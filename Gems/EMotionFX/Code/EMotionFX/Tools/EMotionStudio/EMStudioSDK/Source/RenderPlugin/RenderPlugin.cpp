@@ -709,8 +709,10 @@ namespace EMStudio
         renderOptionsFilename += "EMStudioRenderOptions.cfg";
         QSettings settings(renderOptionsFilename.c_str(), QSettings::IniFormat, this);
 
-        // save the general render options
-        m_renderOptions.Save(&settings);
+        // Deprecation of renderPlugin.
+        // Since we are using the same render option save file for atom render plugin, do not save the render options in the RenderPlugin to
+        // prevent double save.
+        // m_renderOptions.Save(&settings);
 
         AZStd::string groupName;
         if (m_currentLayout)

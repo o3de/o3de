@@ -31,7 +31,6 @@ namespace EMStudio
         AnimViewportRenderer* GetAnimViewportRenderer() { return m_renderer.get(); }
 
         void Reinit(bool resetCamera = true);
-        EMotionFX::ActorRenderFlagBitset GetRenderFlags() const;
 
     private:
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -43,14 +42,10 @@ namespace EMStudio
         void SetupCameras();
         void SetupCameraController();
 
-        void LoadRenderFlags();
-        void SaveRenderFlags();
-
         // AnimViewportRequestBus::Handler overrides
-        void ResetCamera();
-        void SetCameraViewMode(CameraViewMode mode);
-        void SetFollowCharacter(bool follow);
-        void ToggleRenderFlag(EMotionFX::ActorRenderFlag flag);
+        void UpdateCameraViewMode(RenderOptions::CameraViewMode mode);
+        void UpdateCameraFollowUp(bool follow);
+        void UpdateRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags);
 
         // ViewportPluginRequestBus::Handler overrides
         AZ::s32 GetViewportId() const;
@@ -62,7 +57,6 @@ namespace EMStudio
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_translateCamera;
         AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
-        EMotionFX::ActorRenderFlagBitset m_renderFlags;
         bool m_followCharacter = false;
     };
 }

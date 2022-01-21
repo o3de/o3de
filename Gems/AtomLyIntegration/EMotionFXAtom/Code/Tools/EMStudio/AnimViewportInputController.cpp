@@ -12,26 +12,11 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 
 #include <EMStudio/AnimViewportInputController.h>
+#include <EMStudio/ManipulatorInteractionRequestBus.h>
 
 
 namespace EMStudio
 {
-    // static const auto ManipulatorPriority = AzFramework::ViewportControllerPriority::Highest;
-
-    AnimViewportInputController::AnimViewportInputController()
-        : AzFramework::SingleViewportController()
-    {
-    }
-
-    AnimViewportInputController::~AnimViewportInputController()
-    {
-    }
-
-    void AnimViewportInputController::Init(AZ::EntityId targetEntityId)
-    {
-        m_targetEntityId = targetEntityId;
-    }
-
     AzToolsFramework::ViewportInteraction::MouseButton AnimViewportInputController::GetMouseButton(
         const AzFramework::InputChannel& inputChannel)
     {
@@ -81,12 +66,6 @@ namespace EMStudio
 
     bool AnimViewportInputController::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        // We only care about manipulator events
-        //if (event.m_priority != ManipulatorPriority)
-        //{
-        //    return false;
-        //}
-
         using AzFramework::InputChannel;
         using AzToolsFramework::ViewportInteraction::KeyboardModifier;
         using AzToolsFramework::ViewportInteraction::MouseButton;
@@ -202,42 +181,9 @@ namespace EMStudio
                 return MouseInteractionEvent(MouseInteraction{}, MouseEvent::Up, false);
             }();
 
-            // AzFramework::EntityContextId entityContextId = mouseInteraction.m_interactionId.m_entityContextId;
-            interactionHandled = HandleMouseMove(mouseInteractionEvent);
+            ManipulatorRequestBus::BroadcastResult(interactionHandled, &ManipulatorRequests::HandleMouseEvent, mouseInteractionEvent);
         }
 
         return interactionHandled;
-    }
-
-    bool AnimViewportInputController::HandleMouseMove(
-        const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent)
-    {
-        if (!m_manipulatorManager)
-        {
-            return false;
-        }
-
-        using AzToolsFramework::ViewportInteraction::MouseEvent;
-        const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
-
-        switch (mouseInteractionEvent.m_mouseEvent)
-        {
-        case MouseEvent::Down:
-            return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
-        case MouseEvent::DoubleClick:
-            return false;
-        case MouseEvent::Move:
-            {
-                const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
-                    m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
-                return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
-            }
-        case MouseEvent::Up:
-            return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
-        case MouseEvent::Wheel:
-            return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
-        default:
-            return false;
-        }
     }
 } // namespace EMStudio

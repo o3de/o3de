@@ -8,7 +8,6 @@
 
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzFramework/Viewport/ViewportColors.h>
-#include <AzToolsFramework/Viewport/ViewportManipulatorController.h> // TODO: move this
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -25,7 +24,7 @@
 #include <QHBoxLayout>
 #include <QGuiApplication>
 
-#pragma optimize("", off)
+
 namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(AtomRenderPlugin, EMotionFX::EditorAllocator, 0);
@@ -43,10 +42,16 @@ namespace EMStudio
 
     AtomRenderPlugin::~AtomRenderPlugin()
     {
+        SaveRenderOptions();
         GetCommandManager()->RemoveCommandCallback(m_importActorCallback, false);
         GetCommandManager()->RemoveCommandCallback(m_removeActorCallback, false);
         delete m_importActorCallback;
         delete m_removeActorCallback;
+
+        if (ManipulatorRequestBus::Handler::BusIsConnected())
+        {
+            ManipulatorRequestBus::Handler::BusDisconnect();
+        }
     }
 
     const char* AtomRenderPlugin::GetName() const
@@ -102,7 +107,7 @@ namespace EMStudio
     void AtomRenderPlugin::ReinitRenderer()
     {
         m_animViewportWidget->Reinit();
-        SetupManipulators();
+        SetManipulatorMode(m_renderOptions.GetManipulatorMode());
     }
 
     bool AtomRenderPlugin::Init()
@@ -122,12 +127,12 @@ namespace EMStudio
 
         // Add the tool bar
         AnimViewportToolBar* toolBar = new AnimViewportToolBar(this, m_innerWidget);
-        toolBar->SetRenderFlags(m_animViewportWidget->GetRenderFlags());
 
         verticalLayout->addWidget(toolBar);
         verticalLayout->addWidget(m_animViewportWidget);
 
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(g_animManipulatorManagerId);
+        SetupManipulators();
 
         // Register command callbacks.
         m_importActorCallback = new ImportActorCallback(false);
@@ -135,67 +140,63 @@ namespace EMStudio
         EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("ImportActor", m_importActorCallback);
         EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("RemoveActor", m_removeActorCallback);
 
+        ManipulatorRequestBus::Handler::BusConnect();
+
         return true;
     }
 
     void AtomRenderPlugin::SetupManipulators()
     {
         // Add the manipulator controller
-        auto controller = AZStd::make_shared<AnimViewportInputController>();
-        controller->m_manipulatorManager = m_manipulatorManager.get();
-        m_animViewportWidget->GetControllerList()->Add(controller);
+        m_animViewportWidget->GetControllerList()->Add(AZStd::make_shared<AnimViewportInputController>());
 
         // Gather information about the entity
         AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
         worldTransform.SetTranslation(m_animViewportWidget->GetAnimViewportRenderer()->GetCharacterCenter());
-        AZ::EntityComponentIdPair idPair = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityComponentIdPair();
 
         // Setup the translate manipulator
         m_translationManipulators.SetSpace(worldTransform);
-        m_translationManipulators.AddEntityComponentIdPair(idPair);
         AzToolsFramework::ConfigureTranslationManipulatorAppearance3d(&m_translationManipulators);
         m_translationManipulators.InstallLinearManipulatorMouseMoveCallback(
-            [this, idPair](const AzToolsFramework::LinearManipulator::Action& action)
+            [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
-                OnManipulatorMoved(action.LocalPosition(), idPair);
+                OnManipulatorMoved(action.LocalPosition());
             });
 
         m_translationManipulators.InstallPlanarManipulatorMouseMoveCallback(
-            [this, idPair](const AzToolsFramework::PlanarManipulator::Action& action)
+            [this](const AzToolsFramework::PlanarManipulator::Action& action)
             {
-                OnManipulatorMoved(action.LocalPosition(), idPair);
+                OnManipulatorMoved(action.LocalPosition());
             });
 
         m_translationManipulators.InstallSurfaceManipulatorMouseMoveCallback(
-            [this, idPair](const AzToolsFramework::SurfaceManipulator::Action& action)
+            [this](const AzToolsFramework::SurfaceManipulator::Action& action)
             {
-                OnManipulatorMoved(action.LocalPosition(), idPair);
+                OnManipulatorMoved(action.LocalPosition());
             });
 
         // Setup the rotation manipulator
         m_rotateManipulators.SetSpace(worldTransform);
-        m_rotateManipulators.AddEntityComponentIdPair(idPair);
         m_rotateManipulators.SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
         m_rotateManipulators.ConfigureView(
             AzToolsFramework::RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
         m_rotateManipulators.InstallMouseMoveCallback(
-            [this, idPair](const AzToolsFramework::AngularManipulator::Action& action)
+            [this](const AzToolsFramework::AngularManipulator::Action& action)
             {
-                OnManipulatorRotated(action.LocalOrientation(), idPair);
+                OnManipulatorRotated(action.LocalOrientation());
             });
 
         // Setup the scale manipulator
         m_scaleManipulators.SetSpace(worldTransform);
-        m_scaleManipulators.AddEntityComponentIdPair(idPair);
         m_scaleManipulators.SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
         m_scaleManipulators.ConfigureView(
             AzToolsFramework::LinearManipulatorAxisLength(), AzFramework::ViewportColors::XAxisColor,
             AzFramework::ViewportColors::YAxisColor, AzFramework::ViewportColors::ZAxisColor);
         m_scaleManipulators.InstallAxisMouseMoveCallback(
-            [this, idPair](const AzToolsFramework::LinearManipulator::Action& action)
+            [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
-                OnManipulatorScaled(action.LocalScale(), idPair);
+                OnManipulatorScaled(action.LocalScale(), action.LocalScaleOffset());
             });
     }
 
@@ -206,6 +207,23 @@ namespace EMStudio
             return;
         }
 
+        if (mode == RenderOptions::ManipulatorMode::SELECT)
+        {
+            m_translationManipulators.Unregister();
+            m_rotateManipulators.Unregister();
+            m_scaleManipulators.Unregister();
+            return;
+        }
+
+        const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+        if (!entityId.IsValid())
+        {
+            return;
+        }
+
+        AZ::Vector3 localPos;
+        AZ::TransformBus::EventResult(localPos, entityId, &AZ::TransformBus::Events::GetLocalTranslation);
+
         switch (mode)
         {
         case RenderOptions::ManipulatorMode::SELECT:
@@ -214,6 +232,7 @@ namespace EMStudio
         case RenderOptions::ManipulatorMode::TRANSLATE:
             {
                 m_translationManipulators.Register(g_animManipulatorManagerId);
+                m_translationManipulators.SetLocalPosition(localPos);
                 m_rotateManipulators.Unregister();
                 m_scaleManipulators.Unregister();
             }
@@ -222,6 +241,7 @@ namespace EMStudio
             {
                 m_translationManipulators.Unregister();
                 m_rotateManipulators.Register(g_animManipulatorManagerId);
+                m_rotateManipulators.SetLocalPosition(localPos);
                 m_scaleManipulators.Unregister();
             }
             break;
@@ -230,25 +250,44 @@ namespace EMStudio
                 m_translationManipulators.Unregister();
                 m_rotateManipulators.Unregister();
                 m_scaleManipulators.Register(g_animManipulatorManagerId);
+                m_scaleManipulators.SetLocalPosition(localPos);
             }
             break;
         }
     }
 
-    void AtomRenderPlugin::OnManipulatorMoved(const AZ::Vector3& position, [[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
+    void AtomRenderPlugin::OnManipulatorMoved(const AZ::Vector3& position)
     {
         m_translationManipulators.SetLocalPosition(position);
-        AZ::TransformBus::Event(idPair.GetEntityId(), &AZ::TransformBus::Events::SetLocalTranslation, position);
+        const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalTranslation, position);
     }
 
-    void AtomRenderPlugin::OnManipulatorRotated(const AZ::Quaternion& rotation, [[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
+    void AtomRenderPlugin::OnManipulatorRotated(const AZ::Quaternion& rotation)
     {
-        AZ::TransformBus::Event(idPair.GetEntityId(), &AZ::TransformBus::Events::SetLocalRotationQuaternion, rotation);
+        const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, rotation);
     }
 
-    void AtomRenderPlugin::OnManipulatorScaled(const AZ::Vector3& scale, [[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
+    void AtomRenderPlugin::OnManipulatorScaled(
+        const AZ::Vector3& scale, const AZ::Vector3& scaleOffset)
     {
-        AZ::TransformBus::Event(idPair.GetEntityId(), &AZ::TransformBus::Events::SetLocalUniformScale, scale.GetX());
+        // Use the scaleOffset to determine which axis to use on the uniform scale.
+        float localScale = 1.0f;
+        if (scaleOffset.GetX() != 0.0f)
+        {
+            localScale = scale.GetX();
+        }
+        else if (scaleOffset.GetY() != 0.0f)
+        {
+            localScale = scale.GetY();
+        }
+        else if (scaleOffset.GetZ() != 0.0f)
+        {
+            localScale = scale.GetZ();
+        }
+        const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalUniformScale, localScale);
     }
 
     void AtomRenderPlugin::LoadRenderOptions()
@@ -259,7 +298,15 @@ namespace EMStudio
         m_renderOptions = RenderOptions::Load(&settings);
     }
 
-    const RenderOptions* AtomRenderPlugin::GetRenderOptions() const
+    void AtomRenderPlugin::SaveRenderOptions()
+    {
+        AZStd::string renderOptionsFilename(GetManager()->GetAppDataFolder());
+        renderOptionsFilename += "EMStudioRenderOptions.cfg";
+        QSettings settings(renderOptionsFilename.c_str(), QSettings::IniFormat, this);
+        m_renderOptions.Save(&settings);
+    }
+
+    RenderOptions* AtomRenderPlugin::GetRenderOptions()
     {
         return &m_renderOptions;
     }
@@ -281,11 +328,10 @@ namespace EMStudio
             BuildMouseInteractionInternal(
                 AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), keyboardModifiers,
                 BuildMousePick(m_animViewportWidget->mapFromGlobal(QCursor::pos()))));
-                // BuildMousePick(QPoint() /*WidgetToViewport(mapFromGlobal(QCursor::pos()))*/)));
         debugDisplay->DepthTestOn();
     }
 
-    bool AtomRenderPlugin::InternalHandleMouseManipulatorInteraction(
+    bool AtomRenderPlugin::HandleMouseEvent(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent)
     {
         if (!m_manipulatorManager)
@@ -338,7 +384,6 @@ namespace EMStudio
         AzToolsFramework::ViewportInteraction::MouseInteraction mouse;
         mouse.m_interactionId.m_cameraId = AZ::EntityId(AZ::EntityId::InvalidEntityId);
         mouse.m_interactionId.m_viewportId = m_animViewportWidget->GetViewportContext()->GetId();
-        mouse.m_interactionId.m_entityContextId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityContextId();
         mouse.m_mouseButtons = buttons;
         mouse.m_mousePick = mousePick;
         mouse.m_keyboardModifiers = modifiers;

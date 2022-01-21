@@ -19,6 +19,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 
 #include <EMStudio/AnimViewportWidget.h>
+#include <EMStudio/ManipulatorInteractionRequestBus.h>
 #include <QWidget>
 #endif
 
@@ -31,7 +32,7 @@ namespace EMStudio
 {
     class AtomRenderPlugin
         : public DockWidgetPlugin
-        , public AzToolsFramework::ViewportInteraction::InternalViewportSelectionRequests
+        , private EMStudio::ManipulatorRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -59,15 +60,14 @@ namespace EMStudio
         void ReinitRenderer();
 
         void LoadRenderOptions();
-        const RenderOptions* GetRenderOptions() const;
+        void SaveRenderOptions();
+        RenderOptions* GetRenderOptions();
 
         void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
         void SetManipulatorMode(RenderOptions::ManipulatorMode mode);
 
     private:
-        // ViewportInteraction::InternalMouseViewportRequests
-        bool InternalHandleMouseManipulatorInteraction(
-            const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent) override;
+        bool HandleMouseEvent(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent) override;
 
         // From a series of input primitives, compose a complete mouse interaction.
         AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteractionInternal(
@@ -77,9 +77,9 @@ namespace EMStudio
         AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point) const;
 
         void SetupManipulators();
-        void OnManipulatorMoved(const AZ::Vector3& position, const AZ::EntityComponentIdPair& idPair);
-        void OnManipulatorRotated(const AZ::Quaternion& rotation, const AZ::EntityComponentIdPair& idPair);
-        void OnManipulatorScaled(const AZ::Vector3& scale, const AZ::EntityComponentIdPair& idPair);
+        void OnManipulatorMoved(const AZ::Vector3& position);
+        void OnManipulatorRotated(const AZ::Quaternion& rotation);
+        void OnManipulatorScaled(const AZ::Vector3& scale, const AZ::Vector3& scaleOffset);
 
         QWidget* m_innerWidget = nullptr;
         AnimViewportWidget* m_animViewportWidget = nullptr;

@@ -210,14 +210,13 @@ namespace EMStudio
         return m_frameworkScene;
     }
 
-    AZ::EntityComponentIdPair AnimViewportRenderer::GetEntityComponentIdPair() const
+    AZ::EntityId AnimViewportRenderer::GetEntityId() const
     {
         if (m_actorEntities.empty())
         {
-            return AZ::EntityComponentIdPair();
+            return AZ::EntityId();
         }
-        AZ::Entity* entity = m_actorEntities[0];
-        return AZ::EntityComponentIdPair(entity->GetId(), entity->FindComponent<EMotionFX::Integration::ActorComponent>()->GetId());
+        return m_actorEntities[0]->GetId();
     }
 
     AzFramework::EntityContextId AnimViewportRenderer::GetEntityContextId() const

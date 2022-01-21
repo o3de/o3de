@@ -17,6 +17,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
+
 namespace EMStudio
 {
     AnimViewportToolBar::AnimViewportToolBar(AtomRenderPlugin* plugin, QWidget* parent)
@@ -39,8 +40,10 @@ namespace EMStudio
                 m_manipulatorActions[i], &QAction::triggered, this,
                 [this, i]()
                 {
-                    // Send the reset camera event.
-                    m_plugin->SetManipulatorMode(RenderOptions::ManipulatorMode(i));
+                    const RenderOptions::ManipulatorMode mode =
+                        m_manipulatorActions[i]->isChecked() ? RenderOptions::ManipulatorMode(i) : RenderOptions::ManipulatorMode::SELECT;
+                    m_plugin->GetRenderOptions()->SetManipulatorMode(mode);
+                    m_plugin->SetManipulatorMode(mode);
                 });
             manipulatorGroup->addAction(m_manipulatorActions[i]);
         }
@@ -90,30 +93,35 @@ namespace EMStudio
             QMenu* cameraMenu = new QMenu(cameraButton);
 
             // Add the camera option
-            const AZStd::vector<AZStd::pair<CameraViewMode, AZStd::string>> cameraOptionNames = {
-                { CameraViewMode::FRONT, "Front" },   { CameraViewMode::BACK, "Back" }, { CameraViewMode::TOP, "Top" },
-                { CameraViewMode::BOTTOM, "Bottom" }, { CameraViewMode::LEFT, "Left" }, { CameraViewMode::RIGHT, "Right" },
+            const AZStd::vector<AZStd::pair<RenderOptions::CameraViewMode, AZStd::string>> cameraOptionNames = {
+                { RenderOptions::CameraViewMode::FRONT, "Front" },
+                { RenderOptions::CameraViewMode::BACK, "Back" },
+                { RenderOptions::CameraViewMode::TOP, "Top" },
+                { RenderOptions::CameraViewMode::BOTTOM, "Bottom" },
+                { RenderOptions::CameraViewMode::LEFT, "Left" },
+                { RenderOptions::CameraViewMode::RIGHT, "Right" },
             };
 
             for (const auto& pair : cameraOptionNames)
             {
-                CameraViewMode mode = pair.first;
+                RenderOptions::CameraViewMode mode = pair.first;
                 cameraMenu->addAction(
                     pair.second.c_str(),
-                    [mode]()
+                    [this, mode]()
                     {
-                        // Send the reset camera event.
-                        AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::SetCameraViewMode, mode);
+                        m_plugin->GetRenderOptions()->SetCameraViewMode(mode);
+                        AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::UpdateCameraViewMode, mode);
                     });
             }
 
             cameraMenu->addSeparator();
             cameraMenu->addAction(
                 "Reset Camera",
-                []()
+                [this]()
                 {
-                    // Send the reset camera event.
-                    AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::ResetCamera);
+                    m_plugin->GetRenderOptions()->SetCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
+                    AnimViewportRequestBus::Broadcast(
+                        &AnimViewportRequestBus::Events::UpdateCameraViewMode, RenderOptions::CameraViewMode::DEFAULT);
                 });
 
             cameraMenu->addSeparator();
@@ -123,8 +131,9 @@ namespace EMStudio
             connect(m_followCharacterAction, &QAction::triggered, this,
                 [this]()
                 {
+                    m_plugin->GetRenderOptions()->SetCameraFollowUp(m_followCharacterAction->isChecked());
                     AnimViewportRequestBus::Broadcast(
-                        &AnimViewportRequestBus::Events::SetFollowCharacter, m_followCharacterAction->isChecked());
+                        &AnimViewportRequestBus::Events::UpdateCameraFollowUp, m_followCharacterAction->isChecked());
                     ;
                 });
 
@@ -141,7 +150,6 @@ namespace EMStudio
 
     AnimViewportToolBar::~AnimViewportToolBar()
     {
-        SaveSettings();
     }
 
     void AnimViewportToolBar::CreateViewOptionEntry(
@@ -149,11 +157,11 @@ namespace EMStudio
     {
         QAction* action = menu->addAction(
             menuEntryName,
-            [actionIndex]()
+            [this, actionIndex]()
             {
+                m_plugin->GetRenderOptions()->ToggerRenderFlag(actionIndex);
                 // Send the reset camera event.
-                AnimViewportRequestBus::Broadcast(
-                    &AnimViewportRequestBus::Events::ToggleRenderFlag, (EMotionFX::ActorRenderFlag)actionIndex);
+                AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::UpdateRenderFlags, m_plugin->GetRenderOptions()->GetRenderFlags());
             });
         action->setCheckable(true);
         action->setVisible(visible);
@@ -166,8 +174,22 @@ namespace EMStudio
         m_renderActions[actionIndex] = action;
     }
 
-    void AnimViewportToolBar::SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags)
+    void AnimViewportToolBar::LoadSettings()
     {
+        const RenderOptions* renderOptions = m_plugin->GetRenderOptions();
+
+        const bool isChecked = renderOptions->GetCameraFollowUp();
+        m_followCharacterAction->setChecked(isChecked);
+        AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::UpdateCameraFollowUp, isChecked);
+
+        RenderOptions::ManipulatorMode mode = renderOptions->GetManipulatorMode();
+        m_plugin->SetManipulatorMode(mode);
+        if (mode != RenderOptions::ManipulatorMode::SELECT)
+        {
+            m_manipulatorActions[mode]->setChecked(true);
+        }
+
+        const EMotionFX::ActorRenderFlagBitset renderFlags = renderOptions->GetRenderFlags();
         for (size_t i = 0; i < renderFlags.size(); ++i)
         {
             QAction* action = m_renderActions[i];
@@ -176,25 +198,5 @@ namespace EMStudio
                 action->setChecked(renderFlags[i]);
             }
         }
-    }
-
-    void AnimViewportToolBar::LoadSettings()
-    {
-        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
-        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
-        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
-
-        const bool isChecked = settings.value("CameraFollowUp", false).toBool();
-        m_followCharacterAction->setChecked(isChecked);
-        AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::SetFollowCharacter, isChecked);
-    }
-
-    void AnimViewportToolBar::SaveSettings()
-    {
-        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
-        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
-        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
-
-        settings.setValue("CameraFollowUp", m_followCharacterAction->isChecked());
     }
 } // namespace EMStudio

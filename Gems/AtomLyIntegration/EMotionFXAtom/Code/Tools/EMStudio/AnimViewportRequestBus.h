@@ -8,28 +8,10 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <Integration/Rendering/RenderFlag.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 
 namespace EMStudio
 {
-    enum CameraViewMode
-    {
-        FRONT,
-        BACK,
-        TOP,
-        BOTTOM,
-        LEFT,
-        RIGHT,
-        DEFAULT
-    };
-
-    enum ManipulatorMode
-    {
-        TRANSLATE,
-        ROTATE,
-        SCALE
-    };
-
     class AnimViewportRequests
         : public AZ::EBusTraits
     {
@@ -37,17 +19,14 @@ namespace EMStudio
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        //! Reset the camera to initial state.
-        virtual void ResetCamera() = 0;
+        //! Update the camera view mode.
+        virtual void UpdateCameraViewMode(EMStudio::RenderOptions::CameraViewMode mode) = 0;
 
-        //! Set the camera view mode.
-        virtual void SetCameraViewMode(CameraViewMode mode) = 0;
+        //! Update the camera follow up option
+        virtual void UpdateCameraFollowUp(bool followUp) = 0;
 
-        //! Set the camera follow up
-        virtual void SetFollowCharacter(bool follow) = 0;
-
-        //! Toggle render option flag
-        virtual void ToggleRenderFlag(EMotionFX::ActorRenderFlag flag) = 0;
+        //! Update render flags
+        virtual void UpdateRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags) = 0;
     };
 
     using AnimViewportRequestBus = AZ::EBus<AnimViewportRequests>;

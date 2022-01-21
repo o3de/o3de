@@ -26,9 +26,7 @@ namespace EMStudio
         AnimViewportToolBar(AtomRenderPlugin* plugin, QWidget* parent);
         ~AnimViewportToolBar();
 
-        void SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags);
         void LoadSettings();
-        void SaveSettings();
 
     private:
         void CreateViewOptionEntry(
