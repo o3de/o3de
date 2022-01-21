@@ -5,7 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "FullscreenShadowTemplate",
-            "PassClass": "ComputePass",
+            "PassClass": "FullscreenShadowPass",
             "Slots": [
                 {
                     "Name": "Output",

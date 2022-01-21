@@ -214,7 +214,7 @@
                                 "Pass": "ShadowPass",
                                 "Attachment": "DirectionalESM"
                             }
-                        },
+                        },                           
                         {
                             "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
