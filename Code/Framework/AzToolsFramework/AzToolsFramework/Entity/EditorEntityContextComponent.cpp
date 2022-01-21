@@ -272,11 +272,11 @@ namespace AzToolsFramework
             return;
         }
 
-        SetupEditorEntity(entity);
-
         // Store creation undo command.
         if (m_isLegacySliceService)
         {
+            SetupEditorEntity(entity);
+
             ScopedUndoBatch undoBatch("Create Entity");
 
             EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(entity->GetId()));
