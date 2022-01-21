@@ -190,12 +190,12 @@
                     ]
                 },
                 {
-                    "Name": "EditorModeFeedbackPass",
-                    "TemplateName": "EditorModeFeedbackTemplate",
+                    "Name": "EditorModeFeedbackPassParent",
+                    "TemplateName": "EditorModeFeedbackParentTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "Input",
+                            "LocalSlot": "EditorModeFeedbackInput",
                             "AttachmentRef": {
                                 "Pass": "LightAdaptation",
                                 "Attachment": "Output"
@@ -211,8 +211,8 @@
                         {
                             "LocalSlot": "InputColor",
                             "AttachmentRef": {
-                                "Pass": "EditorModeFeedbackPass",
-                                "Attachment": "Output"
+                                "Pass": "EditorModeFeedbackPassParent",
+                                "Attachment": "EditorModeFeedbackOutput"
                             }
                         }
                     ]

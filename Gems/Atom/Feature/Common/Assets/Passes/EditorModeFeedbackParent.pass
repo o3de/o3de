@@ -1,0 +1,56 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "EditorModeFeedbackParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "EditorModeFeedbackInput",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "EditorModeFeedbackOutput",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "EditorModeFeedbackOutput",
+                    "AttachmentRef": {
+                        "Pass": "EditorModeFeedbackPass",
+                        "Attachment": "EditorModeFeedbackOutput"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "EditorModeFeedbackPass",
+                    "TemplateName": "EditorModeFeedbackTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "EditorModeFeedbackInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "EditorModeFeedbackInput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
+
+
+// P1 (mask write)
+// P2 (mask read, color read, color write)
+
+
+//PostProccess -> EditorModeFeedback
+//
+//PostProccess -> EditorModeFeedbackMask (write out some data to a mask texture)
+//             -> EditorModeFeedback (read from mask and color from previous pass output)

@@ -8,13 +8,13 @@
             "PassClass": "EditorModeFeedbackPass",
             "Slots": [
                 {
-                    "Name": "Input",
+                    "Name": "EditorModeFeedbackInput",
                     "SlotType": "Input",
                     "ShaderInputName": "m_framebuffer",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "Output",
+                    "Name": "EditorModeFeedbackOutput",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
@@ -24,32 +24,32 @@
             ],
             "ImageAttachments": [
                 {
-                    "Name": "EditorModeFeedbackOutput",
+                    "Name": "EditorModeFeedbackOutputAttachment",
                     "SizeSource": {
                         "Source": {
                             "Pass": "This",
-                            "Attachment": "Input"
+                            "Attachment": "EditorModeFeedbackInput"
                         }
                     },
                     "FormatSource": {
                         "Pass": "This",
-                        "Attachment": "Input"
+                        "Attachment": "EditorModeFeedbackInput"
                     }
                 }
             ],
             "Connections": [
                 {
-                    "LocalSlot": "Output",
+                    "LocalSlot": "EditorModeFeedbackOutput",
                     "AttachmentRef": {
                         "Pass": "This",
-                        "Attachment": "EditorModeFeedbackOutput"
+                        "Attachment": "EditorModeFeedbackOutputAttachment"
                     }
                 }
             ],
             "FallbackConnections": [
                 {
-                    "Input" : "Input",
-                    "Output" : "Output"
+                    "Input" : "EditorModeFeedbackInput",
+                    "Output" : "EditorModeFeedbackOutput"
                 }
             ],
             "PassData": {
