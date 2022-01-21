@@ -12,7 +12,7 @@
 
 namespace AZ
 {
-    enum class ObjectStreamWriteElementResponse;
+    enum class ObjectStreamWriteOverrideResponse;
 
     namespace VariantSerializationInternal
     {
@@ -482,7 +482,7 @@ namespace AZ
                 }
             }
         private:
-            static ObjectStreamWriteElementResponse ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
+            static ObjectStreamWriteOverrideResponse ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
                 [[maybe_unused]] const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
             {
                 auto alternativeVisitor = [&callContext, variantClassElement](auto&& elementAlt)
@@ -507,7 +507,7 @@ namespace AZ
                 AZStd::visit(AZStd::move(alternativeVisitor), *reinterpret_cast<const VariantType*>(variantPtr));
                 // To avoid including ObjectStream.h into this file, we static cast the value of 0
                 // to an AZ::ObjectStreamWriteElemntResponse which corresponds to the CompletedWrite enum value
-                return static_cast<AZ::ObjectStreamWriteElementResponse>(0);
+                return static_cast<AZ::ObjectStreamWriteOverrideResponse>(0);
             }
 
             VariantSerializationInternal::AZStdVariantContainer<Types...> m_variantContainer;
