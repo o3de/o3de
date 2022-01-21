@@ -110,7 +110,6 @@ ly_add_target(
             AZ::AzCore
             AZ::AzToolsFramework
             Gem::LmbrCentral.Static
-            AZ::AWSNativeSDKInit
             AZ::AtomCore
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
