@@ -608,7 +608,7 @@ def get_registered(engine_name: str = None,
                     except json.JSONDecodeError as e:
                         logger.warning(f'{engine_json} failed to load: {str(e)}')
                     else:
-                        this_engines_name = engine_json_data['engine_name']
+                        this_engines_name = engine_json_data.get('engine_name','')
                         if this_engines_name == engine_name:
                             return engine_path
         engines_path = json_data.get('engines_path', {})
