@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/utils.h>
+#include <AzCore/std/typetraits/is_constructible.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 
 /* Microsoft C++ ABI puts 1 byte of padding between each empty base class when multiple inheritance is being used
@@ -20,7 +21,7 @@
 #if defined(AZ_COMPILER_MSVC)
 #define AZSTD_COMPRESSED_PAIR_EMPTY_BASE_OPTIMIZATION __declspec(empty_bases)
 #else
-#define AZSTD_COMPRESSED_PAIR_EMPTY_BASE_OPTIMIZATION 
+#define AZSTD_COMPRESSED_PAIR_EMPTY_BASE_OPTIMIZATION
 #endif
 
 namespace AZStd
@@ -97,16 +98,14 @@ namespace AZStd
         using second_base_value_type = typename second_base_type::value_type;
 
     public:
-        // First template argument is a placeholder argument of void as MSVC examines the types
-        // of a templated function to determine if they are the same template
-        // Due to the "template <class T> compressed_pair(skip_element_tag, T&&)"
-        // constructor below, the default constructor template types needs to be distinguished from it
-        template <typename = void, typename = AZStd::enable_if_t<
-            AZStd::is_default_constructible<first_base_value_type>::value
-            && AZStd::is_default_constructible<second_base_value_type>::value>>
+        // First template argument is used to perform a substitution into AZStd::enable_if_t
+        // so that SFINAE can trigger
+        template <typename Unused = void, typename = AZStd::enable_if_t<
+            AZStd::is_default_constructible_v<first_base_value_type>
+            && AZStd::is_default_constructible_v<second_base_value_type>, Unused>>
         constexpr compressed_pair();
 
-        template <typename T, AZStd::enable_if_t<!is_same<remove_cvref_t<T>, compressed_pair>::value, bool> = true>
+        template <typename T, AZStd::enable_if_t<!is_same_v<remove_cvref_t<T>, compressed_pair>, bool> = true>
         constexpr explicit compressed_pair(T&& firstElement);
 
         template <typename T>

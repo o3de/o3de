@@ -2,26 +2,33 @@
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PrecompiledShaderAssetSourceData",
-    "ClassData":
+    "ClassData": 
     {
         "ShaderAssetFileName": "diffuseprobegridraytracingclosesthit.azshader",
         "PlatformIdentifiers": 
         [
-            "pc", "linux"
+            "pc",
+            "linux"
         ],
-        "RootShaderVariantAssets":
+        "Supervariants": 
         [
             {
-                "APIName": "dx12",
-                "RootShaderVariantAssetFileName": "diffuseprobegridraytracingclosesthit_dx12_0.azshadervariant"
-            },
-            {
-                "APIName": "vulkan",
-                "RootShaderVariantAssetFileName": "diffuseprobegridraytracingclosesthit_vulkan_0.azshadervariant"
-            },
-            {
-                "APIName": "null",
-                "RootShaderVariantAssetFileName": "diffuseprobegridraytracingclosesthit_null_0.azshadervariant"
+                "Name": "",
+                "RootShaderVariantAssets": 
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridraytracingclosesthit_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridraytracingclosesthit_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridraytracingclosesthit_null_0.azshadervariant"
+                    }
+                ]
             }
         ]
     }

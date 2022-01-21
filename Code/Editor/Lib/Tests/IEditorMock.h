@@ -85,9 +85,6 @@ public:
     MOCK_METHOD0(IsSelectionLocked, bool());
     MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
-    MOCK_METHOD1(GetDBItemManager, IDataBaseManager* (EDataBaseItemType));
-    MOCK_METHOD0(GetMaterialManagerLibrary, IBaseLibraryManager* ());
-    MOCK_METHOD0(GetIEditorMaterialManager, IEditorMaterialManager* ());
     MOCK_METHOD0(GetIconManager, IIconManager* ());
     MOCK_METHOD0(GetMusicManager, CMusicManager* ());
     MOCK_METHOD2(GetTerrainElevation, float(float , float ));

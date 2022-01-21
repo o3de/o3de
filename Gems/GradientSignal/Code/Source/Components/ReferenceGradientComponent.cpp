@@ -131,13 +131,18 @@ namespace GradientSignal
 
     float ReferenceGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        return m_configuration.m_gradientSampler.GetValue(sampleParams);
+    }
 
-        float output = 0.0f;
+    void ReferenceGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
 
-        output = m_configuration.m_gradientSampler.GetValue(sampleParams);
-
-        return output;
+        m_configuration.m_gradientSampler.GetValues(positions, outValues);
     }
 
     bool ReferenceGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const
