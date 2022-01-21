@@ -19,8 +19,7 @@
                                             {
                                                 "eventDatas": [
                                                     {
-                                                        "$type": "MotionMatchEventData",
-                                                        "tag": "discard"
+                                                        "$type": "DiscardFrameEventData"
                                                     }
                                                 ],
                                                 "startTime": 32.266666412353516,
@@ -29,8 +28,7 @@
                                             {
                                                 "eventDatas": [
                                                     {
-                                                        "$type": "MotionMatchEventData",
-                                                        "tag": "discard"
+                                                        "$type": "DiscardFrameEventData"
                                                     }
                                                 ],
                                                 "startTime": 86.86666870117188,

@@ -16,7 +16,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <MotionMatching/MotionMatchingBus.h>
 
-namespace MotionMatching
+namespace EMotionFX::MotionMatching
 {
     class MotionMatchingSystemComponent
         : public AZ::Component
@@ -41,8 +41,6 @@ namespace MotionMatching
         // MotionMatchingRequestBus interface implementation
 
         ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;
         void Activate() override;
@@ -54,5 +52,4 @@ namespace MotionMatching
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
     };
-
-} // namespace MotionMatching
+} // namespace EMotionFX::MotionMatching

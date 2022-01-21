@@ -19,6 +19,7 @@
 #include <AzCore/std/tuple.h>
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
+#include <EventData.h>
 #include <Frame.h>
 
 namespace EMotionFX
@@ -67,6 +68,7 @@ namespace EMotionFX::MotionMatching
         const AZStd::vector<Frame>& GetFrames() const;
         AZStd::vector<Frame>& GetFrames();
         const AZStd::vector<const Motion*>& GetUsedMotions() const;
+        size_t GetSampleRate() const { return m_sampleRate; }
 
         /**
          * Find the frame index for the given playtime and motion.
@@ -76,12 +78,13 @@ namespace EMotionFX::MotionMatching
 
     private:
         void ImportFrame(Motion* motion, float timeValue, bool mirrored);
-            bool IsFrameDiscarded(const AZStd::vector<MotionMatchEventData*>& activeEventDatas) const;
-            void ExtractActiveMotionMatchEventDatas(const Motion* motion, float time, AZStd::vector<MotionMatchEventData*>& activeEventDatas); // Vector will be cleared internally.
+        bool IsFrameDiscarded(const AZStd::vector<EventData*>& activeEventDatas) const;
+        void ExtractActiveMotionEventDatas(const Motion* motion, float time, AZStd::vector<EventData*>& activeEventDatas); // Vector will be cleared internally.
 
     private:
         AZStd::vector<Frame> m_frames; /**< The collection of frames. Keep in mind these don't hold a pose, but reference to a given frame/time value inside a given motion. */
         AZStd::unordered_map<Motion*, AZStd::vector<size_t>> m_frameIndexByMotion;
         AZStd::vector<const Motion*> m_usedMotions; /**< The list of used motions. */
+        size_t m_sampleRate = 0;
     };
 } // namespace EMotionFX::MotionMatching

@@ -5,7 +5,7 @@
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
-namespace MotionMatching
+namespace EMotionFX::MotionMatching
 {
     /// System component for MotionMatching editor
     class MotionMatchingEditorSystemComponent
@@ -30,4 +30,4 @@ namespace MotionMatching
         void Activate() override;
         void Deactivate() override;
     };
-} // namespace MotionMatching
+} // namespace EMotionFX::MotionMatching

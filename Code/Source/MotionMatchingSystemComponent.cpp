@@ -18,18 +18,19 @@
 #include <EMotionFX/Source/AnimGraphObjectFactory.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/PoseDataFactory.h>
+
 #include <Integration/EMotionFXBus.h>
 
 #include <BlendTreeMotionMatchNode.h>
 #include <Feature.h>
-#include <MotionMatchEventData.h>
 #include <FeaturePosition.h>
 #include <FeatureTrajectory.h>
 #include <FeatureVelocity.h>
+#include <EventData.h>
 #include <MotionMatchingSystemComponent.h>
 #include <PoseDataJointVelocities.h>
 
-namespace MotionMatching
+namespace EMotionFX::MotionMatching
 {
     void MotionMatchingSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -49,7 +50,8 @@ namespace MotionMatching
             }
         }
 
-        EMotionFX::MotionMatching::MotionMatchEventData::Reflect(context);
+        EMotionFX::MotionMatching::DiscardFrameEventData::Reflect(context);
+        EMotionFX::MotionMatching::TagEventData::Reflect(context);
 
         EMotionFX::MotionMatching::FeatureSchema::Reflect(context);
         EMotionFX::MotionMatching::Feature::Reflect(context);
@@ -128,4 +130,4 @@ namespace MotionMatching
     void MotionMatchingSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
     }
-} // namespace MotionMatching
+} // namespace EMotionFX::MotionMatching
