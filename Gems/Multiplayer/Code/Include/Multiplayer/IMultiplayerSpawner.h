@@ -11,6 +11,11 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 
+namespace AzFramework
+{
+    struct PlayerConnectionConfig;
+}
+
 namespace Multiplayer
 {
     struct EntityReplicationData;
@@ -33,7 +38,8 @@ namespace Multiplayer
 
         virtual ~IMultiplayerSpawner() = default;
 
-        virtual AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> OnPlayerJoin(uint64_t userId) = 0;
+        virtual AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> OnPlayerJoin(
+            uint64_t userId, AzFramework::PlayerConnectionConfig config, Multiplayer::LongNetworkString ticket) = 0;
 
         virtual void OnPlayerLeave(
             Multiplayer::ConstNetworkEntityHandle entityHandle, const Multiplayer::ReplicationSet& replicationSet, AzNetworking::DisconnectReason reason) = 0;

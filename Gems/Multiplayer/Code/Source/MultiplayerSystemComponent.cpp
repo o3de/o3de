@@ -494,13 +494,15 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Connect& packet
     )
     {
+        AzFramework::PlayerConnectionConfig config;
+        config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+        config.m_playerSessionId = packet.GetTicket();
+
         // Validate our session with the provider if any
-        if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+        AzFramework::ISessionHandlingProviderRequests* sessionRequests = AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get();
+        if (sessionRequests != nullptr)
         {
-            AzFramework::PlayerConnectionConfig config;
-            config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
-            config.m_playerSessionId = packet.GetTicket();
-            if (!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config))
+            if (!sessionRequests->ValidatePlayerJoinSession(config))
             {
                 auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
                 m_networkInterface->GetConnectionSet().VisitConnections(visitor);
@@ -509,7 +511,7 @@ namespace Multiplayer
         }
         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
-        // Hosts will spawn a new default player prefab for the user that just connected
+        // Hosts will handle spawning for a player on connect
         if (GetAgentType() == MultiplayerAgentType::ClientServer
          || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
@@ -526,7 +528,8 @@ namespace Multiplayer
             else if (spawner)
             {
                 // Route to spawner implementation
-                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams = spawner->OnPlayerJoin(packet.GetTemporaryUserId());
+                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams =
+                    spawner->OnPlayerJoin(packet.GetTemporaryUserId(), config, packet.GetTicket());
                 controlledEntity = TrySpawnPlayerPrefab(spawnParams.first, spawnParams.second);
             }
 
@@ -887,7 +890,8 @@ namespace Multiplayer
             if (spawner)
             {
                 // Route to spawner implementation
-                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams = spawner->OnPlayerJoin(0);
+                AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams =
+                    spawner->OnPlayerJoin(0, AzFramework::PlayerConnectionConfig(), "");
                 controlledEntity = TrySpawnPlayerPrefab(spawnParams.first, spawnParams.second);
             }
             if (controlledEntity.Exists())
