@@ -3334,7 +3334,6 @@ void CCryEditApp::OnOpenLevel()
     CLevelFileDialog levelFileDialog(true);
     levelFileDialog.show();
     levelFileDialog.adjustSize();
-    levelFileDialog.hide();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {

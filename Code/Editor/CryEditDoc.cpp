@@ -692,7 +692,6 @@ void CCryEditDoc::OnFileSaveAs()
     CLevelFileDialog levelFileDialog(false);
     levelFileDialog.show();
     levelFileDialog.adjustSize();
-    levelFileDialog.hide();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
