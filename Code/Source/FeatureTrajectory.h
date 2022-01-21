@@ -138,11 +138,11 @@ namespace EMotionFX::MotionMatching
 
         float m_pastTimeRange = 0.7f; //< The time window the samples are distributed along for the past trajectory.
         size_t m_numPastSamples = 4; //< The number of samples stored per frame for the past (history) trajectory.
-        float m_pastCostFactor = 0.5f; //< TODO:
+        float m_pastCostFactor = 0.5f; //< Normalized value to weight or scale the future trajectory cost.
 
         float m_futureTimeRange = 1.2f; //< The time window the samples are distributed along for the future trajectory.
         size_t m_numFutureSamples = 6; //< The number of samples stored per frame for the future trajectory.
-        float m_futureCostFactor = 0.75f; //< TODO:
+        float m_futureCostFactor = 0.75f; //< Normalized value to weight or scale the future trajectory cost.
 
         Axis m_facingAxis = Axis::Y; //< Which axis of the joint transform is facing forward?
         AZ::Vector3 m_facingAxisDir = AZ::Vector3::CreateAxisY();

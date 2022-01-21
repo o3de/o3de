@@ -2,7 +2,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <MotionMatchingEditorSystemComponent.h>
 
-namespace MotionMatching
+namespace EMotionFX::MotionMatching
 {
     void MotionMatchingEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -50,5 +50,4 @@ namespace MotionMatching
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         MotionMatchingSystemComponent::Deactivate();
     }
-
-} // namespace MotionMatching
+} // namespace EMotionFX::MotionMatching

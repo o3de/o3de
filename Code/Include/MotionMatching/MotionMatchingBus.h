@@ -4,7 +4,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
-namespace MotionMatching
+namespace EMotionFX::MotionMatching
 {
     class MotionMatchingRequests
     {
@@ -28,4 +28,4 @@ namespace MotionMatching
     using MotionMatchingRequestBus = AZ::EBus<MotionMatchingRequests, MotionMatchingBusTraits>;
     using MotionMatchingInterface = AZ::Interface<MotionMatchingRequests>;
 
-} // namespace MotionMatching
+} // namespace EMotionFX::MotionMatching

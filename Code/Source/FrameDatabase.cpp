@@ -16,11 +16,12 @@
 #include <EMotionFX/Source/AnimGraphPosePool.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Motion.h>
+#include <MotionMatchingData.h>
 #include <MotionMatchingInstance.h>
 #include <Frame.h>
 #include <Feature.h>
 #include <FrameDatabase.h>
-#include <MotionMatchEventData.h>
+#include <EventData.h>
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/MotionEvent.h>
@@ -56,7 +57,7 @@ namespace EMotionFX::MotionMatching
         m_usedMotions.shrink_to_fit();
     }
 
-    void FrameDatabase::ExtractActiveMotionMatchEventDatas(const Motion* motion, float time, AZStd::vector<MotionMatchEventData*>& activeEventDatas)
+    void FrameDatabase::ExtractActiveMotionEventDatas(const Motion* motion, float time, AZStd::vector<EventData*>& activeEventDatas)
     {
         activeEventDatas.clear();
 
@@ -81,21 +82,17 @@ namespace EMotionFX::MotionMatching
 
                 for (auto eventData : motionEvent.GetEventDatas())
                 {
-                    auto motionMatchEventData = azdynamic_cast<const MotionMatchEventData*>(eventData.get());
-                    if (motionMatchEventData)
-                    {
-                        activeEventDatas.emplace_back(const_cast<MotionMatchEventData*>(motionMatchEventData));
-                    }
+                    activeEventDatas.emplace_back(const_cast<EventData*>(eventData.get()));
                 }
             }
         }
     }
 
-    bool FrameDatabase::IsFrameDiscarded(const AZStd::vector<MotionMatchEventData*>& activeEventDatas) const
+    bool FrameDatabase::IsFrameDiscarded(const AZStd::vector<EventData*>& activeEventDatas) const
     {
-        for (const MotionMatchEventData* eventData : activeEventDatas)
+        for (const EventData* eventData : activeEventDatas)
         {
-            if (eventData->GetDiscardFrames())
+            if (eventData->RTTI_GetType() == azrtti_typeid<DiscardFrameEventData>())
             {
                 return true;
             }
@@ -116,6 +113,7 @@ namespace EMotionFX::MotionMatching
         size_t numFramesDiscarded = 0;
 
         // Calculate the number of frames we might need to import, in worst case.
+        m_sampleRate = settings.m_sampleRate;
         const double timeStep = 1.0 / aznumeric_cast<double>(settings.m_sampleRate);
         const size_t worstCaseNumFrames = aznumeric_cast<size_t>(ceil(motion->GetDuration() / timeStep)) + 1;
 
@@ -125,7 +123,7 @@ namespace EMotionFX::MotionMatching
             m_frames.reserve(m_frames.size() + worstCaseNumFrames);
         }
 
-        AZStd::vector<MotionMatchEventData*> activeEvents;
+        AZStd::vector<EventData*> activeEvents;
 
         // Iterate over all sample positions in the motion.
         const double totalTime = aznumeric_cast<double>(motion->GetDuration());
@@ -133,7 +131,7 @@ namespace EMotionFX::MotionMatching
         while (curTime <= totalTime)
         {
             const float floatTime = aznumeric_cast<float>(curTime);
-            ExtractActiveMotionMatchEventDatas(motion, floatTime, activeEvents);
+            ExtractActiveMotionEventDatas(motion, floatTime, activeEvents);
             if (!IsFrameDiscarded(activeEvents))
             {
                 ImportFrame(motion, floatTime, mirrored);
@@ -150,7 +148,7 @@ namespace EMotionFX::MotionMatching
         if (curTime - timeStep < totalTime - 0.000001)
         {
             const float floatTime = aznumeric_cast<float>(totalTime);
-            ExtractActiveMotionMatchEventDatas(motion, floatTime, activeEvents);
+            ExtractActiveMotionEventDatas(motion, floatTime, activeEvents);
             if (!IsFrameDiscarded(activeEvents))
             {
                 ImportFrame(motion, floatTime, mirrored);
@@ -188,6 +186,8 @@ namespace EMotionFX::MotionMatching
         size_t total = 0;
 
         total += m_frames.capacity() * sizeof(Frame);
+        total += sizeof(m_frames);
+        total += m_usedMotions.capacity() * sizeof(const Motion*);
         total += sizeof(m_usedMotions);
 
         return total;
