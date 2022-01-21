@@ -460,12 +460,8 @@ namespace O3DE::ProjectManager
             {
                 engineInfo = EngineInfoFromPath(enginePathResult);
 
-                // handle the case where an engine was registered but the engine.json is missing/corrupt
-                if (!engineInfo.IsValid())
-                {
-                    engineInfo.m_name = engineName;
-                    engineInfo.m_path = Py_To_String(enginePathResult); 
-                }
+                // it is possible an engine is registered in o3de_manifest.json but the engine.json is
+                // missing or corrupt in which case we do not consider it a registered engine
             }
         });
 

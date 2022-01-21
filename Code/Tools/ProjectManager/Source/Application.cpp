@@ -196,50 +196,43 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool forceRegistration = false;
-
-        // check if an engine with this name is already registered
+        // check if an engine with this name is already registered and has a valid engine.json
         auto existingEngineResult = m_pythonBindings->GetEngineInfo(engineInfo.m_name);
         if (existingEngineResult)
         {
-            const EngineInfo& otherEngineInfo = existingEngineResult.GetValue();
-
-            // only prompt the user about forcing registration if the other engine's engine.json exists
-            if (auto engineSettingsPath = AZ::IO::FixedMaxPath{ otherEngineInfo.m_path.toUtf8().constData() } / "engine.json";
-                AZ::IO::SystemFile::Exists(engineSettingsPath.c_str()))
+            if (!interactive)
             {
-                if (!interactive)
-                {
-                    AZ_Error("Project Manager", false, "An engine with the name %s is already registered with the path %s",
-                        engineInfo.m_name.toUtf8().constData(), engineInfo.m_path.toUtf8().constData());
-                    return false;
-                }
-
-                // get the updated engine name unless the user wants to cancel
-                bool okPressed = false;
-
-                engineInfo.m_name = QInputDialog::getText(nullptr,
-                    QObject::tr("Engine '%1' already registered").arg(engineInfo.m_name),
-                    QObject::tr("An engine named '%1' is already registered.<br /><br />"
-                                "<b>Current path</b><br />%2<br/><br />"
-                                "<b>New path</b><br />%3<br /><br />"
-                                "Press 'OK' to force registration, or provide a new engine name below.<br />"
-                                "Alternatively, press `Cancel` to close the Project Manager and resolve the issue manually.")
-                                .arg(engineInfo.m_name, otherEngineInfo.m_path, engineInfo.m_path),
-                    QLineEdit::Normal,
-                    engineInfo.m_name,
-                    &okPressed);
-
-                if (!okPressed)
-                {
-                    // user elected not to change the name or force registration
-                    return false;
-                }
+                AZ_Error("Project Manager", false, "An engine with the name %s is already registered with the path %s",
+                    engineInfo.m_name.toUtf8().constData(), engineInfo.m_path.toUtf8().constData());
+                return false;
             }
 
-            forceRegistration = true;
+            // get the updated engine name unless the user wants to cancel
+            bool okPressed = false;
+            const EngineInfo& otherEngineInfo = existingEngineResult.GetValue();
+
+            engineInfo.m_name = QInputDialog::getText(nullptr,
+                QObject::tr("Engine '%1' already registered").arg(engineInfo.m_name),
+                QObject::tr("An engine named '%1' is already registered.<br /><br />"
+                            "<b>Current path</b><br />%2<br/><br />"
+                            "<b>New path</b><br />%3<br /><br />"
+                            "Press 'OK' to force registration, or provide a new engine name below.<br />"
+                            "Alternatively, press `Cancel` to close the Project Manager and resolve the issue manually.")
+                            .arg(engineInfo.m_name, otherEngineInfo.m_path, engineInfo.m_path),
+                QLineEdit::Normal,
+                engineInfo.m_name,
+                &okPressed);
+
+            if (!okPressed)
+            {
+                // user elected not to change the name or force registration
+                return false;
+            }
         }
 
+        // always force register in case there is an engine registered in o3de_manifest.json, but
+        // the engine.json is missing or corrupt in which case GetEngineInfo() fails
+        constexpr bool forceRegistration = true;
         auto registerOutcome = m_pythonBindings->SetEngineInfo(engineInfo, forceRegistration);
         if (!registerOutcome)
         {
