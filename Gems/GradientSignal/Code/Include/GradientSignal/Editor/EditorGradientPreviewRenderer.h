@@ -321,7 +321,7 @@ namespace GradientSignal
                     // offset and stride for one additional pass which is what causes the first 3 passes to behave differently than the
                     // rest. The pass offset between X and Y is also what causes the pattern to keep filling in pixels and lines that
                     // haven't already been processed.
-                    const int64_t laggingPass = AZ::GetMax(curPass - 1, 0LL);
+                    const int64_t laggingPass = AZ::GetMax<int64_t>(curPass - 1, 0);
                     const int64_t yOffsetShifter = AZ::GetMin(m_finalInterlacingPass - laggingPass, m_finalInterlacingPass - 1);
                     const int64_t yPixelOffset = (laggingPass % 2) * (1LL << (yOffsetShifter / 2));
                     const int64_t yPixelStride = 1LL << ((yOffsetShifter + 1) / 2);
