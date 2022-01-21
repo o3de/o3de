@@ -71,7 +71,6 @@ namespace PhysX
             const int32_t row, const int32_t col,
             const int32_t numRows, const int32_t numCols)
         {
-
             uint8_t materialIndex0 = 0;
             uint8_t materialIndex1 = 0;
 
@@ -81,49 +80,51 @@ namespace PhysX
             // In PhysX, the material indices refer to the quad down and to the right of the sample.
             // If we're in the last row or last column, there aren't any quads down or to the right,
             // so just clear these out.
-
-            if (!lastRowIndex && !lastColumnIndex)
+            if (lastRowIndex || lastColumnIndex)
             {
-                auto GetIndex = [numCols](int32_t row, int32_t col)
-                {
-                    return (row * numCols) + col;
-                };
-
-                // Our source data is providing one material index per vertex, but PhysX wants one material index
-                // per triangle.  The heuristic that we'll go with for selecting the material index is to choose
-                // the material for the vertex that's not on the diagonal of each triangle.
-                // Ex:  A *---* B
-                //        | / |      For this, we'll use A for index0 and D for index1.
-                //      C *---* D
-                //
-                // Ex:  A *---* B
-                //        | \ |      For this, we'll use C for index0 and B for index1.
-                //      C *---* D
-                //
-                // This is a pretty arbitrary choice, so the heuristic might need to be revisited over time if this
-                // causes incorrect or unpredictable physics material mappings.
-
-                const Physics::HeightMaterialPoint& currentSample = samples[GetIndex(row, col)];
-
-                switch (currentSample.m_quadMeshType)
-                {
-                case Physics::QuadMeshType::SubdivideUpperLeftToBottomRight:
-                    materialIndex0 = samples[GetIndex(row + 1, col)].m_materialIndex;
-                    materialIndex1 = samples[GetIndex(row, col + 1)].m_materialIndex;
-                    break;
-                case Physics::QuadMeshType::SubdivideBottomLeftToUpperRight:
-                    materialIndex0 = currentSample.m_materialIndex;
-                    materialIndex1 = samples[GetIndex(row + 1, col + 1)].m_materialIndex;
-                    break;
-                case Physics::QuadMeshType::Hole:
-                    materialIndex0 = physx::PxHeightFieldMaterial::eHOLE;
-                    materialIndex1 = physx::PxHeightFieldMaterial::eHOLE;
-                    break;
-                default:
-                    AZ_Assert(false, "Unhandled case in GetPhysXMaterialIndicesFromHeightfieldSamples");
-                    break;
-                }
+                return { materialIndex0, materialIndex1 };
             }
+            
+            auto GetIndex = [numCols](int32_t row, int32_t col)
+            {
+                return (row * numCols) + col;
+            };
+
+            // Our source data is providing one material index per vertex, but PhysX wants one material index
+            // per triangle.  The heuristic that we'll go with for selecting the material index is to choose
+            // the material for the vertex that's not on the diagonal of each triangle.
+            // Ex:  A *---* B
+            //        | / |      For this, we'll use A for index0 and D for index1.
+            //      C *---* D
+            //
+            // Ex:  A *---* B
+            //        | \ |      For this, we'll use C for index0 and B for index1.
+            //      C *---* D
+            //
+            // This is a pretty arbitrary choice, so the heuristic might need to be revisited over time if this
+            // causes incorrect or unpredictable physics material mappings.
+
+            const Physics::HeightMaterialPoint& currentSample = samples[GetIndex(row, col)];
+
+            switch (currentSample.m_quadMeshType)
+            {
+            case Physics::QuadMeshType::SubdivideUpperLeftToBottomRight:
+                materialIndex0 = samples[GetIndex(row + 1, col)].m_materialIndex;
+                materialIndex1 = samples[GetIndex(row, col + 1)].m_materialIndex;
+                break;
+            case Physics::QuadMeshType::SubdivideBottomLeftToUpperRight:
+                materialIndex0 = currentSample.m_materialIndex;
+                materialIndex1 = samples[GetIndex(row + 1, col + 1)].m_materialIndex;
+                break;
+            case Physics::QuadMeshType::Hole:
+                materialIndex0 = physx::PxHeightFieldMaterial::eHOLE;
+                materialIndex1 = physx::PxHeightFieldMaterial::eHOLE;
+                break;
+            default:
+                AZ_Assert(false, "Unhandled case in GetPhysXMaterialIndicesFromHeightfieldSamples");
+                break;
+            }
+            
             return { materialIndex0, materialIndex1 };
         }
 

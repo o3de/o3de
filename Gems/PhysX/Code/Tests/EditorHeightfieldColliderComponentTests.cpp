@@ -139,9 +139,9 @@ namespace PhysXEditorTests
             // Create an asset out of our Script Event
             Physics::MaterialLibraryAsset* matLibAsset = aznew Physics::MaterialLibraryAsset;
             {
-                AZStd::vector<Physics::MaterialId> matIds = GetMaterialList();
+                const AZStd::vector<Physics::MaterialId> matIds = GetMaterialList();
 
-                for (Physics::MaterialId matId : matIds)
+                for (const Physics::MaterialId& matId : matIds)
                 {
                     Physics::MaterialFromAssetConfiguration matConfig;
                     matConfig.m_id = matId;
@@ -336,7 +336,7 @@ namespace PhysXEditorTests
 
         // PhysX Heightfield cooking doesn't map 1-1 sample material indices to triangle material indices 
         // Hence hardcoding the expected material indices in the test 
-        const int physicsMaterialsValidationDataIndex[] = {0, 2, 1, 1};
+        const AZStd::array<int, 4> physicsMaterialsValidationDataIndex = {0, 2, 1, 1};
 
         for (int sampleRow = 0; sampleRow < numRows; ++sampleRow)
         {
@@ -364,8 +364,11 @@ namespace PhysXEditorTests
                     Physics::Material* mat2 = GetMaterialFromRaycast(rayX + secondRayOffset, rayY + secondRayOffset);
                     EXPECT_NE(mat2, nullptr);
 
-                    AZStd::string expectedMaterialName = physicsSurfaceTypes[physicsMaterialsValidationDataIndex[sampleRow * 2 + sampleColumn]];
-                    EXPECT_EQ(mat1->GetSurfaceTypeName(), expectedMaterialName);
+                    if (mat1)
+                    {
+                        AZStd::string expectedMaterialName = physicsSurfaceTypes[physicsMaterialsValidationDataIndex[sampleRow * 2 + sampleColumn]];
+                        EXPECT_EQ(mat1->GetSurfaceTypeName(), expectedMaterialName);
+                    }
                 }
             }
         }
