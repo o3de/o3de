@@ -385,7 +385,7 @@ namespace AZ
                     {
                         size_t imageDataIndex = (y * width * pixelSize) + (x * pixelSize);
 
-                        auto& outValue = const_cast<float&>(outValues[outValuesIndex++]);
+                        auto& outValue = outValues[outValuesIndex++];
                         outValue = Internal::RetrieveFloatValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
                     }
                 }
@@ -412,7 +412,7 @@ namespace AZ
                     {
                         size_t imageDataIndex = (y * width * pixelSize) + (x * pixelSize);
 
-                        auto& outValue = const_cast<AZ::u32&>(outValues[outValuesIndex++]);
+                        auto& outValue = outValues[outValuesIndex++];
                         outValue = Internal::RetrieveUintValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
                     }
                 }
@@ -439,7 +439,7 @@ namespace AZ
                     {
                         size_t imageDataIndex = (y * width * pixelSize) + (x * pixelSize);
 
-                        auto& outValue = const_cast<AZ::s32&>(outValues[outValuesIndex++]);
+                        auto& outValue = outValues[outValuesIndex++];
                         outValue = Internal::RetrieveIntValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
                     }
                 }
