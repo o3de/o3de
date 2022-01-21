@@ -48,8 +48,9 @@ FOR /f "tokens=1,2,3" %%a IN ('CALL aws sts assume-role --query Credentials.[Sec
     SET AWS_ACCESS_KEY_ID=%%c
 )
 FOR /F "tokens=4 delims=:" %%a IN ("%ASSUME_ROLE_ARN%") DO SET O3DE_AWS_DEPLOY_ACCOUNT=%%a
-
-set O3DE_AWS_PROJECT_NAME=%BRANCH_NAME%-%PIPELINE_NAME%-Windows
+IF "%O3DE_AWS_PROJECT_NAME%"=="" (
+    SET O3DE_AWS_PROJECT_NAME=%BRANCH_NAME%-%PIPELINE_NAME%-Windows
+)
 
 SET ERROR_EXISTS=0
 CALL :DestroyCDKApplication AWSCore,ERROR_EXISTS

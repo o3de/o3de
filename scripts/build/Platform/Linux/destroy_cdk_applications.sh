@@ -87,7 +87,9 @@ export AWS_SECRET_ACCESS_KEY=$(echo $credentials | cut -d' ' -f1)
 export AWS_SESSION_TOKEN=$(echo $credentials | cut -d' ' -f2)
 export AWS_ACCESS_KEY_ID=$(echo $credentials | cut -d' ' -f3)
 
-export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+if [[ -z "$O3DE_AWS_PROJECT_NAME" ]]; then
+   export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+fi
 
 ERROR_EXISTS=0
 DestroyCDKApplication AWSCore

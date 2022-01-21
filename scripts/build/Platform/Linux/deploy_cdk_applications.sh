@@ -85,7 +85,9 @@ export AWS_SESSION_TOKEN=$(echo $credentials | cut -d' ' -f2)
 export AWS_ACCESS_KEY_ID=$(echo $credentials | cut -d' ' -f3)
 
 export O3DE_AWS_DEPLOY_ACCOUNT=$(echo "$ASSUME_ROLE_ARN" | cut -d':' -f5)
-export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+if [[ -z "$O3DE_AWS_PROJECT_NAME" ]]; then
+   export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+fi
 
 # Bootstrap and deploy the CDK applications
 echo [cdk_bootstrap] Bootstrap CDK
