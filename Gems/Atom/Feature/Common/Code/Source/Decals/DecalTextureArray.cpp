@@ -49,7 +49,7 @@ namespace AZ
             }
 
             // Extract exactly which texture asset we need to load from the given material and map type (diffuse, normal, etc).
-            static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(const AZ::RPI::MaterialAsset& materialAsset, const AZ::Name& propertyName)
+            static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(AZ::RPI::MaterialAsset& materialAsset, const AZ::Name& propertyName)
             {
                 if (!materialAsset.IsReady())
                 {
@@ -84,7 +84,7 @@ namespace AZ
             static AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetStreamingImageAsset(const AZ::Data::Asset<Data::AssetData> materialAssetData, const AZ::Name& propertyName)
             {
                 AZ_Assert(materialAssetData->IsReady(), "GetStreamingImageAsset() called with AssetData that is not ready.");
-                const AZ::RPI::MaterialAsset* materialAsset = materialAssetData.GetAs<AZ::RPI::MaterialAsset>();
+                AZ::RPI::MaterialAsset* materialAsset = materialAssetData.GetAs<AZ::RPI::MaterialAsset>();
                 return GetStreamingImageAsset(*materialAsset, propertyName);
             }
         }
@@ -141,7 +141,7 @@ namespace AZ
             return m_textureArrayPacked[mapType];
         }
 
-        bool DecalTextureArray::IsValidDecalMaterial(const AZ::RPI::MaterialAsset& materialAsset)
+        bool DecalTextureArray::IsValidDecalMaterial(AZ::RPI::MaterialAsset& materialAsset)
         {
             return GetStreamingImageAsset(materialAsset, GetMapName(DecalMapType_Diffuse)).IsReady();
         }

@@ -6,8 +6,8 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
@@ -96,6 +96,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             whitebox_editor_supported_files.cmake
         PLATFORM_INCLUDE_FILES
             ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_tools.cmake
+            ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/whitebox_editor_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
@@ -198,6 +199,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTestShared
                     AZ::AzManipulatorTestFramework.Static
                     Gem::WhiteBox.Editor.Static
+            RUNTIME_DEPENDENCIES
+                Gem::PhysX.Editor
         )
 
         ly_add_googletest(

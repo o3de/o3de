@@ -173,7 +173,7 @@ namespace GuideHelpers
         // the line is drawn as the inverse of the background color
         AZ::Color guideColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-        CDraw2d::RenderState renderState;
+        IDraw2d::RenderState renderState;
         renderState.m_blendState.m_blendSource = AZ::RHI::BlendFactor::ColorDestInverse;
         renderState.m_blendState.m_blendDest = AZ::RHI::BlendFactor::Zero;
 

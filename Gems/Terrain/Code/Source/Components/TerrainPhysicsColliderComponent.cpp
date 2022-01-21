@@ -17,6 +17,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 namespace Terrain
@@ -43,11 +44,25 @@ namespace Terrain
                         AZ::Edit::UIHandlers::ComboBox, &TerrainPhysicsSurfaceMaterialMapping::m_surfaceTag, "Surface Tag",
                         "Surface type to map to a physics material.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainPhysicsSurfaceMaterialMapping::m_materialId, "Material ID", "")
+                    ->ElementAttribute(Physics::Attributes::MaterialLibraryAssetId, &TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true);
             }
         }
     }
+
+    AZ::Data::AssetId TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId()
+    {
+        if (const auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            if (const auto* physicsConfiguration = physicsSystem->GetConfiguration())
+            {
+                return physicsConfiguration->m_materialLibraryAsset.GetId();
+            }
+        }
+        return {};
+    }
+
     void TerrainPhysicsColliderConfig::Reflect(AZ::ReflectContext* context)
     {
         TerrainPhysicsSurfaceMaterialMapping::Reflect(context);
@@ -269,21 +284,14 @@ namespace Terrain
         heights.clear();
         heights.reserve(gridWidth * gridHeight);
 
-        for (int32_t row = 0; row < gridHeight; row++)
+        auto perPositionHeightCallback = [&heights, worldCenterZ]
+            ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
-            const float y = row * gridResolution.GetY() + worldSize.GetMin().GetY();
-            for (int32_t col = 0; col < gridWidth; col++)
-            {
-                const float x = col * gridResolution.GetX() + worldSize.GetMin().GetX();
-                float height = 0.0f;
+            heights.emplace_back(surfacePoint.m_position.GetZ() - worldCenterZ);
+        };
 
-                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                    height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
-                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, nullptr);
-
-                heights.emplace_back(height - worldCenterZ);
-            }
-        }
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
+            worldSize, gridResolution, perPositionHeightCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
     }
 
     uint8_t TerrainPhysicsColliderComponent::GetMaterialIdIndex(const Physics::MaterialId& materialId, const AZStd::vector<Physics::MaterialId>& materialList) const
@@ -335,42 +343,37 @@ namespace Terrain
 
         AZStd::vector<Physics::MaterialId> materialList = GetMaterialList();
 
-        for (int32_t row = 0; row < gridHeight; row++)
+        auto perPositionCallback = [&heightMaterials, &materialList, this, worldCenterZ, worldHeightBoundsMin, worldHeightBoundsMax]
+            ([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
-            const float y = row * gridResolution.GetY() + worldSize.GetMin().GetY();
-            for (int32_t col = 0; col < gridWidth; col++)
+            float height = surfacePoint.m_position.GetZ();
+
+            // Any heights that fall outside the range of our bounding box will get turned into holes.
+            if ((height < worldHeightBoundsMin) || (height > worldHeightBoundsMax))
             {
-                const float x = col * gridResolution.GetX() + worldSize.GetMin().GetX();
-                float height = 0.0f;
-
-                bool terrainExists = true;
-                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                    height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
-                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
-
-                // Any heights that fall outside the range of our bounding box will get turned into holes.
-                if ((height < worldHeightBoundsMin) || (height > worldHeightBoundsMax))
-                {
-                    height = worldHeightBoundsMin;
-                    terrainExists = false;
-                }
-
-                // Find the best surface tag at this point.
-                AzFramework::SurfaceData::SurfaceTagWeight surfaceWeight;
-                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                    surfaceWeight, &AzFramework::Terrain::TerrainDataRequests::GetMaxSurfaceWeightFromFloats, x, y,
-                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, nullptr);
-
-                Physics::HeightMaterialPoint point;
-                point.m_height = height - worldCenterZ;
-                point.m_quadMeshType = terrainExists ? Physics::QuadMeshType::SubdivideUpperLeftToBottomRight : Physics::QuadMeshType::Hole;
-
-                Physics::MaterialId materialId = FindMaterialIdForSurfaceTag(surfaceWeight.m_surfaceType);
-                point.m_materialIndex = GetMaterialIdIndex(materialId, materialList);
-
-                heightMaterials.emplace_back(point);
+                height = worldHeightBoundsMin;
+                terrainExists = false;
             }
-        }
+
+            // Find the best surface tag at this point.
+            // We want the MaxSurfaceWeight. The ProcessSurfacePoints callback has surface weights sorted.
+            // So, we pick the value at the front of the list.
+            AzFramework::SurfaceData::SurfaceTagWeight surfaceWeight;
+            if (!surfacePoint.m_surfaceTags.empty())
+            {
+                surfaceWeight = *surfacePoint.m_surfaceTags.begin();
+            }
+
+            Physics::HeightMaterialPoint point;
+            point.m_height = height - worldCenterZ;
+            point.m_quadMeshType = terrainExists ? Physics::QuadMeshType::SubdivideUpperLeftToBottomRight : Physics::QuadMeshType::Hole;
+            Physics::MaterialId materialId = FindMaterialIdForSurfaceTag(surfaceWeight.m_surfaceType);
+            point.m_materialIndex = GetMaterialIdIndex(materialId, materialList);
+            heightMaterials.emplace_back(point);
+        };
+
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion,
+            worldSize, gridResolution, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
     }
 
     AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const

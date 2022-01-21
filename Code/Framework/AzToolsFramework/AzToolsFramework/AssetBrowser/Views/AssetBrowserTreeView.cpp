@@ -230,7 +230,10 @@ namespace AzToolsFramework
             {
                 QModelIndex curIndex = selectedIndexes[0];
                 m_expandToEntriesByDefault = true;
-                m_treeStateSaver->ApplySnapshot();
+                if (m_treeStateSaver)
+                {
+                    m_treeStateSaver->ApplySnapshot();
+                }
 
                 setCurrentIndex(curIndex);
                 scrollTo(curIndex);
@@ -240,8 +243,12 @@ namespace AzToolsFramework
 
             // Flag our default expansion state so that we expand down to source entries after filtering
             m_expandToEntriesByDefault = hasFilter;
+
             // Then ask our state saver to apply its current snapshot again, falling back on asking us if entries should be expanded or not
-            m_treeStateSaver->ApplySnapshot();
+            if (m_treeStateSaver)
+            {
+                m_treeStateSaver->ApplySnapshot();
+            }
 
             // If we're filtering for a valid entry, select the first valid entry
             if (hasFilter && selectFirstValidEntry)

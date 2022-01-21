@@ -21,7 +21,6 @@ namespace MaterialEditor
 {
     //! MaterialEditorWindow is the main class. Its responsibility is limited to initializing and connecting
     //! its panels, managing selection of assets, and performing high-level actions like saving. It contains...
-    //! 1) MaterialBrowser        - The user browses for Material (.material) assets.
     //! 2) MaterialViewport        - The user can see the selected Material applied to a model.
     //! 3) MaterialPropertyInspector  - The user edits the properties of the selected Material.
     class MaterialEditorWindow
@@ -48,7 +47,7 @@ namespace MaterialEditor
 
         void closeEvent(QCloseEvent* closeEvent) override;
 
-        MaterialViewportWidget* m_materialViewport = nullptr;
-        MaterialEditorToolBar* m_toolBar = nullptr;
+        MaterialViewportWidget* m_materialViewport = {};
+        MaterialEditorToolBar* m_toolBar = {};
     };
 } // namespace MaterialEditor
