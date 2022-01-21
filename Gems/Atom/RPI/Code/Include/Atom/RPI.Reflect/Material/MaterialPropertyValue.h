@@ -30,6 +30,10 @@ namespace AZ
 {
     namespace RPI
     {
+        //! This is a variant data type that represents the value of a material property.
+        //! For convenience, it supports all the types necessary for *both* the runtime data (MaterialAsset) as well as .material file data (MaterialSourceData).
+        //! For example, Instance<Image> is exclusive to the runtime data and AZStd::string is primarily for image file paths in .material files. Most other
+        //! data types are relevant in both contexts.
         class MaterialPropertyValue final
         {
         public:

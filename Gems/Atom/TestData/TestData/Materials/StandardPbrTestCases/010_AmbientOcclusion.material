@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "010_OcclusionBase.material",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "occlusion": {
             "diffuseFactor": 2.0,

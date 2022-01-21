@@ -6,24 +6,28 @@
  *
  */
 
-#include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Name/Name.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <Window/ShaderManagementConsoleWindow.h>
+#include <AzCore/Utils/Utils.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
+#include <QDesktopServices>
+#include <QFileDialog>
 #include <QHeaderView>
 #include <QStandardItemModel>
 #include <QTableView>
+#include <QUrl>
 #include <QWindow>
 AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(QWidget* parent /* = 0 */)
-        : AtomToolsFramework::AtomToolsDocumentMainWindow(parent)
+        : Base(parent)
     {
         resize(1280, 1024);
 
@@ -37,14 +41,17 @@ namespace ShaderManagementConsole
 
         setObjectName("ShaderManagementConsoleWindow");
 
-        m_toolBar = new ShaderManagementConsoleToolBar(this);
-        m_toolBar->setObjectName("ToolBar");
-        addToolBar(m_toolBar);
+        m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
+        m_assetBrowser->SetOpenHandler([](const AZStd::string& absolutePath) {
+            if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
+            {
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
+                    &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                return;
+            }
 
-        AddDockWidget("Asset Browser", new ShaderManagementConsoleBrowserWidget, Qt::BottomDockWidgetArea, Qt::Vertical);
-        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
-
-        SetDockWidgetVisible("Python Terminal", false);
+            QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
+        });
 
         // Restore geometry and show the window
         mainWindowWrapper->showFromSettings();
@@ -54,8 +61,17 @@ namespace ShaderManagementConsole
         m_actionNew->setEnabled(false);
         m_actionSaveAsChild->setVisible(false);
         m_actionSaveAsChild->setEnabled(false);
+        m_actionSaveAll->setVisible(false);
+        m_actionSaveAll->setEnabled(false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
+    }
+
+    bool ShaderManagementConsoleWindow::GetOpenDocumentParams(AZStd::string& openPath)
+    {
+        openPath = QFileDialog::getOpenFileName(
+            this, tr("Open Document"), AZ::Utils::GetProjectPath().c_str(), tr("Files (*.%1)").arg(AZ::RPI::ShaderVariantListSourceData::Extension)).toUtf8().constData();
+        return !openPath.empty();
     }
 
     QWidget* ShaderManagementConsoleWindow::CreateDocumentTabView(const AZ::Uuid& documentId)

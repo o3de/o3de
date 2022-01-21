@@ -11,6 +11,7 @@
 #include <AzCore/JSON/writer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <AzCore/std/sort.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
@@ -83,6 +84,20 @@ namespace AzToolsFramework
                 return AZ::Failure(findCommonRootOutcome.TakeError());
             }
 
+            // order entities by their respective position within Entity Outliner
+            EditorEntitySortRequestBus::Event(
+                commonRootEntityId,
+                [&topLevelEntities](EditorEntitySortRequestBus::Events* sortRequests)
+                {
+                    AZStd::sort(
+                        topLevelEntities.begin(), topLevelEntities.end(),
+                        [&sortRequests](AZ::Entity* entity1, AZ::Entity* entity2)
+                        {
+                            return sortRequests->GetChildEntityIndex(entity1->GetId()) <
+                                sortRequests->GetChildEntityIndex(entity2->GetId());
+                        });
+                });
+
             AZ::EntityId containerEntityId;
 
             InstanceOptionalReference instanceToCreate;
@@ -153,8 +168,6 @@ namespace AzToolsFramework
                 }
 
                 // Create the Prefab
-                AZ_Assert(filePath.IsAbsolute(), "CreatePrefabInMemory requires an absolute file path.");
-
                 instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
                     entities, AZStd::move(instancePtrs), m_prefabLoaderInterface->GenerateRelativePath(filePath),
                     commonRootEntityOwningInstance);
@@ -172,6 +185,7 @@ namespace AzToolsFramework
 
                 // Parent the non-container top level entities to the container entity.
                 // Parenting the top level container entities will be done during the creation of links.
+                EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, true);
                 for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
                     if (!IsInstanceContainerEntity(topLevelEntity->GetId()))
@@ -179,6 +193,7 @@ namespace AzToolsFramework
                         AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
                     }
                 }
+                EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::SetForceAddEntitiesToBackFlag, false);
 
                 // Update the template of the instance since the entities are modified since the template creation.
                 Prefab::PrefabDom serializedInstance;
@@ -279,6 +294,8 @@ namespace AzToolsFramework
 
         CreatePrefabResult PrefabPublicHandler::CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath)
         {
+            AZ_Assert(filePath.IsAbsolute(), "CreatePrefabInDisk requires an absolute file path.");
+
             auto result = CreatePrefabInMemory(entityIds, filePath);
             if (result.IsSuccess())
             {
@@ -1046,7 +1063,7 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("No entities to duplicate."));
             }
 
-            const EntityIdList entityIdsNoFocusContainer = GenerateEntityIdListWithoutFocusedInstanceContainer(entityIds);
+            const EntityIdList entityIdsNoFocusContainer = SanitizeEntityIdList(entityIds);
             if (entityIdsNoFocusContainer.empty())
             {
                 return AZ::Failure(AZStd::string("No entities to duplicate because only instance selected is the container entity of the focused instance."));
@@ -1185,7 +1202,7 @@ namespace AzToolsFramework
         PrefabOperationResult PrefabPublicHandler::DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants)
         {
             // Remove the container entity of the focused prefab from the list, if it is included.
-            const EntityIdList entityIdsNoFocusContainer = GenerateEntityIdListWithoutFocusedInstanceContainer(entityIds);
+            const EntityIdList entityIdsNoFocusContainer = SanitizeEntityIdList(entityIds);
 
             if (entityIdsNoFocusContainer.empty())
             {
@@ -1217,27 +1234,6 @@ namespace AzToolsFramework
             if (&m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId)->get() != &commonOwningInstance->get())
             {
                 return AZ::Failure(AZStd::string("Cannot delete entities belonging to an instance that is not being edited."));
-            }
-
-            // None of the specified entities can be marked as read only, otherwise this operation is invalid.
-            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
-            {
-                AZ::EntityId readOnlyEntityId;
-                for (const auto& entityId : entityIdsNoFocusContainer)
-                {
-                    if (readOnlyEntityPublicInterface->IsReadOnly(entityId))
-                    {
-                        readOnlyEntityId = entityId;
-                        break;
-                    }
-                }
-
-                if (readOnlyEntityId.IsValid())
-                {
-                    return AZ::Failure(AZStd::string::format(
-                        "Cannot delete entities because entity (id '%llu') is marked as read only.",
-                        static_cast<AZ::u64>(readOnlyEntityId)));
-                }
             }
 
             // Retrieve entityList from entityIds
@@ -1663,10 +1659,24 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        EntityIdList PrefabPublicHandler::GenerateEntityIdListWithoutFocusedInstanceContainer(
-            const EntityIdList& entityIds) const
+        EntityIdList PrefabPublicHandler::SanitizeEntityIdList(const EntityIdList& entityIds) const
         {
-            EntityIdList outEntityIds(entityIds);
+            EntityIdList outEntityIds;
+
+            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+            {
+                std::copy_if(
+                    entityIds.begin(), entityIds.end(), AZStd::back_inserter(outEntityIds),
+                    [readOnlyEntityPublicInterface](const AZ::EntityId& entityId)
+                    {
+                        return !readOnlyEntityPublicInterface->IsReadOnly(entityId);
+                    }
+                );
+            }
+            else
+            {
+                outEntityIds = entityIds;
+            }
 
             AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
             AZ::EntityId focusedInstanceContainerEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);

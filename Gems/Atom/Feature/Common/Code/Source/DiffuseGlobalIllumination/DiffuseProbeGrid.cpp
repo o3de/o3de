@@ -134,6 +134,12 @@ namespace AZ
             m_updateRenderObjectSrg = true;
         }
 
+        void DiffuseProbeGrid::SetNumRaysPerProbe(const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe)
+        {
+            m_numRaysPerProbe = numRaysPerProbe;
+            m_updateTextures = true;
+        }
+
         void DiffuseProbeGrid::SetTransform(const AZ::Transform& transform)
         {
             m_transform = transform;
@@ -280,7 +286,7 @@ namespace AZ
 
                 // probe raytrace
                 {
-                    uint32_t width = m_numRaysPerProbe;
+                    uint32_t width = GetNumRaysPerProbe().m_rayCount;
                     uint32_t height = GetTotalProbeCount();
 
                     m_rayTraceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
@@ -422,7 +428,7 @@ namespace AZ
             srg->SetConstantRaw(constantIndex, &probeGridCounts[0], sizeof(probeGridCounts));
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumRays"));
-            srg->SetConstant(constantIndex, m_numRaysPerProbe);
+            srg->SetConstant(constantIndex, GetNumRaysPerProbe().m_rayCount);
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_probeGrid.probeNumIrradianceTexels"));
             srg->SetConstant(constantIndex, DefaultNumIrradianceTexels);

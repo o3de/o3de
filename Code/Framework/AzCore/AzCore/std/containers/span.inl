@@ -24,47 +24,21 @@ namespace AZStd
     }
 
     template <class Element>
-    inline constexpr span<Element>::span(pointer first, const_pointer last)
+    inline constexpr span<Element>::span(pointer first, pointer last)
         : m_begin(first)
         , m_end(last)
     { }
 
-    template <class Element>
-    template<AZStd::size_t N>
-    inline constexpr span<Element>::span(AZStd::array<Element, N>& data)
+    template<class Element>
+    template<typename Container>
+    inline constexpr span<Element>::span(Container& data)
         : m_begin(data.data())
         , m_end(m_begin + data.size())
     { }
 
-    template <class Element>
-    inline constexpr span<Element>::span(AZStd::vector<Element>& data)
-        : m_begin(data.data())
-        , m_end(m_begin + data.size())
-    { }
-
-    template <class Element>
-    template<AZStd::size_t N>
-    inline constexpr span<Element>::span(AZStd::fixed_vector<Element, N>& data)
-        : m_begin(data.data())
-        , m_end(m_begin + data.size())
-    { }
-
-    template <class Element>
-    template<AZStd::size_t N>
-    inline constexpr span<Element>::span(const AZStd::array<Element, N>& data)
-        : m_begin(data.data())
-        , m_end(m_begin + data.size())
-    { }
-
-    template <class Element>
-    inline constexpr span<Element>::span(const AZStd::vector<Element>& data)
-        : m_begin(data.data())
-        , m_end(m_begin + data.size())
-    { }
-
-    template <class Element>
-    template<AZStd::size_t N>
-    inline constexpr span<Element>::span(const AZStd::fixed_vector<Element, N>& data)
+    template<class Element>
+    template<typename Container>
+    inline constexpr span<Element>::span(const Container& data)
         : m_begin(data.data())
         , m_end(m_begin + data.size())
     { }

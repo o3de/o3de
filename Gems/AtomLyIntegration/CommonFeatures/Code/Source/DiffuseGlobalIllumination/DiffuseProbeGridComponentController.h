@@ -35,6 +35,7 @@ namespace AZ
             float m_ambientMultiplier = DefaultDiffuseProbeGridAmbientMultiplier;
             float m_viewBias = DefaultDiffuseProbeGridViewBias;
             float m_normalBias = DefaultDiffuseProbeGridNormalBias;
+            DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
 
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
@@ -98,6 +99,7 @@ namespace AZ
             void SetAmbientMultiplier(float ambientMultiplier);
             void SetViewBias(float viewBias);
             void SetNormalBias(float normalBias);
+            void SetNumRaysPerProbe(const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe);
             void SetEditorMode(DiffuseProbeGridMode editorMode);
             void SetRuntimeMode(DiffuseProbeGridMode runtimeMode);
 

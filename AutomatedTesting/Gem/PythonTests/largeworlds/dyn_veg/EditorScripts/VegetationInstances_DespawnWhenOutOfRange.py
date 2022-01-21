@@ -43,18 +43,20 @@ def VegetationInstances_DespawnWhenOutOfRange():
     import azlmbr.legacy.general as general
     import azlmbr.math as math
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Create vegetation layer spawner
     world_center = math.Vector3(512.0, 512.0, 32.0)
-    asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Spawner Instance", world_center, 16.0, 16.0, 16.0, asset_path)
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "RangeDespawn_PinkFlower")[0]
+    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", world_center, 16.0, 16.0, 16.0,
+                                                               pink_flower_prefab)
 
     # Create a surface to spawn on
     dynveg.create_surface_entity("Spawner Entity", world_center, 16.0, 16.0, 1.0)

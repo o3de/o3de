@@ -147,8 +147,8 @@ namespace ScriptCanvas
         bool CanConvertToValue() const;
         bool ConvertToValue();
 
-        bool CanConvertToReference() const;
-        bool ConvertToReference();
+        bool CanConvertToReference(bool isNewSlot = false) const;
+        bool ConvertToReference(bool isNewSlot = false);
         void SetVariableReference(const VariableId& variableId);
         const VariableId& GetVariableReference() const;
         GraphVariable* GetVariable() const;
