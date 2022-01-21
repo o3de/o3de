@@ -760,8 +760,6 @@ namespace SerializeTestClasses {
         }
 
         int m_field = 0;
-
-        static AZ::ObjectStreamWriteOverrideResponse m_response;
     };
 } //SerializeTestClasses
 
