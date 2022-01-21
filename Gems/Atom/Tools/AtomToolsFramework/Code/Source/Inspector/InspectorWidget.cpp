@@ -14,7 +14,7 @@
 #include <AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h>
 #include <AtomToolsFramework/Inspector/InspectorGroupWidget.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
-#include <Source/Inspector/ui_InspectorWidget.h>
+#include <Inspector/ui_InspectorWidget.h>
 
 namespace AtomToolsFramework
 {

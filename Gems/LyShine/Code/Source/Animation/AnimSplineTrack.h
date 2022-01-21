@@ -378,7 +378,7 @@ private:
 
     UiAnimParamData m_componentParamData;
 
-    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) {};
+    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) { return false; };
 };
 
 //////////////////////////////////////////////////////////////////////////

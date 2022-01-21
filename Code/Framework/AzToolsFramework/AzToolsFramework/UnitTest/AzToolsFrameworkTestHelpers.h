@@ -111,8 +111,27 @@ namespace UnitTest
     {
         Q_OBJECT
     public:
-        FocusInteractionWidget(QWidget* parent = nullptr) : QWidget(parent) {}
+        FocusInteractionWidget(QWidget* parent = nullptr)
+            : QWidget(parent)
+        {
+        }
+
         bool event(QEvent* event) override;
+    };
+
+    /// Records mouse move events and stores the local and global position of the cursor.
+    /// @note To use, install as an event filter for the widget being interacted with
+    /// e.g. m_testWidget->installEventFilter(&m_mouseMoveDetector);
+    class MouseMoveDetector : public QObject
+    {
+        Q_OBJECT
+    public:
+        MouseMoveDetector(QWidget* parent = nullptr);
+
+        bool eventFilter([[maybe_unused]] QObject* watched, QEvent* event) override;
+
+        QPoint m_mouseGlobalPosition;
+        QPoint m_mouseLocalPosition;
     };
 
     /// Stores actions registered for either normal mode (regular viewport) editing and

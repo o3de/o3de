@@ -65,6 +65,8 @@ namespace AzFramework
             void Deactivate() override;
 
             void OnCatalogLoaded(const char* catalogFile) override;
+            void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
+            void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
 
             static void Reflect(AZ::ReflectContext* context);
 

@@ -49,7 +49,13 @@ namespace AZ::Render
         void PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
         AzFramework::DebugDisplayRequests* GetDebugDisplay(AzFramework::ViewportId viewportId);
 
-        void RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor);
+        void RenderAABB(EMotionFX::ActorInstance* instance,
+            bool enableNodeAabb,
+            const AZ::Color& nodeAabbColor,
+            bool enableMeshAabb,
+            const AZ::Color& meshAabbColor,
+            bool enableStaticAabb,
+            const AZ::Color& staticAabbColor);
         void RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
         void RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
         void RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance);

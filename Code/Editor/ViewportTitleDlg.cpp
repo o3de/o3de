@@ -14,6 +14,7 @@
 #include "ViewportTitleDlg.h"
 
 // Qt
+#include <QCheckBox>
 #include <QLabel>
 #include <QInputDialog>
 
@@ -43,6 +44,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
@@ -50,6 +52,8 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #endif //! defined(Q_MOC_RUN)
+
+static constexpr int MiniumOverflowMenuWidth = 200;
 
 // CViewportTitleDlg dialog
 
@@ -257,21 +261,56 @@ void CViewportTitleDlg::SetupHelpersButton()
 
 void CViewportTitleDlg::SetupOverflowMenu()
 {
-    // Setup the overflow menu
-    QMenu* overFlowMenu = new QMenu(this);
+    // simple override of QMenu that does not respond to keyboard events
+    // note: this prevents the menu from being prematurely closed
+    class IgnoreKeyboardMenu : public QMenu
+    {
+    public:
+        IgnoreKeyboardMenu(QWidget *parent = nullptr) : QMenu(parent)
+        {
+        }
 
-    m_audioMuteAction = new QAction("Mute Audio", overFlowMenu);
+    private:
+        void keyPressEvent(QKeyEvent* event) override
+        {
+            // regular escape key handling
+            if (event->key() == Qt::Key_Escape)
+            {
+                QMenu::keyPressEvent(event);
+            }
+        }
+    };
+
+    // setup the overflow menu
+    auto* overflowMenu = new IgnoreKeyboardMenu(this);
+    overflowMenu->setMinimumWidth(MiniumOverflowMenuWidth);
+
+    m_audioMuteAction = new QAction("Mute Audio", overflowMenu);
     connect(m_audioMuteAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedMuteAudio);
-    overFlowMenu->addAction(m_audioMuteAction);
+    overflowMenu->addAction(m_audioMuteAction);
 
-    overFlowMenu->addSeparator();
+    overflowMenu->addSeparator();
 
-    m_enableGridSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
-    connect(m_enableGridSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnGridSnappingToggled);
-    m_enableGridSnappingAction->setCheckable(true);
-    overFlowMenu->addAction(m_enableGridSnappingAction);
+    m_enableGridSnappingCheckBox = new QCheckBox("Enable Grid Snapping", overflowMenu);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(m_enableGridSnappingCheckBox);
+    auto gridSnappingWidgetAction = new QWidgetAction(overflowMenu);
+    gridSnappingWidgetAction->setDefaultWidget(m_enableGridSnappingCheckBox);
+    connect(m_enableGridSnappingCheckBox, &QCheckBox::stateChanged, this, &CViewportTitleDlg::OnGridSnappingToggled);
+    overflowMenu->addAction(gridSnappingWidgetAction);
 
-    m_gridSizeActionWidget = new QWidgetAction(overFlowMenu);
+    m_enableGridVisualizationCheckBox = new QCheckBox("Show Grid", overflowMenu);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(m_enableGridVisualizationCheckBox);
+    auto gridVisualizationWidgetAction = new QWidgetAction(overflowMenu);
+    gridVisualizationWidgetAction->setDefaultWidget(m_enableGridVisualizationCheckBox);
+    connect(
+        m_enableGridVisualizationCheckBox, &QCheckBox::stateChanged,
+        [](const int state)
+        {
+            SandboxEditor::SetShowingGrid(state == Qt::Checked);
+        });
+    overflowMenu->addAction(gridVisualizationWidgetAction);
+
+    m_gridSizeActionWidget = new QWidgetAction(overflowMenu);
     m_gridSpinBox = new AzQtComponents::DoubleSpinBox();
     m_gridSpinBox->setValue(SandboxEditor::GridSnappingSize());
     m_gridSpinBox->setMinimum(1e-2f);
@@ -281,31 +320,33 @@ void CViewportTitleDlg::SetupOverflowMenu()
         m_gridSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &CViewportTitleDlg::OnGridSpinBoxChanged);
 
     m_gridSizeActionWidget->setDefaultWidget(m_gridSpinBox);
-    overFlowMenu->addAction(m_gridSizeActionWidget);
+    overflowMenu->addAction(m_gridSizeActionWidget);
 
-    overFlowMenu->addSeparator();
+    overflowMenu->addSeparator();
 
-    m_enableAngleSnappingAction = new QAction("Enable Angle Snapping", overFlowMenu);
-    connect(m_enableAngleSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnAngleSnappingToggled);
-    m_enableAngleSnappingAction->setCheckable(true);
-    overFlowMenu->addAction(m_enableAngleSnappingAction);
+    m_enableAngleSnappingCheckBox = new QCheckBox("Enable Angle Snapping", overflowMenu);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(m_enableAngleSnappingCheckBox);
+    auto angleSnappingWidgetAction = new QWidgetAction(overflowMenu);
+    angleSnappingWidgetAction->setDefaultWidget(m_enableAngleSnappingCheckBox);
+    connect(m_enableAngleSnappingCheckBox, &QCheckBox::stateChanged, this, &CViewportTitleDlg::OnAngleSnappingToggled);
+    overflowMenu->addAction(angleSnappingWidgetAction);
 
-    m_angleSizeActionWidget = new QWidgetAction(overFlowMenu);
+    m_angleSizeActionWidget = new QWidgetAction(overflowMenu);
     m_angleSpinBox = new AzQtComponents::DoubleSpinBox();
     m_angleSpinBox->setValue(SandboxEditor::AngleSnappingSize());
     m_angleSpinBox->setMinimum(1e-2f);
-    m_angleSpinBox->setToolTip(tr("Angle Snapping"));
+    m_angleSpinBox->setToolTip(tr("Angle size"));
 
     QObject::connect(
         m_angleSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this,
         &CViewportTitleDlg::OnAngleSpinBoxChanged);
 
     m_angleSizeActionWidget->setDefaultWidget(m_angleSpinBox);
-    overFlowMenu->addAction(m_angleSizeActionWidget);
+    overflowMenu->addAction(m_angleSizeActionWidget);
 
-    m_ui->m_overflowBtn->setMenu(overFlowMenu);
+    m_ui->m_overflowBtn->setMenu(overflowMenu);
     m_ui->m_overflowBtn->setPopupMode(QToolButton::InstantPopup);
-    connect(overFlowMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::UpdateOverFlowMenuState);
+    connect(overflowMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::UpdateOverFlowMenuState);
 
     UpdateMuteActionText();
 }
@@ -982,43 +1023,49 @@ void CViewportTitleDlg::CheckForCameraSpeedUpdate()
     }
 }
 
-void CViewportTitleDlg::OnGridSnappingToggled()
+void CViewportTitleDlg::OnGridSnappingToggled(const int state)
 {
-    m_gridSizeActionWidget->setEnabled(m_enableGridSnappingAction->isChecked());
+    m_gridSizeActionWidget->setEnabled(state == Qt::Checked);
+    m_enableGridVisualizationCheckBox->setEnabled(state == Qt::Checked);
     MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->trigger();
 }
 
-void CViewportTitleDlg::OnAngleSnappingToggled()
+void CViewportTitleDlg::OnAngleSnappingToggled(const int state)
 {
-    m_angleSizeActionWidget->setEnabled(m_enableAngleSnappingAction->isChecked());
+    m_angleSizeActionWidget->setEnabled(state == Qt::Checked);
     MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
 }
 
-void CViewportTitleDlg::OnGridSpinBoxChanged(double value)
+void CViewportTitleDlg::OnGridSpinBoxChanged(const double value)
 {
-    SandboxEditor::SetGridSnappingSize(static_cast<float>(value));
+    SandboxEditor::SetGridSnappingSize(aznumeric_cast<float>(value));
 }
 
-void CViewportTitleDlg::OnAngleSpinBoxChanged(double value)
+void CViewportTitleDlg::OnAngleSpinBoxChanged(const double value)
 {
-    SandboxEditor::SetAngleSnappingSize(static_cast<float>(value));
+    SandboxEditor::SetAngleSnappingSize(aznumeric_cast<float>(value));
 }
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()
 {
-    bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
+    const bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
     {
-        QSignalBlocker signalBlocker(m_enableGridSnappingAction);
-        m_enableGridSnappingAction->setChecked(gridSnappingActive);
+        QSignalBlocker signalBlocker(m_enableGridSnappingCheckBox);
+        m_enableGridSnappingCheckBox->setChecked(gridSnappingActive);
     }
     m_gridSizeActionWidget->setEnabled(gridSnappingActive);
 
-    bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
+    const bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
     {
-        QSignalBlocker signalBlocker(m_enableAngleSnappingAction);
-        m_enableAngleSnappingAction->setChecked(angleSnappingActive);
+        QSignalBlocker signalBlocker(m_enableAngleSnappingCheckBox);
+        m_enableAngleSnappingCheckBox->setChecked(angleSnappingActive);
     }
     m_angleSizeActionWidget->setEnabled(angleSnappingActive);
+
+    {
+        QSignalBlocker signalBlocker(m_enableGridVisualizationCheckBox);
+        m_enableGridVisualizationCheckBox->setChecked(SandboxEditor::ShowingGrid());
+    }
 }
 
  namespace

@@ -19,6 +19,7 @@
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom_Feature_Traits_Platform.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.h>
@@ -38,9 +39,9 @@ namespace AZ
             : RPI::RenderPass(descriptor)
         {
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false)
+            if (device->GetFeatures().m_rayTracing == false || !AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
             {
-                // raytracing is not supported on this platform
+                // raytracing or GI is not supported on this platform
                 SetEnabled(false);
             }
         }
@@ -298,7 +299,7 @@ namespace AZ
                     };
 
                     RHI::DispatchRaysItem dispatchRaysItem;
-                    dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe();
+                    dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount;
                     dispatchRaysItem.m_height = diffuseProbeGrid->GetTotalProbeCount();
                     dispatchRaysItem.m_depth = 1;
                     dispatchRaysItem.m_rayTracingPipelineState = m_rayTracingPipelineState.get();

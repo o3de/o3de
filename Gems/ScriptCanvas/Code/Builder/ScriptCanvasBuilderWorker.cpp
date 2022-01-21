@@ -44,7 +44,7 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, false);
         AzFramework::StringFunc::Path::Normalize(fullPath);
 
-        const ScriptCanvasEditor::Graph* sourceGraph = nullptr;
+        const ScriptCanvasEditor::EditorGraph* sourceGraph = nullptr;
         const ScriptCanvas::GraphData* graphData = nullptr;
         ScriptCanvasEditor::SourceHandle sourceHandle;
 
@@ -62,7 +62,6 @@ namespace ScriptCanvasBuilder
         }
 
         // in terms of job creation, assert on anything but smooth sailing from this point
-
         AZ_Assert(sourceGraph, "Graph component is missing from entity.");
         AZ_Assert(graphData, "GraphData is missing from entity");
 
