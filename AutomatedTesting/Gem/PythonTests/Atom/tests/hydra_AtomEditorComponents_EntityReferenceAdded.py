@@ -193,7 +193,6 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
                                                          1)
         count_after = entity_reference_component.get_container_count(
             AtomComponentProperties.entity_reference('EntityIdReferences'))
-        remove_count = (count_before == 3) and (count_after == 2)
         Report.result(
             Tests.container_remove,
             ((count_before == 3) and (count_after == 2) and
