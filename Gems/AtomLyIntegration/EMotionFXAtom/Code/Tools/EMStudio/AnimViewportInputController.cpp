@@ -22,7 +22,7 @@ namespace EMStudio
     {
         using AzToolsFramework::ViewportInteraction::MouseButton;
         using InputButton = AzFramework::InputDeviceMouse::Button;
-        const auto& id = inputChannel.GetInputChannelId();
+        const AzFramework::InputChannelId& id = inputChannel.GetInputChannelId();
         if (id == InputButton::Left)
         {
             return MouseButton::Left;
