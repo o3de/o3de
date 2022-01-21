@@ -95,7 +95,6 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <AzToolsFramework/Viewport/ViewportManipulatorController.h>
 
 #include <QtGui/private/qhighdpiscaling_p.h>
 
