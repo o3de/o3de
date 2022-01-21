@@ -221,6 +221,8 @@ set(FILES
     DOM/DomJsonBenchmarks.cpp
     DOM/DomPathTests.cpp
     DOM/DomPathBenchmarks.cpp
+    DOM/DomPatchTests.cpp
+    DOM/DomPatchBenchmarks.cpp
     DOM/DomValueTests.cpp
     DOM/DomValueBenchmarks.cpp
 )

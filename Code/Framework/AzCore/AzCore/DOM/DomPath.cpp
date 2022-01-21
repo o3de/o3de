@@ -53,17 +53,20 @@ namespace AZ::Dom
 
     bool PathEntry::operator==(size_t value) const
     {
-        return IsIndex() && GetIndex() == value;
+        const size_t* internalValue = AZStd::get_if<size_t>(&m_value);
+        return internalValue == nullptr ? false : (*internalValue) == value;
     }
 
     bool PathEntry::operator==(const AZ::Name& key) const
     {
-        return IsKey() && GetKey() == key;
+        const AZ::Name* internalValue = AZStd::get_if<AZ::Name>(&m_value);
+        return internalValue == nullptr ? false : (*internalValue) == key;
     }
 
     bool PathEntry::operator==(AZStd::string_view key) const
     {
-        return IsKey() && GetKey() == AZ::Name(key);
+        const AZ::Name* internalValue = AZStd::get_if<AZ::Name>(&m_value);
+        return internalValue == nullptr ? false : (*internalValue) == AZ::Name(key);
     }
 
     bool PathEntry::operator!=(const PathEntry& other) const
@@ -73,17 +76,17 @@ namespace AZ::Dom
 
     bool PathEntry::operator!=(size_t value) const
     {
-        return !IsIndex() || GetIndex() != value;
+        return !operator==(value);
     }
 
     bool PathEntry::operator!=(const AZ::Name& key) const
     {
-        return !IsKey() || GetKey() != key;
+        return !operator==(key);
     }
 
     bool PathEntry::operator!=(AZStd::string_view key) const
     {
-        return !IsKey() || GetKey() != AZ::Name(key);
+        return !operator==(key);
     }
 
     void PathEntry::SetEndOfArray()
