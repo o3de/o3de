@@ -510,8 +510,6 @@ set(FILES
     Viewport/ViewportTypes.cpp
     Viewport/ViewportSettings.h
     Viewport/ViewportSettings.cpp
-    Viewport/ViewportManipulatorController.h
-    Viewport/ViewportManipulatorController.cpp
     ViewportUi/Button.h
     ViewportUi/Button.cpp
     ViewportUi/ButtonGroup.h

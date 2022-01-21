@@ -83,28 +83,24 @@ namespace EMStudio
         const auto state = event.m_inputChannel.GetState();
         if (IsMouseMove(event.m_inputChannel))
         {
-            // Cache the ray trace results when doing manipulator interaction checks, no need to recalculate after
-            // if (event.m_priority == ManipulatorPriority)
-            {
-                const auto* position = event.m_inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
-                AZ_Assert(position, "Expected PositionData2D but found nullptr");
+            const auto* position = event.m_inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
+            AZ_Assert(position, "Expected PositionData2D but found nullptr");
 
-                AzFramework::WindowSize windowSize;
-                AzFramework::WindowRequestBus::EventResult(
-                    windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+            AzFramework::WindowSize windowSize;
+            AzFramework::WindowRequestBus::EventResult(
+                windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-                const auto screenPoint = AzFramework::ScreenPoint(
-                    aznumeric_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
-                    aznumeric_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height));
+            const auto screenPoint = AzFramework::ScreenPoint(
+                aznumeric_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
+                aznumeric_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height));
 
-                ProjectedViewportRay ray{};
-                ViewportInteractionRequestBus::EventResult(
-                    ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
+            ProjectedViewportRay ray{};
+            ViewportInteractionRequestBus::EventResult(
+                ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
 
-                m_mouseInteraction.m_mousePick.m_rayOrigin = ray.m_origin;
-                m_mouseInteraction.m_mousePick.m_rayDirection = ray.m_direction;
-                m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
-            }
+            m_mouseInteraction.m_mousePick.m_rayOrigin = ray.m_origin;
+            m_mouseInteraction.m_mousePick.m_rayDirection = ray.m_direction;
+            m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
 
             eventType = MouseEvent::Move;
         }
