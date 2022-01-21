@@ -19,5 +19,6 @@ namespace AZ
         static constexpr float DefaultDiffuseProbeGridAmbientMultiplier = 1.0f;
         static constexpr float DefaultDiffuseProbeGridViewBias = 0.2f;
         static constexpr float DefaultDiffuseProbeGridNormalBias = 0.1f;
+        static constexpr DiffuseProbeGridNumRaysPerProbe DefaultDiffuseProbeGridNumRaysPerProbe = DiffuseProbeGridNumRaysPerProbe::NumRaysPerProbe_288;
     } // namespace Render
 } // namespace AZ

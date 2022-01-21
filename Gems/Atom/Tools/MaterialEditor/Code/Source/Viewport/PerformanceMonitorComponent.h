@@ -8,11 +8,10 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Pass/Pass.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Statistics/RunningStatistic.h>
-
-#include <Atom/RPI.Public/Pass/Pass.h>
-#include <Atom/Viewport/PerformanceMonitorRequestBus.h>
+#include <Viewport/PerformanceMonitorRequestBus.h>
 
 namespace MaterialEditor
 {

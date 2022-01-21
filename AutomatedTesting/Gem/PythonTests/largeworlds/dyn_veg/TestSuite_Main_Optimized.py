@@ -131,7 +131,6 @@ class TestAutomation_PrefabNotEnabled(EditorTestSuite):
     class test_ShapeIntersectionFilter_InstancesPlantInAssignedShape(EditorParallelTest):
         from .EditorScripts import ShapeIntersectionFilter_InstancesPlantInAssignedShape as test_module
 
-    @pytest.mark.skip("https://github.com/o3de/o3de/issues/6973")
     class test_ShapeIntersectionFilter_FilterStageToggle(EditorParallelTest):
         from .EditorScripts import ShapeIntersectionFilter_FilterStageToggle as test_module
 
