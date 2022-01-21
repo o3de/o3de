@@ -58,7 +58,7 @@ def Multiplayer_SimpleNetworkLevelEntity():
         Report.critical_result(TestSuccessFailTuples.find_network_player, player_id.IsValid())
 
         # 4) Check the editor logs for network spawnable errors
-        ATTEMPTING_INVALID_NETSPAWN_WAIT_TIME_SECONDS = 1.0  # The editor will try to net-spawn its networked level entity before it's even a client. Make sure this doesn't happen.
+        ATTEMPTING_INVALID_NETSPAWN_WAIT_TIME_SECONDS = 0.0  # The editor will try to net-spawn its networked level entity before it's even a client. Make sure this didn't happen.
         helper.fail_if_log_line_found('NetworkEntityManager', "RequestNetSpawnableInstantiation: Requested spawnable Root.network.spawnable doesn't exist in the NetworkSpawnableLibrary. Please make sure it is a network spawnable", section_tracer.errors, ATTEMPTING_INVALID_NETSPAWN_WAIT_TIME_SECONDS)
 
         # 5) Ensure the script graph attached to the level entity is running on the server
