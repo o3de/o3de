@@ -13,6 +13,9 @@
 
 namespace Multiplayer
 {
+    struct EntityReplicationData;
+    using ReplicationSet = AZStd::map<ConstNetworkEntityHandle, EntityReplicationData>;
+
     //! @class IMultiplayerSpawner
     //! @brief IMultiplayerSpawner routes spawning requests for connecting players from
     //! the Muliplayer Gem to game logic utilizing it
@@ -32,6 +35,7 @@ namespace Multiplayer
 
         virtual AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> OnPlayerJoin(uint64_t userId) = 0;
 
-        virtual void OnPlayerLeave(ConstNetworkEntityHandle entityHandle) = 0;
+        virtual void OnPlayerLeave(
+            Multiplayer::ConstNetworkEntityHandle entityHandle, const Multiplayer::ReplicationSet& replicationSet, AzNetworking::DisconnectReason reason) = 0;
     };
 }

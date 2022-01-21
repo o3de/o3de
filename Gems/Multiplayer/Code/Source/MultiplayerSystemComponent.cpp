@@ -804,7 +804,8 @@ namespace Multiplayer
                 {
                     ServerToClientConnectionData* connectionData =
                         reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
-                    spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity());
+                    const ReplicationSet& replicationSet = connectionData->GetReplicationManager().GetReplicationWindow()->GetReplicationSet();
+                    spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity(), replicationSet, reason);
                 }
 
                 if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
