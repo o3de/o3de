@@ -23,6 +23,13 @@ namespace EMStudio
         DEFAULT
     };
 
+    enum ManipulatorMode
+    {
+        TRANSLATE,
+        ROTATE,
+        SCALE
+    };
+
     class AnimViewportRequests
         : public AZ::EBusTraits
     {

@@ -9,6 +9,11 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzToolsFramework/Manipulators/TranslationManipulators.h>
+#include <AzToolsFramework/Manipulators/RotationManipulators.h>
+#include <AzToolsFramework/Manipulators/ScaleManipulators.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+
 #include <MCore/Source/Command.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
@@ -26,6 +31,7 @@ namespace EMStudio
 {
     class AtomRenderPlugin
         : public DockWidgetPlugin
+        , public AzToolsFramework::ViewportInteraction::InternalViewportSelectionRequests
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -55,15 +61,41 @@ namespace EMStudio
         void LoadRenderOptions();
         const RenderOptions* GetRenderOptions() const;
 
+        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
+        void SetManipulatorMode(RenderOptions::ManipulatorMode mode);
+
     private:
+        // ViewportInteraction::InternalMouseViewportRequests
+        bool InternalHandleMouseManipulatorInteraction(
+            const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent) override;
+
+        // From a series of input primitives, compose a complete mouse interaction.
+        AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteractionInternal(
+            AzToolsFramework::ViewportInteraction::MouseButtons buttons,
+            AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers,
+            const AzToolsFramework::ViewportInteraction::MousePick& mousePick) const;
+        AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point) const;
+
+        void SetupManipulators();
+        void OnManipulatorMoved(const AZ::Vector3& position, const AZ::EntityComponentIdPair& idPair);
+        void OnManipulatorRotated(const AZ::Quaternion& rotation, const AZ::EntityComponentIdPair& idPair);
+        void OnManipulatorScaled(const AZ::Vector3& scale, const AZ::EntityComponentIdPair& idPair);
 
         QWidget* m_innerWidget = nullptr;
         AnimViewportWidget* m_animViewportWidget = nullptr;
         RenderOptions m_renderOptions;
+
+        // Manipulators
+        AzToolsFramework::TranslationManipulators m_translationManipulators;
+        AzToolsFramework::RotationManipulators m_rotateManipulators;
+        AzToolsFramework::ScaleManipulators m_scaleManipulators;
+        AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
 
         MCORE_DEFINECOMMANDCALLBACK(ImportActorCallback);
         MCORE_DEFINECOMMANDCALLBACK(RemoveActorCallback);
         ImportActorCallback* m_importActorCallback = nullptr;
         RemoveActorCallback* m_removeActorCallback = nullptr;
     };
+
+    extern const AzToolsFramework::ManipulatorManagerId g_animManipulatorManagerId;
 }// namespace EMStudio

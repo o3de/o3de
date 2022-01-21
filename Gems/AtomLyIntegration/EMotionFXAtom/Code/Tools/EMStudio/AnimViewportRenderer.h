@@ -55,8 +55,9 @@ namespace EMStudio
         AZ::Vector3 GetCharacterCenter() const;
 
         void UpdateActorRenderFlag(EMotionFX::ActorRenderFlagBitset renderFlags);
-
         AZStd::shared_ptr<AzFramework::Scene> GetFrameworkScene() const;
+        AZ::EntityComponentIdPair GetEntityComponentIdPair() const;
+        AzFramework::EntityContextId GetEntityContextId() const;
 
     private:
 

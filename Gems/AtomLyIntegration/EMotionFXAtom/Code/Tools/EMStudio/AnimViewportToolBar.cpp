@@ -7,8 +7,10 @@
  */
 
 #include <QToolButton>
+#include <QPushButton>
 #include <QMenu>
 #include <QSettings>
+#include <EMStudio/AtomRenderPlugin.h>
 #include <EMStudio/AnimViewportToolBar.h>
 #include <EMStudio/AnimViewportRequestBus.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
@@ -17,10 +19,32 @@
 
 namespace EMStudio
 {
-    AnimViewportToolBar::AnimViewportToolBar(QWidget* parent)
+    AnimViewportToolBar::AnimViewportToolBar(AtomRenderPlugin* plugin, QWidget* parent)
         : QToolBar(parent)
+        , m_plugin(plugin)
     {
         AzQtComponents::ToolBar::addMainToolBarStyle(this);
+
+        // Add the manipulator actions
+        QActionGroup* manipulatorGroup = new QActionGroup(this);
+        manipulatorGroup->setExclusive(true);
+        manipulatorGroup->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
+        m_manipulatorActions[RenderOptions::TRANSLATE] = addAction(QIcon(":/EMotionFXAtom/Translate.svg"), "Translate");
+        m_manipulatorActions[RenderOptions::ROTATE] = addAction(QIcon(":/EMotionFXAtom/Rotate.svg"), "Rotate");
+        m_manipulatorActions[RenderOptions::SCALE] = addAction(QIcon(":/EMotionFXAtom/Scale.svg"), "Scale");
+        for (size_t i = RenderOptions::ManipulatorMode::TRANSLATE; i < RenderOptions::ManipulatorMode::NUM_MODES; ++i)
+        {
+            m_manipulatorActions[i]->setCheckable(true);
+            connect(
+                m_manipulatorActions[i], &QAction::triggered, this,
+                [this, i]()
+                {
+                    // Send the reset camera event.
+                    m_plugin->SetManipulatorMode(RenderOptions::ManipulatorMode(i));
+                });
+            manipulatorGroup->addAction(m_manipulatorActions[i]);
+        }
+        addSeparator();
 
         // Add the render view options button
         QToolButton* renderOptionsButton = new QToolButton(this);
@@ -139,14 +163,14 @@ namespace EMStudio
             action->setIcon(QIcon(iconFileName));
         }
 
-        m_actions[actionIndex] = action;
+        m_renderActions[actionIndex] = action;
     }
 
     void AnimViewportToolBar::SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags)
     {
         for (size_t i = 0; i < renderFlags.size(); ++i)
         {
-            QAction* action = m_actions[i];
+            QAction* action = m_renderActions[i];
             if (action)
             {
                 action->setChecked(renderFlags[i]);

@@ -18,10 +18,12 @@
 
 namespace EMStudio
 {
+    class AnimRenderPlugin;
+
     class AnimViewportToolBar : public QToolBar
     {
     public:
-        AnimViewportToolBar(QWidget* parent = nullptr);
+        AnimViewportToolBar(AtomRenderPlugin* plugin, QWidget* parent);
         ~AnimViewportToolBar();
 
         void SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags);
@@ -32,7 +34,9 @@ namespace EMStudio
         void CreateViewOptionEntry(
             QMenu* menu, const char* menuEntryName, uint32_t actionIndex, bool visible = true, char* iconFileName = nullptr);
 
-        QAction* m_actions[EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS] = { nullptr };
+        AtomRenderPlugin* m_plugin = nullptr;
+        QAction* m_manipulatorActions[RenderOptions::ManipulatorMode::NUM_MODES] = { nullptr };
+        QAction* m_renderActions[EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS] = { nullptr };
         QAction* m_followCharacterAction = nullptr;
     };
 }
