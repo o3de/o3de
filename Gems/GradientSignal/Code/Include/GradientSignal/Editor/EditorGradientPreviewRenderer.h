@@ -25,7 +25,6 @@
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
 
-
 namespace GradientSignal
 {
     //! EditorGradientPreviewUpdateJob offloads the creation of a gradient preview image to another thread.
@@ -238,6 +237,8 @@ namespace GradientSignal
         //! Process runs exactly once for each time Start() is called on a Job, and processes on a Job worker thread.
         void Process() override
         {
+            AZ_PROFILE_FUNCTION(Entity);
+
             // Guard against the case that we're trying to cancel even before we've started to run.
             if (!m_shouldCancel)
             {
@@ -249,13 +250,154 @@ namespace GradientSignal
                 // extra pad bytes for each line due to alignment.  We use this to make sure we start writing each line at the right byte offset.
                 const uint64_t imageBytesPerLine = m_previewImage->bytesPerLine();
 
-                // The following are all used for calculating our interlaced pixel updates.
+                // Keep track of the total number of pixels that we intend to process. For easy interlacing calculations, we always use
+                // square power-of-two conceptual images, but we'll skip any pixels that fall outside of our actual image bounds.
+                const uint64_t totalPixels = (m_imageBoundsPowerOfTwo * m_imageBoundsPowerOfTwo);
+
+                // Preallocate buffers for our gradient lookup positions, our gradient output values, and the corresponding pixel buffer
+                // index to store the value into. These allow us to fetch gradient values in bulk, which is much faster than fetching them
+                // individually. The max size we'll need is for our last pass, which requests 50% of our total pixels, so that's what we
+                // will preallocate.
+                AZStd::vector<AZ::Vector3> gradientLookupPositions(totalPixels / 2);
+                AZStd::vector<float> gradientValues(totalPixels / 2);
+                AZStd::vector<size_t> pixelBufferIndex(totalPixels / 2);
+
+                // The following loop uses a variant of the Adam7 interlacing algorithm that's been generalized to work for N passes,
+                // instead of exactly 7 passes. The first two passes fill in 1 pixel each, and then each subsequent pass doubles the
+                // number of pixels it fills in, until the last pass fills in 50%.
+                // Note that m_finalInteracingPass contains the value of the final pass to process, not the total number of passes.
+                // On each pass, we'll also early-out if the main thread requested a cancellation.
+                for (uint64_t curPass = 0; (!m_shouldCancel) && (curPass <= m_finalInterlacingPass); curPass++)
+                {
+                    gradientLookupPositions.clear();
+                    pixelBufferIndex.clear();
+                    gradientValues.clear();
+
+                    // Total number of pixels that we'll process per pass. After the first two passes, the amount doubles per pass till we
+                    // reach 50% in the last pass, since all the other passes before it will have covered the other 50%.
+                    // Ex: 7 passes will do N/64, N/64, N/32, N/16, N/8, N/4, N/2 pixels per pass. The GetMin() makes the first two passes
+                    // both do the same number of pixels.
+                    const uint64_t totalPixelsPerPass =
+                        totalPixels >> AZ::GetMin(m_finalInterlacingPass - curPass + 1, m_finalInterlacingPass);
+
+                    // The general interlace formulas need a multiplier and an offset for x and y to apply to each relative pixel index.
+                    //
+                    // The first 3 passes are a little different than the others because they establish the base pattern:
+                    // 1 . . . 2 . . .
+                    // . . . . . . . .
+                    // . . . . . . . .
+                    // . . . . . . . . 
+                    // 3 . . . 3 . . .
+                    // . . . . . . . .
+                    // . . . . . . . .
+                    // . . . . . . . .
+                    //
+                    // Every 2 passes from then on do the same thing, with shrinking grids. One pass fills in the grid X midpoints on the
+                    // lines that were already processed, and the second pass fills in all the equivalent points on the Y grid midpoints
+                    // x . 4 . x . 4 .
+                    // . . . . . . . .
+                    // 5 . 5 . 5 . 5 .
+                    // . . . . . . . .
+                    // x . 4 . x . 4 .
+                    // . . . . . . . .
+                    // 5 . 5 . 5 . 5 .
+                    // . . . . . . . .
+                    //
+                    // x 6 x 6 x 6 x 6
+                    // 7 7 7 7 7 7 7 7
+                    // x 6 x 6 x 6 x 6
+                    // 7 7 7 7 7 7 7 7
+                    // x 6 x 6 x 6 x 6
+                    // 7 7 7 7 7 7 7 7
+                    // x 6 x 6 x 6 x 6
+                    // 7 7 7 7 7 7 7 7
+
+                    // For X, we want our starting pixel offset to alternate between 0 and a decreasing power of 2 on every pass, and
+                    // our stride to decrease by a power of 2 every two passes, ending with an offset of 0 and a stride of 1 on the last
+                    // pass.
+                    const uint64_t xOffsetShifter = AZ::GetMin(m_finalInterlacingPass - curPass, m_finalInterlacingPass - 1);
+                    const uint64_t xPixelOffset = (curPass % 2) * (1LL << (xOffsetShifter / 2));
+                    const uint64_t xPixelStride = 1LL << ((xOffsetShifter + 1) / 2);
+
+                    // For Y, we want our starting pixel offset and our stride to behave the same as X, except that we hold our starting
+                    // offset and stride for one additional pass which is what causes the first 3 passes to behave differently than the
+                    // rest. The pass offset between X and Y is also what causes the pattern to keep filling in pixels and lines that
+                    // haven't already been processed.
+                    const uint64_t yOffsetShifter = AZ::GetMin(m_finalInterlacingPass - curPass + 1, m_finalInterlacingPass - 1);
+                    const uint64_t yPixelOffset = (yOffsetShifter % 2) * (1LL << (yOffsetShifter / 2));
+                    const uint64_t yPixelStride = 1LL << ((yOffsetShifter + 1) / 2);
+
+                    // First, we loop and fill in all the gradientLookupPositions and pixelBufferIndex values for any pixels that don't
+                    // get culled out.
+                    for (uint64_t curPixel = 0; (curPixel < totalPixelsPerPass); curPixel++)
+                    {
+                        // Here's where interlacing happens.  If this were non-interlaced, we'd simply have the following:
+                        // x = curPixel % m_imageBoundsPowerOfTwo
+                        // y = curPixel / m_imageBoundsPowerOfTwo
+                        uint64_t x = ((curPixel * xPixelStride) + xPixelOffset) % m_imageBoundsPowerOfTwo;
+                        uint64_t y = ((((curPixel * xPixelStride) + xPixelOffset) / m_imageBoundsPowerOfTwo) * yPixelStride) + yPixelOffset;
+
+                        // Since we're using a power of two for calculating our interlacing, it's possible to get pixel offsets beyond the
+                        // bounds of our actual image.  We just skip those and continue on to the next pixel.
+                        if ((x >= m_imageBoundsX) || (y >= m_imageBoundsY))
+                        {
+                            continue;
+                        }
+
+                        // Now that we've figured out the interlaced pixel coordinate, map it back to a world position.
+
+                        // Invert world y to match axis.  (We use "imageBoundsY- 1" to invert because our loop doesn't go all the way to
+                        // imageBoundsY)
+                        AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((m_imageBoundsY - 1) - y), 0.0f);
+                        AZ::Vector3 position = m_previewBoundsStart + (uvw * m_pixelToBoundsScale) + m_scaledTexelOffset;
+
+                        // If our preview is only drawing what appears inside the given shape, check to see if the pixel should be drawn.
+                        bool inBounds = true;
+                        if (m_constrainToShape)
+                        {
+                            LmbrCentral::ShapeComponentRequestsBus::EventResult(
+                                inBounds, m_previewEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, position);
+                        }
+
+                        // If we're drawing this pixel, push it into our buffer of lookup positions.
+                        if (inBounds)
+                        {
+                            gradientLookupPositions.emplace_back(position);
+                            pixelBufferIndex.emplace_back(((m_centeringOffsetY + y) * imageBytesPerLine) + (m_centeringOffsetX + x));
+                        }
+                    }
+
+                    // Resize our output buffer to match our input buffer and query for all the gradient values at once.
+                    gradientValues.resize(gradientLookupPositions.size());
+                    m_sampler.GetValues(gradientLookupPositions, gradientValues);
+
+                    // For each output value, run it through a filter if we were given one, then store it in the pixel buffer.
+                    for (size_t index = 0; index < gradientLookupPositions.size(); index++)
+                    {
+                        float sample = gradientValues[index];
+
+                        if (m_filterFunc)
+                        {
+                            GradientSampleParams sampleParams;
+                            sampleParams.m_position = gradientLookupPositions[index];
+                            sample = m_filterFunc(sample, sampleParams);
+                        }
+
+                        buffer[pixelBufferIndex[index]] = static_cast<AZ::u8>(sample * 255);
+
+                        // Notify the main thread via atomic bool that the image has changed by at least one pixel.
+                        m_refreshUI = true;
+                    }
+                }
+
+                /*
 
                 // The current interlace pass that we're on.
                 int64_t curPass = 0;
                 // The index of the first pixel for this pass.  This is used to calculate the relative pixel index per pass.
                 uint64_t firstPixelPerPass = 0;
-                // Total number of pixels that we'll process per pass.  After the first two passes, the amount doubles per pass till we reach 100%.
+                // Total number of pixels that we'll process per pass.  After the first two passes, the amount doubles per pass till we
+                // reach 100%.
                 uint64_t totalPixelsPerPass = (m_imageBoundsPowerOfTwo * m_imageBoundsPowerOfTwo) / (1LL << (m_finalInterlacingPass - curPass));
                 // The general interlace formulas need a multiplier and an offset for x and y to apply to each relative pixel index.
                 // The pixel multipliers start high and reduce on each pass to increase the pixel density per pass.
@@ -330,6 +472,7 @@ namespace GradientSignal
                     // Notify the main thread via atomic bool that the image has changed by at least one pixel.
                     m_refreshUI = true;
                 }
+                */
             }
 
             // Finally, we're done updating, so notify the main thread safely that we've finished.  This is how we're able to block
@@ -456,3 +599,4 @@ namespace GradientSignal
         EditorGradientPreviewUpdateJob* m_updateJob = nullptr;
     };
 } //namespace GradientSignal
+
