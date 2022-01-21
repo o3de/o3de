@@ -881,6 +881,23 @@ namespace ScriptCanvasEditor
             return "";
         }
 
+        void NodePaletteDockWidget::NavigateToTranslationFile(GraphCanvas::NodePaletteTreeItem* nodePaletteItem)
+        {
+            if (nodePaletteItem)
+            {
+                AZ::IO::Path gemPath = GetGemPath("ScriptCanvas.Editor");
+                gemPath = gemPath / AZ::IO::Path("TranslationAssets");
+                gemPath = gemPath / nodePaletteItem->GetTranslationDataPath();
+                gemPath.ReplaceExtension(".names");
+
+                AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+                if (fileIO && fileIO->Exists(gemPath.c_str()))
+                {
+                    AzQtComponents::ShowFileOnDesktop(gemPath.c_str());
+                }
+            }
+        }
+
         void NodePaletteDockWidget::GenerateTranslation()
         {
             QModelIndexList indexList = GetTreeView()->selectionModel()->selectedRows();
@@ -897,21 +914,11 @@ namespace ScriptCanvasEditor
 
             if (indexList.size() == 1)
             {
-                AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
                 QModelIndex sourceIndex = filterModel->mapToSource(indexList[0]);
                 if (sourceIndex.isValid())
                 {
                     GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
-
-                    AZ::IO::Path gemPath = GetGemPath("ScriptCanvas.Editor");
-                    gemPath = gemPath / AZ::IO::Path("TranslationAssets");
-                    gemPath = gemPath / nodePaletteItem->GetTranslationDataPath();
-                    gemPath.ReplaceExtension(".names");
-
-                    if (fileIO->Exists(gemPath.c_str()))
-                    {
-                        AzQtComponents::ShowFileOnDesktop(gemPath.c_str());
-                    }
+                    NavigateToTranslationFile(nodePaletteItem);
                 }
             }
         }
@@ -929,19 +936,7 @@ namespace ScriptCanvasEditor
                     QModelIndex sourceIndex = filterModel->mapToSource(index);
 
                     GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
-                    if (nodePaletteItem)
-                    {
-                        AZ::IO::Path gemPath = GetGemPath("ScriptCanvas.Editor");
-                        gemPath = gemPath / AZ::IO::Path("TranslationAssets");
-                        gemPath = gemPath / nodePaletteItem->GetTranslationDataPath();
-                        gemPath.ReplaceExtension(".names");
-
-                        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-                        if (fileIO->Exists(gemPath.c_str()))
-                        {
-                            AzQtComponents::ShowFileOnDesktop(gemPath.c_str());
-                        }
-                    }
+                    NavigateToTranslationFile(nodePaletteItem);
                 }
             }
         }
