@@ -77,7 +77,7 @@ namespace AzToolsFramework
                 AZStd::vector<Instance*>& outInstances) const;
 
             //! Sanitizes an EntityIdList to remove entities that should not be affected by prefab operations.
-            //! It will identify and exclude the container of the root prefab entity, and all read-only entities.
+            //! It will identify and exclude the container entity of the root prefab instance, and all read-only entities.
             EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
