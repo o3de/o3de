@@ -6,7 +6,7 @@
  *
  */
 
-#include "PerlinGradientComponent.h"
+#include <GradientSignal/Components/PerlinGradientComponent.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -138,6 +138,9 @@ namespace GradientSignal
 
     void PerlinGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         m_perlinImprovedNoise.reset(aznew PerlinImprovedNoise(AZ::GetMax(m_configuration.m_randomSeed, 1)));
         GradientRequestBus::Handler::BusConnect(GetEntityId());
         PerlinGradientRequestBus::Handler::BusConnect(GetEntityId());
@@ -148,6 +151,7 @@ namespace GradientSignal
         m_perlinImprovedNoise.reset();
         GradientRequestBus::Handler::BusDisconnect();
         PerlinGradientRequestBus::Handler::BusDisconnect();
+        GradientTransformNotificationBus::Handler::BusDisconnect();
     }
 
     bool PerlinGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -170,26 +174,63 @@ namespace GradientSignal
         return false;
     }
 
+    void PerlinGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
+    {
+        AZStd::unique_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        m_gradientTransform = newTransform;
+    }
+
     float PerlinGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         if (m_perlinImprovedNoise)
         {
             AZ::Vector3 uvw = sampleParams.m_position;
-
             bool wasPointRejected = false;
-            const bool shouldNormalizeOutput = false;
-            GradientTransformRequestBus::Event(
-                GetEntityId(), &GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
+
+            {
+                AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+                m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
+            }
 
             if (!wasPointRejected)
             {
-                return m_perlinImprovedNoise->GenerateOctaveNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ(), m_configuration.m_octave, m_configuration.m_amplitude, m_configuration.m_frequency);
+                return m_perlinImprovedNoise->GenerateOctaveNoise(
+                    uvw.GetX(), uvw.GetY(), uvw.GetZ(), m_configuration.m_octave, m_configuration.m_amplitude,
+                    m_configuration.m_frequency);
             }
         }
 
         return 0.0f;
+    }
+
+    void PerlinGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZ::Vector3 uvw;
+        bool wasPointRejected = false;
+
+        AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            m_gradientTransform.TransformPositionToUVW(positions[index], uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                outValues[index] = m_perlinImprovedNoise->GenerateOctaveNoise(
+                    uvw.GetX(), uvw.GetY(), uvw.GetZ(), m_configuration.m_octave, m_configuration.m_amplitude,
+                    m_configuration.m_frequency);
+            }
+            else
+            {
+                outValues[index] = 0.0f;
+            }
+        }
     }
 
     int PerlinGradientComponent::GetRandomSeed() const

@@ -22,7 +22,7 @@ from o3de import manifest
 ])
 class TestGetTemplatesForCreation:
     @staticmethod
-    def get_templates() -> list:
+    def get_manifest_templates() -> list:
         return []
 
     @staticmethod
@@ -40,20 +40,24 @@ class TestGetTemplatesForCreation:
     )
     def test_get_templates_for_generic_creation(self, valid_project_json_paths, valid_gem_json_paths,
                                                 expected_template_paths):
-        def validate_project_json(template_path) -> bool:
-            return pathlib.Path(template_path) in valid_project_json_paths
+        def validate_project_json(project_json_path) -> bool:
+            return pathlib.Path(project_json_path) in valid_project_json_paths
 
-        def validate_gem_json(template_path) -> bool:
-            return pathlib.Path(template_path) in valid_gem_json_paths
+        def validate_gem_json(gem_json_path) -> bool:
+            return pathlib.Path(gem_json_path) in valid_gem_json_paths
 
-        with patch('o3de.manifest.get_templates', side_effect=self.get_templates) as get_templates_patch, \
+        with patch('o3de.manifest.get_manifest_templates', side_effect=self.get_manifest_templates)\
+                        as get_manifest_templates_patch, \
                 patch('o3de.manifest.get_project_templates', side_effect=self.get_project_templates)\
                         as get_project_templates_patch, \
                 patch('o3de.manifest.get_engine_templates', side_effect=self.get_engine_templates)\
                         as get_engine_templates_patch, \
-            patch('o3de.validation.valid_o3de_template_json', return_value=True) as validate_template_json,\
-            patch('o3de.validation.valid_o3de_project_json', side_effect=validate_project_json) as validate_project_json,\
-            patch('o3de.validation.valid_o3de_gem_json', side_effect=validate_gem_json) as validate_gem_json:
+                patch('o3de.validation.valid_o3de_template_json', return_value=True) \
+                        as validate_template_json,\
+                patch('o3de.validation.valid_o3de_project_json', side_effect=validate_project_json) \
+                        as validate_project_json,\
+                patch('o3de.validation.valid_o3de_gem_json', side_effect=validate_gem_json) \
+                        as validate_gem_json:
             templates = manifest.get_templates_for_generic_creation()
             assert templates == expected_template_paths
 
@@ -64,21 +68,24 @@ class TestGetTemplatesForCreation:
     )
     def test_get_templates_for_gem_creation(self, valid_project_json_paths, valid_gem_json_paths,
                                                 expected_template_paths):
-        def validate_project_json(template_path) -> bool:
-            return pathlib.Path(template_path) in valid_project_json_paths
+        def validate_project_json(project_json_path) -> bool:
+            return pathlib.Path(project_json_path) in valid_project_json_paths
 
-        def validate_gem_json(template_path) -> bool:
-            return pathlib.Path(template_path) in valid_gem_json_paths
+        def validate_gem_json(gem_json_path) -> bool:
+            return pathlib.Path(gem_json_path) in valid_gem_json_paths
 
-        with patch('o3de.manifest.get_templates', side_effect=self.get_templates) as get_templates_patch, \
+        with patch('o3de.manifest.get_manifest_templates', side_effect=self.get_manifest_templates)\
+                        as get_manifest_templates_patch, \
                 patch('o3de.manifest.get_project_templates', side_effect=self.get_project_templates) \
                         as get_project_templates_patch, \
                 patch('o3de.manifest.get_engine_templates', side_effect=self.get_engine_templates) \
                         as get_engine_templates_patch, \
-                patch('o3de.validation.valid_o3de_template_json', return_value=True) as validate_template_json, \
-                patch('o3de.validation.valid_o3de_project_json',
-                      side_effect=validate_project_json) as validate_project_json, \
-                patch('o3de.validation.valid_o3de_gem_json', side_effect=validate_gem_json) as validate_gem_json:
+                patch('o3de.validation.valid_o3de_template_json', return_value=True) \
+                        as validate_template_json, \
+                patch('o3de.validation.valid_o3de_project_json', side_effect=validate_project_json) \
+                        as validate_project_json, \
+                patch('o3de.validation.valid_o3de_gem_json', side_effect=validate_gem_json) \
+                        as validate_gem_json:
             templates = manifest.get_templates_for_project_creation()
             assert templates == expected_template_paths
 
@@ -89,20 +96,23 @@ class TestGetTemplatesForCreation:
     )
     def test_get_templates_for_project_creation(self, valid_project_json_paths, valid_gem_json_paths,
                                                 expected_template_paths):
-        def validate_project_json(template_path) -> bool:
-            return pathlib.Path(template_path) in valid_project_json_paths
+        def validate_project_json(project_json_path) -> bool:
+            return pathlib.Path(project_json_path) in valid_project_json_paths
 
-        def validate_gem_json(template_path) -> bool:
-            return pathlib.Path(template_path) in valid_gem_json_paths
+        def validate_gem_json(gem_json_path) -> bool:
+            return pathlib.Path(gem_json_path) in valid_gem_json_paths
 
-        with patch('o3de.manifest.get_templates', side_effect=self.get_templates) as get_templates_patch, \
+        with patch('o3de.manifest.get_manifest_templates', side_effect=self.get_manifest_templates) \
+                        as get_manifest_templates_patch, \
                 patch('o3de.manifest.get_project_templates', side_effect=self.get_project_templates) \
                         as get_project_templates_patch, \
                 patch('o3de.manifest.get_engine_templates', side_effect=self.get_engine_templates) \
                         as get_engine_templates_patch, \
-                patch('o3de.validation.valid_o3de_template_json', return_value=True) as validate_template_json, \
-                patch('o3de.validation.valid_o3de_project_json',
-                      side_effect=validate_project_json) as validate_project_json, \
-                patch('o3de.validation.valid_o3de_gem_json', side_effect=validate_gem_json) as validate_gem_json:
+                patch('o3de.validation.valid_o3de_template_json', return_value=True) \
+                        as validate_template_json, \
+                patch('o3de.validation.valid_o3de_project_json', side_effect=validate_project_json) \
+                        as validate_project_json, \
+                patch('o3de.validation.valid_o3de_gem_json', side_effect=validate_gem_json) \
+                        as validate_gem_json:
             templates = manifest.get_templates_for_gem_creation()
             assert templates == expected_template_paths

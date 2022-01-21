@@ -86,8 +86,7 @@ def GradientPreviewSettings_ClearingPinnedEntitySetsPreviewToOrigin():
         return entity
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Create entity with Random Noise gradient and verify gradient position after clearing pinned entity
     clear_entityid_check_position(

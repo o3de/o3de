@@ -38,14 +38,17 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME')
 ]
 
-def palSh(cmd, lbl = '', winSlashReplacement = true) {
+def palSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
-    } else if (winSlashReplacement) {
-        bat label: lbl,
-            script: cmd.replace('/','\\')
     } else {
+        if (winSlashReplacement) {
+            cmd = cmd.replace('/','\\')
+        }
+        if (winCharReplacement) {
+            cmd = cmd.replace('%', '%%')
+        }
         bat label: lbl,
             script: cmd
     }
@@ -261,7 +264,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     commitDateFmt = '%%cI'
     if (env.IS_UNIX) commitDateFmt = '%cI'
 
-    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date')
+    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date', winSlashReplacement=true, winCharReplacement=false)
     env.CHANGE_DATE = readFile file: 'commitdate'
     env.CHANGE_DATE = env.CHANGE_DATE.trim()
     palRm('commitdate')
@@ -610,7 +613,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
                         }
                         // Upload test artifacts only on builds that failed and ran test suites
-                        if (env.IS_UPLOAD_TEST_ARTIFACTS?.toBoolean() && params.containsKey('CMAKE_TARGET') && params.CMAKE_TARGET.contains("TEST_SUITE")) {
+                        if (env.IS_UPLOAD_TEST_ARTIFACTS?.toBoolean() && params.containsKey('CTEST_OPTIONS')) {
                             CreateUploadTestArtifactStage(build_job_name, envVars['WORKSPACE'], params.OUTPUT_DIRECTORY).call()
                         }
                         // All other errors will be raised outside the retry block
@@ -810,7 +813,7 @@ try {
                         }
                     }
 
-                    pipelineProperties.add(parameters(pipelineParameters))
+                    pipelineProperties.add(parameters(pipelineParameters.unique()))
                     properties(pipelineProperties)
 
                     // Stash the INCREMENTAL_BUILD_SCRIPT_PATH since all nodes will use it

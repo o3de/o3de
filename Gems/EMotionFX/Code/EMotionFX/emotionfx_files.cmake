@@ -144,6 +144,8 @@ set(FILES
     Source/TransformData.h
     Source/TriggerActionSetup.cpp
     Source/TriggerActionSetup.h
+    Source/Velocity.cpp
+    Source/Velocity.h
     Source/VertexAttributeLayer.cpp
     Source/VertexAttributeLayer.h
     Source/VertexAttributeLayerAbstractData.cpp

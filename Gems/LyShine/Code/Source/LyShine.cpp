@@ -43,11 +43,11 @@
 #include "Sprite.h"
 #include "UiSerialize.h"
 #include "UiRenderer.h"
+#include "Draw2d.h"
 
 #include <LyShine/Bus/UiCursorBus.h>
 #include <LyShine/Bus/UiDraggableBus.h>
 #include <LyShine/Bus/UiDropTargetBus.h>
-#include <LyShine/Draw2d.h>
 
 #if defined(LYSHINE_INTERNAL_UNIT_TEST)
 #include "TextMarkup.h"
@@ -155,8 +155,6 @@ CLyShine::CLyShine([[maybe_unused]] ISystem* system)
     LyShineDebug::Initialize();
     UiElementComponent::Initialize();
     UiCanvasComponent::Initialize();
-
-    UiAnimationSystem::StaticInitialize();
 
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
@@ -353,6 +351,12 @@ ISprite* CLyShine::CreateSprite(const AZStd::string& renderTargetName)
 bool CLyShine::DoesSpriteTextureAssetExist(const AZStd::string& pathname)
 {
     return CSprite::DoesSpriteTextureAssetExist(pathname);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::Data::Instance<AZ::RPI::Image> CLyShine::LoadTexture(const AZStd::string& pathname)
+{
+    return CDraw2d::LoadTexture(pathname);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -668,7 +672,7 @@ void CLyShine::LoadUiCursor()
 {
     if (!m_cursorImagePathToLoad.empty())
     {
-        m_uiCursorTexture = CDraw2d::LoadTexture(m_cursorImagePathToLoad); // LYSHINE_ATOM_TODO - add clamp option to draw2d and set cursor to clamp
+        m_uiCursorTexture = CDraw2d::LoadTexture(m_cursorImagePathToLoad);
         m_cursorImagePathToLoad.clear();
     }
 }
@@ -691,7 +695,13 @@ void CLyShine::RenderUiCursor()
     AZ::RHI::Size cursorSize = m_uiCursorTexture->GetDescriptor().m_size;
     const AZ::Vector2 dimensions(aznumeric_cast<float>(cursorSize.m_width), aznumeric_cast<float>(cursorSize.m_height));
 
-    m_draw2d->DrawImage(m_uiCursorTexture, position, dimensions);
+    IDraw2d::ImageOptions imageOptions;
+    imageOptions.m_clamp = true;
+    const float opacity = 1.0f;
+    const float rotation = 0.0f;
+    const AZ::Vector2* pivotPoint = nullptr;
+    const AZ::Vector2* minMaxTexCoords = nullptr;
+    m_draw2d->DrawImage(m_uiCursorTexture, position, dimensions, opacity, rotation, pivotPoint, minMaxTexCoords, &imageOptions);
 }
 
 #ifndef _RELEASE
