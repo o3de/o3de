@@ -17,6 +17,8 @@ namespace AZ
 {
     namespace RPI
     {
+        class MaterialPropertyDescriptor;
+
         struct MaterialPropertyIndexType {
             AZ_TYPE_INFO(MaterialPropertyIndexType, "{cfc09268-f3f1-4474-bd8f-f2c8de27c5f1}");
         };
@@ -76,6 +78,9 @@ namespace AZ
         const char* ToString(MaterialPropertyDataType materialPropertyDataType);
 
         AZStd::string GetMaterialPropertyDataTypeString(AZ::TypeId typeId);
+        
+        //! Checks that the TypeId matches the type expected by materialPropertyDescriptor
+        bool ValidateMaterialPropertyDataType(TypeId typeId, const Name& propertyName, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError);
 
         //! A material property is any data input to a material, like a bool, float, Vector, Image, Buffer, etc.
         //! This descriptor defines a single input property, including it's name ID, and how it maps

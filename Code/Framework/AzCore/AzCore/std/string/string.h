@@ -18,6 +18,8 @@
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/typetraits/alignment_of.h>
+#include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/is_integral.h>
 
 #include <AzCore/std/string/string_view.h>
@@ -1483,11 +1485,11 @@ namespace AZStd
             }
         };
 
-        // Clang supports compile-time check for printf-like signatures
+        // Clang/GCC supports compile-time check for printf-like signatures
         // On MSVC, *only* if /analyze flag is enabled(defines _PREFAST_) we can also do a compile-time check
         // For not affecting final release binary size, we don't use the templated version on Release configuration either
-#if AZ_COMPILER_CLANG || defined(_PREFAST_) || defined(_RELEASE)
-#    if AZ_COMPILER_CLANG
+#if AZ_COMPILER_CLANG || AZ_COMPILER_GCC || defined(_PREFAST_) || defined(_RELEASE)
+#    if AZ_COMPILER_CLANG || AZ_COMPILER_GCC
 #        define FORMAT_FUNC      __attribute__((format(printf, 1, 2)))
 #        define FORMAT_FUNC_ARG
 #    elif AZ_COMPILER_MSVC
@@ -2071,9 +2073,8 @@ namespace AZStd
     template<class Element, class Traits, class Allocator>
     struct hash< basic_string< Element, Traits, Allocator> >
     {
-        typedef basic_string< Element, Traits, Allocator> argument_type;
-        typedef AZStd::size_t                           result_type;
-        inline result_type operator()(const argument_type& value) const
+        using is_transparent = void;
+        inline constexpr size_t operator()(const basic_string_view<Element, Traits>& value) const
         {
             return hash_string(value.begin(), value.length());
         }

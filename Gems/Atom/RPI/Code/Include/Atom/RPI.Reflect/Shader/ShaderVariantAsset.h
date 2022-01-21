@@ -50,6 +50,7 @@ namespace AZ
             RPI::ShaderVariantStableId GetStableId() const { return m_stableId;  }
 
             const ShaderVariantId& GetShaderVariantId() const { return m_shaderVariantId; }
+            uint32_t GetSupervariantIndex() const;
 
             //! Returns the shader stage function associated with the provided stage enum value.
             const RHI::ShaderStageFunction* GetShaderStageFunction(RHI::ShaderStage shaderStage) const;

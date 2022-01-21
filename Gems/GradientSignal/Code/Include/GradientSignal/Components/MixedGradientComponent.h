@@ -99,6 +99,7 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // GradientRequestBus
         float GetValue(const GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const override;
 
     protected:
@@ -110,6 +111,34 @@ namespace GradientSignal
         MixedGradientLayer* GetLayer(int layerIndex) override;
 
     private:
+        static float PerformMixingOperation(MixedGradientLayer::MixingOperation operation, float prevValue, float currentUnpremultiplied)
+        {
+            switch (operation)
+            {
+            case MixedGradientLayer::MixingOperation::Initialize:
+                return currentUnpremultiplied;
+            case MixedGradientLayer::MixingOperation::Multiply:
+                return prevValue * currentUnpremultiplied;
+            case MixedGradientLayer::MixingOperation::Add:
+                return prevValue + currentUnpremultiplied;
+            case MixedGradientLayer::MixingOperation::Subtract:
+                return prevValue - currentUnpremultiplied;
+            case MixedGradientLayer::MixingOperation::Min:
+                return AZStd::min(prevValue, currentUnpremultiplied);
+            case MixedGradientLayer::MixingOperation::Max:
+                return AZStd::max(prevValue, currentUnpremultiplied);
+            case MixedGradientLayer::MixingOperation::Average:
+                return (prevValue + currentUnpremultiplied) / 2.0f;
+            case MixedGradientLayer::MixingOperation::Normal:
+                return currentUnpremultiplied;
+            case MixedGradientLayer::MixingOperation::Overlay:
+                return (prevValue >= 0.5f) ? (1.0f - (2.0f * (1.0f - prevValue) * (1.0f - currentUnpremultiplied)))
+                                                             : (2.0f * prevValue * currentUnpremultiplied);
+            default:
+                return currentUnpremultiplied;
+            }
+        }
+
         MixedGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };

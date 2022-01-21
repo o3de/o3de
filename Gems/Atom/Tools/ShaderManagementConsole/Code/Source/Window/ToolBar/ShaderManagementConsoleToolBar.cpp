@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/PlatformDef.h>
-#include <Source/Window/ToolBar/ShaderManagementConsoleToolBar.h>
+#include <Window/ToolBar/ShaderManagementConsoleToolBar.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
@@ -29,4 +29,4 @@ namespace ShaderManagementConsole
     }
 } // namespace ShaderManagementConsole
 
-#include <Source/Window/ToolBar/moc_ShaderManagementConsoleToolBar.cpp>
+#include <Window/ToolBar/moc_ShaderManagementConsoleToolBar.cpp>

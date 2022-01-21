@@ -68,6 +68,11 @@ namespace AzToolsFramework
             }
         }
 
+        QSharedPointer<const StringFilter> AssetBrowserFilterModel::GetStringFilter() const
+        {
+            return m_stringFilter;
+        }
+
         bool AssetBrowserFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
         {
             //get the source idx, if invalid early out

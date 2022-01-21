@@ -413,7 +413,7 @@ def crash_log_watchdog(request, workspace):
 
 def _crash_log_watchdog(request, workspace, raise_on_crash):
     """Separate implementation to call directly during unit tests"""
-    error_log = os.path.join(workspace.paths.project_log(), 'error.log')
+    error_log = workspace.paths.crash_log()
     crash_log_watchdog = ly_test_tools.environment.watchdog.CrashLogWatchdog(
         error_log, raise_on_condition=raise_on_crash)
 

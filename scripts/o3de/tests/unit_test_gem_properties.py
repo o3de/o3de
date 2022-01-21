@@ -18,10 +18,9 @@ TEST_GEM_JSON_PAYLOAD = '''
 {
     "gem_name": "TestGem",
     "display_name": "TestGem",
-    "license": "MIT",
-    "license_url": "https://opensource.org/licenses/MIT",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "The primary repo for TestGem goes here: i.e. http://www.mydomain.com",
-    "type": "Code",
     "summary": "A short description of TestGem.",
     "canonical_tags": [
         "Gem"
@@ -31,7 +30,9 @@ TEST_GEM_JSON_PAYLOAD = '''
     ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/"
+    "documentation_url": "https://o3de.org/docs/",
+    "dependencies": [
+    ]
 }
 '''
 

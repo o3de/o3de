@@ -50,7 +50,7 @@ namespace AZ
             RHI::DrawItemSortKey m_sortKey = 0;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_useForwardPassIblSpecular = false;
-
+            bool m_isRayTracingEnabled = true;
             RPI::Cullable::LodType m_lodType = RPI::Cullable::LodType::Default;
             RPI::Cullable::LodOverride m_lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(0);
             float m_minimumScreenCoverage = 1.0f / 1080.0f;
@@ -115,6 +115,9 @@ namespace AZ
 
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
+
+            void SetRayTracingEnabled(bool enabled) override;
+            bool GetRayTracingEnabled() const override;
 
             // BoundsRequestBus and MeshComponentRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;

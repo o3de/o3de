@@ -7,9 +7,9 @@
  */
 
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/Application/Application.h>
+#include <Viewport/MaterialViewportRequestBus.h>
 #include <Window/PresetBrowserDialogs/ModelPresetBrowserDialog.h>
 
 namespace MaterialEditor

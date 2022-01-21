@@ -6,23 +6,73 @@
  *
  */
 
-#include <Atom/Document/MaterialDocumentModule.h>
-#include <Atom/Viewport/MaterialViewportModule.h>
-#include <Atom/Window/MaterialEditorWindowModule.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <Document/MaterialDocument.h>
+#include <Document/MaterialDocumentRequestBus.h>
+#include <Document/MaterialDocumentSettings.h>
 #include <MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
+#include <Viewport/MaterialViewportModule.h>
+#include <Window/MaterialEditorWindow.h>
+#include <Window/MaterialEditorWindowSettings.h>
+
+void InitMaterialEditorResources()
+{
+    // Must register qt resources from other modules
+    Q_INIT_RESOURCE(MaterialEditor);
+    Q_INIT_RESOURCE(InspectorWidget);
+    Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+}
 
 namespace MaterialEditor
 {
-    //! This function returns the build system target name of "MaterialEditor"
-    AZStd::string MaterialEditorApplication::GetBuildTargetName() const
+    MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
+        : Base(argc, argv)
     {
-#if !defined(LY_CMAKE_TARGET)
-#error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
-#endif
-        return AZStd::string{ LY_CMAKE_TARGET };
+        InitMaterialEditorResources();
+
+        QApplication::setApplicationName("O3DE Material Editor");
+
+        // The settings registry has been created at this point, so add the CMake target
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
+            *AZ::SettingsRegistry::Get(), GetBuildTargetName());
+
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusConnect();
+    }
+
+    MaterialEditorApplication::~MaterialEditorApplication()
+    {
+        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
+        m_window.reset();
+    }
+
+    void MaterialEditorApplication::Reflect(AZ::ReflectContext* context)
+    {
+        Base::Reflect(context);
+        MaterialDocumentSettings::Reflect(context);
+        MaterialEditorWindowSettings::Reflect(context);
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<MaterialDocumentRequestBus>("MaterialDocumentRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
+                ;
+        }
+    }
+
+    void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
+    {
+        Base::CreateStaticModules(outModules);
+        outModules.push_back(aznew MaterialViewportModule);
     }
 
     const char* MaterialEditorApplication::GetCurrentConfigurationName() const
@@ -36,22 +86,22 @@ namespace MaterialEditor
 #endif
     }
 
-    MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
-        : AtomToolsApplication(argc, argv)
+    void MaterialEditorApplication::StartCommon(AZ::Entity* systemEntity)
     {
-        QApplication::setApplicationName("O3DE Material Editor");
+        Base::StartCommon(systemEntity);
 
-        // The settings registry has been created at this point, so add the CMake target
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
-            *AZ::SettingsRegistry::Get(), GetBuildTargetName());
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
+            []() { return aznew MaterialDocument(); });
     }
 
-    void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
+    AZStd::string MaterialEditorApplication::GetBuildTargetName() const
     {
-        Base::CreateStaticModules(outModules);
-        outModules.push_back(aznew MaterialDocumentModule);
-        outModules.push_back(aznew MaterialViewportModule);
-        outModules.push_back(aznew MaterialEditorWindowModule);
+#if !defined(LY_CMAKE_TARGET)
+#error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
+#endif
+        //! Returns the build system target name of "MaterialEditor"
+        return AZStd::string{ LY_CMAKE_TARGET };
     }
 
     AZStd::vector<AZStd::string> MaterialEditorApplication::GetCriticalAssetFilters() const
@@ -59,18 +109,19 @@ namespace MaterialEditor
         return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/" });
     }
 
-    void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
+    void MaterialEditorApplication::CreateMainWindow()
     {
-        // Process command line options for opening one or more material documents on startup
-        size_t openDocumentCount = commandLine.GetNumMiscValues();
-        for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
-        {
-            const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
+        m_materialEditorBrowserInteractions.reset(aznew MaterialEditorBrowserInteractions);
+        m_window.reset(aznew MaterialEditorWindow);
+    }
 
-            AZ_Printf(GetBuildTargetName().c_str(), "Opening document: %s", openDocumentPath.c_str());
-            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
-        }
+    void MaterialEditorApplication::DestroyMainWindow()
+    {
+        m_window.reset();
+    }
 
-        Base::ProcessCommandLine(commandLine);
+    QWidget* MaterialEditorApplication::GetAppMainWindow()
+    {
+        return m_window.get();
     }
 } // namespace MaterialEditor
