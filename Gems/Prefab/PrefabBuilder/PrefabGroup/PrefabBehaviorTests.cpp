@@ -284,7 +284,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(PrefabBehaviorTests, PrefabBehavior_UpdateManifestWithEmtpyScene_DoesNotFail)
+    TEST_F(PrefabBehaviorTests, PrefabBehavior_UpdateManifestWithEmptyScene_DoesNotFail)
     {
         using namespace AZ::SceneAPI;
         using namespace AZ::SceneAPI::Events;
@@ -299,7 +299,7 @@ namespace UnitTest
         EXPECT_NE(result,  ProcessingResult::Failure);
     }
 
-    TEST_F(PrefabBehaviorTests, PrefabBehavior_UpdateManifestWithEmtpyScene_Ignored)
+    TEST_F(PrefabBehaviorTests, PrefabBehavior_UpdateManifestWithEmptyScene_Ignored)
     {
         using namespace AZ::SceneAPI;
         using namespace AZ::SceneAPI::Events;

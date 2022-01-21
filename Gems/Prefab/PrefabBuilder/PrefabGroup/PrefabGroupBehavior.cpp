@@ -238,6 +238,12 @@ namespace AZ::SceneAPI::Behaviors
                 entityId,
                 "{DCE68F6E-2E16-4CB4-A834-B6C2F900A7E9} AZ::Render::EditorMeshComponent");
 
+            if(editorMeshComponent.IsValid() == false)
+            {
+                AZ_Warning("prefab", false, "Could not add the EditorMeshComponent component; project needs Atom enabled.");
+                return Events::ProcessingResult::Ignored;
+            }
+
             // assign mesh asset id hint using JSON
             auto meshAssetJson = AZStd::string::format(
                 R"JSON(
