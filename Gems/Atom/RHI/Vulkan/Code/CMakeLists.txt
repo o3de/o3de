@@ -32,6 +32,7 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
                 AZ::AzCore
                 Gem::Atom_RHI.Reflect
                 3rdParty::glad_vulkan
+                3rdParty::vulkan-validationlayers
     )
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -113,6 +114,7 @@ ly_add_target(
             Gem::Atom_RHI_Vulkan.Reflect
             Gem::Atom_RHI_Vulkan.Glad.Static
             3rdParty::glad_vulkan
+            3rdParty::vulkan-validationlayers
 )
 
 ly_add_target(
