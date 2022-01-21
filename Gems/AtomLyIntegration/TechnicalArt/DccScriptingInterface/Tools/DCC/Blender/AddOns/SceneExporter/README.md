@@ -1,2 +1,9 @@
-# O3DE Tools for Blender
-Useful tools for Everyday Blender
+"""
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+"""
+# -------------------------------------------------------------------------
+
+This folder contains the Blender O3DE Scene Exporter Plugin (DCCsi) for O3DE
