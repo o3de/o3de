@@ -146,8 +146,12 @@ namespace AZ
             case AZ::RHI::Format::R8_SNORM:
             {
                 // Scale the value from AZ::s8 min/max to -1 to 1
+                // We need to treat -128 and -127 the same, so that we get a symmetric
+                // range of -127 to 127 with complementary scaled values of -1 to 1
                 auto actualMem = reinterpret_cast<const AZ::s8*>(mem);
-                return ScaleValue(actualMem[index], std::numeric_limits<AZ::s8>::min(), std::numeric_limits<AZ::s8>::max(), -1, 1);
+                AZ::s8 signedMax = std::numeric_limits<AZ::s8>::max();
+                AZ::s8 signedMin = aznumeric_cast<AZ::s8>(-signedMax);
+                return ScaleValue(AZStd::max(actualMem[index], signedMin), signedMin, signedMax, -1, 1);
             }
             case AZ::RHI::Format::D16_UNORM:
             case AZ::RHI::Format::R16_UNORM:
@@ -157,8 +161,12 @@ namespace AZ
             case AZ::RHI::Format::R16_SNORM:
             {
                 // Scale the value from AZ::s16 min/max to -1 to 1
+                // We need to treat -32768 and -32767 the same, so that we get a symmetric
+                // range of -32767 to 32767 with complementary scaled values of -1 to 1
                 auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
-                return ScaleValue(actualMem[index], std::numeric_limits<AZ::s16>::min(), std::numeric_limits<AZ::s16>::max(), -1, 1);
+                AZ::s16 signedMax = std::numeric_limits<AZ::s16>::max();
+                AZ::s16 signedMin = aznumeric_cast<AZ::s16>(-signedMax);
+                return ScaleValue(AZStd::max(actualMem[index], signedMin), signedMin, signedMax, -1, 1);
             }
             case AZ::RHI::Format::R16_FLOAT:
             {
