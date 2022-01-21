@@ -61,12 +61,9 @@ def Multiplayer_SimpleNetworkLevelEntity():
         ATTEMPTING_INVALID_NETSPAWN_WAIT_TIME_SECONDS = 1.0  # The editor will try to net-spawn its networked level entity before it's even a client. Make sure this doesn't happen.
         helper.fail_if_log_line_found('NetworkEntityManager', "RequestNetSpawnableInstantiation: Requested spawnable Root.network.spawnable doesn't exist in the NetworkSpawnableLibrary. Please make sure it is a network spawnable", section_tracer.errors, ATTEMPTING_INVALID_NETSPAWN_WAIT_TIME_SECONDS)
 
-        # 5) Ensure the script graph attached to the level entity is running on both client and server
+        # 5) Ensure the script graph attached to the level entity is running on the server
         SCRIPTGRAPH_ENABLED_WAIT_TIME_SECONDS = 0.25
-        # Check Server
         helper.succeed_if_log_line_found('EditorServer', "Script: SimpleNetworkLevelEntity: On Graph Start", section_tracer.prints, SCRIPTGRAPH_ENABLED_WAIT_TIME_SECONDS)
-        # Check Editor/Client (Uncomment once script asset preload is working properly LYN-9136)
-        # helper.succeed_if_log_line_found('Script', "SimpleNetworkLevelEntity: On Graph Start", section_tracer.prints, SCRIPTGRAPH_ENABLED_WAIT_TIME_SECONDS)  # Client
 
     
     # Exit game mode
