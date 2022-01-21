@@ -10,8 +10,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
 #include <AzCore/std/containers/vector.h>
+#include <Viewport/MaterialViewportNotificationBus.h>
 #endif
 
 #include <Window/PresetBrowserDialogs/PresetBrowserDialog.h>

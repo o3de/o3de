@@ -19,6 +19,7 @@
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/std/typetraits/is_convertible.h>
 
 // we need this for AZ_TEST_FLOAT compare
 #include <cinttypes>
@@ -1458,34 +1459,33 @@ namespace UnitTest
 
         using ValidFormatArg = AZStd::string::_Format_Internal::ValidFormatArg;
 
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v1),  ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v2),  ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v3),  ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v4),  ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v5),  ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v6),  ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v7),  ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v8),  ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v9),  ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v10), ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v11), ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v12), ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v13), ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v14), ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v15), ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v16), ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v17), ValidFormatArg), "Should be valid format argument");
-        static_assert(AZSTD_IS_CONVERTIBLE(decltype(v18), ValidFormatArg), "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v1),  ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v2),  ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v3),  ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v4),  ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v5),  ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v7),  ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v8),  ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v9),  ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v10), ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v11), ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v12), ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v13), ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v14), ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v15), ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v16), ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v17), ValidFormatArg>, "Should be valid format argument");
+        static_assert(AZStd::is_convertible_v<decltype(v18), ValidFormatArg>, "Should be valid format argument");
 
-        static_assert(!AZSTD_IS_CONVERTIBLE(AZStd::string, ValidFormatArg), "AZStd::string shouldn't be a valid format argument");
-        static_assert(!AZSTD_IS_CONVERTIBLE(std::string, ValidFormatArg), "std::string shouldn't be a valid format argument");
-        static_assert(!AZSTD_IS_CONVERTIBLE(AZStd::wstring, ValidFormatArg), "AZStd::wstring shouldn't be a valid format argument");
-        static_assert(!AZSTD_IS_CONVERTIBLE(std::wstring, ValidFormatArg), "std::wstring shouldn't be a valid format argument");
-        static_assert(!AZSTD_IS_CONVERTIBLE(WrappedInt, ValidFormatArg), "WrappedInt shouldn't be a valid format argument");
-        static_assert(!AZSTD_IS_CONVERTIBLE(AZStd::string_view, ValidFormatArg), "AZStd::string_view shouldn't be a valid format argument");
-        static_assert(!AZSTD_IS_CONVERTIBLE(AZStd::wstring_view, ValidFormatArg), "AZStd::wstring_view shouldn't be a valid format argument");
-        static_assert(!AZSTD_IS_CONVERTIBLE(std::string_view, ValidFormatArg), "string_view shouldn't be a valid format argument");
-        static_assert(!AZSTD_IS_CONVERTIBLE(std::wstring_view, ValidFormatArg), "wstring_view shouldn't be a valid format argument");
+        static_assert(!AZStd::is_convertible_v<AZStd::string, ValidFormatArg>, "AZStd::string shouldn't be a valid format argument");
+        static_assert(!AZStd::is_convertible_v<std::string, ValidFormatArg>, "std::string shouldn't be a valid format argument");
+        static_assert(!AZStd::is_convertible_v<AZStd::wstring, ValidFormatArg>, "AZStd::wstring shouldn't be a valid format argument");
+        static_assert(!AZStd::is_convertible_v<std::wstring, ValidFormatArg>, "std::wstring shouldn't be a valid format argument");
+        static_assert(!AZStd::is_convertible_v<WrappedInt, ValidFormatArg>, "WrappedInt shouldn't be a valid format argument");
+        static_assert(!AZStd::is_convertible_v<AZStd::string_view, ValidFormatArg>, "AZStd::string_view shouldn't be a valid format argument");
+        static_assert(!AZStd::is_convertible_v<AZStd::wstring_view, ValidFormatArg>, "AZStd::wstring_view shouldn't be a valid format argument");
+        static_assert(!AZStd::is_convertible_v<std::string_view, ValidFormatArg>, "string_view shouldn't be a valid format argument");
+        static_assert(!AZStd::is_convertible_v<std::wstring_view, ValidFormatArg>, "wstring_view shouldn't be a valid format argument");
     }
 
     TEST_F(String, StringViewPrintf)

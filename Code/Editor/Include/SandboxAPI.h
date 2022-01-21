@@ -21,7 +21,7 @@
 #endif
 
 #if defined(SANDBOX_IMPORTS) && defined(SANDBOX_EXPORTS)
-#error SANDBOX_EXPORTS and SANDBOX_IMPORTS can't be defined at the same time
+#error SANDBOX_EXPORTS and SANDBOX_IMPORTS cannot be defined at the same time
 #endif
 
 #if defined(SANDBOX_EXPORTS)

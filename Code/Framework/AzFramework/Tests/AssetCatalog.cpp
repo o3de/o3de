@@ -14,6 +14,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Math/Uuid.h>
@@ -21,6 +22,7 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Asset/AssetCatalog.h>
@@ -930,6 +932,109 @@ namespace UnitTest
         EXPECT_FALSE(m_assetCatalog->DoesAssetIdMatchWildcardPattern(m_firstAssetId, "*.xml"));
         EXPECT_FALSE(m_assetCatalog->DoesAssetIdMatchWildcardPattern(m_firstAssetId, ""));
     }
+
+    TEST_F(AssetCatalogAPITest, EnumerateAssetsListsCorrectAssets)
+    {
+        AZStd::vector<AssetId> foundAssets;
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr,
+            [&foundAssets](const AZ::Data::AssetId assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
+            {
+                foundAssets.emplace_back(assetId);
+            },
+            nullptr);
+
+        ASSERT_EQ(foundAssets.size(), 2);
+        EXPECT_EQ(foundAssets[0], m_firstAssetId);
+        EXPECT_EQ(foundAssets[1], m_secondAssetId);
+    }
+
+    TEST_F(AssetCatalogAPITest, EnumerateAssetsDoesNotBlockMutex)
+    {
+        // This test simulates a previously-occurring deadlock bug caused by having the main thread call AssetCatalog::EnumerateAssets
+        // with a callback that calls the AssetManager, and a loading thread running underneath the AssetManager that calls the
+        // AssetCatalog.
+        // To reproduce this state, we will do the following:
+        // Main Thread                  Job Thread
+        //                              wait on mainToJobSync
+        // call EnumerateAssets
+        // unblock mainToJobSync
+        // wait on jobToMainSync        call AssetCatalog::X
+        //                              unblock jobToMainSync
+        //
+        // These steps should ensure that we create a theoretical "lock inversion", if EnumerateAssets locked an AssetCatalog mutex.
+        // Even though we're using binary semaphores instead of mutexes, we're creating the same blocking situation.
+        // EnumerateAssets itself should no longer lock the AssetCatalog mutex, so this test should succeed since there won't be any
+        // actual lock inversion.
+
+        // Set up job manager with one thread that we can use to set up the concurrent mutex access.
+        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+        AZ::JobManagerDesc desc;
+        AZ::JobManagerThreadDesc threadDesc;
+        desc.m_workerThreads.push_back(threadDesc);
+        auto jobManager = aznew AZ::JobManager(desc);
+        auto jobContext = aznew AZ::JobContext(*jobManager);
+        AZ::JobContext::SetGlobalContext(jobContext);
+
+        AZStd::binary_semaphore mainToJobSync;
+        AZStd::binary_semaphore jobToMainSync;
+
+        // Create a job whose sole purpose is to wait for EnumerateAssets to get called, call AssetCatalog, then tell EnumerateAssets
+        // to finish. If EnumerateAssets has a mutex held, this will deadlock.
+        auto job = AZ::CreateJobFunction(
+            [&mainToJobSync, &jobToMainSync]() mutable
+            {
+                // wait for the main thread to be inside the EnumerateAssets callback.
+                mainToJobSync.acquire();
+
+                // call AssetCatalog::X.  This will deadlock if EnumerateAssets is holding an AssetCatalog mutex.
+                [[maybe_unused]] AZStd::string assetPath;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, AZ::Data::AssetId());
+
+                // signal the main thread to continue
+                jobToMainSync.release();
+            },
+            true);
+        job->Start();
+
+        bool testCompletedSuccessfully = false;
+
+        // Call EnumerateAssets with a callback that also tries to lock the mutex.
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr,
+            [this, &mainToJobSync, &jobToMainSync, &testCompletedSuccessfully]
+                (const AZ::Data::AssetId assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
+            {
+                // Only run this logic on the first assetId.
+                if (assetId == m_firstAssetId)
+                {
+                    // Tell the job it can continue
+                    mainToJobSync.release();
+
+                    // Wait for the job to finish calling AssetCatalog::X.  This will deadlock if EnumerateAssets is holding an
+                    // AssetCatalog mutex.
+                    if (jobToMainSync.try_acquire_for(AZStd::chrono::seconds(5)))
+                    {
+                        // Only mark the test as completed successfully if we ran this logic and didn't deadlock.
+                        testCompletedSuccessfully = true;
+                    }
+
+                }
+            },
+            nullptr);
+
+        EXPECT_TRUE(testCompletedSuccessfully);
+
+        // Clean up the job manager
+        AZ::JobContext::SetGlobalContext(nullptr);
+        delete jobContext;
+        delete jobManager;
+        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
+    }
+
+
 
     class AssetType1
         : public AssetData

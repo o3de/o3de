@@ -308,34 +308,71 @@ namespace AZStd
         }
         static constexpr bool eq(char_type left, char_type right) noexcept { return left == right; }
         static constexpr bool lt(char_type left, char_type right) noexcept { return left < right; }
-        static constexpr int compare(const char_type* s1, const char_type* s2, size_t count) noexcept
+        static constexpr int compare(const char_type* s1, const char_type* s2, size_t count) noexcept 
+        { 
+            // In GCC versions prior to major version 10, __builtin_memcmp fails in valid checks in constexpr evaluation 
+#if !defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 100000 
+            if constexpr (AZStd::is_same_v<char_type, char>) 
+            { 
+                return __builtin_memcmp(s1, s2, count); 
+            } 
+            else if constexpr (AZStd::is_same_v<char_type, wchar_t>) 
+            { 
+                return __builtin_wmemcmp(s1, s2, count); 
+            } else 
+#endif 
+            { 
+                if (az_builtin_is_constant_evaluated()) 
+                { 
+                    for (; count; --count, ++s1, ++s2) 
+                    {
+                        if (lt(*s1, *s2)) 
+                        { 
+                            return -1; 
+                        } 
+                        else if (lt(*s2, *s1)) 
+                        { 
+                            return 1; 
+                        } 
+                    } 
+                    return 0; 
+                } 
+                else 
+                { 
+                    return ::memcmp(s1, s2, count * sizeof(char_type)); 
+                } 
+            } 
+        }
+
+        static constexpr size_t length(const char_type* s) noexcept
         {
+            // For GCC versions less than 10, __builtin_strlen and __builtin_wcslen is not supported as const expressions
+            // so for that case it will need to manually count the characters (at compile time) instead
+#if defined(AZ_COMPILER_GCC) && AZ_COMPILER_GCC < 100000
+
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
-                return __builtin_memcmp(s1, s2, count);
+                if (!az_builtin_is_constant_evaluated())
+                {
+                    return strlen(s);
+                }
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
-                return __builtin_wmemcmp(s1, s2, count);
-            }
-            else
-            {
-                for (; count; --count, ++s1, ++s2)
+                if (!az_builtin_is_constant_evaluated())
                 {
-                    if (lt(*s1, *s2))
-                    {
-                        return -1;
-                    }
-                    else if (lt(*s2, *s1))
-                    {
-                        return 1;
-                    }
+                    return wcslen(s);
                 }
-                return 0;
             }
-        }
-        static constexpr size_t length(const char_type* s) noexcept
-        {
+
+            size_t strLength{};
+            for (; *s; ++s, ++strLength)
+            {
+                ;
+            }
+            return strLength;
+#else
+
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_strlen(s);
@@ -353,9 +390,39 @@ namespace AZStd
                 }
                 return strLength;
             }
+#endif // defined(AZ_COMPILER_GCC) && AZ_COMPILER_GCC < 100000
         }
+
         static constexpr const char_type* find(const char_type* s, size_t count, const char_type& ch) noexcept
         {
+            // For GCC versions less than 10, __builtin_char_memchr and __builtin_wmemchr is not supported, and 
+            // __builtin_memchr is not supported as const expressions. In those cases we will manually locate and 
+            // return the pointer to 's' (at compile time)
+#if defined(AZ_COMPILER_GCC) && AZ_COMPILER_GCC < 100000
+            if constexpr (AZStd::is_same_v<char_type, char>)
+            {
+                if (!az_builtin_is_constant_evaluated())
+                {
+                    return static_cast<const char_type*>(__builtin_memchr(s, ch, count));
+                }
+            }
+            else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
+            {
+                if (!az_builtin_is_constant_evaluated())
+                {
+                    return wmemchr(s, ch, count);
+                }
+            }
+
+            for (; count; --count, ++s)
+            {
+                if (eq(*s, ch))
+                {
+                    return s;
+                }
+            }
+            return nullptr;
+#else
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_char_memchr(s, ch, count);
@@ -363,7 +430,6 @@ namespace AZStd
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
                 return __builtin_wmemchr(s, ch, count);
-
             }
             else
             {
@@ -376,6 +442,7 @@ namespace AZStd
                 }
                 return nullptr;
             }
+#endif 
         }
         static constexpr char_type* move(char_type* dest, const char_type* src, size_t count) noexcept
         {
@@ -438,8 +505,6 @@ namespace AZStd
         }
         static constexpr char_type* copy(char_type* dest, const char_type* src, size_t count) noexcept
         {
-            AZ_Assert(dest != nullptr && src != nullptr, "Invalid input!");
-
         #if az_has_builtin_memcpy
             __builtin_memcpy(dest, src, count * sizeof(char_type));
         #else
@@ -455,6 +520,7 @@ namespace AZStd
                 }
                 else
                 {
+                    AZ_Assert(dest1 != nullptr && src1 != nullptr, "Invalid input!");
                     ::memcpy(dest1, src1, count1 * sizeof(char_type));
                 }
                 return dest1;
