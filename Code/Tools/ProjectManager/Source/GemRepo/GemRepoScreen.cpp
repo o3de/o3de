@@ -297,6 +297,7 @@ namespace O3DE::ProjectManager
         middleVLayout->addSpacing(30);
 
         constexpr int headerTableMinWidth = MinWindowWidth - inspectorWidth - middleLayoutIndent * 2;
+        constexpr int minHeaderSectionWidth = 120;
 
         m_gemRepoHeaderTable = new AdjustableHeaderWidget(
             QStringList{ tr("Repository Name"), tr("Creator"), tr("Updated"), "" },
@@ -307,7 +308,14 @@ namespace O3DE::ProjectManager
                 // Include invisible header for delete button 
                 GemRepoItemDelegate::s_iconSize + GemRepoItemDelegate::s_contentMargins.right()
             },
-            headerTableMinWidth,
+            minHeaderSectionWidth,
+            QVector<QHeaderView::ResizeMode>
+            {
+                QHeaderView::ResizeMode::Interactive,
+                QHeaderView::ResizeMode::Stretch,
+                QHeaderView::ResizeMode::Fixed,
+                QHeaderView::ResizeMode::Fixed
+            },
             this);
 
         middleVLayout->addWidget(m_gemRepoHeaderTable);

@@ -7,6 +7,7 @@
  */
 
 #include <AdjustableHeaderWidget.h>
+#include <AzCore/Debug/Trace.h>
 
 #include <QHeaderView>
 #include <QTimer>
@@ -19,11 +20,10 @@
 
 namespace O3DE::ProjectManager
 {
-    AdjustableHeaderWidget::AdjustableHeaderWidget(
-        const QStringList& headerLabels, const QVector<int>& defaultHeaderWidths, int minWidth, QWidget* parent)
+    AdjustableHeaderWidget::AdjustableHeaderWidget( const QStringList& headerLabels,
+        const QVector<int>& defaultHeaderWidths, int minHeaderWidth,
+        const QVector<QHeaderView::ResizeMode>& resizeModes, QWidget* parent)
         : QTableWidget(parent)
-        , m_minWidth(minWidth)
-        , m_previousWidth(minWidth)
     {
         setObjectName("adjustableHeaderWidget");
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -32,50 +32,83 @@ namespace O3DE::ProjectManager
         m_header = horizontalHeader();
         m_header->setDefaultAlignment(Qt::AlignLeft);
 
-        // Insert columns so the header labels will show up along with the additional first indent column
-        setColumnCount(headerLabels.count() + 1);
-        // Set header labels along with empty indent column
-        setHorizontalHeaderLabels(QStringList{ "" } + headerLabels);
+        setColumnCount(headerLabels.count());
+        setHorizontalHeaderLabels(headerLabels);
 
-        // Scale the first header section used for indenting
-        m_header->resizeSection(0, s_headerIndentSection);
+        AZ_Assert(defaultHeaderWidths.count() == columnCount(), "Default header widths does not match number of columns");
+        AZ_Assert(resizeModes.count() == columnCount(), "Resize modesdoes not match number of columns");
 
-        // Resize the other headers to their defaults now that the are created
-        for (int column = 0; column < headerLabels.count() && column < defaultHeaderWidths.count(); ++column)
+        for (int column = 0; column < columnCount(); ++column)
         {
-            m_header->resizeSection(column + 1, defaultHeaderWidths[column]);
+            m_header->resizeSection(column, defaultHeaderWidths[column]);
+            m_header->setSectionResizeMode(column, resizeModes[column]);
         }
 
-        m_header->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
-        m_header->setStretchLastSection(true);
+        m_header->setMinimumSectionSize(minHeaderWidth);
+        m_header->setCascadingSectionResizes(true);
+
+        connect(m_header, &QHeaderView::sectionResized, this, &AdjustableHeaderWidget::OnSectionResized);
     }
 
-    int AdjustableHeaderWidget::GetScrollPosition() const
+    void AdjustableHeaderWidget::OnSectionResized(int logicalIndex, int oldSize, int newSize)
     {
-        const QScrollBar* scrollBar = this->horizontalScrollBar();
+        const int headerCount = columnCount(); 
+        const int headerWidth = m_header->width();
+        const int totalSectionWidth = m_header->length();
 
-        const int scrollWidth = width();
-        const int absoluteWidth = m_header->length();
-        const int scrollMin = scrollBar->minimum();
-        const float scrollRange = static_cast<float>(scrollBar->maximum()) - static_cast<float>(scrollMin);
-        const int scrollValue = scrollBar->sliderPosition();
+        if (totalSectionWidth > headerWidth && newSize > oldSize)
+        {
+            int xPos = 0;
+            int requiredWidth = 0;
 
-        // Caculuate the abolute width in pixels that is scrolled
-        if (scrollValue == scrollMin || scrollWidth >= absoluteWidth)
-        {
-            return 0;
+            for (int i = 0; i < headerCount; i++)
+            {
+                if (i < logicalIndex)
+                {
+                    xPos += m_header->sectionSize(i);
+                }
+                else if (i == logicalIndex)
+                {
+                    xPos += newSize;
+                }
+                else if (i > logicalIndex)
+                {
+                    if (m_header->sectionResizeMode(i) == QHeaderView::ResizeMode::Fixed)
+                    {
+                        requiredWidth += m_header->sectionSize(i);
+                    }
+                    else
+                    {
+                        requiredWidth += m_header->minimumSectionSize();
+                    }
+                }
+            }
+
+            if (xPos + requiredWidth > headerWidth)
+            {
+                m_header->resizeSection(logicalIndex, oldSize);
+            }
         }
-        else
+
+        // wait till all columns resized
+        QTimer::singleShot(0, [&]()
         {
-            return static_cast<int>((scrollValue - scrollMin) / scrollRange * (absoluteWidth - scrollWidth));
-        }
+            // only re-paint when the header and section widths have settled
+            const int headerWidth = m_header->width();
+            const int totalSectionWidth = m_header->length();
+            if (totalSectionWidth == headerWidth)
+            {
+                emit sectionsResized();
+            }
+        });
     }
 
     int AdjustableHeaderWidget::CalcHeaderXPos(int headerIndex, bool calcEnd) const
     {
+
         // Total the widths of all headers before this one or including it if calcEnd is true
         // Also factors in scroll position of the header
-        int xPos = -GetScrollPosition();
+        int xPos = 0;
 
         if (!calcEnd)
         {
@@ -91,37 +124,5 @@ namespace O3DE::ProjectManager
         return xPos;
     }
 
-    void AdjustableHeaderWidget::resizeEvent(QResizeEvent* event)
-    {
-        QTableWidget::resizeEvent(event);
-        // Handles header scaling while the headers are shown
-        ScaleHeaders();
-    }
-
-    void AdjustableHeaderWidget::showEvent(QShowEvent* event)
-    {
-        QTableWidget::showEvent(event);
-        // Handles header scaling incase the window was resized while this was not displayed
-        ScaleHeaders();
-    }
-
-    void AdjustableHeaderWidget::ScaleHeaders()
-    {
-        const int currentWidth = width();
-        const float newRatio = static_cast<float>(currentWidth) / static_cast<float>(m_previousWidth);
-
-        if (newRatio != 1.0f)
-        {
-            int columnCount = m_header->model()->columnCount(QModelIndex());
-
-            // Resize all columns except the first because it is a spacer and last because it is set to stretch and fill the remaining space
-            for (int columnIndex = 1; columnIndex < columnCount - 1; ++columnIndex)
-            {
-                m_header->resizeSection(columnIndex, static_cast<int>(m_header->sectionSize(columnIndex) * newRatio));
-            }
-
-            m_previousWidth = currentWidth;
-        }
-    }
 
 } // namespace O3DE::ProjectManager
