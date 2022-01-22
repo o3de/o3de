@@ -29,4 +29,5 @@ set(FILES
     UI/UICore/SaveChangesDialog.hxx
     UI/UICore/SaveChangesDialog.cpp
     UI/UICore/SaveChangesDialog.ui
+    ToolsFileUtils/ToolsFileUtils_generic.cpp
 )

@@ -13,6 +13,7 @@
 #include <EMotionFX/Source/TransformData.h>
 #include "RenderWidget.h"
 #include "RenderViewWidget.h"
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
 
 namespace EMStudio

@@ -15,8 +15,10 @@
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/Recorder.h>
-#include "../../../../EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h"
+#include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
+#include <QtGui/QPainter>
 
 namespace EMStudio
 {

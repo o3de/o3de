@@ -12,6 +12,7 @@
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>
 #include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
+#include <AzCore/std/sort.h>
 
 namespace ScriptCanvas
 {

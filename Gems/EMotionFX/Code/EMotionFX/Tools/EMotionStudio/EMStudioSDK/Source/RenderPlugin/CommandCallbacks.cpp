@@ -10,6 +10,7 @@
 #include "RenderPlugin.h"
 #include <EMotionFX/CommandSystem/Source/ImporterCommands.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
 
 namespace EMStudio
