@@ -253,7 +253,7 @@ namespace AZStd::Internal
         }
 
         template <typename U, typename = enable_if_t<is_convertible_v<U, T>>>
-        fixed_non_trivial_storage(AZStd::initializer_list<U> ilist) noexcept(noexcept(emplace_back(AZStd::declval<U>())))
+        fixed_non_trivial_storage(AZStd::initializer_list<U> ilist) noexcept(noexcept(this->emplace_back(AZStd::declval<U>())))
         {
             AZSTD_CONTAINER_ASSERT(ilist.size() <= capacity(), "Initializer list cannot be larger than storage capacity");
             for (const U& element : ilist)

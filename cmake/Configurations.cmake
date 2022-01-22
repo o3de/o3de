@@ -25,6 +25,10 @@ include(cmake/ConfigurationTypes.cmake)
 # \arg:DEFINES_${CONFIGURATION}
 # \arg:COMPILATION
 # \arg:COMPILATION_${CONFIGURATION}
+# \arg:COMPILATION_C
+# \arg:COMPILATION_C_${CONFIGURATION}
+# \arg:COMPILATION_CXX
+# \arg:COMPILATION_CXX_${CONFIGURATION}
 # \arg:LINK
 # \arg:LINK_${CONFIGURATION}
 # \arg:LINK_STATIC
@@ -45,6 +49,8 @@ function(ly_append_configurations_options)
     set(multiArgs
         DEFINES
         COMPILATION
+        COMPILATION_C
+        COMPILATION_CXX
         LINK
         LINK_STATIC
         LINK_NON_STATIC
@@ -73,7 +79,16 @@ function(ly_append_configurations_options)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)
     endif()
-
+    if(ly_append_configurations_options_COMPILATION_C)
+        string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION}")
+        string(APPEND CMAKE_C_FLAGS " " ${COMPILATION_STR})
+        set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} PARENT_SCOPE)
+    endif()
+    if(ly_append_configurations_options_COMPILATION_CXX)
+        string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION}")
+        string(APPEND CMAKE_CXX_FLAGS " " ${COMPILATION_STR})
+        set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} PARENT_SCOPE)
+    endif()
     if(ly_append_configurations_options_LINK)
         string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK}")
         set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
@@ -189,5 +204,5 @@ foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
 endforeach()
 
 # flags are defined per platform, follow platform files under Platform/<PlatformName>/Configurations_<platformname>.cmake
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 include(${pal_dir}/Configurations_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)

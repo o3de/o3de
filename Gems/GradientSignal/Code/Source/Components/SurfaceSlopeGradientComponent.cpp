@@ -215,7 +215,7 @@ namespace GradientSignal
         return GetSlopeRatio(points, angleMin, angleMax);
     }
 
-    void SurfaceSlopeGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void SurfaceSlopeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {

@@ -31,7 +31,7 @@ namespace MaterialEditor
 
     void PerformanceMonitorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PerformanceMonitorService", 0x6a44241a));
+        provided.push_back(AZ_CRC_CE("PerformanceMonitorService"));
     }
 
     void PerformanceMonitorComponent::Init()

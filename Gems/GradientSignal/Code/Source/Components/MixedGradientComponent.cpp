@@ -284,7 +284,7 @@ namespace GradientSignal
         return AZ::GetClamp(result, 0.0f, 1.0f);
     }
 
-    void MixedGradientComponent::GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+    void MixedGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {

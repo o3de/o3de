@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    Tests/GradientSignalTestHelpers.cpp
+    Tests/GradientSignalTestHelpers.h
     Tests/GradientSignalTestFixtures.cpp
     Tests/GradientSignalTestFixtures.h
     Tests/GradientSignalTestMocks.cpp

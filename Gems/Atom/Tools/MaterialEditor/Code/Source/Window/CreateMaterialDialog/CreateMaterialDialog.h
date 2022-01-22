@@ -10,7 +10,7 @@
 
 #include <AzCore/std/containers/vector.h>
 
-#include <Source/Window/CreateMaterialDialog/ui_CreateMaterialDialog.h>
+#include <Window/CreateMaterialDialog/ui_CreateMaterialDialog.h>
 
 #include <QFileInfo>
 
