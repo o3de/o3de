@@ -104,13 +104,11 @@ ly_add_target(
             3rdParty::Qt::Concurrent
             3rdParty::TIFF
             3rdParty::squish-ccr
-            3rdParty::AWSNativeSDK::STS
             Legacy::CryCommon
             Legacy::EditorCommon
             AZ::AzCore
             AZ::AzToolsFramework
             Gem::LmbrCentral.Static
-            AZ::AWSNativeSDKInit
             AZ::AtomCore
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
@@ -119,7 +117,6 @@ ly_add_target(
             Gem::AtomViewportDisplayInfo
             ${additional_dependencies}
         PUBLIC
-            3rdParty::AWSNativeSDK::Core
             3rdParty::Qt::Network
             Legacy::EditorCore
     RUNTIME_DEPENDENCIES
