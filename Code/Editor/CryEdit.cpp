@@ -36,14 +36,6 @@ AZ_POP_DISABLE_WARNING
 #include <QMessageBox>
 #include <QDialogButtonBox>
 
-// Aws Native SDK
-#include <aws/sts/STSClient.h>
-#include <aws/core/auth/AWSCredentialsProvider.h>
-#include <aws/sts/model/GetFederationTokenRequest.h>
-#include <aws/core/http/HttpClient.h>
-#include <aws/core/http/HttpResponse.h>
-#include <aws/core/utils/json/JsonSerializer.h>
-
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
@@ -144,9 +136,7 @@ AZ_POP_DISABLE_WARNING
 
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
-// AWSNativeSDK
 #include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 
 
 #if defined(AZ_PLATFORM_WINDOWS)
