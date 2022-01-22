@@ -29,4 +29,5 @@ ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-android   TARGETS lib
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-android        TARGETS OpenSSL         PACKAGE_HASH 4036d4019d722f0e1b7a1621bf60b5a17ca6a65c9c78fd8701cee1131eec8480)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-android           TARGETS ZLIB            PACKAGE_HASH 73c9e88892c237a3fc6eafc04268ccd9d479e6d55f9df2ed58b236c8f9cf2cae)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-android       TARGETS lz4             PACKAGE_HASH f5b22642d218dbbb442cae61e469e5b241c4740acd258c3e8678e60dec61ea93)
+ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-android  TARGETS vulkan-validationlayers     PACKAGE_HASH e3b8c136eaf67c13a33d63cd4eda1c5603621dedb28b3403e973d4d0786650b4)
 
