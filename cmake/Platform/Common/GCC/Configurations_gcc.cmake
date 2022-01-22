@@ -20,7 +20,8 @@ endif()
 
 
 ly_append_configurations_options(
-    COMPILATION
+
+    COMPILATION_C
         -fno-exceptions
         -fvisibility=hidden
         -Wall
@@ -59,11 +60,47 @@ ly_append_configurations_options(
         -Wno-comment
         -Wno-restrict
         -Wno-format-overflow
-
-    COMPILATION_C
         -Wno-absolute-value
 
     COMPILATION_CXX
+        -fno-exceptions
+        -fvisibility=hidden
+        -Wall
+        -Werror
+
+        ${LY_GCC_GCOV_FLAGS}
+        ${LY_GCC_GPROF_FLAGS}
+
+        # Disabled warnings 
+        -Wno-format-security
+        -Wno-multichar
+        -Wno-parentheses
+        -Wno-switch
+        -Wno-tautological-compare
+        -Wno-unknown-pragmas
+        -Wno-unused-function
+        -Wno-unused-value
+        -Wno-unused-variable
+        -Wno-format-truncation
+        -Wno-uninitialized
+        -Wno-array-bounds
+        -Wno-nonnull-compare
+        -Wno-strict-aliasing
+        -Wno-unused-result
+        -Wno-sign-compare
+        -Wno-return-local-addr
+        -Wno-stringop-overflow
+        -Wno-attributes
+        -Wno-logical-not-parentheses
+        -Wno-stringop-truncation
+        -Wno-memset-elt-size
+        -Wno-unused-but-set-variable
+        -Wno-enum-compare
+        -Wno-int-in-bool-context
+        -Wno-sequence-point
+        -Wno-comment
+        -Wno-restrict
+        -Wno-format-overflow
         -fvisibility-inlines-hidden
         -Wno-invalid-offsetof
         -Wno-class-memaccess
