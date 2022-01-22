@@ -55,8 +55,7 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
         return behavior_context_test_success
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Verify all of the BehaviorContext API:
     behavior_context = (
@@ -90,8 +89,10 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
     dynveg.create_surface_entity("Baseline Surface", entity_center_point, 32.0, 32.0, 1.0)
 
     # Create a new entity with required vegetation area components
-    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Veg Area", entity_center_point, 32.0, 32.0, 32.0, asset_path)
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "PhysXCollider_PinkFlower")[0]
+    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", entity_center_point, test_box_size,
+                                                               test_box_size, test_box_size, pink_flower_prefab)
 
     # Add a Vegetation Surface Mask Filter component to the spawner entity and set it to include the "test" tag
     spawner_entity.add_component("Vegetation Surface Mask Filter")

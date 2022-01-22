@@ -48,7 +48,7 @@ class CLyShine
 public:
 
     //! Create the LyShine object, the given system pointer is stored internally
-    CLyShine(ISystem* system);
+    CLyShine();
 
     // ILyShine
 
@@ -72,6 +72,7 @@ public:
     ISprite* LoadSprite(const AZStd::string& pathname) override;
     ISprite* CreateSprite(const AZStd::string& renderTargetName) override;
     bool DoesSpriteTextureAssetExist(const AZStd::string& pathname) override;
+    AZ::Data::Instance<AZ::RPI::Image> LoadTexture(const AZStd::string& pathname) override;
 
     void PostInit() override;
 

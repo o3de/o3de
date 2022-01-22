@@ -9,19 +9,19 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
-#include <Atom/Viewport/MaterialViewportSettings.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Viewport/MaterialViewportComponent.h>
+#include <Viewport/MaterialViewportNotificationBus.h>
+#include <Viewport/MaterialViewportSettings.h>
 
 namespace MaterialEditor
 {
@@ -42,7 +42,7 @@ namespace MaterialEditor
             {
                 editContext->Class<MaterialViewportComponent>("MaterialViewport", "Manages configurations for lighting and models displayed in the viewport")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -103,18 +103,19 @@ namespace MaterialEditor
 
     void MaterialViewportComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("PerformanceMonitorService", 0x6a44241a));
-        required.push_back(AZ_CRC("AtomImageBuilderService", 0x76ded592));
+        required.push_back(AZ_CRC_CE("RPISystem"));
+        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        required.push_back(AZ_CRC_CE("PerformanceMonitorService"));
     }
 
     void MaterialViewportComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MaterialViewportService", 0xed9b44d7));
+        provided.push_back(AZ_CRC_CE("MaterialViewportService"));
     }
 
     void MaterialViewportComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("MaterialViewportService", 0xed9b44d7));
+        incompatible.push_back(AZ_CRC_CE("MaterialViewportService"));
     }
 
     void MaterialViewportComponent::Init()
@@ -165,12 +166,12 @@ namespace MaterialEditor
         // AssetCatalogRequestBus::EnumerateAssets can lead to deadlocked)
         AZ::Data::AssetCatalogRequests::AssetEnumerationCB enumerateCB = [this]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& info)
         {
-            if (AzFramework::StringFunc::EndsWith(info.m_relativePath.c_str(), ".lightingpreset.azasset"))
+            if (AZ::StringFunc::EndsWith(info.m_relativePath.c_str(), ".lightingpreset.azasset"))
             {
                 m_lightingPresetAssets[info.m_assetId] = { info.m_assetId, info.m_assetType };
                 AZ::Data::AssetBus::MultiHandler::BusConnect(info.m_assetId);
             }
-            else if (AzFramework::StringFunc::EndsWith(info.m_relativePath.c_str(), ".modelpreset.azasset"))
+            else if (AZ::StringFunc::EndsWith(info.m_relativePath.c_str(), ".modelpreset.azasset"))
             {
                 m_modelPresetAssets[info.m_assetId] = { info.m_assetId, info.m_assetType };
                 AZ::Data::AssetBus::MultiHandler::BusConnect(info.m_assetId);
@@ -428,5 +429,52 @@ namespace MaterialEditor
         AZ::TickBus::QueueFunction([this]() {
             ReloadContent();
         });
+    }
+
+    void MaterialViewportComponent::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+    {
+        auto ReloadLightingAndModelPresets = [this, &assetId](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+        {
+            AZ::Data::AssetInfo assetInfo = assetCatalogRequests->GetAssetInfoById(assetId);
+            AZ::Data::Asset<AZ::RPI::AnyAsset>* modifiedPresetAsset{};
+            if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset"))
+            {
+                m_lightingPresetAssets[assetInfo.m_assetId] = { assetInfo.m_assetId, assetInfo.m_assetType };
+                AZ::Data::AssetBus::MultiHandler::BusConnect(assetInfo.m_assetId);
+                modifiedPresetAsset = &m_lightingPresetAssets[assetInfo.m_assetId];
+            }
+            else if (AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset"))
+            {
+                m_modelPresetAssets[assetInfo.m_assetId] = { assetInfo.m_assetId, assetInfo.m_assetType };
+                AZ::Data::AssetBus::MultiHandler::BusConnect(assetInfo.m_assetId);
+                modifiedPresetAsset = &m_modelPresetAssets[assetInfo.m_assetId];
+            }
+
+            // Queue a load on the changed asset
+            if (modifiedPresetAsset != nullptr)
+            {
+                modifiedPresetAsset->QueueLoad();
+            }
+        };
+        AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(ReloadLightingAndModelPresets));
+    }
+
+    void MaterialViewportComponent::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+    {
+        OnCatalogAssetChanged(assetId);
+    }
+
+    void MaterialViewportComponent::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
+    {
+        if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset"))
+        {
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect(assetInfo.m_assetId);
+            m_lightingPresetAssets.erase(assetId);
+        }
+        if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset"))
+        {
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect(assetInfo.m_assetId);
+            m_modelPresetAssets.erase(assetId);
+        }
     }
 }

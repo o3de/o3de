@@ -14,7 +14,7 @@ function(ly_copy source_file target_directory)
     cmake_path(APPEND target_file "${target_directory}" "${target_filename}")
     cmake_path(COMPARE "${source_file}" EQUAL "${target_file}" same_location)
     if(NOT ${same_location})
-        file(LOCK ${target_file}.lock GUARD FUNCTION TIMEOUT 300)
+        file(LOCK "${target_file}.lock" GUARD FUNCTION TIMEOUT 300)
         file(SIZE "${source_file}" source_file_size)
         if(EXISTS "${target_file}")
             file(SIZE "${target_file}" target_file_size)
@@ -39,4 +39,4 @@ endfunction()
 
 @LY_COPY_COMMANDS@
 
-file(TOUCH @STAMP_OUTPUT_FILE@)
+file(TOUCH "@STAMP_OUTPUT_FILE@")

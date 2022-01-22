@@ -36,14 +36,6 @@ AZ_POP_DISABLE_WARNING
 #include <QMessageBox>
 #include <QDialogButtonBox>
 
-// Aws Native SDK
-#include <aws/sts/STSClient.h>
-#include <aws/core/auth/AWSCredentialsProvider.h>
-#include <aws/sts/model/GetFederationTokenRequest.h>
-#include <aws/core/http/HttpClient.h>
-#include <aws/core/http/HttpResponse.h>
-#include <aws/core/utils/json/JsonSerializer.h>
-
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
@@ -124,9 +116,6 @@ AZ_POP_DISABLE_WARNING
 #include "ScopedVariableSetter.h"
 
 #include "Util/3DConnexionDriver.h"
-
-#include "DimensionsDialog.h"
-
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
 #include "AboutDialog.h"
@@ -147,9 +136,7 @@ AZ_POP_DISABLE_WARNING
 
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
-// AWSNativeSDK
 #include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 
 
 #if defined(AZ_PLATFORM_WINDOWS)
@@ -1352,8 +1339,27 @@ void CCryEditApp::CompileCriticalAssets() const
         }
     }
     assetsInQueueNotifcation.BusDisconnect();
-    CCryEditApp::OutputStartupMessage(QString("Asset Processor is now ready."));
 
+    // Signal the "CriticalAssetsCompiled" lifecycle event
+    // Also reload the "assetcatalog.xml" if it exists
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
+        // Reload the assetcatalog.xml at this point again
+        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        auto LoadCatalog = [settingsRegistry](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+        {
+            if (AZ::IO::FixedMaxPath assetCatalogPath;
+                settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                assetCatalogPath /= "assetcatalog.xml";
+                assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+            }
+        };
+        AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+    }
+
+    CCryEditApp::OutputStartupMessage(QString("Asset Processor is now ready."));
 }
 
 bool CCryEditApp::ConnectToAssetProcessor() const
@@ -1669,7 +1675,7 @@ bool CCryEditApp::InitInstance()
         return false;
     }
 
-    if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
     {
         AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacySystemInterfaceCreated", R"({})");
     }
@@ -1786,12 +1792,6 @@ bool CCryEditApp::InitInstance()
     QTimer::singleShot(0, this, [this, cmdInfo] {
         InitLevel(cmdInfo);
     });
-
-#ifdef USE_WIP_FEATURES_MANAGER
-    // load the WIP features file
-    CWipFeatureManager::Instance()->EnableManager(!cmdInfo.m_bDeveloperMode);
-    CWipFeatureManager::Init();
-#endif
 
     if (!m_bConsoleMode && !m_bPreviewMode)
     {
@@ -2122,13 +2122,6 @@ int CCryEditApp::ExitInstance(int exitCode)
         m_pEditor->OnBeginShutdownSequence();
     }
     qobject_cast<Editor::EditorQtApplication*>(qApp)->UnloadSettings();
-
-    #ifdef USE_WIP_FEATURES_MANAGER
-    //
-    // close wip features manager
-    //
-    CWipFeatureManager::Shutdown();
-    #endif
 
     if (IsInRegularEditorMode())
     {
@@ -3360,6 +3353,10 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
         return GetIEditor()->GetDocument();
     }
 
+    bool usePrefabSystemForLevels = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+
     // If we are loading and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())
     {
@@ -3367,6 +3364,15 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
         bool bIsDocModified = GetIEditor()->GetDocument()->IsModified();
         OnSwitchPhysics();
         GetIEditor()->GetDocument()->SetModifiedFlag(bIsDocModified);
+
+        if (usePrefabSystemForLevels)
+        {
+            auto* rootSpawnableInterface = AzFramework::RootSpawnableInterface::Get();
+            if (rootSpawnableInterface)
+            {
+                rootSpawnableInterface->ProcessSpawnableQueue();
+            }
+        }
     }
 
     // We're about to start loading a level, so start recording errors to display at the end.

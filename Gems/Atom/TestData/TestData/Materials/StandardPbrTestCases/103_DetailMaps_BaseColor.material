@@ -1,8 +1,8 @@
 {
     "description": "",
     "materialType": "Materials/Types/EnhancedPBR.materialtype",
-    "parentMaterial": "TestData/Materials/StandardPbrTestCases/101_DetailMaps_LucyBaseNoDetailMaps.material",
-    "propertyLayoutVersion": 3,
+    "parentMaterial": "TestData/Materials/StandardPbrTestCases/101_DetailMaps_BaseNoDetailMaps.material",
+    "materialTypeVersion": 3,
     "properties": {
         "detailLayerGroup": {
             "baseColorDetailBlend": 0.800000011920929,

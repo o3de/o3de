@@ -13,7 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 #include <LyShine/UiSerializeHelpers.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
@@ -588,7 +588,7 @@ void UiImageComponent::SetSpritePathname(AZStd::string spritePath)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiImageComponent::SetSpritePathnameIfExists(AZStd::string spritePath)
 {
-    if (gEnv->pLyShine->DoesSpriteTextureAssetExist(spritePath))
+    if (AZ::Interface<ILyShine>::Get()->DoesSpriteTextureAssetExist(spritePath))
     {
         SetSpritePathname(spritePath);
         return true;
@@ -1179,7 +1179,7 @@ void UiImageComponent::Init()
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }
@@ -1192,14 +1192,14 @@ void UiImageComponent::Init()
         {
             if (!m_spritePathname.GetAssetPath().empty())
             {
-                m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+                m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
             }
         }
         else if (m_spriteType == UiImageInterface::SpriteType::RenderTarget)
         {
             if (!m_renderTargetName.empty())
             {
-                m_sprite = gEnv->pLyShine->CreateSprite(m_renderTargetName.c_str());
+                m_sprite = AZ::Interface<ILyShine>::Get()->CreateSprite(m_renderTargetName.c_str());
             }
         }
         else
@@ -2527,7 +2527,7 @@ void UiImageComponent::OnSpritePathnameChange()
     if (!m_spritePathname.GetAssetPath().empty())
     {
         // Load the new texture.
-        newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     // if listening for notifications from a current sprite then disconnect
@@ -2557,7 +2557,7 @@ void UiImageComponent::OnSpriteRenderTargetNameChange()
 
     if (!m_renderTargetName.empty())
     {
-        newSprite = gEnv->pLyShine->CreateSprite(m_renderTargetName.c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->CreateSprite(m_renderTargetName.c_str());
     }
 
     SAFE_RELEASE(m_sprite);

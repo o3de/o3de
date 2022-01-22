@@ -79,7 +79,7 @@ namespace AZStd
         typedef typename tree_type::const_reverse_iterator      const_reverse_iterator;
         
         using node_type = map_node_handle<map_node_traits<key_type, mapped_type, allocator_type, typename tree_type::node_type, typename tree_type::node_deleter>>;
-        using insert_return_type = insert_return_type<iterator, node_type>;
+        using insert_return_type = AZStd::AssociativeInternal::insert_return_type<iterator, node_type>;
 
         AZ_FORCE_INLINE explicit map(const Compare& comp = Compare(), const Allocator& alloc = Allocator())
             : m_tree(comp, alloc) {}

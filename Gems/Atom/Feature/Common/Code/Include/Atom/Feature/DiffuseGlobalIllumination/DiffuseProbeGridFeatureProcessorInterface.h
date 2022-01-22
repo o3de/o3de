@@ -43,6 +43,42 @@ namespace AZ
             RHI::Size m_size;
         };
 
+        enum class DiffuseProbeGridNumRaysPerProbe : uint32_t
+        {
+            NumRaysPerProbe_144,
+            NumRaysPerProbe_288,
+            NumRaysPerProbe_432,
+            NumRaysPerProbe_576,
+            NumRaysPerProbe_720,
+            NumRaysPerProbe_864,
+            NumRaysPerProbe_1008,
+        
+            Count
+        };
+
+        struct DiffuseProbeGridNumRaysPerProbeEntry
+        {
+            DiffuseProbeGridNumRaysPerProbe m_enum;
+            uint32_t m_rayCount;
+            const char* m_supervariant;
+            uint32_t m_index;
+        };
+
+        #define DECLARE_DiffuseProbeGridNumRaysPerProbeEntry(numRaysPerProbe) \
+            { DiffuseProbeGridNumRaysPerProbe::NumRaysPerProbe_##numRaysPerProbe, numRaysPerProbe, "NumRaysPerProbe" #numRaysPerProbe, aznumeric_cast<uint32_t>(DiffuseProbeGridNumRaysPerProbe::NumRaysPerProbe_##numRaysPerProbe) }
+
+        static const DiffuseProbeGridNumRaysPerProbeEntry DiffuseProbeGridNumRaysPerProbeArray[aznumeric_cast<uint32_t>(DiffuseProbeGridNumRaysPerProbe::Count)] =
+        {
+            DECLARE_DiffuseProbeGridNumRaysPerProbeEntry(144),
+            DECLARE_DiffuseProbeGridNumRaysPerProbeEntry(288),
+            DECLARE_DiffuseProbeGridNumRaysPerProbeEntry(432),
+            DECLARE_DiffuseProbeGridNumRaysPerProbeEntry(576),
+            DECLARE_DiffuseProbeGridNumRaysPerProbeEntry(720),
+            DECLARE_DiffuseProbeGridNumRaysPerProbeEntry(864),
+            DECLARE_DiffuseProbeGridNumRaysPerProbeEntry(1008)
+        };
+        static const uint32_t DiffuseProbeGridNumRaysPerProbeArraySize = RHI::ArraySize(DiffuseProbeGridNumRaysPerProbeArray);
+
         static const char* DiffuseProbeGridIrradianceFileName = "Irradiance_lutrgba16f.dds";
         static const char* DiffuseProbeGridDistanceFileName = "Distance_lutrg32f.dds";
         static const char* DiffuseProbeGridProbeDataFileName = "ProbeData_lutrgba16f.dds";
@@ -82,6 +118,7 @@ namespace AZ
             virtual void SetProbeSpacing(const DiffuseProbeGridHandle& probeGrid, const AZ::Vector3& probeSpacing) = 0;
             virtual void SetViewBias(const DiffuseProbeGridHandle& probeGrid, float viewBias) = 0;
             virtual void SetNormalBias(const DiffuseProbeGridHandle& probeGrid, float normalBias) = 0;
+            virtual void SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe) = 0;
             virtual void SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier) = 0;
             virtual void Enable(const DiffuseProbeGridHandle& probeGrid, bool enable) = 0;
             virtual void SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows) = 0;

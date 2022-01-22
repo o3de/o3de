@@ -27,7 +27,7 @@
 #include <LyShine/Bus/UiEntityContextBus.h>
 #include <LyShine/Bus/UiCanvasUpdateNotificationBus.h>
 #include <LyShine/UiSerializeHelpers.h>
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/Memory.h>
@@ -254,9 +254,9 @@ namespace
 
     UiRenderer* GetUiRendererForGame()
     {
-        if (gEnv && gEnv->pLyShine)
+        if (AZ::Interface<ILyShine>::Get())
         {
-            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
             return lyShine->GetUiRenderer();
         }
         return nullptr;
@@ -264,9 +264,9 @@ namespace
 
     UiRenderer* GetUiRendererForEditor()
     {
-        if (gEnv && gEnv->pLyShine)
+        if (AZ::Interface<ILyShine>::Get())
         {
-            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
             return lyShine->GetUiRendererForEditor();
         }
         return nullptr;
