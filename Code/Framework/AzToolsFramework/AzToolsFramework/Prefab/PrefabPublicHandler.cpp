@@ -1063,7 +1063,7 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("No entities to duplicate."));
             }
 
-            const EntityIdList entityIdsNoFocusContainer = GenerateEntityIdListWithoutFocusedInstanceContainer(entityIds);
+            const EntityIdList entityIdsNoFocusContainer = SanitizeEntityIdList(entityIds);
             if (entityIdsNoFocusContainer.empty())
             {
                 return AZ::Failure(AZStd::string("No entities to duplicate because only instance selected is the container entity of the focused instance."));
@@ -1202,7 +1202,7 @@ namespace AzToolsFramework
         PrefabOperationResult PrefabPublicHandler::DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants)
         {
             // Remove the container entity of the focused prefab from the list, if it is included.
-            const EntityIdList entityIdsNoFocusContainer = GenerateEntityIdListWithoutFocusedInstanceContainer(entityIds);
+            const EntityIdList entityIdsNoFocusContainer = SanitizeEntityIdList(entityIds);
 
             if (entityIdsNoFocusContainer.empty())
             {
@@ -1234,27 +1234,6 @@ namespace AzToolsFramework
             if (&m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId)->get() != &commonOwningInstance->get())
             {
                 return AZ::Failure(AZStd::string("Cannot delete entities belonging to an instance that is not being edited."));
-            }
-
-            // None of the specified entities can be marked as read only, otherwise this operation is invalid.
-            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
-            {
-                AZ::EntityId readOnlyEntityId;
-                for (const auto& entityId : entityIdsNoFocusContainer)
-                {
-                    if (readOnlyEntityPublicInterface->IsReadOnly(entityId))
-                    {
-                        readOnlyEntityId = entityId;
-                        break;
-                    }
-                }
-
-                if (readOnlyEntityId.IsValid())
-                {
-                    return AZ::Failure(AZStd::string::format(
-                        "Cannot delete entities because entity (id '%llu') is marked as read only.",
-                        static_cast<AZ::u64>(readOnlyEntityId)));
-                }
             }
 
             // Retrieve entityList from entityIds
@@ -1680,10 +1659,24 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        EntityIdList PrefabPublicHandler::GenerateEntityIdListWithoutFocusedInstanceContainer(
-            const EntityIdList& entityIds) const
+        EntityIdList PrefabPublicHandler::SanitizeEntityIdList(const EntityIdList& entityIds) const
         {
-            EntityIdList outEntityIds(entityIds);
+            EntityIdList outEntityIds;
+
+            if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get())
+            {
+                std::copy_if(
+                    entityIds.begin(), entityIds.end(), AZStd::back_inserter(outEntityIds),
+                    [readOnlyEntityPublicInterface](const AZ::EntityId& entityId)
+                    {
+                        return !readOnlyEntityPublicInterface->IsReadOnly(entityId);
+                    }
+                );
+            }
+            else
+            {
+                outEntityIds = entityIds;
+            }
 
             AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
             AZ::EntityId focusedInstanceContainerEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
