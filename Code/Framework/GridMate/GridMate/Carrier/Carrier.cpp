@@ -1952,8 +1952,8 @@ CarrierThread::ProcessConnections()
 
         bool isHandshakeTimeOut = false;
         bool isConnectionTimeout = false;
-        bool isBadTrafficConditions = false;
-        bool isBadPackets = false;
+        [[maybe_unused]] bool isBadTrafficConditions = false;
+        [[maybe_unused]] bool isBadPackets = false;
         if (connection->m_isBadPackets)
         {
             isBadPackets = true;

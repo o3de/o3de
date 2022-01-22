@@ -312,7 +312,7 @@ namespace AZ
 
             const View::UsageFlags viewFlags = worklistData->m_view->GetUsageFlags();
             const RHI::DrawListMask drawListMask = worklistData->m_view->GetDrawListMask();
-            uint32_t numDrawPackets = 0;
+            [[maybe_unused]] uint32_t numDrawPackets = 0;
             uint32_t numVisibleCullables = 0;
 
             AZ_Assert(worklist.size() > 0, "Received empty worklist in ProcessWorklist");

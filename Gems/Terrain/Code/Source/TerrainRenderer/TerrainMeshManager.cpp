@@ -291,7 +291,7 @@ namespace Terrain
         modelAssetCreator.Begin(AZ::Uuid::CreateRandom());
 
         uint16_t gridSize = GridSize;
-        float gridSpacing = GridSpacing;
+        [[maybe_unused]] float gridSpacing = GridSpacing;
 
         for (uint32_t i = 0; i < AZ::RPI::ModelLodAsset::LodCountMax && gridSize > 0; ++i)
         {

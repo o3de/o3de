@@ -85,7 +85,7 @@ namespace AZ
 
     NameDictionary::~NameDictionary()
     {
-        bool leaksDetected = false;
+        [[maybe_unused]] bool leaksDetected = false;
 
         for (const auto& keyValue : m_dictionary)
         {
