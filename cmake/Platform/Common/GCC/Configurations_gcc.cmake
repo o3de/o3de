@@ -40,10 +40,8 @@ ly_append_configurations_options(
         -Wno-unused-value
         -Wno-unused-variable
         -Wno-format-truncation
-        -Wno-reorder
         -Wno-uninitialized
         -Wno-array-bounds
-        -Wno-class-memaccess
         -Wno-nonnull-compare
         -Wno-strict-aliasing
         -Wno-unused-result
@@ -58,9 +56,7 @@ ly_append_configurations_options(
         -Wno-enum-compare
         -Wno-int-in-bool-context
         -Wno-sequence-point
-        -Wno-delete-non-virtual-dtor
         -Wno-comment
-        -Wno-reorder
         -Wno-restrict
         -Wno-format-overflow
 
@@ -70,6 +66,9 @@ ly_append_configurations_options(
     COMPILATION_CXX
         -fvisibility-inlines-hidden
         -Wno-invalid-offsetof
+        -Wno-class-memaccess
+        -Wno-delete-non-virtual-dtor
+        -Wno-reorder
 
     COMPILATION_DEBUG
         -O0 # No optimization
