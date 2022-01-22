@@ -78,16 +78,29 @@ function(o3de_recurse_gems object_json_path gems)
     set(${gems} ${gem_entries} PARENT_SCOPE)
 endfunction()
 
+#! o3de_find_all_gems: returns all gem paths
+#
+# \arg:gems the paths of all gems
+function(o3de_find_all_gems gems)
+    o3de_get_manifest_path(manifest_path)
+    if(EXISTS ${manifest_path})
+        o3de_recurse_gems(${manifest_path} all_gems)
+    endif()
+    o3de_recurse_gems(${LY_ROOT_FOLDER}/engine.json engine_gems)
+    list(APPEND all_gems ${engine_gems})
+    foreach(project ${LY_PROJECTS})
+        o3de_recurse_gems(${project}/project.json project_gems)
+        list(APPEND all_gems ${project_gems})
+    endforeach()
+    set(${gems} ${all_gems} PARENT_SCOPE)
+endfunction()
+
 #! o3de_find_gem: returns the gem path
 #
 # \arg:gem_name the gem name to find
 # \arg:the path of the gem
 function(o3de_find_gem gem_name gem_path)
-    o3de_get_manifest_path(manifest_path)
-    if(EXISTS ${manifest_path})
-        o3de_recurse_gems(${manifest_path} gems)
-    endif()
-    o3de_recurse_gems(${LY_ROOT_FOLDER}/engine.json gems)
+    o3de_find_all_gems(gems)
     foreach(gem ${gems})
         ly_file_read(${gem}/gem.json json_data)
         string(JSON gem_json_name ERROR_VARIABLE json_error GET ${json_data} "gem_name")
@@ -250,6 +263,106 @@ function(o3de_restricted_path o3de_json_file restricted_path) #parent_relative_p
             set(${restricted_path} ${o3de_json_file_parent}/restricted PARENT_SCOPE)
         endif()
     endif()
+endfunction()
+
+
+# these functions are building up the LY_EXTERNAL_SUBDIRS global property
+
+# this one reads a gem.json and its restricted additions and recurses
+function(add_gem_json_external_subdirectories gem_path)
+    set(gem_json_path ${gem_path}/gem.json)
+    if(EXISTS ${gem_json_path})
+        # read the gem.json external subdirs
+        read_json_external_subdirs(gem_external_subdirs ${gem_json_path})
+        foreach(gem_external_subdir ${gem_external_subdirs})
+            file(REAL_PATH ${gem_external_subdir} real_gem_external_subdir BASE_DIRECTORY ${gem_path})
+            set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_gem_external_subdir})
+            add_gem_json_external_subdirectories(${real_gem_external_subdir})
+        endforeach()
+        
+        # see if this o3de object has any restricted external subdir additions
+        o3de_restricted_path(${gem_json_path} gem_restricted_path gem_parent_relative_path)
+        o3de_pal_dir(pal_dir ${gem_path}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+        if(EXISTS ${pal_dir}/gem-${PAL_PLATFORM_NAME_LOWERCASE}.json)
+            read_json_external_subdirs(restricted_gem_external_subdirs ${pal_dir}/gem_${PAL_PLATFORM_NAME_LOWERCASE}.json)
+            foreach(restricted_gem_external_subdir ${restricted_gem_external_subdirs})
+                file(REAL_PATH ${restricted_gem_external_subdir} real_restricted_gem_external_subdir BASE_DIRECTORY ${pal_dir})
+                set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_restricted_gem_external_subdir})
+                add_gem_json_external_subdirectories(${real_restricted_gem_external_subdir})
+            endforeach()
+        endif()
+    endif()
+endfunction()
+
+# this one reads the project and its restricted additions and recurses
+function(add_project_json_external_subdirectories project_path)
+    set(project_json_path ${project_path}/project.json)
+    if(EXISTS ${project_json_path})
+        read_json_external_subdirs(project_external_subdirs ${project_json_path})
+        foreach(project_external_subdir ${project_external_subdirs})
+            file(REAL_PATH ${project_external_subdir} real_project_external_subdir BASE_DIRECTORY ${project_path})
+            set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_project_external_subdir})
+            add_gem_json_external_subdirectories(${real_project_external_subdir})
+        endforeach()
+
+        # see if this o3de object has any restricted external subdir additions
+        o3de_restricted_path(${project_json_path} project_restricted_path project_parent_relative_path)
+        o3de_pal_dir(pal_dir ${project_path}/Platform/${PAL_PLATFORM_NAME} ${project_restricted_path} ${project_path} ${project_parent_relative_path})
+        if(EXISTS ${pal_dir}/project-${PAL_PLATFORM_NAME_LOWERCASE}.json)
+            read_json_external_subdirs(restricted_project_external_subdirs ${pal_dir}/project_${PAL_PLATFORM_NAME_LOWERCASE}.json)
+            foreach(restricted_project_external_subdir ${restricted_project_external_subdirs})
+                file(REAL_PATH ${restricted_project_external_subdir} real_restricted_project_external_subdir BASE_DIRECTORY ${pal_dir})
+                set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_restricted_project_external_subdir})
+                add_gem_json_external_subdirectories(${real_restricted_project_external_subdir})
+        endforeach()
+        endif()
+    endif()
+endfunction()
+
+# this one reads the engine and its restricted additions and recurses
+function(add_engine_json_external_subdirectories engine_path)
+    set(engine_json_path ${engine_path}/engine.json)
+    if(EXISTS ${engine_json_path})
+        # read the engine.json external subdirs
+        read_json_external_subdirs(engine_external_subdirs ${engine_json_path})
+        foreach(engine_external_subdir ${engine_external_subdirs})
+            file(REAL_PATH ${engine_external_subdir} real_engine_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+            set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_engine_external_subdir})
+            add_gem_json_external_subdirectories(${real_engine_external_subdir})
+        endforeach()
+
+        # see if this o3de object has any restricted external subdir additions
+        o3de_restricted_path(${engine_json_path} engine_restricted_path engine_parent_relative_path)
+        o3de_pal_dir(pal_dir ${engine_path}/Platform/${PAL_PLATFORM_NAME} ${engine_restricted_path} ${engine_path} ${engine_parent_relative_path})
+        if(EXISTS ${pal_dir}/engine-${PAL_PLATFORM_NAME_LOWERCASE}.json)
+            read_json_external_subdirs(restricted_engine_external_subdirs ${pal_dir}/engine_${PAL_PLATFORM_NAME_LOWERCASE}.json)
+            foreach(restricted_engine_external_subdir ${restricted_engine_external_subdirs})
+                file(REAL_PATH ${restricted_engine_external_subdir} real_restricted_engine_external_subdir BASE_DIRECTORY ${pal_dir})
+                set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_restricted_engine_external_subdir})
+                add_gem_json_external_subdirectories(${real_restricted_engine_external_subdir})
+            endforeach()
+        endif()
+    endif()
+endfunction()
+
+# this is the entry point
+function(add_subdirectory_on_externalsubdirs)
+    get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+    list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
+    # Loop over the additional external subdirectories and invoke add_subdirectory on them
+    foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
+        # Hash the external_directory name and append it to the Binary Directory section of add_subdirectory
+        # This is to deal with potential situations where multiple external directories has the same last directory name
+        # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
+        file(REAL_PATH ${external_directory} full_directory_path)
+        string(SHA256 full_directory_hash ${full_directory_path})
+        # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
+        # when the external subdirectory contains relative paths of significant length
+        string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
+        # Use the last directory as the suffix path to use for the Binary Directory
+        get_filename_component(directory_name ${external_directory} NAME)
+        add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
+    endforeach()
 endfunction()
 
 # detect open platforms
