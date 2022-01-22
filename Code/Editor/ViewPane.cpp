@@ -173,10 +173,14 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
         expansion->installEventFilter(m_expanderWatcher);
     }
 
-    m_viewportTitleDlg.InitializePrefabViewportFocusPathHandler(
-        qobject_cast<AzQtComponents::BreadCrumbs*>(toolbar->findChild<QWidget*>("m_prefabFocusPath")),
-        qobject_cast<QToolButton*>(toolbar->findChild<QWidget*>("m_prefabFocusBackButton"))
-    );
+    AzQtComponents::BreadCrumbs* prefabsBreadcrumbs =
+        qobject_cast<AzQtComponents::BreadCrumbs*>(toolbar->findChild<QWidget*>("m_prefabFocusPath"));
+    QToolButton* backButton = qobject_cast<QToolButton*>(toolbar->findChild<QWidget*>("m_prefabFocusBackButton"));
+
+    if (prefabsBreadcrumbs && backButton)
+    {
+        m_viewportTitleDlg.InitializePrefabViewportFocusPathHandler(prefabsBreadcrumbs, backButton);
+    }
 
     m_id = -1;
 }

@@ -394,6 +394,11 @@ void CViewportTitleDlg::OnInitDialog()
 
 void CViewportTitleDlg::InitializePrefabViewportFocusPathHandler(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton)
 {
+    if (m_prefabViewportFocusPathHandler != nullptr)
+    {
+        return;
+    }
+
     bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
