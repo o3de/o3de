@@ -546,16 +546,8 @@ QProgressBar::chunk {
     min-height:24px;
 }
 
-#adjustableHeaderWidget QTableCornerButton::section {
-    border:none;
-    background-color:#333333;
-}
-
 #adjustableHeaderWidget QHeaderView::section { 
-    background-color:#333333; 
-    color:white; 
-    font-size:12px; 
-    border-right:1px solid #FFFFFF 
+    background-color:#333333;
 }
 
 #GemCatalogHeaderShowCountLabel {
