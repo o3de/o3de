@@ -86,9 +86,9 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
     7) Add item to 'EntityIdReferences'
     8) Update item in 'EntityIdReferences'
     9) Remove item from 'EntityIdReferences'
-    10) Rest the container property then put one entity reference back for further tests
+    10) Reset the container property then put one entity reference back for further tests
     11) Remove component
-    12) Undo component remove
+    12) UNDO component remove
     13) Enter/Exit game mode.
     14) Test IsHidden.
     15) Test IsVisible.
@@ -160,55 +160,53 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
                 AtomComponentProperties.entity_reference('EntityIdReferences')))
 
         # 6. Append item to 'EntityIdReferences'
-        entity_reference_component.append_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
-                                                         test_1.id)
+        entity_reference_component.append_container_item(
+            AtomComponentProperties.entity_reference('EntityIdReferences'), test_1.id)
         Report.result(
             Tests.container_append,
             entity_reference_component.get_container_item(
                 AtomComponentProperties.entity_reference('EntityIdReferences'), 0) == test_1.id)
 
         # 7. Add item to 'EntityIdReferences'
-        entity_reference_component.add_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
-                                                      1, test_1.id)
+        entity_reference_component.add_container_item(
+            AtomComponentProperties.entity_reference('EntityIdReferences'), 1, test_1.id)
         Report.result(
             Tests.container_add,
             entity_reference_component.get_container_count(
-                AtomComponentProperties.entity_reference('EntityIdReferences')) == 2
-        )
+                AtomComponentProperties.entity_reference('EntityIdReferences')) == 2)
 
         # 8. Update item in 'EntityIdReferences'
-        entity_reference_component.update_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
-                                                         1, test_2.id)
+        entity_reference_component.update_container_item(
+            AtomComponentProperties.entity_reference('EntityIdReferences'), 1, test_2.id)
         Report.result(
             Tests.container_update,
             entity_reference_component.get_container_item(
                 AtomComponentProperties.entity_reference('EntityIdReferences'), 1) == test_2.id)
 
         # 9. Remove item from 'EntityIdReferences'
-        entity_reference_component.append_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
-                                                         test_3.id)
+        entity_reference_component.append_container_item(
+            AtomComponentProperties.entity_reference('EntityIdReferences'), test_3.id)
         count_before = entity_reference_component.get_container_count(
             AtomComponentProperties.entity_reference('EntityIdReferences'))
-        entity_reference_component.remove_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
-                                                         1)
+        entity_reference_component.remove_container_item(
+            AtomComponentProperties.entity_reference('EntityIdReferences'), 1)
         count_after = entity_reference_component.get_container_count(
             AtomComponentProperties.entity_reference('EntityIdReferences'))
         Report.result(
             Tests.container_remove,
             ((count_before == 3) and (count_after == 2) and
              (entity_reference_component.get_container_item(
-                 AtomComponentProperties.entity_reference('EntityIdReferences'), 1) == test_3.id))
-        )
+                 AtomComponentProperties.entity_reference('EntityIdReferences'), 1) == test_3.id)))
 
-        # 10. Rest the container property then put one entity reference back for further tests
+        # 10. Reset the container property then put one entity reference back for further tests
         entity_reference_component.reset_container(AtomComponentProperties.entity_reference('EntityIdReferences'))
         general.idle_wait_frames(1)
         Report.result(
             Tests.container_reset,
             entity_reference_component.get_container_count(
                 AtomComponentProperties.entity_reference('EntityIdReferences')) == 0)
-        entity_reference_component.append_container_item(AtomComponentProperties.entity_reference('EntityIdReferences'),
-                                                         test_1.id)
+        entity_reference_component.append_container_item(
+            AtomComponentProperties.entity_reference('EntityIdReferences'), test_1.id)
 
         # 11. Remove component
         entity_reference_entity.remove_component(AtomComponentProperties.entity_reference())
@@ -216,7 +214,7 @@ def AtomEditorComponents_EntityReference_AddedToEntity():
         Report.result(Tests.entity_reference_component_removed, not entity_reference_entity.has_component(
             AtomComponentProperties.entity_reference()))
 
-        # 12. Undo component remove
+        # 12. UNDO component remove
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.entity_reference_component, entity_reference_entity.has_component(

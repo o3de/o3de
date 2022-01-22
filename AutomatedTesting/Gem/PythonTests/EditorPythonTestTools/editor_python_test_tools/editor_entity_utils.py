@@ -477,7 +477,7 @@ class EditorEntity:
         remove_success = editor.EditorComponentAPIBus(bus.Broadcast, "RemoveComponents", component_ids)
         assert (
             remove_success
-        ), f"Failure: could not remove component from '{self.get_name()}'"
+        ), f"Failure: could not remove component from entity '{self.get_name()}'"
 
     def get_components_of_type(self, component_names: list) -> List[EditorComponent]:
         """
