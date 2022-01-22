@@ -107,11 +107,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::Editor.Headers
                 Legacy::EditorCommon
                 Legacy::CryCommon
-        RUNTIME_DEPENDENCIES
-            Gem::Atom_RPI.Editor
-            Gem::Atom_Feature_Common.Editor
-            Gem::AtomToolsFramework.Editor
-            Legacy::EditorCommon
     )
 
     ly_add_target(
@@ -121,7 +116,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             atomlyintegration_commonfeatures_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                .
                 Source
             PUBLIC
                 Include
@@ -131,6 +125,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::AtomLyIntegration_CommonFeatures.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::Atom_RPI.Editor
+            Gem::Atom_Feature_Common.Editor
+            Gem::AtomToolsFramework.Editor
+            Legacy::EditorCommon
     )
 
     # The AtomLyIntegration_CommonFeatures.Editor module is used for Builders and Tools
