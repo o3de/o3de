@@ -38,4 +38,12 @@ namespace AZStd
     {
         return Internal::INVOKE(Internal::InvokeTraits::forward<F>(f), Internal::InvokeTraits::forward<Args>(args)...);
     }
+
+    // models the invocable concept
+    template <class F, class... Args>
+    /*concept*/ constexpr bool invocable = is_invocable_v<F, Args...>;
+
+    // models the regular_invocable concept
+    template <class F, class... Args>
+    /*concept*/ constexpr bool regular_invocable = invocable<F, Args...>;
 }
