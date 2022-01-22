@@ -57,6 +57,5 @@ namespace EMStudio
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_translateCamera;
         AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
-        bool m_followCharacter = false;
     };
 }
