@@ -17,6 +17,25 @@ namespace Profiler
 {
     thread_local CpuTimingLocalStorage* CpuProfilerImpl::ms_threadLocalStorage = nullptr;
 
+    // generates a hash from the event string and address of each format arg
+    AZStd::size_t GenerateFormatStringHash(const char* format, size_t argCount, va_list args)
+    {
+        AZStd::size_t eventHash = 0;
+        AZStd::hash_combine(eventHash, format);
+
+        va_list argsCopy;
+        va_copy(argsCopy, args);
+
+        for (size_t i = 0; i < argCount; ++i)
+        {
+            AZStd::hash_combine(eventHash, va_arg(argsCopy, void*));
+        }
+
+        va_end(argsCopy);
+
+        return eventHash;
+    }
+
     // --- CpuProfiler ---
 
     CpuProfiler* CpuProfiler::Get()
@@ -103,11 +122,23 @@ namespace Profiler
         {
             if (m_enabled)
             {
+                const char* fullEventName = eventName;
+
+                if (eventNameArgCount != 0)
+                {
+                    va_list formatArgs;
+                    va_start(formatArgs, eventNameArgCount);
+
+                    fullEventName = GetOrCreateFormatedString(eventName, eventNameArgCount, formatArgs);
+
+                    va_end(formatArgs);
+                }
+
                 // Lazy initialization, creates an instance of the Thread local data if it's not created, and registers it
                 RegisterThreadStorage();
 
                 // Push it to the stack
-                CachedTimeRegion timeRegion({budget->Name(), eventName});
+                CachedTimeRegion timeRegion({ budget->Name(), fullEventName });
                 ms_threadLocalStorage->RegionStackPushBack(timeRegion);
             }
 
@@ -257,6 +288,29 @@ namespace Profiler
             ms_threadLocalStorage = aznew CpuTimingLocalStorage();
             m_registeredThreads.emplace_back(ms_threadLocalStorage);
         }
+    }
+
+    const char* CpuProfilerImpl::GetOrCreateFormatedString(const char* format, size_t argCount, va_list args)
+    {
+        AZStd::scoped_lock lock(m_dynamicNameMutex);
+
+        AZStd::size_t eventHash = GenerateFormatStringHash(format, argCount, args);
+
+        if (auto findIter = m_dynamicNameStringPool.find(eventHash); findIter != m_dynamicNameStringPool.end())
+        {
+            return findIter->second.c_str();
+        }
+
+    AZ_PUSH_DISABLE_WARNING(, "-Wformat-security")
+        AZStd::string fullEventName = AZStd::string::format_arg(format, args);
+    AZ_POP_DISABLE_WARNING
+
+        auto emplaceIter = m_dynamicNameStringPool.emplace(eventHash, fullEventName).first;
+
+        AZ_Warning("CpuProfiler", m_dynamicNameStringPool.size() < MaxDynamicStringPoolSize,
+            "Stored dynamic region names are accumulating. Consider removing a AZ_PROFILE_* macro using format strings");
+
+        return emplaceIter->second.c_str();
     }
 
     // --- CpuTimingLocalStorage ---

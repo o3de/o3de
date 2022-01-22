@@ -124,14 +124,21 @@ namespace Profiler
 
     private:
         static constexpr AZStd::size_t MaxFramesToSave = 2 * 60 * 120; // 2 minutes of 120fps
-        static constexpr AZStd::size_t MaxRegionStringPoolSize = 16384; // Max amount of unique strings to save in the pool before throwing warnings.
+        static constexpr AZStd::size_t MaxDynamicStringPoolSize = 4096; // Max amount of unique strings to save in the pool before throwing warnings.
 
         // Lazily create and register the local thread data
         void RegisterThreadStorage();
 
+        const char* GetOrCreateFormatedString(const char* format, size_t argsCount, va_list args);
+
         // ThreadId -> ThreadTimeRegionMap
         // On the start of each frame, this map will be updated with the last frame's profiling data.
         TimeRegionMap m_timeRegionMap;
+
+        // String pool for storing region names submitted at runtime. Each call to any AZ_PROFILE_* macro with format string arguments
+        // will either construct a string in this pool or use an already-existing entry.
+        AZStd::unordered_map<AZStd::size_t, AZStd::string> m_dynamicNameStringPool;
+        AZStd::mutex m_dynamicNameMutex;
 
         // Set of registered threads when created
         AZStd::vector<AZStd::intrusive_ptr<CpuTimingLocalStorage>, AZ::OSStdAllocator> m_registeredThreads;
