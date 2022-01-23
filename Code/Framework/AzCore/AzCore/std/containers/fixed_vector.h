@@ -642,8 +642,18 @@ namespace AZStd
                 return &newElement;
             }
 
-            AZStd::uninitialized_move(insertPosPtr, dataEnd, insertPosPtr + 1);
+            // We need to move data with care, it is overlapping.
+
+            // first move the last element into the uninitialized position as that will not overlap.
+            pointer nonOverlap = dataEnd - 1;
+            AZStd::uninitialized_move(nonOverlap, dataEnd, dataEnd);
+
+            // copy the memory backwards while performing AZStd::move on the existing elements the area with overlapping memory
+            // to move the elments to the right by 1
+            AZStd::move_backward(insertPosPtr, nonOverlap, dataEnd);
+            // add new elements
             AZStd::construct_at(insertPosPtr, AZStd::forward<Args>(args)...);
+            resize_no_construct(size() + 1);
             return iterator(insertPosPtr);
         }
         iterator insert(const_iterator insertPos, const_reference value)
