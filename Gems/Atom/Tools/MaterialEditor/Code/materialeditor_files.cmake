@@ -49,8 +49,6 @@ set(FILES
     Source/Viewport/MaterialViewportWidget.cpp
     Source/Viewport/MaterialViewportWidget.h
     Source/Viewport/MaterialViewportWidget.ui
-    Source/Viewport/MaterialViewportRenderer.cpp
-    Source/Viewport/MaterialViewportRenderer.h
     Source/Viewport/PerformanceMonitorComponent.cpp
     Source/Viewport/PerformanceMonitorComponent.h
 
