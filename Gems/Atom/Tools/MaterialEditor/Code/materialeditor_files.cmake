@@ -69,13 +69,6 @@ set(FILES
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.cpp
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.h
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.ui
-    Source/Window/PresetBrowserDialogs/PresetBrowserDialog.cpp
-    Source/Window/PresetBrowserDialogs/PresetBrowserDialog.h
-    Source/Window/PresetBrowserDialogs/PresetBrowserDialog.ui
-    Source/Window/PresetBrowserDialogs/LightingPresetBrowserDialog.cpp
-    Source/Window/PresetBrowserDialogs/LightingPresetBrowserDialog.h
-    Source/Window/PresetBrowserDialogs/ModelPresetBrowserDialog.cpp
-    Source/Window/PresetBrowserDialogs/ModelPresetBrowserDialog.h
     Source/Window/PerformanceMonitor/PerformanceMonitorWidget.cpp
     Source/Window/PerformanceMonitor/PerformanceMonitorWidget.h
     Source/Window/PerformanceMonitor/PerformanceMonitorWidget.ui
