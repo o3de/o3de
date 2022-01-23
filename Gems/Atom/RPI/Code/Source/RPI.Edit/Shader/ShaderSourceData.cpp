@@ -23,6 +23,7 @@ namespace AZ
                 serializeContext->Class<ShaderSourceData>()
                     ->Version(4)
                     ->Field("Source", &ShaderSourceData::m_source)
+                    ->Field("Requirements", &ShaderSourceData::m_requirements)
                     ->Field("DrawList", &ShaderSourceData::m_drawListName)
                     ->Field("DepthStencilState", &ShaderSourceData::m_depthStencilState)
                     ->Field("RasterState", &ShaderSourceData::m_rasterState)

@@ -16,7 +16,7 @@ COMMON_OPTIONS_PARALLAX(o_layer0_)
 COMMON_OPTIONS_PARALLAX(o_layer1_)
 COMMON_OPTIONS_PARALLAX(o_layer2_)
 
-float EvaluatePixelDepth_BlendMask(
+float EvaluateMultilayerPixelDepth(
     float blendMask,
     float depth,
     float2 uv[2],

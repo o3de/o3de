@@ -10,6 +10,18 @@
 
 #include <Atom/Features/PBR/Surfaces/StandardSurface.azsli>
 
+// ---------- Material Parameters ----------
+
+COMMON_OPTIONS_BASE_COLOR()
+COMMON_OPTIONS_ROUGHNESS()
+COMMON_OPTIONS_METALLIC()
+COMMON_OPTIONS_SPECULAR_F0()
+COMMON_OPTIONS_NORMAL()
+COMMON_OPTIONS_CLEAR_COAT()
+COMMON_OPTIONS_OCCLUSION()
+COMMON_OPTIONS_EMISSIVE()
+// Note COMMON_OPTIONS_PARALLAX is in StandardPBR_Common.azsli because it's needed by all StandardPBR shaders.
+
 void EvaluateOpaqueSurface(
     float3 normal,
     // UVs retrieved via EvaluateUVs shader function

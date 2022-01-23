@@ -30,22 +30,6 @@
 // Decals
 #include <Atom/Features/PBR/Decals.azsli>
 
-
-// ---------- Material Parameters ----------
-
-COMMON_OPTIONS_BASE_COLOR()
-COMMON_OPTIONS_ROUGHNESS()
-COMMON_OPTIONS_METALLIC()
-COMMON_OPTIONS_SPECULAR_F0()
-COMMON_OPTIONS_NORMAL()
-COMMON_OPTIONS_CLEAR_COAT()
-COMMON_OPTIONS_OCCLUSION()
-COMMON_OPTIONS_EMISSIVE()
-// Note COMMON_OPTIONS_PARALLAX is in StandardPBR_Common.azsli because it's needed by all StandardPBR shaders.
-
-// Alpha
-#include "MaterialInputs/AlphaInput.azsli"
-
 // ---------- Vertex Shader ----------
 
 struct VSInput
@@ -57,8 +41,7 @@ struct VSInput
     float3 m_bitangent : BITANGENT; 
  
     // Extended fields (only referenced in this azsl file)...
-    float2 m_uv0 : UV0;
-    float2 m_uv1 : UV1;
+    float2 m_uv[UvSetCount] : UV0;
 };
 
 struct VSOutput
@@ -85,7 +68,7 @@ VSOutput StandardPbr_ForwardPassVS(VSInput IN)
     float4 worldPosition;
     VertexLocalToWorld(IN.m_position, worldPosition);
 
-    EvaluateUVs(IN.m_uv0, IN.m_uv1, OUT.m_uv[0], OUT.m_uv[1]);
+    EvaluateUVs(IN.m_uv, OUT.m_uv);
 
     EvaluateWorldSpaceTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
 
@@ -118,7 +101,9 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     if (ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture))
     {
-        PrepareGeneratedTangent(IN.m_tangent, IN.m_bitangent, IN.m_uv, tangents, bitangents);
+        PrepareGeneratedTangent(
+            vertexNormal, IN.m_tangent, IN.m_bitangent, IN.m_worldPosition,
+            isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
     }
 
     // ------- Depth & Parallax -------

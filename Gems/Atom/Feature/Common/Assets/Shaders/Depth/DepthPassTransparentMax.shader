@@ -1,6 +1,10 @@
 {
     "Source" : "./DepthPass.azsl",
 
+    "Requirements": [
+        "VertexLocalToWorld"
+    ],
+
     "RasterState": { "CullMode": "None" },
 
     "DepthStencilState" : { 

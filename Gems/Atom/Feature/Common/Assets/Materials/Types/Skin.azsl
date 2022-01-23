@@ -106,7 +106,10 @@ VSOutput SkinVS(VSInput IN)
 {
     VSOutput OUT;
  
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    float3 worldPosition;
+    VertexLocalToWorld(IN.m_position, worldPosition);
+
+    // TODO Refactor this shader
  
     // UV0 is for tiled UVs. This will almost always be used exclusively with the detail layer, but it is still available
     // for the main layer to use if needed. Unlike StandardPBR etc, we don't provide a transform for this stream on the main layer, 

@@ -8,7 +8,7 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-
+ 
 struct VSInput
 {
     float3 m_position : POSITION;
@@ -19,6 +19,12 @@ struct VSInput
     float3 m_normal : NORMAL;
     float4 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
+    
+    // This gets set automatically by the system at runtime only if it's available.
+    // There is a soft naming convention that associates this with o_blendMask_isBound, which will be set to true whenever m_optional_blendMask is available.
+    // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
+    // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
+    float4 m_optional_blendMask : COLOR0;
 };
 
 struct VSDepthOutput
@@ -31,6 +37,7 @@ struct VSDepthOutput
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
+    float3 m_blendMask : UV3;
 };
  
 VSDepthOutput MainVS(VSInput IN)
@@ -40,11 +47,20 @@ VSDepthOutput MainVS(VSInput IN)
     VertexLocalToWorld(IN.m_position, OUT.m_worldPosition);
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, OUT.m_worldPosition);
 
-    EvaluateUVs(IN.m_uv0, IN.m_uv1, OUT.m_uv[0], OUT.m_uv[1]);
+    EvaluateUVs(IN.m_uv, OUT.m_uv);
 
     if (ShouldHandleParallaxInDepthShaders())
     {
         EvaluateWorldSpaceTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
+    }
+
+    if (o_blendMask_isBound)
+    {
+        OUT.m_blendMask = IN.m_optional_blendMask.rgb;
+    }
+    else
+    {
+        OUT.m_blendMask = float3(0, 0, 0);
     }
 
     return OUT;
@@ -59,16 +75,24 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     PSDepthOutput OUT;
 
+
     if (ShouldHandleParallaxInDepthShaders())
     {
         float3 tangents[UvSetCount];
         float3 bitangents[UvSetCount];
-        PrepareGeneratedTangent(IN.m_tangent, IN.m_bitangent, IN.m_uv, tangents, bitangents);
+        PrepareGeneratedTangent(
+            normalize(IN.m_normal), IN.m_tangent, IN.m_bitangent, IN.m_worldPosition,
+            isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
 
-        EvaluatePixelDepth(IN.m_position.z, IN.m_uv, IN.m_worldPosition, IN.m_normal, tangents, bitangents, OUT.m_depth);
+        EvaluateMultilayerPixelDepth(
+            IN.m_blendMask,
+            IN.m_position.z,
+            IN.m_uv,
+            IN.m_normal,
+            tangents,
+            bitangents,
+            OUT.m_depth);
     }
-
-    MaybeClip(IN.m_uv);
 
     return OUT;
 }

@@ -1,6 +1,14 @@
 {
     "Source" : "./EnhancedPBR_ForwardPass.azsl",
 
+    "Requirements": [
+        "EvaluateUVs",
+        // TODO: provide a non-parallax variant that doesn't require a world-space TBN
+        "EvaluateWorldSpaceTBN",
+        "EvaluatePixelDepth",
+        "EvaluateEnhancedSurfaceAlphaClip"
+    ],
+
     "DepthStencilState" :
     {
         "Depth" :

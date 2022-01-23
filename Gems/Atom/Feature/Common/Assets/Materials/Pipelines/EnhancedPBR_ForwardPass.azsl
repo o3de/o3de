@@ -34,8 +34,7 @@ struct VSInput
     float3 m_bitangent : BITANGENT; 
  
     // Extended fields (only referenced in this azsl file)...
-    float2 m_uv0 : UV0;
-    float2 m_uv1 : UV1;
+    float2 m_uv[UvSetCount] : UV0;
 };
 
 struct VSOutput
@@ -49,8 +48,7 @@ struct VSOutput
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV5;
 
     // Extended fields (only referenced in this azsl file)...
-    float2 m_uv[UvSetCount] : UV1;    
-    float2 m_detailUv[UvSetCount] : UV3;
+    float2 m_uv[UvSetCount + DetailedUvSetCount] : UV1;    
 };
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>
@@ -59,10 +57,10 @@ VSOutput EnhancedPbr_ForwardPassVS(VSInput IN)
 {
     VSOutput OUT;
  
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    float4 worldPosition;
+    VertexLocalToWorld(IN.m_position, worldPosition);
 
-    EvaluateUVs(IN.m_uv0, IN.m_uv1, OUT.m_uv[0], OUT.m_uv[1]);
-    EvaluateDetailUVs(IN.m_uv0, IN.m_uv1, OUT.m_detailUv[0], OUT.m_detailUv[1]);
+    EvaluateUVs(IN.m_uv, OUT.m_uv);
 
     EvaluateWorldSpaceTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
     
@@ -96,7 +94,9 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering) || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture)
     {
-        PrepareGeneratedTangent(IN.m_tangent, IN.m_bitangent, IN.m_uv, tangents, bitangents);
+        PrepareGeneratedTangent(
+            vertexNormal, IN.m_tangent, IN.m_bitangent, IN.m_worldPosition,
+            isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
     }
 
     // ------- Depth & Parallax -------
@@ -110,8 +110,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     {
         UvDeltas deltas = EvaluatePixelDepth(depthNDC, IN.m_uv, IN.m_worldPosition, IN.m_normal, tangents, bitangents, depthNDC);
 
-        IN.m_detailUv[0] += deltas.m_uvDelta[0];
-        IN.m_detailUv[0] += deltas.m_uvDelta[1];
+        IN.m_uv[2] += deltas.m_uvDelta[0];
+        IN.m_uv[3] += deltas.m_uvDelta[1];
 
         // Adjust directional light shadow coorinates for parallax correction
         if(o_parallax_enablePixelDepthOffset)

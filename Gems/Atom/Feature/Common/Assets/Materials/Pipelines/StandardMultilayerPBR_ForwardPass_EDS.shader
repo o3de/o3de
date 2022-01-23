@@ -1,5 +1,13 @@
 {
-    "Source" : "./StandardPBR_ForwardPass.azsl",
+    "Source" : "./StandardMultilayerPBR_ForwardPass.azsl",
+
+    "Requirements": [
+        "VertexLocalToWorld",
+        "EvaluateUVs",
+        "EvaluateWorldSpaceTBN",
+        "EvaluateMultilayerOpaqueSurface",
+        "EvaluateMultilayerPixelDepth"
+    ],
 
     "DepthStencilState" :
     {
@@ -30,7 +38,6 @@
         }
     },
 
-
     "CompilerHints" : { 
         "DisableOptimizations" : false
     },
@@ -40,15 +47,23 @@
       "EntryPoints":
       [
         {
-          "name": "StandardPbr_ForwardPassVS",
+          "name": "ForwardPassVS",
           "type": "Vertex"
         },
         {
-          "name": "StandardPbr_ForwardPassPS",
+          "name": "ForwardPassPS_EDS",
           "type": "Fragment"
         }
       ]
     },
+
+    "Supervariants":
+    [
+        {
+            "Name": "",
+            "PlusArguments": "--no-alignment-validation"
+        }
+    ],
 
     "DrawList" : "forward"
 }

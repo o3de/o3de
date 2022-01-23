@@ -34,8 +34,7 @@ COMMON_OPTIONS_DETAIL_MAPS()
 
 void EvaluateEnhancedOpaqueSurface(
     float3 normal,
-    float2 uv[UvSetCount],
-    float2 detailUv[UvSetCount],
+    float2 uv[TotalUvSetCount],
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     bool isFrontFace,
@@ -54,7 +53,7 @@ void EvaluateEnhancedOpaqueSurface(
 
     // ------- Detail Layer Setup -------
     
-    const float2 detailUv = detailUv[MaterialSrg::m_detail_allMapsUvIndex];
+    const float2 detailUv = uv[MaterialSrg::m_detail_allMapsUvIndex + UvSetCount];
 
     // When the detail maps and the detail blend mask are on the same UV, they both use the transformed detail UVs because they are 'attached' to each other
     const float2 detailBlendMaskUv =

@@ -53,12 +53,14 @@ set(FILES
     Include/Atom/RPI.Reflect/Material/MaterialAsset.h
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreator.h
     Include/Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h
+    Include/Atom/RPI.Reflect/Material/MaterialPipelineAsset.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyValue.h
     Include/Atom/RPI.Reflect/Material/MaterialTypeAsset.h
     Include/Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h
     Include/Atom/RPI.Reflect/Material/ShaderCollection.h
+    Include/Atom/RPI.Reflect/Material/ShaderFunctionCollection.h
     Include/Atom/RPI.Reflect/Material/MaterialFunctor.h
     Include/Atom/RPI.Reflect/Material/MaterialVersionUpdate.h
     Include/Atom/RPI.Reflect/Pass/ComputePassData.h
@@ -135,11 +137,13 @@ set(FILES
     Source/RPI.Reflect/Material/MaterialAssetCreator.cpp
     Source/RPI.Reflect/Material/LuaMaterialFunctor.cpp
     Source/RPI.Reflect/Material/MaterialDynamicMetadata.cpp
+    Source/RPI.Reflect/Material/MaterialPipelineAsset.cpp
     Source/RPI.Reflect/Material/MaterialPropertyDescriptor.cpp
     Source/RPI.Reflect/Material/MaterialPropertiesLayout.cpp
     Source/RPI.Reflect/Material/MaterialTypeAsset.cpp
     Source/RPI.Reflect/Material/MaterialTypeAssetCreator.cpp
     Source/RPI.Reflect/Material/ShaderCollection.cpp
+    Source/RPI.Reflect/Material/ShaderFunctionCollection.cpp
     Source/RPI.Reflect/Material/MaterialFunctor.cpp
     Source/RPI.Reflect/Material/MaterialVersionUpdate.cpp
     Source/RPI.Reflect/Pass/PassAsset.cpp

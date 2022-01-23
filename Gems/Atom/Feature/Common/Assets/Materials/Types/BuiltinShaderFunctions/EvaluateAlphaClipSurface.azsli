@@ -8,6 +8,9 @@
 
 #pragma once
 
+// Alpha
+#include "../MaterialInputs/AlphaInput.azsli"
+
 #include "EvaluateOpaqueSurface.azsli"
 
 float EvaluateAlphaAndClip(float2 uv[UvSetCount])

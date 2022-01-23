@@ -10,6 +10,16 @@ set(FILES
     Materials/Special/ShadowCatcher.azsl
     Materials/Special/ShadowCatcher.materialtype
     Materials/Special/ShadowCatcher.shader
+    Materials/Types/BuiltInShaderFunctions/EvaluateAlphaClipSurface.azsli
+    Materials/Types/BuiltInShaderFunctions/EvaluateEnhancedAlphaClipSurface.azsli
+    Materials/Types/BuiltInShaderFunctions/EvaluateEnhancedOpaqueSurface.azsli
+    Materials/Types/BuiltInShaderFunctions/EvaluatePixelDepth.azsli
+    Materials/Types/BuiltInShaderFunctions/EvaluatePixelDepth_BlendMask.azsli
+    Materials/Types/BuiltInShaderFunctions/EvaluateSurfaceTangentSpace.azsli
+    Materials/Types/BuiltInShaderFunctions/EvaluateUVs.azsli
+    Materials/Types/BuiltInShaderFunctions/EvaluateWorldSpaceTBN.azsli
+    Materials/Types/BuiltInShaderFunctions/MaybeClip.azsli
+    Materials/Types/BuiltInShaderFunctions/VertexLocalToWorld.azsli
     Materials/Types/EnhancedPBR.materialtype
     Materials/Types/EnhancedPBR_Common.azsli
     Materials/Types/EnhancedPBR_DepthPass_WithPS.azsl
@@ -314,8 +324,6 @@ set(FILES
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
     ShaderLib/Atom/Features/Skin/SkinObjectSrg.azsli
     ShaderLib/Atom/Features/Vertex/VertexHelper.azsli
-    ShaderLib/Atom/MaterialFunctions/StaticMeshTransforms.azsli
-    ShaderLib/Atom/MaterialFunctions/SkinnedMeshTransforms.azsli
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
     ShaderResourceGroups/ViewSrg.azsli

@@ -8,12 +8,12 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
+#include <Atom/Features/Shadow/Shadow.azsli>
  
-struct VSInput
+struct VertexInput
 {
     float3 m_position : POSITION;
-    float2 m_uv0 : UV0;
-    float2 m_uv1 : UV1;
+    float2 m_uv[2] : UV0;
 
     // only used for parallax depth calculation
     float3 m_normal : NORMAL;
@@ -27,9 +27,9 @@ struct VSInput
     float4 m_optional_blendMask : COLOR0;
 };
 
-struct VSDepthOutput
+struct VertexOutput
 {
-    precise linear centroid float4 m_position : SV_Position;
+    float4 m_position : SV_Position;
     float2 m_uv[UvSetCount] : UV1;
 
     // only used for parallax depth calculation
@@ -40,14 +40,14 @@ struct VSDepthOutput
     float3 m_blendMask : UV3;
 };
  
-VSDepthOutput MainVS(VSInput IN)
+VertexOutput MainVS(VertexInput IN)
 {
-    VSDepthOutput OUT;
+    VertexOutput OUT;
 
     VertexLocalToWorld(IN.m_position, OUT.m_worldPosition);
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, OUT.m_worldPosition);
 
-    EvaluateUVs(IN.m_uv0, IN.m_uv1, OUT.m_uv[0], OUT.m_uv[1]);
+    EvaluateUVs(IN.m_uv, OUT.m_uv);
 
     if (ShouldHandleParallaxInDepthShaders())
     {
@@ -71,18 +71,19 @@ struct PSDepthOutput
     precise float m_depth : SV_Depth;
 };
 
-PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
+PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     PSDepthOutput OUT;
-
 
     if (ShouldHandleParallaxInDepthShaders())
     {
         float3 tangents[UvSetCount];
         float3 bitangents[UvSetCount];
-        PrepareGeneratedTangent(IN.m_tangent, IN.m_bitangent, IN.m_uv, tangents, bitangents);
+        PrepareGeneratedTangent(
+            normalize(IN.m_normal), IN.m_tangent, IN.m_bitangent, IN.m_worldPosition,
+            isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
 
-        EvaluatePixelDepth_BlendMask(
+        EvaluateMultilayerPixelDepth(
             IN.m_blendMask,
             IN.m_position.z,
             IN.m_uv,
@@ -90,6 +91,8 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
             tangents,
             bitangents,
             OUT.m_depth);
+
+        OUT.m_depth += PdoShadowMapBias;
     }
 
     return OUT;

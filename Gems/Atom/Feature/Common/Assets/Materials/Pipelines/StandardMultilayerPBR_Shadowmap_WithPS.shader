@@ -1,5 +1,12 @@
 {
-    "Source" : "./EnhancedPBR_Shadowmap_WithPS.azsl",
+    "Source" : "./StandardMultilayerPBR_Shadowmap_WithPS.azsl",
+
+    "Requirements": [
+      "VertexLocalToWorld",
+      "EvaluateUVs",
+      "EvaluateWorldSpaceTBN",
+      "EvaluateMultilayerPixelDepth"
+    ],
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }

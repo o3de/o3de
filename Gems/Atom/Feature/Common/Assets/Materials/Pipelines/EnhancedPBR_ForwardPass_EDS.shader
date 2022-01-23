@@ -1,5 +1,13 @@
 {
-    "Source" : "./StandardMultilayerPBR_ForwardPass.azsl",
+    "Source" : "./EnhancedPBR_ForwardPass.azsl",
+
+    "Requirements": [
+        "EvaluateUVs",
+        // TODO: provide a non-parallax variant that doesn't require a world-space TBN
+        "EvaluateWorldSpaceTBN",
+        "EvaluatePixelDepth",
+        "EvaluateEnhancedSurfaceAlphaClip"
+    ],
 
     "DepthStencilState" :
     {
@@ -39,23 +47,15 @@
       "EntryPoints":
       [
         {
-          "name": "ForwardPassVS",
+          "name": "EnhancedPbr_ForwardPassVS",
           "type": "Vertex"
         },
         {
-          "name": "ForwardPassPS",
+          "name": "EnhancedPbr_ForwardPassPS_EDS",
           "type": "Fragment"
         }
       ]
     },
-    
-    "Supervariants":
-    [
-        {
-            "Name": "",
-            "PlusArguments": "--no-alignment-validation"
-        }
-    ],
 
-    "DrawList" : "forward"
+    "DrawList" : "forwardWithSubsurfaceOutput"
 }

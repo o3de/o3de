@@ -1,0 +1,44 @@
+{
+    "name": "EnhancedSurface",
+    "description": "Material shading pipeline for the enhanced surface",
+    "version": 1,
+    "shaders": [
+        {
+            "file": "./EnhancedPBR_ForwardPass.shader",
+            "tag": "ForwardPass"
+        },
+        {
+            "file": "./EnhancedPBR_ForwardPass_EDS.shader",
+            "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "Shaders/Shadow/Shadowmap.shader",
+            "tag": "Shadowmap"
+        },
+        {
+            "file": "./Shadowmap_WithPS.shader",
+            "tag": "Shadowmap_WithPS"
+        },
+        {
+            "file": "Shaders/Depth/DepthPass.shader",
+            "tag": "DepthPass"
+        },
+        {
+            "file": "./DepthPass_WithPS.shader",
+            "tag": "DepthPass_WithPS"
+        },
+        {
+            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
+        },
+        // TODO: Refactor these min/max passes to not be full-res
+        {
+            "file": "Shaders/Depth/DepthPassTransparentMin.shader",
+            "tag": "DepthPassTransparentMin"
+        },
+        {
+            "file": "Shaders/Depth/DepthPassTransparentMax.shader",
+            "tag": "DepthPassTransparentMax"
+        }
+    ]
+}

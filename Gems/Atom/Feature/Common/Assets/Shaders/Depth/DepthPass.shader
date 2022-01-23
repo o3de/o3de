@@ -1,6 +1,10 @@
 {
     "Source" : "./DepthPass.azsl",
 
+    "Requirements": [
+        "VertexLocalToWorld"
+    ],
+
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
     },

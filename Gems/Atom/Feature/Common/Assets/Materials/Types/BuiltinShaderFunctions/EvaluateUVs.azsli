@@ -6,15 +6,18 @@
  *
  */
 
-struct UVs
-{
-    float2 m_uv0;
-    float2 m_uv1;
-};
-
-void EvaluateUVs(in float2 uv0, in float2 uv1, out float2 uv0Out, out float2 uv1Out)
+void EvaluateUVs(in float2 IN[UvSetCount + DetailedUvSetCount], out float2 OUT[UvSetCount + DetailedUvSetCount])
 {
     // By design, only UV0 is allowed to apply UV transforms
-    uv0Out = mul(MaterialSrg::m_uvMatrix, float3(uv0, 1.0)).xy;
-    uv1Out = uv1;
+    OUT[0] = mul(MaterialSrg::m_uvMatrix, float3(IN[0], 1.0)).xy;
+    OUT[1] = IN[1];
+#if DetailedUvSetCount == 2
+    // Our standard practice is to only transform the first UV as that's the one we expect to be used for
+    // tiling. But for detail maps you could actually use either UV stream for tiling. There is no concern about applying
+    // the same transform to both UV sets because the detail map feature forces the same UV set to be used for all detail maps.
+    // Note we might be able to combine these into a single UV similar to what Skin.materialtype does,
+    // but we would need to address how it works with the parallax code below that indexes into the m_detailUV array.
+    OUT[2] = mul(MaterialSrg::m_detailUvMatrix, float3(IN[2], 1.0)).xy;
+    OUT[3] = mul(MaterialSrg::m_detailUvMatrix, float3(IN[3], 1.0)).xy;
+#endif
 }

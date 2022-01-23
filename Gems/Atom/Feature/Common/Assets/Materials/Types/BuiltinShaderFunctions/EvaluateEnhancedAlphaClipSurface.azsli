@@ -24,10 +24,9 @@ float EvaluateAlphaAndClip(float2 uv[UvSetCount])
         o_opacity_source);
 }
 
-void EvaluateEnhancedAlphaClipSurface(
+void EvaluateAlphaClipSurface(
     float3 normal,
-    float2 uv[UvSetCount],
-    float2 detailUv[UvSetCount],
+    float2 uv[TotalUvSetCount],
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
     bool isFrontFace,

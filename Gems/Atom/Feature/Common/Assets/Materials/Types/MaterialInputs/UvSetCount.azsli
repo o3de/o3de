@@ -9,3 +9,5 @@
 #pragma once
 
 #define UvSetCount 2
+#define DetailUvSetCount 0
+#define TotalUvSetCount (UvSetCount + DetailUvSetCount)

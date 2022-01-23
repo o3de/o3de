@@ -8,13 +8,11 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include <Atom/Features/Shadow/Shadow.azsli>
 
-struct VertexInput
+struct VSInput
 {
     float3 m_position : POSITION;
-    float2 m_uv0 : UV0;
-    float2 m_uv1 : UV1;
+    float2 m_uvs[2] : UV0;
 
     // only used for parallax depth calculation
     float3 m_normal : NORMAL;
@@ -22,10 +20,9 @@ struct VertexInput
     float3 m_bitangent : BITANGENT; 
 };
 
-struct VertexOutput
+struct VSDepthOutput
 {
-    // "centroid" is needed for SV_Depth to compile
-    linear centroid float4 m_position : SV_Position;
+    precise linear centroid float4 m_position : SV_Position;
     float2 m_uv[UvSetCount] : UV1;
 
     // only used for parallax depth calculation
@@ -35,14 +32,14 @@ struct VertexOutput
     float3 m_worldPosition : UV0;
 };
  
-VertexOutput MainVS(VertexInput IN)
+VSDepthOutput MainVS(VSInput IN)
 {
-    VertexOutput OUT;
+    VSDepthOutput OUT;
 
     VertexLocalToWorld(IN.m_position, OUT.m_worldPosition);
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, OUT.m_worldPosition)
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, OUT.m_worldPosition);
 
-    EvaluateUVs(IN.m_uv0, IN.m_uv1, OUT.m_uv[0], OUT.m_uv[1]);
+    EvaluateUVs(IN.m_uvs, OUT.m_uv);
 
     if (ShouldHandleParallaxInDepthShaders())
     {
@@ -54,10 +51,10 @@ VertexOutput MainVS(VertexInput IN)
 
 struct PSDepthOutput
 {
-    float m_depth : SV_Depth;
+    precise float m_depth : SV_Depth;
 };
 
-PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
+PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     PSDepthOutput OUT;
 
@@ -65,15 +62,13 @@ PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
     {
         float3 tangents[UvSetCount];
         float3 bitangents[UvSetCount];
-        PrepareGeneratedTangent(IN.m_tangent, IN.m_bitangent, IN.m_uv, tangents, bitangents);
+        PrepareGeneratedTangent(
+            normalize(IN.m_normal), IN.m_tangent, IN.m_bitangent, IN.m_worldPosition,
+            isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
 
-        OUT.m_depth = EvaluatePixelDepth(
-            IN.m_depth, IN.m_uv, IN.m_worldPosition, IN.m_normal, tangents, bitangents);
-
-        OUT.m_depth += PdoShadowMapBias;
+        EvaluatePixelDepth(IN.m_depth, IN.m_uv, IN.m_worldPosition, IN.m_normal, tangents, bitangents, OUT.m_depth);
     }
 
-    // TODO: Specialize this shader for the cases where depth is written, clipping is performed, or both
     MaybeClip(IN.m_uv);
 
     return OUT;

@@ -57,6 +57,12 @@ namespace AZ
             };
 
             AZStd::string m_source;
+
+            //! Set of shader function requirements that must be provided with external headers for the shader to compile.
+            //! The presence of such requirements indicates that the shader cannot be compiled without injected headers to provide
+            //! the required functionality.
+            AZStd::vector<AZStd::string> m_requirements;
+
             RHI::ShaderCompilerArguments m_compiler;
 
             AZStd::string m_drawListName;
