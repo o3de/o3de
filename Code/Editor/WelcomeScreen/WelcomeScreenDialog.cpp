@@ -118,7 +118,7 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     connect(ui->levelFileLabel, &QLabel::linkActivated, this, &WelcomeScreenDialog::OnNewLevelLabelClicked);
     connect(ui->openLevelButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnOpenLevelBtnClicked);
 
-    // Adjust the height, if need be
+    // Adjust the height, if it need to be
     // Do it in the constructor so that the WindowDecoratorWrapper handles it correctly
     int smallestHeight = GetSmallestScreenHeight();
     if (smallestHeight < geometry().height())
