@@ -44,6 +44,7 @@ namespace MaterialEditor
         bool GetOpenDocumentParams(AZStd::string& openPath) override;
         void OpenSettings() override;
         void OpenHelp() override;
+        void OpenAbout() override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
 
