@@ -536,8 +536,7 @@ namespace Profiler
         ImGui::Columns(1, "TimelineColumn", true);
 
         // Timeline
-        if (ImGui::BeginChild(
-                "Timeline", { 0, 0 }, true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+        if (ImGui::BeginChild("Timeline", { 0, 0 }, true, ImGuiWindowFlags_AlwaysVerticalScrollbar))
         {
             // Find the next frame boundary after the viewport's right bound and draw until that tick
             auto nextFrameBoundaryItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportEndTick);

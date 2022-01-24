@@ -9,64 +9,6 @@
             },
             "methods": [
                 {
-                    "base": "AutonomousToAuthority",
-                    "context": "NetworkTestPlayerComponent",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Autonomous To Authority"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Autonomous To Authority is invoked"
-                    },
-                    "details": {
-                        "name": "Autonomous To Authority"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{CA5E5C37-98A6-04D2-E15C-1B4BFEE4C7DD}",
-                            "details": {
-                                "name": "Network Test Player Component"
-                            }
-                        },
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "ServerToAuthority",
-                    "context": "NetworkTestPlayerComponent",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Server To Authority"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Server To Authority is invoked"
-                    },
-                    "details": {
-                        "name": "Server To Authority"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{CA5E5C37-98A6-04D2-E15C-1B4BFEE4C7DD}",
-                            "details": {
-                                "name": "Network Test Player Component"
-                            }
-                        },
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
                     "base": "AutonomousToAuthorityByEntityId",
                     "context": "NetworkTestPlayerComponent",
                     "entry": {
@@ -97,18 +39,72 @@
                     ]
                 },
                 {
-                    "base": "ServerToAuthorityByEntityId",
+                    "base": "AuthorityToClientNoParams_PlayFxByEntityId",
                     "context": "NetworkTestPlayerComponent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Server To Authority By Entity Id"
+                        "tooltip": "When signaled, this will invoke Authority To Client No Params_ Play Fx By Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Server To Authority By Entity Id is invoked"
+                        "tooltip": "Signaled after Authority To Client No Params_ Play Fx By Entity Id is invoked"
                     },
                     "details": {
-                        "name": "Server To Authority By Entity Id"
+                        "name": "Authority To Client No Params_ Play Fx By Entity Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Source",
+                                "tooltip": "The Source containing the NetworkTestPlayerComponentController"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AuthorityToAutonomous_PlayerNumberByEntityId",
+                    "context": "NetworkTestPlayerComponent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Authority To Autonomous_ Player Number By Entity Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Authority To Autonomous_ Player Number By Entity Id is invoked"
+                    },
+                    "details": {
+                        "name": "Authority To Autonomous_ Player Number By Entity Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Source",
+                                "tooltip": "The Source containing the NetworkTestPlayerComponentController"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "player_number"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ServerToAuthority_DealDamageByEntityId",
+                    "context": "NetworkTestPlayerComponent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Server To Authority_ Deal Damage By Entity Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Server To Authority_ Deal Damage By Entity Id is invoked"
+                    },
+                    "details": {
+                        "name": "Server To Authority_ Deal Damage By Entity Id"
                     },
                     "params": [
                         {
@@ -121,47 +117,48 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "some Float"
+                                "name": "damage"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "AutonomousToAuthorityNoParams",
+                    "base": "AutonomousToAuthorityNoParamsByEntityId",
                     "context": "NetworkTestPlayerComponent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Autonomous To Authority No Params"
+                        "tooltip": "When signaled, this will invoke Autonomous To Authority No Params By Entity Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Autonomous To Authority No Params is invoked"
+                        "tooltip": "Signaled after Autonomous To Authority No Params By Entity Id is invoked"
                     },
                     "details": {
-                        "name": "Autonomous To Authority No Params"
+                        "name": "Autonomous To Authority No Params By Entity Id"
                     },
                     "params": [
                         {
-                            "typeid": "{CA5E5C37-98A6-04D2-E15C-1B4BFEE4C7DD}",
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "Network Test Player Component"
+                                "name": "Source",
+                                "tooltip": "The Source containing the NetworkTestPlayerComponentController"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "AuthorityToAutonomous",
+                    "base": "ServerToAuthority_DealDamage",
                     "context": "NetworkTestPlayerComponent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Authority To Autonomous"
+                        "tooltip": "When signaled, this will invoke Server To Authority_ Deal Damage"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Authority To Autonomous is invoked"
+                        "tooltip": "Signaled after Server To Authority_ Deal Damage is invoked"
                     },
                     "details": {
-                        "name": "Authority To Autonomous"
+                        "name": "Server To Authority_ Deal Damage"
                     },
                     "params": [
                         {
@@ -179,24 +176,59 @@
                     ]
                 },
                 {
-                    "base": "AuthorityToClientNoParams",
+                    "base": "AutonomousToAuthority",
                     "context": "NetworkTestPlayerComponent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Authority To Client No Params"
+                        "tooltip": "When signaled, this will invoke Autonomous To Authority"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Authority To Client No Params is invoked"
+                        "tooltip": "Signaled after Autonomous To Authority is invoked"
                     },
                     "details": {
-                        "name": "Authority To Client No Params"
+                        "name": "Autonomous To Authority"
                     },
                     "params": [
                         {
                             "typeid": "{CA5E5C37-98A6-04D2-E15C-1B4BFEE4C7DD}",
                             "details": {
                                 "name": "Network Test Player Component"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AuthorityToAutonomous_PlayerNumber",
+                    "context": "NetworkTestPlayerComponent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Authority To Autonomous_ Player Number"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Authority To Autonomous_ Player Number is invoked"
+                    },
+                    "details": {
+                        "name": "Authority To Autonomous_ Player Number"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CA5E5C37-98A6-04D2-E15C-1B4BFEE4C7DD}",
+                            "details": {
+                                "name": "Network Test Player Component"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
                             }
                         }
                     ]
@@ -308,79 +340,47 @@
                     ]
                 },
                 {
-                    "base": "AuthorityToClientNoParamsByEntityId",
+                    "base": "AutonomousToAuthorityNoParams",
                     "context": "NetworkTestPlayerComponent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Authority To Client No Params By Entity Id"
+                        "tooltip": "When signaled, this will invoke Autonomous To Authority No Params"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Authority To Client No Params By Entity Id is invoked"
+                        "tooltip": "Signaled after Autonomous To Authority No Params is invoked"
                     },
                     "details": {
-                        "name": "Authority To Client No Params By Entity Id"
+                        "name": "Autonomous To Authority No Params"
                     },
                     "params": [
                         {
-                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "typeid": "{CA5E5C37-98A6-04D2-E15C-1B4BFEE4C7DD}",
                             "details": {
-                                "name": "Source",
-                                "tooltip": "The Source containing the NetworkTestPlayerComponentController"
+                                "name": "Network Test Player Component"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "AuthorityToAutonomousByEntityId",
+                    "base": "AuthorityToClientNoParams_PlayFx",
                     "context": "NetworkTestPlayerComponent",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Authority To Autonomous By Entity Id"
+                        "tooltip": "When signaled, this will invoke Authority To Client No Params_ Play Fx"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Authority To Autonomous By Entity Id is invoked"
+                        "tooltip": "Signaled after Authority To Client No Params_ Play Fx is invoked"
                     },
                     "details": {
-                        "name": "Authority To Autonomous By Entity Id"
+                        "name": "Authority To Client No Params_ Play Fx"
                     },
                     "params": [
                         {
-                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "typeid": "{CA5E5C37-98A6-04D2-E15C-1B4BFEE4C7DD}",
                             "details": {
-                                "name": "Source",
-                                "tooltip": "The Source containing the NetworkTestPlayerComponentController"
-                            }
-                        },
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "some Float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "AutonomousToAuthorityNoParamsByEntityId",
-                    "context": "NetworkTestPlayerComponent",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Autonomous To Authority No Params By Entity Id"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Autonomous To Authority No Params By Entity Id is invoked"
-                    },
-                    "details": {
-                        "name": "Autonomous To Authority No Params By Entity Id"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
-                            "details": {
-                                "name": "Source",
-                                "tooltip": "The Source containing the NetworkTestPlayerComponentController"
+                                "name": "Network Test Player Component"
                             }
                         }
                     ]

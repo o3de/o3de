@@ -745,7 +745,7 @@ namespace
 
     void PySetActiveViewport(unsigned int viewportIndex)
     {
-        bool success = false;
+        [[maybe_unused]] bool success = false;
         CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
         if (layout)
         {
