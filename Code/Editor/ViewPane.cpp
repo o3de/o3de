@@ -38,7 +38,6 @@
 #include "Viewport.h"
 #include "LayoutConfigDialog.h"
 #include "TopRendererWnd.h"
-#include "UserMessageDefines.h"
 #include "MainWindow.h"
 #include "QtViewPaneManager.h"
 #include "EditorViewportWidget.h"
@@ -746,7 +745,7 @@ namespace
 
     void PySetActiveViewport(unsigned int viewportIndex)
     {
-        bool success = false;
+        [[maybe_unused]] bool success = false;
         CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
         if (layout)
         {

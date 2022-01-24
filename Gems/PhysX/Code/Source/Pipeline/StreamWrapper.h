@@ -10,6 +10,7 @@
 
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Asset/AssetDataStream.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <extensions/PxDefaultStreams.h>
 
 namespace PhysX

@@ -69,6 +69,45 @@ protected:
         m_colliderComponent = m_entity->CreateComponent<Terrain::TerrainPhysicsColliderComponent>(Terrain::TerrainPhysicsColliderConfig());
         m_app.RegisterComponentDescriptor(m_colliderComponent->CreateDescriptor());
     }
+
+    void ProcessRegionLoop(const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
+        AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+        AzFramework::SurfaceData::SurfaceTagWeightList* surfaceTags,
+        float mockHeight)
+    {
+        if (!perPositionCallback)
+        {
+            return;
+        }
+
+        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize.GetX()));
+        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize.GetY()));
+
+        AzFramework::SurfaceData::SurfacePoint surfacePoint;
+        for (size_t y = 0; y < numSamplesY; y++)
+        {
+            float fy = aznumeric_cast<float>(inRegion.GetMin().GetY() + (y * stepSize.GetY()));
+            for (size_t x = 0; x < numSamplesX; x++)
+            {
+                bool terrainExists = false;
+                float fx = aznumeric_cast<float>(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
+                surfacePoint.m_position.Set(fx, fy, mockHeight);
+                if (surfaceTags)
+                {
+                    surfacePoint.m_surfaceTags.clear();
+                    if (fy < 128.0)
+                    {
+                        surfacePoint.m_surfaceTags.push_back(surfaceTags->at(0));
+                    }
+                    else
+                    {
+                        surfacePoint.m_surfaceTags.push_back(surfaceTags->at(1));
+                    }
+                }
+                perPositionCallback(x, y, surfacePoint, terrainExists);
+            }
+        }
+    }
 };
 
 TEST_F(TerrainPhysicsColliderComponentTest, ActivateEntityActivateSuccess)
@@ -238,6 +277,14 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
+    ON_CALL(terrainListener, ProcessHeightsFromRegion).WillByDefault(
+        [this](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+        {
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, nullptr, 0.0f);
+        }
+    );
 
     int32_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
@@ -271,8 +318,15 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
 
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
-    ON_CALL(terrainListener, GetHeightFromFloats).WillByDefault(Return(mockHeight));
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
+    ON_CALL(terrainListener, ProcessHeightsFromRegion).WillByDefault(
+        [this, mockHeight](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            [[maybe_unused]]  AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+        {
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, nullptr, mockHeight);
+        }
+    );
 
     // Just return the bounds as setup. This is equivalent to the box being at the origin.
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
@@ -414,22 +468,18 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     return2.m_surfaceType = tag2;
     return2.m_weight = 1.0f;
 
+    AzFramework::SurfaceData::SurfaceTagWeightList surfaceTags = { return1, return2 };
+
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
-    ON_CALL(terrainListener, GetHeightFromFloats).WillByDefault(Return(mockHeight));
-    ON_CALL(terrainListener, GetMaxSurfaceWeightFromFloats)
-        .WillByDefault(
-            [return1, return2](
-                [[maybe_unused]] float x, [[maybe_unused]] float y,
-                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr)
-            {
-                // return tag1 for the first half of the rows, tag2 for the rest.
-                if (y < 128.0)
-                {
-                    return return1;
-                }
-                return return2;
-            });
+    ON_CALL(terrainListener, ProcessSurfacePointsFromRegion).WillByDefault(
+        [this, mockHeight, &surfaceTags](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+        {
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags, mockHeight);
+        }
+    );
 
     AZStd::vector<Physics::HeightMaterialPoint> heightsAndMaterials;
 

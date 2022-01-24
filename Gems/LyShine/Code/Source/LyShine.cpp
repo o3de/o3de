@@ -43,11 +43,11 @@
 #include "Sprite.h"
 #include "UiSerialize.h"
 #include "UiRenderer.h"
+#include "Draw2d.h"
 
 #include <LyShine/Bus/UiCursorBus.h>
 #include <LyShine/Bus/UiDraggableBus.h>
 #include <LyShine/Bus/UiDropTargetBus.h>
-#include <LyShine/Draw2d.h>
 
 #if defined(LYSHINE_INTERNAL_UNIT_TEST)
 #include "TextMarkup.h"
@@ -124,7 +124,7 @@ AllocateConstIntCVar(CLyShine, CV_ui_RunUnitTestsOnStartup);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CLyShine::CLyShine([[maybe_unused]] ISystem* system)
+CLyShine::CLyShine()
     : AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI())
     , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI())
     , m_draw2d(new CDraw2d)
@@ -155,8 +155,6 @@ CLyShine::CLyShine([[maybe_unused]] ISystem* system)
     LyShineDebug::Initialize();
     UiElementComponent::Initialize();
     UiCanvasComponent::Initialize();
-
-    UiAnimationSystem::StaticInitialize();
 
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
@@ -356,6 +354,12 @@ bool CLyShine::DoesSpriteTextureAssetExist(const AZStd::string& pathname)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::Data::Instance<AZ::RPI::Image> CLyShine::LoadTexture(const AZStd::string& pathname)
+{
+    return CDraw2d::LoadTexture(pathname);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::PostInit()
 {
 #if defined(LYSHINE_INTERNAL_UNIT_TEST)
@@ -382,8 +386,8 @@ void CLyShine::Update(float deltaTimeInSeconds)
     }
 
     // Tell the UI system the size of the viewport we are rendering to - this drives the
-    // canvas size for full screen UI canvases. It needs to be set before either pLyShine->Update or
-    // pLyShine->Render are called. It must match the viewport size that the input system is using.
+    // canvas size for full screen UI canvases. It needs to be set before either lyShine->Update or
+    // lyShine->Render are called. It must match the viewport size that the input system is using.
     SetViewportSize(m_uiRenderer->GetViewportSize());
 
     // Guard against nested updates. This can occur if a canvas update below triggers the load screen component's
@@ -691,7 +695,7 @@ void CLyShine::RenderUiCursor()
     AZ::RHI::Size cursorSize = m_uiCursorTexture->GetDescriptor().m_size;
     const AZ::Vector2 dimensions(aznumeric_cast<float>(cursorSize.m_width), aznumeric_cast<float>(cursorSize.m_height));
 
-    CDraw2d::ImageOptions imageOptions;
+    IDraw2d::ImageOptions imageOptions;
     imageOptions.m_clamp = true;
     const float opacity = 1.0f;
     const float rotation = 0.0f;
@@ -704,10 +708,10 @@ void CLyShine::RenderUiCursor()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::DebugReportDrawCalls(IConsoleCmdArgs* cmdArgs)
 {
-    if (gEnv->pLyShine)
+    if (AZ::Interface<ILyShine>::Get())
     {
         // We want to use an internal-only non-static function so downcast to CLyShine
-        CLyShine* pLyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+        CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
 
         // There is an optional parameter which is a name to include in the output filename
         AZStd::string name;
@@ -717,7 +721,7 @@ void CLyShine::DebugReportDrawCalls(IConsoleCmdArgs* cmdArgs)
         }
 
         // Use the canvas manager to access all the loaded canvases
-        pLyShine->m_uiCanvasManager->DebugReportDrawCalls(name);
+        lyShine->m_uiCanvasManager->DebugReportDrawCalls(name);
     }
 }
 #endif
@@ -738,7 +742,7 @@ void CLyShine::RunUnitTests(IConsoleCmdArgs* cmdArgs)
         return;
     }
 
-    CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+    CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
     AZ_Assert(lyShine, "Attempting to run unit-tests prior to LyShine initialization!");
 
     TextMarkup::UnitTest(cmdArgs);

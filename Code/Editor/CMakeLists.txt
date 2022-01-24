@@ -63,7 +63,7 @@ ly_add_target(
 set(pal_cmake_files "")
 foreach(enabled_platform ${LY_PAL_TOOLS_ENABLED})
     string(TOLOWER ${enabled_platform} enabled_platform_lowercase)
-    ly_get_list_relative_pal_filename(pal_cmake_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${enabled_platform})
+    o3de_pal_dir(pal_cmake_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${enabled_platform} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
     list(APPEND pal_cmake_files ${pal_cmake_dir}/editor_lib_${enabled_platform_lowercase}_files.cmake)
 endforeach()
 
@@ -104,13 +104,11 @@ ly_add_target(
             3rdParty::Qt::Concurrent
             3rdParty::TIFF
             3rdParty::squish-ccr
-            3rdParty::AWSNativeSDK::STS
             Legacy::CryCommon
             Legacy::EditorCommon
             AZ::AzCore
             AZ::AzToolsFramework
             Gem::LmbrCentral.Static
-            AZ::AWSNativeSDKInit
             AZ::AtomCore
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
@@ -119,7 +117,6 @@ ly_add_target(
             Gem::AtomViewportDisplayInfo
             ${additional_dependencies}
         PUBLIC
-            3rdParty::AWSNativeSDK::Core
             3rdParty::Qt::Network
             Legacy::EditorCore
     RUNTIME_DEPENDENCIES

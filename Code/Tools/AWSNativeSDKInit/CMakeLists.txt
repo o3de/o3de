@@ -6,14 +6,14 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/source/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
 ly_add_target(
     NAME AWSNativeSDKInit STATIC
     NAMESPACE AZ
     FILES_CMAKE
         aws_native_sdk_init_files.cmake
-        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             include
@@ -29,6 +29,24 @@ ly_add_target(
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_add_target(
+        NAME AWSNativeSDKTestLibs STATIC
+        NAMESPACE AZ
+        FILES_CMAKE
+            aws_native_sdk_test_files.cmake
+        INCLUDE_DIRECTORIES
+            PUBLIC
+                include
+                tests/libs
+            PRIVATE
+                source
+        BUILD_DEPENDENCIES
+            PRIVATE
+                3rdParty::AWSNativeSDK::Core
+                AZ::AzCore
+                AZ::AzTest
+    )
+
     ly_add_target(
         NAME AWSNativeSDKInit.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE AZ

@@ -43,7 +43,7 @@ function(fixup_python_framework framework_path)
     
     file(GLOB_RECURSE exe_file_list "${framework_path}/**/*.exe")
     if(exe_file_list)
-        file(REMOVE_RECURSE "${exe_file_list}")
+        file(REMOVE_RECURSE ${exe_file_list})
     endif()
     execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink include/python@LY_PYTHON_VERSION_MAJOR_MINOR@m Headers
         WORKING_DIRECTORY "${framework_path}/Versions/@LY_PYTHON_VERSION_MAJOR_MINOR@"

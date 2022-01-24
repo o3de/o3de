@@ -51,7 +51,7 @@ namespace AssetProcessor
             case AZ::SettingsRegistryInterface::VisitAction::Begin:
             {
                 // Only continue traversal if the path is exactly the AssetProcessorSettingsKey (which indicates the start of traversal)
-                // or if a "Platform *" object and it's children are being traversed 
+                // or if a "Platform *" object and it's children are being traversed
                 if (jsonPath == AssetProcessorSettingsKey)
                 {
                     return AZ::SettingsRegistryInterface::VisitResponse::Continue;
@@ -631,7 +631,7 @@ namespace AssetProcessor
         for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
         {
             AZStd::string_view currentRCParams = assetRecognizer.m_defaultParams;
-            // The "/Amazon/AssetProcessor/Settings/RC */<platform>" entry will be queried 
+            // The "/Amazon/AssetProcessor/Settings/RC */<platform>" entry will be queried
             AZ::IO::Path overrideParamsKey = AZ::IO::Path(AZ::IO::PosixPathSeparator);
             overrideParamsKey /= path;
             overrideParamsKey /= platform.m_identifier;
@@ -644,7 +644,7 @@ namespace AssetProcessor
             }
             else
             {
-                // otherwise check for tags associated with the platform 
+                // otherwise check for tags associated with the platform
                 for (const AZStd::string& tag : platform.m_tags)
                 {
                     overrideParamsKey.ReplaceFilename(AZ::IO::PathView(tag));
@@ -1416,6 +1416,8 @@ namespace AssetProcessor
             return QString();
         }
 
+        auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
+
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
             AssetProcessor::ScanFolderInfo scanFolderInfo = m_scanFolders[pathIdx];
@@ -1430,7 +1432,7 @@ namespace AssetProcessor
             QDir rooted(scanFolderInfo.ScanPath());
             QString absolutePath = rooted.absoluteFilePath(tempRelativeName);
             AssetProcessor::FileStateInfo fileStateInfo;
-            auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
+
             if (fileStateInterface)
             {
                 if (fileStateInterface->GetFileInfo(absolutePath, &fileStateInfo))
@@ -1499,7 +1501,7 @@ namespace AssetProcessor
         QRegExp nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
         AZStd::stack<QString> dirs;
         dirs.push(sourceFolderDir.absolutePath());
-        
+
         while (!dirs.empty())
         {
             QString absolutePath = dirs.top();
@@ -1528,7 +1530,7 @@ namespace AssetProcessor
                         continue;
                     }
                 }
-                
+
                 QString pathMatch{ sourceFolderDir.relativeFilePath(dirIterator.filePath()) };
                 if (nameMatch.exactMatch(pathMatch))
                 {

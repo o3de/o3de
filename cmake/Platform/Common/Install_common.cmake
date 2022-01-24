@@ -445,9 +445,10 @@ function(ly_setup_cmake_install)
         )
     endforeach()
 
-    # Transform the LY_EXTERNAL_SUBDIRS list into a json array
+    # Transform the LY_EXTERNAL_SUBDIRS global property list into a json array
     set(indent "        ")
-    foreach(external_subdir ${LY_EXTERNAL_SUBDIRS})
+    get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+    foreach(external_subdir ${external_subdirs})
         cmake_path(RELATIVE_PATH external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE engine_rel_external_subdir)
         list(APPEND relative_external_subdirs "\"${engine_rel_external_subdir}\"")
     endforeach()
@@ -639,7 +640,8 @@ function(ly_setup_assets)
     # the install layout from the root directory. Such as <external-subdirectory-root>/Cache.
     # This is also done to avoid globbing thousands of files in subdirectories that shouldn't
     # be processed.
-    foreach(gem_candidate_dir IN LISTS LY_EXTERNAL_SUBDIRS LY_PROJECTS)
+    get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+    foreach(gem_candidate_dir IN LISTS external_subdirs LY_PROJECTS)
         file(REAL_PATH ${gem_candidate_dir} gem_candidate_dir BASE_DIRECTORY ${LY_ROOT_FOLDER})
         # Don't recurse immediately in order to exclude transient source artifacts
         file(GLOB

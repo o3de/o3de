@@ -131,7 +131,7 @@ namespace AssetUtilsInternal
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
-        
+
         // once we're done, regardless of success or failure, we 'unlock' those files for further process.
         // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
         QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
@@ -870,23 +870,27 @@ namespace AssetUtilities
         return true;
     }
 
-    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath)
     {
         // Skip over the assetPlatform path segment if it is matches one of the platform defaults
         // Otherwise return the path unchanged
-        AZStd::string_view strippedProductPath{ relativeProductPath };
-        if (AZStd::optional pathSegment = AZ::StringFunc::TokenizeNext(strippedProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
-            pathSegment.has_value())
+
+        AZStd::string_view originalPath = relativeProductPath;
+        AZStd::optional firstPathSegment = AZ::StringFunc::TokenizeNext(relativeProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+
+        if (firstPathSegment && AzFramework::PlatformHelper::GetPlatformIdFromName(*firstPathSegment) != AzFramework::PlatformId::Invalid)
         {
-            AZ::IO::FixedMaxPathString assetPlatformSegmentLower{ *pathSegment };
-            AZStd::to_lower(assetPlatformSegmentLower.begin(), assetPlatformSegmentLower.end());
-            if (AzFramework::PlatformHelper::GetPlatformIdFromName(assetPlatformSegmentLower) != AzFramework::PlatformId::Invalid)
-            {
-                return QString::fromUtf8(strippedProductPath.data(), aznumeric_cast<int>(strippedProductPath.size()));
-            }
+            return relativeProductPath;
         }
 
-        return QString::fromUtf8(relativeProductPath.data(), aznumeric_cast<int>(relativeProductPath.size()));
+        return originalPath;
+    }
+
+    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    {
+        AZStd::string_view result = StripAssetPlatformNoCopy(relativeProductPath);
+
+        return QString::fromUtf8(result.data(), aznumeric_cast<int>(result.size()));
     }
 
     QString NormalizeFilePath(const QString& filePath)

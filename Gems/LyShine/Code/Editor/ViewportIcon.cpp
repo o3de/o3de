@@ -6,7 +6,7 @@
  *
  */
 #include "EditorCommon.h"
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -15,7 +15,7 @@ float ViewportIcon::m_dpiScaleFactor = 1.0f;
 
 ViewportIcon::ViewportIcon(const char* textureFilename)
 {
-    m_image = CDraw2d::LoadTexture(textureFilename);
+    m_image = Draw2dHelper::LoadTexture(textureFilename);
 }
 
 ViewportIcon::~ViewportIcon()
@@ -48,7 +48,7 @@ void ViewportIcon::DrawImageAligned(Draw2dHelper& draw2d, AZ::Vector2& pivot, fl
         opacity);
 }
 
-void ViewportIcon::DrawImageTiled(Draw2dHelper& draw2d, CDraw2d::VertexPosColUV* verts)
+void ViewportIcon::DrawImageTiled(Draw2dHelper& draw2d, IDraw2d::VertexPosColUV* verts)
 {
     // Use default blending and rounding modes
     IDraw2d::Rounding rounding = IDraw2d::Rounding::Nearest;
@@ -63,7 +63,7 @@ void ViewportIcon::DrawAxisAlignedBoundingBox(Draw2dHelper& draw2d, AZ::Vector2 
     float endTexCoordU = fabsf((bound1.GetX() - bound0.GetX()) * pixelLengthForDottedLineTexture);
     float endTexCoordV = fabsf((bound1.GetY() - bound0.GetY()) * pixelLengthForDottedLineTexture);
 
-    CDraw2d::VertexPosColUV verts[2];
+    IDraw2d::VertexPosColUV verts[2];
     {
         verts[0].color = dottedColor;
         verts[1].color = dottedColor;
@@ -158,7 +158,7 @@ void ViewportIcon::Draw(Draw2dHelper& draw2d, AZ::Vector2 anchorPos, const AZ::M
     AZ::Matrix4x4 moveFromPivotSpaceMat = AZ::Matrix4x4::CreateTranslation(pivot3);
     AZ::Matrix4x4 newTransform = transform * moveFromPivotSpaceMat * rotMat * moveToPivotSpaceMat;
 
-    CDraw2d::VertexPosColUV verts[4];
+    IDraw2d::VertexPosColUV verts[4];
     // points are a clockwise quad
     static const AZ::Vector2 uvs[4] = {
         AZ::Vector2(0.0f, 0.0f), AZ::Vector2(1.0f, 0.0f), AZ::Vector2(1.0f, 1.0f), AZ::Vector2(0.0f, 1.0f)
@@ -251,7 +251,7 @@ void ViewportIcon::DrawDistanceLine(Draw2dHelper& draw2d, AZ::Vector2 start, AZ:
     const float pixelLengthForDottedLineTexture = 8.0f;
     float endTexCoordU = length / pixelLengthForDottedLineTexture;
 
-    CDraw2d::VertexPosColUV verts[2];
+    IDraw2d::VertexPosColUV verts[2];
 
     verts[0].position = start;
     verts[0].color = dottedColor;
@@ -296,7 +296,7 @@ void ViewportIcon::DrawDistanceLine(Draw2dHelper& draw2d, AZ::Vector2 start, AZ:
 
     draw2d.SetTextAlignment(IDraw2d::HAlign::Center, IDraw2d::VAlign::Bottom);
     draw2d.SetTextRotation(rotation);
-    draw2d.DrawText(textBuf, textPos, 16.0f * ViewportIcon::GetDpiScaleFactor(), 1.0f);
+    draw2d.DrawText(textBuf, textPos, 8.0f, 1.0f);
 }
 
 void ViewportIcon::DrawAnchorLinesSplit(Draw2dHelper& draw2d, AZ::Vector2 anchorPos1, AZ::Vector2 anchorPos2,
