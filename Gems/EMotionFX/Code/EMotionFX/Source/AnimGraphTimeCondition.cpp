@@ -92,8 +92,9 @@ namespace EMotionFX
             // create a randomized count down value
             if (animGraphInstance->IsNetworkEnabled())
             {
-                // using a seeded random in order to generate predictable result in network. 
-                uniqueData->m_countDownTime = MCore::Random::RandF(m_minRandomTime, m_maxRandomTime, animGraphInstance->GetLcgRandom());
+                // Using a seeded random in order to generate predictable result in network. 
+                uniqueData->m_countDownTime =
+                    m_minRandomTime + (m_maxRandomTime - m_minRandomTime) * animGraphInstance->GetLcgRandom().GetRandomFloat();
             }
             else
             {

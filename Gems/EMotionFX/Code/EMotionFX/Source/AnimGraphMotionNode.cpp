@@ -664,7 +664,16 @@ namespace EMotionFX
                 const float randomRange = previousIndexCumulativeWeight + m_motionRandomSelectionCumulativeWeights.back().second - currentIndexCumulativeWeight;
 
                 // Picking a random number between [0, randomRange)
-                const float randomValue = animGraphInstance->GetLcgRandom().GetRandomFloat() * randomRange;
+                float randomValue = 0.0f;
+                if (animGraphInstance->IsNetworkEnabled())
+                {
+                    // Using a seeded random in order to generate predictable result in network. 
+                    randomValue = animGraphInstance->GetLcgRandom().GetRandomFloat() * randomRange;
+                }
+                else
+                {
+                    randomValue = MCore::Random::RandF(0, randomRange);
+                }
                 // Remapping the value onto the existing non normalized cumulative probabilities
                 float remappedRandomValue = randomValue;
                 if (randomValue > previousIndexCumulativeWeight)
