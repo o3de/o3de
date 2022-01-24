@@ -99,9 +99,7 @@ namespace O3DE::ProjectManager
 
     int AdjustableHeaderWidget::CalcHeaderXPos(int headerIndex, bool calcEnd) const
     {
-
         // Total the widths of all headers before this one or including it if calcEnd is true
-        // Also factors in scroll position of the header
         int xPos = 0;
 
         if (!calcEnd)
