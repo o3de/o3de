@@ -55,7 +55,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="FaceList - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::u64" field="m_data" value="14563017593520122982" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							<Class name="AZ::u64" field="m_data" value="9996709738915796379" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -123,7 +123,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="FaceList - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::u64" field="m_data" value="11332459830831720586" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							<Class name="AZ::u64" field="m_data" value="16809217014760075539" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -309,7 +309,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="Tangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::u64" field="m_data" value="14351734474754285313" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							<Class name="AZ::u64" field="m_data" value="913385441694195840" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -340,7 +340,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="Bitangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::u64" field="m_data" value="15997251922861304891" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							<Class name="AZ::u64" field="m_data" value="16763868708150748964" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -471,7 +471,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="Tangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::u64" field="m_data" value="12937806066914201637" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							<Class name="AZ::u64" field="m_data" value="11496565252852403390" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -502,7 +502,7 @@
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
 						<Class name="AZStd::string" field="value1" value="Bitangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::u64" field="m_data" value="873786942732834087" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+							<Class name="AZ::u64" field="m_data" value="6810649909977646014" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 						</Class>
 					</Class>
 					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
