@@ -118,30 +118,6 @@ function(ly_generate_project_build_path_setreg project_real_path)
     file(GENERATE OUTPUT ${project_user_build_path_setreg_file} CONTENT ${project_build_path_setreg_content})
 endfunction()
 
-function(add_gem_json_external_subdirectories gem_path)
-    set(gem_json_path ${gem_path}/gem.json)
-    if(EXISTS ${gem_json_path})
-        read_json_external_subdirs(gem_external_subdirs ${gem_path}/gem.json)
-        foreach(gem_external_subdir ${gem_external_subdirs})
-            file(REAL_PATH ${gem_external_subdir} real_external_subdir BASE_DIRECTORY ${gem_path})
-            set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_external_subdir})
-            add_gem_json_external_subdirectories(${real_external_subdir})
-        endforeach()
-    endif()
-endfunction()
-
-function(add_project_json_external_subdirectories project_path)
-    set(project_json_path ${project_path}/project.json)
-    if(EXISTS ${project_json_path})
-        read_json_external_subdirs(project_external_subdirs ${project_path}/project.json)
-        foreach(project_external_subdir ${project_external_subdirs})
-            file(REAL_PATH ${project_external_subdir} real_external_subdir BASE_DIRECTORY ${project_path})
-            set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${real_external_subdir})
-            add_gem_json_external_subdirectories(${real_external_subdir})
-        endforeach()
-    endif()
-endfunction()
-
 function(install_project_asset_artifacts project_real_path)
     # The cmake tar command has a bit of a flaw
     # Any paths within the archive files it creates are relative to the current working directory.
@@ -212,16 +188,16 @@ foreach(project ${LY_PROJECTS})
     # when the external subdirectory contains relative paths of significant length
     string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
 
-    get_filename_component(project_folder_name ${project} NAME)
+    cmake_path(GET project FILENAME project_folder_name )
     list(APPEND LY_PROJECTS_FOLDER_NAME ${project_folder_name})
     add_subdirectory(${project} "${project_folder_name}-${full_directory_hash}")
     ly_generate_project_build_path_setreg(${full_directory_path})
-    add_project_json_external_subdirectories(${full_directory_path})
 
     # Get project name
     o3de_read_json_key(project_name ${full_directory_path}/project.json "project_name")
+    add_project_json_external_subdirectories(${full_directory_path} "${project_name}")
 
-   install_project_asset_artifacts(${full_directory_path})
+    install_project_asset_artifacts(${full_directory_path})
 
 endforeach()
 

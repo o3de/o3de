@@ -10,7 +10,7 @@
 o3de_find_gem("PhysX" physx_gem_path)
 set(physx_gem_json ${physx_gem_path}/gem.json)
 o3de_restricted_path(${physx_gem_json} physx_gem_restricted_path physx_gem_parent_relative_path)
-o3de_pal_dir(physx_pal_source_dir ${physx_gem_path}/Code/Source/Platform/${PAL_PLATFORM_NAME} ${physx_gem_restricted_path} ${physx_gem_path} ${physx_gem_parent_relative_path})
+o3de_pal_dir(physx_pal_source_dir ${physx_gem_path}/Code/Source/Platform/${PAL_PLATFORM_NAME} "${physx_gem_restricted_path}" "${physx_gem_path}" "${physx_gem_parent_relative_path}")
 
 include(${physx_pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
 

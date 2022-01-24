@@ -15,10 +15,20 @@ import os
 import pathlib
 import sys
 
-from o3de import cmake, manifest, utils
+from o3de import cmake, manifest, project_properties, utils
 
 logger = logging.getLogger('o3de.disable_gem')
 logging.basicConfig(format=utils.LOG_FORMAT)
+
+
+def _remove_registered_gem_name_from_project(project_path: pathlib.Path, gem_name: str) -> int:
+    """
+    remove the registered gem name from the project.json
+    Returns
+    -------
+    int
+    """
+    return project_properties.edit_project_props(project_path, delete_gem_names=gem_name)
 
 
 def disable_gem_in_project(gem_name: str = None,
@@ -89,10 +99,13 @@ def disable_gem_in_project(gem_name: str = None,
     if not enabled_gem_file.is_file():
         logger.error(f'Enabled gem file {enabled_gem_file} is not present.')
         return 1
+
     # remove the gem
     error_code = cmake.remove_gem_dependency(enabled_gem_file, gem_json_data['gem_name'])
-    if error_code:
-        ret_val = error_code
+
+    # Remove the name of the gem from the project.json "gem_names" field it was added due to be an gem registered
+    # with the o3de_manifest
+    ret_val = error_code or _remove_registered_gem_name_from_project(project_path, gem_json_data['gem_name'])
 
     return ret_val
 

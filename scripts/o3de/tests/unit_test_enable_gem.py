@@ -104,10 +104,11 @@ class TestEnableGemCommand:
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, 0),
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False, 0),
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False, 0),
+        pytest.param(pathlib.PurePath('TestGem'), pathlib.PurePath('TestProject'), False, False, 0),
         ]
     )
-    def test_enable_gem_registers_gem_as_well(self, gem_path, project_path, gem_registered_with_project, gem_registered_with_engine,
-                        expected_result):
+    def test_enable_gem_registers_gem_name_with_project_json(self, gem_path, project_path, gem_registered_with_project,
+                                                             gem_registered_with_engine, expected_result):
 
         def get_registered_path(project_name: str = None, gem_name: str = None) -> pathlib.Path:
             if project_name:
@@ -115,9 +116,6 @@ class TestEnableGemCommand:
             elif gem_name:
                 return gem_path
             return None
-
-        def get_registered_gem_path(gem_name: str) -> pathlib.Path:
-            return gem_path
 
         def save_o3de_manifest(new_project_data: dict, manifest_path: pathlib.Path = None) -> bool:
             if manifest_path == project_path:
@@ -129,7 +127,7 @@ class TestEnableGemCommand:
                 return json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
             return None
 
-        def get_project_json_data(project_path: pathlib.Path):
+        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
             return self.enable_gem.project_data
 
         def get_gem_json_data(gem_path: pathlib.Path, project_path: pathlib.Path):
@@ -155,11 +153,14 @@ class TestEnableGemCommand:
                 patch('o3de.manifest.get_engine_gems', side_effect=get_engine_gems) as get_engine_gems_patch,\
                 patch('o3de.cmake.add_gem_dependency', side_effect=add_gem_dependency) as add_gem_dependency_patch,\
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
+
+            self.enable_gem.project_data.pop('gem_names', None)
             result = enable_gem.enable_gem_in_project(gem_path=gem_path, project_path=project_path)
             assert result == expected_result
-            # If the gem isn't registered with the engine or project already it should now be registered with the project
-            if not gem_registered_with_engine and gem_registered_with_project:
-                # Prepend the project path to each external subdirectory
-                project_relative_subdirs = map(lambda subdir: (pathlib.Path(project_path) / subdir).as_posix(),
-                    self.enable_gem.project_data.get('external_subdirectories', []))
-                assert gem_path.as_posix() in project_relative_subdirs
+
+            gem_json = get_gem_json_data(gem_path, project_path)
+            project_json = get_project_json_data(project_path=project_path)
+            if not gem_registered_with_engine and not gem_registered_with_project:
+                assert gem_json.get('gem_name', '') in project_json.get('gem_names', [])
+            else:
+                assert gem_json.get('gem_name', '') not in project_json.get('gem_names', [])
