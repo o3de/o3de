@@ -40,6 +40,7 @@ namespace AZ
                     ->Field("ambientMultiplier", &EditorDiffuseProbeGridComponent::m_ambientMultiplier)
                     ->Field("viewBias", &EditorDiffuseProbeGridComponent::m_viewBias)
                     ->Field("normalBias", &EditorDiffuseProbeGridComponent::m_normalBias)
+                    ->Field("numRaysPerProbe", &EditorDiffuseProbeGridComponent::m_numRaysPerProbe)
                     ->Field("editorMode", &EditorDiffuseProbeGridComponent::m_editorMode)
                     ->Field("runtimeMode", &EditorDiffuseProbeGridComponent::m_runtimeMode)
                     ;
@@ -93,6 +94,9 @@ namespace AZ
                                 ->Attribute(Edit::Attributes::Step, 0.1f)
                                 ->Attribute(Edit::Attributes::Min, 0.0f)
                                 ->Attribute(Edit::Attributes::Max, 1.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_numRaysPerProbe, "Number of Rays Per Probe", "Number of rays cast by each probe to detect lighting in its surroundings")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnNumRaysPerProbeChanged)
+                                ->Attribute(AZ::Edit::Attributes::EnumValues, &EditorDiffuseProbeGridComponent::GetNumRaysPerProbeEnumList)
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "Grid mode")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_editorMode, "Editor Mode", "Controls whether the editor uses RealTime or Baked diffuse GI. RealTime requires a ray-tracing capable GPU. Auto-Select will fallback to Baked if ray-tracing is not available")
@@ -216,6 +220,19 @@ namespace AZ
             }
         }
 
+        AZStd::vector<Edit::EnumConstant<DiffuseProbeGridNumRaysPerProbe>> EditorDiffuseProbeGridComponent::GetNumRaysPerProbeEnumList() const
+        {
+            AZStd::vector<Edit::EnumConstant<DiffuseProbeGridNumRaysPerProbe>> enumList;
+
+            for (uint32_t index = 0; index < DiffuseProbeGridNumRaysPerProbeArraySize; ++index)
+            {
+                const DiffuseProbeGridNumRaysPerProbeEntry& entry = DiffuseProbeGridNumRaysPerProbeArray[index];
+                enumList.push_back(Edit::EnumConstant<DiffuseProbeGridNumRaysPerProbe>(entry.m_enum, AZStd::to_string(entry.m_rayCount).c_str()));
+            }
+
+            return enumList;
+        }
+
         AZ::Aabb EditorDiffuseProbeGridComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
         {
             return m_controller.GetAabb();
@@ -310,6 +327,12 @@ namespace AZ
         AZ::u32 EditorDiffuseProbeGridComponent::OnNormalBiasChanged()
         {
             m_controller.SetNormalBias(m_normalBias);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AZ::u32 EditorDiffuseProbeGridComponent::OnNumRaysPerProbeChanged()
+        {
+            m_controller.SetNumRaysPerProbe(m_numRaysPerProbe);
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 

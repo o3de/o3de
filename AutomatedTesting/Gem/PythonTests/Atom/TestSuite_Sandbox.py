@@ -26,13 +26,3 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C36525660")
     class AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
-
-    # this test causes editor to crash when using slices. once automation transitions to prefabs it should pass
-    @pytest.mark.test_case_id("C36529666")
-    class AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded(EditorSharedTest):
-        from Atom.tests import hydra_AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded as test_module
-
-    # this test causes editor to crash when using slices. once automation transitions to prefabs it should pass
-    @pytest.mark.test_case_id("C36525660")
-    class AtomEditorComponentsLevel_DisplayMapperAdded(EditorSharedTest):
-        from Atom.tests import hydra_AtomEditorComponentsLevel_DisplayMapperAdded as test_module

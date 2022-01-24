@@ -29,7 +29,6 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Time/ITime.h>
 
-#include <LyShine/Bus/UiCursorBus.h>
 //#define DEFENCE_CVAR_HASH_LOGGING
 
 // s should point to a buffer at least 65 chars long
@@ -749,8 +748,6 @@ void    CXConsole::ShowConsole(bool show, const int iRequestScrollMax)
 
     if (show && !m_bConsoleActive)
     {
-        UiCursorBus::Broadcast(&UiCursorBus::Events::IncrementVisibleCounter);
-
         AzFramework::InputSystemCursorRequestBus::EventResult(m_previousSystemCursorState,
             AzFramework::InputDeviceMouse::Id,
             &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
@@ -760,8 +757,6 @@ void    CXConsole::ShowConsole(bool show, const int iRequestScrollMax)
     }
     else if (!show && m_bConsoleActive)
     {
-        UiCursorBus::Broadcast(&UiCursorBus::Events::DecrementVisibleCounter);
-
         AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
             &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
             m_previousSystemCursorState);
