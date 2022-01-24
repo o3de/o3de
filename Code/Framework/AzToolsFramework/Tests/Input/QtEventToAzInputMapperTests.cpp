@@ -562,7 +562,7 @@ namespace UnitTest
 
         AZ::Vector2 accumulatedPosition(0.0f,0.0f);
         for(const auto& pos: m_azCursorPositions) {
-            accumulatedPosition += (pos.m_normalizedPositionDelta * AZ::Vector2((float)WidgetSize.width(), (float)WidgetSize.height()));
+            accumulatedPosition += (pos.m_normalizedPositionDelta * AZ::Vector2(aznumeric_cast<float>(WidgetSize.width()), aznumeric_cast<float>(WidgetSize.height())));
         }
 
         // validate
