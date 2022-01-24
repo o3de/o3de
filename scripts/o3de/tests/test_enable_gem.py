@@ -134,10 +134,10 @@ class TestEnableGemCommand:
             return self.enable_gem.gem_data
 
         def get_project_gems(project_path: pathlib.Path):
-            return [gem_path] if gem_registered_with_project else []
+            return [pathlib.Path(gem_path).resolve()] if gem_registered_with_project else []
 
         def get_engine_gems():
-            return [gem_path] if gem_registered_with_engine else []
+            return [pathlib.Path(gem_path).resolve()] if gem_registered_with_engine else []
 
         def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
             return 0
