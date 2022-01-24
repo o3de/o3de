@@ -147,7 +147,13 @@ namespace AWSCore
         using ServiceRequestJobType = ServiceRequestJob<RequestType>;
         using ServiceClientJobType = ServiceClientJob<typename RequestType::ServiceTraits>;
 
+        using OnSuccessFunction = AZStd::function<void(ServiceRequestJob* job)>;
+        using OnFailureFunction = AZStd::function<void(ServiceRequestJob* job)>;
+
         class Function;
+
+        template<class Allocator = AZ::SystemAllocator>
+        static ServiceRequestJob* Create(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig());
 
         static Config* GetDefaultConfig()
         {
@@ -211,19 +217,6 @@ namespace AWSCore
         }
 
     protected:
-        /// The URL created by appending the API path to the service URL.
-        /// The path may contain {param} format parameters. The 
-        /// RequestType::parameters.BuildRequest method is responsible
-        /// for replacing these parts of the url.
-        const Aws::String& m_requestUrl;
-
-        std::shared_ptr<Aws::Client::AWSAuthV4Signer> m_AWSAuthSigner{ nullptr };
-
-        // Passed in configuration contains the AWS Credentials to use. If this request requires credentials 
-        // check in the constructor and set this bool to indicate if we're not valid before placing the credentials
-        // in the m_AWSAuthSigner
-        bool m_missingCredentials{ false };
-
         /// Called to prepare the request. By default no changes
         /// are made to the parameters object. Override to defer the preparation
         /// of parameters until running on the job's worker thread,
@@ -254,6 +247,19 @@ namespace AWSCore
         virtual void DoCleanup()
         {
         }
+
+        /// The URL created by appending the API path to the service URL.
+        /// The path may contain {param} format parameters. The
+        /// RequestType::parameters.BuildRequest method is responsible
+        /// for replacing these parts of the url.
+        const Aws::String& m_requestUrl;
+
+        std::shared_ptr<Aws::Client::AWSAuthV4Signer> m_AWSAuthSigner{ nullptr };
+
+        // Passed in configuration contains the AWS Credentials to use. If this request requires credentials
+        // check in the constructor and set this bool to indicate if we're not valid before placing the credentials
+        // in the m_AWSAuthSigner
+        bool m_missingCredentials{ false };
 
     private:
         bool BuildRequest(RequestBuilder& request) override
@@ -599,17 +605,6 @@ namespace AWSCore
             AZ_Printf(logRequestsChannel, "Response Body:\n");
             PrintRequestOutput(responseContent);
         }
-
-    public:
-        using OnSuccessFunction = AZStd::function<void(ServiceRequestJob* job)>;
-        using OnFailureFunction = AZStd::function<void(ServiceRequestJob* job)>;
-
-        template<class Allocator = AZ::SystemAllocator>
-        static ServiceRequestJob* Create(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
-        {
-            return azcreate(Function, (onSuccess, onFailure, config), Allocator);
-        }
-
     };
 
     /// A derived class that calls lambda functions on job completion.
@@ -629,9 +624,6 @@ namespace AWSCore
         }
 
     protected:
-        OnSuccessFunction m_onSuccess;
-        OnFailureFunction m_onFailure;
-
         void OnSuccess() override
         {
             AZStd::function<void()> callbackHandler = [this]()
@@ -667,7 +659,19 @@ namespace AWSCore
             };
             AZ::TickBus::QueueFunction(callbackHandler);
         }
+
+        OnSuccessFunction m_onSuccess;
+        OnFailureFunction m_onFailure;
+
     };
+
+    template<class RequestType>
+    template<class Allocator>
+    ServiceRequestJob<RequestType>* ServiceRequestJob<RequestType>::Create(
+        OnSuccessFunction onSuccess, OnFailureFunction onFailure, IConfig* config)
+    {
+        return azcreate(Function, (onSuccess, onFailure, config), Allocator);
+    }
 } // namespace AWSCore
 
 

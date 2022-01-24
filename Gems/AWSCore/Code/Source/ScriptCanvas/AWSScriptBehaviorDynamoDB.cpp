@@ -70,7 +70,7 @@ namespace AWSCore
         auto job = DynamoDBGetItemRequestJob::Create(
             [](DynamoDBGetItemRequestJob* job) // OnSuccess handler
             {
-                auto item = job->result.GetItem();
+                auto item = job->m_result.GetItem();
                 if (!item.empty())
                 {
                     DynamoDBAttributeValueMap result;
@@ -90,18 +90,18 @@ namespace AWSCore
             },
             [](DynamoDBGetItemRequestJob* job) // OnError handler
             {
-                Aws::String errorMessage = job->error.GetMessage();
+                Aws::String errorMessage = job->m_error.GetMessage();
                 AWSScriptBehaviorDynamoDBNotificationBus::Broadcast(
                     &AWSScriptBehaviorDynamoDBNotificationBus::Events::OnGetItemError, errorMessage.c_str());
             },
             &config);
 
-        job->request.SetTableName(table.c_str());
+        job->m_request.SetTableName(table.c_str());
         for (const auto& kepMapPair : keyMap)
         {
             Aws::Utils::Json::JsonValue keyJsonValue(kepMapPair.second.c_str());
             Aws::DynamoDB::Model::AttributeValue keyAttributeValue(keyJsonValue.View());
-            job->request.AddKey(kepMapPair.first.c_str(), keyAttributeValue);
+            job->m_request.AddKey(kepMapPair.first.c_str(), keyAttributeValue);
         }
         job->Start();
     }
