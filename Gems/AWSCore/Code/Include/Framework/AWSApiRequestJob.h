@@ -197,9 +197,9 @@ namespace AWSCore
         /// the job object is reused.
         void Reset(bool isClearDependent) override
         {
-            m_request = RequestType{};
-            m_result = ResultType{};
-            m_error = ErrorType{};
+            request = RequestType{};
+            result = ResultType{};
+            error = ErrorType{};
             m_wasSuccess = false;
             AwsApiClientJobType::Reset(isClearDependent);
         }
@@ -210,9 +210,9 @@ namespace AWSCore
             return m_wasSuccess;
         }
 
-        RequestType m_request;
-        ResultType m_result;
-        ErrorType m_error;
+        RequestType request;
+        ResultType result;
+        ErrorType error;
 
     protected:
         void Process() override
@@ -240,17 +240,17 @@ namespace AWSCore
             {
                 // Get real pointer from shared pointer, then use with member
                 // function pointer to call the function.
-                OutcomeType outcome = (AwsApiClientJobType::m_client.get()->*RequestTraits::Function)(m_request);
+                OutcomeType outcome = (AwsApiClientJobType::m_client.get()->*RequestTraits::Function)(request);
 
                 if (outcome.IsSuccess())
                 {
-                    m_result = std::move(outcome.GetResultWithOwnership());
+                    result = std::move(outcome.GetResultWithOwnership());
                     m_wasSuccess = true;
                     OnSuccess();
                 }
                 else
                 {
-                    m_error = outcome.GetError();
+                    error = outcome.GetError();
                     m_wasSuccess = false;
                     OnFailure();
                 }

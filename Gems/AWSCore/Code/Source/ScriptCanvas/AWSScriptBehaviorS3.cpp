@@ -93,16 +93,16 @@ namespace AWSCore
             },
             [](S3GetObjectRequestJob* job) // OnError handler
             {
-                Aws::String errorMessage = job->m_error.GetMessage();
+                Aws::String errorMessage = job->error.GetMessage();
                 AWSScriptBehaviorS3NotificationBus::Broadcast(
                     &AWSScriptBehaviorS3NotificationBus::Events::OnGetObjectError, errorMessage.c_str());
             },
             &config);
 
-        job->m_request.SetBucket(Aws::String(bucket.c_str()));
-        job->m_request.SetKey(Aws::String(objectKey.c_str()));
+        job->request.SetBucket(Aws::String(bucket.c_str()));
+        job->request.SetKey(Aws::String(objectKey.c_str()));
         Aws::String outFileName(normalizedOutFile.c_str());
-        job->m_request.SetResponseStreamFactory([outFileName]() {
+        job->request.SetResponseStreamFactory([outFileName]() {
             return Aws::New<Aws::FStream>(
                 AWSScriptBehaviorS3Name, outFileName.c_str(),
                 std::ios_base::out | std::ios_base::in | std::ios_base::binary | std::ios_base::trunc);
@@ -140,14 +140,14 @@ namespace AWSCore
             },
             [](S3HeadObjectRequestJob* job) // OnError handler
             {
-                Aws::String errorMessage = job->m_error.GetMessage();
+                Aws::String errorMessage = job->error.GetMessage();
                 AWSScriptBehaviorS3NotificationBus::Broadcast(
                     &AWSScriptBehaviorS3NotificationBus::Events::OnHeadObjectError, errorMessage.c_str());
             },
             &config);
 
-        job->m_request.SetBucket(Aws::String(bucket.c_str()));
-        job->m_request.SetKey(Aws::String(objectKey.c_str()));
+        job->request.SetBucket(Aws::String(bucket.c_str()));
+        job->request.SetKey(Aws::String(objectKey.c_str()));
         job->Start();
     }
 

@@ -71,7 +71,7 @@ namespace AWSCore
         auto job = LambdaInvokeRequestJob::Create(
             [](LambdaInvokeRequestJob* job) // OnSuccess handler
             {
-                Aws::IOStream& stream = job->m_result.GetPayload();
+                Aws::IOStream& stream = job->result.GetPayload();
                 std::istreambuf_iterator<AZStd::string::value_type> eos;
                 AZStd::string content = AZStd::string{std::istreambuf_iterator<AZStd::string::value_type>(stream), eos};
                 AWSScriptBehaviorLambdaNotificationBus::Broadcast(
@@ -79,7 +79,7 @@ namespace AWSCore
             },
             [](LambdaInvokeRequestJob* job) // OnError handler
             {
-                Aws::String errorMessage = job->m_error.GetMessage();
+                Aws::String errorMessage = job->error.GetMessage();
                 AWSScriptBehaviorLambdaNotificationBus::Broadcast(
                     &AWSScriptBehaviorLambdaNotificationBus::Events::OnInvokeError, errorMessage.c_str());
             },
@@ -87,8 +87,8 @@ namespace AWSCore
 
         std::shared_ptr<Aws::StringStream> stream = std::make_shared<Aws::StringStream>();
         *stream << payload.c_str();
-        job->m_request.SetFunctionName(functionName.c_str());
-        job->m_request.SetBody(stream);
+        job->request.SetFunctionName(functionName.c_str());
+        job->request.SetBody(stream);
         job->Start();
     }
 
