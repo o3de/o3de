@@ -13,7 +13,7 @@
 namespace AZ::Debug::Platform
 {
     template<typename... T>
-    void BeginRegion([[maybe_unused]] Budget* budget, const char* eventName, T const&... args)
+    void BeginProfileRegion([[maybe_unused]] Budget* budget, const char* eventName, T const&... args)
     {
         // ideally this would be smaller but AZ_PROFILE_FUNCTION produces some long event names
         using EventNameString = AZStd::fixed_string<512>;
@@ -25,12 +25,12 @@ namespace AZ::Debug::Platform
         ATrace_beginSection(fullEventName.c_str());
     }
 
-    inline void BeginRegion([[maybe_unused]] Budget* budget, const char* eventName)
+    inline void BeginProfileRegion([[maybe_unused]] Budget* budget, const char* eventName)
     {
         ATrace_beginSection(eventName);
     }
 
-    inline void EndRegion([[maybe_unused]] Budget* budget)
+    inline void EndProfileRegion([[maybe_unused]] Budget* budget)
     {
         ATrace_endSection();
     }

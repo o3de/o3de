@@ -14,21 +14,21 @@
 namespace AZ::Debug::Platform
 {
     template<typename... T>
-    void BeginRegion([[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args)
+    void BeginProfileRegion([[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args)
     {
     #ifdef USE_PIX
         PIXBeginEvent(PIX_COLOR_INDEX(budget->Crc() & 0xff), eventName, args...);
     #endif
     }
 
-    inline void BeginRegion([[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName)
+    inline void BeginProfileRegion([[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName)
     {
     #ifdef USE_PIX
         PIXBeginEvent(PIX_COLOR_INDEX(budget->Crc() & 0xff), eventName);
     #endif
     }
 
-    inline void EndRegion([[maybe_unused]] Budget* budget)
+    inline void EndProfileRegion([[maybe_unused]] Budget* budget)
     {
     #ifdef USE_PIX
         PIXEndEvent();

@@ -13,9 +13,9 @@ namespace AZ::Debug
     namespace Platform
     {
         template<typename... T>
-        void BeginRegion(Budget* budget, const char* eventName, T const&... args);
-        void BeginRegion(Budget* budget, const char* eventName);
-        void EndRegion(Budget* budget);
+        void BeginProfileRegion(Budget* budget, const char* eventName, T const&... args);
+        void BeginProfileRegion(Budget* budget, const char* eventName);
+        void EndProfileRegion(Budget* budget);
     } // namespace Platform
 
     template<typename... T>
@@ -25,7 +25,7 @@ namespace AZ::Debug
     #if !defined(_RELEASE)
         if (budget)
         {
-            Platform::BeginRegion(budget, eventName, args...);
+            Platform::BeginProfileRegion(budget, eventName, args...);
 
             budget->BeginProfileRegion();
 
@@ -49,7 +49,7 @@ namespace AZ::Debug
                 profiler->EndRegion(budget);
             }
 
-            Platform::EndRegion(budget);
+            Platform::EndProfileRegion(budget);
         }
     #endif // !defined(_RELEASE)
     }
