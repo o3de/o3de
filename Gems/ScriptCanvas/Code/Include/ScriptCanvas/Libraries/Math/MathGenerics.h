@@ -14,7 +14,7 @@ namespace ScriptCanvas
 {
     namespace MathNodes
     {
-        static const char* k_categoryName = "Math";
+        static constexpr const char* k_categoryName = "Math";
 
         AZ_INLINE Data::NumberType MultiplyAndAdd(Data::NumberType multiplicand, Data::NumberType multiplier, Data::NumberType addend)
         {

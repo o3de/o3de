@@ -92,13 +92,11 @@ namespace ScriptCanvasEditor
 
         // WorkspaceAssetSaveData
         EditorWorkspace::WorkspaceAssetSaveData::WorkspaceAssetSaveData()
-            : m_assetType(azrtti_typeid<ScriptCanvasAsset>())
         {
         }
 
-        EditorWorkspace::WorkspaceAssetSaveData::WorkspaceAssetSaveData(const AZ::Data::AssetId& assetId)
+        EditorWorkspace::WorkspaceAssetSaveData::WorkspaceAssetSaveData(SourceHandle assetId)
             : m_assetId(assetId)
-            , m_assetType(azrtti_typeid<ScriptCanvasAsset>())
         {
         }
 
@@ -108,7 +106,7 @@ namespace ScriptCanvasEditor
             {
                 AZStd::vector<WorkspaceAssetSaveData> assetSaveData;
                 AZStd::vector<AZ::Data::AssetId> assetIds;
-                auto subElement = rootDataElementNode.FindSubElement(AZ_CRC("ActiveAssetIds", 0xe445268a));
+                auto subElement = rootDataElementNode.FindSubElement(AZ_CRC_CE("ActiveAssetIds"));
 
                 if (subElement)
                 {
@@ -117,13 +115,19 @@ namespace ScriptCanvasEditor
                         assetSaveData.reserve(assetIds.size());
                         for (const AZ::Data::AssetId& assetId : assetIds)
                         {
-                            assetSaveData.emplace_back(assetId);
+                            assetSaveData.emplace_back(SourceHandle( nullptr, assetId.m_guid, "" ));
                         }
                     }
                 }
 
-                rootDataElementNode.RemoveElementByName(AZ_CRC("ActiveAssetIds", 0xe445268a));
+                rootDataElementNode.RemoveElementByName(AZ_CRC_CE("ActiveAssetIds"));
                 rootDataElementNode.AddElementWithData(context, "ActiveAssetData", assetSaveData);
+            }
+
+            if (rootDataElementNode.GetVersion() < 4)
+            {
+                rootDataElementNode.RemoveElementByName(AZ_CRC_CE("ActiveAssetIds"));
+                rootDataElementNode.RemoveElementByName(AZ_CRC_CE("FocusedAssetId"));
             }
 
             return true;
@@ -135,13 +139,12 @@ namespace ScriptCanvasEditor
             if (serialize)
             {
                 serialize->Class<WorkspaceAssetSaveData>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("AssetId", &WorkspaceAssetSaveData::m_assetId)
-                    ->Field("AssetType", &WorkspaceAssetSaveData::m_assetType)
                 ;
 
                 serialize->Class<EditorWorkspace>()
-                    ->Version(3, &EditorWorkspace::VersionConverter)
+                    ->Version(4, &EditorWorkspace::VersionConverter)
                     ->Field("m_storedWindowState", &EditorWorkspace::m_storedWindowState)
                     ->Field("m_windowGeometry", &EditorWorkspace::m_windowGeometry)
                     ->Field("FocusedAssetId", &EditorWorkspace::m_focusedAssetId)
@@ -150,13 +153,13 @@ namespace ScriptCanvasEditor
             }
         }
 
-        void EditorWorkspace::ConfigureActiveAssets(AZ::Data::AssetId focussedAssetId, const AZStd::vector< WorkspaceAssetSaveData >& activeAssetData)
+        void EditorWorkspace::ConfigureActiveAssets(SourceHandle focussedAssetId, const AZStd::vector< WorkspaceAssetSaveData >& activeAssetData)
         {
             m_focusedAssetId = focussedAssetId;
             m_activeAssetData = activeAssetData;
         }
 
-        AZ::Data::AssetId EditorWorkspace::GetFocusedAssetId() const
+        SourceHandle EditorWorkspace::GetFocusedAssetId() const
         {
             return m_focusedAssetId;
         }
@@ -395,6 +398,7 @@ namespace ScriptCanvasEditor
                     ->Field("ShowUpgradeDialog", &ScriptCanvasEditorSettings::m_showUpgradeDialog)
                     ->Field("ZoomSettings", &ScriptCanvasEditorSettings::m_zoomSettings)
                     ->Field("ExperimentalSettings", &ScriptCanvasEditorSettings::m_experimentalSettings)
+                    ->Field("SceneContextMenuNodePaletteWidth", &ScriptCanvasEditorSettings::m_sceneContextMenuNodePaletteWidth)
                     ;
 
                 AZ::EditContext* editContext = serialize->GetEditContext();
@@ -467,13 +471,13 @@ namespace ScriptCanvasEditor
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_snapDistance, "Connection Snap Distance", "The distance from a slot under which connections will snap to it.")
                             ->Attribute(AZ::Edit::Attributes::Min, 10.0)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_enableGroupDoubleClickCollapse, "Double Click to Collapse/Uncollapse Group", "Enables the user to decide whether you can double click on a group to collapse/uncollapse a group.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_enableGroupDoubleClickCollapse, "Double Click to Collapse/Expand Group", "Enables the user to decide whether you can double click on a group to collapse/expand a group.")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_allowBookmarkViewpointControl, "Bookmark Zooming", "Will cause the bookmarks to force the viewport into the state determined by the bookmark type\nBookmark Anchors - The viewport that exists when the bookmark is created.\nNode Groups - The area the Node Group covers")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_dragNodeCouplingConfig, "Node Coupling Configuration", "Controls for managing Node Coupling.\nNode Coupling is when you are dragging a node and leave it hovered over another Node, we will try to connect the sides you overlapped with each other.")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_dragNodeSplicingConfig, "Drag Node Splicing Configuration", "Controls for managing Node Splicing on a Drag.\nNode Splicing on a Drag will let you drag a node onto a connection, and splice that node onto the specified connection.")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_dropNodeSplicingConfig, "Drop Node Splicing Configuration", "Controls for managing Node Splicing on a Drag.\nNode Splicing on a drop will let you drop a node onto a connection from the Node Palette, and splice that node onto the specified connection.")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_autoSaveConfig, "AutoSave Configuration", "Controls for managing Auto Saving.\nAuto Saving will occur after the specified time of inactivity on a graph.")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_shakeDespliceConfig, "Shake To Desplice", "Settings that controls various parameters of the Shake to Desplice feature")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_shakeDespliceConfig, "Shake To De-splice", "Settings that controls various parameters of the Shake to De-splice feature")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_allowNodeNudging, "Allow Node Nudging", "Controls whether or not nodes will attempt to nudge each other out of the way under various interactions.")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_alignmentTimeMS, "Alignment Time", "Controls the amount of time nodes will take to slide into place when performing alignment commands")
                             ->Attribute(AZ::Edit::Attributes::Min, 0)
@@ -485,8 +489,10 @@ namespace ScriptCanvasEditor
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_experimentalSettings, "Experimental Settings", "Settings that will control elements that are under development and may not work as expected")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_saveRawTranslationOuputToFile, "Save Translation File", "Save out the raw result of translation for debug purposes")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SettingsCpp::UpdateProcessingSettings)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_printAbstractCodeModel, "Print Abstract Modeld", "Print out the Abstract Code Model to the console at the end of parsing for debug purposes")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_printAbstractCodeModel, "Print Abstract Model", "Print out the Abstract Code Model to the console at the end of parsing for debug purposes")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SettingsCpp::UpdateProcessingSettings)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptCanvasEditorSettings::m_sceneContextMenuNodePaletteWidth, "Context Menu Width", "Allows you to configure the width of the context menu that opens on a Script Canvas graph")
+                            ->Attribute(AZ::Edit::Attributes::Min, 120)
                         ;
 
                     editContext->Class<ExperimentalSettings>("Experimental", "Settings for features under development that may not behave as expected yet.")

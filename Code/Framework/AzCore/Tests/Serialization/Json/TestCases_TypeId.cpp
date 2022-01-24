@@ -10,6 +10,72 @@
 #include <Tests/Serialization/Json/JsonSerializationTests.h>
 #include <Tests/Serialization/Json/TestCases_Classes.h>
 #include <Tests/Serialization/Json/TestCases_Pointers.h>
+#include <AzCore/Asset/AssetCommon.h>
+
+namespace AZ
+{
+    template<typename T>
+    struct SerializeGenericTypeInfo<JsonSerializationTests::TemplatedClass<T>>
+    {
+        using ThisType = JsonSerializationTests::TemplatedClass<T>;
+
+        class GenericTemplatedClassInfo : public GenericClassInfo
+        {
+        public:
+            GenericTemplatedClassInfo()
+                : m_classData{ SerializeContext::ClassData::Create<ThisType>(
+                      "TemplatedClass", "{CA4ADF74-66E7-4D16-B4AC-F71278C60EC7}", nullptr, nullptr) }
+            {
+            }
+
+            SerializeContext::ClassData* GetClassData() override
+            {
+                return &m_classData;
+            }
+
+            size_t GetNumTemplatedArguments() override
+            {
+                return 1;
+            }
+
+            const Uuid& GetSpecializedTypeId() const override
+            {
+                return m_classData.m_typeId;
+            }
+
+            const Uuid& GetGenericTypeId() const override
+            {
+                return m_classData.m_typeId;
+            }
+
+            const Uuid& GetTemplatedTypeId(size_t element) override
+            {
+                (void)element;
+                return SerializeGenericTypeInfo<T>::GetClassTypeId();
+            }
+
+            void Reflect(SerializeContext* serializeContext) override
+            {
+                if (serializeContext)
+                {
+                    serializeContext->RegisterGenericClassInfo(
+                        GetSpecializedTypeId(), this, &AZ::AnyTypeInfoConcept<Data::Asset<Data::AssetData>>::CreateAny);
+                    serializeContext->RegisterGenericClassInfo(
+                        azrtti_typeid<ThisType>(), this,
+                        &AZ::AnyTypeInfoConcept<ThisType>::CreateAny);
+                }
+            }
+
+            SerializeContext::ClassData m_classData;
+        };
+
+        using ClassInfoType = GenericTemplatedClassInfo;
+        static ClassInfoType* GetGenericInfo()
+        {
+            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ThisType>();
+        }
+    };
+} // namespace AZ
 
 namespace JsonSerializationTests
 {
@@ -285,5 +351,33 @@ namespace JsonSerializationTests
 
         EXPECT_EQ(Processing::Halted, result.GetProcessing());
         EXPECT_EQ(Outcomes::Unknown, result.GetOutcome());
+    }
+
+    TEST_F(JsonSerializationTests, StoreTypeId_TemplatedType_StoresUuidWithName)
+    {
+        using namespace AZ;
+        using namespace AZ::JsonSerializationResult;
+
+        m_serializeContext->RegisterGenericType<TemplatedClass<A::Inherited>>();
+        m_serializeContext->RegisterGenericType<TemplatedClass<BaseClass>>();
+
+        Uuid input = azrtti_typeid<TemplatedClass<A::Inherited>>();
+        ResultCode result = JsonSerialization::StoreTypeId(
+            *m_jsonDocument, m_jsonDocument->GetAllocator(), input, AZStd::string_view{}, *m_serializationSettings);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+
+        AZStd::string expected =
+            AZStd::string::format(R"("%s TemplatedClass")", azrtti_typeid<TemplatedClass<A::Inherited>>().ToString<AZStd::string>().c_str());
+        Expect_DocStrEq(expected.c_str(), false);
+
+        input = azrtti_typeid<TemplatedClass<BaseClass>>();
+        result = JsonSerialization::StoreTypeId(
+            *m_jsonDocument, m_jsonDocument->GetAllocator(), input, AZStd::string_view{}, *m_serializationSettings);
+
+        expected =
+            AZStd::string::format(R"("%s TemplatedClass")", azrtti_typeid<TemplatedClass<BaseClass>>().ToString<AZStd::string>().c_str());
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        Expect_DocStrEq(expected.c_str(), false);
     }
 } // namespace JsonSerializationTests

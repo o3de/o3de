@@ -16,6 +16,7 @@
 #include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
 
 #include <GraphCanvas/Editor/EditorTypes.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
 
 
 namespace ScriptCanvasEditor
@@ -61,6 +62,7 @@ namespace ScriptCanvasEditor
         void CreateView(AZ::Data::AssetId assetId, QWidget* parent) override;
         void ClearView(AZ::Data::AssetId assetId) override;
         void UntrackAsset(AZ::Data::AssetId assetId) override;
+        void RefreshAll() override;
 
         // Getters
 
@@ -118,10 +120,5 @@ namespace ScriptCanvasEditor
         // Invoked when an asset is loaded from file and becomes ready
         Callbacks::OnAssetReadyCallback m_onAssetReadyCallback;
 
-        // Internal::MemoryAssetNotificationBus
-        void OnAssetReady(const ScriptCanvasMemoryAsset* asset) override;
-        void OnAssetReloaded(const ScriptCanvasMemoryAsset* asset) override;
-        void OnAssetSaved(const ScriptCanvasMemoryAsset* asset, bool isSuccessful) override;
-        void OnAssetError(const ScriptCanvasMemoryAsset* asset) override;
     };
 }

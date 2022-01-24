@@ -229,25 +229,35 @@ void CViewportTitleDlg::SetupHelpersButton()
 
 void CViewportTitleDlg::SetupOverflowMenu()
 {
-    // Setup the overflow menu
-    QMenu* overFlowMenu = new QMenu(this);
+    // setup the overflow menu
+    auto overflowMenu = new QMenu(this);
 
-    m_audioMuteAction = new QAction("Mute Audio", overFlowMenu);
+    m_audioMuteAction = new QAction("Mute Audio", overflowMenu);
     connect(m_audioMuteAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedMuteAudio);
-    overFlowMenu->addAction(m_audioMuteAction);
+    overflowMenu->addAction(m_audioMuteAction);
 
-    m_enableVRAction = new QAction("Enable VR Preview", overFlowMenu);
+    m_enableVRAction = new QAction("Enable VR Preview", overflowMenu);
     connect(m_enableVRAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedEnableVR);
-    overFlowMenu->addAction(m_enableVRAction);
+    overflowMenu->addAction(m_enableVRAction);
 
-    overFlowMenu->addSeparator();
+    overflowMenu->addSeparator();
 
-    m_enableGridSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
+    m_enableGridSnappingAction = new QAction("Enable Grid Snapping", overflowMenu);
     connect(m_enableGridSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnGridSnappingToggled);
     m_enableGridSnappingAction->setCheckable(true);
-    overFlowMenu->addAction(m_enableGridSnappingAction);
+    overflowMenu->addAction(m_enableGridSnappingAction);
 
-    m_gridSizeActionWidget = new QWidgetAction(overFlowMenu);
+    m_enableGridVisualizationAction = new QAction("Show Grid", overflowMenu);
+    connect(
+        m_enableGridVisualizationAction, &QAction::triggered,
+        []
+        {
+            SandboxEditor::SetShowingGrid(!SandboxEditor::ShowingGrid());
+        });
+    m_enableGridVisualizationAction->setCheckable(true);
+    overflowMenu->addAction(m_enableGridVisualizationAction);
+
+    m_gridSizeActionWidget = new QWidgetAction(overflowMenu);
     m_gridSpinBox = new AzQtComponents::DoubleSpinBox();
     m_gridSpinBox->setValue(SandboxEditor::GridSnappingSize());
     m_gridSpinBox->setMinimum(1e-2f);
@@ -257,31 +267,31 @@ void CViewportTitleDlg::SetupOverflowMenu()
         m_gridSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &CViewportTitleDlg::OnGridSpinBoxChanged);
 
     m_gridSizeActionWidget->setDefaultWidget(m_gridSpinBox);
-    overFlowMenu->addAction(m_gridSizeActionWidget);
+    overflowMenu->addAction(m_gridSizeActionWidget);
 
-    overFlowMenu->addSeparator();
+    overflowMenu->addSeparator();
 
-    m_enableAngleSnappingAction = new QAction("Enable Angle Snapping", overFlowMenu);
+    m_enableAngleSnappingAction = new QAction("Enable Angle Snapping", overflowMenu);
     connect(m_enableAngleSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnAngleSnappingToggled);
     m_enableAngleSnappingAction->setCheckable(true);
-    overFlowMenu->addAction(m_enableAngleSnappingAction);
+    overflowMenu->addAction(m_enableAngleSnappingAction);
 
-    m_angleSizeActionWidget = new QWidgetAction(overFlowMenu);
+    m_angleSizeActionWidget = new QWidgetAction(overflowMenu);
     m_angleSpinBox = new AzQtComponents::DoubleSpinBox();
     m_angleSpinBox->setValue(SandboxEditor::AngleSnappingSize());
     m_angleSpinBox->setMinimum(1e-2f);
-    m_angleSpinBox->setToolTip(tr("Angle Snapping"));
+    m_angleSpinBox->setToolTip(tr("Angle size"));
 
     QObject::connect(
         m_angleSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this,
         &CViewportTitleDlg::OnAngleSpinBoxChanged);
 
     m_angleSizeActionWidget->setDefaultWidget(m_angleSpinBox);
-    overFlowMenu->addAction(m_angleSizeActionWidget);
+    overflowMenu->addAction(m_angleSizeActionWidget);
 
-    m_ui->m_overflowBtn->setMenu(overFlowMenu);
+    m_ui->m_overflowBtn->setMenu(overflowMenu);
     m_ui->m_overflowBtn->setPopupMode(QToolButton::InstantPopup);
-    connect(overFlowMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::UpdateOverFlowMenuState);
+    connect(overflowMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::UpdateOverFlowMenuState);
 
     UpdateMuteActionText();
 }
@@ -1004,31 +1014,36 @@ void CViewportTitleDlg::OnAngleSnappingToggled()
     MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
 }
 
-void CViewportTitleDlg::OnGridSpinBoxChanged(double value)
+void CViewportTitleDlg::OnGridSpinBoxChanged(const double value)
 {
-    SandboxEditor::SetGridSnappingSize(static_cast<float>(value));
+    SandboxEditor::SetGridSnappingSize(aznumeric_cast<float>(value));
 }
 
-void CViewportTitleDlg::OnAngleSpinBoxChanged(double value)
+void CViewportTitleDlg::OnAngleSpinBoxChanged(const double value)
 {
-    SandboxEditor::SetAngleSnappingSize(static_cast<float>(value));
+    SandboxEditor::SetAngleSnappingSize(aznumeric_cast<float>(value));
 }
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()
 {
-    bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
+    const bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
     {
         QSignalBlocker signalBlocker(m_enableGridSnappingAction);
         m_enableGridSnappingAction->setChecked(gridSnappingActive);
     }
     m_gridSizeActionWidget->setEnabled(gridSnappingActive);
 
-    bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
+    const bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
     {
         QSignalBlocker signalBlocker(m_enableAngleSnappingAction);
         m_enableAngleSnappingAction->setChecked(angleSnappingActive);
     }
     m_angleSizeActionWidget->setEnabled(angleSnappingActive);
+
+    {
+        QSignalBlocker signalBlocker(m_enableGridVisualizationAction);
+        m_enableGridVisualizationAction->setChecked(SandboxEditor::ShowingGrid());
+    }
 }
 
 namespace

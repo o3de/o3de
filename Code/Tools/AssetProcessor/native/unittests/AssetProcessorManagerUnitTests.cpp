@@ -347,7 +347,7 @@ namespace AssetProcessor
 
         ExcludeAssetRecognizer excludeRecogniser;
         excludeRecogniser.m_name = "backup";
-        excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(".*\\/savebackup\\/.*", AssetBuilderSDK::AssetBuilderPattern::Regex);
+        excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("(^|.+/)savebackup/.*", AssetBuilderSDK::AssetBuilderPattern::Regex);
         config.AddExcludeRecognizer(excludeRecogniser);
 
         AssetProcessorManager_Test apm(&config);  // note, this will 'push' the scan folders in to the db.
@@ -1791,13 +1791,8 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE((newfingerprintForPCAfterVersionChange != fingerprintForPC) || (newfingerprintForPCAfterVersionChange != newfingerprintForPC));//Fingerprints should be different
         UNIT_TEST_EXPECT_TRUE((newfingerprintForANDROIDAfterVersionChange != fingerprintForANDROID) || (newfingerprintForANDROIDAfterVersionChange != newfingerprintForANDROID));//Fingerprints should be different
 
-        //------Test for Files which are excluded
         processResults.clear();
-        absolutePath = AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath("subfolder3/savebackup/test.txt"));
-        QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
-        UNIT_TEST_EXPECT_FALSE(BlockUntil(idling, 3000)); //Processing a file that will be excluded should not cause assetprocessor manager to emit the onBecameIdle signal because its state should not change
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 0);
-
+        
         // ------------- Test querying asset status -------------------
         {
             absolutePath = tempPath.absoluteFilePath("subfolder2/folder/ship.tiff");

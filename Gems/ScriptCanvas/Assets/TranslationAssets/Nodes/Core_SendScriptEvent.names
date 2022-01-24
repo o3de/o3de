@@ -1,0 +1,30 @@
+{
+    "entries": [
+        {
+            "base": "{64A97CC3-2BEA-4B47-809B-6C7DA34FD00F}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Send Script Event",
+                "category": "Core",
+                "tooltip": "Allows you to send an event."
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Fires the specified ScriptEvent when signaled"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Trigged after the ScriptEvent has been signaled and returns"
+                    }
+                }
+            ]
+        }
+    ]
+}

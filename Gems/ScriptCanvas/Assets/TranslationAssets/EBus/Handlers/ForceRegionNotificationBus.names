@@ -1,0 +1,49 @@
+{
+    "entries": [
+        {
+            "base": "ForceRegionNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Force Region",
+                "category": "Physics"
+            },
+            "methods": [
+                {
+                    "base": "OnCalculateNetForce",
+                    "details": {
+                        "name": "On Calculate Net Force"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

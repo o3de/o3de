@@ -1,0 +1,42 @@
+{
+    "entries": [
+        {
+            "base": "{11DDEEC1-7111-4655-B47F-8F0372B1A1A9}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Add Element at End",
+                "category": "Containers",
+                "tooltip": "Adds the provided element at the end of the container"
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataOutput_Container_0",
+                    "details": {
+                        "name": "Container"
+                    }
+                },
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Output signal"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -17,6 +17,7 @@
 
 #include <Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h>
 #include <Editor/Assets/ScriptCanvasMemoryAsset.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
 
 class QWidget;
 
@@ -78,6 +79,9 @@ namespace ScriptCanvasEditor
 
         //! Used to make sure assets that are unloaded also get removed from tracking
         virtual void UntrackAsset([[maybe_unused]] AZ::Data::AssetId assetId) {}
+
+        //! Recreates the view for all tracked assets
+        virtual void RefreshAll() {}
 
         using AssetList = AZStd::vector<ScriptCanvasMemoryAsset::pointer>;
 
@@ -151,17 +155,5 @@ namespace ScriptCanvasEditor
         using MemoryAssetSystemNotificationBus = AZ::EBus<MemoryAssetSystemNotifications>;
     }
     
-    class MemoryAssetNotifications
-        : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::Data::AssetId;
-
-        virtual void OnFileStateChanged(Tracker::ScriptCanvasFileState) {}
-    };
-
-    using MemoryAssetNotificationBus = AZ::EBus<MemoryAssetNotifications>;
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
