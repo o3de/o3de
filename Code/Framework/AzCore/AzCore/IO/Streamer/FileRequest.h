@@ -27,7 +27,252 @@ namespace AZ::IO
     class ExternalFileRequest;
 
     using FileRequestPtr = AZStd::intrusive_ptr<ExternalFileRequest>;
+} // namespace AZ::IO
 
+namespace AZ::IO::Requests
+{
+    //! Request to read data. This is a translated request and holds an absolute path and has been
+    //! resolved to the archive file if needed.
+    struct ReadData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
+        inline constexpr static bool s_failWhenUnhandled = true;
+
+        ReadData(void* output, u64 outputSize, const RequestPath& path, u64 offset, u64 size, bool sharedRead);
+
+        const RequestPath& m_path; //!< The path to the file that contains the requested data.
+        void* m_output; //!< Target output to write the read data to.
+        u64 m_outputSize; //!< Size of memory m_output points to. This needs to be at least as big as m_size, but can be bigger.
+        u64 m_offset; //!< The offset in bytes into the file.
+        u64 m_size; //!< The number of bytes to read from the file.
+        bool m_sharedRead; //!< True if other code will be reading from the file or the stack entry can exclusively lock.
+    };
+
+    //! Request to read data. This is an untranslated request and holds a relative path. The Scheduler
+    //! will translate this to the appropriate ReadData or CompressedReadData.
+    struct ReadRequestData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
+        inline constexpr static bool s_failWhenUnhandled = true;
+
+        ReadRequestData(
+            RequestPath path,
+            void* output,
+            u64 outputSize,
+            u64 offset,
+            u64 size,
+            AZStd::chrono::system_clock::time_point deadline,
+            IStreamerTypes::Priority priority);
+        ReadRequestData(
+            RequestPath path,
+            IStreamerTypes::RequestMemoryAllocator* allocator,
+            u64 offset,
+            u64 size,
+            AZStd::chrono::system_clock::time_point deadline,
+            IStreamerTypes::Priority priority);
+        ~ReadRequestData();
+
+        RequestPath m_path; //!< Relative path to the target file.
+        IStreamerTypes::RequestMemoryAllocator* m_allocator; //!< Allocator used to manage the memory for this request.
+        AZStd::chrono::system_clock::time_point m_deadline; //!< Time by which this request should have been completed.
+        void* m_output; //!< The memory address assigned (during processing) to store the read data to.
+        u64 m_outputSize; //!< The memory size of the addressed used to store the read data.
+        u64 m_offset; //!< The offset in bytes into the file.
+        u64 m_size; //!< The number of bytes to read from the file.
+        IStreamerTypes::Priority m_priority; //!< Priority used for ordering requests. This is used when requests have the same deadline.
+        IStreamerTypes::MemoryType m_memoryType; //!< The type of memory provided by the allocator if used.
+    };
+
+    //! Creates a cache dedicated to a single file. This is best used for files where blocks are read from
+    //! periodically such as audio banks of video files.
+    struct CreateDedicatedCacheData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
+        inline constexpr static bool s_failWhenUnhandled = false;
+
+        CreateDedicatedCacheData(RequestPath path, const FileRange& range);
+
+        RequestPath m_path;
+        FileRange m_range;
+    };
+
+    //! Destroys a cache dedicated to a single file that was previously created by CreateDedicatedCache
+    struct DestroyDedicatedCacheData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
+        inline constexpr static bool s_failWhenUnhandled = false;
+
+        DestroyDedicatedCacheData(RequestPath path, const FileRange& range);
+
+        RequestPath m_path;
+        FileRange m_range;
+    };
+
+    enum class ReportType : int8_t
+    {
+        FileLocks
+    };
+
+    struct ReportData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityLow;
+        inline constexpr static bool s_failWhenUnhandled = false;
+
+        explicit ReportData(ReportType reportType);
+
+        ReportType m_reportType;
+    };
+
+    //! Stores a reference to the external request so it stays alive while the request is being processed.
+    //! This is needed because Streamer supports fire-and-forget requests since completion can be handled by
+    //! registering a callback.
+    struct ExternalRequestData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
+        inline constexpr static bool s_failWhenUnhandled = true;
+
+        explicit ExternalRequestData(FileRequestPtr&& request);
+
+        FileRequestPtr m_request; //!< The request that was send to Streamer.
+    };
+
+    //! Stores an instance of a RequestPath. To reduce copying instances of a RequestPath functions that
+    //! need a path take them by reference to the original request. In some cases a path originates from
+    //! within in the stack and temporary storage is needed. This struct allows for that temporary storage
+    //! so it can be safely referenced later.
+    struct RequestPathStoreData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
+        inline constexpr static bool s_failWhenUnhandled = true;
+
+        explicit RequestPathStoreData(RequestPath path);
+
+        RequestPath m_path;
+    };
+
+    //! Request to read and decompress data.
+    struct CompressedReadData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
+        inline constexpr static bool s_failWhenUnhandled = true;
+
+        CompressedReadData(CompressionInfo&& compressionInfo, void* output, u64 readOffset, u64 readSize);
+
+        CompressionInfo m_compressionInfo;
+        void* m_output; //!< Target output to write the read data to.
+        u64 m_readOffset; //!< The offset into the decompressed to start copying from.
+        u64 m_readSize; //!< Number of bytes to read from the decompressed file.
+    };
+
+    //! Holds the progress of an operation chain until this request is explicitly completed.
+    struct WaitData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
+        inline constexpr static bool s_failWhenUnhandled = true;
+    };
+
+    //! Checks to see if any node in the stack can find a file at the provided path.
+    struct FileExistsCheckData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
+        inline constexpr static bool s_failWhenUnhandled = false;
+
+        explicit FileExistsCheckData(const RequestPath& path);
+
+        const RequestPath& m_path;
+        bool m_found{ false };
+    };
+
+    //! Searches for a file in the stack and retrieves the meta data. This may be slower than a file exists
+    //! check.
+    struct FileMetaDataRetrievalData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
+        inline constexpr static bool s_failWhenUnhandled = false;
+
+        explicit FileMetaDataRetrievalData(const RequestPath& path);
+
+        const RequestPath& m_path;
+        u64 m_fileSize{ 0 };
+        bool m_found{ false };
+    };
+
+    //! Cancels a request in the stream stack, if possible.
+    struct CancelData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHighest;
+        inline constexpr static bool s_failWhenUnhandled = false;
+
+        explicit CancelData(FileRequestPtr target);
+
+        FileRequestPtr m_target; //!< The request that will be canceled.
+    };
+
+    //! Updates the priority and deadline of a request that has not been queued yet.
+    struct RescheduleData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
+        inline constexpr static bool s_failWhenUnhandled = false;
+
+        RescheduleData(FileRequestPtr target, AZStd::chrono::system_clock::time_point newDeadline, IStreamerTypes::Priority newPriority);
+
+        FileRequestPtr m_target; //!< The request that will be rescheduled.
+        AZStd::chrono::system_clock::time_point m_newDeadline; //!< The new deadline for the request.
+        IStreamerTypes::Priority m_newPriority; //!< The new priority for the request.
+    };
+
+    //! Flushes all references to the provided file in the streaming stack.
+    struct FlushData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
+        inline constexpr static bool s_failWhenUnhandled = false;
+
+        explicit FlushData(RequestPath path);
+
+        RequestPath m_path;
+    };
+
+    //! Flushes all caches in the streaming stack.
+    struct FlushAllData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
+        inline constexpr static bool s_failWhenUnhandled = false;
+    };
+
+    //! Data for a custom command. This can be used by nodes added extensions that need data that can't be stored
+    //! in the already provided data.
+    struct CustomData
+    {
+        inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
+
+        CustomData(AZStd::any data, bool failWhenUnhandled);
+
+        AZStd::any m_data; //!< The data for the custom request.
+        bool m_failWhenUnhandled; //!< Whether or not the request is marked as failed or success when no node process it.
+    };
+    using CommandVariant = AZStd::variant<
+        AZStd::monostate,
+        ExternalRequestData,
+        RequestPathStoreData,
+        ReadRequestData,
+        ReadData,
+        CompressedReadData,
+        WaitData,
+        FileExistsCheckData,
+        FileMetaDataRetrievalData,
+        CancelData,
+        RescheduleData,
+        FlushData,
+        FlushAllData,
+        CreateDedicatedCacheData,
+        DestroyDedicatedCacheData,
+        ReportData,
+        CustomData>;
+
+} // namespace AZ::IO::Requests
+
+namespace AZ::IO
+{
     class FileRequest final
     {
     public:
@@ -36,218 +281,7 @@ namespace AZ::IO
         friend class StreamerContext;
         friend class ExternalFileRequest;
 
-        //! Stores a reference to the external request so it stays alive while the request is being processed.
-        //! This is needed because Streamer supports fire-and-forget requests since completion can be handled by
-        //! registering a callback.
-        struct ExternalRequestData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
-            inline constexpr static bool s_failWhenUnhandled = true;
-
-            explicit ExternalRequestData(FileRequestPtr&& request);
-
-            FileRequestPtr m_request; //!< The request that was send to Streamer.
-        };
-
-        //! Stores an instance of a RequestPath. To reduce copying instances of a RequestPath functions that
-        //! need a path take them by reference to the original request. In some cases a path originates from
-        //! within in the stack and temporary storage is needed. This struct allows for that temporary storage
-        //! so it can be safely referenced later.
-        struct RequestPathStoreData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
-            inline constexpr static bool s_failWhenUnhandled = true;
-
-            explicit RequestPathStoreData(RequestPath path);
-
-            RequestPath m_path;
-        };
-
-        //! Request to read data. This is an untranslated request and holds a relative path. The Scheduler
-        //! will translate this to the appropriate ReadData or CompressedReadData.
-        struct ReadRequestData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
-            inline constexpr static bool s_failWhenUnhandled = true;
-
-            ReadRequestData(RequestPath path, void* output, u64 outputSize, u64 offset, u64 size,
-                AZStd::chrono::system_clock::time_point deadline, IStreamerTypes::Priority priority);
-            ReadRequestData(RequestPath path, IStreamerTypes::RequestMemoryAllocator* allocator, u64 offset, u64 size,
-                AZStd::chrono::system_clock::time_point deadline, IStreamerTypes::Priority priority);
-            ~ReadRequestData();
-
-            RequestPath m_path; //!< Relative path to the target file.
-            IStreamerTypes::RequestMemoryAllocator* m_allocator; //!< Allocator used to manage the memory for this request.
-            AZStd::chrono::system_clock::time_point m_deadline; //!< Time by which this request should have been completed.
-            void* m_output; //!< The memory address assigned (during processing) to store the read data to.
-            u64 m_outputSize; //!< The memory size of the addressed used to store the read data.
-            u64 m_offset; //!< The offset in bytes into the file.
-            u64 m_size; //!< The number of bytes to read from the file.
-            IStreamerTypes::Priority m_priority; //!< Priority used for ordering requests. This is used when requests have the same deadline.
-            IStreamerTypes::MemoryType m_memoryType; //!< The type of memory provided by the allocator if used.
-        };
-
-        //! Request to read data. This is a translated request and holds an absolute path and has been
-        //! resolved to the archive file if needed.
-        struct ReadData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
-            inline constexpr static bool s_failWhenUnhandled = true;
-
-            ReadData(void* output, u64 outputSize, const RequestPath& path, u64 offset, u64 size, bool sharedRead);
-
-            const RequestPath& m_path; //!< The path to the file that contains the requested data.
-            void* m_output; //!< Target output to write the read data to.
-            u64 m_outputSize; //!< Size of memory m_output points to. This needs to be at least as big as m_size, but can be bigger.
-            u64 m_offset; //!< The offset in bytes into the file.
-            u64 m_size; //!< The number of bytes to read from the file.
-            bool m_sharedRead; //!< True if other code will be reading from the file or the stack entry can exclusively lock.
-        };
-
-        //! Request to read and decompress data.
-        struct CompressedReadData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
-            inline constexpr static bool s_failWhenUnhandled = true;
-
-            CompressedReadData(CompressionInfo&& compressionInfo, void* output, u64 readOffset, u64 readSize);
-
-            CompressionInfo m_compressionInfo;
-            void* m_output; //!< Target output to write the read data to.
-            u64 m_readOffset; //!< The offset into the decompressed to start copying from.
-            u64 m_readSize; //!< Number of bytes to read from the decompressed file.
-        };
-
-        //! Holds the progress of an operation chain until this request is explicitly completed.
-        struct WaitData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
-            inline constexpr static bool s_failWhenUnhandled = true;
-        };
-
-        //! Checks to see if any node in the stack can find a file at the provided path.
-        struct FileExistsCheckData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
-            inline constexpr static bool s_failWhenUnhandled = false;
-
-            explicit FileExistsCheckData(const RequestPath& path);
-
-            const RequestPath& m_path;
-            bool m_found{ false };
-        };
-
-        //! Searches for a file in the stack and retrieves the meta data. This may be slower than a file exists
-        //! check.
-        struct FileMetaDataRetrievalData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
-            inline constexpr static bool s_failWhenUnhandled = false;
-
-            explicit FileMetaDataRetrievalData(const RequestPath& path);
-
-            const RequestPath& m_path;
-            u64 m_fileSize{ 0 };
-            bool m_found{ false };
-        };
-
-        //! Cancels a request in the stream stack, if possible.
-        struct CancelData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHighest;
-            inline constexpr static bool s_failWhenUnhandled = false;
-
-            explicit CancelData(FileRequestPtr target);
-
-            FileRequestPtr m_target; //!< The request that will be canceled.
-        };
-
-        //! Updates the priority and deadline of a request that has not been queued yet.
-        struct RescheduleData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
-            inline constexpr static bool s_failWhenUnhandled = false;
-
-            RescheduleData(FileRequestPtr target, AZStd::chrono::system_clock::time_point newDeadline, IStreamerTypes::Priority newPriority);
-
-            FileRequestPtr m_target; //!< The request that will be rescheduled.
-            AZStd::chrono::system_clock::time_point m_newDeadline; //!< The new deadline for the request.
-            IStreamerTypes::Priority m_newPriority; //!< The new priority for the request.
-        };
-
-        //! Flushes all references to the provided file in the streaming stack.
-        struct FlushData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
-            inline constexpr static bool s_failWhenUnhandled = false;
-
-            explicit FlushData(RequestPath path);
-
-            RequestPath m_path;
-        };
-
-        //! Flushes all caches in the streaming stack.
-        struct FlushAllData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
-            inline constexpr static bool s_failWhenUnhandled = false;
-        };
-
-        //! Creates a cache dedicated to a single file. This is best used for files where blocks are read from
-        //! periodically such as audio banks of video files.
-        struct CreateDedicatedCacheData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
-            inline constexpr static bool s_failWhenUnhandled = false;
-
-            CreateDedicatedCacheData(RequestPath path, const FileRange& range);
-
-            RequestPath m_path;
-            FileRange m_range;
-        };
-
-        //! Destroys a cache dedicated to a single file that was previously created by CreateDedicatedCache
-        struct DestroyDedicatedCacheData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityHigh;
-            inline constexpr static bool s_failWhenUnhandled = false;
-
-            DestroyDedicatedCacheData(RequestPath path, const FileRange& range);
-
-            RequestPath m_path;
-            FileRange m_range;
-        };
-
-        struct ReportData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityLow;
-            inline constexpr static bool s_failWhenUnhandled = false;
-
-            enum class ReportType
-            {
-                FileLocks
-            };
-
-            explicit ReportData(ReportType reportType);
-
-            ReportType m_reportType;
-        };
-
-        //! Data for a custom command. This can be used by nodes added extensions that need data that can't be stored
-        //! in the already provided data.
-        struct CustomData
-        {
-            inline constexpr static IStreamerTypes::Priority s_orderPriority = IStreamerTypes::s_priorityMedium;
-
-            CustomData(AZStd::any data, bool failWhenUnhandled);
-
-            AZStd::any m_data; //!< The data for the custom request.
-            bool m_failWhenUnhandled; //!< Whether or not the request is marked as failed or success when no node process it.
-        };
-
-        using CommandVariant = AZStd::variant<AZStd::monostate, ExternalRequestData, RequestPathStoreData, ReadRequestData, ReadData,
-            CompressedReadData, WaitData, FileExistsCheckData, FileMetaDataRetrievalData, CancelData, RescheduleData, FlushData,
-            FlushAllData, CreateDedicatedCacheData, DestroyDedicatedCacheData, ReportData, CustomData>;
+        using CommandVariant = Requests::CommandVariant;
         using OnCompletionCallback = AZStd::function<void(FileRequest& request)>;
 
         AZ_CLASS_ALLOCATOR(FileRequest, SystemAllocator, 0);
@@ -278,7 +312,7 @@ namespace AZ::IO
         void CreateFlushAll();
         void CreateDedicatedCacheCreation(RequestPath path, const FileRange& range = {}, FileRequest* parent = nullptr);
         void CreateDedicatedCacheDestruction(RequestPath path, const FileRange& range = {}, FileRequest* parent = nullptr);
-        void CreateReport(ReportData::ReportType reportType);
+        void CreateReport(Requests::ReportType reportType);
         void CreateCustom(AZStd::any data, bool failWhenUnhandled = true, FileRequest* parent = nullptr);
 
         void SetCompletionCallback(OnCompletionCallback callback);
@@ -325,8 +359,17 @@ namespace AZ::IO
         //! Command and parameters for the request.
         CommandVariant m_command;
 
-        //! Status of the request.
-        AZStd::atomic<IStreamerTypes::RequestStatus> m_status{ IStreamerTypes::RequestStatus::Pending };
+        //! Estimated time this request will complete. This is an estimation and depends on many
+        //! factors which can cause it to change drastically from moment to moment.
+        AZStd::chrono::system_clock::time_point m_estimatedCompletion;
+
+        //! The file request that has a dependency on this one. This can be null if there are no
+        //! other request depending on this one to complete.
+        FileRequest* m_parent{ nullptr };
+
+
+        //! Id assigned when the request is added to the pending queue.
+        size_t m_pendingId{ 0 };
 
         //! Called once the request has completed. This will always be called from the Streamer thread
         //! and thread safety is the responsibility of called function. When assigning a lambda avoid
@@ -336,16 +379,8 @@ namespace AZ::IO
         //! a longer running task is needed consider using a job to do the work.
         OnCompletionCallback m_onCompletion;
 
-        //! Estimated time this request will complete. This is an estimation and depends on many
-        //! factors which can cause it to change drastically from moment to moment.
-        AZStd::chrono::system_clock::time_point m_estimatedCompletion;
-
-        //! The file request that has a dependency on this one. This can be null if there are no
-        //! other request depending on this one to complete.
-        FileRequest* m_parent{ nullptr };
-
-        //! Id assigned when the request is added to the pending queue.
-        size_t m_pendingId{ 0 };
+        //! Status of the request.
+        AZStd::atomic<IStreamerTypes::RequestStatus> m_status{ IStreamerTypes::RequestStatus::Pending };
 
         //! The number of dependent file request that need to complete before this one is done.
         u16 m_dependencies{ 0 };
