@@ -623,7 +623,7 @@ namespace AWSCore
         {
         }
 
-    protected:
+    private:
         void OnSuccess() override
         {
             AZStd::function<void()> callbackHandler = [this]()
