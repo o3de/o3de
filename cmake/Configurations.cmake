@@ -42,6 +42,8 @@ include(cmake/ConfigurationTypes.cmake)
 # \arg:LINK_SHARED
 # \arg:LINK_SHARED_${CONFIGURATION}
 #
+# Note: COMPILATION_C/COMPILATION_CXX are mutually exclusive with COMPILATION. You can only specify COMPILATION for C/C++ flags or 
+#       a combination of COMPILATION_C/COMPILATION_CXX for the separate c/c++ flags separately.
 function(ly_append_configurations_options)
 
     set(options)
@@ -80,15 +82,14 @@ function(ly_append_configurations_options)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)
     endif()
     if(ly_append_configurations_options_COMPILATION_C)
-        string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION}")
-        string(APPEND CMAKE_C_FLAGS " " ${COMPILATION_STR})
-        set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} PARENT_SCOPE)
+        string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION_C}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)
     endif()
     if(ly_append_configurations_options_COMPILATION_CXX)
-        string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION}")
-        string(APPEND CMAKE_CXX_FLAGS " " ${COMPILATION_STR})
-        set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} PARENT_SCOPE)
+        string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION_CXX}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)        
     endif()
+
     if(ly_append_configurations_options_LINK)
         string(REPLACE ";" " " LINK_STR "${ly_append_configurations_options_LINK}")
         set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
