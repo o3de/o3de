@@ -164,7 +164,7 @@ namespace Terrain
         if (!m_isRequestInProgress)
         {
             m_isRequestInProgress = true;
-            GradientSignal::GradientSampleParams params(AZ::Vector3(inPosition.GetX(), inPosition.GetY(), 0.0f));
+            GradientSignal::GradientSampleParams params(inPosition);
 
             // Right now, when the list contains multiple entries, we will use the highest point from each gradient.
             // This is needed in part because gradients don't really have world bounds, so they exist everywhere but generally have a value
@@ -189,8 +189,68 @@ namespace Terrain
         }
 
         const float height = AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxSample);
-        outPosition.SetZ(AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
+        outPosition.Set(inPosition.GetX(), inPosition.GetY(), AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
     }
+
+    void TerrainHeightGradientListComponent::GetHeights(
+        AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList)
+    {
+        AZ_Assert(
+            inOutPositionList.size() == terrainExistsList.size(), "The position list size doesn't match the terrainExists list size.");
+
+        AZ_WarningOnce("Terrain", !m_isRequestInProgress, "Detected cyclic dependences with terrain height entity references");
+
+        if (!m_isRequestInProgress)
+        {
+            m_isRequestInProgress = true;
+
+            // Start by initializing all our terrainExists flags to false.
+            AZStd::fill(terrainExistsList.begin(), terrainExistsList.end(), false);
+
+            // Create a temporary buffer for storing all the gradient values for the currently-queried gradient.
+            AZStd::vector<float> curGradientSamples(inOutPositionList.size());
+
+            // Create a temporary buffer for storing all the max gradient values.
+            AZStd::vector<float> maxValueSamples(inOutPositionList.size());
+
+            // Right now, when the list contains multiple entries, we will use the highest point from each gradient.
+            // This is needed in part because gradients don't really have world bounds, so they exist everywhere but generally have a
+            // value of 0 outside their data bounds if they're using bounded data.  We should examine the possibility of extending the
+            // gradient API to provide actual bounds so that it's possible to detect if the gradient even 'exists' in an area, at which
+            // point we could just make this list a prioritized list from top to bottom for any points that overlap.
+            for (auto& gradientId : m_configuration.m_gradientEntities)
+            {
+                if (gradientId.IsValid())
+                {
+                    GradientSignal::GradientRequestBus::Event(
+                        gradientId, &GradientSignal::GradientRequestBus::Events::GetValues, inOutPositionList, curGradientSamples);
+
+                    for (size_t index = 0; index < maxValueSamples.size(); index++)
+                    {
+                        maxValueSamples[index] = AZ::GetMax(maxValueSamples[index], curGradientSamples[index]);
+
+                        // If gradients ever provide bounds, or if we add a value threshold in this component, it would be possible for
+                        // terrain to *not* exist at a specific point.
+                        terrainExistsList[index] = true;
+                    }
+                }
+            }
+
+            for (size_t index = 0; index < inOutPositionList.size(); index++)
+            {
+                if (terrainExistsList[index])
+                {
+                    const float height =
+                        AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxValueSamples[index]);
+                    inOutPositionList[index].SetZ(AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
+                }
+            }
+
+            m_isRequestInProgress = false;
+        }
+    }
+
+
 
     void TerrainHeightGradientListComponent::OnCompositionChanged()
     {
