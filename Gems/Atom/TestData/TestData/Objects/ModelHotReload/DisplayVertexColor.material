@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "blend": {
             "blendSource": "BlendMaskVertexColors",

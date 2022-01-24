@@ -188,7 +188,14 @@ namespace PhysX
         //! Returns defaultValue if the input is infinite or NaN, otherwise returns the input unchanged.
         const AZ::Vector3& Sanitize(const AZ::Vector3& input, const AZ::Vector3& defaultValue = AZ::Vector3::CreateZero());
 
+        AZStd::pair<uint8_t, uint8_t> GetPhysXMaterialIndicesFromHeightfieldSamples(
+            const AZStd::vector<Physics::HeightMaterialPoint>& samples,
+            const int32_t row, const int32_t col,
+            const int32_t numRows, const int32_t numCols);
+
         Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId);
+
+        void SetMaterialsFromHeightfieldProvider(const AZ::EntityId& heightfieldProviderId, Physics::MaterialSelection& materialSelection);
 
         namespace Geometry
         {

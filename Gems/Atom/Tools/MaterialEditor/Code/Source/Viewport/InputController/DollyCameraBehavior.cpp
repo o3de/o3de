@@ -6,11 +6,11 @@
  *
  */
 
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Component/TransformBus.h>
+#include <Viewport/InputController/DollyCameraBehavior.h>
 #include <Viewport/InputController/MaterialEditorViewportInputController.h>
-#include <Source/Viewport/InputController/DollyCameraBehavior.h>
 
 namespace MaterialEditor
 {
