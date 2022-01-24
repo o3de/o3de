@@ -55,7 +55,7 @@ namespace PhysX
         m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
     }
 
-    AZ::Crc32 EditorShapeColliderComponent::SubdivisionCountVisibility()
+    AZ::Crc32 EditorShapeColliderComponent::SubdivisionCountVisibility() const
     {
         if (m_shapeType == ShapeType::Cylinder)
         {
@@ -65,7 +65,7 @@ namespace PhysX
         return AZ::Edit::PropertyVisibility::Hide;
     }
 
-    AZ::Crc32 EditorShapeColliderComponent::SingleSidedVisibility()
+    AZ::Crc32 EditorShapeColliderComponent::SingleSidedVisibility() const
     {
         if ((m_shapeType == ShapeType::QuadSingleSided || m_shapeType == ShapeType::QuadDoubleSided)
             && GetEntity()->FindComponent<EditorRigidBodyComponent>() == nullptr)
@@ -124,16 +124,16 @@ namespace PhysX
 
     void EditorShapeColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysicsWorldBodyService", 0x944da0cc));
-        provided.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-        provided.push_back(AZ_CRC("PhysXTriggerService", 0x3a117d7b));
-        provided.push_back(AZ_CRC("PhysXShapeColliderService", 0x98a7e779));
+        provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+        provided.push_back(AZ_CRC_CE("PhysXColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysXTriggerService"));
+        provided.push_back(AZ_CRC_CE("PhysXShapeColliderService"));
     }
 
     void EditorShapeColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        required.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void EditorShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -422,7 +422,6 @@ namespace PhysX
 
             SetShapeConfig(ShapeType::QuadSingleSided, shapeConfig);
         }
-
         else
         {
             // it's not possible to create a perfectly 2d convex in PhysX, so the best we can do is a very thin box

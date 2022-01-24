@@ -105,9 +105,9 @@ namespace PhysX
         void RefreshUiProperties();
 
         AZ::u32 OnSubdivisionCountChange();
-        AZ::Crc32 SubdivisionCountVisibility();
+        AZ::Crc32 SubdivisionCountVisibility() const;
         void OnSingleSidedChange();
-        AZ::Crc32 SingleSidedVisibility();
+        AZ::Crc32 SingleSidedVisibility() const;
 
         // AZ::Component
         void Activate() override;

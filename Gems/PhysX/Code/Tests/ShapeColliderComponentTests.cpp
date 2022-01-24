@@ -470,7 +470,7 @@ namespace PhysXEditorTests
 
     void SetTrigger(PhysX::EditorShapeColliderComponent* editorShapeColliderComponent, bool isTrigger)
     {
-        SetBoolValueOnComponent(editorShapeColliderComponent, AZ_CRC("Trigger", 0x1a6b0f5d), isTrigger);
+        SetBoolValueOnComponent(editorShapeColliderComponent, AZ_CRC_CE("Trigger"), isTrigger);
     }
 
     bool GetBoolValueFromComponent(AZ::Component* component, AZ::Crc32 name)
@@ -489,17 +489,17 @@ namespace PhysXEditorTests
 
     bool IsTrigger(PhysX::EditorShapeColliderComponent* editorShapeColliderComponent)
     {
-        return GetBoolValueFromComponent(editorShapeColliderComponent, AZ_CRC("Trigger"));
+        return GetBoolValueFromComponent(editorShapeColliderComponent, AZ_CRC_CE("Trigger"));
     }
 
     void SetSingleSided(PhysX::EditorShapeColliderComponent* editorShapeColliderComponent, bool singleSided)
     {
-        SetBoolValueOnComponent(editorShapeColliderComponent, AZ_CRC("SingleSided"), singleSided);
+        SetBoolValueOnComponent(editorShapeColliderComponent, AZ_CRC_CE("SingleSided"), singleSided);
     }
 
     bool IsSingleSided(PhysX::EditorShapeColliderComponent* editorShapeColliderComponent)
     {
-        return GetBoolValueFromComponent(editorShapeColliderComponent, AZ_CRC("SingleSided"));
+        return GetBoolValueFromComponent(editorShapeColliderComponent, AZ_CRC_CE("SingleSided"));
     }
 
     EntityPtr CreateRigidBox(const AZ::Vector3& boxDimensions, const AZ::Vector3& position)
@@ -636,7 +636,6 @@ namespace PhysXEditorTests
         EXPECT_NEAR(aabb.GetMin().GetY(), -0.6f, 1e-3f);
         EXPECT_NEAR(aabb.GetMax().GetX(), 2.7f, 1e-3f);
         EXPECT_NEAR(aabb.GetMax().GetY(), 0.6f, 1e-3f);
-        EXPECT_TRUE(true);
     }
 
     TEST_P(PhysXEditorParamBoolFixture, EditorShapeColliderComponent_TriggerSettingIsRememberedWhenSwitchingToQuadAndBack)
@@ -731,9 +730,12 @@ namespace PhysXEditorTests
         EntityPtr gameQuadEntity = CreateActiveGameEntityFromEditorEntity(editorQuadEntity.get());
         EntityPtr gameBoxEntity = CreateActiveGameEntityFromEditorEntity(editorBoxEntity.get());
 
-        // give the box enough upward velocity to rise above the level of the quad and simulate
+        // give the box enough upward velocity to rise above the level of the quad
+        // simulate for enough time that the box would have reached the top of its trajectory and fallen back past the starting point if
+        // it hadn't collided with the top of the quad
+        const int numTimesteps = 100;
         Physics::RigidBodyRequestBus::Event(gameBoxEntity->GetId(), &Physics::RigidBodyRequests::SetLinearVelocity, AZ::Vector3::CreateAxisZ(6.0f));
-        PhysX::TestUtils::UpdateScene(m_defaultScene, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 200);
+        PhysX::TestUtils::UpdateScene(m_defaultScene, AzPhysics::SystemConfiguration::DefaultFixedTimestep, numTimesteps);
 
         // the box should travel through the base of the quad because it has no collision from that direction
         // and land on the top surface of the quad, which does have collision
