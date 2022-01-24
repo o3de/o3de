@@ -399,9 +399,10 @@ namespace AZ::SceneAPI::Behaviors
         }
 
         // compute the filenames of the scene file
-        AZStd::string watchFolder = scene.GetWatchFolder() + "/";
         AZStd::string relativeSourcePath = scene.GetSourceFilename();
         AZ::StringFunc::Replace(relativeSourcePath, ".", "_");
+        // the watch folder and forward slash is used to in the asset hint path of the file
+        AZStd::string watchFolder = scene.GetWatchFolder() + "/";
         AZ::StringFunc::Replace(relativeSourcePath, watchFolder.c_str(), "");
         AZStd::string filenameOnly{ relativeSourcePath };
         AZ::StringFunc::Path::GetFileName(filenameOnly.c_str(), filenameOnly);
