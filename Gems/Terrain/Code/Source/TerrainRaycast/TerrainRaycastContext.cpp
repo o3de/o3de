@@ -213,12 +213,13 @@ namespace
                                                  const AZ::Vector2& terrainResolution,
                                                  const AZ::Aabb& terrainWorldBounds,
                                                  const AZ::Vector3& rayStart,
-                                                 const AZ::Vector3& rayDirection,
-                                                 const AZ::Vector3& rayDirectionReciprocal,
+                                                 const AZ::Vector3& rayEnd,
                                                  AzFramework::RenderGeometry::RayResult& result)
     {
         // Find the nearest intersection (if any) between the ray and terrain world bounds.
         // Note that the ray might (and often will) start inside the terrain world bounds.
+        const AZ::Vector3 rayDirection = rayEnd - rayStart;
+        const AZ::Vector3 rayDirectionReciprocal = rayDirection.GetReciprocal();
         FindNearestIntersection(terrainWorldBounds,
                                 rayStart,
                                 rayDirection,
@@ -319,7 +320,8 @@ namespace
                currentVoxel.GetMin().GetY() <= voxelGridMaxY &&
                currentVoxel.GetMax().GetY() >= voxelGridMinY &&
                currentVoxel.GetMin().GetZ() <= voxelGridMaxZ &&
-               currentVoxel.GetMax().GetZ() >= voxelGridMinZ)
+               currentVoxel.GetMax().GetZ() >= voxelGridMinZ &&
+               tMaxX <= 1.0f && tMaxY <= 1.0f && tMaxZ <= 1.0f)
         {
             TriangulateAndFindNearestIntersection(terrainSystem,
                                                   currentVoxel,
@@ -376,15 +378,12 @@ AzFramework::RenderGeometry::RayResult TerrainRaycastContext::RayIntersect(
 {
     const AZ::Aabb terrainWorldBounds = m_terrainSystem.GetTerrainAabb();
     const AZ::Vector2 terrainResolution = m_terrainSystem.GetTerrainHeightQueryResolution();
-    const AZ::Vector3 rayDirection = ray.m_endWorldPosition - ray.m_startWorldPosition;
-    const AZ::Vector3 rayDirectionReciprocal = rayDirection.GetReciprocal();
     AzFramework::RenderGeometry::RayResult rayIntersectionResult;
     FindNearestIntersectionIterative(m_terrainSystem,
                                      terrainResolution,
                                      terrainWorldBounds,
                                      ray.m_startWorldPosition,
-                                     rayDirection,
-                                     rayDirectionReciprocal,
+                                     ray.m_endWorldPosition,
                                      rayIntersectionResult);
 
     // If needed we could call m_terrainSystem.FindBestAreaEntityAtPosition in order to set
