@@ -12,7 +12,7 @@ import os
 import re
 import ui
 import utils
-import o3de
+import o3de_utils
 from pathlib import Path
 # Optional Arguments for file menu exporter
 #fbxPath = Path('')
@@ -37,14 +37,14 @@ def fbxFileExporter(fbxfilepath):
                 # Clone Texture images and Repath images before export
                 fileMenuExport = False
                 if not bpy.types.Scene.exportInTextureFolder == None:
-                    utils.CloneAndRepathImages(fileMenuExport, bpy.types.Scene.selectedo3deProjectPath, projectSelectionList = o3de.BuildProjectsList())
+                    utils.CloneAndRepathImages(fileMenuExport, bpy.types.Scene.selectedo3deProjectPath, projectSelectionList = o3de_utils.BuildProjectsList())
             else:
                 # WAS ONCE FILE MENU EXPORT
                 exportFilePath = os.path.join(bpy.types.Scene.selectedo3deProjectPath, '{}{}'.format(filename, '.fbx'))
                 # Clone Texture images and Repath images before export
                 fileMenuExport = None # This is because it was first exported by the file menu export
                 if not bpy.types.Scene.exportInTextureFolder == None:
-                    utils.CloneAndRepathImages(fileMenuExport, bpy.types.Scene.selectedo3deProjectPath, projectSelectionList = o3de.BuildProjectsList())
+                    utils.CloneAndRepathImages(fileMenuExport, bpy.types.Scene.selectedo3deProjectPath, projectSelectionList = o3de_utils.BuildProjectsList())
         else:
             # Build new path
             exportFilePath = fbxfilepath
@@ -52,7 +52,7 @@ def fbxFileExporter(fbxfilepath):
             # Clone Texture images and Repath images before export
             fileMenuExport = True
             if not bpy.types.Scene.exportInTextureFolder is None:
-                utils.CloneAndRepathImages(fileMenuExport, fbxfilepath, projectSelectionList = o3de.BuildProjectsList())
+                utils.CloneAndRepathImages(fileMenuExport, fbxfilepath, projectSelectionList = o3de_utils.BuildProjectsList())
 
         bpy.ops.export_scene.fbx(
             filepath=exportFilePath,

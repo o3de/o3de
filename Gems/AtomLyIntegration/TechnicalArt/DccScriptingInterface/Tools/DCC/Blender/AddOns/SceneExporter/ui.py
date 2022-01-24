@@ -14,7 +14,7 @@ from bpy_extras.io_utils import ExportHelper
 from bpy.types import Panel, Operator, PropertyGroup
 from bpy.props import EnumProperty, StringProperty, BoolProperty, PointerProperty
 import fbx_exporter
-import o3de
+import o3de_utils
 import ui
 
 def MessageBox(message = "", title = "Message Box", icon = 'LIGHT'):
@@ -145,7 +145,7 @@ class O3deTools(Panel):
         row = layout.row()
         mainLable = layout.row()
 
-        o3deDefaultProjectsFolder, o3deProjects, engineIsInstalled = o3de.LookatEngineManifest()
+        o3deDefaultProjectsFolder, o3deProjects, engineIsInstalled = o3de_utils.LookatEngineManifest()
 
         if engineIsInstalled: # Checks to see if O3DE is installed
 

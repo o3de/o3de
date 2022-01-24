@@ -31,7 +31,7 @@ import sys
 directory = os.getcwd()
 sys.path += [directory]
 
-import o3de
+import o3de_utils
 import ui
 
 # Const
@@ -49,7 +49,7 @@ def register():
     bpy.types.Scene.selectedo3deProjectPath = ''
     bpy.types.Scene.exportInTextureFolder = True
     bpy.types.Scene.storedImageSourcePathsDict = {}
-    bpy.types.Scene.projectsWorkingList = EnumProperty(items=o3de.BuildProjectsList(), name='')
+    bpy.types.Scene.projectsWorkingList = EnumProperty(items=o3de_utils.BuildProjectsList(), name='')
     bpy.types.Scene.exportOptionsList = EnumProperty(items=EXPORT_LIST_OPTIONS, name='', default='0')
 
 def unregister():
