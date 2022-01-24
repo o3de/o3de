@@ -93,6 +93,10 @@ endfunction()
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
 
+if(LY_EXTERNAL_SUBDIRS)
+    set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${LY_EXTERNAL_SUBDIRS})
+endif()
+
 if(NOT INSTALLED_ENGINE)
     # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
     # external subdirectories. This should go before adding the rest of the targets so the targets are availbe to the launcher.

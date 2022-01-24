@@ -68,7 +68,7 @@ namespace GraphModel
         CreateSlotData(m_inputEventSlots, m_inputEventSlotDefinitions);
         CreateSlotData(m_outputEventSlots, m_outputEventSlotDefinitions);
 
-        int numExtendableSlots = 0;
+        [[maybe_unused]] int numExtendableSlots = 0;
         for (auto it = m_extendableSlots.begin(); it != m_extendableSlots.end(); it++)
         {
             numExtendableSlots += aznumeric_cast<int>(it->second.size());

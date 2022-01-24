@@ -23,6 +23,7 @@
 #include <AzCore/Jobs/JobFunction.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <TerrainRaycast/TerrainRaycastContext.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
 namespace Terrain
@@ -187,6 +188,9 @@ namespace Terrain
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 
+        AzFramework::EntityContextId GetTerrainRaycastEntityContextId() const override;
+        AzFramework::RenderGeometry::RayResult GetClosestIntersection(
+            const AzFramework::RenderGeometry::RayRequest& ray) const override;
 
     private:
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
@@ -230,5 +234,7 @@ namespace Terrain
 
         mutable AZStd::shared_mutex m_areaMutex;
         AZStd::map<AZ::EntityId, TerrainAreaData, TerrainLayerPriorityComparator> m_registeredAreas;
+
+        mutable TerrainRaycastContext m_terrainRaycastContext;
     };
 } // namespace Terrain
