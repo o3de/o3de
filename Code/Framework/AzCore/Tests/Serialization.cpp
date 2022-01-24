@@ -726,6 +726,8 @@ namespace SerializeTestClasses {
         AZ_RTTI(ElementOverrideType, "{BAA18B6C-3CB3-476C-8B41-21EA7CE1F4CF}");
         AZ_CLASS_ALLOCATOR(ElementOverrideType, AZ::SystemAllocator, 0);
 
+        virtual ~ElementOverrideType() = default;
+
         static AZ::ObjectStreamWriteOverrideResponse Writer(
             AZ::SerializeContext::EnumerateInstanceCallContext& callContext,
             const void* object,
