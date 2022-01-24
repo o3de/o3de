@@ -9,8 +9,6 @@
 #include <Terrain/Pass/ClipmapGenerationPassData.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
-#pragma optimize("", off)
-
 namespace Terrain
 {
     void ClipmapGenerationPassData::Reflect(AZ::ReflectContext* context)
@@ -55,5 +53,3 @@ namespace Terrain
     }
 
 } // namespace Terrain
-
-#pragma optimize("", on)

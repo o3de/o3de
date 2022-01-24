@@ -45,7 +45,7 @@
                 {
                     "Name": "ClipmapGenerationPass",
                     "TemplateName": "ClipmapGenerationPassTemplate",
-                    "Enabled": true
+                    "Enabled": false
                 },
                 {
                     "Name": "DepthPrePass",
