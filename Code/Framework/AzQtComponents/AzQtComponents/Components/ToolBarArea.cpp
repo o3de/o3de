@@ -32,7 +32,8 @@ namespace AzQtComponents
         {
             if (QWidget* widget = item->widget())
             {
-                toolbar->addWidget(widget);
+                QAction* action = toolbar->addWidget(widget);
+                action->setObjectName(widget->objectName());
             }
             else if (item->spacerItem())
             {

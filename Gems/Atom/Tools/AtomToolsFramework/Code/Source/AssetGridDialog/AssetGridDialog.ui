@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PresetBrowserDialog</class>
- <widget class="QWidget" name="PresetBrowserDialog">
+ <class>AssetGridDialog</class>
+ <widget class="QWidget" name="AssetGridDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -26,7 +26,7 @@
       <widget class="QLineEdit" name="m_searchWidget"/>
      </item>
      <item>
-      <widget class="QListWidget" name="m_presetList"/>
+      <widget class="QListWidget" name="m_assetList"/>
      </item>
     </layout>
    </item>

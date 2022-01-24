@@ -51,6 +51,7 @@ bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, co
 }
 
 TerrainSystem::TerrainSystem()
+    : m_terrainRaycastContext(*this)
 {
     Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
     AZ::TickBus::Handler::BusConnect();
@@ -438,6 +439,16 @@ void TerrainSystem::GetSurfacePointFromFloats(
     GetSurfacePoint(AZ::Vector3(x, y, 0.0f), outSurfacePoint, sampleFilter, terrainExistsPtr);
 }
 
+AzFramework::EntityContextId TerrainSystem::GetTerrainRaycastEntityContextId() const
+{
+    return m_terrainRaycastContext.GetEntityContextId();
+}
+
+AzFramework::RenderGeometry::RayResult TerrainSystem::GetClosestIntersection(
+    const AzFramework::RenderGeometry::RayRequest& ray) const
+{
+    return m_terrainRaycastContext.RayIntersect(ray);
+}
 
 AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const
 {

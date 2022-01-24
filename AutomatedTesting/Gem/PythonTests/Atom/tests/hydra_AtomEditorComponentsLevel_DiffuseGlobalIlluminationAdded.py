@@ -60,7 +60,7 @@ def AtomEditorComponentsLevel_DiffuseGlobalIllumination_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Add Diffuse Global Illumination level component to the level entity.
@@ -86,10 +86,10 @@ def AtomEditorComponentsLevel_DiffuseGlobalIllumination_AddedToEntity():
 
         # 4. Set Quality Level property to Low
         diffuse_global_illumination_component.set_component_property_value(
-            AtomComponentProperties.diffuse_global_illumination('Quality Level', GLOBAL_ILLUMINATION_QUALITY['Low']))
+            AtomComponentProperties.diffuse_global_illumination('Quality Level'), GLOBAL_ILLUMINATION_QUALITY['Low'])
         quality = diffuse_global_illumination_component.get_component_property_value(
             AtomComponentProperties.diffuse_global_illumination('Quality Level'))
-        Report.result(diffuse_global_illumination_quality, quality == GLOBAL_ILLUMINATION_QUALITY['Low'])
+        Report.result(Tests.diffuse_global_illumination_quality, quality == GLOBAL_ILLUMINATION_QUALITY['Low'])
 
         # 5. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)

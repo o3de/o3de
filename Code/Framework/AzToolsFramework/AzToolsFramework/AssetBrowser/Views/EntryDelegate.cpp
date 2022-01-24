@@ -177,7 +177,7 @@ namespace AzToolsFramework
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
             if (data.canConvert<const AssetBrowserEntry*>())
             {
-                bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
+                [[maybe_unused]] bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
 
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
