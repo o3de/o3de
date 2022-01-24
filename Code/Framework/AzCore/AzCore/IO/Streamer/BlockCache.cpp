@@ -137,18 +137,18 @@ namespace AZ::IO
         AZStd::visit([this, request](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
             {
                 ReadFile(request, args);
                 return;
             }
             else
             {
-                if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData>)
+                if constexpr (AZStd::is_same_v<Command, Requests::FlushData>)
                 {
                     FlushCache(args.m_path);
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushAllData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::FlushAllData>)
                 {
                     FlushEntireCache();
                 }
@@ -166,7 +166,7 @@ namespace AZ::IO
         {
             Section& delayed = m_delayedSections.front();
             AZ_Assert(delayed.m_parent, "Delayed section doesn't have a reference to the original request.");
-            auto data = AZStd::get_if<FileRequest::ReadData>(&delayed.m_parent->GetCommand());
+            auto data = AZStd::get_if<Requests::ReadData>(&delayed.m_parent->GetCommand());
             AZ_Assert(data, "A request in the delayed queue of the BlockCache didn't have a parent with read data.");
             // This call can add the same section to the back of the queue if there's not
             // enough space. Because of this the entry needs to be removed from the delayed
@@ -233,7 +233,7 @@ namespace AZ::IO
         }
     }
 
-    void BlockCache::ReadFile(FileRequest* request, FileRequest::ReadData& data)
+    void BlockCache::ReadFile(FileRequest* request, Requests::ReadData& data)
     {
         if (!m_next)
         {
@@ -250,7 +250,7 @@ namespace AZ::IO
             m_numMetaDataRetrievalInProgress--;
             if (fileSizeRequest.GetStatus() == IStreamerTypes::RequestStatus::Completed)
             {
-                auto& requestInfo = AZStd::get<FileRequest::FileMetaDataRetrievalData>(fileSizeRequest.GetCommand());
+                auto& requestInfo = AZStd::get<Requests::FileMetaDataRetrievalData>(fileSizeRequest.GetCommand());
                 if (requestInfo.m_found)
                 {
                     ContinueReadFile(request, requestInfo.m_fileSize);
@@ -272,7 +272,7 @@ namespace AZ::IO
         Section main;
         Section epilog;
 
-        auto& data = AZStd::get<FileRequest::ReadData>(request->GetCommand());
+        auto& data = AZStd::get<Requests::ReadData>(request->GetCommand());
 
         if (!SplitRequest(prolog, main, epilog, data.m_path, fileLength, data.m_offset, data.m_size,
             reinterpret_cast<u8*>(data.m_output)))
