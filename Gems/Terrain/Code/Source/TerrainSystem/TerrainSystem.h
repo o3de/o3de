@@ -41,6 +41,8 @@ namespace Terrain
         TerrainSystem();
         ~TerrainSystem();
 
+        static void Reflect(AZ::ReflectContext* context);
+
         ///////////////////////////////////////////
         // TerrainSystemServiceRequestBus::Handler Impl
         void Activate() override;

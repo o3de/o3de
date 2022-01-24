@@ -14,6 +14,8 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <TerrainSystem/TerrainSystem.h>
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Terrain/Pass/ClipmapGenerationPassData.h>
 
 namespace Terrain
 {
@@ -33,6 +35,8 @@ namespace Terrain
                 ;
             }
         }
+
+        TerrainSystem::Reflect(context);
     }
 
     void TerrainSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -63,6 +67,10 @@ namespace Terrain
         // every time an entity is added or removed to a level.  If this ever changes, the Terrain System ownership could move into
         // the level component.
         m_terrainSystem = new TerrainSystem();
+
+        auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+        AZ_Assert(passSystem, "Cannot get the pass system.");
+        passSystem->AddPassCreator(AZ::Name("ClipmapGenerationComputePass"), &ClipmapGenerationPass::Create);
     }
 
     void TerrainSystemComponent::Deactivate()

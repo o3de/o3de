@@ -1,0 +1,561 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            {
+                "Name": "MSAAResolveColorTemplate",
+                "Path": "Passes/MSAAResolveColor.pass"
+            },
+            {
+                "Name": "MSAAResolveCustomTemplate",
+                "Path": "Passes/MSAAResolveCustom.pass"
+            },
+            {
+                "Name": "MSAAResolveDepthTemplate",
+                "Path": "Passes/MSAAResolveDepth.pass"
+            },
+            {
+                "Name": "DepthPassTemplate",
+                "Path": "Passes/Depth.pass"
+            },
+            {
+                "Name": "DepthMSAAPassTemplate",
+                "Path": "Passes/DepthMSAA.pass"
+            },
+            {
+                "Name": "DepthMSAA2xPassTemplate",
+                "Path": "Passes/DepthMSAA2x.pass"
+            },
+            {
+                "Name": "DepthMSAA4xPassTemplate",
+                "Path": "Passes/DepthMSAA4x.pass"
+            },
+            {
+                "Name": "DepthMSAA8xPassTemplate",
+                "Path": "Passes/DepthMSAA8x.pass"
+            },
+            {
+                "Name": "DepthMaxPassTemplate",
+                "Path": "Passes/DepthMax.pass"
+            },
+            {
+                "Name": "ForwardPassTemplate",
+                "Path": "Passes/Forward.pass"
+            },
+            {
+                "Name": "ForwardMSAAPassTemplate",
+                "Path": "Passes/ForwardMSAA.pass"
+            },
+            {
+                "Name": "ForwardSubsurfaceMSAAPassTemplate",
+                "Path": "Passes/ForwardSubsurfaceMSAA.pass"
+            },
+            {
+                "Name": "MainPipeline",
+                "Path": "Passes/MainPipeline.pass"
+            },
+            {
+                "Name": "MainPipelineRenderToTexture",
+                "Path": "Passes/MainPipelineRenderToTexture.pass"
+            },
+            {
+                "Name": "CascadedShadowmapsTemplate",
+                "Path": "Passes/CascadedShadowmaps.pass"
+            },
+            {
+                "Name": "SlowClearPassTemplate",
+                "Path": "Passes/SlowClear.pass"
+            },
+            {
+                "Name": "FullscreenCopyTemplate",
+                "Path": "Passes/FullscreenCopy.pass"
+            },
+            {
+                "Name": "ModulateTextureTemplate",
+                "Path": "Passes/ModulateTexture.pass"
+            },
+            {
+                "Name": "BlendColorGradingLutsTemplate",
+                "Path": "Passes/BlendColorGradingLuts.pass"
+            },
+            {
+                "Name": "LookModificationCompositeTemplate",
+                "Path": "Passes/LookModificationComposite.pass"
+            },
+            {
+                "Name": "LookModificationTransformTemplate",
+                "Path": "Passes/LookModificationTransform.pass"
+            },
+            {
+                "Name": "AuxGeomPassTemplate",
+                "Path": "Passes/AuxGeom.pass"
+            },
+            {
+                "Name": "SkyBoxTemplate",
+                "Path": "Passes/SkyBox.pass"
+            },
+            {
+                "Name": "SkyBoxTwoOutputsTemplate",
+                "Path": "Passes/SkyBox_TwoOutputs.pass"
+            },
+            {
+                "Name": "UIPassTemplate",
+                "Path": "Passes/UI.pass"
+            },
+            {
+                "Name": "ImGuiPassTemplate",
+                "Path": "Passes/ImGui.pass"
+            },
+            {
+                "Name": "EyeAdaptationTemplate",
+                "Path": "Passes/EyeAdaptation.pass"
+            },
+            {
+                "Name": "DownsampleLuminanceMinAvgMaxCS",
+                "Path": "Passes/DownsampleLuminanceMinAvgMaxCS.pass"
+            },
+            {
+                "Name": "DownsampleMinAvgMaxCS",
+                "Path": "Passes/DownsampleMinAvgMaxCS.pass"
+            },
+            {
+                "Name": "DownsampleMipChainTemplate",
+                "Path": "Passes/DownsampleMipChain.pass"
+            },
+            {
+                "Name": "DisplayMapperTemplate",
+                "Path": "Passes/DisplayMapper.pass"
+            },
+            {
+                "Name": "SkinningPassTemplate",
+                "Path": "Passes/Skinning.pass"
+            },
+            {
+                "Name": "BRDFTexturePipeline",
+                "Path": "Passes/BRDFTexturePipeline.pass"
+            },
+            {
+                "Name": "BRDFTextureTemplate",
+                "Path": "Passes/BRDFTexture.pass"
+            },
+            {
+                "Name": "TransparentPassTemplate",
+                "Path": "Passes/Transparent.pass"
+            },
+            {
+                "Name": "ConvertToAcescgTemplate",
+                "Path": "Passes/ConvertToAcescg.pass"
+            },
+            {
+                "Name": "DepthExponentiationTemplate",
+                "Path": "Passes/DepthExponentiation.pass"
+            },
+            {
+                "Name": "DepthOfFieldTemplate",
+                "Path": "Passes/DepthOfField.pass"
+            },
+            {
+                "Name": "DepthOfFieldOnBokehTemplate",
+                "Path": "Passes/DepthOfFieldOnBokeh.pass"
+            },
+            {
+                "Name": "DepthOfFieldBlurBokehTemplate",
+                "Path": "Passes/DepthOfFieldBlurBokeh.pass"
+            },
+            {
+                "Name": "DepthOfFieldCompositeTemplate",
+                "Path": "Passes/DepthOfFieldComposite.pass"
+            },
+            {
+                "Name": "DepthOfFieldDownSampleTemplate",
+                "Path": "Passes/DepthOfFieldDownSample.pass"
+            },
+            {
+                "Name": "DepthOfFieldPrepareTemplate",
+                "Path": "Passes/DepthOfFieldPrepare.pass"
+            },
+            {
+                "Name": "DepthOfFieldMaskTemplate",
+                "Path": "Passes/DepthOfFieldMask.pass"
+            },
+            {
+                "Name": "DepthOfFieldReadBackFocusDepthTemplate",
+                "Path": "Passes/DepthOfFieldReadBackFocusDepth.pass"
+            },
+            {
+                "Name": "DepthOfFieldWriteFocusDepthFromGpuTemplate",
+                "Path": "Passes/DepthOfFieldWriteFocusDepthFromGpu.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldTemplate",
+                "Path": "Passes/NewDepthOfField.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldDownsampleTemplate",
+                "Path": "Passes/NewDepthOfFieldDownsample.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldTileReduceTemplate",
+                "Path": "Passes/NewDepthOfFieldTileReduce.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldTile3x3Template",
+                "Path": "Passes/NewDepthOfFieldTile3x3.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldFilterLargeTemplate",
+                "Path": "Passes/NewDepthOfFieldFilterLarge.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldFilterSmallTemplate",
+                "Path": "Passes/NewDepthOfFieldFilterSmall.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldCompositeTemplate",
+                "Path": "Passes/NewDepthOfFieldComposite.pass"
+            },
+			{
+                "Name": "EsmShadowmapsTemplate",
+                "Path": "Passes/EsmShadowmaps.pass"
+            },
+            {
+                "Name": "LightCullingHeatmapTemplate",
+                "Path": "Passes/LightCullingHeatmap.pass"
+            },
+            {
+                "Name": "LuminanceHeatmapTemplate",
+                "Path": "Passes/LuminanceHeatmap.pass"
+            },
+            {
+                "Name": "LuminanceHistogramGeneratorTemplate",
+                "Path": "Passes/LuminanceHistogramGenerator.pass"
+            },
+            {
+                "Name": "LightCullingTemplate",
+                "Path": "Passes/LightCulling.pass"
+            },
+            {
+                "Name": "LightCullingTilePrepareMSAATemplate",
+                "Path": "Passes/LightCullingTilePrepareMSAA.pass"
+            },
+            {
+                "Name": "EnvironmentCubeMapPipeline",
+                "Path": "Passes/EnvironmentCubeMapPipeline.pass"
+            },
+            {
+                "Name": "ProjectedShadowmapsTemplate",
+                "Path": "Passes/ProjectedShadowmaps.pass"
+            },
+            {
+                "Name": "LightCullingRemapTemplate",
+                "Path": "Passes/LightCullingRemap.pass"
+            },
+            {
+                "Name": "EnvironmentCubeMapForwardMSAAPassTemplate",
+                "Path": "Passes/EnvironmentCubeMapForwardMSAA.pass"
+            },
+            {
+                "Name": "EnvironmentCubeMapForwardSubsurfaceMSAAPassTemplate",
+                "Path": "Passes/EnvironmentCubeMapForwardSubsurfaceMSAA.pass"
+            },
+            {
+                "Name": "EnvironmentCubeMapDepthMSAAPassTemplate",
+                "Path": "Passes/EnvironmentCubeMapDepthMSAA.pass"
+            },
+            {
+                "Name": "EnvironmentCubeMapSkyBoxPassTemplate",
+                "Path": "Passes/EnvironmentCubeMapSkyBox.pass"
+            },
+            {
+                "Name": "DepthToLinearTemplate",
+                "Path": "Passes/DepthToLinearDepth.pass"
+            },
+            {
+                "Name": "DeferredFogPassTemplate",
+                "Path": "Passes/DeferredFog.pass"
+            },
+            {
+                "Name": "SubsurfaceScatteringPassTemplate",
+                "Path": "Passes/SubsurfaceScattering.pass"
+            },
+            {
+                "Name": "DiffuseSpecularMergeTemplate",
+                "Path": "Passes/DiffuseSpecularMerge.pass"
+            },
+            {
+                "Name": "SMAAEdgeDetectionTemplate",
+                "Path": "Passes/SMAAEdgeDetection.pass"
+            },
+            {
+                "Name": "SMAABlendingWeightCalculationTemplate",
+                "Path": "Passes/SMAABlendingWeightCalculation.pass"
+            },
+            {
+                "Name": "SMAANeighborhoodBlendingTemplate",
+                "Path": "Passes/SMAANeighborhoodBlending.pass"
+            },
+            {
+                "Name": "SMAAConvertToPerceptualColorTemplate",
+                "Path": "Passes/SMAAConvertToPerceptualColor.pass"
+            },
+            {
+                "Name": "SMAA1xApplyLinearHDRColorTemplate",
+                "Path": "Passes/SMAA1xApplyLinearHDRColor.pass"
+            },
+            {
+                "Name": "SMAA1xApplyPerceptualColorTemplate",
+                "Path": "Passes/SMAA1xApplyPerceptualColor.pass"
+            },
+            {
+                "Name": "TaaTemplate",
+                "Path": "Passes/Taa.pass"
+            },
+            {
+                "Name": "ContrastAdaptiveSharpeningTemplate",
+                "Path": "Passes/ContrastAdaptiveSharpening.pass"
+            },
+            {
+                "Name": "SsaoParentTemplate",
+                "Path": "Passes/SsaoParent.pass"
+            },
+            {
+                "Name": "SsaoComputeTemplate",
+                "Path": "Passes/SsaoCompute.pass"
+            },
+            {
+                "Name": "ReflectionsParentPassTemplate",
+                "Path": "Passes/Reflections.pass"
+            },
+            {
+                "Name": "ReflectionProbeStencilPassTemplate",
+                "Path": "Passes/ReflectionProbeStencil.pass"
+            },
+            {
+                "Name": "ReflectionProbeBlendWeightPassTemplate",
+                "Path": "Passes/ReflectionProbeBlendWeight.pass"
+            },
+            {
+                "Name": "ReflectionGlobalFullscreenPassTemplate",
+                "Path": "Passes/ReflectionGlobalFullscreen.pass"
+            },
+            {
+                "Name": "ReflectionProbeRenderOuterPassTemplate",
+                "Path": "Passes/ReflectionProbeRenderOuter.pass"
+            },
+            {
+                "Name": "ReflectionProbeRenderInnerPassTemplate",
+                "Path": "Passes/ReflectionProbeRenderInner.pass"
+            },
+            {
+                "Name": "ReflectionCopyFrameBufferPassTemplate",
+                "Path": "Passes/ReflectionCopyFrameBuffer.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpacePassTemplate",
+                "Path": "Passes/ReflectionScreenSpace.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceTracePassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceTrace.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceBlurPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceBlur.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceBlurVerticalPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceBlurVertical.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceBlurHorizontalPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceBlurHorizontal.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceCompositePassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceComposite.pass"
+            },
+            {
+                "Name": "ReflectionCompositePassTemplate",
+                "Path": "Passes/ReflectionComposite.pass"
+            },
+            {
+                "Name": "CameraMotionVectorPassTemplate",
+                "Path": "Passes/CameraMotionVector.pass"
+            },
+            {
+                "Name": "MeshMotionVectorPassTemplate",
+                "Path": "Passes/MeshMotionVector.pass"
+            },
+            {
+                "Name": "RayTracingAccelerationStructurePassTemplate",
+                "Path": "Passes/RayTracingAccelerationStructure.pass"
+            },
+            {
+                "Name": "FastDepthAwareBlurTemplate",
+                "Path": "Passes/FastDepthAwareBlur.pass"
+            },
+            {
+                "Name": "FastDepthAwareBlurHorTemplate",
+                "Path": "Passes/FastDepthAwareBlurHor.pass"
+            },
+            {
+                "Name": "FastDepthAwareBlurVerTemplate",
+                "Path": "Passes/FastDepthAwareBlurVer.pass"
+            },
+            {
+                "Name": "DepthDownsampleTemplate",
+                "Path": "Passes/DepthDownsample.pass"
+            },
+            {
+                "Name": "DepthUpsampleTemplate",
+                "Path": "Passes/DepthUpsample.pass"
+            },
+            {
+                "Name": "FullscreenOutputOnlyTemplate",
+                "Path": "Passes/FullscreenOutputOnly.pass"
+            },
+            {
+                "Name": "BloomDownsamplePassTemplate",
+                "Path": "Passes/BloomDownsample.pass"
+            },
+            {
+                "Name": "BloomBlurPassTemplate",
+                "Path": "Passes/BloomBlur.pass"
+            },
+            {
+                "Name": "BloomCompositePassTemplate",
+                "Path": "Passes/BloomComposite.pass"
+            },
+            {
+                "Name": "BloomPassTemplate",
+                "Path": "Passes/Bloom.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridRayTracingPassTemplate",
+                "Path": "Passes/DiffuseProbeGridRayTracing.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridUpdatePassTemplate",
+                "Path": "Passes/DiffuseProbeGridUpdate.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridBlendIrradiancePassTemplate",
+                "Path": "Passes/DiffuseProbeGridBlendIrradiance.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridBlendDistancePassTemplate",
+                "Path": "Passes/DiffuseProbeGridBlendDistance.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridBorderUpdatePassTemplate",
+                "Path": "Passes/DiffuseProbeGridBorderUpdate.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridRelocationPassTemplate",
+                "Path": "Passes/DiffuseProbeGridRelocation.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridClassificationPassTemplate",
+                "Path": "Passes/DiffuseProbeGridClassification.pass"
+            },
+            {
+                "Name": "DiffuseGlobalIlluminationPassTemplate",
+                "Path": "Passes/DiffuseGlobalIllumination.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridDownsamplePassTemplate",
+                "Path": "Passes/DiffuseProbeGridDownsample.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridRenderPassTemplate",
+                "Path": "Passes/DiffuseProbeGridRender.pass"
+            },
+            {
+                "Name": "DiffuseCompositePassTemplate",
+                "Path": "Passes/DiffuseComposite.pass"
+            },
+            {
+                "Name": "DiffuseGlobalFullscreenPassTemplate",
+                "Path": "Passes/DiffuseGlobalFullscreen.pass"
+            },
+            {
+                "Name": "MorphTargetPassTemplate",
+                "Path": "Passes/MorphTarget.pass"
+            },
+            {
+                "Name": "DepthMSAAParentTemplate",
+                "Path": "Passes/DepthMSAAParent.pass"
+            },
+            {
+                "Name": "MotionVectorParentTemplate",
+                "Path": "Passes/MotionVectorParent.pass"
+            },
+            {
+                "Name": "LightCullingParentTemplate",
+                "Path": "Passes/LightCullingParent.pass"
+            },
+            {
+                "Name": "ShadowParentTemplate",
+                "Path": "Passes/ShadowParent.pass"
+            },
+            {
+                "Name": "OpaqueParentTemplate",
+                "Path": "Passes/OpaqueParent.pass"
+            },
+            {
+                "Name": "ToolsPipeline",
+                "Path": "Passes/ToolsPipeline.pass"
+            },
+            {
+                "Name": "ToolsPipelineRenderToTexture",
+                "Path": "Passes/ToolsPipelineRenderToTexture.pass"
+            },
+            {
+                "Name": "TransparentParentTemplate",
+                "Path": "Passes/TransparentParent.pass"
+            },
+            {
+                "Name": "PostProcessParentTemplate",
+                "Path": "Passes/PostProcessParent.pass"
+            },
+            {
+                "Name": "DebugOverlayParentTemplate",
+                "Path": "Passes/DebugOverlayParent.pass"
+            },
+            {
+                "Name": "UIParentTemplate",
+                "Path": "Passes/UIParent.pass"
+            },
+            {
+                "Name": "LightAdaptationParentTemplate",
+                "Path": "Passes/LightAdaptationParent.pass"
+            },
+            {
+                "Name": "LowEndForwardPassTemplate",
+                "Path": "Passes/LowEndForward.pass"
+            },
+            {
+                "Name": "LowEndPipelineTemplate",
+                "Path": "Passes/LowEndPipeline.pass"
+            },
+            {
+                "Name": "KawaseShadowBlurTemplate",
+                "Path": "Passes/KawaseShadowBlur.pass"
+            },
+            {
+                "Name": "HDRColorGradingTemplate",
+                "Path": "Passes/HDRColorGrading.pass"
+            },
+            {
+                "Name": "LutGenerationTemplate",
+                "Path": "Passes/LutGeneration.pass"
+            },
+            {
+                "Name": "ClipmapGenerationPassTemplate",
+                "Path": "Passes/ClipmapGeneration.pass"
+            }
+        ]
+    }
+}
