@@ -124,7 +124,7 @@ def update_manifest(scene):
         meshGroup['id'] = '{' + str(uuid.uuid5(uuid.NAMESPACE_DNS, sourceFilenameOnly + chunkPath)) + '}'
         sceneManifest.mesh_group_select_node(meshGroup, chunkPath)
 
-    # combine both scene manifests so the the OnPrepareForExport will be called
+    # combine both scene manifests so the OnPrepareForExport will be called
     originalManifest = json.loads(scene.manifest.ExportToJson())
     sceneManifest.manifest["values"].append(originalManifest["values"][0])
     return sceneManifest.export()
