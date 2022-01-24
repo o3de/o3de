@@ -297,7 +297,7 @@ namespace Terrain
         {
             if (sector.m_isDirty)
             {
-                RebuildSectorWireframe(sector, heightDataResolution, worldMinZ);
+                RebuildSectorWireframe(sector, heightDataResolution);
             }
 
             if (!sector.m_lineVertices.empty())
@@ -317,7 +317,7 @@ namespace Terrain
 
     }
 
-    void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution, float worldMinZ)
+    void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution)
     {
         if (!sector.m_isDirty)
         {
@@ -354,44 +354,29 @@ namespace Terrain
         // For each terrain height value in the region, create the _| grid lines for that point and cache off the height value
         // for use with subsequent grid line calculations.
         auto ProcessHeightValue = [gridResolution, &previousHeight, &rowHeights, &sector]
-            (uint32_t xIndex, uint32_t yIndex, const AZ::Vector3& position, [[maybe_unused]] bool terrainExists)
+            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
         {
             // Don't add any vertices for the first column or first row.  These grid lines will be handled by an adjacent sector, if
             // there is one.
             if ((xIndex > 0) && (yIndex > 0))
             {
-                float x = position.GetX() - gridResolution.GetX();
-                float y = position.GetY() - gridResolution.GetY();
+                float x = surfacePoint.m_position.GetX() - gridResolution.GetX();
+                float y = surfacePoint.m_position.GetY() - gridResolution.GetY();
 
-                sector.m_lineVertices.emplace_back(AZ::Vector3(x, position.GetY(), previousHeight));
-                sector.m_lineVertices.emplace_back(position);
+                sector.m_lineVertices.emplace_back(AZ::Vector3(x, surfacePoint.m_position.GetY(), previousHeight));
+                sector.m_lineVertices.emplace_back(surfacePoint.m_position);
 
-                sector.m_lineVertices.emplace_back(AZ::Vector3(position.GetX(), y, rowHeights[xIndex]));
-                sector.m_lineVertices.emplace_back(position);
+                sector.m_lineVertices.emplace_back(AZ::Vector3(surfacePoint.m_position.GetX(), y, rowHeights[xIndex]));
+                sector.m_lineVertices.emplace_back(surfacePoint.m_position);
             }
 
             // Save off the heights so that we can use them to draw subsequent columns and rows.
-            previousHeight = position.GetZ();
-            rowHeights[xIndex] = position.GetZ();
+            previousHeight = surfacePoint.m_position.GetZ();
+            rowHeights[xIndex] = surfacePoint.m_position.GetZ();
         };
 
-        // This set of nested loops will get replaced with a call to ProcessHeightsFromRegion once the API exists.
-        for (size_t yIndex = 0; yIndex < numSamplesY; yIndex++)
-        {
-            float y = region.GetMin().GetY() + (gridResolution.GetY() * yIndex);
-            for (size_t xIndex = 0; xIndex < numSamplesX; xIndex++)
-            {
-                float x = region.GetMin().GetX() + (gridResolution.GetX() * xIndex);
-
-                float height = worldMinZ;
-                bool terrainExists = false;
-                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                    height, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
-                    AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
-                ProcessHeightValue(
-                    aznumeric_cast<uint32_t>(xIndex), aznumeric_cast<uint32_t>(yIndex), AZ::Vector3(x, y, height), terrainExists);
-            }
-        }
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
+            region, gridResolution, ProcessHeightValue, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
     }
 
     void TerrainWorldDebuggerComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)

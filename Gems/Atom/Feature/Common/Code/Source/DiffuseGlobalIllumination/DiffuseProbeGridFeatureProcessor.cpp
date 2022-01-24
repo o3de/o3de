@@ -295,6 +295,12 @@ namespace AZ
             probeGrid->SetNormalBias(normalBias);
         }
 
+        void DiffuseProbeGridFeatureProcessor::SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe)
+        {
+            AZ_Assert(probeGrid.get(), "SetNumRaysPerProbe called with an invalid handle");
+            probeGrid->SetNumRaysPerProbe(numRaysPerProbe);
+        }
+
         void DiffuseProbeGridFeatureProcessor::SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier)
         {
             AZ_Assert(probeGrid.get(), "SetAmbientMultiplier called with an invalid handle");
@@ -531,7 +537,7 @@ namespace AZ
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
             request.m_initialData = m_boxIndices.data();
-            AZ::RHI::ResultCode result = m_bufferPool->InitBuffer(request);
+            [[maybe_unused]] AZ::RHI::ResultCode result = m_bufferPool->InitBuffer(request);
             AZ_Error("DiffuseProbeGridFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create index buffer view

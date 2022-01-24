@@ -322,7 +322,7 @@ namespace AZ
         
         void Scene::RemoveRenderPipeline(const RenderPipelineId& pipelineId)
         {
-            bool removed = false;
+            [[maybe_unused]] bool removed = false;
             for (auto it = m_pipelines.begin(); it != m_pipelines.end(); ++it)
             {
                 if (pipelineId == (*it)->GetId())

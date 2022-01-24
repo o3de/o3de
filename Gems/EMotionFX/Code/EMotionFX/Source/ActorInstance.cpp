@@ -34,6 +34,8 @@
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/RagdollInstance.h>
 
+#include <numeric>
+
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(ActorInstance, ActorInstanceAllocator, 0)
