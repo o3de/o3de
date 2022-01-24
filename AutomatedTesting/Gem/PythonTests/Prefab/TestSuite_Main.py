@@ -38,6 +38,10 @@ class TestAutomation(TestAutomationBase):
         from Prefab.tests.instantiate_prefab import InstantiatePrefab_ContainingASingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
+    def test_InstantiatePrefab_FromCreatedPrefabWithSingleEntity(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.instantiate_prefab import InstantiatePrefab_FromCreatedPrefabWithSingleEntity as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
+
     def test_DeletePrefab_ContainingASingleEntity(self, request, workspace, editor, launcher_platform):
         from Prefab.tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
         self._run_prefab_test(request, workspace, editor, test_module)

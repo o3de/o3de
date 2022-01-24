@@ -45,8 +45,12 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_InstantiatePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.instantiate_prefab import InstantiatePrefab_ContainingASingleEntity as test_module
 
+    class test_InstantiatePrefab_FromCreatedPrefabWithSingleEntity(EditorSharedTest):
+        from .tests.instantiate_prefab import InstantiatePrefab_FromCreatedPrefabWithSingleEntity as test_module
+
     class test_DeletePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.delete_prefab import DeletePrefab_ContainingASingleEntity as test_module
 
     class test_DuplicatePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
+    
