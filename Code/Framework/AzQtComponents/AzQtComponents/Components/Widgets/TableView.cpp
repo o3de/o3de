@@ -38,7 +38,6 @@ namespace AzQtComponents
         ConfigHelpers::read<qreal>(settings, QStringLiteral("FocusBorderWidth"), config.focusBorderWidth);
         ConfigHelpers::read<QColor>(settings, QStringLiteral("FocusBorderColor"), config.focusBorderColor);
         ConfigHelpers::read<QColor>(settings, QStringLiteral("FocusFillColor"), config.focusFillColor);
-        ConfigHelpers::read<QColor>(settings, QStringLiteral("HeaderFillColor"), config.headerFillColor);
         settings.endGroup();
 
         return config;
@@ -52,7 +51,6 @@ namespace AzQtComponents
         config.focusBorderWidth = 1;
         config.focusBorderColor = QStringLiteral("#94D2FF");
         config.focusFillColor = QStringLiteral("#10ffffff");
-        config.headerFillColor = QStringLiteral("#2d2d2d");
 
         return config;
     }
@@ -173,22 +171,6 @@ namespace AzQtComponents
             painter->drawRect(option->rect.left(), option->rect.top() + 1, config.borderWidth, option->rect.height() - 2);
             painter->restore();
         }
-
-        return true;
-    }
-
-    bool TableView::drawHeaderSection(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config)
-    {
-        Q_UNUSED(widget);
-        Q_UNUSED(style);
-
-        const auto headerViewOption = qstyleoption_cast<const QStyleOptionHeader*>(option);
-        if (!headerViewOption)
-        {
-            return false;
-        }
-
-        painter->fillRect(headerViewOption->rect, config.headerFillColor);
 
         return true;
     }
