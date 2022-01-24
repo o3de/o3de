@@ -30,9 +30,16 @@ class TestGetTemplatesForCreation:
         return []
 
     @staticmethod
+    def get_gem_templates() -> list:
+        return []
+
+    @staticmethod
     def get_engine_templates() -> list:
         return [pathlib.Path('D:/o3de/Templates/DefaultProject'), pathlib.Path('D:/o3de/Templates/DefaultGem')]
 
+    @staticmethod
+    def get_all_gems(project_path: pathlib.Path = None) -> list:
+        return []
 
     @pytest.mark.parametrize("expected_template_paths", [
             pytest.param([])
@@ -50,16 +57,24 @@ class TestGetTemplatesForCreation:
                         as get_manifest_templates_patch, \
                 patch('o3de.manifest.get_project_templates', side_effect=self.get_project_templates)\
                         as get_project_templates_patch, \
+                patch('o3de.manifest.get_gem_templates', side_effect=self.get_gem_templates) \
+                        as get_gem_templates_patch, \
                 patch('o3de.manifest.get_engine_templates', side_effect=self.get_engine_templates)\
                         as get_engine_templates_patch, \
+                patch('o3de.manifest.get_all_gems', side_effect=self.get_all_gems) \
+                        as get_all_gems_patch, \
                 patch('o3de.validation.valid_o3de_template_json', return_value=True) \
                         as validate_template_json,\
                 patch('o3de.validation.valid_o3de_project_json', side_effect=validate_project_json) \
                         as validate_project_json,\
                 patch('o3de.validation.valid_o3de_gem_json', side_effect=validate_gem_json) \
-                        as validate_gem_json:
+                        as validate_gem_json,\
+                patch('o3de.manifest.load_o3de_manifest') as load_o3de_manifest_patch:
             templates = manifest.get_templates_for_generic_creation()
             assert templates == expected_template_paths
+
+            # make sure the o3de manifest isn't attempted to be loaded
+            load_o3de_manifest_patch.assert_not_called()
 
 
     @pytest.mark.parametrize("expected_template_paths", [
@@ -78,16 +93,24 @@ class TestGetTemplatesForCreation:
                         as get_manifest_templates_patch, \
                 patch('o3de.manifest.get_project_templates', side_effect=self.get_project_templates) \
                         as get_project_templates_patch, \
+                patch('o3de.manifest.get_gem_templates', side_effect=self.get_gem_templates) \
+                        as get_gem_templates_patch, \
                 patch('o3de.manifest.get_engine_templates', side_effect=self.get_engine_templates) \
                         as get_engine_templates_patch, \
+                patch('o3de.manifest.get_all_gems', side_effect=self.get_all_gems) \
+                        as get_all_gems_patch, \
                 patch('o3de.validation.valid_o3de_template_json', return_value=True) \
                         as validate_template_json, \
                 patch('o3de.validation.valid_o3de_project_json', side_effect=validate_project_json) \
                         as validate_project_json, \
                 patch('o3de.validation.valid_o3de_gem_json', side_effect=validate_gem_json) \
-                        as validate_gem_json:
+                        as validate_gem_json,\
+                patch('o3de.manifest.load_o3de_manifest') as load_o3de_manifest_patch:
             templates = manifest.get_templates_for_project_creation()
             assert templates == expected_template_paths
+
+            # make sure the o3de manifest isn't attempted to be loaded
+            load_o3de_manifest_patch.assert_not_called()
 
 
     @pytest.mark.parametrize("expected_template_paths", [
@@ -106,13 +129,21 @@ class TestGetTemplatesForCreation:
                         as get_manifest_templates_patch, \
                 patch('o3de.manifest.get_project_templates', side_effect=self.get_project_templates) \
                         as get_project_templates_patch, \
+                patch('o3de.manifest.get_gem_templates', side_effect=self.get_gem_templates) \
+                        as get_gem_templates_patch, \
                 patch('o3de.manifest.get_engine_templates', side_effect=self.get_engine_templates) \
                         as get_engine_templates_patch, \
+                patch('o3de.manifest.get_all_gems', side_effect=self.get_all_gems) \
+                        as get_all_gems_patch, \
                 patch('o3de.validation.valid_o3de_template_json', return_value=True) \
                         as validate_template_json, \
                 patch('o3de.validation.valid_o3de_project_json', side_effect=validate_project_json) \
                         as validate_project_json, \
                 patch('o3de.validation.valid_o3de_gem_json', side_effect=validate_gem_json) \
-                        as validate_gem_json:
+                        as validate_gem_json, \
+                patch('o3de.manifest.load_o3de_manifest') as load_o3de_manifest_patch:
             templates = manifest.get_templates_for_gem_creation()
             assert templates == expected_template_paths
+
+            # make sure the o3de manifest isn't attempted to be loaded
+            load_o3de_manifest_patch.assert_not_called()

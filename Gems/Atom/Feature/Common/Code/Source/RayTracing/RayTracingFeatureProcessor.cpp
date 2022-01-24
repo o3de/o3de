@@ -123,7 +123,7 @@ namespace AZ
             // create the BLAS buffers for each sub-mesh, or re-use existing BLAS objects if they were already created.
             // Note: all sub-meshes must either create new BLAS objects or re-use existing ones, otherwise it's an error (it's the same model in both cases)
             // Note: the buffer is just reserved here, the BLAS is built in the RayTracingAccelerationStructurePass
-            bool blasInstanceFound = false;
+            [[maybe_unused]] bool blasInstanceFound = false;
             for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshes.size(); ++subMeshIndex)
             {
                 SubMesh& subMesh = mesh.m_subMeshes[subMeshIndex];

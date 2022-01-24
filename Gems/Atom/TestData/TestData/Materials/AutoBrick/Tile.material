@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "TestData/Materials/Types/AutoBrick.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "appearance": {
             "ao": 0.010100999847054482,

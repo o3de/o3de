@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/Document/MaterialDocumentRequestBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
@@ -15,6 +14,7 @@
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+#include <Document/MaterialDocumentRequestBus.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
 
 namespace MaterialEditor
@@ -152,7 +152,7 @@ namespace MaterialEditor
             AtomToolsFramework::DynamicProperty property;
             AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
                 property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty,
-                AZ::RPI::MaterialPropertyId(groupName, uvNamePair.m_shaderInput.ToString()).GetFullName());
+                AZ::RPI::MaterialPropertyId(groupName, uvNamePair.m_shaderInput.ToString()));
             group.m_properties.push_back(property);
 
             property.SetValue(property.GetConfig().m_parentValue);
@@ -189,7 +189,7 @@ namespace MaterialEditor
                     AtomToolsFramework::DynamicProperty property;
                     AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
                         property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty,
-                        AZ::RPI::MaterialPropertyId(groupName, propertyDefinition.m_name).GetFullName());
+                        AZ::RPI::MaterialPropertyId(groupName, propertyDefinition.m_name));
                     group.m_properties.push_back(property);
                 }
             }

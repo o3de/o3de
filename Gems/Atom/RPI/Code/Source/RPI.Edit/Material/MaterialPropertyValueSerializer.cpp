@@ -8,7 +8,6 @@
 
 #include <Atom/RPI.Edit/Material/MaterialPropertyValueSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <Atom/RPI.Edit/Material/MaterialSourceDataSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
 
 #include <AzCore/Math/Color.h>
@@ -55,64 +54,71 @@ namespace AZ
             MaterialSourceData::Property* property = reinterpret_cast<MaterialSourceData::Property*>(outputValue);
             AZ_Assert(property, "Output value for JsonMaterialPropertyValueSerializer can't be null.");
 
-            const MaterialTypeSourceData* materialType = context.GetMetadata().Find<MaterialTypeSourceData>();
-            if (!materialType)
-            {
-                AZ_Assert(false, "Material type reference not found");
-                return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Catastrophic, "Material type reference not found.");
-            }
-
-            const JsonMaterialPropertyValueSerializer::LoadContext* loadContext = context.GetMetadata().Find<JsonMaterialPropertyValueSerializer::LoadContext>();
-
-            // Construct the full property name (groupName.propertyName) by parsing it from the JSON path string.
-            size_t startPropertyName = context.GetPath().Get().rfind('/');
-            size_t startGroupName = context.GetPath().Get().rfind('/', startPropertyName-1);
-            AZStd::string_view groupName = context.GetPath().Get().substr(startGroupName + 1, startPropertyName - startGroupName - 1);
-            AZStd::string_view propertyName = context.GetPath().Get().substr(startPropertyName + 1);
-
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
-            auto propertyDefinition = materialType->FindProperty(groupName, propertyName, loadContext->m_materialTypeVersion);
-            if (!propertyDefinition)
+            if (inputValue.IsBool())
             {
-                AZStd::string message = AZStd::string::format("Property '%.*s.%.*s' not found in material type.", AZ_STRING_ARG(groupName), AZ_STRING_ARG(propertyName));
-                return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Unsupported, message);
+                result.Combine(LoadVariant<bool>(property->m_value, false, inputValue, context));
+            }
+            else if (inputValue.IsInt() || inputValue.IsInt64())
+            {
+                result.Combine(LoadVariant<int32_t>(property->m_value, 0, inputValue, context));
+            }
+            else if (inputValue.IsUint() || inputValue.IsUint64())
+            {
+                result.Combine(LoadVariant<uint32_t>(property->m_value, 0u, inputValue, context));
+            }
+            else if (inputValue.IsFloat() || inputValue.IsDouble())
+            {
+                result.Combine(LoadVariant<float>(property->m_value, 0.0f, inputValue, context));
+            }
+            else if (inputValue.IsArray() && inputValue.Size() == 4)
+            {
+                result.Combine(LoadVariant<Vector4>(property->m_value, Vector4{0.0f, 0.0f, 0.0f, 0.0f}, inputValue, context));
+            }
+            else if (inputValue.IsArray() && inputValue.Size() == 3)
+            {
+                result.Combine(LoadVariant<Vector3>(property->m_value, Vector3{0.0f, 0.0f, 0.0f}, inputValue, context));
+            }
+            else if (inputValue.IsArray() && inputValue.Size() == 2)
+            {
+                result.Combine(LoadVariant<Vector2>(property->m_value, Vector2{0.0f, 0.0f}, inputValue, context));
+            }
+            else if (inputValue.IsObject())
+            {
+                JsonSerializationResult::ResultCode resultCode = LoadVariant<Color>(property->m_value, Color::CreateZero(), inputValue, context);
+                
+                if(resultCode.GetProcessing() != JsonSerializationResult::Processing::Completed)
+                {
+                    resultCode = LoadVariant<Vector4>(property->m_value, Vector4::CreateZero(), inputValue, context);
+                }
+                
+                if(resultCode.GetProcessing() != JsonSerializationResult::Processing::Completed)
+                {
+                    resultCode = LoadVariant<Vector3>(property->m_value, Vector3::CreateZero(), inputValue, context);
+                }
+                
+                if(resultCode.GetProcessing() != JsonSerializationResult::Processing::Completed)
+                {
+                    resultCode = LoadVariant<Vector2>(property->m_value, Vector2::CreateZero(), inputValue, context);
+                }
+
+                if(resultCode.GetProcessing() == JsonSerializationResult::Processing::Completed)
+                {
+                    result.Combine(resultCode);
+                }
+                else
+                {
+                    return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Unsupported, "Unknown data type");
+                }
+            }
+            else if (inputValue.IsString())
+            {
+                result.Combine(LoadVariant<AZStd::string>(property->m_value, AZStd::string{}, inputValue, context));
             }
             else
             {
-                switch (propertyDefinition->m_dataType)
-                {
-                case MaterialPropertyDataType::Bool:
-                    result.Combine(LoadVariant<bool>(property->m_value, false, inputValue, context));
-                    break;
-                case MaterialPropertyDataType::Int:
-                    result.Combine(LoadVariant<int32_t>(property->m_value, 0, inputValue, context));
-                    break;
-                case MaterialPropertyDataType::UInt:
-                    result.Combine(LoadVariant<uint32_t>(property->m_value, 0u, inputValue, context));
-                    break;
-                case MaterialPropertyDataType::Float:
-                    result.Combine(LoadVariant<float>(property->m_value, 0.0f, inputValue, context));
-                    break;
-                case MaterialPropertyDataType::Vector2:
-                    result.Combine(LoadVariant<Vector2>(property->m_value, Vector2{0.0f, 0.0f}, inputValue, context));
-                    break;
-                case MaterialPropertyDataType::Vector3:
-                    result.Combine(LoadVariant<Vector3>(property->m_value, Vector3{0.0f, 0.0f, 0.0f}, inputValue, context));
-                    break;
-                case MaterialPropertyDataType::Vector4:
-                    result.Combine(LoadVariant<Vector4>(property->m_value, Vector4{0.0f, 0.0f, 0.0f, 0.0f}, inputValue, context));
-                    break;
-                case MaterialPropertyDataType::Color:
-                    result.Combine(LoadVariant<Color>(property->m_value, AZ::Colors::White, inputValue, context));
-                    break;
-                case MaterialPropertyDataType::Image:
-                case MaterialPropertyDataType::Enum:
-                    result.Combine(LoadVariant<AZStd::string>(property->m_value, AZStd::string{}, inputValue, context));
-                    break;
-                default:
-                    return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Unsupported, "Unknown data type");
-                }
+                return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Unsupported, "Unknown data type");
             }
 
             if (result.GetProcessing() == JsonSerializationResult::Processing::Completed)

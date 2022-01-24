@@ -9,19 +9,19 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
-#include <Atom/Viewport/MaterialViewportSettings.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Viewport/MaterialViewportComponent.h>
+#include <Viewport/MaterialViewportNotificationBus.h>
+#include <Viewport/MaterialViewportSettings.h>
 
 namespace MaterialEditor
 {
@@ -42,7 +42,7 @@ namespace MaterialEditor
             {
                 editContext->Class<MaterialViewportComponent>("MaterialViewport", "Manages configurations for lighting and models displayed in the viewport")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -103,18 +103,19 @@ namespace MaterialEditor
 
     void MaterialViewportComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("PerformanceMonitorService", 0x6a44241a));
-        required.push_back(AZ_CRC("AtomImageBuilderService", 0x76ded592));
+        required.push_back(AZ_CRC_CE("RPISystem"));
+        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        required.push_back(AZ_CRC_CE("PerformanceMonitorService"));
     }
 
     void MaterialViewportComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MaterialViewportService", 0xed9b44d7));
+        provided.push_back(AZ_CRC_CE("MaterialViewportService"));
     }
 
     void MaterialViewportComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("MaterialViewportService", 0xed9b44d7));
+        incompatible.push_back(AZ_CRC_CE("MaterialViewportService"));
     }
 
     void MaterialViewportComponent::Init()

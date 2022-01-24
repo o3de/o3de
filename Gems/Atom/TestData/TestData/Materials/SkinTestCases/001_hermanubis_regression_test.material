@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/Skin.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "baseColor": {
             "color": [

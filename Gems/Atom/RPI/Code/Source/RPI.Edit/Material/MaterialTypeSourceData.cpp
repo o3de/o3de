@@ -130,22 +130,17 @@ namespace AZ
             return nullptr;
         }
 
-        bool MaterialTypeSourceData::ApplyPropertyRenames(MaterialPropertyId& propertyId, uint32_t materialTypeVersion) const
+        bool MaterialTypeSourceData::ApplyPropertyRenames(MaterialPropertyId& propertyId) const
         {
             bool renamed = false;
 
             for (const VersionUpdateDefinition& versionUpdate : m_versionUpdates)
             {
-                if (materialTypeVersion >= versionUpdate.m_toVersion)
-                {
-                    continue;
-                }
-
                 for (const VersionUpdatesRenameOperationDefinition& action : versionUpdate.m_actions)
                 {
                     if (action.m_operation == "rename")
                     {
-                        if (action.m_renameFrom == propertyId.GetFullName().GetStringView())
+                        if (action.m_renameFrom == propertyId.GetStringView())
                         {
                             propertyId = MaterialPropertyId::Parse(action.m_renameTo);
                             renamed = true;
@@ -161,7 +156,7 @@ namespace AZ
             return renamed;
         }
 
-        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion) const
+        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName) const
         {
             auto groupIter = m_propertyLayout.m_properties.find(groupName);
             if (groupIter != m_propertyLayout.m_properties.end())
@@ -178,18 +173,23 @@ namespace AZ
             // Property has not been found, try looking for renames in the version history
 
             MaterialPropertyId propertyId = MaterialPropertyId{groupName, propertyName};
-            ApplyPropertyRenames(propertyId, materialTypeVersion);
+            ApplyPropertyRenames(propertyId);
 
             // Do the search again with the new names
 
-            groupIter = m_propertyLayout.m_properties.find(propertyId.GetGroupName().GetStringView());
-            if (groupIter != m_propertyLayout.m_properties.end())
+            AZStd::vector<AZStd::string> tokens;
+            AZ::StringFunc::Tokenize(propertyId.GetStringView(), tokens, ".", true, true);
+            if (tokens.size() == 2)
             {
-                for (const PropertyDefinition& property : groupIter->second)
+                groupIter = m_propertyLayout.m_properties.find(tokens[0]);
+                if (groupIter != m_propertyLayout.m_properties.end())
                 {
-                    if (property.m_name == propertyId.GetPropertyName().GetStringView())
+                    for (const PropertyDefinition& property : groupIter->second)
                     {
-                        return &property;
+                        if (property.m_name == tokens[1])
+                        {
+                            return &property;
+                        }
                     }
                 }
             }
@@ -405,7 +405,7 @@ namespace AZ
                         continue;
                     }
 
-                    materialTypeAssetCreator.BeginMaterialProperty(propertyId.GetFullName(), property.m_dataType);
+                    materialTypeAssetCreator.BeginMaterialProperty(propertyId, property.m_dataType);
 
                     if (property.m_dataType == MaterialPropertyDataType::Enum)
                     {
@@ -459,18 +459,18 @@ namespace AZ
                             if (result == MaterialUtils::GetImageAssetResult::Missing)
                             {
                                 materialTypeAssetCreator.ReportError(
-                                    "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
+                                    "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
                                     property.m_value.GetValue<AZStd::string>().data());
                             }
                             else
                             {
-                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
+                                materialTypeAssetCreator.SetPropertyValue(propertyId, imageAsset);
                             }
                         }
                         break;
                         case MaterialPropertyDataType::Enum:
                         {
-                            MaterialPropertyIndex propertyIndex = materialTypeAssetCreator.GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId.GetFullName());
+                            MaterialPropertyIndex propertyIndex = materialTypeAssetCreator.GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
                             const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAssetCreator.GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
                             AZ::Name enumName = AZ::Name(property.m_value.GetValue<AZStd::string>());
@@ -481,12 +481,12 @@ namespace AZ
                             }
                             else
                             {
-                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), enumValue);
+                                materialTypeAssetCreator.SetPropertyValue(propertyId, enumValue);
                             }
                         }
                         break;
                         default:
-                            materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), property.m_value);
+                            materialTypeAssetCreator.SetPropertyValue(propertyId, property.m_value);
                             break;
                         }
                     }

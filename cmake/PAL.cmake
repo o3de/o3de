@@ -435,9 +435,9 @@ function(ly_get_absolute_pal_filename out_name in_name)
     endif()
 
     if(${ARGC} GREATER 4)
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path} ${parent_relative_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}" "${parent_relative_path}")
     else()
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}")
     endif()
     set(${out_name} ${abs_name} PARENT_SCOPE)
 endfunction()
@@ -546,7 +546,7 @@ function(ly_get_list_relative_pal_filename out_name in_name)
     set(${out_name} ${relative_name} PARENT_SCOPE)
 endfunction()
 
-o3de_pal_dir(pal_cmake_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+o3de_pal_dir(pal_cmake_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 
 ly_include_cmake_file_list(${pal_cmake_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
 

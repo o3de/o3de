@@ -19,7 +19,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/typetraits/is_base_of.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/IO/IStreamerTypes.h>
 
 namespace AZ
 {

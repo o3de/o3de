@@ -5,25 +5,23 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Aabb.h>
-
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Render/GeometryIntersectionBus.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzFramework/Render/IntersectorInterface.h>
-#include <AzFramework/Render/GeometryIntersectionBus.h>
-
 
 namespace AzFramework
 {
-
     namespace RenderGeometry
     {
-        //! Implementation of IntersectorBus interface, this class contains a cached AABB list
-        //! of the connected entities to the intersection bus and calculates performant ray intersections against them
+        //! Implementation of IntersectorBus interface, this class contains a cached AABB list of the connected
+        //! entities to the intersection bus and calculates efficient ray intersections against them.
         class Intersector final
             : public IntersectorBus::Handler
             , protected IntersectionNotificationBus::Handler
@@ -34,32 +32,32 @@ namespace AzFramework
             Intersector(AzFramework::EntityContextId contextId);
             ~Intersector();
 
-            // IntersectorBus
+            // IntersectorBus overrides ...
             RayResult RayIntersect(const RayRequest& ray) override;
 
-            // IntersectionNotifications
+            // IntersectionNotificationBus overrides ...
             void OnEntityConnected(AZ::EntityId entityId) override;
             void OnEntityDisconnected(AZ::EntityId entityId) override;
             void OnGeometryChanged(AZ::EntityId entityId) override;
 
         private:
-
             struct EntityData
             {
                 EntityData(AZ::EntityId id, AZ::Aabb aabb)
                     : m_id(id)
                     , m_aabb(aabb)
-                    , m_ref(1) {}
+                    , m_ref(1)
+                {
+                }
 
                 AZ::EntityId m_id;
                 AZ::Aabb m_aabb;
                 int m_ref;
             };
-            
+
             class EntityDataList
             {
             public:
-
                 int AddRef(AZ::EntityId entityId);
                 int RemoveRef(AZ::EntityId entityId);
                 void Update(const EntityData& newData);
@@ -88,5 +86,5 @@ namespace AzFramework
             AZStd::vector<AZStd::pair<const EntityData*, float>> m_candidatesSortedByDist;
             AzFramework::EntityContextId m_contextId;
         };
-    }
-}
+    } // namespace RenderGeometry
+} // namespace AzFramework

@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "PbrTerrain.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 1,
+    "materialTypeVersion": 1,
     "properties": {
         "baseColor": {
             "color": [ 0.18, 0.18, 0.18 ] 

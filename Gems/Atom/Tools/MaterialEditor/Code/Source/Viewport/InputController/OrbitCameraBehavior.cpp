@@ -7,8 +7,8 @@
  */
 
 #include <AzCore/Component/TransformBus.h>
-#include <Source/Viewport/InputController/OrbitCameraBehavior.h>
 #include <Viewport/InputController/MaterialEditorViewportInputController.h>
+#include <Viewport/InputController/OrbitCameraBehavior.h>
 
 namespace MaterialEditor
 {

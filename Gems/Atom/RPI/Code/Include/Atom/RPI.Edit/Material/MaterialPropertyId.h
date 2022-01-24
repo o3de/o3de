@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Name/Name.h>
+#include <AtomCore/std/containers/array_view.h>
 
 namespace AZ
 {
@@ -16,31 +17,38 @@ namespace AZ
     {
         class MaterialAsset;
 
-        //! Utility for building material property names consisting of a group name and a property sub-name.
-        //! Represented as "[groupName].[propertyName]".
-        //! The group name is optional, in which case the ID will just be "[propertyName]".
+        //! Utility for building material property IDs.
+        //! These IDs are represented like "groupA.groupB.[...].propertyName".
+        //! The groups are optional, in which case the full property ID will just be like "propertyName".
         class MaterialPropertyId
         {
         public:                
             static bool IsValidName(AZStd::string_view name);
             static bool IsValidName(const AZ::Name& name);
 
-            //! Creates a MaterialPropertyId from a full name string like "[groupName].[propertyName]" or just "[propertyName]"
+            //! Creates a MaterialPropertyId from a full name string like "groupA.groupB.[...].propertyName" or just "propertyName".
+            //! Also checks the name for validity.
             static MaterialPropertyId Parse(AZStd::string_view fullPropertyId);
 
             MaterialPropertyId() = default;
+            explicit MaterialPropertyId(AZStd::string_view propertyName);
             MaterialPropertyId(AZStd::string_view groupName, AZStd::string_view propertyName);
             MaterialPropertyId(const Name& groupName, const Name& propertyName);
+            explicit MaterialPropertyId(const AZStd::array_view<AZStd::string> names);
 
             AZ_DEFAULT_COPY_MOVE(MaterialPropertyId);
 
-            const Name& GetGroupName() const;
-            const Name& GetPropertyName() const;
-            const Name& GetFullName() const;
+            operator const Name&() const;
 
             //! Returns a pointer to the full name ("[groupName].[propertyName]"). 
+            //! Same as Name::GetCStr()
             //! This is included for convenience so it can be used for error messages in the same way an AZ::Name is used.
             const char* GetCStr() const;
+            
+            //! Returns a string_view of the full name ("[groupName].[propertyName]").
+            //! Same as Name::GetStringView()
+            //! This is included for convenience so it can be used for string comparison in the same way an AZ::Name is used.
+            AZStd::string_view GetStringView() const;
 
             //! Returns a hash of the full name. This is needed for compatibility with NameIdReflectionMap.
             Name::Hash GetHash() const;
@@ -52,8 +60,6 @@ namespace AZ
 
         private:
             Name m_fullName;
-            Name m_groupName;
-            Name m_propertyName;
         };
     } // namespace RPI
 

@@ -21,6 +21,12 @@
 
 namespace AZ::IO
 {
+    class RequestPath;
+    namespace Requests
+    {
+        struct ReadData;
+    }
+
     struct BlockCacheConfig final :
         public IStreamerStackConfig
     {
@@ -109,7 +115,7 @@ namespace AZ::IO
 
         using TimePoint = AZStd::chrono::system_clock::time_point;
 
-        void ReadFile(FileRequest* request, FileRequest::ReadData& data);
+        void ReadFile(FileRequest* request, Requests::ReadData& data);
         void ContinueReadFile(FileRequest* request, u64 fileLength);
         CacheResult ReadFromCache(FileRequest* request, Section& section, const RequestPath& filePath);
         CacheResult ReadFromCache(FileRequest* request, Section& section, u32 cacheBlock);
