@@ -92,7 +92,7 @@ public:
                                     if (!toolLabel->isVisible())
                                     {
                                         // Manually turn the custom context menus into submenus
-                                        if (toolLabel->menu() != nullptr)
+                                        if (toolLabel->menu())
                                         {
                                             QAction* action = menu->addMenu(toolLabel->menu());
                                             action->setText(toolLabel->text());
@@ -157,7 +157,6 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     m_viewportScrollArea->setContentsMargins(QMargins());
     m_viewportScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    
     QWidget* viewportContainer = m_viewportTitleDlg.findChild<QWidget*>(QStringLiteral("ViewportTitleDlgContainer"));
     QToolBar* toolbar = CreateToolBarFromWidget(viewportContainer,
                                                 Qt::TopToolBarArea,
@@ -176,6 +175,9 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     AzQtComponents::BreadCrumbs* prefabsBreadcrumbs =
         qobject_cast<AzQtComponents::BreadCrumbs*>(toolbar->findChild<QWidget*>("m_prefabFocusPath"));
     QToolButton* backButton = qobject_cast<QToolButton*>(toolbar->findChild<QWidget*>("m_prefabFocusBackButton"));
+
+    AZ_Assert(prefabsBreadcrumbs, "Could not find Prefabs Breadcrumbs widget on CLayoutViewPane initialization!");
+    AZ_Assert(backButton, "Could not find Prefabs Breadcrumbs back button on CLayoutViewPane initialization!");
 
     if (prefabsBreadcrumbs && backButton)
     {
