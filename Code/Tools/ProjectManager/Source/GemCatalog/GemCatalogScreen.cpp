@@ -36,7 +36,6 @@
 #include <QMessageBox>
 #include <QHash>
 #include <QStackedWidget>
-#include <QApplication>
 
 namespace O3DE::ProjectManager
 {

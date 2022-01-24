@@ -11,12 +11,6 @@
 
 #include <QHeaderView>
 #include <QTimer>
-#include <QResizeEvent>
-#include <QScrollBar>
-#include <QColor>
-#include <QStyledItemDelegate>
-#include <QApplication>
-#include <QPalette>
 
 namespace O3DE::ProjectManager
 {
