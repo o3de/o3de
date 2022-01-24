@@ -89,7 +89,4 @@ set(FILES
     Source/Window/MaterialInspector/MaterialInspector.cpp
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.h
     Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.cpp
-    Source/Window/HelpDialog/HelpDialog.h
-    Source/Window/HelpDialog/HelpDialog.cpp
-    Source/Window/HelpDialog/HelpDialog.ui
 )
