@@ -61,7 +61,7 @@ DEFAULT_CONFIG_CHANGES = [
 ]
 
 TEST_RUNNER_PROJECT = 'AzTestRunner'
-TEST_RUNNER_PACKAGE_NAME = 'com.o3de.tests'
+TEST_RUNNER_PACKAGE_NAME = 'org.o3de.tests'
 
 # Android Orientation Constants
 ORIENTATION_LANDSCAPE = 1 << 0

@@ -116,7 +116,7 @@ namespace AZ
             const char* GetObbStoragePath() const { return m_obbStoragePath.c_str(); }
 
             //! Get the dot separated package name for the current application.
-            //! e.g. com.o3de.samples for SamplesProject
+            //! e.g. org.o3de.samples for SamplesProject
             const char* GetPackageName() const { return m_packageName.c_str(); }
 
             //! Get the app version code (android:versionCode in the manifest).

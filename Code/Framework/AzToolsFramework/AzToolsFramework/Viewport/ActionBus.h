@@ -23,11 +23,11 @@ namespace AzToolsFramework
     /// @name Reverse URLs.
     /// Used to identify common actions and override them when necessary.
     //@{
-    static const AZ::Crc32 s_backAction = AZ_CRC("com.o3de.action.common.back", 0x80c3030f);
-    static const AZ::Crc32 s_deleteAction = AZ_CRC("com.o3de.action.common.delete", 0x58e78eed);
-    static const AZ::Crc32 s_duplicateAction = AZ_CRC("com.o3de.action.common.duplicate", 0xbc5a4a23);
-    static const AZ::Crc32 s_nextComponentMode = AZ_CRC("com.o3de.action.common.nextComponentMode", 0xf9aca3a8);
-    static const AZ::Crc32 s_previousComponentMode = AZ_CRC("com.o3de.action.common.previousComponentMode", 0x0580eaec);
+    static const AZ::Crc32 s_backAction = AZ_CRC("org.o3de.action.common.back", 0x80c3030f);
+    static const AZ::Crc32 s_deleteAction = AZ_CRC("org.o3de.action.common.delete", 0x58e78eed);
+    static const AZ::Crc32 s_duplicateAction = AZ_CRC("org.o3de.action.common.duplicate", 0xbc5a4a23);
+    static const AZ::Crc32 s_nextComponentMode = AZ_CRC("org.o3de.action.common.nextComponentMode", 0xf9aca3a8);
+    static const AZ::Crc32 s_previousComponentMode = AZ_CRC("org.o3de.action.common.previousComponentMode", 0x0580eaec);
     //@}
 
     /// Specific Action properties to be sent to a type implementing
