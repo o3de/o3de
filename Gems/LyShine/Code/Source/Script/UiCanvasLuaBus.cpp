@@ -114,7 +114,7 @@ AZ::EntityId UiCanvasLuaProxy::LoadCanvas(const char* canvasFilename)
     CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING,
         "UiCanvasLuaProxy:LoadCanvas is deprecated. Please use UiCanvasManagerBus:LoadCanvas instead\n");
 
-    return gEnv->pLyShine->LoadCanvas(canvasFilename);
+    return AZ::Interface<ILyShine>::Get()->LoadCanvas(canvasFilename);
 }
 
 void UiCanvasLuaProxy::UnloadCanvas(AZ::EntityId canvasEntityId)
@@ -130,7 +130,7 @@ void UiCanvasLuaProxy::UnloadCanvas(AZ::EntityId canvasEntityId)
         UiCanvasComponent* canvasComponent = canvasEntity->FindComponent<UiCanvasComponent>();
         if (canvasComponent)
         {
-            gEnv->pLyShine->ReleaseCanvas(canvasEntityId, false);
+            AZ::Interface<ILyShine>::Get()->ReleaseCanvas(canvasEntityId, false);
         }
         else
         {

@@ -364,7 +364,7 @@ namespace AZ
                 AZ_Assert(success, "PipelineStateEntry already exists in the pending cache.");
             }
 
-            ResultCode resultCode = ResultCode::InvalidArgument;
+            [[maybe_unused]] ResultCode resultCode = ResultCode::InvalidArgument;
 
             // Increment the pending compile count on the global entry, which tracks how many pipeline states
             // are currently being compiled across all threads.

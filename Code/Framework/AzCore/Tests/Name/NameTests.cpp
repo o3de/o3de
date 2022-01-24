@@ -642,7 +642,7 @@ namespace UnitTest
         char buffer[RandomStringBufferSize];
 
         AZStd::sys_time_t newNameTime;
-        AZStd::sys_time_t existingNameTime;
+        [[maybe_unused]] AZStd::sys_time_t existingNameTime;
         AZStd::sys_time_t stringTime;
 
         {
