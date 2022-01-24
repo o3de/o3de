@@ -557,6 +557,10 @@
                 "Path": "Passes/EditorModeFeedback.pass"
             },
             {
+                "Name": "EditorModeMaskTemplate",
+                "Path": "Passes/EditorModeMask.pass"
+            },
+            {
                 "Name": "LutGenerationTemplate",
                 "Path": "Passes/LutGeneration.pass"
             }

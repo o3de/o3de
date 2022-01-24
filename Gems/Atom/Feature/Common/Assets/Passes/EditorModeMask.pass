@@ -1,0 +1,57 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "EditorModeMaskTemplate",
+            "PassClass": "EditorModeMaskPass",
+            "Slots": [
+                {
+                    "Name": "EditorModeMaskOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "EditorModeMaskOutputAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SwapChainOutput"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "Parent",
+                        "Attachment": "SwapChainOutput"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "EditorModeFeedbackOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "EditorModeFeedbackOutputAttachment"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "EditorModeFeedbackInput",
+                    "Output" : "EditorModeFeedbackOutput"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/EditorModeFeedback.shader"
+                }
+            }
+        }
+    }
+}
