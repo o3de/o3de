@@ -617,7 +617,7 @@ namespace AWSCore
         AZ_CLASS_ALLOCATOR(Function, AZ::SystemAllocator, 0);
 
         Function(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
-            : ServiceRequestJob(false, config) // No auto delete - we'll take care of it
+            : ServiceRequestJob(false, config) // No auto delete - The Function class will handle it with the DoCleanup() function
             , m_onSuccess{ onSuccess }
             , m_onFailure{ onFailure }
         {
