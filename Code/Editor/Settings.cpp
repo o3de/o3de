@@ -1128,7 +1128,7 @@ void SEditorSettings::SaveSettingsRegistryFile()
         return;
     }
 
-    bool saved{};
+    [[maybe_unused]] bool saved{};
     constexpr auto configurationMode = AZ::IO::SystemFile::SF_OPEN_CREATE
         | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH
         | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
