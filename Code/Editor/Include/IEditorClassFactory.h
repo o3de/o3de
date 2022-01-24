@@ -135,9 +135,6 @@ struct IClassDesc
     //////////////////////////////////////////////////////////////////////////
 };
 
-
-struct IViewPaneClass;
-
 struct CRYEDIT_API IEditorClassFactory
 {
 public:
@@ -149,7 +146,6 @@ public:
     virtual IClassDesc* FindClass(const char* pClassName) const = 0;
     //! Find class in the factory by class id
     virtual IClassDesc* FindClass(const GUID& rClassID) const = 0;
-    virtual IViewPaneClass* FindViewPaneClassByTitle(const char* pPaneTitle) const = 0;
     virtual void UnregisterClass(const char* pClassName) = 0;
     virtual void UnregisterClass(const GUID& rClassID) = 0;
     //! Get classes that matching specific requirements.

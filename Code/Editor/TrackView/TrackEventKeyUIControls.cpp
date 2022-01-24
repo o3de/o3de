@@ -235,5 +235,3 @@ void CTrackEventKeyUIControls::BuildEventDropDown(QString& curEvent, const QStri
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CTrackEventKeyUIControls, "TrackView.KeyUI.TrackEvent", "TrackViewKeyUI");

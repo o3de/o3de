@@ -71,8 +71,6 @@ public:
     IClassDesc* FindClass(const char* className) const;
     //! Find class in the factory by class ID
     IClassDesc* FindClass(const GUID& rClassID) const;
-    //! Find View Pane Class in the factory by pane title
-    IViewPaneClass* FindViewPaneClassByTitle(const char* pPaneTitle) const;
     void UnregisterClass(const char* pClassName);
     void UnregisterClass(const GUID& rClassID);
     //! Get classes matching specific requirements ordered alphabetically by name.
@@ -134,11 +132,5 @@ public:
 // Use this define to automatically register a new class description.
 #define REGISTER_CLASS_DESC(ClassDesc) \
     CAutoRegisterClassHelper g_AutoRegHelper##ClassDesc(new ClassDesc);
-
-#define REGISTER_QT_CLASS_DESC(ClassDesc, name, category) \
-    CAutoRegisterClassHelper g_AutoRegHelper##ClassDesc(new CQtViewClass<ClassDesc>(name, category));
-
-#define REGISTER_QT_CLASS_DESC_SYSTEM_ID(ClassDesc, name, category, systemid) \
-    CAutoRegisterClassHelper g_AutoRegHelper##ClassDesc(new CQtViewClass<ClassDesc>(name, category, systemid));
 
 #endif // CRYINCLUDE_EDITOR_PLUGIN_H

@@ -283,7 +283,6 @@ set(FILES
     Include/IPreferencesPage.h
     Include/ISourceControl.h
     Include/ITransformManipulator.h
-    Include/IViewPane.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     Objects/BaseObject.cpp

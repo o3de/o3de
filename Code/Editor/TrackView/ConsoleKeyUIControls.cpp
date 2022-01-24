@@ -118,5 +118,3 @@ void CConsoleKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CConsoleKeyUIControls, "TrackView.KeyUI.Console", "TrackViewKeyUI");
