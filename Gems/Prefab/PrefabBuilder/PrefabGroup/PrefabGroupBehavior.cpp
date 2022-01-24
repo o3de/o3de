@@ -95,6 +95,278 @@ namespace AZ::SceneAPI::Behaviors
             return m_preExportEventContextFunction(context);
         }
 
+        using MeshTransformPair = AZStd::pair<Containers::SceneGraph::NodeIndex, Containers::SceneGraph::NodeIndex>;
+        using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshTransformPair>;
+        using MeshTransformMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshTransformPair>;
+
+        MeshTransformMap CalculateMeshTransformMap(const Containers::Scene& scene)
+        {
+            auto graph = scene.GetGraph();
+            const auto view = Containers::Views::MakeSceneGraphDownwardsView<Containers::Views::BreadthFirst>(
+                graph,
+                graph.GetRoot(),
+                graph.GetContentStorage().cbegin(),
+                true);
+
+            if (view.begin() == view.end())
+            {
+                return {};
+            }
+
+            MeshTransformMap meshTransformMap;
+            for (auto it = view.begin(); it != view.end(); ++it)
+            {
+                Containers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
+                AZStd::string currentNodeName = graph.GetNodeName(currentIndex).GetPath();
+                auto currentContent = graph.GetNodeContent(currentIndex);
+                if (currentContent)
+                {
+                    if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(currentContent.get()))
+                    {
+                        auto parentIndex = graph.GetNodeParent(currentIndex);
+                        if (parentIndex.IsValid() == false)
+                        {
+                            continue;
+                        }
+                        auto parentContent = graph.GetNodeContent(parentIndex);
+                        if (parentContent && azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(parentContent.get()))
+                        {
+                            // map the node parent to the ITransform
+                            MeshTransformPair pair{ parentIndex, currentIndex };
+                            meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(parentIndex), AZStd::move(pair) });
+                        }
+                    }
+                }
+            }
+            return meshTransformMap;
+        }
+
+        using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
+        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
+
+        NodeEntityMap CreateMeshGroups(
+            ManifestUpdates& manifestUpdates,
+            const MeshTransformMap& meshTransformMap,
+            const Containers::Scene& scene,
+            AZStd::string& relativeSourcePath)
+        {
+            NodeEntityMap nodeEntityMap;
+            const auto& graph = scene.GetGraph();
+
+            for (const auto& entry : meshTransformMap)
+            {
+                const auto thisNodeIndex = entry.first;
+                const auto meshNodeIndex = entry.second.first;
+                const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
+                AZStd::string meshNodePath{ meshNodeName.GetPath() };
+
+                AZStd::string meshNodeFullName;
+                meshNodeFullName = relativeSourcePath;
+                meshNodeFullName.append("_");
+                meshNodeFullName.append(meshNodeName.GetName());
+
+                auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
+                meshGroup->SetName(meshNodeFullName.c_str());
+                meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
+                for (const auto& meshGoupNamePair : meshTransformMap)
+                {
+                    if (meshGoupNamePair.first != thisNodeIndex)
+                    {
+                        const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.first);
+                        meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
+                    }
+                }
+                meshGroup->OverrideId(DataTypes::Utilities::CreateStableUuid(
+                    scene,
+                    azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(),
+                    meshNodeName.GetPath()));
+
+                // this clears out the mesh coordinates each mesh group will be rotated and translated
+                // using the attached scene graph node
+                auto coordinateSystemRule = AZStd::make_shared<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
+                coordinateSystemRule->SetUseAdvancedData(true);
+                coordinateSystemRule->SetRotation(AZ::Quaternion::CreateIdentity());
+                coordinateSystemRule->SetTranslation(AZ::Vector3::CreateZero());
+                coordinateSystemRule->SetScale(1.0f);
+                meshGroup->GetRuleContainer().AddRule(coordinateSystemRule);
+
+                manifestUpdates.emplace_back(meshGroup);
+
+                // create an entity for each MeshGroup
+                AZ::EntityId entityId;
+                AzToolsFramework::EntityUtilityBus::BroadcastResult(
+                    entityId,
+                    &AzToolsFramework::EntityUtilityBus::Events::CreateEditorReadyEntity,
+                    meshNodeName.GetName());
+
+                if (entityId.IsValid() == false)
+                {
+                    return {};
+                }
+
+                // Since the mesh component lives in a gem, then create it by name
+                AzFramework::BehaviorComponentId editorMeshComponent;
+                AzToolsFramework::EntityUtilityBus::BroadcastResult(
+                    editorMeshComponent,
+                    &AzToolsFramework::EntityUtilityBus::Events::GetOrAddComponentByTypeName,
+                    entityId,
+                    "{DCE68F6E-2E16-4CB4-A834-B6C2F900A7E9} AZ::Render::EditorMeshComponent");
+
+                if (editorMeshComponent.IsValid() == false)
+                {
+                    AZ_Warning("prefab", false, "Could not add the EditorMeshComponent component; project needs Atom enabled.");
+                    return {};
+                }
+
+                // assign mesh asset id hint using JSON
+                auto meshAssetJson = AZStd::string::format(
+                    R"JSON(
+                        {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
+                    )JSON", meshNodeFullName.c_str());
+
+                bool result = false;
+                AzToolsFramework::EntityUtilityBus::BroadcastResult(
+                    result,
+                    &AzToolsFramework::EntityUtilityBus::Events::UpdateComponentForEntity,
+                    entityId,
+                    editorMeshComponent,
+                    meshAssetJson);
+
+                if (result == false)
+                {
+                    AZ_Error("prefab", false, "UpdateComponentForEntity failed for EditorMeshComponent component");
+                    return {};
+                }
+
+                nodeEntityMap.insert({ thisNodeIndex, entityId });
+            }
+
+            return nodeEntityMap;
+        }
+
+        using EntityIdList = AZStd::vector<AZ::EntityId>;
+
+        EntityIdList FixUpEntityParenting(
+            const NodeEntityMap& nodeEntityMap,
+            const Containers::SceneGraph& graph,
+            const MeshTransformMap& meshTransformMap)
+        {
+            EntityIdList entities;            
+            entities.reserve(nodeEntityMap.size());
+
+            for (const auto& nodeEntity : nodeEntityMap)
+            {
+                entities.emplace_back(nodeEntity.second);
+
+                // find matching parent EntityId (if any)
+                AZ::EntityId parentEntityId;
+                const auto thisNodeIndex = nodeEntity.first;
+                auto parentNodeIndex = graph.GetNodeParent(thisNodeIndex);
+                while (parentNodeIndex.IsValid())
+                {
+                    auto parentNodeIterator = meshTransformMap.find(parentNodeIndex);
+                    if (meshTransformMap.end() != parentNodeIterator)
+                    {
+                        auto parentEntiyIterator = nodeEntityMap.find(parentNodeIterator->first);
+                        if (nodeEntityMap.end() != parentEntiyIterator)
+                        {
+                            parentEntityId = parentEntiyIterator->second;
+                            break;
+                        }
+                    }
+                    else if (graph.HasNodeParent(parentNodeIndex))
+                    {
+                        parentNodeIndex = graph.GetNodeParent(parentNodeIndex);
+                    }
+                    else
+                    {
+                        parentNodeIndex = {};
+                    }
+                }
+
+                AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(nodeEntity.second);
+                auto* entityTransform = entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
+                if (!entityTransform)
+                {
+                    return {};
+                }
+
+                // parent entities
+                if (parentEntityId.IsValid())
+                {
+                    entityTransform->SetParent(parentEntityId);
+                }
+
+                auto thisNodeIterator = meshTransformMap.find(thisNodeIndex);
+                AZ_Assert(thisNodeIterator != meshTransformMap.end(), "This node index missing.");
+                auto thisTransformIndex = thisNodeIterator->second.second;
+
+                // get node matrix data to set the entity's local transform
+                const auto nodeTransform = azrtti_cast<const DataTypes::ITransform*>(graph.GetNodeContent(thisTransformIndex));
+                entityTransform->SetLocalTM(AZ::Transform::CreateFromMatrix3x4(nodeTransform->GetMatrix()));
+            }
+
+            return entities;
+        }
+
+        bool CreatePrefabGroup(
+            ManifestUpdates& manifestUpdates,
+            Containers::Scene& scene,
+            const EntityIdList& entities,
+            const AZStd::string& filenameOnly,
+            const AZStd::string& relativeSourcePath)
+        {
+            AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
+
+            // create prefab group for entire stack
+            AzToolsFramework::Prefab::TemplateId prefabTemplateId;
+            AzToolsFramework::Prefab::PrefabSystemScriptingBus::BroadcastResult(
+                prefabTemplateId,
+                &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplate,
+                entities,
+                filenameOnly);
+
+            if (prefabTemplateId == AzToolsFramework::Prefab::InvalidTemplateId)
+            {
+                AZ_Error("prefab", false, "Could not create a prefab template for entites.");
+                return false;
+            }
+
+            // Convert the prefab to a JSON string
+            AZ::Outcome<AZStd::string, void> outcome;
+            AzToolsFramework::Prefab::PrefabLoaderScriptingBus::BroadcastResult(
+                outcome,
+                &AzToolsFramework::Prefab::PrefabLoaderScriptingBus::Events::SaveTemplateToString,
+                prefabTemplateId);
+
+            if (outcome.IsSuccess() == false)
+            {
+                AZ_Error("prefab", false, "Could not create JSON string for template; maybe NaN values in the template?");
+                return false;
+            }
+
+            AzToolsFramework::Prefab::PrefabDom prefabDom;
+            prefabDom.Parse(outcome.GetValue().c_str());
+
+            auto prefabGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::PrefabGroup>();
+            prefabGroup->SetName(relativeSourcePath);
+            prefabGroup->SetPrefabDom(AZStd::move(prefabDom));
+            prefabGroup->SetId(DataTypes::Utilities::CreateStableUuid(
+                scene,
+                azrtti_typeid<AZ::SceneAPI::SceneData::PrefabGroup>(),
+                relativeSourcePath));
+
+            manifestUpdates.emplace_back(prefabGroup);
+
+            // update manifest if there where no errors
+            for (auto update : manifestUpdates)
+            {
+                scene.GetManifest().AddEntry(update);
+            }
+
+            return true;
+        }
+
         // AssetImportRequest
         Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action, RequestingApplication requester) override;
     };
@@ -120,47 +392,7 @@ namespace AZ::SceneAPI::Behaviors
             }
         }
 
-        using MeshTransformPair = AZStd::pair<Containers::SceneGraph::NodeIndex, Containers::SceneGraph::NodeIndex>;
-        using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshTransformPair>;
-        using MeshTransformMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshTransformPair>;
-        MeshTransformMap meshTransformMap;
-
-        auto graph = scene.GetGraph();
-        const auto view = Containers::Views::MakeSceneGraphDownwardsView<Containers::Views::BreadthFirst>(
-            graph,
-            graph.GetRoot(),
-            graph.GetContentStorage().cbegin(),
-            true);
-
-        if (view.begin() == view.end())
-        {
-            return Events::ProcessingResult::Ignored;
-        }
-        for (auto it = view.begin(); it != view.end(); ++it)
-        {
-            Containers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
-            AZStd::string currentNodeName = graph.GetNodeName(currentIndex).GetPath();
-            auto currentContent = graph.GetNodeContent(currentIndex);
-            if (currentContent)
-            {
-                if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(currentContent.get()))
-                {
-                    auto parentIndex = graph.GetNodeParent(currentIndex);
-                    if (parentIndex.IsValid() == false)
-                    {
-                        continue;
-                    }
-                    auto parentContent = graph.GetNodeContent(parentIndex);
-                    if (parentContent && azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(parentContent.get()))
-                    {
-                        // map the node parent to the ITransform
-                        MeshTransformPair pair {parentIndex, currentIndex};
-                        meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(parentIndex), AZStd::move(pair) });
-                    }
-                }
-            }
-        }
-
+        auto meshTransformMap = CalculateMeshTransformMap(scene);
         if (meshTransformMap.empty())
         {
             return Events::ProcessingResult::Ignored;
@@ -175,200 +407,22 @@ namespace AZ::SceneAPI::Behaviors
         AZ::StringFunc::Path::GetFileName(filenameOnly.c_str(), filenameOnly);
         AZ::StringFunc::Path::ReplaceExtension(filenameOnly, "prefab");
 
-        // create mesh groups and Editor entities for each pair
-        AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> manifestUpdates;
-        AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId> nodeEntityMap;
+        ManifestUpdates manifestUpdates;
 
-        for (const auto& entry : meshTransformMap)
-        {
-            const auto thisNodeIndex = entry.first;
-            const auto meshNodeIndex = entry.second.first;
-            const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
-            AZStd::string meshNodePath { meshNodeName.GetPath() };
-
-            AZStd::string meshNodeFullName;
-            meshNodeFullName = relativeSourcePath;
-            meshNodeFullName.append("_");
-            meshNodeFullName.append(meshNodeName.GetName());
-
-            auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
-            meshGroup->SetName(meshNodeFullName.c_str());
-            meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
-            for (const auto& meshGoupNamePair : meshTransformMap)
-            {
-                if (meshGoupNamePair.first != thisNodeIndex)
-                {
-                    const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.first);
-                    meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
-                }
-            }
-            meshGroup->OverrideId(DataTypes::Utilities::CreateStableUuid(
-                scene,
-                azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(),
-                meshNodeName.GetPath()));
-
-            // this clears out the mesh coordinates each mesh group will be rotated and translated
-            // using the attached scene graph node
-            auto coordinateSystemRule = AZStd::make_shared<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
-            coordinateSystemRule->SetUseAdvancedData(true);
-            coordinateSystemRule->SetRotation(AZ::Quaternion::CreateIdentity());
-            coordinateSystemRule->SetTranslation(AZ::Vector3::CreateZero());
-            coordinateSystemRule->SetScale(1.0f);
-            meshGroup->GetRuleContainer().AddRule(coordinateSystemRule);
-
-            manifestUpdates.emplace_back(meshGroup);
-
-            // create an entity for each MeshGroup
-            AZ::EntityId entityId;
-            AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                entityId,
-                &AzToolsFramework::EntityUtilityBus::Events::CreateEditorReadyEntity,
-                meshNodeName.GetName());
-
-            if (entityId.IsValid() == false)
-            {
-                return Events::ProcessingResult::Ignored;
-            }
-
-            // Since the mesh component lives in a gem, then create it by name
-            AzFramework::BehaviorComponentId editorMeshComponent;
-            AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                editorMeshComponent,
-                &AzToolsFramework::EntityUtilityBus::Events::GetOrAddComponentByTypeName,
-                entityId,
-                "{DCE68F6E-2E16-4CB4-A834-B6C2F900A7E9} AZ::Render::EditorMeshComponent");
-
-            if(editorMeshComponent.IsValid() == false)
-            {
-                AZ_Warning("prefab", false, "Could not add the EditorMeshComponent component; project needs Atom enabled.");
-                return Events::ProcessingResult::Ignored;
-            }
-
-            // assign mesh asset id hint using JSON
-            auto meshAssetJson = AZStd::string::format(
-                R"JSON(
-                    {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
-                )JSON", meshNodeFullName.c_str());
-
-            bool result = false;
-            AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                result,
-                &AzToolsFramework::EntityUtilityBus::Events::UpdateComponentForEntity,
-                entityId,
-                editorMeshComponent,
-                meshAssetJson);
-
-            if (result == false)
-            {
-                AZ_Error("prefab", false, "UpdateComponentForEntity failed for EditorMeshComponent component");
-                return Events::ProcessingResult::Ignored;
-            }
-
-            nodeEntityMap.insert({ thisNodeIndex, entityId });
-        }
-
-        // fix up transforms and parenting
-        AZStd::vector<AZ::EntityId> entities;
-        entities.reserve(nodeEntityMap.size());
-
-        for (const auto& nodeEntity : nodeEntityMap)
-        {
-            entities.emplace_back(nodeEntity.second);
-
-            // find matching parent EntityId (if any)
-            AZ::EntityId parentEntityId;
-            const auto thisNodeIndex = nodeEntity.first;
-            auto parentNodeIndex = graph.GetNodeParent(thisNodeIndex);
-            while (parentNodeIndex.IsValid())
-            {
-                auto parentNodeIterator = meshTransformMap.find(parentNodeIndex);
-                if (meshTransformMap.end() != parentNodeIterator)
-                {
-                    auto parentEntiyIterator = nodeEntityMap.find(parentNodeIterator->first);
-                    if (nodeEntityMap.end() != parentEntiyIterator)
-                    {
-                        parentEntityId = parentEntiyIterator->second;
-                        break;
-                    }
-                }
-                else if (graph.HasNodeParent(parentNodeIndex))
-                {
-                    parentNodeIndex = graph.GetNodeParent(parentNodeIndex);
-                }
-                else
-                {
-                    parentNodeIndex = {};
-                }
-            }
-
-            AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(nodeEntity.second);
-            auto* entityTransform = entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
-            if (!entityTransform)
-            {
-                return Events::ProcessingResult::Ignored;
-            }
-
-            // parent entities
-            if (parentEntityId.IsValid())
-            {
-                entityTransform->SetParent(parentEntityId);
-            }
-
-            auto thisNodeIterator = meshTransformMap.find(thisNodeIndex);
-            AZ_Assert(thisNodeIterator != meshTransformMap.end(), "This node index missing.");
-            auto thisTransformIndex = thisNodeIterator->second.second;
-
-            // get node matrix data to set the entity's local transform
-            const auto nodeTransform = azrtti_cast<const DataTypes::ITransform*>(graph.GetNodeContent(thisTransformIndex));
-            entityTransform->SetLocalTM(AZ::Transform::CreateFromMatrix3x4(nodeTransform->GetMatrix()));
-        }
-
-        AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
-
-        // create prefab group for entire stack
-        AzToolsFramework::Prefab::TemplateId prefabTemplateId;
-        AzToolsFramework::Prefab::PrefabSystemScriptingBus::BroadcastResult(
-            prefabTemplateId,
-            &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplate,
-            entities,
-            filenameOnly);
-
-        if (prefabTemplateId == AzToolsFramework::Prefab::InvalidTemplateId)
+        auto nodeEntityMap = CreateMeshGroups(manifestUpdates, meshTransformMap, scene, relativeSourcePath);
+        if(nodeEntityMap.empty())
         {
             return Events::ProcessingResult::Ignored;
         }
 
-        // Convert the prefab to a JSON string
-        AZ::Outcome<AZStd::string, void> outcome;
-        AzToolsFramework::Prefab::PrefabLoaderScriptingBus::BroadcastResult(
-            outcome,
-            &AzToolsFramework::Prefab::PrefabLoaderScriptingBus::Events::SaveTemplateToString,
-            prefabTemplateId);
-
-        if (outcome.IsSuccess() == false)
+        auto entities = FixUpEntityParenting(nodeEntityMap, scene.GetGraph(), meshTransformMap);
+        if(entities.empty())
         {
             return Events::ProcessingResult::Ignored;
         }
 
-        AzToolsFramework::Prefab::PrefabDom prefabDom;
-        prefabDom.Parse(outcome.GetValue().c_str());
-
-        auto prefabGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::PrefabGroup>();
-        prefabGroup->SetName(relativeSourcePath);
-        prefabGroup->SetPrefabDom(AZStd::move(prefabDom));
-        prefabGroup->SetId(DataTypes::Utilities::CreateStableUuid(
-            scene,
-            azrtti_typeid<AZ::SceneAPI::SceneData::PrefabGroup>(),
-            relativeSourcePath));
-
-        manifestUpdates.emplace_back(prefabGroup);
-
-        // update manifest if there where no errors
-        for (auto update : manifestUpdates)
-        {
-            scene.GetManifest().AddEntry(update);
-        }
-        return Events::ProcessingResult::Success;
+        bool success = CreatePrefabGroup(manifestUpdates, scene, entities, filenameOnly, relativeSourcePath);
+        return success ? Events::ProcessingResult::Success : Events::ProcessingResult::Ignored;
     }
 
     //
