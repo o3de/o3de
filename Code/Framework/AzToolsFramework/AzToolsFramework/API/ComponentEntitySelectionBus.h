@@ -57,14 +57,17 @@ namespace AzToolsFramework
             return false;
         }
 
-        //! @brief Returns true if the component overrides EditorSelectionIntersectRay method,
-        //! otherwise selection will be based only on AABB test.
-        //! @return True if EditorSelectionIntersectRay method is implemented.
+        //! @brief Returns if the component overrides EditorSelectionIntersectRay(Viewport) interface,
+        //! otherwise selection will be based only on an AABB test.
         virtual bool SupportsEditorRayIntersect()
         {
             return false;
         }
 
+        //! @brief Returns if the component overrides EditorSelectionIntersectRay(Viewport) interface,
+        //! otherwise selection will be based only on an AABB test.
+        //! @note Overload of SupportsEditorRayIntersect which accepts a ViewportInfo containing the ViewportId, this can be used to
+        //! lookup the intersection setting per viewport.
         virtual bool SupportsEditorRayIntersectViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
         {
             return SupportsEditorRayIntersect();

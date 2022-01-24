@@ -69,6 +69,7 @@ namespace LmbrCentral
             ShapeComponentIndirectCallManipulatorViewportInteractionFixture::SetUpEditorFixtureImpl();
 
             auto* entity1 = AzToolsFramework::GetEntityById(m_entityId1);
+            AZ_Assert(entity1, "Entity1 could not be found");
             entity1->Deactivate();
             entity1->CreateComponent<EditorSphereShapeComponent>();
             entity1->Activate();
