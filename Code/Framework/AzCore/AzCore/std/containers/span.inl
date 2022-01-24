@@ -133,7 +133,7 @@ namespace AZStd
             "Either the Subspan Offset %zu is larger than the span size %zu or the Count != dynamic_extent and"
             " its value %zu is greater than \"span size - Offset\" %zu",
             Offset, size(), Count, size() - Offset);
-        using return_type = span<element_type, Count != dynamic_extent ? Extent - Offset : dynamic_extent>;
+        using return_type = span<element_type, Count != dynamic_extent ? Count : (Extent != dynamic_extent ? Extent - Offset : dynamic_extent)>;
         return return_type{ data() + Offset, Count != dynamic_extent ? Count : size() - Offset };
     }
 
