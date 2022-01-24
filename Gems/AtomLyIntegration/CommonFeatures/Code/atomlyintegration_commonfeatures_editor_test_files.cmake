@@ -5,3 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+set(FILES
+    Tests/Main.cpp
+    Tests/MeshComponentControllerTests.cpp)

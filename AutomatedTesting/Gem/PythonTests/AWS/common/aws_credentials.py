@@ -68,6 +68,10 @@ class AwsCredentials:
         if (len(self._credentials.sections()) == 0) and (not self._credentials_file_exists):
             os.remove(self._credentials_path)
             return
+        
+        credentials_file_dir = os.path.dirname(self._credentials_path)
+        if not os.path.isdir(credentials_file_dir):
+            os.makedirs(credentials_file_dir)
 
         with open(self._credentials_path, 'w+') as credential_file:
             self._credentials.write(credential_file)

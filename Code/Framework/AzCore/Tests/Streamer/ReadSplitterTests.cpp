@@ -155,7 +155,7 @@ namespace AZ::IO
         {
             EXPECT_EQ(subRequests[i]->GetParent(), readRequest);
 
-            FileRequest::ReadData* data = AZStd::get_if<FileRequest::ReadData>(&subRequests[i]->GetCommand());
+            Requests::ReadData* data = AZStd::get_if<Requests::ReadData>(&subRequests[i]->GetCommand());
             ASSERT_NE(nullptr, data);
             EXPECT_EQ(SplitSize, data->m_size);
             EXPECT_EQ(SplitSize * i, data->m_offset);
@@ -210,7 +210,7 @@ namespace AZ::IO
         {
             EXPECT_EQ(subRequests[i]->GetParent(), readRequest);
 
-            FileRequest::ReadData* data = AZStd::get_if<FileRequest::ReadData>(&subRequests[i]->GetCommand());
+            Requests::ReadData* data = AZStd::get_if<Requests::ReadData>(&subRequests[i]->GetCommand());
             ASSERT_NE(nullptr, data);
             EXPECT_EQ(SplitSize, data->m_size);
             EXPECT_EQ(SplitSize * i, data->m_offset);
@@ -230,7 +230,7 @@ namespace AZ::IO
         {
             EXPECT_EQ(subRequests[i]->GetParent(), readRequest);
 
-            FileRequest::ReadData* data = AZStd::get_if<FileRequest::ReadData>(&subRequests[i]->GetCommand());
+            Requests::ReadData* data = AZStd::get_if<Requests::ReadData>(&subRequests[i]->GetCommand());
             ASSERT_NE(nullptr, data);
             EXPECT_EQ(SplitSize, data->m_size);
             EXPECT_EQ(SplitSize * (batchSize + i), data->m_offset);
@@ -265,7 +265,7 @@ namespace AZ::IO
         m_readSplitter->QueueRequest(readRequest);
 
         ASSERT_NE(nullptr, subRequest);
-        FileRequest::ReadData* data = AZStd::get_if<FileRequest::ReadData>(&subRequest->GetCommand());
+        Requests::ReadData* data = AZStd::get_if<Requests::ReadData>(&subRequest->GetCommand());
         EXPECT_NE(buffer, data->m_output);
         EXPECT_EQ(readSize, data->m_size);
         EXPECT_EQ(0, data->m_offset);
@@ -311,7 +311,7 @@ namespace AZ::IO
         m_readSplitter->QueueRequest(readRequest);
 
         ASSERT_NE(nullptr, subRequest);
-        FileRequest::ReadData* data = AZStd::get_if<FileRequest::ReadData>(&subRequest->GetCommand());
+        Requests::ReadData* data = AZStd::get_if<Requests::ReadData>(&subRequest->GetCommand());
         EXPECT_NE(buffer, data->m_output);
         EXPECT_EQ(readSize + offsetAdjustment, data->m_size);
         EXPECT_EQ(0, data->m_offset);

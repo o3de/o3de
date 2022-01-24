@@ -99,7 +99,7 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a Global Skylight (IBL) entity with no components.
@@ -176,10 +176,12 @@ def AtomEditorComponents_GlobalSkylightIBL_AddedToEntity():
 
         # 11. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, global_skylight_entity.exists())
 
         # 12. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not  global_skylight_entity.exists())
 
         # 13. Look for errors and asserts.

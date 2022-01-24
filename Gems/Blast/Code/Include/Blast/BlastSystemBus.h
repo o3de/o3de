@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <Blast/BlastDebug.h>
 #include <Blast/BlastMaterial.h>
