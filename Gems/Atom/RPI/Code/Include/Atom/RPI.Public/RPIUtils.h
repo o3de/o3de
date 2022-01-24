@@ -33,11 +33,11 @@ namespace AZ
         Data::Asset<ShaderAsset> FindCriticalShaderAsset(const AZStd::string& shaderFilePath);
 
         //! Loads a shader for the given shader asset ID. Optional shaderFilePath param for debugging.
-        Data::Instance<Shader> LoadShader(Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath = "");
+        Data::Instance<Shader> LoadShader(Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath = "", const AZStd::string& supervariantName = "");
 
         //! Loads a shader for the given shader file path
-        Data::Instance<Shader> LoadShader(const AZStd::string& shaderFilePath);
-        Data::Instance<Shader> LoadCriticalShader(const AZStd::string& shaderFilePath);
+        Data::Instance<Shader> LoadShader(const AZStd::string& shaderFilePath, const AZStd::string& supervariantName = "");
+        Data::Instance<Shader> LoadCriticalShader(const AZStd::string& shaderFilePath, const AZStd::string& supervariantName = "");
 
         //! Loads a streaming image asset for the given file path
         Data::Instance<RPI::StreamingImage> LoadStreamingTexture(AZStd::string_view path);

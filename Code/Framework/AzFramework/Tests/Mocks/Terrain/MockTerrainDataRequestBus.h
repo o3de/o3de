@@ -92,6 +92,8 @@ namespace UnitTest
             ProcessSurfaceWeightsFromListOfVector2, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
         MOCK_CONST_METHOD3(
             ProcessSurfacePointsFromListOfVector2, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler));
+        MOCK_CONST_METHOD2(
+            GetNumSamplesFromRegion, AZStd::pair<size_t, size_t>(const AZ::Aabb&, const AZ::Vector2&));
         MOCK_CONST_METHOD4(
             ProcessHeightsFromRegion, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler));
         MOCK_CONST_METHOD4(

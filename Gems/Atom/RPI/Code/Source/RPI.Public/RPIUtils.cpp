@@ -74,7 +74,7 @@ namespace AZ
             return shaderAsset;
         }
 
-        Data::Instance<Shader> LoadShader(Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath)
+        Data::Instance<Shader> LoadShader(Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath, const AZStd::string& supervariantName)
         {
             auto shaderAsset = FindShaderAsset(shaderAssetId, shaderFilePath);
             if (!shaderAsset)
@@ -82,7 +82,7 @@ namespace AZ
                 return nullptr;
             }
 
-            Data::Instance<Shader> shader = Shader::FindOrCreate(shaderAsset);
+            Data::Instance<Shader> shader = Shader::FindOrCreate(shaderAsset, AZ::Name(supervariantName));
             if (!shader)
             {
                 AZ_Error("RPI Utils", false, "Failed to find or create a shader instance from shader asset [%s] with asset ID [%s]", shaderFilePath.c_str(), shaderAssetId.ToString<AZStd::string>().c_str());
@@ -103,15 +103,15 @@ namespace AZ
             return FindShaderAsset(GetShaderAssetId(shaderFilePath, isCritical), shaderFilePath);
         }
 
-        Data::Instance<Shader> LoadShader(const AZStd::string& shaderFilePath)
+        Data::Instance<Shader> LoadShader(const AZStd::string& shaderFilePath, const AZStd::string& supervariantName)
         {
-            return LoadShader(GetShaderAssetId(shaderFilePath), shaderFilePath);
+            return LoadShader(GetShaderAssetId(shaderFilePath), shaderFilePath, supervariantName);
         }
 
-        Data::Instance<Shader> LoadCriticalShader(const AZStd::string& shaderFilePath)
+        Data::Instance<Shader> LoadCriticalShader(const AZStd::string& shaderFilePath, const AZStd::string& supervariantName)
         {
             const bool isCritical = true;
-            return LoadShader(GetShaderAssetId(shaderFilePath, isCritical), shaderFilePath);
+            return LoadShader(GetShaderAssetId(shaderFilePath, isCritical), shaderFilePath, supervariantName);
         }
 
         AZ::Data::Instance<RPI::StreamingImage> LoadStreamingTexture(AZStd::string_view path)

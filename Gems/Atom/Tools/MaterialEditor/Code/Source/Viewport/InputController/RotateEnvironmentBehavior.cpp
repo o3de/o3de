@@ -13,7 +13,7 @@
 #include <Atom/RPI.Public/Scene.h>
 
 #include <Viewport/InputController/MaterialEditorViewportInputController.h>
-#include <Source/Viewport/InputController/RotateEnvironmentBehavior.h>
+#include <Viewport/InputController/RotateEnvironmentBehavior.h>
 
 namespace MaterialEditor
 {

@@ -6,9 +6,9 @@
  *
  */
 
-#include <Atom/Document/MaterialDocumentSettings.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <Document/MaterialDocumentSettings.h>
 
 namespace MaterialEditor
 {

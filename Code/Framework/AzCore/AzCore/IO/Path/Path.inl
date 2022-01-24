@@ -13,50 +13,6 @@
 
 #include <AzCore/IO/Path/PathIterable.inl>
 
-// extern instantiations of Path templates to prevent implicit instantiations
-namespace AZ::IO
-{
-    // Class templates explicit declarations
-    extern template class BasicPath<AZStd::string>;
-    extern template class BasicPath<FixedMaxPathString>;
-    extern template class PathIterator<PathView>;
-    extern template class PathIterator<Path>;
-    extern template class PathIterator<FixedMaxPath>;
-
-    // Swap function explicit declarations
-    extern template void swap<AZStd::string>(Path& lhs, Path& rhs) noexcept;
-    extern template void swap<FixedMaxPathString>(FixedMaxPath& lhs, FixedMaxPath& rhs) noexcept;
-
-    // Hash function explicit declarations
-    extern template size_t hash_value<AZStd::string>(const Path& pathToHash);
-    extern template size_t hash_value<FixedMaxPathString>(const FixedMaxPath& pathToHash);
-
-    // Append operator explicit declarations
-    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, const PathView& rhs);
-    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, const PathView& rhs);
-    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, AZStd::string_view rhs);
-    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, AZStd::string_view rhs);
-    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs,
-        const typename BasicPath<AZStd::string>::value_type* rhs);
-    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs,
-        const typename BasicPath<FixedMaxPathString>::value_type* rhs);
-
-    // Iterator compare explicit declarations
-    extern template bool operator==<PathView>(const PathIterator<PathView>& lhs,
-        const PathIterator<PathView>& rhs);
-    extern template bool operator==<Path>(const PathIterator<Path>& lhs,
-        const PathIterator<Path>& rhs);
-    extern template bool operator==<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
-        const PathIterator<FixedMaxPath>& rhs);
-    extern template bool operator!=<PathView>(const PathIterator<PathView>& lhs,
-        const PathIterator<PathView>& rhs);
-    extern template bool operator!=<Path>(const PathIterator<Path>& lhs,
-        const PathIterator<Path>& rhs);
-    extern template bool operator!=<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
-        const PathIterator<FixedMaxPath>& rhs);
-}
-
-
 //! PathView implementation
 namespace AZ::IO
 {
@@ -939,13 +895,13 @@ namespace AZ::IO
             // then it has no root directory nor filename
             if (rootNameView.end() == m_path.end())
             {
-                // has_root_directory || has_filename = false
-                // If the root name is of the form
-                // # C: - then it isn't absolute unless it has a root directory C:\
-                // # \\?\ = is a UNC path that can't exist without a root directory
-                // # \\server - Is absolute, but has no root directory
-                // Therefore if the rootName is larger than three characters
-                // then append the path separator
+                /* has_root_directory || has_filename = false
+                   If the root name is of the form
+                   C: - then it isn't absolute unless it has a root directory C:\.
+                   \\?\ = is a UNC path that can't exist without a root directory.
+                   \\server - Is absolute, but has no root directory.
+                   Therefore if the rootName is larger than three characters
+                   then append the path separator. */
                 if (rootNameView.size() >= 3)
                 {
                     m_path.push_back(m_preferred_separator);
@@ -1549,4 +1505,40 @@ namespace AZ::IO
     {
         return AZStd::hash<PathView>{}(pathToHash);
     }
+}
+
+// extern instantiations of Path templates to prevent implicit instantiations
+namespace AZ::IO
+{
+    // Swap function explicit declarations
+    extern template void swap<AZStd::string>(Path& lhs, Path& rhs) noexcept;
+    extern template void swap<FixedMaxPathString>(FixedMaxPath& lhs, FixedMaxPath& rhs) noexcept;
+
+    // Hash function explicit declarations
+    extern template size_t hash_value<AZStd::string>(const Path& pathToHash);
+    extern template size_t hash_value<FixedMaxPathString>(const FixedMaxPath& pathToHash);
+
+    // Append operator explicit declarations
+    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, const PathView& rhs);
+    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, const PathView& rhs);
+    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, AZStd::string_view rhs);
+    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, AZStd::string_view rhs);
+    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs,
+        const typename BasicPath<AZStd::string>::value_type* rhs);
+    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs,
+        const typename BasicPath<FixedMaxPathString>::value_type* rhs);
+
+    // Iterator compare explicit declarations
+    extern template bool operator==<PathView>(const PathIterator<PathView>& lhs,
+        const PathIterator<PathView>& rhs);
+    extern template bool operator==<Path>(const PathIterator<Path>& lhs,
+        const PathIterator<Path>& rhs);
+    extern template bool operator==<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
+        const PathIterator<FixedMaxPath>& rhs);
+    extern template bool operator!=<PathView>(const PathIterator<PathView>& lhs,
+        const PathIterator<PathView>& rhs);
+    extern template bool operator!=<Path>(const PathIterator<Path>& lhs,
+        const PathIterator<Path>& rhs);
+    extern template bool operator!=<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
+        const PathIterator<FixedMaxPath>& rhs);
 }

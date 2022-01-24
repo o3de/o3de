@@ -8,51 +8,51 @@
 
 #undef RC_INVOKED
 
-#include <AzCore/Component/Entity.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/Entity.h>
 
-#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
+#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <Atom/RPI.Public/WindowContext.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/Material/Material.h>
-#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 #include <Atom/Component/DebugCamera/CameraComponent.h>
-#include <Atom/Feature/PostProcessing/PostProcessingConstants.h>
-#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
-#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
-#include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/Component/DebugCamera/NoClipControllerComponent.h>
+#include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
+#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
+#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
+#include <Atom/Feature/PostProcessing/PostProcessingConstants.h>
 
-#include <Atom/Document/MaterialDocumentRequestBus.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <Atom/Viewport/MaterialViewportRequestBus.h>
-#include <Atom/Viewport/PerformanceMonitorRequestBus.h>
-#include <Atom/Viewport/MaterialViewportSettings.h>
 
-#include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
+#include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentConstants.h>
-#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
-#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
-#include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlBus.h>
 #include <AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h>
+#include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 
-#include <Source/Viewport/MaterialViewportRenderer.h>
+#include <Document/MaterialDocumentRequestBus.h>
+#include <Viewport/MaterialViewportRenderer.h>
+#include <Viewport/MaterialViewportRequestBus.h>
+#include <Viewport/MaterialViewportSettings.h>
+#include <Viewport/PerformanceMonitorRequestBus.h>
 
 namespace MaterialEditor
 {
