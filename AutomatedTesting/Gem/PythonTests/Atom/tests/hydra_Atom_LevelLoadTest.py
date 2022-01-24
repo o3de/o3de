@@ -23,10 +23,9 @@ def Atom_LevelLoadTest():
     1) Create tuple with level load success and failure messages
     2) Open the level using the python test tools command
     3) Verify level is loaded using a separate command, and report success/failure
-    4) Create tuple with success and failure messages for entering gameplay
-    5) Enter gameplay and report result
-    6) Create tuple with success and failure messages for exiting gameplay
-    7) Exit Gameplay and report result
+    4) Enter gameplay and report result using a tuple
+    5) Exit Gameplay and report result using a tuple
+    6) Look for errors or asserts.
 
     :return: None
     """
@@ -34,45 +33,33 @@ def Atom_LevelLoadTest():
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
-
-    level_list = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest", "Sponza"]
+    from Atom.atom_utils.atom_constants import LEVEL_LIST
 
     with Tracer() as error_tracer:
-        #
 
-        for level in level_list:
+        for level in LEVEL_LIST:
 
             # 1. Create tuple with level load success and failure messages
-            level_check_tupple = (f"loaded {level}", f"failed to load {level}")
+            level_check_tuple = (f"loaded {level}", f"failed to load {level}")
 
             # 2. Open the level using the python test tools command
             TestHelper.init_idle()
-            TestHelper.open_level("graphics", level)
+            TestHelper.open_level("Graphics", level)
 
             # 3. Verify level is loaded using a separate command, and report success/failure
-            load_success = general.get_current_level_name()
-            Report.info(load_success)
-            if load_success == level:
-                level_match = True
-            else:
-                level_match = False
-            Report.info(level_match)
-            Report.result(level_check_tupple, level_match)
+            Report.result(level_check_tuple, level == general.get_current_level_name())
 
-            # 4. Create tuple with success and failure messages for entering gameplay
-            Enter_game_mode_tupple = (f"{level} entered gameplay successfully ", f"{level} failed to enter gameplay")
+            # 4. Enter gameplay and report result using a tuple
+            enter_game_mode_tuple = (f"{level} entered gameplay successfully ", f"{level} failed to enter gameplay")
+            TestHelper.enter_game_mode(enter_game_mode_tuple)
+            general.idle_wait_frames(1)
 
-            # 5. Enter gameplay and report result
-            TestHelper.enter_game_mode(Enter_game_mode_tupple)
-
-            # 6. Create tuple with success and failure messages for exiting gameplay
-            Exit_game_mode_tupple = (f"{level} exited gameplay successfully ", f"{level} failed to exit gameplay")
-
-            # 7. Exit Gameplay and report result
-            TestHelper.exit_game_mode(Exit_game_mode_tupple)
+            # 5. Exit gameplay and report result using a tuple
+            exit_game_mode_tuple = (f"{level} exited gameplay successfully ", f"{level} failed to exit gameplay")
+            TestHelper.exit_game_mode(exit_game_mode_tuple)
 
 
-        # 11. Look for errors or asserts.
+        # 6. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

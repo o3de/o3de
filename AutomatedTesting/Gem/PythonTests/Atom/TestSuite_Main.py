@@ -23,6 +23,10 @@ class TestAutomation(EditorTestSuite):
 
     enable_prefab_system = True
 
+    @pytest.mark.test_case_id("C36529679")
+    class AtomLevelLoadTest_Editor(EditorSharedTest):
+        from Atom.tests import hydra_Atom_LevelLoadTest as test_module
+
     @pytest.mark.test_case_id("C36525657")
     class AtomEditorComponents_BloomAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_BloomAdded as test_module
