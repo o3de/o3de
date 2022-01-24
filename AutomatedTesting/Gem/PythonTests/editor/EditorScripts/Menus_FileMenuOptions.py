@@ -33,7 +33,7 @@ def Menus_FileMenuOptions_Work():
     file_menu_options = [
         ("New Level",),
         ("Open Level",),
-        ("Import",),
+        #("Import",),                     Temporarily disabled due to https://github.com/o3de/o3de/issues/6746  
         ("Save",),
         ("Save As",),
         ("Save Level Statistics",),
