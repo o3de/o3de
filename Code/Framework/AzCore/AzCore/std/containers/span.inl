@@ -156,7 +156,7 @@ namespace AZStd
     inline constexpr auto span<T, Extent>::size_bytes() const noexcept -> size_type { return m_size * sizeof(element_type); }
 
     template <class T, size_t Extent>
-    inline constexpr bool span<T, Extent>::empty() const noexcept{ return size() == 0; }
+    [[nodiscard]] inline constexpr bool span<T, Extent>::empty() const noexcept{ return size() == 0; }
 
     // element access
     template <class T, size_t Extent>

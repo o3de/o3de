@@ -175,7 +175,7 @@ namespace UnitTest
             // Test failure of preconditions by requesting more
             // elements thant stored in the span
             AZ_TEST_START_TRACE_SUPPRESSION;
-            auto outOfBoundsSpan = intSpan.first(intSpan.size() + 1);
+            intSpan.first(intSpan.size() + 1);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
@@ -195,7 +195,7 @@ namespace UnitTest
             // Test failure of preconditions by requesting more
             // elements thant stored in the span
             AZ_TEST_START_TRACE_SUPPRESSION;
-            auto outOfBoundsSpan = intSpan.first<vectorElementCount + 1>();
+            intSpan.first<vectorElementCount + 1>();
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
     }
@@ -222,7 +222,7 @@ namespace UnitTest
             // Test failure of preconditions by requesting more
             // elements thant stored in the span
             AZ_TEST_START_TRACE_SUPPRESSION;
-            auto outOfBoundsSpan = intSpan.last(intSpan.size() + 1);
+            intSpan.last(intSpan.size() + 1);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
 
@@ -242,7 +242,7 @@ namespace UnitTest
             // Test failure of preconditions by requesting more
             // elements thant stored in the span
             AZ_TEST_START_TRACE_SUPPRESSION;
-            auto outOfBoundsSpan = intSpan.last<vectorElementCount + 1>();
+            intSpan.last<vectorElementCount + 1>();
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
     }

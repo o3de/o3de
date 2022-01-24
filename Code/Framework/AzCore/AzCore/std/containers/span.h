@@ -152,7 +152,7 @@ namespace AZStd
         constexpr size_type size() const noexcept;
         constexpr size_type size_bytes() const noexcept;
 
-        constexpr bool empty() const noexcept;
+        [[nodiscard]] constexpr bool empty() const noexcept;
 
         // element access - https://eel.is/c++draft/views#span.elem
         constexpr reference operator[](size_type index) const;
