@@ -157,17 +157,17 @@ function(o3de_restricted_id o3de_json_file restricted parent_relative_path)
     # This object did not have a "restricted" set, now we must look at the parent
     # Stop if this is a top level object
     o3de_manifest_restricted(manifest_restricted_paths)
-    get_filename_component(o3de_json_file_parent ${o3de_json_file} DIRECTORY)
-    get_filename_component(relative_path ${o3de_json_file_parent} NAME)
-    get_filename_component(o3de_json_file_parent ${o3de_json_file_parent} DIRECTORY)
+    cmake_path(GET o3de_json_file PARENT_PATH o3de_json_file_parent)
+    cmake_path(GET o3de_json_file_parent FILENAME relative_path)
+    cmake_path(GET o3de_json_file_parent PARENT_PATH o3de_json_file_parent)
     if(${o3de_json_file_parent} IN_LIST manifest_restricted_paths)
         set(${parent_relative_path} "" PARENT_SCOPE)
         set(${restricted} "" PARENT_SCOPE)
         return()
     endif()
 
-    string(LENGTH ${o3de_json_file_parent} parent_len)
-    while(parent_len)
+    set(is_prev_path_segment TRUE)
+    while(is_prev_path_segment)
         if(EXISTS ${o3de_json_file_parent}/engine.json)
             o3de_json_restricted(${o3de_json_file_parent}/engine.json restricted_name)
             if(restricted_name)
@@ -199,10 +199,12 @@ function(o3de_restricted_id o3de_json_file restricted parent_relative_path)
             return()
         endif()
 
-        get_filename_component(parent ${o3de_json_file_parent} NAME)
-        string(PREPEND relative_path ${parent}/)
-        get_filename_component(o3de_json_file_parent ${o3de_json_file_parent} DIRECTORY)
-        string(LENGTH ${o3de_json_file_parent} parent_len)
+        # Remove one path segment from the end of the o3de json candidate path
+        cmake_path(GET o3de_json_file_parent PARENT_PATH parent_path)
+        cmake_path(GET o3de_json_file_parent FILENAME path_segment)
+        cmake_path(COMPARE "${o3de_json_file_parent}" NOT_EQUAL "${parent_path}" is_prev_path_segment)
+        cmake_path(SET o3de_json_file_parent "${parent_path}")
+        cmake_path(SET relative_path "${path_segment}/${relative_path}")
     endwhile()
 endfunction()
 
@@ -232,10 +234,13 @@ endfunction()
 #! o3de_restricted_path:
 #
 # \arg:o3de_json_file json file to read restricted id from
-# \arg:restricted_name name of the restricted object
-function(o3de_restricted_path o3de_json_file restricted_path parent_relative_path)
+# \arg:restricted_path output path of the restricted object
+# \arg:parent_relative_path optional output of the path relative to the parent
+function(o3de_restricted_path o3de_json_file restricted_path) #parent_relative_path
     o3de_restricted_id(${o3de_json_file} restricted_name parent_relative)
-    set(${parent_relative_path} ${parent_relative} PARENT_SCOPE)
+    if(${ARGC} GREATER 2)
+        set(${ARGV2} ${parent_relative} PARENT_SCOPE)
+    endif()
     if(restricted_name)
         o3de_find_restricted_folder(${restricted_name} restricted_folder)
         if(restricted_folder)
@@ -254,7 +259,7 @@ foreach(detection_file ${detection_files})
 endforeach()
 
 # set the O3DE_ENGINE_RESTRICTED_PATH
-o3de_restricted_path(${LY_ROOT_FOLDER}/engine.json O3DE_ENGINE_RESTRICTED_PATH engine_has_no_parent)
+o3de_restricted_path(${LY_ROOT_FOLDER}/engine.json O3DE_ENGINE_RESTRICTED_PATH)
 
 # detect platforms in the restricted path
 file(GLOB detection_files ${O3DE_ENGINE_RESTRICTED_PATH}/*/cmake/PALDetection_*.cmake)
@@ -293,27 +298,33 @@ function(ly_get_absolute_pal_filename out_name in_name)
 
     # parent relative path is optional
     if(${ARGC} GREATER 4)
-        set(parent_relative_path ${ARGV4})
+        if(ARGV4)
+            set(parent_relative_path ${ARGV4})
+        endif()
     endif()
 
     # The Default object path for path is the LY_ROOT_FOLDER
     cmake_path(SET object_path NORMALIZE "${LY_ROOT_FOLDER}")
     if(${ARGC} GREATER 3)
-        # The user has supplied an object restricted path, the object path for consideration
-        cmake_path(SET object_path NORMALIZE ${ARGV3})
+        if(ARGV3)
+            # The user has supplied an object restricted path, the object path for consideration
+            cmake_path(SET object_path NORMALIZE ${ARGV3})
+        endif()
     endif()
 
     # The default restricted object path is O3DE_ENGINE_RESTRICTED_PATH
     cmake_path(SET object_restricted_path NORMALIZE "${O3DE_ENGINE_RESTRICTED_PATH}")
     if(${ARGC} GREATER 2)
-        # The user has supplied an object restricted path
-        cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        if(ARGV3)
+            # The user has supplied an object restricted path
+            cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        endif()
     endif()
 
     if(${ARGC} GREATER 4)
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path} ${parent_relative_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}" "${parent_relative_path}")
     else()
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}")
     endif()
     set(${out_name} ${abs_name} PARENT_SCOPE)
 endfunction()
@@ -338,7 +349,7 @@ function(o3de_pal_dir out_name in_name object_restricted_path object_path) #pare
             cmake_path(GET current_object_path PARENT_PATH parent_path)
             cmake_path(GET current_object_path FILENAME path_segment)
             list(PREPEND path_segments_visited ${path_segment})
-            cmake_path(COMPARE current_object_path NOT_EQUAL parent_path is_prev_path_segment)
+            cmake_path(COMPARE "${current_object_path}" NOT_EQUAL "${parent_path}" is_prev_path_segment)
             cmake_path(SET current_object_path "${parent_path}")
 
             set(is_prev_path_segment TRUE)
@@ -346,7 +357,7 @@ function(o3de_pal_dir out_name in_name object_restricted_path object_path) #pare
                 # Remove one path segment from the end of the current_object_path and prepend it to the list path_segments
                 cmake_path(GET current_object_path PARENT_PATH parent_path)
                 cmake_path(GET current_object_path FILENAME path_segment)
-                cmake_path(COMPARE current_object_path NOT_EQUAL parent_path is_prev_path_segment)
+                cmake_path(COMPARE "${current_object_path}" NOT_EQUAL "${parent_path}" is_prev_path_segment)
                 cmake_path(SET current_object_path "${parent_path}")
                 # The Path is in a PAL structure
                 # Decompose the path into sections before "Platform" and after "Platform"
@@ -389,34 +400,40 @@ function(ly_get_list_relative_pal_filename out_name in_name)
 
     # parent relative path is optional
     if(${ARGC} GREATER 4)
-        set(parent_relative_path ${ARGV4})
+        if(ARGV4)
+            set(parent_relative_path ${ARGV4})
+        endif()
     endif()
 
     # The Default object path for path is the LY_ROOT_FOLDER
     cmake_path(SET object_path NORMALIZE "${LY_ROOT_FOLDER}")
     if(${ARGC} GREATER 3)
-        # The user has supplied an object restricted path, the object path for consideration
-        cmake_path(SET object_path NORMALIZE ${ARGV3})
+        if(ARGV3)
+            # The user has supplied an object restricted path, the object path for consideration
+            cmake_path(SET object_path NORMALIZE ${ARGV3})
+        endif()
     endif()
 
     # The default restricted object path is O3DE_ENGINE_RESTRICTED_PATH
     cmake_path(SET object_restricted_path NORMALIZE "${O3DE_ENGINE_RESTRICTED_PATH}")
     if(${ARGC} GREATER 2)
-        # The user has supplied an object restricted path
-        cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        if(ARGV2)
+            # The user has supplied an object restricted path
+            cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        endif()
     endif()
 
     if(${ARGC} GREATER 4)
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path} ${parent_relative_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}" "${parent_relative_path}")
     else()
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}")
     endif()
 
     cmake_path(RELATIVE_PATH abs_name BASE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} OUTPUT_VARIABLE relative_name)
     set(${out_name} ${relative_name} PARENT_SCOPE)
 endfunction()
 
-o3de_pal_dir(pal_cmake_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+o3de_pal_dir(pal_cmake_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 
 ly_include_cmake_file_list(${pal_cmake_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
 

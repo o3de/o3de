@@ -10,14 +10,17 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
+
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
 #include <AzFramework/Windowing/NativeWindow.h>
@@ -571,6 +574,17 @@ namespace O3DELauncher
         }
 
     #if !defined(AZ_MONOLITHIC_BUILD)
+
+    #if !defined(_RELEASE)
+        // until CrySystem can be removed (or made to be managed by the component application),
+        // we need to manually clear the BudgetTracker before CrySystem is unloaded so the Budget
+        // pointer(s) it has references to are cleared properly
+        if (auto budgetTracker = AZ::Interface<AZ::Debug::BudgetTracker>::Get(); budgetTracker)
+        {
+            budgetTracker->Reset();
+        }
+    #endif // !defined(_RELEASE)
+
         delete systemInitParams.pSystem;
         crySystemLibrary.reset(nullptr);
     #endif // !defined(AZ_MONOLITHIC_BUILD)

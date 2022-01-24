@@ -189,6 +189,9 @@ namespace PhysX
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
 
+        // Update material selection from the mapping
+        Utils::SetMaterialsFromHeightfieldProvider(GetEntityId(), m_colliderConfig.m_materialSelection);
+
         AzPhysics::ShapeColliderPairList colliderShapePairs;
         colliderShapePairs.emplace_back(AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), m_shapeConfig);
         configuration.m_colliderAndShapeData = colliderShapePairs;

@@ -9,12 +9,16 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 #include <QApplication>
+#include <QTextDocument>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
                                                                // 4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
 #include <QAbstractItemView>
@@ -160,13 +164,20 @@ namespace AzToolsFramework
             LoadBranchPixMaps();
         }
 
+        void SearchEntryDelegate::Init()
+        {
+            AssetBrowserModel* assetBrowserModel;
+            AssetBrowserComponentRequestBus::BroadcastResult(assetBrowserModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
+            AZ_Assert(assetBrowserModel, "Failed to get filebrowser model");
+            m_assetBrowserFilerModel = assetBrowserModel->GetFilterModel();
+        }
+
         void SearchEntryDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
         {
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
             if (data.canConvert<const AssetBrowserEntry*>())
             {
-                bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
-                bool isSelected = (option.state & QStyle::State_Selected) != 0;
+                [[maybe_unused]] bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
 
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
@@ -265,13 +276,22 @@ namespace AzToolsFramework
                     remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
                     remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
                 }
+
                 QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
                     ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
                     : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
-                style->drawItemText(
-                    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled, displayString,
-                    isSelected ? QPalette::HighlightedText : QPalette::Text);
+                QStyleOptionViewItem optionV4{ option };
+                initStyleOption(&optionV4, index);
+                optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
+
+                if (m_assetBrowserFilerModel && m_assetBrowserFilerModel->GetStringFilter() 
+                    && !m_assetBrowserFilerModel->GetStringFilter()->GetFilterString().isEmpty())
+                {
+                    displayString = RichTextHighlighter::HighlightText(displayString, m_assetBrowserFilerModel->GetStringFilter()->GetFilterString());
+                }
+
+                RichTextHighlighter::PaintHighlightedRichText(displayString, painter, optionV4, remainingRect);
             }
         }
 

@@ -168,12 +168,20 @@ namespace GradientSignal
 
     float SmoothStepGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        float output = 0.0f;
+        const float value = m_configuration.m_gradientSampler.GetValue(sampleParams);
+        return m_configuration.m_smoothStep.GetSmoothedValue(value);
+    }
 
-        const float value = AZ::GetClamp(m_configuration.m_gradientSampler.GetValue(sampleParams), 0.0f, 1.0f);
-        output = m_configuration.m_smoothStep.GetSmoothedValue(value);
+    void SmoothStepGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
 
-        return output;
+        m_configuration.m_gradientSampler.GetValues(positions, outValues);
+        m_configuration.m_smoothStep.GetSmoothedValues(outValues);
     }
 
     bool SmoothStepGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const

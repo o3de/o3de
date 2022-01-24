@@ -56,6 +56,7 @@ namespace AZ
             AZStd::string ValidateOrCreateNewTexturePath(const AZStd::string& relativePath, const char* fileSuffix);
             void CheckoutSourceTextureFile(const AZStd::string& fullPath);
             void CheckTextureAssetNotification(const AZStd::string& relativePath, Data::Asset<RPI::StreamingImageAsset>& configurationAsset);
+            AZStd::vector<Edit::EnumConstant<DiffuseProbeGridNumRaysPerProbe>> GetNumRaysPerProbeEnumList() const;
 
             // property change notifications
             AZ::Outcome<void, AZStd::string> OnProbeSpacingValidateX(void* newValue, const AZ::Uuid& valueType);
@@ -65,6 +66,7 @@ namespace AZ
             AZ::u32 OnAmbientMultiplierChanged();
             AZ::u32 OnViewBiasChanged();
             AZ::u32 OnNormalBiasChanged();
+            AZ::u32 OnNumRaysPerProbeChanged();
             AZ::u32 OnEditorModeChanged();
             AZ::u32 OnRuntimeModeChanged();
             AZ::Outcome<void, AZStd::string> OnModeChangeValidate(void* newValue, const AZ::Uuid& valueType);
@@ -80,6 +82,7 @@ namespace AZ
             float m_ambientMultiplier = DefaultDiffuseProbeGridAmbientMultiplier;
             float m_viewBias = DefaultDiffuseProbeGridViewBias;
             float m_normalBias = DefaultDiffuseProbeGridNormalBias;
+            DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
 

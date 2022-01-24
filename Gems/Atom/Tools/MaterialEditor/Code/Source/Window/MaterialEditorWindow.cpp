@@ -6,18 +6,18 @@
  *
  */
 
-#include <Atom/Document/MaterialDocumentRequestBus.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/Window/MaterialEditorWindowSettings.h>
+#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <Document/MaterialDocumentRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
-#include <Window/HelpDialog/HelpDialog.h>
-#include <Window/MaterialBrowserWidget.h>
 #include <Window/MaterialEditorWindow.h>
+#include <Window/MaterialEditorWindowSettings.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
 #include <Window/PerformanceMonitor/PerformanceMonitorWidget.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
@@ -27,14 +27,17 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QApplication>
 #include <QByteArray>
 #include <QCloseEvent>
+#include <QDesktopServices>
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QUrl>
 #include <QWindow>
 AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
 {
     MaterialEditorWindow::MaterialEditorWindow(QWidget* parent /* = 0 */)
-        : AtomToolsFramework::AtomToolsDocumentMainWindow(parent)
+        : Base(parent)
     {
         resize(1280, 1024);
 
@@ -72,15 +75,30 @@ namespace MaterialEditor
         m_materialViewport->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
         centralWidget()->layout()->addWidget(m_materialViewport);
 
-        AddDockWidget("Asset Browser", new MaterialBrowserWidget, Qt::BottomDockWidgetArea, Qt::Vertical);
-        AddDockWidget("Inspector", new MaterialInspector, Qt::RightDockWidgetArea, Qt::Horizontal);
-        AddDockWidget("Viewport Settings", new ViewportSettingsInspector, Qt::LeftDockWidgetArea, Qt::Horizontal);
-        AddDockWidget("Performance Monitor", new PerformanceMonitorWidget, Qt::RightDockWidgetArea, Qt::Horizontal);
-        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
+        m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
+        m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
+        m_assetBrowser->SetOpenHandler([](const AZStd::string& absolutePath) {
+            if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
+            {
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
+                    &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                return;
+            }
+
+            if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
+            {
+                return;
+            }
+
+            QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
+        });
+
+        AddDockWidget("Inspector", new MaterialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
+        AddDockWidget("Viewport Settings", new ViewportSettingsInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
+        AddDockWidget("Performance Monitor", new PerformanceMonitorWidget, Qt::BottomDockWidgetArea, Qt::Horizontal);
 
         SetDockWidgetVisible("Viewport Settings", false);
         SetDockWidgetVisible("Performance Monitor", false);
-        SetDockWidgetVisible("Python Terminal", false);
 
         // Restore geometry and show the window
         mainWindowWrapper->showFromSettings();
@@ -160,8 +178,22 @@ namespace MaterialEditor
 
     void MaterialEditorWindow::OpenHelp()
     {
-        HelpDialog dialog(this);
-        dialog.exec();
+        QMessageBox::information(
+            this, windowTitle(),
+            R"(<html><head/><body>
+            <p><h3><u>Material Editor Controls</u></h3></p>
+            <p><b>LMB</b> - pan camera</p>
+            <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>
+            <p><b>MMB</b> or <b>Alt+MMB</b> - move camera on its xy plane</p>
+            <p><b>Alt+RMB</b> or <b>LMB+RMB</b> - dolly camera on its z axis</p>
+            <p><b>Ctrl+LMB</b> - rotate model</p>
+            <p><b>Shift+LMB</b> - rotate environment</p>
+            </body></html>)");
+    }
+
+    void MaterialEditorWindow::OpenAbout()
+    {
+        QMessageBox::about(this, windowTitle(), QApplication::applicationName());
     }
 
     void MaterialEditorWindow::closeEvent(QCloseEvent* closeEvent)

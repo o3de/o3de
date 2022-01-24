@@ -123,7 +123,7 @@ namespace EMotionFX
             TargetType* targetBuffer = static_cast<TargetType*>(targetVertexAttributeLayer->GetData());
 
             // Fill the vertex attribute layer by iterating through the Atom meshes and copying over the vertex data for each.
-            size_t addedElements = 0;
+            [[maybe_unused]] size_t addedElements = 0;
             for (const AZ::RPI::ModelLodAsset::Mesh& atomMesh : sourceModelLod->GetMeshes())
             {
                 const uint32_t atomMeshVertexCount = atomMesh.GetVertexCount();
