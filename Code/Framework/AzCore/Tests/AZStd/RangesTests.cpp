@@ -70,7 +70,7 @@ namespace UnitTest
         EXPECT_EQ(extentArray + 0, AZStd::ranges::begin(extentArray));
     }
 
-    TEST_F(RangesTestFixture, RangesBegin_DoesNotCompiles_WithNoExtentArray)
+    TEST_F(RangesTestFixture, RangesBegin_DoesNotCompile_WithNoExtentArray)
     {
         using ArrayNoExtentType = int[];
         static_assert(!AZStd::invocable<decltype(AZStd::ranges::begin), ArrayNoExtentType>);
@@ -96,7 +96,7 @@ namespace UnitTest
         EXPECT_EQ(extentArray + 5, AZStd::ranges::end(extentArray));
     }
 
-    TEST_F(RangesTestFixture, RangesEnd_DoesNotCompiles_WithNoExtentArray)
+    TEST_F(RangesTestFixture, RangesEnd_DoesNotCompile_WithNoExtentArray)
     {
         using ArrayNoExtentType = int[];
         static_assert(!AZStd::invocable<decltype(AZStd::ranges::end), ArrayNoExtentType>);
@@ -239,7 +239,7 @@ namespace UnitTest
         static_assert(5 == AZStd::ranges::size(extentArray));
     }
 
-    TEST_F(RangesTestFixture, RangesSize_DoesNotCompiles_WithNoExtentArray)
+    TEST_F(RangesTestFixture, RangesSize_DoesNotCompile_WithNoExtentArray)
     {
         using ArrayNoExtentType = int[];
         static_assert(!AZStd::invocable<decltype(AZStd::ranges::size), ArrayNoExtentType>);
@@ -268,7 +268,7 @@ namespace UnitTest
         static_assert(5 == AZStd::ranges::ssize(extentArray));
     }
 
-    TEST_F(RangesTestFixture, RangesSSize_DoesNotCompiles_WithNoExtentArray)
+    TEST_F(RangesTestFixture, RangesSSize_DoesNotCompile_WithNoExtentArray)
     {
         using ArrayNoExtentType = int[];
         static_assert(!AZStd::invocable<decltype(AZStd::ranges::ssize), ArrayNoExtentType>);
@@ -297,7 +297,7 @@ namespace UnitTest
         static_assert(!AZStd::ranges::empty(extentArray));
     }
 
-    TEST_F(RangesTestFixture, RangesEmpty_DoesNotCompiles_WithNoExtentArray)
+    TEST_F(RangesTestFixture, RangesEmpty_DoesNotCompile_WithNoExtentArray)
     {
         using ArrayNoExtentType = int[];
         static_assert(!AZStd::invocable<decltype(AZStd::ranges::empty), ArrayNoExtentType>);
@@ -325,7 +325,7 @@ namespace UnitTest
         EXPECT_EQ(extentArray, AZStd::ranges::data(extentArray));
     }
 
-    TEST_F(RangesTestFixture, RangesData_DoesNotCompiles_WithNoExtentArray)
+    TEST_F(RangesTestFixture, RangesData_DoesNotCompile_WithNoExtentArray)
     {
         using ArrayNoExtentType = int[];
         static_assert(!AZStd::invocable<decltype(AZStd::ranges::data), ArrayNoExtentType>);
@@ -353,7 +353,7 @@ namespace UnitTest
         EXPECT_EQ(extentArray, AZStd::ranges::cdata(extentArray));
     }
 
-    TEST_F(RangesTestFixture, RangesCData_DoesNotCompiles_WithNoExtentArray)
+    TEST_F(RangesTestFixture, RangesCData_DoesNotCompile_WithNoExtentArray)
     {
         using ArrayNoExtentType = int[];
         static_assert(!AZStd::invocable<decltype(AZStd::ranges::cdata), ArrayNoExtentType>);
