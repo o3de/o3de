@@ -15,6 +15,7 @@
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Viewport/VertexContainerDisplay.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include "MathConversion.h"
@@ -355,6 +356,20 @@ namespace LmbrCentral
             m_cachedUniformScaleTransform.GetTranslation(), cameraState);
 
         return (static_cast<float>(rayIntersectData.m_distanceSq) < powf(s_lineWidth * screenToWorldScale, 2.0f));
+    }
+
+    bool EditorSplineComponent::SupportsEditorRayIntersect()
+    {
+        return AzToolsFramework::HelpersVisible();
+    }
+
+    bool EditorSplineComponent::SupportsEditorRayIntersectViewport(const AzFramework::ViewportInfo& viewportInfo)
+    {
+        bool helpersVisible = false;
+        AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            helpersVisible, viewportInfo.m_viewportId,
+            &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::HelpersVisible);
+        return helpersVisible;
     }
 
     void EditorSplineComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
