@@ -87,7 +87,7 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a Mesh entity with no components.
@@ -151,10 +151,12 @@ def AtomEditorComponents_Mesh_AddedToEntity():
 
         # 10. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, mesh_entity.exists())
 
         # 11. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not mesh_entity.exists())
 
         # 12. Look for errors or asserts.
