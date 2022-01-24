@@ -48,8 +48,7 @@ def Component_AddedRemoved():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Create an Entity at the root of the level
     newEntityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())

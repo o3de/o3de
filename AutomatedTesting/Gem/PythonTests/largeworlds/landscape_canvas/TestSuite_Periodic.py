@@ -52,7 +52,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_LandscapeCanvas_Edit_UndoNodeDelete_SliceEntity(self, request, workspace, editor, launcher_platform):
-        from .EditorScripts import Edit_UndoNodeDelete_SliceEntity as test_module
+        from .EditorScripts import Edit_UndoNodeDelete_PrefabEntity as test_module
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_LandscapeCanvas_NewGraph_CreatedSuccessfully(self, request, workspace, editor, launcher_platform):
@@ -77,7 +77,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_LandscapeCanvas_Slice_CreateInstantiate(self, request, workspace, editor, remove_test_slice, launcher_platform):
-        from .EditorScripts import Slice_CreateInstantiate as test_module
+        from .EditorScripts import Prefab_CreateInstantiate as test_module
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_LandscapeCanvas_GradientModifierNodes_EntityCreatedOnNodeAdd(self, request, workspace, editor, launcher_platform):
@@ -102,7 +102,7 @@ class TestAutomation(TestAutomationBase):
 
     def test_LandscapeCanvas_GraphUpdates_UpdateComponents(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import GraphUpdates_UpdateComponents as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module, batch_mode=False)
 
     def test_LandscapeCanvas_ComponentUpdates_UpdateGraph(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import ComponentUpdates_UpdateGraph as test_module
