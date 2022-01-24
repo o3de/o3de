@@ -12,13 +12,6 @@ import ly_test_tools.environment.file_system as file_system
 import ly_test_tools._internal.pytest_plugin as internal_plugin
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
 
-@pytest.mark.SUITE_periodic
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
-
-    class test_LandscapeCanvas_AreaNodes_DependentComponentsAdded(EditorSharedTest):
-        from .EditorScripts import AreaNodes_DependentComponentsAdded as test_module
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -32,6 +25,9 @@ class TestAutomation(EditorTestSuite):
 
     class test_LandscapeCanvas_GradientMixer_NodeConstruction(EditorSharedTest):
         from .EditorScripts import GradientMixer_NodeConstruction as test_module
+
+    class test_LandscapeCanvas_AreaNodes_DependentComponentsAdded(EditorSharedTest):
+        from .EditorScripts import AreaNodes_DependentComponentsAdded as test_module
 
     class test_LandscapeCanvas_AreaNodes_EntityCreatedOnNodeAdd(EditorSharedTest):
         from .EditorScripts import AreaNodes_EntityCreatedOnNodeAdd as test_module
