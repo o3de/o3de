@@ -210,6 +210,7 @@ set(FILES
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp
     AZStd/SmartPtr.cpp
+    AZStd/SpanTests.cpp
     AZStd/String.cpp
     AZStd/TypeTraits.cpp
     AZStd/Tuple.cpp
