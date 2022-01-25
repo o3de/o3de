@@ -6,12 +6,14 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
@@ -161,13 +163,10 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         {
             return AZ::Failure(AZStd::string::format("Failed to produce the target spawnable '%.*s'.", AZ_STRING_ARG(spawnableName)));
         }
-        
+
         if (loadReferencedAssets)
         {
-            for (auto& product : context.GetProcessedObjects())
-            {
-                LoadReferencedAssets(product.GetReferencedAssets());
-            }
+            LoadReferencedAssets(spawnableAssetData);
         }
 
         auto& spawnableAssetDataAdded = m_spawnableAssets.emplace(spawnableName, spawnableAssetData).first->second;
@@ -213,63 +212,91 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return m_spawnableAssets;
     }
 
-    void InMemorySpawnableAssetContainer::LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
+    void InMemorySpawnableAssetContainer::LoadReferencedAssets(SpawnableAssetData& spawnable)
     {
-        // Start our loads on all assets by calling GetAsset from the AssetManager
-        for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
+        // Get the referenced assets directly from the product. This is done for two reasons:
+        //  1. Avoids calls to the Asset Manager for assets that are already loaded.
+        //  2. Gets the exact asset to load to avoid issues with assets that don't reload.
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>*> blockingAssets;
+
+        for (AZ::Data::Asset<AZ::Data::AssetData>& asset : spawnable.m_assets)
         {
-            if (!asset.GetId().IsValid())
+            AZ::SerializeContext* sc = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+            AZ_Assert(
+                sc, "Unable to locate Serialize Context while resolving asset references in the in-memory spawnable asset container.");
+
+            auto callback = [&blockingAssets](
+                                void* object, const AZ::SerializeContext::ClassData* classData,
+                                [[maybe_unused]]const AZ::SerializeContext::ClassElement* elementData) -> bool
             {
-                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
-                continue;
-            }
+                if (classData->m_typeId == AZ::GetAssetClassId())
+                {
+                    auto asset = reinterpret_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(object);
 
-            const AZ::Data::AssetLoadBehavior loadBehavior = asset.GetAutoLoadBehavior();
+                    if (!asset->GetId().IsValid())
+                    {
+                        AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                        return false;
+                    }
 
-            if (loadBehavior == AZ::Data::AssetLoadBehavior::NoLoad)
-            {
-                continue;
-            }
+                    if (asset->GetStatus() != AZ::Data::AssetData::AssetStatus::NotLoaded)
+                    {
+                        // Already loaded so no need to do anything.
+                        return false;
+                    }
 
-            AZ::Data::AssetId assetId = asset.GetId();
-            AZ::Data::AssetType assetType = asset.GetType();
+                    const AZ::Data::AssetLoadBehavior loadBehavior = asset->GetAutoLoadBehavior();
+                    if (loadBehavior == AZ::Data::AssetLoadBehavior::NoLoad)
+                    {
+                        return false;
+                    }
 
-            asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, loadBehavior);
+                    AZ::Data::AssetId assetId = asset->GetId();
+                    AZ::Data::AssetType assetType = asset->GetType();
 
-            if (!asset.GetId().IsValid())
-            {
-                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
-                continue;
-            }
+                    // Always queue load as the next step will stop loading for all PreLoad assets
+                    *asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::QueueLoad);
+
+                    if (!asset->GetId().IsValid())
+                    {
+                        AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                        return false;
+                    }
+
+                    if (loadBehavior == AZ::Data::AssetLoadBehavior::PreLoad)
+                    {
+                        // Only assets that are preloaded need to be waited on.
+                        blockingAssets.push_back(asset);
+                    }
+                    return false;
+                }
+                return true;
+            };
+
+            AZ::SerializeContext::EnumerateInstanceCallContext enumerationContext(
+                callback, nullptr, sc, AZ::SerializeContext::ENUM_ACCESS_FOR_READ, nullptr);
+            sc->EnumerateInstance(&enumerationContext, asset.GetData(), asset.GetType(), nullptr, nullptr);
         }
 
         // For all Preload assets we block until they're ready
         // We do this as a separate pass so that we don't interrupt queuing up all other asset loads
-        for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
+        for (AZ::Data::Asset<AZ::Data::AssetData>* asset : blockingAssets)
         {
-            if (!asset.GetId().IsValid())
+            asset->BlockUntilLoadComplete();
+            
+            if (asset->IsError())
             {
-                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                AZ_Error(
+                    "Prefab", false, "Asset with id %s failed to preload while entering game mode",
+                    asset->GetId().ToString<AZStd::string>().c_str());
+
                 continue;
             }
 
-            const AZ::Data::AssetLoadBehavior loadBehavior = asset.GetAutoLoadBehavior();
-
-            if (loadBehavior != AZ::Data::AssetLoadBehavior::PreLoad)
-            {
-                continue;
-            }
-
-            asset.BlockUntilLoadComplete();
-
-            if (asset.IsError())
-            {
-                AZ_Error("Prefab", false, "Asset with id %s failed to preload while entering game mode",
-                    asset.GetId().ToString<AZStd::string>().c_str());
-
-                continue;
-            }
+            // Reset the load behavior back to preload because the async load will have caused the behavior to be set to queued. Some assets
+            // will complain if they're not set to the correct loading behavior.
+            asset->SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         }
     }
-
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

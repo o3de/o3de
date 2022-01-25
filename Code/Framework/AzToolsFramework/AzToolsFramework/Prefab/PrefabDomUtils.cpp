@@ -119,6 +119,60 @@ namespace AzToolsFramework
                 return true;
             }
 
+            bool StoreInstanceInPrefabDom(
+                const Instance& instance,
+                PrefabDom& prefabDom,
+                AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets,
+                StoreFlags flags)
+            {
+                InstanceEntityIdMapper entityIdMapper;
+                entityIdMapper.SetStoringInstance(instance);
+
+                // Need to store the id mapper as both its type and its base type
+                // Meta data is found by type id and we need access to both types at different levels (Instance, EntityId)
+                AZ::JsonSerializerSettings settings;
+                settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
+                settings.m_metadata.Add(&entityIdMapper);
+                settings.m_metadata.Add(AZ::Data::SerializedAssetTracker{});
+
+                if ((flags & StoreFlags::StripDefaultValues) != StoreFlags::StripDefaultValues)
+                {
+                    settings.m_keepDefaults = true;
+                }
+
+                if ((flags & StoreFlags::StoreLinkIds) != StoreFlags::None)
+                {
+                    settings.m_metadata.Create<LinkIdMetadata>();
+                }
+
+                AZStd::string scratchBuffer;
+                auto issueReportingCallback = [&scratchBuffer](
+                                                  AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
+                                                  AZStd::string_view path) -> AZ::JsonSerializationResult::ResultCode
+                {
+                    return Internal::JsonIssueReporter(scratchBuffer, message, result, path);
+                };
+
+                settings.m_reporting = AZStd::move(issueReportingCallback);
+
+                AZ::JsonSerializationResult::ResultCode result =
+                    AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), instance, settings);
+
+                if (result.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "Failed to serialize prefab instance with source path %s. "
+                        "Unable to proceed.",
+                        instance.GetTemplateSourcePath().c_str());
+
+                    return false;
+                }
+
+                referencedAssets = AZStd::move(settings.m_metadata.Find<AZ::Data::SerializedAssetTracker>()->GetTrackedAssets());
+                return true;
+            }
+
             bool StoreEntityInPrefabDomFormat(const AZ::Entity& entity, Instance& owningInstance, PrefabDom& prefabDom, StoreFlags flags)
             {
                 InstanceEntityIdMapper entityIdMapper;
