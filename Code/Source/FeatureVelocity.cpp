@@ -94,9 +94,9 @@ namespace EMotionFX::MotionMatching
         // Speed difference
         // TODO: This needs to be normalized later on, else wise it could be that the direction difference is weights
         // too heavily or too less compared to what the speed values are
-        const float speedDifferenceCost = AZ::GetAbs(frameVelocity.GetLength() - currentVelocity.GetLength());
+        const float speedDifferenceCost = frameVelocity.GetLength() - currentVelocity.GetLength();
 
-        return directionDifferenceCost + speedDifferenceCost;
+        return CalcResidual(directionDifferenceCost) + CalcResidual(speedDifferenceCost);
     }
 
     void FeatureVelocity::Reflect(AZ::ReflectContext* context)
@@ -120,7 +120,7 @@ namespace EMotionFX::MotionMatching
         editContext->Class<FeatureVelocity>("FeatureVelocity", "Matches joint velocities.")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+            ;
     }
 
     size_t FeatureVelocity::GetNumDimensions() const
