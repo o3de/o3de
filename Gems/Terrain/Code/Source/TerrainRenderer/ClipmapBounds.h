@@ -11,7 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector2.h>
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <TerrainRenderer/Vector2i.h>
 #include <TerrainRenderer/Aabb2i.h>
 
@@ -20,16 +20,19 @@ namespace Terrain
 
     struct ClipmapBoundsDescriptor
     {
-        //! Width and height of the clipmap.
+        //! Width and height of the clipmap in texels.
         uint32_t m_size = 1024;
 
-        //! Current center location of the clipmap
-        AZ::Vector2 m_center = AZ::Vector2::CreateZero();
+        //! Current center location of the clipmap in world space
+        AZ::Vector2 m_worldSpaceCenter = AZ::Vector2::CreateZero();
 
-        //! Unused area around edges of the clipmap. Center point must be moved by
-        //! at least this much before an update is triggered. This allows for larger
-        //! but less frequent updates.
-        uint32_t m_margin = 4;
+        // Updates to the clipmap will be produced in multiples of this value. This
+        // allows for larger but less frequent updates, and gives some wiggle room
+        // for each movement before an update is triggered.
+        // Note: This also means that whatever uses this clipmap should only ever
+        // display m_size - (2 * m_clipmapUpdateMultiple) pixels from the clipmap.
+        // Use GetWorldSpaceSafeDistance() to get the safe distance from center.
+        uint32_t m_clipmapUpdateMultiple = 4;
 
         //! Scale of the clip map compared to the world. A scale of 0.5 means that
         //! a clipmap of size 1024 would cover 512 meters.
@@ -42,22 +45,22 @@ namespace Terrain
         AZ::Aabb m_worldAabb;
 
         //! The clipmaps bounds of the updated region. Will always be between 0 and size.
-        //! Min inclusive, max exclusive. e.g., a single pixel would be min 0,0 and max 1,1.
+        //! Min inclusive, max exclusive.
         Aabb2i m_localAabb;
 
         bool operator==(const ClipmapBoundsRegion& other) const;
         bool operator!=(const ClipmapBoundsRegion& other) const;
     };
 
-    // This class manages a single clipmap region. This is typically a texture which contains data
-    // around a point like the camera. The underlying texture never actually moves, and since it
-    // wraps it can be thought of like a repeating grid. This makes looking up data in the clipmap
-    // trivial since it's just the world coordinate scaled by some amount, however only data inside
-    // the clipmap bounds will actually be valid. This technique also allows for only the edge areas
-    // of the clipmap to be updated as the center point moves around the world.
+    // This class manages a single clipmap region. A clipmap is a virtual view into a much larger
+    // region, where the clipmap view is centered around a point like the current camera position.
+    // The clipmap texture wraps to form a repeating grid and never moves, but only data within
+    // the clipmap bounds is actually valid. This makes looking up data in the clipmap trivial
+    // since it's just the world coordinate scaled by some amount. This technique also allows for
+    // only the edge areas of the clipmap to be updated as the center point moves around the world.
     //
-    // The edges of the clipmap region will typically run through the texture, dividing it into 4
-    // regions, except in cases where the clipmap region happens to be aligned with the underlying
+    // The edges of the clipmap bounds will typically run through the texture, dividing it into 4
+    // regions, except in cases where the clipmap bounds happen to be aligned with the underlying
     // grid. This means whenever some bounding box needs to be updated in the clipmap, it may actually
     // translate to 4 different areas of the underlying texture - one for each quadrant.
     //
@@ -68,7 +71,7 @@ namespace Terrain
     /*
      ___________________________
     |      |      |      |      |      Clipmap     Clipmap
-    |      |      |      |      |      Region      Texture (Tiled)
+    |      |      |      |      |      Bounds      Texture (Tiled)
     |______|______|______|______|      ______      ______
     |      |     _|____  |      |     | |    |    |____|_|
     |      |    | |    | |      |     |_|_*__|    |    | |
@@ -89,6 +92,8 @@ namespace Terrain
         explicit ClipmapBounds(const ClipmapBoundsDescriptor& desc);
         ~ClipmapBounds() = default;
 
+        using ClipmapBoundsRegionList = AZStd::fixed_vector<ClipmapBoundsRegion, 4>;
+
         //! Updates the clipmap bounds using a world coordinate center position and returns
         //! 0-2 regions that need to be updated due to moving beyond the margins. These update
         //! regions will always be at least the size of the margin, and will represent horizontal
@@ -97,7 +102,7 @@ namespace Terrain
         //! clipmap but not updated by the center moving. This can be useful in cases where part
         //! of the bounds of the clipmap is dirty, but areas that will already be updated due
         //! to the center moving shouldn't be updated twice.
-        AZStd::vector<ClipmapBoundsRegion> UpdateCenter(const AZ::Vector2& newCenter, AZ::Aabb* untouchedRegion = nullptr);
+        ClipmapBoundsRegionList UpdateCenter(const AZ::Vector2& newCenter, AZ::Aabb* untouchedRegion = nullptr);
         
         //! Updates the clipmap bounds using a position in clipmap space (no scaling) and returns
         //! 0-2 regions that need to be updated due to moving beyond the margins. These update
@@ -107,18 +112,23 @@ namespace Terrain
         //! clipmap but not updated by the center moving. This can be useful in cases where part
         //! of the bounds of the clipmap is dirty, but areas that will already be updated due
         //! to the center moving shouldn't be updated twice.
-        AZStd::vector<ClipmapBoundsRegion> UpdateCenter(const Vector2i& newCenter, AZ::Aabb* untouchedRegion = nullptr);
+        ClipmapBoundsRegionList UpdateCenter(const Vector2i& newCenter, AZ::Aabb* untouchedRegion = nullptr);
 
         //! Takes in a single world space region and transforms it into 0-4 regions in the clipmap clamped
         //! to the bounds of the clipmap.
-        AZStd::vector<ClipmapBoundsRegion> TransformRegion(AZ::Aabb worldSpaceRegion);
+        ClipmapBoundsRegionList TransformRegion(AZ::Aabb worldSpaceRegion);
         
         //! Takes in a single unscaled clipmap space region and transforms it into 0-4 regions in the clipmap clamped
         //! to the bounds of the clipmap.
-        AZStd::vector<ClipmapBoundsRegion> TransformRegion(Aabb2i clipSpaceRegion);
+        ClipmapBoundsRegionList TransformRegion(Aabb2i clipSpaceRegion);
 
-        //! Returns the bounds covered by this clipmap in world space. Z component ignored.
+        //! Returns the bounds covered by this clipmap in world space. Z component is always 0.
         AZ::Aabb GetWorldBounds();
+
+        //! Returns the safe x and y distance from the center in world space. This is based on the scale,
+        //! clipmap size, and m_clipmapUpdateMultiple. For example, a clipmap size 1024 with scale
+        //! 0.25 and margin of 4 would have a safe distance of (1024 * 0.5 - 4) * 0.25 = 127.0f.
+        float GetWorldSpaceSafeDistance();
 
     private:
         
@@ -135,7 +145,7 @@ namespace Terrain
         Vector2i m_modCenter;
         int32_t m_size;
         int32_t m_halfSize;
-        int32_t m_margin;
+        int32_t m_clipmapUpdateMultiple;
         float m_scale;
         float m_rcpScale;
 

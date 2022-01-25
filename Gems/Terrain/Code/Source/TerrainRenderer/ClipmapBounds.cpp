@@ -9,6 +9,7 @@
 #include <TerrainRenderer/ClipmapBounds.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace Terrain
 {
@@ -25,7 +26,7 @@ namespace Terrain
     ClipmapBounds::ClipmapBounds(const ClipmapBoundsDescriptor& desc)
         : m_size(desc.m_size)
         , m_halfSize(desc.m_size >> 1)
-        , m_margin(AZ::GetMax<uint32_t>(desc.m_margin, 1))
+        , m_clipmapUpdateMultiple(AZ::GetMax<uint32_t>(desc.m_clipmapUpdateMultiple, 1))
         , m_scale(desc.m_scale)
         , m_rcpScale(1.0f / desc.m_scale)
     {
@@ -33,15 +34,15 @@ namespace Terrain
         m_scale = AZ::GetMax(m_scale, AZ::Constants::FloatEpsilon);
 
         // recalculate m_center
-        UpdateCenter(desc.m_center);
+        UpdateCenter(desc.m_worldSpaceCenter);
     }
     
-    AZStd::vector<ClipmapBoundsRegion> ClipmapBounds::UpdateCenter(const AZ::Vector2& newCenter, AZ::Aabb* untouchedRegion)
+    auto ClipmapBounds::UpdateCenter(const AZ::Vector2& newCenter, AZ::Aabb* untouchedRegion) -> ClipmapBoundsRegionList
     {
         return UpdateCenter(GetClipSpaceVector(newCenter), untouchedRegion);
     }
 
-    AZStd::vector<ClipmapBoundsRegion> ClipmapBounds::UpdateCenter(const Vector2i& newCenter, AZ::Aabb* untouchedRegion)
+    auto ClipmapBounds::UpdateCenter(const Vector2i& newCenter, AZ::Aabb* untouchedRegion) -> ClipmapBoundsRegionList
     {
         AZStd::vector<Aabb2i> updateRegions;
         Vector2i updatedCenter = m_center;
@@ -51,20 +52,20 @@ namespace Terrain
         {
             int32_t diff = centerDim - snappedCenterDim;
             
-            int32_t scaledCenterDim = (centerDim / m_margin);
+            int32_t scaledCenterDim = (centerDim / m_clipmapUpdateMultiple);
             if (centerDim < 0)
             {
                 // Force rounding down for negatives
                 scaledCenterDim--;
             }
 
-            if (diff >= m_margin)
+            if (diff >= m_clipmapUpdateMultiple)
             {
-                snappedCenterDim = scaledCenterDim * m_margin;
+                snappedCenterDim = scaledCenterDim * m_clipmapUpdateMultiple;
             }
-            if (diff < -m_margin)
+            if (diff < -m_clipmapUpdateMultiple)
             {
-                snappedCenterDim = (scaledCenterDim + 1) * m_margin;
+                snappedCenterDim = (scaledCenterDim + 1) * m_clipmapUpdateMultiple;
             }
         };
         UpdateDim(newCenter.m_x, updatedCenter.m_x);
@@ -157,17 +158,17 @@ namespace Terrain
         m_modCenter.m_x = (m_size + (m_center.m_x % m_size)) % m_size;
         m_modCenter.m_y = (m_size + (m_center.m_y % m_size)) % m_size;
 
-        AZStd::vector<ClipmapBoundsRegion> boundsUpdate;
+        ClipmapBoundsRegionList boundsUpdate;
         for (Aabb2i& updateRegion : updateRegions)
         {
-            AZStd::vector<ClipmapBoundsRegion> update = TransformRegion(updateRegion);
+            ClipmapBoundsRegionList update = TransformRegion(updateRegion);
             boundsUpdate.insert(boundsUpdate.end(), update.begin(), update.end());
         }
 
         return boundsUpdate;
     }
     
-    AZStd::vector<ClipmapBoundsRegion> ClipmapBounds::TransformRegion(AZ::Aabb worldSpaceRegion)
+    auto ClipmapBounds::TransformRegion(AZ::Aabb worldSpaceRegion) -> ClipmapBoundsRegionList
     {
         AZ::Vector2 worldMin = AZ::Vector2(worldSpaceRegion.GetMin().GetX(), worldSpaceRegion.GetMin().GetY());
         AZ::Vector2 worldMax = AZ::Vector2(worldSpaceRegion.GetMax().GetX(), worldSpaceRegion.GetMax().GetY());
@@ -179,9 +180,9 @@ namespace Terrain
         return TransformRegion(clipSpaceRegion);
     }
 
-    AZStd::vector<ClipmapBoundsRegion> ClipmapBounds::TransformRegion(Aabb2i region)
+    auto ClipmapBounds::TransformRegion(Aabb2i region) -> ClipmapBoundsRegionList
     {
-        AZStd::vector<ClipmapBoundsRegion> transformedRegions;
+        ClipmapBoundsRegionList transformedRegions;
 
         Aabb2i clampedRegion = region.GetClamped(GetLocalBounds());
         if (!clampedRegion.IsValid())
@@ -229,6 +230,11 @@ namespace Terrain
         return AZ::Aabb::CreateFromMinMaxValues(
             localBounds.m_min.m_x * m_scale, localBounds.m_min.m_y * m_scale, 0.0f,
             localBounds.m_max.m_x * m_scale, localBounds.m_max.m_y * m_scale, 0.0f);
+    }
+
+    float ClipmapBounds::GetWorldSpaceSafeDistance()
+    {
+        return (m_halfSize - m_clipmapUpdateMultiple) * m_scale;
     }
 
     Aabb2i ClipmapBounds::GetLocalBounds() const

@@ -41,8 +41,8 @@ namespace UnitTest
         ) * worldBoundsSize;
 
         Terrain::Vector2i localMax = {
-            AZStd::lround(desc.m_center.GetX() / desc.m_scale) + int32_t(desc.m_size / 2ul),
-            AZStd::lround(desc.m_center.GetY() / desc.m_scale) + int32_t(desc.m_size / 2ul)
+            AZStd::lround(desc.m_worldSpaceCenter.GetX() / desc.m_scale) + int32_t(desc.m_size / 2ul),
+            AZStd::lround(desc.m_worldSpaceCenter.GetY() / desc.m_scale) + int32_t(desc.m_size / 2ul)
         };
 
         int32_t intSize = int32_t(desc.m_size);
@@ -88,8 +88,8 @@ namespace UnitTest
     {
         // Create clipmap around 0.0, so it's perfectly divided into 4 quadrants
         Terrain::ClipmapBoundsDescriptor desc;
-        desc.m_center = AZ::Vector2(0.0f, 0.0f);
-        desc.m_margin = 0;
+        desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
+        desc.m_clipmapUpdateMultiple = 0;
         desc.m_scale = 1.0f;
         desc.m_size = 1024;
         Terrain::ClipmapBounds bounds(desc);
@@ -113,8 +113,8 @@ namespace UnitTest
     {
         // Create clipmap around 0.0, so it's perfectly divided into 4 quadrants, but half-scale
         Terrain::ClipmapBoundsDescriptor desc;
-        desc.m_center = AZ::Vector2(0.0f, 0.0f);
-        desc.m_margin = 0;
+        desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
+        desc.m_clipmapUpdateMultiple = 0;
         desc.m_scale = 0.5f;
         desc.m_size = 1024;
         Terrain::ClipmapBounds bounds(desc);
@@ -141,8 +141,8 @@ namespace UnitTest
         // Clipmap in negative space
         {
             Terrain::ClipmapBoundsDescriptor desc;
-            desc.m_center = AZ::Vector2(-1234.0f, -5432.0f);
-            desc.m_margin = 0;
+            desc.m_worldSpaceCenter = AZ::Vector2(-1234.0f, -5432.0f);
+            desc.m_clipmapUpdateMultiple = 0;
             desc.m_scale = 0.75f;
             desc.m_size = 512;
             CheckTransformRegionFullBounds(desc);
@@ -151,8 +151,8 @@ namespace UnitTest
         // Clipmap in positive space
         {
             Terrain::ClipmapBoundsDescriptor desc;
-            desc.m_center = AZ::Vector2(1234.0f, 5432.0f);
-            desc.m_margin = 0;
+            desc.m_worldSpaceCenter = AZ::Vector2(1234.0f, 5432.0f);
+            desc.m_clipmapUpdateMultiple = 0;
             desc.m_scale = 1.25f;
             desc.m_size = 1024;
             CheckTransformRegionFullBounds(desc);
@@ -161,8 +161,8 @@ namespace UnitTest
         // Clipmap on x axis
         {
             Terrain::ClipmapBoundsDescriptor desc;
-            desc.m_center = AZ::Vector2(1234.0f, -100.0f);
-            desc.m_margin = 0;
+            desc.m_worldSpaceCenter = AZ::Vector2(1234.0f, -100.0f);
+            desc.m_clipmapUpdateMultiple = 0;
             desc.m_scale = 1.5f;
             desc.m_size = 256;
             CheckTransformRegionFullBounds(desc);
@@ -170,8 +170,8 @@ namespace UnitTest
         // Clipmap on y axis
         {
             Terrain::ClipmapBoundsDescriptor desc;
-            desc.m_center = AZ::Vector2(-100.0f, 5432.0f);
-            desc.m_margin = 0;
+            desc.m_worldSpaceCenter = AZ::Vector2(-100.0f, 5432.0f);
+            desc.m_clipmapUpdateMultiple = 0;
             desc.m_scale = 1.0f;
             desc.m_size = 2048;
             CheckTransformRegionFullBounds(desc);
@@ -182,8 +182,8 @@ namespace UnitTest
     {
         // Create clipmap around 0.0, so it's perfectly divided into 4 quadrants
         Terrain::ClipmapBoundsDescriptor desc;
-        desc.m_center = AZ::Vector2(0.0f, 0.0f);
-        desc.m_margin = 0;
+        desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
+        desc.m_clipmapUpdateMultiple = 0;
         desc.m_scale = 1.0f;
         desc.m_size = 1024;
         Terrain::ClipmapBounds bounds(desc);
@@ -239,8 +239,8 @@ namespace UnitTest
 
         // Create clipmap around 0.0, so it's perfectly divided into 4 quadrants
         Terrain::ClipmapBoundsDescriptor desc;
-        desc.m_center = AZ::Vector2(0.0f, 0.0f);
-        desc.m_margin = 16;
+        desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
+        desc.m_clipmapUpdateMultiple = 16;
         desc.m_scale = 1.0f;
         desc.m_size = 1024;
         Terrain::ClipmapBounds bounds(desc);
@@ -266,8 +266,8 @@ namespace UnitTest
     {
         // Create clipmap around 0.0, so it's perfectly divided into 4 quadrants
         Terrain::ClipmapBoundsDescriptor desc;
-        desc.m_center = AZ::Vector2(0.0f, 0.0f);
-        desc.m_margin = 16;
+        desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
+        desc.m_clipmapUpdateMultiple = 16;
         desc.m_scale = 1.0f;
         desc.m_size = 1024;
         Terrain::ClipmapBounds bounds(desc);
@@ -291,12 +291,13 @@ namespace UnitTest
             }
 
             // Two edges of margin * size, minus the overlap in the corner.
-            float expectedCoverage = desc.m_margin * desc.m_size * 2.0f - desc.m_margin * desc.m_margin;
+            const uint32_t updateMultiple = desc.m_clipmapUpdateMultiple;
+            float expectedCoverage = updateMultiple * desc.m_size * 2.0f - updateMultiple * updateMultiple;
             EXPECT_NEAR(pixelsCovered, expectedCoverage, 0.0001f);
 
             // 2. The untouched region area should match what's expected
             float untouchedRegionArea = untouchedRegion.GetSurfaceArea() * 0.5f;
-            float expectedUntouchedRegionSide = aznumeric_cast<float>(desc.m_size - desc.m_margin);
+            float expectedUntouchedRegionSide = aznumeric_cast<float>(desc.m_size - desc.m_clipmapUpdateMultiple);
             float expectedUntouchedRegionArea = expectedUntouchedRegionSide * expectedUntouchedRegionSide;
             EXPECT_NEAR(untouchedRegionArea, expectedUntouchedRegionArea, 0.0001f);
 
