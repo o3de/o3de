@@ -151,7 +151,7 @@ namespace AZ
                 auto actualMem = reinterpret_cast<const AZ::s8*>(mem);
                 AZ::s8 signedMax = std::numeric_limits<AZ::s8>::max();
                 AZ::s8 signedMin = aznumeric_cast<AZ::s8>(-signedMax);
-                return ScaleValue(AZStd::max(actualMem[index], signedMin), signedMin, signedMax, -1, 1);
+                return ScaleValue(AZStd::max(actualMem[index], signedMin), signedMin, signedMax, -1.0f, 1.0f);
             }
             case AZ::RHI::Format::D16_UNORM:
             case AZ::RHI::Format::R16_UNORM:
@@ -166,7 +166,7 @@ namespace AZ
                 auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
                 AZ::s16 signedMax = std::numeric_limits<AZ::s16>::max();
                 AZ::s16 signedMin = aznumeric_cast<AZ::s16>(-signedMax);
-                return ScaleValue(AZStd::max(actualMem[index], signedMin), signedMin, signedMax, -1, 1);
+                return ScaleValue(AZStd::max(actualMem[index], signedMin), signedMin, signedMax, -1.0f, 1.0f);
             }
             case AZ::RHI::Format::R16_FLOAT:
             {
@@ -391,7 +391,7 @@ namespace AZ
                 {
                     for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                     {
-                        size_t imageDataIndex = (y * width * pixelSize) + (x * pixelSize);
+                        size_t imageDataIndex = (y * width + x) * pixelSize;
 
                         auto& outValue = outValues[outValuesIndex++];
                         outValue = Internal::RetrieveFloatValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
@@ -418,7 +418,7 @@ namespace AZ
                 {
                     for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                     {
-                        size_t imageDataIndex = (y * width * pixelSize) + (x * pixelSize);
+                        size_t imageDataIndex = (y * width + x) * pixelSize;
 
                         auto& outValue = outValues[outValuesIndex++];
                         outValue = Internal::RetrieveUintValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
@@ -445,7 +445,7 @@ namespace AZ
                 {
                     for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
                     {
-                        size_t imageDataIndex = (y * width * pixelSize) + (x * pixelSize);
+                        size_t imageDataIndex = (y * width + x) * pixelSize;
 
                         auto& outValue = outValues[outValuesIndex++];
                         outValue = Internal::RetrieveIntValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
