@@ -80,6 +80,9 @@ namespace Terrain
 
         // TerrainAreaSurfaceRequestBus
         void GetSurfaceWeights(const AZ::Vector3& inPosition, AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights) const override;
+        void GetSurfaceWeightsFromList(
+            AZStd::span<const AZ::Vector3> inPositionList,
+            AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const override;
 
     private:
         //////////////////////////////////////////////////////////////////////////
