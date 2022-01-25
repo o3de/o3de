@@ -18,9 +18,9 @@
 namespace Terrain
 {
 
-    struct ClipmapBoundsDescritor
+    struct ClipmapBoundsDescriptor
     {
-        //! Size of the clipmap in width / height.
+        //! Width and height of the clipmap.
         uint32_t m_size = 1024;
 
         //! Current center location of the clipmap
@@ -64,25 +64,29 @@ namespace Terrain
     // This class aids in figuring out which areas of a clipmap need to be updated as its center point
     // moves around in the world, and can map a single region that needs to be updated into several
     // separate regions for each quadrant.
-    // _____________________________
-    // |      |      |      |      |      Clipmap
-    // |      |      |      |      |      Texture
-    // |______|______|______|______|      ______ 
-    // |      |     _|____  |      |     | |    |
-    // |      |    | |    | |      |     |_|____|
-    // |______|____|_|_*__|_|______|     |_|____|
-    // |      |    |_|____| |      |
-    // |      |      |      |      |
-    // |______|______|______|______|
-    // |      |      |      |      |
-    // |      |      |      |      |
-    // |______|______|______|______|
+    
+    /*
+     ___________________________
+    |      |      |      |      |      Clipmap     Clipmap
+    |      |      |      |      |      Region      Texture (Tiled)
+    |______|______|______|______|      ______      ______
+    |      |     _|____  |      |     | |    |    |____|_|
+    |      |    | |    | |      |     |_|_*__|    |    | |
+    |______|____|_|_*__|_|______|     |_|____|    |_*__|_|
+    |      |    |_|____| |      |
+    |      |      |      |      |
+    |______|______|______|______|
+    |      |      |      |      |
+    |      |      |      |      |
+    |______|______|______|______|
+
+    */
 
     class ClipmapBounds
     {
     public:
 
-        explicit ClipmapBounds(const ClipmapBoundsDescritor& desc);
+        explicit ClipmapBounds(const ClipmapBoundsDescriptor& desc);
         ~ClipmapBounds() = default;
 
         //! Updates the clipmap bounds using a world coordinate center position and returns

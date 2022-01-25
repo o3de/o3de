@@ -22,20 +22,10 @@ namespace UnitTest
         : public UnitTest::AllocatorsTestFixture
     {
     public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            UnitTest::AllocatorsTestFixture::TearDown();
-        }
-
-        void CheckTransformRegionFullBounds(const Terrain::ClipmapBoundsDescritor& desc);
+        void CheckTransformRegionFullBounds(const Terrain::ClipmapBoundsDescriptor& desc);
     };
 
-    void ClipmapBoundsTests::CheckTransformRegionFullBounds(const Terrain::ClipmapBoundsDescritor& desc)
+    void ClipmapBoundsTests::CheckTransformRegionFullBounds(const Terrain::ClipmapBoundsDescriptor& desc)
     {
         Terrain::ClipmapBounds bounds(desc);
 
@@ -90,14 +80,14 @@ namespace UnitTest
 
     TEST_F(ClipmapBoundsTests, Construction)
     {
-        Terrain::ClipmapBoundsDescritor desc;
+        Terrain::ClipmapBoundsDescriptor desc;
         Terrain::ClipmapBounds bounds(desc);
     }
     
     TEST_F(ClipmapBoundsTests, BasicTransform)
     {
         // Create clipmap around 0.0, so it's perfectly divided into 4 quadrants
-        Terrain::ClipmapBoundsDescritor desc;
+        Terrain::ClipmapBoundsDescriptor desc;
         desc.m_center = AZ::Vector2(0.0f, 0.0f);
         desc.m_margin = 0;
         desc.m_scale = 1.0f;
@@ -122,7 +112,7 @@ namespace UnitTest
     TEST_F(ClipmapBoundsTests, ScaledTransform)
     {
         // Create clipmap around 0.0, so it's perfectly divided into 4 quadrants, but half-scale
-        Terrain::ClipmapBoundsDescritor desc;
+        Terrain::ClipmapBoundsDescriptor desc;
         desc.m_center = AZ::Vector2(0.0f, 0.0f);
         desc.m_margin = 0;
         desc.m_scale = 0.5f;
@@ -150,7 +140,7 @@ namespace UnitTest
 
         // Clipmap in negative space
         {
-            Terrain::ClipmapBoundsDescritor desc;
+            Terrain::ClipmapBoundsDescriptor desc;
             desc.m_center = AZ::Vector2(-1234.0f, -5432.0f);
             desc.m_margin = 0;
             desc.m_scale = 0.75f;
@@ -160,7 +150,7 @@ namespace UnitTest
         
         // Clipmap in positive space
         {
-            Terrain::ClipmapBoundsDescritor desc;
+            Terrain::ClipmapBoundsDescriptor desc;
             desc.m_center = AZ::Vector2(1234.0f, 5432.0f);
             desc.m_margin = 0;
             desc.m_scale = 1.25f;
@@ -170,7 +160,7 @@ namespace UnitTest
         
         // Clipmap on x axis
         {
-            Terrain::ClipmapBoundsDescritor desc;
+            Terrain::ClipmapBoundsDescriptor desc;
             desc.m_center = AZ::Vector2(1234.0f, -100.0f);
             desc.m_margin = 0;
             desc.m_scale = 1.5f;
@@ -179,7 +169,7 @@ namespace UnitTest
         }
         // Clipmap on y axis
         {
-            Terrain::ClipmapBoundsDescritor desc;
+            Terrain::ClipmapBoundsDescriptor desc;
             desc.m_center = AZ::Vector2(-100.0f, 5432.0f);
             desc.m_margin = 0;
             desc.m_scale = 1.0f;
@@ -191,7 +181,7 @@ namespace UnitTest
     TEST_F(ClipmapBoundsTests, TransformSmallBounds)
     {
         // Create clipmap around 0.0, so it's perfectly divided into 4 quadrants
-        Terrain::ClipmapBoundsDescritor desc;
+        Terrain::ClipmapBoundsDescriptor desc;
         desc.m_center = AZ::Vector2(0.0f, 0.0f);
         desc.m_margin = 0;
         desc.m_scale = 1.0f;
@@ -248,7 +238,7 @@ namespace UnitTest
         // With a margin defined, the bounds should only trigger updates when the camera moves outside the margins
 
         // Create clipmap around 0.0, so it's perfectly divided into 4 quadrants
-        Terrain::ClipmapBoundsDescritor desc;
+        Terrain::ClipmapBoundsDescriptor desc;
         desc.m_center = AZ::Vector2(0.0f, 0.0f);
         desc.m_margin = 16;
         desc.m_scale = 1.0f;
@@ -275,7 +265,7 @@ namespace UnitTest
     TEST_F(ClipmapBoundsTests, CenterMovementUpdates)
     {
         // Create clipmap around 0.0, so it's perfectly divided into 4 quadrants
-        Terrain::ClipmapBoundsDescritor desc;
+        Terrain::ClipmapBoundsDescriptor desc;
         desc.m_center = AZ::Vector2(0.0f, 0.0f);
         desc.m_margin = 16;
         desc.m_scale = 1.0f;

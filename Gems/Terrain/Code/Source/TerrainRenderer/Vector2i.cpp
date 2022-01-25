@@ -27,57 +27,57 @@ namespace Terrain
         , m_y(value)
     {}
 
-    auto Vector2i::operator+(const Vector2i& rhs) const -> Vector2i
+    Vector2i Vector2i::operator+(const Vector2i& rhs) const
     {
         Vector2i returnPoint = *this;
         returnPoint += rhs;
         return returnPoint;
     }
     
-    auto Vector2i::operator+=(const Vector2i& rhs) -> Vector2i&
+    Vector2i& Vector2i::operator+=(const Vector2i& rhs)
     {
         m_x += rhs.m_x;
         m_y += rhs.m_y;
         return *this;
     }
 
-    auto Vector2i::operator-(const Vector2i& rhs) const -> Vector2i
+    Vector2i Vector2i::operator-(const Vector2i& rhs) const
     {
         return *this + -rhs;
     }
     
-    auto Vector2i::operator-=(const Vector2i& rhs) -> Vector2i&
+    Vector2i& Vector2i::operator-=(const Vector2i& rhs)
     {
         return *this += -rhs;
     }
     
-    auto Vector2i::operator-() const -> Vector2i
+    Vector2i Vector2i::operator-() const
     {
         return {-m_x, -m_y};
     }
     
-    auto Vector2i::operator*(const Vector2i& rhs) const -> Vector2i
+    Vector2i Vector2i::operator*(const Vector2i& rhs) const
     {
         Vector2i returnPoint = *this;
         returnPoint *= rhs;
         return returnPoint;
     }
     
-    auto Vector2i::operator*=(const Vector2i& rhs) -> Vector2i&
+    Vector2i& Vector2i::operator*=(const Vector2i& rhs)
     {
         m_x *= rhs.m_x;
         m_y *= rhs.m_y;
         return *this;
     }
 
-    auto Vector2i::operator/(const Vector2i& rhs) const -> Vector2i
+    Vector2i Vector2i::operator/(const Vector2i& rhs) const
     {
         Vector2i returnPoint = *this;
         returnPoint /= rhs;
         return returnPoint;
     }
     
-    auto Vector2i::operator/=(const Vector2i& rhs) -> Vector2i&
+    Vector2i& Vector2i::operator/=(const Vector2i& rhs)
     {
         m_x /= rhs.m_x;
         m_y /= rhs.m_y;
@@ -91,6 +91,6 @@ namespace Terrain
     
     bool Vector2i::operator!=(const Vector2i& rhs) const
     {
-        return rhs.m_x != m_x || rhs.m_y != m_y;
+        return !(*this == rhs);
     }
 }

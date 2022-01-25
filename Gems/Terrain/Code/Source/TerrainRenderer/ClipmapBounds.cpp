@@ -22,14 +22,15 @@ namespace Terrain
         return !(*this == other);
     }
 
-    ClipmapBounds::ClipmapBounds(const ClipmapBoundsDescritor& desc)
+    ClipmapBounds::ClipmapBounds(const ClipmapBoundsDescriptor& desc)
         : m_size(desc.m_size)
         , m_halfSize(desc.m_size >> 1)
         , m_margin(AZ::GetMax<uint32_t>(desc.m_margin, 1))
         , m_scale(desc.m_scale)
         , m_rcpScale(1.0f / desc.m_scale)
     {
-        AZ_Assert(m_size % m_margin == 0, "ClipmapBounds: m_size should be a mulitple of m_margin")
+        AZ_Error("ClipmapBounds", m_scale > 0.0f, "ClipmapBounds should have a scale that is greater than 0.0f.");
+        m_scale = AZ::GetMax(m_scale, AZ::Constants::FloatEpsilon);
 
         // recalculate m_center
         UpdateCenter(desc.m_center);
@@ -50,19 +51,20 @@ namespace Terrain
         {
             int32_t diff = centerDim - snappedCenterDim;
             
-            // Force rounding down for negatives
+            int32_t scaledCenterDim = (centerDim / m_margin);
             if (centerDim < 0)
             {
-                centerDim -= m_margin;
+                // Force rounding down for negatives
+                scaledCenterDim--;
             }
 
             if (diff >= m_margin)
             {
-                snappedCenterDim = (centerDim / m_margin) * m_margin;
+                snappedCenterDim = scaledCenterDim * m_margin;
             }
             if (diff < -m_margin)
             {
-                snappedCenterDim = ((centerDim / m_margin) + 1) * m_margin;
+                snappedCenterDim = (scaledCenterDim + 1) * m_margin;
             }
         };
         UpdateDim(newCenter.m_x, updatedCenter.m_x);
@@ -194,7 +196,7 @@ namespace Terrain
         minBoundary.m_x = (minCorner.m_x / m_size - (minCorner.m_x < 0 ? 1 : 0)) * m_size;
         minBoundary.m_y = (minCorner.m_y / m_size - (minCorner.m_y < 0 ? 1 : 0)) * m_size;
 
-        Aabb2i blTile = Aabb2i(minBoundary, minBoundary + m_size);
+        Aabb2i bottomLeftTile = Aabb2i(minBoundary, minBoundary + m_size);
         Aabb2i localBounds = GetLocalBounds();
         
         // For each of the 4 quadrants:
@@ -212,10 +214,10 @@ namespace Terrain
             }
         };
 
-        calculateQuadrant(blTile);
-        calculateQuadrant(blTile + Vector2i(m_size, 0));
-        calculateQuadrant(blTile + Vector2i(0, m_size));
-        calculateQuadrant(blTile + Vector2i(m_size, m_size));
+        calculateQuadrant(bottomLeftTile);
+        calculateQuadrant(bottomLeftTile + Vector2i(m_size, 0));
+        calculateQuadrant(bottomLeftTile + Vector2i(0, m_size));
+        calculateQuadrant(bottomLeftTile + Vector2i(m_size, m_size));
         
         return transformedRegions;
     }
