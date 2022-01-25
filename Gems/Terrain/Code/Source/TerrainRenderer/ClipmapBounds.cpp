@@ -218,44 +218,6 @@ namespace Terrain
         calculateQuadrant(blTile + Vector2i(m_size, m_size));
         
         return transformedRegions;
-
-        /*
-        Vector2i minCorner = m_modCenter - m_halfSize;
-        
-        Vector2i blOffset = {
-            m_modCenter.m_x < m_halfSize ? -m_halfSize : m_halfSize,
-            m_modCenter.m_y < m_halfSize ? -m_halfSize : m_halfSize
-        };
-        blOffset -= m_modCenter;
-
-        AZStd::vector<ClipmapBoundsRegion> update;
-        Aabb2i localBounds = GetLocalBounds();
-
-        // For each of the 4 quadrants:
-        auto calculateQuadrant = [&](Vector2i quadrantOffset)
-        {
-            //Aabb2i offsetUpdateArea = region + minCorner + quadrantOffset;
-            Aabb2i offsetUpdateArea = region + quadrantOffset;
-            Aabb2i updateSectionBounds = localBounds.GetClamped(offsetUpdateArea);
-            if (updateSectionBounds.IsValid())
-            {
-                update.push_back(ClipmapBoundsRegion({
-                    AZ::Aabb::CreateFromMinMaxValues(
-                        updateSectionBounds.m_min.m_x * m_scale, updateSectionBounds.m_min.m_y * m_scale, 0.0f,
-                        updateSectionBounds.m_max.m_x * m_scale, updateSectionBounds.m_max.m_y * m_scale, 0.0f
-                    ),
-                    updateSectionBounds - localBounds.m_min
-                }));
-            }
-        };
-        
-        calculateQuadrant(blOffset);
-        calculateQuadrant(blOffset + Vector2i(m_size, 0));
-        calculateQuadrant(blOffset + Vector2i(0, m_size));
-        calculateQuadrant(blOffset + Vector2i(m_size, m_size));
-
-        return update;
-        */
     }
 
     AZ::Aabb ClipmapBounds::GetWorldBounds()
