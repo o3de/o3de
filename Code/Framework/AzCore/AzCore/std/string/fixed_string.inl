@@ -325,14 +325,14 @@ namespace AZStd
     template<class Element, size_t MaxElementCount, class Traits>
     template<class InputIt>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::append(InputIt first, InputIt last)
-        -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
+        -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
     {
-        if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+        if constexpr (contiguous_iterator<InputIt>
             && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
         {
             return append(AZStd::to_address(first), AZStd::distance(first, last));
         }
-        else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+        else if constexpr (forward_iterator<InputIt>)
         {
             // Input Iterator pointer type doesn't match the const_pointer type
             // So the elements need to be appended one by one into the buffer
@@ -461,14 +461,14 @@ namespace AZStd
     template<class Element, size_t MaxElementCount, class Traits>
     template<class InputIt>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::assign(InputIt first, InputIt last)
-        -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
+        -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
     {
-        if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+        if constexpr (contiguous_iterator<InputIt>
             && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
         {
             return assign(AZStd::to_address(first), AZStd::distance(first, last));
         }
-        else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+        else if constexpr (forward_iterator<InputIt>)
         {
             // Input Iterator pointer type doesn't match the const_pointer type
             // So the elements need to be assigned one by one into the buffer
@@ -627,15 +627,15 @@ namespace AZStd
     template<class Element, size_t MaxElementCount, class Traits>
     template<class InputIt>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::insert(const_iterator insertPos,
-        InputIt first, InputIt last)-> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>
+        InputIt first, InputIt last)-> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>
     {   // insert [_First, _Last) at _Where
         size_type insertOffset = AZStd::distance(cbegin(), insertPos);
-        if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+        if constexpr (contiguous_iterator<InputIt>
             && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
         {
             insert(insertOffset, AZStd::to_address(first), AZStd::distance(first, last));
         }
-        else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+        else if constexpr (forward_iterator<InputIt>)
         {
             // Input Iterator pointer type doesn't match the const_pointer type
             // So the elements need to be inserted one by one into the buffer
@@ -927,14 +927,14 @@ namespace AZStd
     template<class Element, size_t MaxElementCount, class Traits>
     template<class InputIt>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace(const_iterator first, const_iterator last,
-        InputIt replaceFirst, InputIt replaceLast) -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
+        InputIt replaceFirst, InputIt replaceLast) -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
     {   // replace [first, last) with [replaceFirst,replaceLast)
-        if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+        if constexpr (contiguous_iterator<InputIt>
             && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
         {
             return replace(first, last, AZStd::to_address(replaceFirst), AZStd::distance(replaceFirst, replaceLast));
         }
-        else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+        else if constexpr (forward_iterator<InputIt>)
         {
             // Input Iterator pointer type doesn't match the const_pointer type
             // So the elements need to be appended one by one into the buffer

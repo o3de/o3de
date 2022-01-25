@@ -130,11 +130,11 @@ namespace AZ
             }
         }
 
-        static void ProcessUVsForSubmesh(size_t vertexCount, size_t atomVertexBufferOffset, [[maybe_unused]] size_t emfxSourceVertexStart, const AZ::Vector2* emfxSourceUVs, AZStd::vector<float[2]>& uvBufferData)
+        static void ProcessUVsForSubmesh(size_t vertexCount, size_t atomVertexBufferOffset, [[maybe_unused]] size_t emfxSourceVertexStart, const AZ::Vector2* emfxSourceUVs, AZStd::vector<AZStd::array<float, 2>>& uvBufferData)
         {
             for (size_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
-                emfxSourceUVs[vertexIndex].StoreToFloat2(uvBufferData[atomVertexBufferOffset + vertexIndex]);
+                emfxSourceUVs[vertexIndex].StoreToFloat2(uvBufferData[atomVertexBufferOffset + vertexIndex].data());
             }
         }
 
@@ -175,7 +175,7 @@ namespace AZ
             const EMotionFX::Mesh* mesh,
             const EMotionFX::SubMesh* subMesh,
             size_t atomVertexBufferOffset,
-            AZStd::vector<uint32_t[MaxSupportedSkinInfluences / 2]>& blendIndexBufferData,
+            AZStd::vector<AZStd::array<uint32_t, MaxSupportedSkinInfluences / 2>>& blendIndexBufferData,
             AZStd::vector<AZStd::array<float, MaxSupportedSkinInfluences>>& blendWeightBufferData,
             bool hasClothData)
         {
@@ -310,9 +310,9 @@ namespace AZ
             AZStd::vector<PackedVector3f> normalBufferData;
             AZStd::vector<Vector4> tangentBufferData;
             AZStd::vector<PackedVector3f> bitangentBufferData;
-            AZStd::vector<uint32_t[MaxSupportedSkinInfluences / 2]> blendIndexBufferData;
+            AZStd::vector<AZStd::array<uint32_t, MaxSupportedSkinInfluences / 2>> blendIndexBufferData;
             AZStd::vector<AZStd::array<float, MaxSupportedSkinInfluences>> blendWeightBufferData;
-            AZStd::vector<float[2]> uvBufferData;
+            AZStd::vector<AZStd::array<float, 2>> uvBufferData;
 
             //
             // Process all LODs from the EMotionFX actor data.

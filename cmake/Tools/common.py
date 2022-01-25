@@ -122,9 +122,9 @@ def determine_engine_root(starting_path=None):
 
 def get_config_file_values(config_file_path, keys_to_extract):
     """
-    Read a lumberyard config file and extract specific keys if they are set
+    Read an o3de config file and extract specific keys if they are set
 
-    @param config_file_path:    The lumberyard config file to parse
+    @param config_file_path:    The o3de config file to parse
     @param keys_to_extract:     The specific keys to lookup the values if set
     @return: Dictionary of keys and its values (for matched keys)
     """

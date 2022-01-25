@@ -173,7 +173,7 @@ TEST_GAME_PROJECT_JSON_FORMAT = """
     "project_id": "{{4F3363D3-4A7C-47A6-B464-B21524771358}}",
 
     "android_settings" : {{
-        "package_name" : "com.lumberyard.yourgame",
+        "package_name" : "org.o3de.yourgame",
         "version_number" : 1,
         "version_name" : "1.0.0.0",
         "orientation" : "landscape"

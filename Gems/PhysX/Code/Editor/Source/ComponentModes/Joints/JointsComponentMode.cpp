@@ -24,47 +24,47 @@ namespace PhysX
 
     namespace SubModeData
     {
-        const AZ::Crc32 SwitchToTranslationSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtotranslationsubmode");
+        const AZ::Crc32 SwitchToTranslationSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtotranslationsubmode");
         static const char* TranslationTitle = "Switch to Position Mode";
         static const char* TranslationToolTip = "Position Mode - Change the position of the joint.";
 
-        const AZ::Crc32 SwitchToRotationSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtorotationsubmode");
+        const AZ::Crc32 SwitchToRotationSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtorotationsubmode");
         static const char* RotationTitle = "Switch to Rotation Mode";
         static const char* RotationToolTip = "Rotation Mode- Change the rotation of the joint.";
 
-        const AZ::Crc32 SwitchToMaxForceSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtomaxforce");
+        const AZ::Crc32 SwitchToMaxForceSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtomaxforce");
         static const char* MaxForceTitle = "Switch to Max Force Mode";
         static const char* MaxForceToolTip = "Max Force Mode - Change the maximum force allowed before the joint breaks.";
 
-        const AZ::Crc32 SwitchToMaxTorqueSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtomaxtorque");
+        const AZ::Crc32 SwitchToMaxTorqueSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtomaxtorque");
         static const char* MaxTorqueTitle = "Switch to Max Torque Mode";
         static const char* MaxTorqueToolTip = "Max Torque Mode - Change the maximum torque allowed before the joint breaks.";
 
-        const AZ::Crc32 SwitchToDampingSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtodamping");
+        const AZ::Crc32 SwitchToDampingSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtodamping");
         static const char* DampingTitle = "Switch to Damping Mode";
         static const char* DampingToolTip = "Damping Mode - Change the damping strength of the joint when beyond the limit.";
 
-        const AZ::Crc32 SwitchToStiffnessSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtostiffness");
+        const AZ::Crc32 SwitchToStiffnessSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtostiffness");
         static const char* StiffnessTitle = "Switch to Stiffness Mode";
         static const char* StiffnessToolTip = "Stiffness Mode - Change the stiffness strength of the joint when beyond the limit.";
 
-        const AZ::Crc32 SwitchToTwistLimitsSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtotwistlimits");
+        const AZ::Crc32 SwitchToTwistLimitsSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtotwistlimits");
         static const char* TwistLimitsTitle = "Switch to Twist Limits Mode";
         static const char* TwistLimitsToolTip = "Twist Limits Mode - Change the limits of the joint.";
 
-        const AZ::Crc32 SwitchToSwingLimitsSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtoswinglimits");
+        const AZ::Crc32 SwitchToSwingLimitsSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtoswinglimits");
         static const char* SwingLimitsTitle = "Switch to Swing Limits Mode";
         static const char* SwingLimitsToolTip = "Swing Limits Mode - Change the limits of the joint.";
 
-        const AZ::Crc32 SwitchToSnapPositionSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtosnapposition");
+        const AZ::Crc32 SwitchToSnapPositionSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtosnapposition");
         static const char* SnapPositionTitle = "Switch to Snap Position Mode";
         static const char* SnapPositionToolTip = "Snap Position Mode - Snap the position of the joint to another Entity.";
 
-        const AZ::Crc32 SwitchToSnapRotationSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.switchtosnaprotation");
+        const AZ::Crc32 SwitchToSnapRotationSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.switchtosnaprotation");
         static const char* SnapRotationTitle = "Switch to Snap Rotation Mode";
         static const char* SnapRotationToolTip = "Snap Rotation Mode - Snap the rotation of the joint toward another Entity.";
 
-        const AZ::Crc32 ResetSubMode = AZ_CRC_CE("com.o3de.action.physx.joints.resetsubmode");
+        const AZ::Crc32 ResetSubMode = AZ_CRC_CE("org.o3de.action.physx.joints.resetsubmode");
         static const char* ResetTitle = "Reset Current Mode";
         static const char* ResetToolTip = "Reset changes made during this mode edit.";
 
