@@ -27,10 +27,10 @@ namespace PhysX
     namespace
     {
         //! Uri's for shortcut actions.
-        const AZ::Crc32 SetDimensionsSubModeActionUri = AZ_CRC("org.o3de.action.physx.setdimensionssubmode", 0x508b1781);
-        const AZ::Crc32 SetOffsetSubModeActionUri = AZ_CRC("org.o3de.action.physx.setoffsetsubmode", 0x777ac743);
-        const AZ::Crc32 SetRotationSubModeActionUri = AZ_CRC("org.o3de.action.physx.setrotationsubmode", 0xf1a8f3ff);
-        const AZ::Crc32 ResetSubModeActionUri = AZ_CRC("org.o3de.action.physx.resetsubmode", 0x599d1594);
+        const AZ::Crc32 SetDimensionsSubModeActionUri = AZ_CRC_CE("org.o3de.action.physx.setdimensionssubmode");
+        const AZ::Crc32 SetOffsetSubModeActionUri = AZ_CRC_CE("org.o3de.action.physx.setoffsetsubmode");
+        const AZ::Crc32 SetRotationSubModeActionUri = AZ_CRC_CE("org.o3de.action.physx.setrotationsubmode");
+        const AZ::Crc32 ResetSubModeActionUri = AZ_CRC_CE("org.o3de.action.physx.resetsubmode");
     } // namespace
 
     AZ_CLASS_ALLOCATOR_IMPL(ColliderComponentMode, AZ::SystemAllocator, 0);
