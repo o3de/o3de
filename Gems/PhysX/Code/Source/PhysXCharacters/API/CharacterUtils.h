@@ -49,6 +49,18 @@ namespace PhysX
             //! @param forceLimit The upper limit on the force the joint can apply to reach its target.
             //! @return The created joint drive.
             physx::PxD6JointDrive CreateD6JointDrive(float strength, float dampingRatio, float forceLimit);
+
+            //! Contains information about a node in a hierarchy and how deep it is in the hierarchy relative to the root.
+            struct DepthData
+            {
+                int m_depth = -1; //!< Depth of the joint in the hierarchy. The root has depth 0, its children depth 1, and so on.
+                size_t m_index = 0; //<! Index of the joint in the hierarchy.
+            };
+
+            //! Given information about the parent nodes for each node in a hierarchy, computes how deep each node is in the
+            //! hierarchy relative to the root level. Assumes that the input parent index data corresponds to a tree structure, i.e.
+            //! does not contain any cycles.
+            AZStd::vector<DepthData> ComputeHierarchyDepths(const AZStd::vector<size_t>& parentIndices);
         } // namespace Characters
     } // namespace Utils
 } // namespace PhysX

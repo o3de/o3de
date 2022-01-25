@@ -2,26 +2,31 @@
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "PrecompiledShaderAssetSourceData",
-    "ClassData":
-    {
+    "ClassData": {
         "ShaderAssetFileName": "diffuseprobegridborderupdaterow.azshader",
-        "PlatformIdentifiers": 
-        [
-            "pc", "linux"
+        "PlatformIdentifiers": [
+            "pc",
+            "linux"
         ],
-        "RootShaderVariantAssets":
+        "Supervariants": 
         [
             {
-                "APIName": "dx12",
-                "RootShaderVariantAssetFileName": "diffuseprobegridborderupdaterow_dx12_0.azshadervariant"
-            },
-            {
-                "APIName": "vulkan",
-                "RootShaderVariantAssetFileName": "diffuseprobegridborderupdaterow_vulkan_0.azshadervariant"
-            },
-            {
-                "APIName": "null",
-                "RootShaderVariantAssetFileName": "diffuseprobegridborderupdaterow_null_0.azshadervariant"
+                "Name": "",
+                "RootShaderVariantAssets": 
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridborderupdaterow_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridborderupdaterow_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridborderupdaterow_null_0.azshadervariant"
+                    }
+                ]
             }
         ]
     }

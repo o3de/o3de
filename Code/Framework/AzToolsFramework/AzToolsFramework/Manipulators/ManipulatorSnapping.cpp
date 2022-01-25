@@ -110,30 +110,6 @@ namespace AzToolsFramework
         return unsnappedPosition + CalculateSnappedOffset(unsnappedPosition, snapAxes, snapAxesCount, size);
     }
 
-    AZ::Vector3 CalculateSnappedTerrainPosition(
-        const AZ::Vector3& worldSurfacePosition, const AZ::Transform& worldFromLocal, const int viewportId, const float size)
-    {
-        const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
-        const AZ::Vector3 localSurfacePosition = localFromWorld.TransformPoint(worldSurfacePosition);
-
-        // snap in xy plane
-        AZ::Vector3 localSnappedSurfacePosition = localSurfacePosition +
-            CalculateSnappedOffset(localSurfacePosition, AZ::Vector3::CreateAxisX(), size) +
-            CalculateSnappedOffset(localSurfacePosition, AZ::Vector3::CreateAxisY(), size);
-
-        // find terrain height at xy snapped location
-        float terrainHeight = 0.0f;
-        ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
-            terrainHeight, viewportId, &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::TerrainHeight,
-            Vector3ToVector2(worldFromLocal.TransformPoint(localSnappedSurfacePosition)));
-
-        // set snapped z value to terrain height
-        AZ::Vector3 localTerrainHeight = localFromWorld.TransformPoint(AZ::Vector3(0.0f, 0.0f, terrainHeight));
-        localSnappedSurfacePosition.SetZ(localTerrainHeight.GetZ());
-
-        return localSnappedSurfacePosition;
-    }
-
     bool GridSnapping(const int viewportId)
     {
         bool snapping = false;
@@ -208,6 +184,10 @@ namespace AzToolsFramework
         const float halfGridSquareCount = float(gridSquareCount) * 0.5f;
         const float halfGridSize = halfGridSquareCount * squareSize;
         const float fadeLineLength = cl_viewportFadeLineDistanceScale * squareSize;
+
+        // ensure AuxGeomDraw::OpacityType::Translucent render state is set
+        debugDisplay.SetAlpha(0.5f);
+
         for (size_t lineIndex = 0; lineIndex <= gridSquareCount; ++lineIndex)
         {
             const float lineOffset = -halfGridSize + (lineIndex * squareSize);

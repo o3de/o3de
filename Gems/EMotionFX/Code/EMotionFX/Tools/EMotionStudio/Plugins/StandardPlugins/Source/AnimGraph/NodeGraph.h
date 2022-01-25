@@ -56,8 +56,8 @@ namespace EMStudio
         void SetScrollOffset(const QPoint& offset)     { m_scrollOffset = offset; }
         void SetScalePivot(const QPoint& pivot)        { m_scalePivot = pivot; }
         float GetLowestScale() const                   { return sLowestScale; }
-        bool GetIsCreatingConnection() const           { return (m_conNode && m_relinkConnection == nullptr); }
-        bool GetIsRelinkingConnection() const          { return (m_conNode && m_relinkConnection); }
+        bool GetIsCreatingConnection() const;
+        bool GetIsRelinkingConnection() const;
         void SetCreateConnectionIsValid(bool isValid)  { m_conIsValid = isValid; }
         bool GetIsCreateConnectionValid() const        { return m_conIsValid; }
         void SetTargetPort(NodePort* port)             { m_targetPort = port; }
@@ -79,7 +79,7 @@ namespace EMStudio
         bool GetReplaceTransitionValid() const                              { return m_replaceTransitionValid; }
         void RenderReplaceTransition(QPainter& painter);
 
-        GraphNode* GetCreateConnectionNode()                   { return m_conNode; }
+        GraphNode* GetCreateConnectionNode() const;
         NodeConnection* GetRelinkConnection()                  { return m_relinkConnection; }
         AZ::u16 GetCreateConnectionPortNr() const              { return m_conPortNr; }
         bool GetCreateConnectionIsInputPort() const            { return m_conIsInputPort; }
@@ -199,7 +199,7 @@ namespace EMStudio
         QPoint                      m_conEndOffset;
         AZ::u16                     m_conPortNr;
         bool                        m_conIsInputPort;
-        GraphNode*                  m_conNode;       // nullptr when no connection is being created
+        QModelIndex                 m_conNodeIndex;
         NodeConnection*             m_relinkConnection; // nullptr when not relinking a connection
         NodePort*                   m_conPort;
         NodePort*                   m_targetPort;

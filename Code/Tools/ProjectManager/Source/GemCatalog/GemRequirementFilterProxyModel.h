@@ -25,16 +25,13 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        GemRequirementFilterProxyModel(GemModel* sourceModel, const QVector<QModelIndex>& addedGems, QObject* parent = nullptr);
+        GemRequirementFilterProxyModel(GemModel* sourceModel, QObject* parent = nullptr);
 
         AzQtComponents::SelectionProxyModel* GetSelectionModel() const { return m_selectionProxyModel; }
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
 
     private:
-        GemModel* m_sourceModel = nullptr;
         AzQtComponents::SelectionProxyModel* m_selectionProxyModel = nullptr;
-
-        QVector<QModelIndex> m_addedGems;
     };
 } // namespace O3DE::ProjectManager

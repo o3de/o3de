@@ -15,7 +15,6 @@
 #if defined(IMGUI_ENABLED)
 #include <ImGuiBus.h>
 #include <imgui/imgui.h>
-#include <Atom/Utils/ImGuiCpuProfiler.h>
 #include <Atom/Utils/ImGuiGpuProfiler.h>
 #include <Atom/Utils/ImGuiPassTree.h>
 #include <Atom/Utils/ImGuiShaderMetrics.h>
@@ -62,9 +61,6 @@ namespace AtomImGuiTools
 
         AZ::Render::ImGuiGpuProfiler m_imguiGpuProfiler;
         bool m_showGpuProfiler = false;
-
-        AZ::Render::ImGuiCpuProfiler m_imguiCpuProfiler;
-        bool m_showCpuProfiler = false;
 
         AZ::Render::ImGuiTransientAttachmentProfiler m_imguiTransientAttachmentProfiler;
         bool m_showTransientAttachmentProfiler = false;

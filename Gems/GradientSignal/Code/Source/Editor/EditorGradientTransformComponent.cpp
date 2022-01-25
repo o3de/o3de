@@ -55,9 +55,13 @@ namespace GradientSignal
 
     void EditorGradientTransformComponent::UpdateFromShape()
     {
-        // Update config from shape on game component, copy that back to our config
-        m_component.UpdateFromShape();
-        m_component.WriteOutConfig(&m_configuration);
-        SetDirty();
+        if (m_runtimeComponentActive)
+        {
+            // Update config from shape on game component, copy that back to our config.
+            bool notifyDependentsOfChange = true;
+            m_component.UpdateFromShape(notifyDependentsOfChange);
+            m_component.WriteOutConfig(&m_configuration);
+            SetDirty();
+        }
     }
 } //namespace GradientSignal

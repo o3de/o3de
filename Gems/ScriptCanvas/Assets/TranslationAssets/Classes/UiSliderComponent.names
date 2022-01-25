@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "UiSliderComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UiSliderComponent"
+            }
+        }
+    ]
+}

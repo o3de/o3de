@@ -19,8 +19,11 @@ namespace AZ
         nodeStack.push_back(m_dataContainer);
 
         SerializeContext::EnumerateInstanceCallContext callContext(
-            AZStd::bind(&DataOverlayTarget::ElementBegin, this, &nodeStack, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3),
-            AZStd::bind(&DataOverlayTarget::ElementEnd, this, &nodeStack),
+            [this, &nodeStack](void* instancePointer, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement)->bool
+            {
+                return ElementBegin(&nodeStack, instancePointer, classData, classElement);
+            },
+            [this, &nodeStack]()->bool { return ElementEnd(&nodeStack); },
             m_sc,
             SerializeContext::ENUM_ACCESS_FOR_READ,
             m_errorLogger

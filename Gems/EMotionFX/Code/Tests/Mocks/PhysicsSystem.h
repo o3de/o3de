@@ -46,6 +46,7 @@ namespace Physics
         }
         MOCK_METHOD2(CreateShape, AZStd::shared_ptr<Physics::Shape>(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration));
         MOCK_METHOD1(ReleaseNativeMeshObject, void(void* nativeMeshObject));
+        MOCK_METHOD1(ReleaseNativeHeightfieldObject, void(void* nativeMeshObject));
         MOCK_METHOD1(CreateMaterial, AZStd::shared_ptr<Physics::Material>(const Physics::MaterialConfiguration& materialConfiguration));
         MOCK_METHOD3(CookConvexMeshToFile, bool(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount));
         MOCK_METHOD3(CookConvexMeshToMemory, bool(const AZ::Vector3* vertices, AZ::u32 vertexCount, AZStd::vector<AZ::u8>& result));

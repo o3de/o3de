@@ -8,6 +8,7 @@
 
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 
@@ -21,16 +22,26 @@ namespace Multiplayer
         m_netEntityIdMap[entity->GetId()] = netEntityId;
     }
 
+    void NetworkEntityTracker::RegisterNetBindComponent(AZ::Entity* entity, NetBindComponent* component)
+    {
+        m_netBindingMap[entity] = component;
+    }
+
+    void NetworkEntityTracker::UnregisterNetBindComponent(NetBindComponent* component)
+    {
+        m_netBindingMap.erase(component->GetEntity());
+    }
+
     NetworkEntityHandle NetworkEntityTracker::Get(NetEntityId netEntityId)
     {
         AZ::Entity* entity = GetRaw(netEntityId);
-        return NetworkEntityHandle(entity, netEntityId, this);
+        return NetworkEntityHandle(entity, this);
     }
 
     ConstNetworkEntityHandle NetworkEntityTracker::Get(NetEntityId netEntityId) const
     {
         AZ::Entity* entity = GetRaw(netEntityId);
-        return ConstNetworkEntityHandle(entity, netEntityId, this);
+        return ConstNetworkEntityHandle(entity, this);
     }
 
     NetEntityId NetworkEntityTracker::Get(const AZ::EntityId& entityId) const

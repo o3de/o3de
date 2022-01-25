@@ -68,9 +68,6 @@ namespace ScriptCanvasEditor
 
                             if (currentSlotId == slotId)
                             {
-                                GraphCanvas::SlotRequestBus::Event(graphCanvasId, &GraphCanvas::SlotRequests::SetTranslationKeyedName, TranslationHelper::GetEBusSenderBusIdNameKey());
-                                GraphCanvas::SlotRequestBus::Event(graphCanvasId, &GraphCanvas::SlotRequests::SetTranslationKeyedTooltip, TranslationHelper::GetEBusSenderBusIdTooltipKey());
-
                                 break;
                             }
                         }

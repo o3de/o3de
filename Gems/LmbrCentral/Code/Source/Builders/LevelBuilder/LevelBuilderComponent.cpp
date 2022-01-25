@@ -31,7 +31,7 @@ namespace LevelBuilder
         builderDescriptor.m_patterns.emplace_back(
             AssetBuilderSDK::AssetBuilderPattern(".*\\/level\\.pak$", AssetBuilderSDK::AssetBuilderPattern::PatternType::Regex));
         builderDescriptor.m_busId = azrtti_typeid<LevelBuilderWorker>();
-        builderDescriptor.m_version = 8;
+        builderDescriptor.m_version = 9;
         builderDescriptor.m_createJobFunction =
             AZStd::bind(&LevelBuilderWorker::CreateJobs, &m_levelBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction =

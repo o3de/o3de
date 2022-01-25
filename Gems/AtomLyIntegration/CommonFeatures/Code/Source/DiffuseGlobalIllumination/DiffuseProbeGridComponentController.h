@@ -35,19 +35,18 @@ namespace AZ
             float m_ambientMultiplier = DefaultDiffuseProbeGridAmbientMultiplier;
             float m_viewBias = DefaultDiffuseProbeGridViewBias;
             float m_normalBias = DefaultDiffuseProbeGridNormalBias;
+            DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
 
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
 
             AZStd::string m_bakedIrradianceTextureRelativePath;
             AZStd::string m_bakedDistanceTextureRelativePath;
-            AZStd::string m_bakedRelocationTextureRelativePath;
-            AZStd::string m_bakedClassificationTextureRelativePath;
+            AZStd::string m_bakedProbeDataTextureRelativePath;
 
             Data::Asset<RPI::StreamingImageAsset> m_bakedIrradianceTextureAsset;
             Data::Asset<RPI::StreamingImageAsset> m_bakedDistanceTextureAsset;
-            Data::Asset<RPI::StreamingImageAsset> m_bakedRelocationTextureAsset;
-            Data::Asset<RPI::StreamingImageAsset> m_bakedClassificationTextureAsset;
+            Data::Asset<RPI::StreamingImageAsset> m_bakedProbeDataTextureAsset;
 
             AZ::u64 m_entityId{ EntityId::InvalidEntityId };
         };
@@ -100,6 +99,7 @@ namespace AZ
             void SetAmbientMultiplier(float ambientMultiplier);
             void SetViewBias(float viewBias);
             void SetNormalBias(float normalBias);
+            void SetNumRaysPerProbe(const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe);
             void SetEditorMode(DiffuseProbeGridMode editorMode);
             void SetRuntimeMode(DiffuseProbeGridMode runtimeMode);
 

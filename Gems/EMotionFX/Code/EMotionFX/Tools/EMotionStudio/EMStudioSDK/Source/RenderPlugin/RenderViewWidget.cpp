@@ -155,12 +155,12 @@ namespace EMStudio
             cameraMenu->addAction("Reset Camera",      [this]() { this->OnResetCamera(); });
 
             QAction* showSelectedAction = cameraMenu->addAction("Show Selected", this, &RenderViewWidget::OnShowSelected);
-            showSelectedAction->setShortcut(Qt::Key_S);
+            showSelectedAction->setShortcut(QKeySequence(Qt::Key_S + Qt::SHIFT));
             GetMainWindow()->GetShortcutManager()->RegisterKeyboardShortcut(showSelectedAction, RenderPlugin::s_renderWindowShortcutGroupName, true);
             addAction(showSelectedAction);
 
             QAction* showEntireSceneAction = cameraMenu->addAction("Show Entire Scene", this, &RenderViewWidget::OnShowEntireScene);
-            showEntireSceneAction->setShortcut(Qt::Key_A);
+            showEntireSceneAction->setShortcut(QKeySequence(Qt::Key_A + Qt::SHIFT));
             GetMainWindow()->GetShortcutManager()->RegisterKeyboardShortcut(showEntireSceneAction, RenderPlugin::s_renderWindowShortcutGroupName, true);
             addAction(showEntireSceneAction);
 

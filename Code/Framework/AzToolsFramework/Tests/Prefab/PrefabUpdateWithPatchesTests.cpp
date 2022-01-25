@@ -68,7 +68,7 @@ namespace UnitTest
         // Create a car with 0 entities and 1 axle instance.
         AZStd::unique_ptr<Instance> axleUnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance> carInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(axleUnderCar) ), CarPrefabMockFilePath);
+            MakeInstanceList(AZStd::move(axleUnderCar)), CarPrefabMockFilePath);
         const TemplateId carTemplateId = carInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         PrefabDom& carTemplateDom = m_prefabSystemComponent->FindTemplateDom(carTemplateId);

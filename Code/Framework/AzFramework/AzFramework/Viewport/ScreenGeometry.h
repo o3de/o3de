@@ -10,6 +10,7 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/base.h>
 
@@ -26,7 +27,7 @@ namespace AzFramework
         AZ_TYPE_INFO(ScreenPoint, "{8472B6C2-527F-44FC-87F8-C226B1A57A97}");
         ScreenPoint() = default;
 
-        ScreenPoint(int x, int y)
+        constexpr ScreenPoint(int x, int y)
             : m_x(x)
             , m_y(y)
         {
@@ -45,7 +46,7 @@ namespace AzFramework
         AZ_TYPE_INFO(ScreenVector, "{1EAA2C62-8FDB-4A28-9FE3-1FA4F1418894}");
         ScreenVector() = default;
 
-        ScreenVector(int x, int y)
+        constexpr ScreenVector(int x, int y)
             : m_x(x)
             , m_y(y)
         {
@@ -53,6 +54,22 @@ namespace AzFramework
 
         int m_x; //!< X screen delta.
         int m_y; //!< Y screen delta.
+    };
+
+    //! A wrapper around a screen width and height.
+    struct ScreenSize
+    {
+        AZ_TYPE_INFO(ScreenSize, "{26D28916-6E8E-44B8-83F9-C44BCDA370E2}");
+        ScreenSize() = default;
+
+        constexpr ScreenSize(int width, int height)
+            : m_width(width)
+            , m_height(height)
+        {
+        }
+
+        int m_width; //!< Screen size width.
+        int m_height; //!< Screen size height.
     };
 
     void ScreenGeometryReflect(AZ::ReflectContext* context);
@@ -138,6 +155,16 @@ namespace AzFramework
         return !operator==(lhs, rhs);
     }
 
+    inline const bool operator==(const ScreenSize& lhs, const ScreenSize& rhs)
+    {
+        return lhs.m_width == rhs.m_width && lhs.m_height == rhs.m_height;
+    }
+
+    inline const bool operator!=(const ScreenSize& lhs, const ScreenSize& rhs)
+    {
+        return !operator==(lhs, rhs);
+    }
+
     inline ScreenVector& operator*=(ScreenVector& lhs, const float rhs)
     {
         lhs.m_x = aznumeric_cast<int>(AZStd::lround(aznumeric_cast<float>(lhs.m_x) * rhs));
@@ -148,6 +175,20 @@ namespace AzFramework
     inline const ScreenVector operator*(const ScreenVector& lhs, const float rhs)
     {
         ScreenVector result{ lhs };
+        result *= rhs;
+        return result;
+    }
+
+    inline ScreenSize& operator*=(ScreenSize& lhs, const float rhs)
+    {
+        lhs.m_width = aznumeric_cast<int>(AZStd::lround(aznumeric_cast<float>(lhs.m_width) * rhs));
+        lhs.m_height = aznumeric_cast<int>(AZStd::lround(aznumeric_cast<float>(lhs.m_height) * rhs));
+        return lhs;
+    }
+
+    inline const ScreenSize operator*(const ScreenSize& lhs, const float rhs)
+    {
+        ScreenSize result{ lhs };
         result *= rhs;
         return result;
     }
@@ -163,9 +204,39 @@ namespace AzFramework
         return AZ::Vector2(aznumeric_cast<float>(screenPoint.m_x), aznumeric_cast<float>(screenPoint.m_y));
     }
 
+    //! Return an AZ::Vector3 from a ScreenPoint (including z/depth value, defaulting to 0.0f).
+    inline AZ::Vector3 Vector3FromScreenPoint(const ScreenPoint& screenPoint, const float z = 0.0f)
+    {
+        return AZ::Vector3(aznumeric_cast<float>(screenPoint.m_x), aznumeric_cast<float>(screenPoint.m_y), z);
+    }
+
     //! Return an AZ::Vector2 from a ScreenVector.
     inline AZ::Vector2 Vector2FromScreenVector(const ScreenVector& screenVector)
     {
         return AZ::Vector2(aznumeric_cast<float>(screenVector.m_x), aznumeric_cast<float>(screenVector.m_y));
+    }
+
+    //! Return an AZ::Vector2 from a ScreenSize.
+    inline AZ::Vector2 Vector2FromScreenSize(const ScreenSize& screenSize)
+    {
+        return AZ::Vector2(aznumeric_cast<float>(screenSize.m_width), aznumeric_cast<float>(screenSize.m_height));
+    }
+
+    //! Return a ScreenPoint from an AZ::Vector2.
+    inline ScreenPoint ScreenPointFromVector2(const AZ::Vector2& vector2)
+    {
+        return ScreenPoint(aznumeric_cast<int>(AZStd::lround(vector2.GetX())), aznumeric_cast<int>(AZStd::lround(vector2.GetY())));
+    }
+
+    //! Return a ScreenVector from an AZ::Vector2.
+    inline ScreenVector ScreenVectorFromVector2(const AZ::Vector2& vector2)
+    {
+        return ScreenVector(aznumeric_cast<int>(AZStd::lround(vector2.GetX())), aznumeric_cast<int>(AZStd::lround(vector2.GetY())));
+    }
+
+    //! Return a ScreenSize from an AZ::Vector2.
+    inline ScreenSize ScreenSizeFromVector2(const AZ::Vector2& vector2)
+    {
+        return ScreenSize(aznumeric_cast<int>(AZStd::lround(vector2.GetX())), aznumeric_cast<int>(AZStd::lround(vector2.GetY())));
     }
 } // namespace AzFramework

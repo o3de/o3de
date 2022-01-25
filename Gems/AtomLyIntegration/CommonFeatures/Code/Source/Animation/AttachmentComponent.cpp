@@ -6,10 +6,10 @@
  *
  */
 #include "AttachmentComponent.h"
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Entity.h>
-#include <MathConversion.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
 #include <LmbrCentral/Animation/AttachmentComponentBus.h>
 #include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
@@ -57,12 +57,16 @@ namespace AZ
                 behaviorContext->EBus<LmbrCentral::AttachmentComponentRequestBus>("AttachmentComponentRequestBus")
                     ->Event("Attach", &LmbrCentral::AttachmentComponentRequestBus::Events::Attach)
                     ->Event("Detach", &LmbrCentral::AttachmentComponentRequestBus::Events::Detach)
-                    ->Event("SetAttachmentOffset", &LmbrCentral::AttachmentComponentRequestBus::Events::SetAttachmentOffset);
+                    ->Event("SetAttachmentOffset", &LmbrCentral::AttachmentComponentRequestBus::Events::SetAttachmentOffset)
+                    ->Event("GetJointName", &LmbrCentral::AttachmentComponentRequestBus::Events::GetJointName)
+                    ->Event("GetTargetEntityId", &LmbrCentral::AttachmentComponentRequestBus::Events::GetTargetEntityId)
+                    ->Event("GetOffset", &LmbrCentral::AttachmentComponentRequestBus::Events::GetOffset);
 
                 behaviorContext->EBus<LmbrCentral::AttachmentComponentNotificationBus>("AttachmentComponentNotificationBus")
                     ->Handler<BehaviorAttachmentComponentNotificationBusHandler>();
             }
         }
+
 
         void AttachmentComponent::Reflect(AZ::ReflectContext* context)
         {

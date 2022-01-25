@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -25,7 +26,6 @@
 #include <Mocks/ISystemMock.h>
 #include <Mocks/IConsoleMock.h>
 #include <Mocks/ILogMock.h>
-#include <Mocks/ITimerMock.h>
 #include <Mocks/IConsoleMock.h>
 #include "IEditorMock.h"
 
@@ -80,7 +80,7 @@ namespace EditorPythonBindingsUnitTests
     };
 
     class EditorPythonBindingsFixture
-        : public testing::Test
+        : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -88,7 +88,6 @@ namespace EditorPythonBindingsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-            appDesc.m_enableDrilling = false;
 
             m_app.Start(appDesc);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

@@ -28,24 +28,29 @@ namespace Multiplayer
                 ->Version(1);
         }
     }
+
     void MultiplayerDebugSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("MultiplayerDebugSystemComponent"));
     }
+
     void MultiplayerDebugSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         ;
     }
+
     void MultiplayerDebugSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatbile)
     {
         incompatbile.push_back(AZ_CRC_CE("MultiplayerDebugSystemComponent"));
     }
+
     void MultiplayerDebugSystemComponent::Activate()
     {
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
 #endif
     }
+
     void MultiplayerDebugSystemComponent::Deactivate()
     {
 #ifdef IMGUI_ENABLED
@@ -71,9 +76,11 @@ namespace Multiplayer
             ImGui::Checkbox("Networking Stats", &m_displayNetworkingStats);
             ImGui::Checkbox("Multiplayer Stats", &m_displayMultiplayerStats);
             ImGui::Checkbox("Multiplayer Entity Stats", &m_displayPerEntityStats);
+            ImGui::Checkbox("Multiplayer Hierarchy Debugger", &m_displayHierarchyDebugger);
             ImGui::EndMenu();
         }
     }
+
     void AccumulatePerSecondValues(const MultiplayerStats& stats, const MultiplayerStats::Metric& metric, float& outCallsPerSecond, float& outBytesPerSecond)
     {
         uint64_t summedCalls = 0;
@@ -106,6 +113,7 @@ namespace Multiplayer
         ImGui::Text("%11.2f", bytesPerSecond);
         return open;
     }
+
     bool DrawSummaryRow(const char* name, const MultiplayerStats& stats)
     {
         const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateTotalPropertyUpdateSentMetrics();
@@ -122,6 +130,7 @@ namespace Multiplayer
         AccumulatePerSecondValues(stats, rpcsRecv, callsPerSecond, bytesPerSecond);
         return DrawMetricsRow(name, true, totalCalls, totalBytes, callsPerSecond, bytesPerSecond);
     }
+
     bool DrawComponentRow(const char* name, const MultiplayerStats& stats, NetComponentId netComponentId)
     {
         const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateComponentPropertyUpdateSentMetrics(netComponentId);
@@ -138,6 +147,7 @@ namespace Multiplayer
         AccumulatePerSecondValues(stats, rpcsRecv, callsPerSecond, bytesPerSecond);
         return DrawMetricsRow(name, true, totalCalls, totalBytes, callsPerSecond, bytesPerSecond);
     }
+
     void DrawComponentDetails(const MultiplayerStats& stats, NetComponentId netComponentId)
     {
         MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry();
@@ -376,7 +386,6 @@ namespace Multiplayer
             }
             ImGui::NewLine();
         }
-        ImGui::End();
     }
 
     void DrawMultiplayerStats()
@@ -427,7 +436,6 @@ namespace Multiplayer
             ImGui::EndTable();
             ImGui::NewLine();
         }
-        ImGui::End();
     }
 
     void MultiplayerDebugSystemComponent::OnImGuiUpdate()
@@ -438,6 +446,7 @@ namespace Multiplayer
             {
                 DrawNetworkingStats();
             }
+            ImGui::End();
         }
 
         if (m_displayMultiplayerStats)
@@ -446,6 +455,7 @@ namespace Multiplayer
             {
                 DrawMultiplayerStats();
             }
+            ImGui::End();
         }
 
         if (m_displayPerEntityStats)
@@ -463,6 +473,31 @@ namespace Multiplayer
                     m_reporter->OnImGuiUpdate();
                 }
             }
+            ImGui::End();
+        }
+
+        if (m_displayHierarchyDebugger)
+        {
+            if (ImGui::Begin("Multiplayer Hierarchy Debugger", &m_displayHierarchyDebugger))
+            {
+                if (m_hierarchyDebugger == nullptr)
+                {
+                    m_hierarchyDebugger = AZStd::make_unique<MultiplayerDebugHierarchyReporter>();
+                }
+
+                if (m_hierarchyDebugger)
+                {
+                    m_hierarchyDebugger->OnImGuiUpdate();
+                }
+            }
+            ImGui::End();
+        }
+        else
+        {
+            if (m_hierarchyDebugger)
+            {
+                m_hierarchyDebugger.reset();
+            }
         }
     }
 #endif
@@ -479,4 +514,3 @@ void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth)
         AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->HideEntityBandwidthDebugOverlay();
     }
 }
-

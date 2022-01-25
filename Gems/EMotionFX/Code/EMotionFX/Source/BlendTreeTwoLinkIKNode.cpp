@@ -189,11 +189,11 @@ namespace EMotionFX
     void BlendTreeTwoLinkIKNode::CalculateMatrix(const AZ::Vector3& goal, const AZ::Vector3& bendDir, AZ::Matrix3x3* outForward)
     {
         // the inverse matrix defines a coordinate system whose x axis contains P, so X = unit(P).
-        const AZ::Vector3 x = MCore::SafeNormalize(goal);
+        const AZ::Vector3 x = goal.GetNormalizedSafe(); 
 
         // the y axis of the inverse is perpendicular to P, so Y = unit( D - X(D . X) ).
         const float dot = bendDir.Dot(x);
-        const AZ::Vector3 y = MCore::SafeNormalize(bendDir - (dot * x));
+        const AZ::Vector3 y = (bendDir - (dot * x)).GetNormalizedSafe();
 
         // the z axis of the inverse is perpendicular to both X and Y, so Z = X x Y.
         const AZ::Vector3 z = x.Cross(y);
@@ -372,11 +372,11 @@ namespace EMotionFX
         if (m_relativeBendDir && !m_extractBendDir)
         {
             bendDir = actorInstance->GetWorldSpaceTransform().m_rotation.TransformVector(bendDir);
-            bendDir = MCore::SafeNormalize(bendDir);
+            bendDir.NormalizeSafe();
         }
         else
         {
-            bendDir = MCore::SafeNormalize(bendDir);
+            bendDir.NormalizeSafe();
         }
 
         // if end node rotation is enabled
@@ -470,8 +470,8 @@ namespace EMotionFX
         // calculate the differences between the current forward vector and the new one after IK
         AZ::Vector3 oldForward = globalTransformB.m_position - globalTransformA.m_position;
         AZ::Vector3 newForward = midPos - globalTransformA.m_position;
-        oldForward = MCore::SafeNormalize(oldForward);
-        newForward = MCore::SafeNormalize(newForward);
+        oldForward.NormalizeSafe();
+        newForward.NormalizeSafe();
 
         // perform a delta rotation to rotate into the new direction after IK
         float dotProduct = oldForward.Dot(newForward);
@@ -499,9 +499,8 @@ namespace EMotionFX
             oldForward = endEffectorNodePos - globalTransformB.m_position;
         }
 
-        oldForward = MCore::SafeNormalize(oldForward);
-        newForward = goal - globalTransformB.m_position;
-        newForward = MCore::SafeNormalize(newForward);
+        oldForward.NormalizeSafe();
+        newForward = (goal - globalTransformB.m_position).GetNormalizedSafe();
 
         // calculate the delta rotation
         dotProduct = oldForward.Dot(newForward);

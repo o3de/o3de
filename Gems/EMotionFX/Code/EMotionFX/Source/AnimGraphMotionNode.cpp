@@ -552,14 +552,6 @@ namespace EMotionFX
             motionNode->CreateMotionInstance(animGraphInstance->GetActorInstance(), this);
         }
 
-        // get the id of the currently used the motion set
-        MotionSet* motionSet = animGraphInstance->GetMotionSet();
-        uint32 motionSetID = MCORE_INVALIDINDEX32;
-        if (motionSet)
-        {
-            motionSetID = motionSet->GetID();
-        }
-
         // update the internally stored playback info
         motionNode->UpdatePlayBackInfo(animGraphInstance);
 
@@ -597,7 +589,7 @@ namespace EMotionFX
         // reset several settings to rewind the motion instance
         motionInstance->ResetTimes();
         motionInstance->SetIsFrozen(false);
-        SetSyncIndex(animGraphInstance, MCORE_INVALIDINDEX32);
+        SetSyncIndex(animGraphInstance, InvalidIndex);
         uniqueData->SetCurrentPlayTime(motionInstance->GetCurrentTime());
         uniqueData->SetDuration(motionInstance->GetDuration());
         uniqueData->SetPreSyncTime(uniqueData->GetCurrentPlayTime());

@@ -8,7 +8,7 @@
 #pragma once
 
 #ifndef AZ_PROFILE_MEMORY_ALLOC
-// No other profiler has defined the performance markers AZ_PROFILE_MEMORY_ALLOC (and friends), fall back to a Driller implementation (currently empty)
+// No other profiler has defined the performance markers AZ_PROFILE_MEMORY_ALLOC (and friends), fall back to current implementation (empty)
 #   define AZ_PROFILE_MEMORY_ALLOC(category, address, size, context)
 #   define AZ_PROFILE_MEMORY_ALLOC_EX(category, filename, lineNumber, address, size, context)
 #   define AZ_PROFILE_MEMORY_FREE(category, address)

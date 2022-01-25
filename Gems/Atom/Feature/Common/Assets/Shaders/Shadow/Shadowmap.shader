@@ -1,5 +1,5 @@
 {
-    "Source" : "Shadowmap",
+    "Source" : "Shadowmap.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }

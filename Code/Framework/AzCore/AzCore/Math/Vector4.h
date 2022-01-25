@@ -189,6 +189,13 @@ namespace AZ
         bool IsGreaterEqualThan(const Vector4& rhs) const;
         //! @}
 
+        //! Floor/Ceil/Round functions, operate on each component individually, result will be a new Vector4.
+        //! @{
+        Vector4 GetFloor() const;
+        Vector4 GetCeil() const;
+        Vector4 GetRound() const; // Ties to even (banker's rounding)
+        //! @}
+
         //! Min/Max functions, operate on each component individually, result will be a new Vector4.
         //! @{
         Vector4 GetMin(const Vector4& v) const;

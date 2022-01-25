@@ -8,8 +8,6 @@
 
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -119,7 +117,7 @@ namespace AZ
 
         ResultCode BufferPool::InitBuffer(const BufferInitRequest& initRequest)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateInitRequest(initRequest))
             {
@@ -168,7 +166,7 @@ namespace AZ
 
         ResultCode BufferPool::MapBuffer(const BufferMapRequest& request, BufferMapResponse& response)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateIsInitialized() || !ValidateNotProcessingFrame())
             {

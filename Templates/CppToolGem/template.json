@@ -1,0 +1,272 @@
+{
+    "template_name": "CppToolGem",
+    "template_restricted_platform_relative_path": "Templates/CppToolGem",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "CppToolGem",
+    "summary": "A gem template for a custom tool in C++ that gets registered with the Editor.",
+    "canonical_tags": [
+        "Template",
+        "Gem"
+    ],
+    "user_tags": [
+        "CppToolGem"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "CMakeLists.txt",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/${NameLower}_editor_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_tests_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_tests_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}Bus.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_android_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_shared_android_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/PAL_android.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_shared_linux_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/PAL_linux.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_mac_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_shared_mac_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/PAL_mac.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_windows_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/PAL_windows.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_ios_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_shared_ios_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/PAL_ios.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}.qrc",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}EditorModule.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}EditorSystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}EditorSystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}Module.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}SystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}SystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}Widget.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}Widget.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/toolbar_icon.svg",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Tests/${Name}EditorTest.cpp",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Tests/${Name}Test.cpp",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Android/android_gem.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Android/android_gem.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Linux/linux_gem.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Linux/linux_gem.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Mac/mac_gem.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Mac/mac_gem.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Windows/windows_gem.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/Windows/windows_gem.json",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/iOS/ios_gem.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Platform/iOS/ios_gem.json",
+            "isTemplated": false
+        },
+        {
+            "file": "gem.json",
+            "isTemplated": true
+        },
+        {
+            "file": "preview.png",
+            "isTemplated": false
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Assets"
+        },
+        {
+            "dir": "Code"
+        },
+        {
+            "dir": "Code/Include"
+        },
+        {
+            "dir": "Code/Include/${Name}"
+        },
+        {
+            "dir": "Code/Platform"
+        },
+        {
+            "dir": "Code/Platform/Android"
+        },
+        {
+            "dir": "Code/Platform/Linux"
+        },
+        {
+            "dir": "Code/Platform/Mac"
+        },
+        {
+            "dir": "Code/Platform/Windows"
+        },
+        {
+            "dir": "Code/Platform/iOS"
+        },
+        {
+            "dir": "Code/Source"
+        },
+        {
+            "dir": "Code/Tests"
+        },
+        {
+            "dir": "Platform"
+        },
+        {
+            "dir": "Platform/Android"
+        },
+        {
+            "dir": "Platform/Linux"
+        },
+        {
+            "dir": "Platform/Mac"
+        },
+        {
+            "dir": "Platform/Windows"
+        },
+        {
+            "dir": "Platform/iOS"
+        }
+    ]
+}

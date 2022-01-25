@@ -6,9 +6,10 @@
 #
 #
 
+include(AzFramework/feature_options.cmake)
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 ly_add_target(
     NAME AzFramework STATIC
@@ -29,20 +30,29 @@ ly_add_target(
             AZ::AzCore
         PUBLIC
             AZ::GridMate
-            3rdParty::zlib
             3rdParty::zstd
             3rdParty::lz4
 )
 
+set(LY_SEARCH_MODE_DEFINE $<$<BOOL:"${LY_ARCHIVE_FILE_SEARCH_MODE}">:LY_ARCHIVE_FILE_SEARCH_MODE=${LY_ARCHIVE_FILE_SEARCH_MODE}>)
+
+ly_add_source_properties(
+    SOURCES
+        AzFramework/Archive/ArchiveVars.cpp
+    PROPERTY COMPILE_DEFINITIONS
+    VALUES ${LY_SEARCH_MODE_DEFINE})
+
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
-    ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Tests/Platform/${PAL_PLATFORM_NAME})
+    o3de_pal_dir(test_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Tests/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
     ly_add_target(
         NAME AzFrameworkTestShared STATIC
         NAMESPACE AZ
         FILES_CMAKE
             Tests/framework_shared_tests_files.cmake
+            AzFramework/Physics/physics_mock_files.cmake
+            Tests/terrain_mock_files.cmake
         INCLUDE_DIRECTORIES
             PUBLIC
                 Tests
@@ -54,7 +64,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzTestShared
     )
-
+    
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
         ly_add_target(
@@ -76,10 +86,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAMESPACE AZ
             FILES_CMAKE
                 Tests/frameworktests_files.cmake
+                ${test_pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
-                    ${pal_dir}
+                    ${test_pal_dir}
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzFramework
@@ -92,6 +103,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_googletest(
             NAME AZ::AzFramework.Tests
         )
+
+        include(${test_pal_dir}/platform_specific_test_targets.cmake)
 
     endif()
 

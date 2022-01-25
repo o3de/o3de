@@ -16,7 +16,7 @@ namespace CertificateManager
 {
     static bool ReadFileIntoString(const char* filename, AZStd::vector<char>& outBuffer)
     {
-        AZStd::string certificatePath = "@assets@/certificates/";
+        AZStd::string certificatePath = "@products@/certificates/";
         certificatePath.append(filename);
 
         AZ::IO::FileIOBase* fileBase = AZ::IO::FileIOBase::GetInstance();
@@ -58,7 +58,7 @@ namespace CertificateManager
         return true;
     }
 
-    FileDataSource::FileDataSource() 
+    FileDataSource::FileDataSource()
         : m_privateKeyPEM(nullptr)
         , m_certificatePEM(nullptr)
         , m_certificateAuthorityCertPEM(nullptr)
@@ -73,13 +73,13 @@ namespace CertificateManager
         azfree(m_privateKeyPEM);
         azfree(m_certificatePEM);
         azfree(m_certificateAuthorityCertPEM);
-    }    
+    }
 
     void FileDataSource::ConfigureDataSource(const char* keyPath, const char* certPath, const char* caPath)
     {
         ConfigurePrivateKey(keyPath);
         ConfigureCertificate(certPath);
-        ConfigureCertificateAuthority(caPath);        
+        ConfigureCertificateAuthority(caPath);
     }
 
     void FileDataSource::ConfigurePrivateKey(const char* path)
@@ -107,7 +107,7 @@ namespace CertificateManager
         if (path != nullptr)
         {
             LoadGenericFile(path,m_certificatePEM);
-        }        
+        }
     }
 
     void FileDataSource::ConfigureCertificateAuthority(const char* path)
@@ -133,7 +133,7 @@ namespace CertificateManager
     {
         return m_certificateAuthorityCertPEM;
     }
-    
+
     bool FileDataSource::HasPublicKey() const
     {
         return m_certificatePEM != nullptr;
@@ -143,7 +143,7 @@ namespace CertificateManager
     {
         return m_certificatePEM;
     }
-    
+
     bool FileDataSource::HasPrivateKey() const
     {
         return m_privateKeyPEM != nullptr;

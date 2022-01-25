@@ -90,7 +90,7 @@ namespace AzToolsFramework
             typedef SharedThumbnailKey BusIdType;
 
             //! notify product thumbnail that the data is ready
-            virtual void ThumbnailRendered(QPixmap& thumbnailImage) = 0;
+            virtual void ThumbnailRendered(const QPixmap& thumbnailImage) = 0;
             //! notify product thumbnail that the thumbnail failed to render
             virtual void ThumbnailFailedToRender() = 0;
         };

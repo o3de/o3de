@@ -1,0 +1,147 @@
+{
+    "entries": [
+        {
+            "base": "NetBindComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Net Entity",
+                "category": "Multiplayer"
+            },
+            "methods": [
+                {
+                    "base": "IsNetEntityRoleAuthority",
+                    "context": "NetBindComponent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Net Entity Role Authority"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Net Entity Role Authority is invoked"
+                    },
+                    "details": {
+                        "name": "Is Role Authority",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Role Authority"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsNetEntityRoleAutonomous",
+                    "context": "NetBindComponent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsNetEntityRoleAutonomous"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Net Entity Role Autonomous is invoked"
+                    },
+                    "details": {
+                        "name": "Is Role Autonomous",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Role Autonomous"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsNetEntityRoleClient",
+                    "context": "NetBindComponent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Role Client"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Role Client is invoked"
+                    },
+                    "details": {
+                        "name": "Is Role Client",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Role Client"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsNetEntityRoleServer",
+                    "context": "NetBindComponent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Role Server"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Role Server is invoked"
+                    },
+                    "details": {
+                        "name": "Is Role Server",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Role Server"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -58,17 +58,9 @@ private:
     void OnClicked() override
     {
         QString tempValue("");
-        QString ext("");
-        if (m_path.isEmpty() == false)
+        if (!m_path.isEmpty() && !Path::GetExt(m_path).isEmpty())
         {
-            if (Path::GetExt(m_path) == "")
-            {
-                tempValue = "";
-            }
-            else
-            {
-                tempValue = m_path;
-            }
+            tempValue = m_path;
         }
 
         AssetSelectionModel selection;

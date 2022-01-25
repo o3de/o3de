@@ -87,7 +87,7 @@ class XmlString
 public:
     XmlString() {};
     XmlString(const char* str)
-        : AZStd::string(str) {};
+        : AZStd::string(str) {}
 
     size_t GetAllocatedMemory() const
     {
@@ -244,15 +244,6 @@ public:
     virtual void removeChild(const XmlNodeRef& node) = 0;
 
     // Summary:
-    //   Inserts child node.
-    virtual void insertChild(int nIndex, const XmlNodeRef& node) = 0;
-
-    // Summary:
-    //   Replaces a specified child with the passed one
-    //   Not supported by all node implementations
-    virtual void replaceChild(int nIndex, const XmlNodeRef& fromNode) = 0;
-
-    // Summary:
     //   Removes all child nodes.
     virtual void removeAllChilds() = 0;
 
@@ -283,13 +274,6 @@ public:
     //   Sets content of this node.
     virtual void setContent(const char* str) = 0;
 
-    // Summary:
-    //   Deep clone of this and all child xml nodes.
-    virtual XmlNodeRef clone() = 0;
-
-    // Summary:
-    //   Returns line number for XML tag.
-    virtual int getLine() const = 0;
     // Summary:
     //   Set line number in xml.
     virtual void setLine(int line) = 0;
@@ -385,20 +369,6 @@ public:
     }
 #endif
 
-    // Summary:
-    //   Copies children to this node from a given node.
-    //   Children are reference copied (shallow copy) and the children's parent is NOT set to this
-    //   node, but left with its original parent (which is still the parent)
-    virtual void shareChildren(const XmlNodeRef& fromNode) = 0;
-
-    // Summary:
-    //   Removes child node at known position.
-    virtual void deleteChildAt(int nIndex) = 0;
-
-    // Summary:
-    //   Returns XML of this node and sub nodes into tmpBuffer without XML checks (much faster)
-    virtual XmlString getXMLUnsafe(int level, [[maybe_unused]] char* tmpBuffer, [[maybe_unused]] uint32 sizeOfTmpBuffer) const { return getXML(level); }
-
     // Notes:
     //   Save in small memory chunks.
     virtual bool saveToFile(const char* fileName, size_t chunkSizeBytes, AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle) = 0;
@@ -413,28 +383,22 @@ public:
     bool getAttr(const char* key, long& value) const
     {
         int v;
-        if (getAttr(key, v))
-        {
-            value = static_cast<long>(v);
-            return true;
-        }
-        else
+        if (!getAttr(key, v))
         {
             return false;
         }
+        value = static_cast<long>(v);
+        return true;
     }
     bool getAttr(const char* key, unsigned long& value) const
     {
         int v;
-        if (getAttr(key, v))
-        {
-            value = static_cast<unsigned long>(v);
-            return true;
-        }
-        else
+        if (!getAttr(key, v))
         {
             return false;
         }
+        value = static_cast<unsigned long>(v);
+        return true;
     }
     void setAttr(const char* key, unsigned long value) { setAttr(key, (unsigned int)value); };
     void setAttr(const char* key, long value) { setAttr(key, (int)value); };
@@ -442,54 +406,42 @@ public:
     bool getAttr(const char* key, unsigned short& value) const
     {
         int v;
-        if (getAttr(key, v))
-        {
-            value = static_cast<unsigned short>(v);
-            return true;
-        }
-        else
+        if (!getAttr(key, v))
         {
             return false;
         }
+        value = static_cast<unsigned short>(v);
+        return true;
     }
     bool getAttr(const char* key, unsigned char& value) const
     {
         int v;
-        if (getAttr(key, v))
-        {
-            value = static_cast<unsigned char>(v);
-            return true;
-        }
-        else
+        if (!getAttr(key, v))
         {
             return false;
         }
+        value = static_cast<unsigned char>(v);
+        return true;
     }
     bool getAttr(const char* key, short& value) const
     {
         int v;
-        if (getAttr(key, v))
-        {
-            value = static_cast<short>(v);
-            return true;
-        }
-        else
+        if (!getAttr(key, v))
         {
             return false;
         }
+        value = static_cast<short>(v);
+        return true;
     }
     bool getAttr(const char* key, char& value) const
     {
         int v;
-        if (getAttr(key, v))
-        {
-            value = static_cast<char>(v);
-            return true;
-        }
-        else
+        if (!getAttr(key, v))
         {
             return false;
         }
+        value = static_cast<char>(v);
+        return true;
     }
     //##@}
 

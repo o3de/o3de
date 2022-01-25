@@ -105,7 +105,7 @@ namespace AudioControlBuilder
                         Audio::ATLXmlTags::ATLPreloadRequestTag, "preload request"));
                 }
 
-                // For each preload request in the control file, determine which config group is used for this platform and register each 
+                // For each preload request in the control file, determine which config group is used for this platform and register each
                 // bank listed in that preload request as a dependency.
                 while (preloadRequestNode)
                 {
@@ -163,7 +163,7 @@ namespace AudioControlBuilder
                     const AZ::rapidxml::xml_node<char>* configGroupNode = configGroupMap[configGroupName];
                     if (!configGroupNode)
                     {
-                        // The config group this platform uses isn't defined in the control file. This might be intentional, so just 
+                        // The config group this platform uses isn't defined in the control file. This might be intentional, so just
                         //  generate a warning and keep going to the next preload node.
                         AZ_TracePrintf("Audio Control Builder", "%s node for config group %s is not defined, so no banks are referenced.",
                             Audio::ATLXmlTags::ATLConfigGroupTag, configGroupName.c_str());
@@ -188,7 +188,7 @@ namespace AudioControlBuilder
                             }
 
                             // Prepend the bank name with the relative path to the wwise sounds folder to get relative path to the bank from
-                            //  the @assets@ alias and push that into the list of banks referenced.
+                            //  the @products@ alias and push that into the list of banks referenced.
                             AZStd::string soundsPrefix = Audio::Wwise::DefaultBanksPath;
                             banksReferenced.emplace_back(soundsPrefix + bankNameAttribute->value());
 
@@ -496,7 +496,7 @@ namespace AudioControlBuilder
             pathDependencies.emplace(relativeBankPath, AssetBuilderSDK::ProductPathDependencyType::ProductFile);
         }
 
-        // For each bank figure out what events are included in the bank, then run through every event referenced in the file and 
+        // For each bank figure out what events are included in the bank, then run through every event referenced in the file and
         //  make sure it is in the list gathered from the banks.
         const auto triggersNode = node->first_node(Audio::ATLXmlTags::TriggersNodeTag);
         if (!triggersNode)
@@ -520,7 +520,7 @@ namespace AudioControlBuilder
 
         AZStd::set<AZStd::string> wwiseEventsInReferencedBanks;
 
-        // Load all bankdeps files for all banks referenced and aggregate the list of events in those files. 
+        // Load all bankdeps files for all banks referenced and aggregate the list of events in those files.
         for (const AZStd::string& relativeBankPath : banksReferenced)
         {
             // Create the full path to the bankdeps file from the bank file.

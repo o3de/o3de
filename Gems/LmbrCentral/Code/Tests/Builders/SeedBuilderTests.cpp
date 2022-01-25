@@ -22,18 +22,20 @@ class SeedBuilderTests
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::IO::FixedMaxPath enginePath;
+        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-        
+
         m_app.Start(AZ::ComponentApplication::Descriptor());
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         const char* dir = m_app.GetExecutableFolder();
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", dir);
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", dir);
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
     }
 
@@ -49,7 +51,7 @@ TEST_F(SeedBuilderTests, SeedBuilder_SourceDependency_Valid)
 {
     DependencyBuilder::SeedBuilderWorker seedBuilderWorker;
     AssetBuilderSDK::CreateJobsRequest request;
-    constexpr char testSeedFolder[] = "@root@/../Gems/LmbrCentral/Code/Tests/Seed";
+    constexpr char testSeedFolder[] = "@engroot@/Gems/LmbrCentral/Code/Tests/Seed";
     char resolvedPath[AZ_MAX_PATH_LEN];
     AZ::IO::FileIOBase::GetInstance()->ResolvePath(testSeedFolder, resolvedPath, AZ_MAX_PATH_LEN);
     request.m_watchFolder = resolvedPath;
@@ -78,7 +80,7 @@ TEST_F(SeedBuilderTests, SeedBuilder_EmptySourceDependency_Valid)
 {
     DependencyBuilder::SeedBuilderWorker seedBuilderWorker;
     AssetBuilderSDK::CreateJobsRequest request;
-    constexpr char testSeedFolder[] = "@root@/../Gems/LmbrCentral/Code/Tests/Seed";
+    constexpr char testSeedFolder[] = "@engroot@/Gems/LmbrCentral/Code/Tests/Seed";
     char resolvedPath[AZ_MAX_PATH_LEN];
     AZ::IO::FileIOBase::GetInstance()->ResolvePath(testSeedFolder, resolvedPath, AZ_MAX_PATH_LEN);
     request.m_watchFolder = resolvedPath;

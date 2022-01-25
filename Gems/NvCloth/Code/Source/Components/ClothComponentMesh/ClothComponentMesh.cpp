@@ -27,6 +27,9 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/WindBus.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 
 namespace NvCloth
 {

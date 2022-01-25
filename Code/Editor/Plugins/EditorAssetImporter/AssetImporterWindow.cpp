@@ -30,6 +30,7 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
 #include <Util/PathUtil.h>
@@ -46,41 +47,6 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 
 const char* AssetImporterWindow::s_documentationWebAddress = "http://docs.aws.amazon.com/lumberyard/latest/userguide/char-fbx-importer.html";
 const AZ::Uuid AssetImporterWindow::s_browseTag = AZ::Uuid::CreateString("{C240D2E1-BFD2-4FFA-BB5B-CC0FA389A5D3}");
-
-void MakeUserFriendlySourceAssetPath(QString& out, const QString& sourcePath)
-{
-    char devAssetsRoot[AZ_MAX_PATH_LEN] = { 0 };
-    if (!gEnv->pFileIO->ResolvePath("@devroot@", devAssetsRoot, AZ_MAX_PATH_LEN))
-    {
-        out = sourcePath;
-        return;
-    }
-
-    AZStd::replace(devAssetsRoot, devAssetsRoot + AZ_MAX_PATH_LEN- 1, AZ_WRONG_FILESYSTEM_SEPARATOR, AZ_CORRECT_FILESYSTEM_SEPARATOR);
- 
-    // Find if the sourcePathArray is a sub directory of the devAssets folder 
-    // Keep reference to sourcePathArray long enough to use in PathView
-    QByteArray sourcePathArray = sourcePath.toUtf8();
-    AZ::IO::PathView sourcePathRootView(sourcePathArray.data());
-    AZ::IO::PathView devAssetsRootView(devAssetsRoot);
-    auto [sourcePathIter, devAssetsIter] = AZStd::mismatch(sourcePathRootView.begin(), sourcePathRootView.end(),
-        devAssetsRootView.begin(), devAssetsRootView.end());
-    // If the devAssets path iterator is not equal to the end, then there was a mismistch while comparing it
-    // against the source path indicating that the source path is not a sub-directory
-    if (devAssetsIter != devAssetsRootView.end())
-    {
-        out = sourcePath;
-        return;
-    }
-
-    int offset = aznumeric_cast<int>(strlen(devAssetsRoot));
-    if (sourcePath.at(offset) == AZ_CORRECT_FILESYSTEM_SEPARATOR)
-    {
-        ++offset;
-    }
-    out = sourcePath.right(sourcePath.length() - offset);
-
-}
 
 AssetImporterWindow::AssetImporterWindow()
     : AssetImporterWindow(nullptr)
@@ -102,7 +68,7 @@ AssetImporterWindow::AssetImporterWindow(QWidget* parent)
 
 AssetImporterWindow::~AssetImporterWindow()
 {
-    AZ_Assert(m_processingOverlayIndex == AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex, 
+    AZ_Assert(m_processingOverlayIndex == AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex,
         "Processing overlay (and potentially background thread) still active at destruction.");
     AZ_Assert(!m_processingOverlay, "Processing overlay (and potentially background thread) still active at destruction.");
 }
@@ -133,7 +99,7 @@ void AssetImporterWindow::OpenFile(const AZStd::string& filePath)
         QMessageBox::warning(this, "In progress", "Unable to close one or more windows at this time.");
         return;
     }
-    
+
     OpenFileInternal(filePath);
 }
 
@@ -146,7 +112,7 @@ void AssetImporterWindow::closeEvent(QCloseEvent* ev)
 
     if (m_processingOverlay)
     {
-        AZ_Assert(m_processingOverlayIndex != AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex, 
+        AZ_Assert(m_processingOverlayIndex != AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex,
             "Processing overlay present, but not the index in the overlay for it.");
         if (m_processingOverlay->HasProcessingCompleted())
         {
@@ -157,7 +123,7 @@ void AssetImporterWindow::closeEvent(QCloseEvent* ev)
             }
             else
             {
-                QMessageBox::critical(this, "Processing In Progress", "Unable to close the result window at this time.", 
+                QMessageBox::critical(this, "Processing In Progress", "Unable to close the result window at this time.",
                     QMessageBox::Ok, QMessageBox::Ok);
                 ev->ignore();
                 return;
@@ -165,7 +131,7 @@ void AssetImporterWindow::closeEvent(QCloseEvent* ev)
         }
         else
         {
-            QMessageBox::critical(this, "Processing In Progress", "Please wait until processing has completed to try again.", 
+            QMessageBox::critical(this, "Processing In Progress", "Please wait until processing has completed to try again.",
                 QMessageBox::Ok, QMessageBox::Ok);
             ev->ignore();
             return;
@@ -199,7 +165,9 @@ void AssetImporterWindow::Init()
     // Load the style sheets
     AzQtComponents::StylesheetPreprocessor styleSheetProcessor(nullptr);
 
-    AZStd::string mainWindowQSSPath = Path::GetEditingRootFolder() + "\\Editor\\Styles\\AssetImporterWindow.qss";
+    auto mainWindowQSSPath = AZ::IO::Path(AZ::Utils::GetEnginePath()) / "Assets";
+    mainWindowQSSPath /= "Editor/Styles/AssetImporterWindow.qss";
+    mainWindowQSSPath.MakePreferred();
     QFile mainWindowStyleSheetFile(mainWindowQSSPath.c_str());
     if (mainWindowStyleSheetFile.open(QFile::ReadOnly))
     {
@@ -212,7 +180,7 @@ void AssetImporterWindow::Init()
     {
         ui->m_actionInspect->setVisible(false);
     }
-    
+
     ResetMenuAccess(WindowState::InitialNothingLoaded);
 
     // Setup the overlay system, and set the root to be the root display. The root display has the browse,
@@ -220,7 +188,7 @@ void AssetImporterWindow::Init()
     m_overlay.reset(aznew AZ::SceneAPI::UI::OverlayWidget(this));
     m_rootDisplay.reset(aznew ImporterRootDisplay(m_serializeContext));
     connect(m_rootDisplay.data(), &ImporterRootDisplay::UpdateClicked, this, &AssetImporterWindow::UpdateClicked);
-    
+
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerAdded, this, &AssetImporterWindow::OverlayLayerAdded);
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerRemoved, this, &AssetImporterWindow::OverlayLayerRemoved);
 
@@ -242,7 +210,7 @@ void AssetImporterWindow::Init()
         AZStd::string joinedExtensions;
         AzFramework::StringFunc::Join(joinedExtensions, extensions.begin(), extensions.end(), " or ");
 
-        AZStd::string firstLineText = 
+        AZStd::string firstLineText =
             AZStd::string::format(
                 "%s files are available for use after placing them in any folder within your game project. "
                 "These files will automatically be processed and may be accessed via the Asset Browser. <a href=\"%s\">Learn more...</a>",
@@ -250,13 +218,13 @@ void AssetImporterWindow::Init()
 
         ui->m_initialPromptFirstLine->setText(firstLineText.c_str());
 
-        AZStd::string secondLineText = 
+        AZStd::string secondLineText =
             AZStd::string::format("To adjust the %s settings, right-click the file in the Asset Browser and select \"Edit Settings\" from the context menu.", joinedExtensions.c_str());
         ui->m_initialPromptSecondLine->setText(secondLineText.c_str());
     }
     else
     {
-        AZStd::string firstLineText = 
+        AZStd::string firstLineText =
             AZStd::string::format(
                 "Files are available for use after placing them in any folder within your game project. "
                 "These files will automatically be processed and may be accessed via the Asset Browser. <a href=\"%s\">Learn more...</a>", s_documentationWebAddress);
@@ -282,12 +250,12 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
     auto asyncLoadHandler = AZStd::make_shared<AZ::SceneAPI::SceneUI::AsyncOperationProcessingHandler>(
         s_browseTag,
         [this, filePath]()
-        { 
-            m_assetImporterDocument->LoadScene(filePath); 
+        {
+            m_assetImporterDocument->LoadScene(filePath);
         },
         [this]()
         {
-            HandleAssetLoadingCompleted(); 
+            HandleAssetLoadingCompleted();
         }, this);
 
     m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Loading, s_browseTag));
@@ -304,7 +272,7 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
         return true;
     }
 
-    QMessageBox messageBox(QMessageBox::Icon::NoIcon, "Unsaved changes", 
+    QMessageBox messageBox(QMessageBox::Icon::NoIcon, "Unsaved changes",
         "You have unsaved changes. Do you want to discard those changes?",
         QMessageBox::StandardButton::Discard | QMessageBox::StandardButton::Cancel, this);
     messageBox.exec();
@@ -406,7 +374,7 @@ void AssetImporterWindow::OnSceneResetRequested()
             else
             {
                 m_assetImporterDocument->ClearScene();
-                AZ_TracePrintf(ErrorWindow, "Manifest reset returned in '%s'", 
+                AZ_TracePrintf(ErrorWindow, "Manifest reset returned in '%s'",
                     result.GetResult() == ProcessingResult::Failure ? "Failure" : "Ignored");
             }
         },
@@ -456,7 +424,7 @@ void AssetImporterWindow::OnInspect()
     // make sure the inspector doesn't outlive the AssetImporterWindow, since we own the data it will be inspecting.
     auto* theInspectWidget = aznew AZ::SceneAPI::UI::SceneGraphInspectWidget(*m_assetImporterDocument->GetScene());
     QObject::connect(this, &QObject::destroyed, theInspectWidget, [theInspectWidget]() { theInspectWidget->window()->close(); } );
-    
+
     m_overlay->PushLayer(label, theInspectWidget, "Scene Inspector", buttons);
 }
 
@@ -483,7 +451,7 @@ void AssetImporterWindow::OverlayLayerRemoved()
     else
     {
         ResetMenuAccess(WindowState::InitialNothingLoaded);
-        
+
         ui->m_initialBrowseContainer->show();
         m_rootDisplay->hide();
     }
@@ -533,8 +501,9 @@ void AssetImporterWindow::HandleAssetLoadingCompleted()
     m_fullSourcePath = m_assetImporterDocument->GetScene()->GetSourceFilename();
     SetTitle(m_fullSourcePath.c_str());
 
-    QString userFriendlyFileName;
-    MakeUserFriendlySourceAssetPath(userFriendlyFileName, m_fullSourcePath.c_str());
+    AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+    AZ::IO::FixedMaxPath relativeSourcePath = AZ::IO::PathView(m_fullSourcePath).LexicallyProximate(projectPath);
+    auto userFriendlyFileName = QString::fromUtf8(relativeSourcePath.c_str(), static_cast<int>(relativeSourcePath.Native().size()));
     m_rootDisplay->SetSceneDisplay(userFriendlyFileName, m_assetImporterDocument->GetScene());
 
     // Once we've browsed to something successfully, we need to hide the initial browse button layer and

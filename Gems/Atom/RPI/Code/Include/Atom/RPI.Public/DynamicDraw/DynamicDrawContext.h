@@ -268,6 +268,8 @@ namespace AZ
             AZStd::vector<RHI::StreamBufferView> m_cachedStreamBufferViews;
             AZStd::vector<RHI::IndexBufferView> m_cachedIndexBufferViews;
             AZStd::vector<Data::Instance<ShaderResourceGroup>> m_cachedDrawSrg;
+
+            uint32_t m_nextDrawSrgIdx = 0;
             
             // structure includes DrawItem and stream and index buffer index
             using BufferViewIndexType = uint32_t;

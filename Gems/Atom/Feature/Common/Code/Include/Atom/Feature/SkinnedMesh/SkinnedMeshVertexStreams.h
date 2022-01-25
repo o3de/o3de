@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <AtomCore/Instance/InstanceData.h>

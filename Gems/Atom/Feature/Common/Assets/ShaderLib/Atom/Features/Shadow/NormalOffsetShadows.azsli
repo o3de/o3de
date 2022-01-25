@@ -1,0 +1,22 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#pragma once
+
+// Helper functions for normal offset shadow mapping.
+// Normal Offset is an alternative to slope-scale depth bias.
+// We bias the shadow map lookup by transforming the world-position along the geometric normal before hand.
+// http://web.archive.org/web/20140810230446/https://www.dissidentlogic.com/old/#Normal%20Offset%20Shadows
+//
+
+// Apply the following to the world position. Then use this modified world position to look up in the shadow map
+float3 ComputeNormalShadowOffset(const float normalOffsetBias, const float3 worldNormal, const float shadowMapDimension)
+{
+    const float shadowmapSize = 2.0f / shadowMapDimension;
+    return float3(worldNormal * normalOffsetBias * shadowmapSize);  
+}

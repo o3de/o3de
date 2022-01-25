@@ -32,6 +32,14 @@ namespace Terrain
         AZ::Vector3 m_worldMin{ 0.0f, 0.0f, 0.0f };
         AZ::Vector3 m_worldMax{ 1024.0f, 1024.0f, 1024.0f };
         AZ::Vector2 m_heightQueryResolution{ 1.0f, 1.0f };
+
+    private:
+        AZ::Outcome<void, AZStd::string> ValidateWorldMin(void* newValue, const AZ::Uuid& valueType);
+        AZ::Outcome<void, AZStd::string> ValidateWorldMax(void* newValue, const AZ::Uuid& valueType);
+        AZ::Outcome<void, AZStd::string> ValidateWorldHeight(void* newValue, const AZ::Uuid& valueType);
+        float NumberOfSamples(AZ::Vector3* min, AZ::Vector3* max, AZ::Vector2* heightQuery);
+        AZ::Outcome<void, AZStd::string> DetermineMessage(float numSamples);
+
     };
 
 

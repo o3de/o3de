@@ -86,6 +86,13 @@ namespace AZ
 
         PhysicalDeviceDriverValidator::ValidationResult PhysicalDeviceDriverValidator::ValidateDriverVersion(const PhysicalDeviceDescriptor& descriptor) const
         {
+            // [GFX TODO] Add driver info for other platforms besides Windows. Currently, avoid spamming warnings.
+            // ATOM-14967 [RHI][Metal] - Address driver version validator for Mac
+            if (m_driverInfo.size() == 0)
+            {
+                return ValidationResult::MissingInfo;
+            }
+
             auto iter = m_driverInfo.find(descriptor.m_vendorId);
 
             if (iter == m_driverInfo.end())

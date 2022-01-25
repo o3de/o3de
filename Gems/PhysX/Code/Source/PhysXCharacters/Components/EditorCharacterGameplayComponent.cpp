@@ -43,7 +43,7 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorCharacterGameplayComponent>(
-                    "PhysX Character Gameplay", "PhysX Character Gameplay")
+                    "PhysX Character Gameplay", "An example implementation of character physics behavior such as gravity.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCharacter.svg")
@@ -51,7 +51,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/character-gameplay/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCharacterGameplayComponent::m_gameplayConfig,
-                        "Gameplay Configuration", "Gameplay Configuration")
+                        "Gameplay Configuration", "Gameplay Configuration.")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

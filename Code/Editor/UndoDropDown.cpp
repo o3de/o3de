@@ -101,13 +101,13 @@ public:
 
         if (fresh.size() < m_stackNames.size())
         {
-            beginRemoveRows(createIndex(-1, -1), static_cast<int>(fresh.size()), static_cast<int>(m_stackNames.size() - 1));
+            beginRemoveRows(QModelIndex(), static_cast<int>(fresh.size()), static_cast<int>(m_stackNames.size() - 1));
             m_stackNames = fresh;
             endRemoveRows();
         }
         else
         {
-            beginInsertRows(createIndex(-1, -1), static_cast<int>(m_stackNames.size()), static_cast<int>(fresh.size() - 1));
+            beginInsertRows(QModelIndex(), static_cast<int>(m_stackNames.size()), static_cast<int>(fresh.size() - 1));
             m_stackNames = fresh;
             endInsertRows();
         }

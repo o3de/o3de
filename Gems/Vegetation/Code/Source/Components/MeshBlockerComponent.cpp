@@ -19,6 +19,7 @@
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <Vegetation/Ebuses/FilterRequestBus.h>
 #include <Vegetation/InstanceData.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace Vegetation
 {

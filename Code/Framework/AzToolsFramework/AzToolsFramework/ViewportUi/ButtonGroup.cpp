@@ -29,13 +29,29 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ButtonGroup::SetHighlightedButton(ButtonId buttonId)
     {
+        if (buttonId == m_highlightedButtonId) // the requested button is highlighted, so do nothing.
+        {
+            return;
+        }
+
         if (auto buttonEntry = m_buttons.find(buttonId); buttonEntry != m_buttons.end())
         {
-            for (auto& button : m_buttons)
-            {
-                button.second->m_state = Button::State::Deselected;
-            }
+            ClearHighlightedButton();
             buttonEntry->second->m_state = Button::State::Selected;
+            m_highlightedButtonId = buttonId;
+        }
+    }
+
+    void ButtonGroup::ClearHighlightedButton()
+    {
+        if (m_highlightedButtonId == InvalidButtonId)
+        {
+            return;
+        }
+        if (auto buttonEntry = m_buttons.find(m_highlightedButtonId); buttonEntry != m_buttons.end())
+        {
+            buttonEntry->second->m_state = Button::State::Deselected;
+            m_highlightedButtonId = InvalidButtonId;
         }
     }
 

@@ -54,7 +54,6 @@ namespace AZ
         //! This pass owns and manages activation of an Imgui context.
         class ImGuiPass
             : public RPI::RenderPass
-            , private TickBus::Handler
             , private AzFramework::InputChannelEventListener
             , private AzFramework::InputTextEventListener
         {
@@ -76,9 +75,6 @@ namespace AZ
             //! Allows draw data from other imgui contexts to be rendered on this context.
             void RenderImguiDrawData(const ImDrawData& drawData);
 
-            // TickBus::Handler overrides...
-            void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint) override;
-
             // AzFramework::InputTextEventListener overrides...
             bool OnInputTextEventFiltered(const AZStd::string& textUTF8) override;
 
@@ -98,6 +94,35 @@ namespace AZ
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
         private:
+            //! Class which connects to the tick handler using the tick order required at the start of an ImGui frame.
+            class TickHandlerFrameStart : protected TickBus::Handler
+            {
+            public:
+                TickHandlerFrameStart(ImGuiPass& imGuiPass);
+
+            protected:
+                // TickBus::Handler overrides...
+                int GetTickOrder() override;
+                void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint) override;
+
+            private:
+                ImGuiPass& m_imGuiPass;
+            };
+
+            //! Class which connects to the tick handler using the tick order required at the end of an ImGui frame.
+            class TickHandlerFrameEnd : protected TickBus::Handler
+            {
+            public:
+                TickHandlerFrameEnd(ImGuiPass& imGuiPass);
+
+            protected:
+                // TickBus::Handler overrides...
+                int GetTickOrder() override;
+                void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint) override;
+
+            private:
+                ImGuiPass& m_imGuiPass;
+            };
 
             struct DrawInfo
             {
@@ -111,6 +136,8 @@ namespace AZ
             void Init();
 
             ImGuiContext* m_imguiContext = nullptr;
+            TickHandlerFrameStart m_tickHandlerFrameStart;
+            TickHandlerFrameEnd m_tickHandlerFrameEnd;
 
             RHI::Ptr<RPI::PipelineStateForDraw> m_pipelineState;
             Data::Instance<RPI::Shader> m_shader;

@@ -13,50 +13,6 @@
 
 #include <AzCore/IO/Path/PathIterable.inl>
 
-// extern instantiations of Path templates to prevent implicit instantiations
-namespace AZ::IO
-{
-    // Class templates explicit declarations
-    extern template class BasicPath<AZStd::string>;
-    extern template class BasicPath<FixedMaxPathString>;
-    extern template class PathIterator<PathView>;
-    extern template class PathIterator<Path>;
-    extern template class PathIterator<FixedMaxPath>;
-
-    // Swap function explicit declarations
-    extern template void swap<AZStd::string>(Path& lhs, Path& rhs) noexcept;
-    extern template void swap<FixedMaxPathString>(FixedMaxPath& lhs, FixedMaxPath& rhs) noexcept;
-
-    // Hash function explicit declarations
-    extern template size_t hash_value<AZStd::string>(const Path& pathToHash);
-    extern template size_t hash_value<FixedMaxPathString>(const FixedMaxPath& pathToHash);
-
-    // Append operator explicit declarations
-    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, const PathView& rhs);
-    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, const PathView& rhs);
-    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, AZStd::string_view rhs);
-    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, AZStd::string_view rhs);
-    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs,
-        const typename BasicPath<AZStd::string>::value_type* rhs);
-    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs,
-        const typename BasicPath<FixedMaxPathString>::value_type* rhs);
-
-    // Iterator compare explicit declarations
-    extern template bool operator==<PathView>(const PathIterator<PathView>& lhs,
-        const PathIterator<PathView>& rhs);
-    extern template bool operator==<Path>(const PathIterator<Path>& lhs,
-        const PathIterator<Path>& rhs);
-    extern template bool operator==<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
-        const PathIterator<FixedMaxPath>& rhs);
-    extern template bool operator!=<PathView>(const PathIterator<PathView>& lhs,
-        const PathIterator<PathView>& rhs);
-    extern template bool operator!=<Path>(const PathIterator<Path>& lhs,
-        const PathIterator<Path>& rhs);
-    extern template bool operator!=<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
-        const PathIterator<FixedMaxPath>& rhs);
-}
-
-
 //! PathView implementation
 namespace AZ::IO
 {
@@ -101,7 +57,11 @@ namespace AZ::IO
     }
 
     // native format observers
-    constexpr auto PathView::Native() const noexcept -> AZStd::string_view
+    constexpr auto PathView::Native() const noexcept -> const AZStd::string_view&
+    {
+        return m_path;
+    }
+    constexpr auto PathView::Native() noexcept -> AZStd::string_view&
     {
         return m_path;
     }
@@ -238,6 +198,14 @@ namespace AZ::IO
     constexpr AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathString() const noexcept
     {
         return AZStd::fixed_string<MaxPathLength>(m_path.begin(), m_path.end());
+    }
+
+    // as_posix
+    constexpr AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathStringAsPosix() const noexcept
+    {
+        AZStd::fixed_string<MaxPathLength> resultPath(m_path.begin(), m_path.end());
+        AZStd::replace(resultPath.begin(), resultPath.end(), AZ::IO::WindowsPathSeparator, AZ::IO::PosixPathSeparator);
+        return resultPath;
     }
 
     // decomposition
@@ -431,7 +399,7 @@ namespace AZ::IO
     constexpr auto PathView::begin() const -> const_iterator
     {
         auto pathParser = parser::PathParser::CreateBegin(m_path, m_preferred_separator);
-        PathIterator<PathView> it;
+        const_iterator it;
         it.m_path_ref = this;
         it.m_state = static_cast<typename const_iterator::ParserState>(pathParser.m_parser_state);
         it.m_path_entry_view = pathParser.m_path_raw_entry;
@@ -441,7 +409,7 @@ namespace AZ::IO
 
     constexpr auto PathView::end() const -> const_iterator
     {
-        PathIterator<PathView> it;
+        const_iterator it;
         it.m_state = const_iterator::AtEnd;
         it.m_path_ref = this;
         return it;
@@ -473,8 +441,7 @@ namespace AZ::IO
         return lhs.Compare(rhs) >= 0;
     }
 
-    template <typename PathResultType>
-    constexpr void PathView::MakeRelativeTo(PathResultType& pathResult, const AZ::IO::PathView& path, const AZ::IO::PathView& base)
+    constexpr void PathView::MakeRelativeTo(PathIterable& pathIterable, const AZ::IO::PathView& path, const AZ::IO::PathView& base) noexcept
     {
         const bool exactCaseCompare = path.m_preferred_separator == PosixPathSeparator
             || base.m_preferred_separator == PosixPathSeparator;
@@ -492,13 +459,11 @@ namespace AZ::IO
                 if (int res = Internal::ComparePathSegment(*pathParser, *pathParserBase, exactCaseCompare);
                     res != 0)
                 {
-                    pathResult.m_path = AZStd::string_view{};
                     return;
                 }
             }
             else if (CheckIterMismatchAtBase())
             {
-                pathResult.m_path = AZStd::string_view{};
                 return;
             }
 
@@ -512,7 +477,6 @@ namespace AZ::IO
             }
             if (CheckIterMismatchAtBase())
             {
-                pathResult.m_path = AZStd::string_view{};
                 return;
             }
         }
@@ -530,7 +494,7 @@ namespace AZ::IO
         // If there is no mismatch, return ".".
         if (!pathParser && !pathParserBase)
         {
-            pathResult.m_path = AZStd::string_view{ "." };
+            pathIterable.emplace_back(".", parser::PathPartKind::PK_Dot);
             return;
         }
 
@@ -539,27 +503,25 @@ namespace AZ::IO
         int elemCount = parser::DetermineLexicalElementCount(pathParserBase);
         if (elemCount < 0)
         {
-            pathResult.m_path = AZStd::string_view{};
             return;
         }
 
         // if elemCount == 0 and (pathParser == end() || pathParser->empty()), returns path("."); otherwise
         if (elemCount == 0 && (pathParser.AtEnd() || *pathParser == ""))
         {
-            pathResult.m_path = AZStd::string_view{ "." };
+            pathIterable.emplace_back(".", parser::PathPartKind::PK_Dot);
             return;
         }
 
         // return a path constructed with 'n' dot-dot elements, followed by the
         // elements of '*this' after the mismatch.
-        pathResult = PathResultType(path.m_preferred_separator);
         while (elemCount--)
         {
-            pathResult /= "..";
+            pathIterable.emplace_back("..", parser::PathPartKind::PK_DotDot);
         }
         for (; pathParser; ++pathParser)
         {
-            pathResult /= *pathParser;
+            pathIterable.emplace_back(*pathParser, parser::ClassifyPathPart(pathParser));
         }
     }
 
@@ -673,7 +635,7 @@ namespace AZ::IO
     // Basic Path implementation
 
     template <typename StringType>
-    constexpr BasicPath<StringType>::BasicPath(const PathView& other)
+    constexpr BasicPath<StringType>::BasicPath(const PathView& other) noexcept
         : m_path(other.m_path)
         , m_preferred_separator(other.m_preferred_separator) {}
 
@@ -726,6 +688,7 @@ namespace AZ::IO
         : m_path(first, last)
         , m_preferred_separator(preferredSeparator) {}
 
+
     template <typename StringType>
     constexpr BasicPath<StringType>::operator PathView() const noexcept
     {
@@ -733,7 +696,7 @@ namespace AZ::IO
     }
 
     template <typename StringType>
-    constexpr auto BasicPath<StringType>::operator=(const PathView& other) -> BasicPath&
+    constexpr auto BasicPath<StringType>::operator=(const PathView& other) noexcept -> BasicPath&
     {
         m_path = other.m_path;
         m_preferred_separator = other.m_preferred_separator;
@@ -932,13 +895,13 @@ namespace AZ::IO
             // then it has no root directory nor filename
             if (rootNameView.end() == m_path.end())
             {
-                // has_root_directory || has_filename = false
-                // If the root name is of the form
-                // # C: - then it isn't absolute unless it has a root directory C:\
-                // # \\?\ = is a UNC path that can't exist without a root directory
-                // # \\server - Is absolute, but has no root directory
-                // Therefore if the rootName is larger than three characters
-                // then append the path separator
+                /* has_root_directory || has_filename = false
+                   If the root name is of the form
+                   C: - then it isn't absolute unless it has a root directory C:\.
+                   \\?\ = is a UNC path that can't exist without a root directory.
+                   \\server - Is absolute, but has no root directory.
+                   Therefore if the rootName is larger than three characters
+                   then append the path separator. */
                 if (rootNameView.size() >= 3)
                 {
                     m_path.push_back(m_preferred_separator);
@@ -974,13 +937,13 @@ namespace AZ::IO
     template <typename StringType>
     constexpr auto BasicPath<StringType>::MakePreferred() -> BasicPath&
     {
-        if (m_preferred_separator != '/')
+        if (m_preferred_separator != PosixPathSeparator)
         {
-            AZStd::replace(m_path.begin(), m_path.end(), '/', m_preferred_separator);
+            AZStd::replace(m_path.begin(), m_path.end(), PosixPathSeparator, m_preferred_separator);
         }
         else
         {
-            AZStd::replace(m_path.begin(), m_path.end(), '\\', m_preferred_separator);
+            AZStd::replace(m_path.begin(), m_path.end(), WindowsPathSeparator, m_preferred_separator);
         }
         return *this;
     }
@@ -1031,6 +994,31 @@ namespace AZ::IO
     constexpr AZStd::fixed_string<MaxPathLength> BasicPath<StringType>::FixedMaxPathString() const
     {
         return AZStd::fixed_string<MaxPathLength>(m_path.begin(), m_path.end());
+    }
+
+    // as_posix
+    // Returns a copy of the path with the path separators converted to PosixPathSeparator
+    template <typename StringType>
+    constexpr auto BasicPath<StringType>::AsPosix() const -> string_type
+    {
+        string_type resultPath(m_path.begin(), m_path.end());
+        AZStd::replace(resultPath.begin(), resultPath.end(), WindowsPathSeparator, PosixPathSeparator);
+        return resultPath;
+    }
+    template <typename StringType>
+    AZStd::string BasicPath<StringType>::StringAsPosix() const
+    {
+        AZStd::string resultPath(m_path.begin(), m_path.end());
+        AZStd::replace(resultPath.begin(), resultPath.end(), WindowsPathSeparator, PosixPathSeparator);
+        return resultPath;
+    }
+
+    template <typename StringType>
+    constexpr AZStd::fixed_string<MaxPathLength> BasicPath<StringType>::FixedMaxPathStringAsPosix() const noexcept
+    {
+        AZStd::fixed_string<MaxPathLength> resultPath(m_path.begin(), m_path.end());
+        AZStd::replace(resultPath.begin(), resultPath.end(), WindowsPathSeparator, PosixPathSeparator);
+        return resultPath;
     }
 
     template <typename StringType>
@@ -1234,6 +1222,7 @@ namespace AZ::IO
         {
             pathResult /= pathPartView;
         }
+
         return pathResult;
     }
 
@@ -1241,7 +1230,13 @@ namespace AZ::IO
     constexpr auto BasicPath<StringType>::LexicallyRelative(const PathView& base) const -> BasicPath
     {
         BasicPath pathResult(m_preferred_separator);
-        static_cast<PathView>(*this).MakeRelativeTo(pathResult, *this, base);
+        PathView::PathIterable pathIterable;
+        PathView::MakeRelativeTo(pathIterable, *this, base);
+        for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
+        {
+            pathResult /= pathPartView;
+        }
+
         return pathResult;
     }
 
@@ -1267,7 +1262,7 @@ namespace AZ::IO
     constexpr auto BasicPath<StringType>::begin() const -> const_iterator
     {
         auto pathParser = parser::PathParser::CreateBegin(m_path, m_preferred_separator);
-        PathIterator<BasicPath> it;
+        const_iterator it;
         it.m_path_ref = this;
         it.m_state = static_cast<typename const_iterator::ParserState>(pathParser.m_parser_state);
         it.m_path_entry_view = pathParser.m_path_raw_entry;
@@ -1278,7 +1273,7 @@ namespace AZ::IO
     template <typename StringType>
     constexpr auto BasicPath<StringType>::end() const -> const_iterator
     {
-        PathIterator<BasicPath> it;
+        const_iterator it;
         it.m_state = const_iterator::AtEnd;
         it.m_path_ref = this;
         return it;
@@ -1355,7 +1350,7 @@ namespace AZ::IO
         return !basePathParts.empty() || !thisPathParts.IsAbsolute();
     }
 
-    constexpr FixedMaxPath PathView::LexicallyNormal() const
+    constexpr auto PathView::LexicallyNormal() const -> FixedMaxPath
     {
         FixedMaxPath pathResult(m_preferred_separator);
         PathIterable pathIterable = GetNormalPathParts(*this);
@@ -1367,21 +1362,28 @@ namespace AZ::IO
         return pathResult;
     }
 
-    constexpr FixedMaxPath PathView::LexicallyRelative(const PathView& base) const
+    constexpr auto PathView::LexicallyRelative(const PathView& base) const -> FixedMaxPath
     {
         FixedMaxPath pathResult(m_preferred_separator);
-        MakeRelativeTo(pathResult, *this, base);
+        PathIterable pathIterable;
+        MakeRelativeTo(pathIterable, *this, base);
+        for ([[maybe_unused]] auto [pathPartView, pathPartKind] : pathIterable)
+        {
+            pathResult /= pathPartView;
+        }
+
         return pathResult;
     }
 
-    constexpr FixedMaxPath PathView::LexicallyProximate(const PathView& base) const
+    constexpr auto PathView::LexicallyProximate(const PathView& base) const -> FixedMaxPath
     {
-        FixedMaxPath result = LexicallyRelative(base);
-        if (result.empty())
+        FixedMaxPath pathResult = LexicallyRelative(base);
+        if (pathResult.empty())
         {
             return FixedMaxPath(*this);
         }
-        return result;
+
+        return pathResult;
     }
 }
 
@@ -1503,4 +1505,40 @@ namespace AZ::IO
     {
         return AZStd::hash<PathView>{}(pathToHash);
     }
+}
+
+// extern instantiations of Path templates to prevent implicit instantiations
+namespace AZ::IO
+{
+    // Swap function explicit declarations
+    extern template void swap<AZStd::string>(Path& lhs, Path& rhs) noexcept;
+    extern template void swap<FixedMaxPathString>(FixedMaxPath& lhs, FixedMaxPath& rhs) noexcept;
+
+    // Hash function explicit declarations
+    extern template size_t hash_value<AZStd::string>(const Path& pathToHash);
+    extern template size_t hash_value<FixedMaxPathString>(const FixedMaxPath& pathToHash);
+
+    // Append operator explicit declarations
+    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, const PathView& rhs);
+    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, const PathView& rhs);
+    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, AZStd::string_view rhs);
+    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, AZStd::string_view rhs);
+    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs,
+        const typename BasicPath<AZStd::string>::value_type* rhs);
+    extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs,
+        const typename BasicPath<FixedMaxPathString>::value_type* rhs);
+
+    // Iterator compare explicit declarations
+    extern template bool operator==<const PathView>(const PathIterator<const PathView>& lhs,
+        const PathIterator<const PathView>& rhs);
+    extern template bool operator==<const Path>(const PathIterator<const Path>& lhs,
+        const PathIterator<const Path>& rhs);
+    extern template bool operator==<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+        const PathIterator<const FixedMaxPath>& rhs);
+    extern template bool operator!=<const PathView>(const PathIterator<const PathView>& lhs,
+        const PathIterator<const PathView>& rhs);
+    extern template bool operator!=<const Path>(const PathIterator<const Path>& lhs,
+        const PathIterator<const Path>& rhs);
+    extern template bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+        const PathIterator<const FixedMaxPath>& rhs);
 }

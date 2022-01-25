@@ -6,8 +6,8 @@
  *
  */
 
-#include <Atom/Viewport/MaterialViewportModule.h>
 #include <Viewport/MaterialViewportComponent.h>
+#include <Viewport/MaterialViewportModule.h>
 #include <Viewport/PerformanceMonitorComponent.h>
 
 namespace MaterialEditor

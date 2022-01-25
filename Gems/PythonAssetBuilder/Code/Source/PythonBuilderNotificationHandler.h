@@ -9,6 +9,7 @@
 
 #include <PythonAssetBuilder/PythonBuilderNotificationBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace PythonAssetBuilder
 {

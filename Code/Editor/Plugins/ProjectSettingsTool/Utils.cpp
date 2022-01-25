@@ -27,37 +27,31 @@ namespace
     }
 
     template<typename StringType>
-    StringType GetAbsoluteDevRoot()
+    StringType GetAbsoluteEngineRoot()
     {
-        const char* devRoot = nullptr;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            devRoot,
-            &AzToolsFramework::AssetSystemRequestBus::Handler::GetAbsoluteDevRootFolderPath);
+        AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
 
-        if (!devRoot)
+        if (engineRoot.empty())
         {
             return "";
         }
 
-        StringType devRootString(devRoot);
-        ToUnixPath(devRootString);
-        return devRootString;
+        StringType engineRootString(engineRoot.c_str());
+        ToUnixPath(engineRootString);
+        return engineRootString;
     }
 
     template<typename StringType>
     StringType GetAbsoluteProjectRoot()
     {
-        const char* projectRoot = nullptr;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            projectRoot,
-            &AzToolsFramework::AssetSystemRequestBus::Handler::GetAbsoluteDevGameFolderPath);
+        AZ::IO::FixedMaxPath projectRoot = AZ::Utils::GetProjectPath();
 
-        if (!projectRoot)
+        if (projectRoot.empty())
         {
             return "";
         }
 
-        StringType projectRootString(projectRoot);
+        StringType projectRootString(projectRoot.c_str());
         ToUnixPath(projectRootString);
         return projectRootString;
     }
@@ -87,9 +81,9 @@ namespace ProjectSettingsTool
         return reinterpret_cast<void*>(func);
     }
 
-    AZStd::string GetDevRoot()
+    AZStd::string GetEngineRoot()
     {
-        return GetAbsoluteDevRoot<AZStd::string>();
+        return GetAbsoluteEngineRoot<AZStd::string>();
     }
     AZStd::string GetProjectRoot()
     {
@@ -104,7 +98,7 @@ namespace ProjectSettingsTool
     QString SelectXmlFromFileDialog(const QString& currentFile)
     {
         // The selected file must be relative to this path
-        QString defaultPath = GetAbsoluteDevRoot<QString>();
+        QString defaultPath = GetAbsoluteEngineRoot<QString>();
         QString startPath;
 
         // Choose the starting path for file dialog
@@ -139,7 +133,7 @@ namespace ProjectSettingsTool
 
     QString SelectImageFromFileDialog(const QString& currentFile)
     {
-        QString defaultPath = QStringLiteral("%1Code%2/Resources/").arg(GetAbsoluteDevRoot<QString>(), ::GetProjectName<QString>());
+        QString defaultPath = QStringLiteral("%1Code%2/Resources/").arg(GetAbsoluteEngineRoot<QString>(), ::GetProjectName<QString>());
 
         QString startPath;
 
@@ -188,7 +182,7 @@ namespace ProjectSettingsTool
         // Android
         if (group <= ImageGroup::AndroidPortrait)
         {
-            root = GetDevRoot() + "/Code/Tools/Android/ProjectBuilder/app_";
+            root = GetEngineRoot() + "/Code/Tools/Android/ProjectBuilder/app_";
         }
         //Ios
         else

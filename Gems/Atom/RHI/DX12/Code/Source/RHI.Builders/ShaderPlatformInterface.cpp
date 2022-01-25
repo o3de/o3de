@@ -114,7 +114,7 @@ namespace AZ
                     }
                 }
 
-                if (shaderCompilerArguments.m_dxcDisableOptimizations)
+                if (shaderCompilerArguments.m_disableOptimizations)
                 {
                     // When optimizations are disabled (-Od), all resources declared in the source file are available to all stages
                     // (when enabled only the resources which are referenced in a stage are bound to the stage)
@@ -195,7 +195,7 @@ namespace AZ
 
         bool ShaderPlatformInterface::BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return shaderCompilerArguments.m_dxcGenerateDebugInfo;
+            return shaderCompilerArguments.m_generateDebugInfo;
         }
 
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const

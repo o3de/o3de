@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom_Feature_Traits_Platform.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
@@ -30,17 +31,25 @@ namespace AZ
         DiffuseProbeGridBorderUpdatePass::DiffuseProbeGridBorderUpdatePass(const RPI::PassDescriptor& descriptor)
             : RPI::RenderPass(descriptor)
         {
-            LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdateRow.azshader",
-                       m_rowShader,
-                       m_rowPipelineState,
-                       m_rowSrgLayout,
-                       m_rowDispatchArgs);
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                SetEnabled(false);
+            }
+            else
+            {
+                LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdateRow.azshader",
+                           m_rowShader,
+                           m_rowPipelineState,
+                           m_rowSrgLayout,
+                           m_rowDispatchArgs);
 
-            LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdateColumn.azshader",
-                       m_columnShader,
-                       m_columnPipelineState,
-                       m_columnSrgLayout,
-                       m_columnDispatchArgs);
+                LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdateColumn.azshader",
+                           m_columnShader,
+                           m_columnPipelineState,
+                           m_columnSrgLayout,
+                           m_columnDispatchArgs);
+            }
         }
 
         void DiffuseProbeGridBorderUpdatePass::LoadShader(AZStd::string shaderFilePath,
@@ -67,27 +76,10 @@ namespace AZ
             srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
 
             // retrieve the number of threads per thread group from the shader
-            const auto numThreads = shader->GetAsset()->GetAttribute(RHI::ShaderStage::Compute, Name{ "numthreads" });
-            if (numThreads)
+            const auto outcome = RPI::GetComputeShaderNumThreads(shader->GetAsset(), dispatchArgs);
+            if (!outcome.IsSuccess())
             {
-                const RHI::ShaderStageAttributeArguments& args = *numThreads;
-                bool validArgs = args.size() == 3;
-                if (validArgs)
-                {
-                    validArgs &= args[0].type() == azrtti_typeid<int>();
-                    validArgs &= args[1].type() == azrtti_typeid<int>();
-                    validArgs &= args[2].type() == azrtti_typeid<int>();
-                }
-
-                if (!validArgs)
-                {
-                    AZ_Error("PassSystem", false, "[DiffuseProbeGridBorderUpdatePass '%s']: Shader '%s' contains invalid numthreads arguments.", GetPathName().GetCStr(), shaderFilePath.c_str());
-                    return;
-                }
-
-                dispatchArgs.m_threadsPerGroupX = static_cast<uint16_t>(AZStd::any_cast<int>(args[0]));
-                dispatchArgs.m_threadsPerGroupY = static_cast<uint16_t>(AZStd::any_cast<int>(args[1]));
-                dispatchArgs.m_threadsPerGroupZ = static_cast<uint16_t>(AZStd::any_cast<int>(args[2]));
+                AZ_Error("PassSystem", false, "[DiffuseProbeGridBorderUpdatePass '%s']: Shader '%s' contains invalid numthreads arguments:\n%s", GetPathName().GetCStr(), shaderFilePath.c_str(), outcome.GetError().c_str());
             }
         }
 

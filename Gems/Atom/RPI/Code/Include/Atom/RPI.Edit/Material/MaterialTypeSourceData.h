@@ -13,6 +13,7 @@
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 
 namespace AZ
 {
@@ -118,6 +119,30 @@ namespace AZ
                 AZStd::unordered_map<Name/*shaderOption*/, Name/*value*/> m_shaderOptionValues;
             };
 
+            struct VersionUpdatesRenameOperationDefinition
+            {
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::VersionUpdatesRenameOperationDefinition, "{F2295489-E15A-46CC-929F-8D42DEDBCF14}");
+
+                AZStd::string m_operation;
+                
+                AZStd::string m_renameFrom;
+                AZStd::string m_renameTo;
+            };
+
+            // TODO: Support script operations--At that point, we'll likely need to replace VersionUpdatesRenameOperationDefinition with a more generic
+            // data structure that has a custom JSON serialize. We will only be supporting rename for now.
+            using VersionUpdateActions = AZStd::vector<VersionUpdatesRenameOperationDefinition>;
+
+            struct VersionUpdateDefinition
+            {
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::VersionUpdateDefinition, "{2C9D3B91-0585-4BC9-91D2-4CF0C71BC4B7}");
+
+                uint32_t m_toVersion;
+                VersionUpdateActions m_actions;
+            };
+
+            using VersionUpdates = AZStd::vector<VersionUpdateDefinition>;
+
             using PropertyList = AZStd::vector<AZStd::unique_ptr<PropertyDefinition>>;
 
             struct PropertySet
@@ -157,6 +182,7 @@ namespace AZ
                 AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;
             };
 
+            using VersionUpdates = AZStd::vector<VersionUpdateDefinition>;
 
             struct PropertyLayout
             {
@@ -165,8 +191,8 @@ namespace AZ
                 PropertyLayout() = default;
                 AZ_DISABLE_COPY(PropertyLayout)
 
-                //! Indicates the version of the set of available properties. Can be used to detect materials that might need to be updated.
-                uint32_t m_version = 0;
+                //! This field is unused, and has been replaced by MaterialTypeSourceData::m_version below. It is kept for legacy file compatibility to suppress warnings and errors.
+                uint32_t m_versionOld = 0;
 
                 //! [Deprecated] Use m_propertySets instead
                 //! List of groups that will contain the available properties
@@ -185,6 +211,11 @@ namespace AZ
             const PropertyLayout& GetPropertyLayout() const { return m_propertyLayout; }
 
             AZStd::string m_description; //< TODO: Make this private
+
+            //! Version 1 is the default and should not contain any version update.
+            uint32_t m_version = 1;
+
+            VersionUpdates m_versionUpdates;
 
             //! A list of shader variants that are always used at runtime; they cannot be turned off
             AZStd::vector<ShaderVariantReferenceData> m_shaderCollection; //< TODO: Make this private
@@ -229,10 +260,6 @@ namespace AZ
             //! @return false if the enumeration was terminated early by the callback returning false.
             bool EnumerateProperties(const EnumeratePropertiesCallback& callback) const;
 
-            //! Convert the property value into the format that will be stored in the source data
-            //! This is primarily needed to support conversions of special types like enums and images
-            bool ConvertPropertyValueToSourceDataFormat(const PropertyDefinition& propertyDefinition, MaterialPropertyValue& propertyValue) const;
-
             Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
 
             bool ConvertToNewDataFormat();
@@ -256,7 +283,11 @@ namespace AZ
                 MaterialTypeAssetCreator& materialTypeAssetCreator,
                 AZStd::vector<AZStd::string>& propertyNameContext,
                 const MaterialTypeSourceData::PropertySet* propertySet) const;
-
+                
+            //! Possibly renames @propertyId based on the material version update steps.
+            //! @return true if the property was renamed
+            bool ApplyPropertyRenames(MaterialPropertyId& propertyId) const;
+            
             //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data.
             //! Groups with the same name will be consolidated into a single entry.
             //! Operates on the old format PropertyLayout::m_groups, used for conversion to the new format.

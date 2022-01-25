@@ -18,45 +18,23 @@ namespace Multiplayer
 {
     ConstNetworkEntityHandle::ConstNetworkEntityHandle(AZ::Entity* entity, const NetworkEntityTracker* networkEntityTracker)
         : m_entity(entity)
-        , m_networkEntityTracker(networkEntityTracker)
+        , m_networkEntityTracker((networkEntityTracker != nullptr) ? networkEntityTracker : GetNetworkEntityTracker())
     {
-        if (m_networkEntityTracker)
-        {
-            m_changeDirty = m_networkEntityTracker->GetChangeDirty(m_entity);
-        }
+        AZ_Assert(m_networkEntityTracker, "NetworkEntityTracker is not valid");
+        m_changeDirty = m_networkEntityTracker->GetChangeDirty(m_entity);
 
         if (entity)
         {
-            AZ_Assert(networkEntityTracker, "NetworkEntityTracker is not valid");
-            NetBindComponent* netBindComponent = m_entity->template FindComponent<NetBindComponent>();
-            AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
-            m_netBindComponent = netBindComponent;
-            m_netEntityId = netBindComponent->GetNetEntityId();
+            m_netBindComponent = m_networkEntityTracker->GetNetBindComponent(entity);
+            if (m_netBindComponent != nullptr)
+            {
+                m_netEntityId = m_netBindComponent->GetNetEntityId();
+            }
+            else
+            {
+                *this = ConstNetworkEntityHandle();
+            }
         }
-    }
-
-    ConstNetworkEntityHandle::ConstNetworkEntityHandle(AZ::Entity* entity, NetEntityId netEntityId, const NetworkEntityTracker* networkEntityTracker)
-        : m_entity(entity)
-        , m_netEntityId(netEntityId)
-        , m_networkEntityTracker(networkEntityTracker)
-    {
-        if (m_networkEntityTracker)
-        {
-            m_changeDirty = m_networkEntityTracker->GetChangeDirty(m_entity);
-        }
-    }
-
-    ConstNetworkEntityHandle::ConstNetworkEntityHandle(NetBindComponent* netBindComponent, const NetworkEntityTracker* networkEntityTracker)
-        : m_entity(netBindComponent->GetEntity())
-        , m_netBindComponent(netBindComponent)
-        , m_networkEntityTracker(networkEntityTracker)
-        , m_netEntityId(netBindComponent->GetNetEntityId())
-    {
-        if (m_networkEntityTracker)
-        {
-            m_changeDirty = m_networkEntityTracker->GetChangeDirty(m_entity);
-        }
-        AZ_Assert(networkEntityTracker, "NetworkEntityTracker is not valid");
     }
 
     bool ConstNetworkEntityHandle::Exists() const
@@ -144,7 +122,7 @@ namespace Multiplayer
         }
         if (m_netBindComponent == nullptr)
         {
-            m_netBindComponent = m_entity->template FindComponent<NetBindComponent>();
+            m_netBindComponent = m_networkEntityTracker->GetNetBindComponent(m_entity);
         }
         return m_netBindComponent;
     }

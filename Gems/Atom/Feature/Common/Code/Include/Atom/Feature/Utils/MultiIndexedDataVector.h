@@ -17,7 +17,7 @@ namespace AZ
     {
         //! MultiIndexedDataVector is similar to IndexedDataVector but adds support for multiple different data vectors each containing different types
         //! i.e. structure of (N) arrays
-        //! See IndexedDataVectorTests.cpp for examples of use
+        //! See MultiIndexedDataVectorTests.cpp for examples of use
         template<typename ... Ts>
         class MultiIndexedDataVector
         {
@@ -198,6 +198,28 @@ namespace AZ
             IndexType GetRawIndex(IndexType index) const
             {
                 return m_indices.at(index);
+            }
+            
+            template<size_t Index, typename DataType>
+            IndexType GetIndexForData(const DataType* data) const
+            {
+                if (data >= &AZStd::get<Index>(m_data).front() && data <= &AZStd::get<Index>(m_data).back())
+                {
+                    return m_dataToIndices.at(data - &AZStd::get<Index>(m_data).front());
+                }
+                return NoFreeSlot;
+            }
+
+            template<size_t Index, typename LambdaType>
+            void ForEach(LambdaType lambda) const
+            {
+                for (auto& item : AZStd::get<Index>(m_data))
+                {
+                    if (!lambda(item))
+                    {
+                        break;
+                    }
+                }
             }
 
         private:

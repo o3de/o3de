@@ -79,13 +79,12 @@ namespace UnitTest
     template <uint32_t NUM_ELEMENTS, uint32_t NUM_BYTES>
     void TestQuantizedValuesHelper01()
     {
-        AzNetworking::QuantizedValues<NUM_ELEMENTS, NUM_BYTES, 0, 1> testIn, testOut; // Transmits float values between 0 and 1 using NUM_BYTES
+        AzNetworking::QuantizedValues<NUM_ELEMENTS, NUM_BYTES, 0, 1> testIn(ValueFromFloat<NUM_ELEMENTS>::Construct(0.0f)), testOut; // Transmits float values between 0 and 1 using NUM_BYTES
 
         AZStd::array<uint8_t, 1024> buffer;
         AzNetworking::NetworkInputSerializer  inputSerializer(buffer.data(), static_cast<uint32_t>(buffer.size()));
         AzNetworking::NetworkOutputSerializer outputSerializer(buffer.data(), static_cast<uint32_t>(buffer.size()));
 
-        testIn = ValueFromFloat<NUM_ELEMENTS>::Construct(0.0f);
         EXPECT_EQ(static_cast<typename ValueFromFloat<NUM_ELEMENTS>::ValueType>(testIn), ValueFromFloat<NUM_ELEMENTS>::Construct(0.0f));
         testIn.Serialize(inputSerializer);
         EXPECT_EQ(inputSerializer.GetSize(), NUM_BYTES * NUM_ELEMENTS);
@@ -95,6 +94,8 @@ namespace UnitTest
         testIn = ValueFromFloat<NUM_ELEMENTS>::Construct(1.0f);
         EXPECT_EQ(static_cast<typename ValueFromFloat<NUM_ELEMENTS>::ValueType>(testIn), ValueFromFloat<NUM_ELEMENTS>::Construct(1.0f));
         testIn.Serialize(inputSerializer);
+        EXPECT_NE(testIn, testOut);
+        EXPECT_NE(testIn.GetQuantizedIntegralValues()[0], testOut.GetQuantizedIntegralValues()[0]);
         testOut.Serialize(outputSerializer);
         EXPECT_EQ(testIn, testOut);
 

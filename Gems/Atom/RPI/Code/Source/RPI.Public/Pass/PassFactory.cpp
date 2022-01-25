@@ -19,6 +19,7 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/Pass/MSAAResolvePass.h>
+#include <Atom/RPI.Public/Pass/SlowClearPass.h>
 #include <Atom/RPI.Public/Pass/Specific/MSAAResolveFullScreenPass.h>
 #include <Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h>
 #include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
@@ -60,6 +61,7 @@ namespace AZ
         {
             AddPassCreator(Name("ParentPass"), &ParentPass::Create);
             AddPassCreator(Name("RasterPass"), &RasterPass::Create);
+            AddPassCreator(Name("SlowClearPass"), &SlowClearPass::Create);
             AddPassCreator(Name("CopyPass"), &CopyPass::Create);
             AddPassCreator(Name("FullScreenTriangle"), &FullscreenTrianglePass::Create);
             AddPassCreator(Name("ComputePass"), &ComputePass::Create);

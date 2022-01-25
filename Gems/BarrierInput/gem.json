@@ -2,7 +2,9 @@
     "gem_name": "BarrierInput",
     "display_name": "Barrier Input",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "The Barrier Input Gem allows the Open 3D Engine to function as a Barrier client so that it can receive input from a remote Barrier server.",
     "canonical_tags": [
@@ -15,6 +17,7 @@
     ],
     "icon_path": "preview.png",
     "requirements": "",
+    "documentation_url": "",
     "dependencies": [
         "Atom_RPI"
     ]

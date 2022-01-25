@@ -1,0 +1,45 @@
+{
+    "entries": [
+        {
+            "base": "UiDropdownNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Dropdown",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "OnDropdownExpanded",
+                    "details": {
+                        "name": "On Dropdown Expanded",
+                        "tooltip": "Executes when the dropdown is expanded"
+                    }
+                },
+                {
+                    "base": "OnDropdownCollapsed",
+                    "details": {
+                        "name": "On Dropdown Collapsed",
+                        "tooltip": "Executes when the dropdown is collapsed"
+                    }
+                },
+                {
+                    "base": "OnDropdownValueChanged",
+                    "details": {
+                        "name": "On Dropdown Value Changed",
+                        "tooltip": "Executes when an option is selected"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Option EntityID",
+                                "tooltip": "The option element that was selected"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

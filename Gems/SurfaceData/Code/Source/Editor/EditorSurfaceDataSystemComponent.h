@@ -47,7 +47,7 @@ namespace SurfaceData
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
     private:
-
+        void LoadAsset(const AZ::Data::AssetId& assetId);
         void AddAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset);
 
         ////////////////////////////////////////////////////////////////////////
@@ -63,7 +63,6 @@ namespace SurfaceData
         ////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetCatalogEventBus
         void OnCatalogLoaded(const char* /*catalogFile*/) override;
-        void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
         void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
         void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
 

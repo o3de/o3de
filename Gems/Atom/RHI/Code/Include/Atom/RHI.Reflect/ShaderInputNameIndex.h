@@ -67,6 +67,10 @@ namespace AZ
             bool IsInitialized() const;
             void AssetInialized() const;
 
+            // Retrieves the underlying name. Should only be used for debug purposes like printing the name when we fail to bind to the SRG.
+            // All regular functionality should go through the above functions.
+            const Name& GetNameForDebug() const;
+
         private:
 
             enum class IndexType : u32

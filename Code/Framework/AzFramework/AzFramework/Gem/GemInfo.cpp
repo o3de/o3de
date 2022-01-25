@@ -61,7 +61,7 @@ namespace AzFramework
 
                     AZ::IO::Path& gemAbsPath = gemInfo.m_absoluteSourcePaths.emplace_back(value);
                     // Resolve any file aliases first - Do not use ResolvePath() as that assumes
-                    // any relative path is underneath the @assets@ alias
+                    // any relative path is underneath the @products@ alias
                     if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
                     {
                         AZ::IO::FixedMaxPath replacedAliasPath;

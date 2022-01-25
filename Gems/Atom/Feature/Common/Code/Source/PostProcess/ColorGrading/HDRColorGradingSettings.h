@@ -13,6 +13,7 @@
 #include <Atom/Feature/PostProcess/ColorGrading/HDRColorGradingSettingsInterface.h>
 
 #include <PostProcess/PostProcessBase.h>
+#include <ACES/Aces.h>
 
 namespace AZ
 {

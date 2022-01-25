@@ -39,6 +39,7 @@ namespace AZ
             void SetProbeSpacing(const DiffuseProbeGridHandle& probeGrid, const AZ::Vector3& probeSpacing) override;
             void SetViewBias(const DiffuseProbeGridHandle& probeGrid, float viewBias) override;
             void SetNormalBias(const DiffuseProbeGridHandle& probeGrid, float normalBias) override;
+            void SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe) override;
             void SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier) override;
             void Enable(const DiffuseProbeGridHandle& probeGrid, bool enable) override;
             void SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows) override;
@@ -51,8 +52,7 @@ namespace AZ
                 DiffuseProbeGridBakeTexturesCallback callback,
                 const AZStd::string& irradianceTextureRelativePath,
                 const AZStd::string& distanceTextureRelativePath,
-                const AZStd::string& relocationTextureRelativePath,
-                const AZStd::string& classificationTextureRelativePath) override;
+                const AZStd::string& probeDataTextureRelativePath) override;
 
             bool CheckTextureAssetNotification(
                 const AZStd::string& relativePath,
@@ -62,8 +62,7 @@ namespace AZ
             bool AreBakedTexturesReferenced(
                 const AZStd::string& irradianceTextureRelativePath,
                 const AZStd::string& distanceTextureRelativePath,
-                const AZStd::string& relocationTextureRelativePath,
-                const AZStd::string& classificationTextureRelativePath) override;
+                const AZStd::string& probeDataTextureRelativePath) override;
 
             // FeatureProcessor overrides
             void Activate() override;

@@ -82,7 +82,7 @@ def Edit_DisabledNodeDuplication():
     nodes = {
         'SpawnerAreaNode': 'Vegetation Asset List',
         'MeshBlockerAreaNode': 'Mesh',
-        'BlockerAreaNode': 'Vegetation Reference Shape',
+        'BlockerAreaNode': 'Shape Reference',
         'FastNoiseGradientNode': 'Gradient Transform Modifier',
         'ImageGradientNode': 'Gradient Transform Modifier',
         'PerlinNoiseGradientNode': 'Gradient Transform Modifier',

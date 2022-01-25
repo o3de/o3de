@@ -779,7 +779,7 @@ TEST_F(ScriptCanvasTestFixture, InterpretedPrintConnectedInput)
 
 TEST_F(ScriptCanvasTestFixture, InterpretedPrintFormatEmptyValue)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_PrintFormatEmptyValue", ExecutionMode::Interpreted);
+    ExpectParseError("LY_SC_UnitTest_PrintFormatEmptyValue");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedProperties)
@@ -819,7 +819,7 @@ TEST_F(ScriptCanvasTestFixture, InterpretedStringFormat)
 
 TEST_F(ScriptCanvasTestFixture, InterpretedStringFormatEmptyValue)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_StringFormatEmptyValue", ExecutionMode::Interpreted);
+    ExpectParseError("LY_SC_UnitTest_StringFormatEmptyValue");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedStringFormatWithRepeatedValueName)
@@ -934,4 +934,9 @@ TEST_F(ScriptCanvasTestFixture, InterpretedNodeableInputMethodSharedDataSlot)
 TEST_F(ScriptCanvasTestFixture, InterpretedExecutionOutPerformance)
 {
     RunUnitTestGraph("LY_SC_UnitTest_ExecutionOutPerformance", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, PromotedUserVariables)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_PromotedUserVariables", ExecutionMode::Interpreted);
 }

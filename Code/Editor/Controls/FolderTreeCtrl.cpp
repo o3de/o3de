@@ -278,17 +278,16 @@ void CFolderTreeCtrl::LoadTreeRec(const QString& currentFolder)
 
 void CFolderTreeCtrl::AddItem(const QString& path)
 {
-    QString folder;
-    QString fileNameWithoutExtension;
-    QString ext;
-
-    Path::Split(path, folder, fileNameWithoutExtension, ext);
+    AZ::IO::FixedMaxPath folder{ AZ::IO::PathView(path.toUtf8().constData()) };
+    AZ::IO::FixedMaxPath fileNameWithoutExtension = folder.Stem();
+    folder = folder.ParentPath();
 
     auto regex = QRegExp(m_fileNameSpec, Qt::CaseInsensitive, QRegExp::Wildcard);
     if (regex.exactMatch(path))
     {
-        CTreeItem* folderTreeItem = CreateFolderItems(folder);
-        folderTreeItem->AddChild(fileNameWithoutExtension, path, eTreeImage_File);
+        CTreeItem* folderTreeItem = CreateFolderItems(QString::fromUtf8(folder.c_str(), static_cast<int>(folder.Native().size())));
+        folderTreeItem->AddChild(QString::fromUtf8(fileNameWithoutExtension.c_str(),
+            static_cast<int>(fileNameWithoutExtension.Native().size())), path, eTreeImage_File);
     }
 }
 

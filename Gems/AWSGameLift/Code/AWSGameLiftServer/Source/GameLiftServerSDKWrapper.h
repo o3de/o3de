@@ -33,6 +33,14 @@ namespace AWSGameLift
         //! @return Returns a generic outcome consisting of success or failure with an error message.
         virtual Aws::GameLift::GenericOutcome ActivateGameSession();
 
+        //! Retrieves player session data, including settings, session metadata, and player data.
+        //! Use this action to get information for a single player session,
+        //! for all player sessions in a game session, or for all player sessions associated with a single player ID.
+        //! @param  describePlayerSessionsRequest The request object describing which player sessions to retrieve.
+        //! @return If successful, returns a DescribePlayerSessionsOutcome object containing a set of player session objects that fit the request parameters.
+        virtual Aws::GameLift::DescribePlayerSessionsOutcome DescribePlayerSessions(
+            const Aws::GameLift::Server::Model::DescribePlayerSessionsRequest& describePlayerSessionsRequest);
+
         //! Initializes the GameLift SDK.
         //! Should be called when the server starts, before any GameLift-dependent initialization happens.
         //! @return If successful, returns an InitSdkOutcome object indicating that the server process is ready to call ProcessReady().
@@ -56,5 +64,16 @@ namespace AWSGameLift
         //! @param playerSessionId Unique ID issued by the Amazon GameLift service in response to a call to the AWS SDK Amazon GameLift API action CreatePlayerSession.
         //! @return Returns a generic outcome consisting of success or failure with an error message.
         virtual Aws::GameLift::GenericOutcome RemovePlayerSession(const AZStd::string& playerSessionId);
+
+        //! Sends a request to find new players for open slots in a game session created with FlexMatch.
+        //! When the match has been successfully, backfilled updated matchmaker data will be sent to the OnUpdateGameSession callback.
+        //! @param  startMatchBackfillRequest This data type is used to send a matchmaking backfill request.
+        //! @return Returns a StartMatchBackfillOutcome object with the match backfill ticket or failure with an error message.
+        virtual Aws::GameLift::StartMatchBackfillOutcome StartMatchBackfill(const Aws::GameLift::Server::Model::StartMatchBackfillRequest& startMatchBackfillRequest);
+
+        //! Cancels an active match backfill request that was created with StartMatchBackfill
+        //! @param  stopMatchBackfillRequest This data type is used to cancel a matchmaking backfill request.
+        //! @return Returns a generic outcome consisting of success or failure with an error message.
+        virtual Aws::GameLift::GenericOutcome StopMatchBackfill(const Aws::GameLift::Server::Model::StopMatchBackfillRequest& stopMatchBackfillRequest);
     };
 } // namespace AWSGameLift

@@ -8,6 +8,7 @@
 
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
 #include <QFileDialog>
 #include <QMenu>
@@ -40,6 +41,11 @@ namespace AtomToolsFramework
         centralWidget->setLayout(centralWidgetLayout);
         setCentralWidget(centralWidget);
 
+        m_assetBrowser = new AtomToolsFramework::AtomToolsAssetBrowser(this);
+        AddDockWidget("Asset Browser", m_assetBrowser, Qt::BottomDockWidgetArea, Qt::Horizontal);
+        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
+        SetDockWidgetVisible("Python Terminal", false);
+
         AtomToolsMainWindowRequestBus::Handler::BusConnect();
     }
 
@@ -50,8 +56,9 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::ActivateWindow()
     {
-        activateWindow();
+        show();
         raise();
+        activateWindow();
     }
 
     bool AtomToolsMainWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation)

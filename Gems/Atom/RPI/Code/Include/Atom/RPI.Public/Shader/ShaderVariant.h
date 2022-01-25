@@ -19,7 +19,6 @@ namespace AZ
         //! the RHI::PipelineStateType of the parent Shader instance. For shaders on the raster
         //! pipeline, the RHI::DrawFilterTag is also provided.
         class ShaderVariant final
-            : public Data::AssetBus::MultiHandler
         {
             friend class Shader;
         public:
@@ -57,9 +56,6 @@ namespace AZ
                 const Data::Asset<ShaderAsset>& shaderAsset,
                 const Data::Asset<ShaderVariantAsset>& shaderVariantAsset,
                 SupervariantIndex supervariantIndex);
-
-            // AssetBus overrides...
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
             //! A reference to the shader asset that this is a variant of.
             Data::Asset<ShaderAsset> m_shaderAsset;

@@ -11,24 +11,26 @@
 
 """azpy.shared.ui.__init__"""
 
-import os
+import logging as _logging
 
-from azpy.env_bool import env_bool
+import azpy.env_bool as env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import FRMT_LOG_LONG
 
-#  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
 if _PACKAGENAME is '__main__':
     _PACKAGENAME = 'azpy.shared.ui'
 
-import azpy
-_LOGGER = azpy.initialize_logger(_PACKAGENAME)
-_LOGGER.debug('Invoking __init__.py for {0}.'.format({_PACKAGENAME}))
-
+# set up module logging
+for handler in _logging.root.handlers[:]:
+    _logging.root.removeHandler(handler)
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_logging.basicConfig(format=FRMT_LOG_LONG)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 # -------------------------------------------------------------------------
 #
 __all__ = []

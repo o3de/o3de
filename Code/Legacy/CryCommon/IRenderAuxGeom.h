@@ -10,6 +10,8 @@
 
 #include "Cry_Color.h"
 #include "IRenderer.h"
+#include <Cry_Math.h>
+#include <Cry_Geo.h>
 
 struct SAuxGeomRenderFlags;
 

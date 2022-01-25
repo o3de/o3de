@@ -1,14 +1,14 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "Materials\\Presets\\MacBeth\\00_illuminant.material",
-    "propertyLayoutVersion": 3,
+    "parentMaterial": "00_illuminant.material",
+    "materialType": "../../Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
             "color": [
                 0.10223544389009476,
-                0.14996567368507386,
-                0.052857253700494769,
+                0.14996567368507385,
+                0.052857253700494766,
                 1.0
             ]
         }

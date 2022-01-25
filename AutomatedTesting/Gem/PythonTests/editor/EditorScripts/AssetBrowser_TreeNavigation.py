@@ -53,6 +53,7 @@ def AssetBrowser_TreeNavigation():
     import azlmbr.legacy.general as general
 
     import editor_python_test_tools.pyside_utils as pyside_utils
+    import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -69,8 +70,7 @@ def AssetBrowser_TreeNavigation():
     file_path = ("AutomatedTesting", "Assets", "ImageGradients", "image_grad_test_gsi.png")
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Open Asset Browser (if not opened already)
     editor_window = pyside_utils.get_editor_main_window()
@@ -84,8 +84,8 @@ def AssetBrowser_TreeNavigation():
 
     # 3) Collapse all files initially
     main_window = editor_window.findChild(QtWidgets.QMainWindow)
-    asset_browser = pyside_utils.find_child_by_hierarchy(main_window, ..., "Asset Browser")
-    tree = pyside_utils.find_child_by_hierarchy(asset_browser, ..., "m_assetBrowserTreeViewWidget")
+    asset_browser = pyside_utils.find_child_by_pattern(main_window, text="Asset Browser", type=QtWidgets.QDockWidget)
+    tree = pyside_utils.find_child_by_pattern(asset_browser, "m_assetBrowserTreeViewWidget")
     scroll_area = tree.findChild(QtWidgets.QWidget, "qt_scrollarea_vcontainer")
     scroll_bar = scroll_area.findChild(QtWidgets.QScrollBar)
     tree.collapseAll()

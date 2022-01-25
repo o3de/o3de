@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{898C7B53-2829-58ED-A053-1641A2BC14E2}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Random Number",
+                "category": "Math/Random",
+                "tooltip": "returns a random real number [Min, Max]"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Min_0",
+                    "details": {
+                        "name": "Min"
+                    }
+                },
+                {
+                    "base": "DataInput_Max_1",
+                    "details": {
+                        "name": "Max"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

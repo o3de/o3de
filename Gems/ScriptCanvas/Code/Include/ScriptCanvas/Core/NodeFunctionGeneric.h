@@ -94,7 +94,7 @@ namespace ScriptCanvas
         }\
         \
         static const char* GetDependency() { return CATEGORY; }\
-        static const char* GetCategory() { if (ISDEPRECATED) return AZ_STRINGIZE(CATEGORY /Deprecated); else return CATEGORY; };\
+        static const char* GetCategory() { if (IsDeprecated()) return "Deprecated"; else return CATEGORY; };\
         static const char* GetDescription() { return DESCRIPTION; };\
         static const char* GetNodeName() { return #NODE_NAME; };\
         static bool IsDeprecated() { return ISDEPRECATED; };\
@@ -256,7 +256,7 @@ namespace ScriptCanvas
         {
             DataSlotConfiguration slotConfiguration;
 
-            slotConfiguration.m_name = AZStd::string::format("%s: %s", Data::Traits<ArgType>::GetName().data(), t_Traits::GetArgName(Index));
+            slotConfiguration.m_name = t_Traits::GetArgName(Index);
             slotConfiguration.ConfigureDatum(AZStd::move(Datum(Data::FromAZType(Data::Traits<ArgType>::GetAZType()), Datum::eOriginality::Copy)));
 
             slotConfiguration.SetConnectionType(connectionType);

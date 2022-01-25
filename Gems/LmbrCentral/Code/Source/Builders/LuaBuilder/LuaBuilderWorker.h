@@ -7,10 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <AzCore/Outcome/Outcome.h>
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AzCore/Component/Component.h>
+#include <AzCore/Outcome/Outcome.h>
+namespace AZ
+{
+    class ScriptContext;
+}
 
 namespace LuaBuilder
 {
@@ -39,6 +43,10 @@ namespace LuaBuilder
 
         JobStepOutcome RunCompileJob(const AssetBuilderSDK::ProcessJobRequest& request);
         JobStepOutcome RunCopyJob(const AssetBuilderSDK::ProcessJobRequest& request);
-        JobStepOutcome WriteAssetInfo(const AssetBuilderSDK::ProcessJobRequest& request, AZStd::string_view destFileName, AZStd::string_view debugName, AZ::ScriptContext& scriptContext);
+        JobStepOutcome WriteAssetInfo(
+            const AssetBuilderSDK::ProcessJobRequest& request,
+            AZStd::string_view destFileName,
+            AZStd::string_view debugName,
+            AZ::ScriptContext& scriptContext);
     };
-}
+} // namespace LuaBuilder

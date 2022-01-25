@@ -1,0 +1,213 @@
+/*
+ * Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+ *
+ */
+
+//---------------------------------------------------------------------------------------
+// Shader code related to hair strands in the graphics pipeline.
+//-------------------------------------------------------------------------------------
+//
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#pragma once 
+
+#include <HairUtilities.azsli>
+
+#define CM_TO_METERS_RENDER 0.01
+
+float4 GetSharedVector4(int offset)
+{
+    return float4(
+        float3(
+            asfloat(PassSrg::m_skinnedHairSharedBuffer[offset]),
+            asfloat(PassSrg::m_skinnedHairSharedBuffer[offset + 1]),
+            asfloat(PassSrg::m_skinnedHairSharedBuffer[offset + 2])
+        ),// * CM_TO_METERS,   // convert to meters when using
+        asfloat(PassSrg::m_skinnedHairSharedBuffer[offset + 3])
+    );
+}
+
+float4 GetSharedPosition(int vertexIndex)
+{
+    int  vertexOffset = (HairDynamicDataSrg::m_positionBufferOffset >> 2) + (vertexIndex << 2);
+    return GetSharedVector4(vertexOffset);
+}
+
+float3 GetSharedTangent(int tangentIndex)
+{
+    int tangentOffset = (HairDynamicDataSrg::m_tangentBufferOffset >> 2) + (tangentIndex << 2);
+
+    return float3(
+        asfloat(PassSrg::m_skinnedHairSharedBuffer[tangentOffset]),
+        asfloat(PassSrg::m_skinnedHairSharedBuffer[tangentOffset + 1]),
+        asfloat(PassSrg::m_skinnedHairSharedBuffer[tangentOffset + 2])
+    );
+}
+
+//! Hair vertex geometry output - input structure for the Pixel shaders
+struct TressFXVertex
+{
+    float4 Position;
+    float4 Tangent;         // xyz = Tangent, w = Strand U 
+    float4 p0p1;
+    float4 StrandColor;     // xyz = Strand Color, w = Strand V
+};
+
+//! Matching structure to carry out as VS output / PS input
+struct PS_INPUT_HAIR
+{
+    float4 Position    : SV_POSITION;
+    float4 Tangent     : Tangent;
+    float4 p0p1        : TEXCOORD0;
+    float4 StrandColor : TEXCOORD1;
+};
+
+float3 GetStrandColor(int index, float fractionOfStrand)
+{
+    float3 rootColor;
+    float3 tipColor;
+
+    float2 texCd = g_HairStrandTexCd[(float) index / NumVerticesPerStrand].xy;
+    rootColor = BaseAlbedoTexture.SampleLevel(LinearWrapSampler, texCd, 0).rgb;
+    tipColor  = MatTipColor.rgb;
+
+    // Multiply with Base Material color
+    rootColor *= MatBaseColor.rgb;
+
+    // Update the color based on position along the strand (vertex level) and lerp between tip and root if within the tipPercentage requested
+    float rootRange = 1.f - TipPercentage;
+    return (fractionOfStrand > rootRange) ? lerp(rootColor, tipColor, (fractionOfStrand - rootRange) / TipPercentage) : rootColor;
+}
+
+TressFXVertex GetExpandedTressFXVert(uint vertexId, float3 eye, float2 winSize, float4x4 viewProj)
+{
+    // Access the current line / curve segment - remember that the mesh is built around
+    // the center line / curve that is expanded as the vertices.
+    uint index = vertexId / 2;  // vertexId is the indexed vertex id when indexed triangles are used
+    // Get updated positions and tangents from simulation result
+//    float3 v = GetSharedPosition(index).xyz;
+    float3 v = g_GuideHairVertexPositions[index].xyz;
+
+    // Both approaches (offset to shared buffer or BufferView) will work!
+//    float3 t = GetSharedTangent(index);   
+    float3 t = g_GuideHairVertexTangents[index].xyz;
+
+    // Get hair strand thickness
+    uint indexInStrand = index % NumVerticesPerStrand;
+    float fractionOfStrand = (float)indexInStrand / (NumVerticesPerStrand - 1);
+    float ratio = (EnableThinTip > 0) ? lerp(1.0, FiberRatio, fractionOfStrand) : 1.0;  // need length of full strand vs the length of this point on the strand. 	
+ 
+    // Calculate right and projected right vectors
+    float3 right = Safe_normalize(cross(t, Safe_normalize(v - eye)));
+    float2 proj_right = Safe_normalize(MatrixMult(viewProj, float4(right, 0)).xy);
+
+    // We always to to expand for faster hair AA, we may want to gauge making this adjustable
+    float expandPixels = 0.71 * CM_TO_METERS_RENDER;
+
+    // Calculate the negative and positive offset screenspace positions
+    float4 hairEdgePositions[2]; // 0 is negative, 1 is positive
+    hairEdgePositions[0] = float4(v - right * ratio * FiberRadius, 1.0);
+    hairEdgePositions[1] = float4(v + right * ratio * FiberRadius, 1.0);
+    hairEdgePositions[0] = MatrixMult(viewProj, hairEdgePositions[0]);
+    hairEdgePositions[1] = MatrixMult(viewProj, hairEdgePositions[1]);
+
+    // Gonna hi-jack Tangent.w (unused) and add a .w component to strand color to store a strand UV
+    float2 strandUV;
+    strandUV.x = (vertexId & 0x01) ? 0.f : 1.f;
+    strandUV.y = fractionOfStrand;
+
+    // Write output data
+    TressFXVertex Output = (TressFXVertex)0;
+    float fDirIndex = (vertexId & 0x01) ? -1.0 : 1.0;
+    Output.Position = ((vertexId & 0x01) ? hairEdgePositions[0] : hairEdgePositions[1]) 
+        // [To Do] Hair: remove the scale
+        + CM_TO_METERS_RENDER * fDirIndex * float4(proj_right * expandPixels / winSize.y, 0.0f, 0.0f) 
+        * ((vertexId & 0x01) ? hairEdgePositions[0].w : hairEdgePositions[1].w);
+    Output.Tangent = float4(t, strandUV.x);
+    Output.p0p1 = float4(hairEdgePositions[0].xy / max(hairEdgePositions[0].w, TRESSFX_FLOAT_EPSILON), hairEdgePositions[1].xy / max(hairEdgePositions[1].w, TRESSFX_FLOAT_EPSILON));
+    Output.StrandColor = float4(GetStrandColor(index, fractionOfStrand), strandUV.y);
+    return Output;
+}
+
+TressFXVertex GetExpandedTressFXShadowVert(uint vertexId, float3 eye, float2 winSize, float4x4 viewProj)
+{
+
+    // Access the current line segment
+    uint index = vertexId / 2;  // vertexId is actually the indexed vertex id when indexed triangles are used
+                                // Get updated positions and tangents from simulation result
+//    float3 v = GetSharedPosition(index).xyz; 
+    float3 v = g_GuideHairVertexPositions[index].xyz;
+//    float3 t = GetSharedTangent(index);   // Adi: both approaches will work!!
+    float3 t = g_GuideHairVertexTangents[index].xyz;
+
+    // Get hair strand thickness
+    uint indexInStrand = index % NumVerticesPerStrand;
+    float fractionOfStrand = (float)indexInStrand / (NumVerticesPerStrand - 1);
+    float ratio = (EnableThinTip > 0) ? lerp(1.0, FiberRatio, fractionOfStrand) : 1.0;  //need length of full strand vs the length of this point on the strand. 	
+
+    // Calculate right and projected right vectors
+    float3 right = Safe_normalize(cross(t, Safe_normalize(v - eye)));
+    float2 proj_right = Safe_normalize(MatrixMult(viewProj, float4(right, 0)).xy);
+
+    // We always to to expand for faster hair AA, we may want to gauge making this adjustable
+    float expandPixels = 1.f * CM_TO_METERS_RENDER; // Disable for shadows 0.71;
+
+    // Calculate the negative and positive offset screenspace positions
+    float4 hairEdgePositions[2]; // 0 is negative, 1 is positive
+    hairEdgePositions[0] = float4(v + -1.0 * right * ratio * FiberRadius * CM_TO_METERS_RENDER, 1.0);
+    hairEdgePositions[1] = float4(v + 1.0 * right * ratio * FiberRadius * CM_TO_METERS_RENDER, 1.0);
+    hairEdgePositions[0] = MatrixMult(viewProj, hairEdgePositions[0]);
+    hairEdgePositions[1] = MatrixMult(viewProj, hairEdgePositions[1]);
+
+    // Write output data
+    TressFXVertex Output = (TressFXVertex)0;
+    float fDirIndex = (vertexId & 0x01) ? -1.0 : 1.0;
+    Output.Position = ((vertexId & 0x01) ? hairEdgePositions[0] : hairEdgePositions[1]) + fDirIndex * float4(proj_right * expandPixels / winSize.y, 0.0f, 0.0f) * ((vertexId & 0x01) ? hairEdgePositions[0].w : hairEdgePositions[1].w);
+    return Output;
+}
+
+//!=============================================================================
+//!             Hair Render VS - Used by all geometry hair shaders 
+//!=============================================================================
+PS_INPUT_HAIR RenderHairVS(uint vertexId : SV_VertexID)
+{
+    PS_INPUT_HAIR vsOutput;
+
+    //    uint2  scrSize;
+    //    PassSrg::m_linearDepth.GetDimensions(scrSize.x, scrSize.y);
+    //    TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, float2(scrSize), g_mVP);
+
+    // [To Do] Hair: the above code should replace the existing but requires modifications to 
+    // the function GetExpandedTressFXVert. 
+    // Note that in Atom g_vViewport is aspect ratio and NOT size.
+    TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, g_vViewport.zw, g_mVP);
+
+    vsOutput.Position = tressfxVert.Position;
+    vsOutput.Tangent = tressfxVert.Tangent;
+    vsOutput.p0p1 = tressfxVert.p0p1;
+    vsOutput.StrandColor = tressfxVert.StrandColor;
+
+    return vsOutput;
+}

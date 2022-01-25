@@ -1,5 +1,5 @@
 {
-    "Source" : "DiffuseComposite",
+    "Source" : "DiffuseComposite.azsl",
 
     "RasterState" :
     {

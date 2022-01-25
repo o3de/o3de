@@ -386,7 +386,6 @@ namespace AzFramework
     void SliceEntityOwnershipService::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> readyAsset)
     {
         AZ_PROFILE_FUNCTION(AzFramework);
-        AZ_ASSET_ATTACH_TO_SCOPE(readyAsset.Get());
 
         AZ_Assert(readyAsset.GetAs<AZ::SliceAsset>(), "Asset is not a slice!");
 
@@ -400,7 +399,6 @@ namespace AzFramework
         // we intentionally capture readyAsset by value here, so that its refcount doesn't hit 0 by the time this call happens.
         AZStd::function<void()> instantiateCallback = [this, readyAsset]()
         {
-            AZ_ASSET_ATTACH_TO_SCOPE(readyAsset.Get());
             const AZ::Data::AssetId readyAssetId = readyAsset.GetId();
             for (auto iter = m_queuedSliceInstantiations.begin(); iter != m_queuedSliceInstantiations.end(); )
             {

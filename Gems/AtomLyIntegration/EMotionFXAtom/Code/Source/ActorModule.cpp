@@ -11,6 +11,9 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Module/Module.h>
+#ifdef EMOTIONFXATOM_EDITOR
+#include <Editor/EditorSystemComponent.h>
+#endif
 
 namespace AZ
 {
@@ -28,7 +31,10 @@ namespace AZ
                 : Module()
             {
                 m_descriptors.insert(m_descriptors.end(), {
-                    ActorSystemComponent::CreateDescriptor()
+                    ActorSystemComponent::CreateDescriptor(),
+#ifdef EMOTIONFXATOM_EDITOR
+                    EMotionFXAtom::EditorSystemComponent::CreateDescriptor(),
+#endif
                 });
             }
 
@@ -39,6 +45,9 @@ namespace AZ
             {
                 return ComponentTypeList{
                     azrtti_typeid<ActorSystemComponent>(),
+#ifdef EMOTIONFXATOM_EDITOR
+                    azrtti_typeid<EMotionFXAtom::EditorSystemComponent>(),
+#endif
                 };
             }
         };

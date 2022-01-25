@@ -417,14 +417,16 @@ namespace AZ
         template const Color&    MaterialFunctor::EditorContext::GetMaterialPropertyValue<Color>    (const MaterialPropertyIndex& index) const;
         template const Data::Instance<Image>& MaterialFunctor::EditorContext::GetMaterialPropertyValue<Data::Instance<Image>> (const MaterialPropertyIndex& index) const;
 
-        void CheckPropertyAccess(const MaterialPropertyIndex& index, const MaterialPropertyFlags& materialPropertyDependencies, [[maybe_unused]] const MaterialPropertiesLayout& materialPropertiesLayout)
+        void CheckPropertyAccess([[maybe_unused]] const MaterialPropertyIndex& index, [[maybe_unused]] const MaterialPropertyFlags& materialPropertyDependencies, [[maybe_unused]] const MaterialPropertiesLayout& materialPropertiesLayout)
         {
+#if defined(AZ_ENABLE_TRACING)
             if (!materialPropertyDependencies.test(index.GetIndex()))
             {
                 const MaterialPropertyDescriptor* propertyDescriptor = materialPropertiesLayout.GetPropertyDescriptor(index);
                 AZ_Error("MaterialFunctor", false, "Material functor accessing an unregistered material property '%s'.",
                     propertyDescriptor ? propertyDescriptor->GetName().GetCStr() : "<unknown>");
             }
+#endif
         }
 
         const MaterialPropertyValue& MaterialFunctor::RuntimeContext::GetMaterialPropertyValue(const MaterialPropertyIndex& index) const

@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzNetworking/Utilities/IpAddress.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
@@ -25,10 +26,10 @@ namespace Multiplayer
     //! The default blend factor for ScopedAlterTime
     static constexpr float DefaultBlendFactor = 1.f;
 
-    AZ_TYPE_SAFE_INTEGRAL(HostId, uint32_t);
-    static constexpr HostId InvalidHostId = static_cast<HostId>(-1);
+    using HostId = AzNetworking::IpAddress;
+    static const HostId InvalidHostId = HostId();
 
-    AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint32_t);
+    AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint64_t);
     static constexpr NetEntityId InvalidNetEntityId = static_cast<NetEntityId>(-1);
 
     AZ_TYPE_SAFE_INTEGRAL(NetComponentId, uint16_t);
@@ -67,6 +68,7 @@ namespace Multiplayer
         Server,      // A simulated proxy on a server
         Authority    // An authoritative proxy on a server (full authority)
     };
+    const char* GetEnumString(NetEntityRole value);
 
     enum class ComponentSerializationType : uint8_t
     {
@@ -105,10 +107,30 @@ namespace Multiplayer
 
     struct EntityMigrationMessage
     {
-        NetEntityId m_entityId;
+        NetEntityId m_netEntityId;
         PrefabEntityId m_prefabEntityId;
         AzNetworking::PacketEncodingBuffer m_propertyUpdateData;
+        bool operator!=(const EntityMigrationMessage& rhs) const;
+        bool Serialize(AzNetworking::ISerializer& serializer);
     };
+
+    inline const char* GetEnumString(NetEntityRole value)
+    {
+        switch (value)
+        {
+        case NetEntityRole::InvalidRole:
+            return "InvalidRole";
+        case NetEntityRole::Client:
+            return "Client";
+        case NetEntityRole::Autonomous:
+            return "Autonomous";
+        case NetEntityRole::Server:
+            return "Server";
+        case NetEntityRole::Authority:
+            return "Authority";
+        }
+        return "Unknown";
+    }
 
     inline PrefabEntityId::PrefabEntityId(AZ::Name name, uint32_t entityOffset)
         : m_prefabName(name)
@@ -133,9 +155,23 @@ namespace Multiplayer
         serializer.Serialize(m_entityOffset, "entityOffset");
         return serializer.IsValid();
     }
+
+    inline bool EntityMigrationMessage::operator!=(const EntityMigrationMessage& rhs) const
+    {
+        return m_netEntityId        != rhs.m_netEntityId
+            || m_prefabEntityId     != rhs.m_prefabEntityId
+            || m_propertyUpdateData != rhs.m_propertyUpdateData;
+    }
+
+    inline bool EntityMigrationMessage::Serialize(AzNetworking::ISerializer& serializer)
+    {
+        serializer.Serialize(m_netEntityId, "netEntityId");
+        serializer.Serialize(m_prefabEntityId, "prefabEntityId");
+        serializer.Serialize(m_propertyUpdateData, "propertyUpdateData");
+        return serializer.IsValid();
+    }
 }
 
-AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::NetEntityId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::NetComponentId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::PropertyIndex);
@@ -145,7 +181,6 @@ AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostFrameId);
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::HostId, "{D04B3363-8E1B-4193-8B2B-D2140389C9D5}");
     AZ_TYPE_INFO_SPECIALIZE(Multiplayer::NetEntityId, "{05E4C08B-3A1B-4390-8144-3767D8E56A81}");
     AZ_TYPE_INFO_SPECIALIZE(Multiplayer::NetComponentId, "{8AF3B382-F187-4323-9014-B380638767E3}");
     AZ_TYPE_INFO_SPECIALIZE(Multiplayer::PropertyIndex, "{F4460210-024D-4B3B-A10A-04B669C34230}");

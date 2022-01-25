@@ -10,6 +10,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 
 namespace AzToolsFramework

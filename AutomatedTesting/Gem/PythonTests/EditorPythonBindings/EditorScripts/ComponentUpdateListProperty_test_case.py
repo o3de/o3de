@@ -16,7 +16,7 @@ import azlmbr.entity as entity
 import azlmbr.math as math
 import azlmbr.paths
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
+sys.path.append(os.path.join(azlmbr.paths.projectroot, 'Gem', 'PythonTests'))
 from automatedtesting_shared.editor_test_helper import EditorTestHelper
 
 

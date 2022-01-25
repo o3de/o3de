@@ -6,10 +6,9 @@
  *
  */
 
-#include <Atom/Viewport/PerformanceMonitorRequestBus.h>
-
-#include <Source/Window/PerformanceMonitor/PerformanceMonitorWidget.h>
-#include <Source/Window/PerformanceMonitor/ui_PerformanceMonitorWidget.h>
+#include <Viewport/PerformanceMonitorRequestBus.h>
+#include <Window/PerformanceMonitor/PerformanceMonitorWidget.h>
+#include <Window/PerformanceMonitor/ui_PerformanceMonitorWidget.h>
 
 #include <QTimer>
 
@@ -55,4 +54,4 @@ namespace MaterialEditor
     }
 } // namespace MaterialEditor
 
-#include <Source/Window/PerformanceMonitor/moc_PerformanceMonitorWidget.cpp>
+#include <Window/PerformanceMonitor/moc_PerformanceMonitorWidget.cpp>

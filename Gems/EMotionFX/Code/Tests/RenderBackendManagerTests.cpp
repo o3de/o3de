@@ -11,6 +11,7 @@
 #include <Integration/Assets/ActorAsset.h>
 #include <Integration/Rendering/RenderBackend.h>
 #include <Integration/Rendering/RenderActor.h>
+#include <Integration/Rendering/RenderFlag.h>
 #include <Integration/Rendering/RenderActorInstance.h>
 #include <Integration/Rendering/RenderBackendManager.h>
 #include <Integration/System/SystemCommon.h>
@@ -64,7 +65,7 @@ namespace EMotionFX
             }
 
             MOCK_METHOD1(OnTick, void(float));
-            MOCK_METHOD1(DebugDraw, void(const DebugOptions&));
+            MOCK_METHOD1(DebugDraw, void(const EMotionFX::ActorRenderFlagBitset&));
             MOCK_CONST_METHOD0(IsVisible, bool());
             MOCK_METHOD1(SetIsVisible, void(bool));
             MOCK_METHOD1(SetMaterials, void(const ActorAsset::MaterialList&));

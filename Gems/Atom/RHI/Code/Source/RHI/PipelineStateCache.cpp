@@ -41,9 +41,12 @@ namespace AZ
                     AZ_Assert(readOnlyCache.empty(), "Inactive library has pipeline states in its global entry.");
                 }
 
+#if defined(AZ_DEBUG_BUILD)
+                // the PipelineStateSet is expensive to duplicate, only do this in debug.
                 PipelineStateSet readOnlyCacheCopy = readOnlyCache;
                 AZ_Assert(AZStd::unique(readOnlyCacheCopy.begin(), readOnlyCacheCopy.end()) == readOnlyCacheCopy.end(),
                     "'%d' Duplicates existed in the read-only cache!", readOnlyCache.size() - readOnlyCacheCopy.size());
+#endif
             }
 
             m_threadLibrarySet.ForEach([this](const ThreadLibrarySet& threadLibrarySet)
@@ -361,7 +364,7 @@ namespace AZ
                 AZ_Assert(success, "PipelineStateEntry already exists in the pending cache.");
             }
 
-            ResultCode resultCode = ResultCode::InvalidArgument;
+            [[maybe_unused]] ResultCode resultCode = ResultCode::InvalidArgument;
 
             // Increment the pending compile count on the global entry, which tracks how many pipeline states
             // are currently being compiled across all threads.

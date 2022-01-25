@@ -9,6 +9,8 @@
 #include <Activity/AWSGameLiftCreateSessionActivity.h>
 #include <AWSGameLiftClientFixture.h>
 
+#include <aws/gamelift/model/CreateGameSessionRequest.h>
+
 using namespace AWSGameLift;
 
 using AWSGameLiftCreateSessionActivityTest = AWSGameLiftClientFixture;

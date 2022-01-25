@@ -16,18 +16,6 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const AZ::u32 InputDeviceMouse::MovementSampleRateDefault = 60;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const AZ::u32 InputDeviceMouse::MovementSampleRateQueueAll = std::numeric_limits<AZ::u32>::max();
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const AZ::u32 InputDeviceMouse::MovementSampleRateAccumulateAll = 0;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputDeviceId InputDeviceMouse::Id("mouse");
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceMouse::IsMouseDevice(const InputDeviceId& inputDeviceId)
     {
         return (inputDeviceId.GetNameCrc32() == Id.GetNameCrc32());
@@ -67,8 +55,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::InputDeviceMouse(AzFramework::InputDeviceId id)
-        : InputDevice(id)
+    InputDeviceMouse::InputDeviceMouse(const InputDeviceId& inputDeviceId,
+                                       ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_buttonChannelsById()
         , m_movementChannelsById()
@@ -97,8 +86,8 @@ namespace AzFramework
         m_cursorPositionChannel = aznew InputChannelDeltaWithSharedPosition2D(SystemCursorPosition, *this, m_cursorPositionData2D);
         m_allChannelsById[SystemCursorPosition] = m_cursorPositionChannel;
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
 
         // Connect to the system cursor request bus
         InputSystemCursorRequestBus::Handler::BusConnect(GetInputDeviceId());

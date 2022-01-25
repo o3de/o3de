@@ -19,11 +19,12 @@
 
 namespace AzToolsFramework
 {
+    class ContainerEntityInterface;
+    class EntityOutlinerListModel;
 
-    /*!
-        * Enables the Outliner to filter entries based on search string.
-        * Enables the Outliner to do custom sorting on entries.
-        */
+    //! Enables the Outliner to filter entries based on search string.
+    //! Enables the Outliner to do custom sorting on entries.
+    //! Enforces the correct rendering for container entities.
     class EntityOutlinerSortFilterProxyModel
         : public QSortFilterProxyModel
     {
@@ -37,12 +38,15 @@ namespace AzToolsFramework
         void UpdateFilter();
 
         // Qt overrides
+        void setSourceModel(QAbstractItemModel* sourceModel) override;
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
         bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
         void sort(int column, Qt::SortOrder order) override;
 
     private:
         QString m_filterName;
+        EntityOutlinerListModel* m_listModel = nullptr;
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
     };
 
 }

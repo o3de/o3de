@@ -99,8 +99,8 @@ namespace AzNetworking
         bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) override;
         bool StopListening() override;
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
-        void SetTimeoutEnabled(bool timeoutEnabled) override;
-        bool IsTimeoutEnabled() const override;
+        void SetTimeoutMs(AZ::TimeMs timeoutMs) override;
+        AZ::TimeMs GetTimeoutMs() const override;
         //! @}
 
         //! Queues a new incoming connection for this network interface.
@@ -137,16 +137,6 @@ namespace AzNetworking
 
         AZ_DISABLE_COPY_MOVE(TcpNetworkInterface);
 
-        struct ConnectionTimeoutFunctor final
-            : public ITimeoutHandler
-        {
-            ConnectionTimeoutFunctor(TcpNetworkInterface& networkInterface);
-            TimeoutResult HandleTimeout(TimeoutQueue::TimeoutItem& item) override;
-        private:
-            AZ_DISABLE_COPY_MOVE(ConnectionTimeoutFunctor);
-            TcpNetworkInterface& m_networkInterface;
-        };
-
         struct PendingRemove
         {
             SocketFd m_socketFd;
@@ -156,13 +146,12 @@ namespace AzNetworking
         AZ::Name m_name;
         TrustZone m_trustZone;
         uint16_t m_port = 0;
-        bool m_timeoutEnabled = true;
+        AZ::TimeMs m_timeoutMs = AZ::Time::ZeroTimeMs;
         IConnectionListener& m_connectionListener;
         TcpConnectionSet m_connectionSet;
         TcpSocketManager m_tcpSocketManager;
         AZ::ThreadSafeDeque<PendingConnection> m_pendingConnections;
         AZStd::vector<PendingRemove> m_pendingRemoves;
-        TimeoutQueue m_connectionTimeoutQueue;
         TcpListenThread& m_listenThread;
 
         friend class TcpConnection; // For access to private RequestDisconnect() method

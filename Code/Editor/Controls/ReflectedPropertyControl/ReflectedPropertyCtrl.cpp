@@ -26,6 +26,9 @@
 #include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
+//AzCore
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 // Editor
 #include "Clipboard.h"
 
@@ -668,7 +671,7 @@ AzToolsFramework::PropertyRowWidget* ReflectedPropertyControl::FindPropertyRowWi
         return nullptr;
     }
     const AzToolsFramework::ReflectedPropertyEditor::WidgetList& widgets = m_editor->GetWidgets();
-    for (auto instance : widgets)
+    for (const auto& instance : widgets)
     {
         if (instance.second->label() == item->GetPropertyName())
         {

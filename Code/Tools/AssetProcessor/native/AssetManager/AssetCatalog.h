@@ -88,8 +88,6 @@ namespace AssetProcessor
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::AssetSystem::AssetSystemRequestBus::Handler overrides
-        const char* GetAbsoluteDevGameFolderPath() override;
-        const char* GetAbsoluteDevRootFolderPath() override;
         bool GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& relativeProductPath) override;
 
         //! Given a partial or full source file path, respond with its relative path and the watch folder it is relative to.
@@ -215,8 +213,6 @@ namespace AssetProcessor
 
         AZStd::vector<char> m_saveBuffer; // so that we don't realloc all the time
 
-        char m_absoluteDevFolderPath[AZ_MAX_PATH_LEN];
-        char m_absoluteDevGameFolderPath[AZ_MAX_PATH_LEN];
         QDir m_cacheRootDir;
     };
 }

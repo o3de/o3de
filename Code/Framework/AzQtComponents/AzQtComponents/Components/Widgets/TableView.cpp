@@ -38,7 +38,6 @@ namespace AzQtComponents
         ConfigHelpers::read<qreal>(settings, QStringLiteral("FocusBorderWidth"), config.focusBorderWidth);
         ConfigHelpers::read<QColor>(settings, QStringLiteral("FocusBorderColor"), config.focusBorderColor);
         ConfigHelpers::read<QColor>(settings, QStringLiteral("FocusFillColor"), config.focusFillColor);
-        ConfigHelpers::read<QColor>(settings, QStringLiteral("HeaderFillColor"), config.headerFillColor);
         settings.endGroup();
 
         return config;
@@ -52,7 +51,6 @@ namespace AzQtComponents
         config.focusBorderWidth = 1;
         config.focusBorderColor = QStringLiteral("#94D2FF");
         config.focusFillColor = QStringLiteral("#10ffffff");
-        config.headerFillColor = QStringLiteral("#2d2d2d");
 
         return config;
     }
@@ -177,22 +175,6 @@ namespace AzQtComponents
         return true;
     }
 
-    bool TableView::drawHeaderSection(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config)
-    {
-        Q_UNUSED(widget);
-        Q_UNUSED(style);
-
-        const auto headerViewOption = qstyleoption_cast<const QStyleOptionHeader*>(option);
-        if (!headerViewOption)
-        {
-            return false;
-        }
-
-        painter->fillRect(headerViewOption->rect, config.headerFillColor);
-
-        return true;
-    }
-
     bool TableView::drawFrameFocusRect(const Style* style, const QStyleOption* option, QPainter* painter, const Config& config)
     {
         Q_UNUSED(style);
@@ -213,12 +195,10 @@ namespace AzQtComponents
         // rectangle drawing.
         if (qTableView || qListView)
         {
-            int hHdr = 0;
             int vHdr = 0;
 
             if (qTableView)
             {
-                hHdr = qTableView->horizontalHeader()->isVisible() ? qTableView->horizontalHeader()->height() : 0;
                 vHdr = qTableView->verticalHeader()->isVisible() ? qTableView->verticalHeader()->width() : 0;
             }
 

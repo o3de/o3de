@@ -24,6 +24,9 @@ namespace AZ
         class ShaderReloadDebugTracker final
         {
         public:
+            static void Init();
+            static void Shutdown();
+
             static bool IsEnabled();
 
             //! Begin a code section. Will print a "[BEGIN] <sectionName>" header, and all subsequent calls will be indented.
@@ -34,8 +37,8 @@ namespace AZ
                 if (IsEnabled())
                 {
                     const AZStd::string sectionName = AZStd::string::format(sectionNameFormat, args...);
-                    AZ_TracePrintf("ShaderReloadDebug", "%*s [BEGIN] %s \n", s_indent, "", sectionName.c_str());
-                    s_indent += IndentSpaces;
+                    AZ_TracePrintf("ShaderReloadDebug", "%*s [BEGIN] %s \n", GetIndent(), "", sectionName.c_str());
+                    AddIndent();
                 }
 #endif
             }
@@ -48,8 +51,8 @@ namespace AZ
                 if (IsEnabled())
                 {
                     const AZStd::string sectionName = AZStd::string::format(sectionNameFormat, args...);
-                    s_indent -= IndentSpaces;
-                    AZ_TracePrintf("ShaderReloadDebug", "%*s [_END_] %s \n", s_indent, "", sectionName.c_str());
+                    RemoveIndent();
+                    AZ_TracePrintf("ShaderReloadDebug", "%*s [_END_] %s \n", GetIndent(), "", sectionName.c_str());
                 }
 #endif
             }
@@ -63,7 +66,7 @@ namespace AZ
                 {
                     const AZStd::string message = AZStd::string::format(format, args...);
 
-                    AZ_TracePrintf("ShaderReloadDebug", "%*s %s \n", s_indent, "", message.c_str());
+                    AZ_TracePrintf("ShaderReloadDebug", "%*s %s \n", GetIndent(), "", message.c_str());
                 }
 #endif
             }
@@ -86,9 +89,12 @@ namespace AZ
             };
 
         private:
-            static bool s_enabled;
-            static int s_indent;
             static constexpr int IndentSpaces = 4;
+
+            static void MakeReady();
+            static void AddIndent();
+            static void RemoveIndent();
+            static int GetIndent();
         };
 
     } // namespace RPI

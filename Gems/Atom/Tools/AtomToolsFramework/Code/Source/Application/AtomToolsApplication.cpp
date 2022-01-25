@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
@@ -35,6 +36,8 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
+
+#include "AtomToolsFramework_Traits_Platform.h"
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QMessageBox>
@@ -77,12 +80,18 @@ namespace AtomToolsFramework
         m_styleManager.reset(new AzQtComponents::StyleManager(this));
         m_styleManager->initialize(this, engineRootPath);
 
-        connect(&m_timer, &QTimer::timeout, this, [&]()
+        m_timer.setInterval(1);
+        connect(&m_timer, &QTimer::timeout, this, [this]()
         {
             this->PumpSystemEventLoopUntilEmpty();
             this->Tick();
         });
 
+        connect(this, &QGuiApplication::applicationStateChanged, this, [this]()
+        {
+            // Limit the update interval when not in focus to reduce power consumption and interference with other applications
+            this->m_timer.setInterval((applicationState() & Qt::ApplicationActive) ? 1 : 32);
+        });
     }
 
     AtomToolsApplication ::~AtomToolsApplication()
@@ -121,10 +130,13 @@ namespace AtomToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "atomtools.general");
             };
-            // The reflection here is based on patterns in CryEditPythonHandler::Reflect
+
             addGeneral(behaviorContext->Method(
                 "idle_wait_frames", &AtomToolsApplication::PyIdleWaitFrames, nullptr,
                 "Waits idling for a frames. Primarily used for auto-testing."));
+            addGeneral(behaviorContext->Method(
+                "exit", &AtomToolsApplication::PyExit, nullptr,
+                "Exit application. Primarily used for auto-testing."));
         }
     }
 
@@ -145,7 +157,9 @@ namespace AtomToolsFramework
         components.insert(
             components.end(),
             {
+                azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::AssetBrowser::AssetBrowserComponent>(),
+                azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
                 azrtti_typeid<AzToolsFramework::Components::PropertyManagerComponent>(),
                 azrtti_typeid<AzToolsFramework::PerforceComponent>(),
@@ -162,18 +176,21 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::StartCommon(AZ::Entity* systemEntity)
     {
-        AzFramework::AssetSystemStatusBus::Handler::BusConnect();
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
 
         Base::StartCommon(systemEntity);
 
-        m_traceLogger.PrepareLogFile(GetBuildTargetName() + ".log");
+        const bool clearLogFile = GetSettingOrDefault("/O3DE/AtomToolsFramework/Application/ClearLogOnStart", false);
+        m_traceLogger.OpenLogFile(GetBuildTargetName() + ".log", clearLogFile);
+
+        ConnectToAssetProcessor();
 
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
+        AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
+            &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, true);
 
         if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
         {
@@ -216,7 +233,11 @@ namespace AtomToolsFramework
         AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
 
+#if AZ_TRAIT_ATOMTOOLSFRAMEWORK_SKIP_APP_DESTROY
+        ::_exit(0);
+#else
         Base::Destroy();
+#endif
     }
 
     AZStd::vector<AZStd::string> AtomToolsApplication::GetCriticalAssetFilters() const
@@ -224,7 +245,7 @@ namespace AtomToolsFramework
         return AZStd::vector<AZStd::string>({});
     }
 
-    void AtomToolsApplication::AssetSystemAvailable()
+    void AtomToolsApplication::ConnectToAssetProcessor()
     {
         bool connectedToAssetProcessor = false;
 
@@ -233,18 +254,19 @@ namespace AtomToolsFramework
         // and able to negotiate a connection when running a debug build
         // and to negotiate a connection
 
-        auto targetName = GetBuildTargetName();
+        const auto targetName = GetBuildTargetName();
 
         AzFramework::AssetSystem::ConnectionSettings connectionSettings;
         AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
         connectionSettings.m_connectionDirection =
             AzFramework::AssetSystem::ConnectionSettings::ConnectionDirection::ConnectToAssetProcessor;
-        connectionSettings.m_connectionIdentifier = GetBuildTargetName();
+        connectionSettings.m_connectionIdentifier = targetName;
         connectionSettings.m_loggingCallback = [targetName]([[maybe_unused]] AZStd::string_view logData)
         {
             AZ_UNUSED(targetName);  // Prevent unused warning in release builds
             AZ_TracePrintf(targetName.c_str(), "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
         };
+
         AzFramework::AssetSystemRequestBus::BroadcastResult(
             connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
 
@@ -252,8 +274,6 @@ namespace AtomToolsFramework
         {
             CompileCriticalAssets();
         }
-
-        AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     }
 
     void AtomToolsApplication::CompileCriticalAssets()
@@ -284,12 +304,27 @@ namespace AtomToolsFramework
             QMessageBox::critical(
                 activeWindow(), QString("Failed to compile critical assets"),
                 QString("Failed to compile the following critical assets:\n%1\n%2")
-                    .arg(failedAssets.join(",\n"))
-                    .arg("Make sure this is an Atom project."));
+                .arg(failedAssets.join(",\n"))
+                .arg("Make sure this is an Atom project."));
             ExitMainLoop();
         }
+
+        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
+
+        // Reload the assetcatalog.xml at this point again
+        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        auto LoadCatalog = [settingsRegistry = m_settingsRegistry.get()](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+        {
+            if (AZ::IO::FixedMaxPath assetCatalogPath;
+                settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                assetCatalogPath /= "assetcatalog.xml";
+                assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+            }
+        };
+        AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
     }
-    
+
     void AtomToolsApplication::SaveSettings()
     {
         if (m_activatedLocalUserSettings)
@@ -378,7 +413,7 @@ namespace AtomToolsFramework
             ExitMainLoop();
         }
     }
-    
+
     bool AtomToolsApplication::LaunchLocalServer()
     {
         // Determine if this is the first launch of the tool by attempting to connect to a running server
@@ -450,10 +485,10 @@ namespace AtomToolsFramework
         return false;
     }
 
-    void AtomToolsApplication::Tick(float deltaOverride)
+    void AtomToolsApplication::Tick()
     {
         TickSystem();
-        Base::Tick(deltaOverride);
+        Base::Tick();
 
         if (WasExitMainLoopRequested())
         {
@@ -537,5 +572,10 @@ namespace AtomToolsFramework
         QEventLoop loop;
         Ticker ticker(&loop, frames);
         loop.exec();
+    }
+
+    void AtomToolsApplication::PyExit()
+    {
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
     }
 } // namespace AtomToolsFramework

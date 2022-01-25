@@ -58,16 +58,13 @@ namespace Multiplayer
         void BindNetworkHierarchyLeaveEventHandler(NetworkHierarchyLeaveEvent::Handler& handler) override;
         //! @}
 
-    protected:
-        //! Used by @NetworkHierarchyRootComponent
-        void SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot);
-
     private:
+        //! Used by @NetworkHierarchyRootComponent
+        void SetTopLevelHierarchyRootEntity(AZ::Entity* previousHierarchyRoot, AZ::Entity* newHierarchyRoot);
+
         AZ::ChildChangedEvent::Handler m_childChangedHandler;
-        AZ::ParentChangedEvent::Handler m_parentChangedHandler;
 
         void OnChildChanged(AZ::ChildChangeType type, AZ::EntityId child);
-        void OnParentChanged(AZ::EntityId oldParent, AZ::EntityId parent);
 
         //! Points to the top level root.
         AZ::Entity* m_rootEntity = nullptr;
@@ -82,5 +79,8 @@ namespace Multiplayer
         bool m_isHierarchyEnabled = true;
 
         void NotifyChildrenHierarchyDisbanded();
+
+        AzNetworking::ConnectionId m_previousOwningConnectionId = AzNetworking::InvalidConnectionId;
+        void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) override;
     };
 }

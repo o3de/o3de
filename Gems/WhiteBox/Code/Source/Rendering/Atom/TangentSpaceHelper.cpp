@@ -73,7 +73,9 @@ namespace WhiteBox
 
             for (AZ::u32 i = 0; i < triangleCount; ++i)
             {
+#if defined(AZ_ENABLE_TRACING)
                 const auto& trianglePositions = trianglesPositions[i];
+#endif
                 const auto& triangleUVs = trianglesUVs[i];
                 const auto& triangleEdges = trianglesEdges[i];
 

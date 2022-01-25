@@ -62,12 +62,11 @@ def Docking_BasicDockedTools():
         import azlmbr.editor as editor
         import azlmbr.entity as entity
 
+        import editor_python_test_tools.hydra_editor_utils as hydra
         from editor_python_test_tools.utils import Report
-        from editor_python_test_tools.utils import TestHelper as helper
 
         # Open an existing simple level
-        helper.init_idle()
-        helper.open_level("Physics", "Base")
+        hydra.open_base_level()
 
         # Make sure the Entity Outliner, Entity Inspector and Console tools are open
         general.open_pane("Entity Outliner (PREVIEW)")
@@ -80,7 +79,7 @@ def Docking_BasicDockedTools():
         editor.EditorEntityAPIBus(bus.Event, 'SetName', entity_id, entity_original_name)
 
         editor_window = pyside_utils.get_editor_main_window()
-        entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner (PREVIEW)")
+        entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner")
 
         # 1) Open the tools and dock them together in a floating tabbed widget.
         # We drag/drop it over the viewport since it doesn't allow docking, so this will undock it
@@ -88,15 +87,15 @@ def Docking_BasicDockedTools():
         pyside_utils.drag_and_drop(entity_outliner, render_overlay)
 
         # We need to grab a new reference to the Entity Outliner QDockWidget because when it gets moved
-        # to the floating window, its parent changes so the wrapped intance we had becomes invalid
-        entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner (PREVIEW)")
+        # to the floating window, its parent changes so the wrapped instance we had becomes invalid
+        entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner")
 
         # Dock the Entity Inspector tabbed with the floating Entity Outliner
         entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
         pyside_utils.drag_and_drop(entity_inspector, entity_outliner)
 
         # We need to grab a new reference to the Entity Inspector QDockWidget because when it gets moved
-        # to the floating window, its parent changes so the wrapped intance we had becomes invalid
+        # to the floating window, its parent changes so the wrapped instance we had becomes invalid
         entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
 
         # Dock the Console tabbed with the floating Entity Inspector
@@ -106,7 +105,7 @@ def Docking_BasicDockedTools():
         # Check to ensure all the tools are parented to the same QStackedWidget
         def check_all_panes_tabbed():
             entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
-            entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner (PREVIEW)")
+            entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner")
             console = editor_window.findChild(QtWidgets.QDockWidget, "Console")
             entity_inspector_parent = entity_inspector.parentWidget()
             entity_outliner_parent = entity_outliner.parentWidget()
@@ -122,7 +121,7 @@ def Docking_BasicDockedTools():
 
         # 2.1,2) Select an Entity in the Entity Outliner.
         entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
-        entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner (PREVIEW)")
+        entity_outliner = editor_window.findChild(QtWidgets.QDockWidget, "Entity Outliner")
         console = editor_window.findChild(QtWidgets.QDockWidget, "Console")
         object_tree = entity_outliner.findChild(QtWidgets.QTreeView, "m_objectTree")
         test_entity_index = pyside_utils.find_child_by_pattern(object_tree, entity_original_name)
@@ -140,13 +139,13 @@ def Docking_BasicDockedTools():
 
         # 2.5,6) Send a console command.
         console_line_edit = console.findChild(QtWidgets.QLineEdit, "lineEdit")
-        console_line_edit.setText("t_Scale 2")
+        console_line_edit.setText("t_simulationTickScale 2")
         QtTest.QTest.keyClick(console_line_edit, QtCore.Qt.Key_Enter)
-        general.get_cvar("t_Scale")
-        Report.result(Tests.docked_console_works, general.get_cvar("t_Scale") == "2")
+        general.get_cvar("t_simulationTickScale")
+        Report.result(Tests.docked_console_works, general.get_cvar("t_simulationTickScale") == "2")
 
         # Reset the altered cvar
-        console_line_edit.setText("t_Scale 1")
+        console_line_edit.setText("t_simulationTickScale 1")
         QtTest.QTest.keyClick(console_line_edit, QtCore.Qt.Key_Enter)
 
     run_test()

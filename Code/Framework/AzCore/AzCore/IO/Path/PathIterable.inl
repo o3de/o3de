@@ -49,8 +49,8 @@ namespace AZ::IO
 
         constexpr void clear() noexcept;
 
-        friend constexpr auto PathView::GetNormalPathParts(const AZ::IO::PathView&) noexcept -> PathIterable;
         friend constexpr auto PathView::AppendNormalPathParts(PathIterable& pathIterable, const AZ::IO::PathView&) noexcept -> void;
+        friend constexpr auto PathView::MakeRelativeTo(PathIterable& pathIterable, const AZ::IO::PathView&, const AZ::IO::PathView&) noexcept -> void;
         PartKindArray m_parts{};
         size_t m_size{};
     };

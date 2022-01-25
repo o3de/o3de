@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Name/NameSerializer.h>
+#include <AzCore/IO/GenericStreams.h>
 
 namespace AZ
 {

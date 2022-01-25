@@ -67,19 +67,12 @@ namespace AZ
             return AZStd::nullopt;
         }
 
-        AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path)
+        bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength)
         {
-            AZ::IO::FixedMaxPathString absolutePath;
-            AZ::IO::FixedMaxPathString srcPath{ path };
-            char* result = _fullpath(absolutePath.data(), srcPath.c_str(), absolutePath.capacity());
-            // Force update of the fixed_string size() value
-            absolutePath.resize_no_construct(AZStd::char_traits<char>::length(absolutePath.data()));
-            if (result)
-            {
-                return absolutePath;
-            }
-
-            return AZStd::nullopt;
+            char* result = _fullpath(absolutePath, path, maxLength);
+            return result != nullptr;
         }
+
+
     }
 }

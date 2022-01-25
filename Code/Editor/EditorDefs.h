@@ -105,7 +105,6 @@
 #include <CryFile.h>
 #include <ISystem.h>
 #include <IIndexedMesh.h>
-#include <ITimer.h>
 #include <IXml.h>
 #include <IMovieSystem.h>
 

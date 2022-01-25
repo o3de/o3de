@@ -34,11 +34,12 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
     m_ui->setupUi(this);
 
     s_pLogoWindow = this;
-    setFixedSize(QSize(600, 300));
+    setFixedSize(QSize(m_enforcedWidth, m_enforcedHeight));
+    setAttribute(Qt::WA_TranslucentBackground, true);
 
     // Prepare background image
     m_backgroundImage = AzQtComponents::ScalePixmapForScreenDpi(
-        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg")),
+        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_2021_11.jpg")),
         screen(),
         QSize(m_enforcedWidth, m_enforcedHeight),
         Qt::IgnoreAspectRatio,

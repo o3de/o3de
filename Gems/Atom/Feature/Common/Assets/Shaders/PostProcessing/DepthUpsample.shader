@@ -1,5 +1,5 @@
 {
-    "Source": "DepthUpsample",
+    "Source": "DepthUpsample.azsl",
 
     "ProgramSettings" :
     {

@@ -18,6 +18,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzFramework/Archive/Codec.h>
 #include <AzFramework/Archive/ZipDirStructures.h>

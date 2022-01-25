@@ -27,7 +27,6 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Asset/AssetManager.h>

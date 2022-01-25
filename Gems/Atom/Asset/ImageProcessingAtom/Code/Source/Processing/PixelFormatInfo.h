@@ -119,7 +119,6 @@ namespace ImageProcessingAtom
         bool        bSquarePow2;    // whether the pixel format requires image size be square and power of 2.
         DXGI_FORMAT d3d10Format;    // the mapping d3d10 pixel format
         ESampleType eSampleType;    // the data type used to present pixel
-        const char* szLegacyName;   // name used for cryEngine
         const char* szName;         // name for showing in editors
         const char* szDescription;  // description for showing in editors
         bool        bCompressed;    // if it's a compressed format
@@ -173,10 +172,6 @@ namespace ImageProcessingAtom
         bool IsFormatSigned(EPixelFormat fmt);
         bool IsFormatFloatingPoint(EPixelFormat fmt, bool bFullPrecision);
 
-        //find the pixel format for name used by Cry's RC.ini
-        //returns ePixelFormat_Unknown if the name was not found in registed format list
-        EPixelFormat FindPixelFormatByLegacyName(const char* name);
-
         //find pixel format by its name
         EPixelFormat FindPixelFormatByName(const char* name);
 
@@ -208,9 +203,6 @@ namespace ImageProcessingAtom
 
         //pixel format name to pixel format enum
         AZStd::map<AZStd::string, EPixelFormat>  m_pixelFormatNameMap;
-
-        // some formats from cryEngine were removed. using this name-pixelFormat mapping to look for new format
-        AZStd::map<AZStd::string, EPixelFormat>  m_removedLegacyFormats;
     };
 
     template <class TInteger>

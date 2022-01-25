@@ -15,7 +15,9 @@
 #include <AzTest/AzTest.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
-#include <NetworkEntity/EntityReplication/EntityReplicator.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
+#include <Multiplayer/NetworkInput/NetworkInputArray.h>
+#include <Source/NetworkEntity/NetworkEntityManager.h>
 
 namespace Multiplayer
 {
@@ -175,10 +177,10 @@ namespace Multiplayer
         void CreateSimpleHierarchy(EntityInfo& root, EntityInfo& child)
         {
             PopulateHierarchicalEntity(root);
-            SetupEntity(root.m_entity, root.m_netId, NetEntityRole::Client);
+            SetupEntity(root.m_entity, root.m_netId, NetEntityRole::Autonomous);
 
             PopulateHierarchicalEntity(child);
-            SetupEntity(child.m_entity, child.m_netId, NetEntityRole::Client);
+            SetupEntity(child.m_entity, child.m_netId, NetEntityRole::Autonomous);
 
             // we need a parent-id value to be present in NetworkTransformComponent (which is in client mode and doesn't have a controller)
             SetParentIdOnNetworkTransform(child.m_entity, root.m_netId);
@@ -211,9 +213,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(value),
-                "hierarchyRoot", /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(value, "hierarchyRoot"); // Derived from NetworkHierarchyChildComponent.AutoComponent.xml
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
@@ -301,6 +302,36 @@ namespace Multiplayer
         SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
     }
 
+    TEST_F(ClientSimpleHierarchyTests, ChildHasOwningConnectionIdOfParent)
+    {
+        // disconnect and assign new connection ids
+        SetParentIdOnNetworkTransform(m_child->m_entity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
+
+        m_root->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 1 });
+        m_child->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 2 });
+
+        const ConnectionId previousConnectionId = m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId();
+
+        // re-attach, child's owning connection id should then be root's connection id
+        SetParentIdOnNetworkTransform(m_child->m_entity, RootNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, RootNetEntityId);
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            m_root->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId()
+        );
+
+        // detach, the child should roll back to his previous owning connection id
+        SetParentIdOnNetworkTransform(m_child->m_entity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            previousConnectionId
+        );
+    }
+
     /*
      * Parent -> Child -> ChildOfChild
      */
@@ -330,7 +361,7 @@ namespace Multiplayer
         void CreateDeepHierarchyOnClient(EntityInfo& childOfChild)
         {
             PopulateHierarchicalEntity(childOfChild);
-            SetupEntity(childOfChild.m_entity, childOfChild.m_netId, NetEntityRole::Client);
+            SetupEntity(childOfChild.m_entity, childOfChild.m_netId, NetEntityRole::Autonomous);
 
             // we need a parent-id value to be present in NetworkTransformComponent (which is in client mode and doesn't have a controller)
             SetParentIdOnNetworkTransform(childOfChild.m_entity, m_childOfChild->m_netId);
@@ -385,6 +416,68 @@ namespace Multiplayer
                 m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->GetHierarchicalEntities()[2],
                 m_childOfChild->m_entity.get()
             );
+        }
+    }
+
+    TEST_F(ClientDeepHierarchyTests, CreateProcessInputTest)
+    {
+        using MultiplayerTest::TestMultiplayerComponent;
+        using MultiplayerTest::TestMultiplayerComponentController;
+        using MultiplayerTest::TestMultiplayerComponentNetworkInput;
+
+        auto* rootNetBind = m_root->m_entity->FindComponent<NetBindComponent>();
+
+        NetworkInputArray inputArray(rootNetBind->GetEntityHandle());
+        NetworkInput& input = inputArray[0];
+
+        const float deltaTime = 0.16f;
+        rootNetBind->CreateInput(input, deltaTime);
+
+        auto ValidateCreatedInput = [](const NetworkInput& input, const HierarchyTests::EntityInfo& entityInfo)
+        {
+            // Validate test input for the root entity's TestMultiplayerComponent
+            auto* testInput = input.FindComponentInput<TestMultiplayerComponentNetworkInput>();
+            EXPECT_NE(testInput, nullptr);
+
+            auto* testMultiplayerComponent = entityInfo.m_entity->FindComponent<TestMultiplayerComponent>();
+            EXPECT_NE(testMultiplayerComponent, nullptr);
+
+            EXPECT_EQ(testInput->m_ownerId, testMultiplayerComponent->GetId());
+        };
+
+        // Validate root input
+        ValidateCreatedInput(input, *m_root);
+
+        // Validate children input
+        {
+            NetworkHierarchyRootComponentNetworkInput* rootHierarchyInput = input.FindComponentInput<NetworkHierarchyRootComponentNetworkInput>();
+            const AZStd::vector<NetworkInputChild>& childInputs = rootHierarchyInput->m_childInputs;
+            EXPECT_EQ(childInputs.size(), 2);
+            ValidateCreatedInput(childInputs[0].GetNetworkInput(), *m_child);
+            ValidateCreatedInput(childInputs[1].GetNetworkInput(), *m_childOfChild);
+        }
+
+        // Test ProcessInput
+        {
+            AZStd::unordered_set<NetEntityId> inputProcessedEntities;
+            size_t processInputCallCounter = 0;
+            auto processInputCallback = [&inputProcessedEntities, &processInputCallCounter](NetEntityId netEntityId)
+            {
+                inputProcessedEntities.insert(netEntityId);
+                processInputCallCounter++;
+            };
+
+            // Set the callbacks for processing input. This allows us to inspect how many times the input was processed
+            // and which entity's controller was invoked.
+            m_root->m_entity->FindComponent<TestMultiplayerComponent>()->m_processInputCallback = processInputCallback;
+            m_child->m_entity->FindComponent<TestMultiplayerComponent>()->m_processInputCallback = processInputCallback;
+            m_childOfChild->m_entity->FindComponent<TestMultiplayerComponent>()->m_processInputCallback = processInputCallback;
+
+            rootNetBind->ProcessInput(input, deltaTime);
+
+            EXPECT_EQ(processInputCallCounter, 3);
+            EXPECT_EQ(inputProcessedEntities,
+                AZStd::unordered_set<NetEntityId>({ m_root->m_netId, m_child->m_netId, m_childOfChild->m_netId }));
         }
     }
 }

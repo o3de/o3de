@@ -9,6 +9,8 @@
 #include <GemRepo/GemRepoListView.h>
 #include <GemRepo/GemRepoItemDelegate.h>
 
+#include <QShortcut>
+
 namespace O3DE::ProjectManager
 {
     GemRepoListView::GemRepoListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent)
@@ -19,6 +21,10 @@ namespace O3DE::ProjectManager
 
         setModel(model);
         setSelectionModel(selectionModel);
-        setItemDelegate(new GemRepoItemDelegate(model, this));
+
+        GemRepoItemDelegate* itemDelegate = new GemRepoItemDelegate(model, this);
+        connect(itemDelegate, &GemRepoItemDelegate::RemoveRepo, this, &GemRepoListView::RemoveRepo);
+        connect(itemDelegate, &GemRepoItemDelegate::RefreshRepo, this, &GemRepoListView::RefreshRepo);
+        setItemDelegate(itemDelegate);
     }
 } // namespace O3DE::ProjectManager

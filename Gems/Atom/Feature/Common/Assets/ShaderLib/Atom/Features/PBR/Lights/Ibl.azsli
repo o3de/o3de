@@ -60,7 +60,7 @@ float3 GetIblSpecular(
     
         // compute blend amount based on world position in the reflection probe volume
         float blendAmount = ComputeLerpBetweenInnerOuterOBBs(
-            ObjectSrg::GetReflectionProbeWorldMatrixInverse(),
+            (float3x4)ObjectSrg::GetReflectionProbeWorldMatrixInverse(),
             ObjectSrg::m_reflectionProbeData.m_innerObbHalfLengths,
             ObjectSrg::m_reflectionProbeData.m_outerObbHalfLengths,
             position);
@@ -85,12 +85,12 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
 
     if(useIbl)
     {
-        float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
+        float globalIblExposure = pow(2.0, SceneSrg::m_iblExposure);
         
         if(useDiffuseIbl)
         {
             float3 iblDiffuse = GetIblDiffuse(surface.normal, surface.albedo, lightingData.diffuseResponse);
-            lightingData.diffuseLighting += (iblDiffuse * iblExposureFactor * lightingData.diffuseAmbientOcclusion);
+            lightingData.diffuseLighting += (iblDiffuse * globalIblExposure * lightingData.diffuseAmbientOcclusion);
         }
 
         if(useSpecularIbl)
@@ -116,8 +116,8 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
                 iblSpecular = iblSpecular * (1.0 - clearCoatResponse) * (1.0 - clearCoatResponse) + clearCoatIblSpecular;
             }
 
-            lightingData.specularLighting += (iblSpecular * iblExposureFactor);
+            float exposure = ObjectSrg::m_reflectionProbeData.m_useReflectionProbe ? pow(2.0, ObjectSrg::m_reflectionProbeData.m_exposure) : globalIblExposure;
+            lightingData.specularLighting += (iblSpecular * exposure);
         }
     }
 }
-

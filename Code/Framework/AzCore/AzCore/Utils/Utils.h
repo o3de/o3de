@@ -104,6 +104,7 @@ namespace AZ
         // Attempts the supplied path to an absolute path.
         //! Returns nullopt if path cannot be converted to an absolute path
         AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path);
+        bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 absolutePathMaxSize);
 
         //! Save a string to a file. Otherwise returns a failure with error message.
         AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath);

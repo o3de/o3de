@@ -29,6 +29,14 @@ namespace AZ
             Count
         };
 
+        namespace DefaultImageAssetPaths
+        {
+            static constexpr char DefaultFallback[] = "textures/defaults/defaultfallback.png.streamingimage";
+            static constexpr char Processing[] = "textures/defaults/processing.png.streamingimage";
+            static constexpr char ProcessingFailed[] = "textures/defaults/processingfailed.png.streamingimage";
+            static constexpr char Missing[] = "textures/defaults/missing.png.streamingimage";
+        }
+
         class ImageSystemInterface
         {
         public:

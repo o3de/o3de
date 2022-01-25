@@ -433,9 +433,7 @@ namespace AZ
                 m_classData.m_attributes.set_allocator(AZStd::move(dllAllocator));
 
                 // Create the ObjectStreamWriteOverrideCB in the current module
-                using ContainerType = AttributeData<AZStd::function<void(SerializeContext::EnumerateInstanceCallContext&,
-                    const void*, const SerializeContext::ClassData&, const SerializeContext::ClassElement*)>>;
-                m_classData.m_attributes.emplace_back(AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f), CreateModuleAttribute<ContainerType>(&ObjectStreamWriter));
+                m_classData.m_attributes.emplace_back(AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f), CreateModuleAttribute(&ObjectStreamWriter));
             }
 
             SerializeContext::ClassData* GetClassData() override

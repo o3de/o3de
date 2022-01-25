@@ -13,6 +13,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/algorithm.h>
@@ -839,7 +840,7 @@ namespace AZ
     }
 
     SliceComponent::SliceInstance* SliceComponent::SliceReference::CreateInstanceFromExistingEntities(AZStd::vector<AZ::Entity*>& entities,
-        const EntityIdToEntityIdMap assetToLiveIdMap,
+        const EntityIdToEntityIdMap& assetToLiveIdMap,
         SliceInstanceId sliceInstanceId)
     {
         AZ_PROFILE_FUNCTION(AzCore);

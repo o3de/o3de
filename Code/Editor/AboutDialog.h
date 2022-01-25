@@ -30,15 +30,15 @@ public:
 
 private:
 
-    void OnCustomerAgreement();
-
     void mouseReleaseEvent(QMouseEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
 
     QScopedPointer<Ui::CAboutDialog>    m_ui;
     QPixmap                             m_backgroundImage;
 
-    int m_enforcedWidth = 600;
-    int m_enforcedHeight = 400;
+    const int m_imageWidth = 668;
+    const int m_imageHeight = 368;
+    const int m_enforcedWidth = 600;
+    const int m_enforcedHeight = 300;
 };
 

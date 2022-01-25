@@ -52,9 +52,8 @@ namespace AZ
          */
         class Shader final
             : public Data::InstanceData
-            , public Data::AssetBus::Handler
+            , public Data::AssetBus::MultiHandler
             , public ShaderVariantFinderNotificationBus::Handler
-            , public ShaderReloadNotificationBus::Handler
         {
             friend class ShaderSystem;
         public:
@@ -137,11 +136,6 @@ namespace AZ
             //! This tag corresponds to the ShaderAsset object's DrawListName.
             RHI::DrawListTag GetDrawListTag() const;
 
-            //! Changes the supervariant of the shader to the specified supervariantIndex.
-            //! [GFX TODO][ATOM-15813]: this can be removed when the shader InstanceDatabase can support multiple shader
-            //! instances with different supervariants.
-            void ChangeSupervariant(SupervariantIndex supervariantIndex);
-
         private:
             explicit Shader(const SupervariantIndex& supervariantIndex) : m_supervariantIndex(supervariantIndex){};
             Shader() = delete;
@@ -154,6 +148,8 @@ namespace AZ
 
             ConstPtr<RHI::PipelineLibraryData> LoadPipelineLibrary() const;
             void SavePipelineLibrary() const;
+            
+            const ShaderVariant& GetVariantInternal(ShaderVariantStableId shaderVariantStableId);
 
             ///////////////////////////////////////////////////////////////////
             /// AssetBus overrides
@@ -164,15 +160,6 @@ namespace AZ
             /// ShaderVariantFinderNotificationBus overrides
             void OnShaderVariantTreeAssetReady(Data::Asset<ShaderVariantTreeAsset> /*shaderVariantTreeAsset*/, bool /*isError*/) override {};
             void OnShaderVariantAssetReady(Data::Asset<ShaderVariantAsset> shaderVariantAsset, bool IsError) override;
-            ///////////////////////////////////////////////////////////////////
-            
-            ///////////////////////////////////////////////////////////////////
-            // ShaderReloadNotificationBus overrides...
-            void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
-            // Note we don't need OnShaderVariantReinitialized because the Shader class doesn't do anything with the data inside
-            // the ShaderVariant object. The only thing we might want to do is propagate the message upward, but that's unnecessary
-            // because the ShaderReloadNotificationBus uses the Shader's AssetId as the ID for all messages including those from the variants.
-            // And of course we don't need to handle OnShaderReinitialized because this *is* this Shader.
             ///////////////////////////////////////////////////////////////////
 
             //! A strong reference to the shader asset.
@@ -206,6 +193,12 @@ namespace AZ
 
             //! PipelineLibrary file name
             char m_pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
+
+            //! During OnAssetReloaded, the internal references to ShaderVariantAsset inside
+            //! ShaderAsset are not updated correctly. We store here a reference to the root ShaderVariantAsset
+            //! when it got reloaded, later when We get OnAssetReloaded for the ShaderAsset We update its internal
+            //! reference to the root variant asset.
+            Data::Asset<ShaderVariantAsset> m_reloadedRootShaderVariantAsset;
         };
     }
 }

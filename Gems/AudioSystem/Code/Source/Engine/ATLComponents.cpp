@@ -977,7 +977,7 @@ namespace Audio
         , m_rPreloadRequests(rPreloadRequests)
         , m_nTriggerImplIDCounter(AUDIO_TRIGGER_IMPL_ID_NUM_RESERVED)
         , m_rFileCacheMgr(rFileCacheMgr)
-        , m_rootPath("@assets@")
+        , m_rootPath("@products@")
     #if !defined(AUDIO_RELEASE)
         , m_pDebugNameStore(nullptr)
     #endif // !AUDIO_RELEASE

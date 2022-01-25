@@ -1,0 +1,122 @@
+{
+    "entries": [
+        {
+            "base": "String_VM",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "String_VM"
+            },
+            "methods": [
+                {
+                    "base": "ToLower",
+                    "context": "String_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToLower"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToLower is invoked"
+                    },
+                    "details": {
+                        "name": "String_VM::ToLower",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ToUpper",
+                    "context": "String_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToUpper"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToUpper is invoked"
+                    },
+                    "details": {
+                        "name": "String_VM::ToUpper",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Substring",
+                    "context": "String_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Substring"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Substring is invoked"
+                    },
+                    "details": {
+                        "name": "String_VM::Substring",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

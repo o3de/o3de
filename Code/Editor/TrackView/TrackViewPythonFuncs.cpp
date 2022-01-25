@@ -19,6 +19,7 @@
 // Editor
 #include "AnimationContext.h"
 
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace
 {

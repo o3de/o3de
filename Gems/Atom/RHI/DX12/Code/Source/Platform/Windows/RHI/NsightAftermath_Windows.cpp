@@ -53,14 +53,14 @@ namespace Aftermath
 #endif
     }
 
-    void SetAftermathEventMarker( [[maybe_unused]] void* cntxHandle, [[maybe_unused]] const AZStd::string& markerData, [[maybe_unused]] bool isAftermathInitialized)
+    void SetAftermathEventMarker( [[maybe_unused]] void* cntxHandle, [[maybe_unused]] const char* markerData, [[maybe_unused]] bool isAftermathInitialized)
     {
 #if defined(USE_NSIGHT_AFTERMATH)
         if (isAftermathInitialized)
         {
             GFSDK_Aftermath_Result result = GFSDK_Aftermath_SetEventMarker(
-                static_cast<GFSDK_Aftermath_ContextHandle>(cntxHandle), static_cast<const void*>(markerData.c_str()),
-                static_cast<unsigned int>(markerData.size()) + 1);
+                static_cast<GFSDK_Aftermath_ContextHandle>(cntxHandle), static_cast<const void*>(markerData),
+                static_cast<unsigned int>(strlen(markerData) + 1);
             AssertOnError(result);
         }
 #endif

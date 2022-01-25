@@ -67,6 +67,9 @@ namespace Multiplayer
         //! @return reference to the requested component data, an empty container will be returned if the NetComponentId does not exist
         const ComponentData& GetMultiplayerComponentData(NetComponentId netComponentId) const;
 
+        //! This releases all owned memory, should only be called during multiplayer shutdown.
+        void Reset();
+
     private:
         NetComponentId m_nextNetComponentId = NetComponentId{ 0 };
         AZStd::unordered_map<NetComponentId, ComponentData> m_componentData;

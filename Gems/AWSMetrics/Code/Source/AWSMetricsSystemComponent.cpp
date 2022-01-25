@@ -74,7 +74,12 @@ namespace AWSMetrics
         {
             behaviorContext->EBus<AWSMetricsRequestBus>("AWSMetricsRequestBus", "Generate and submit metrics to the metrics analytics pipeline")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSMetrics")
-                ->Event("SubmitMetrics", &AWSMetricsRequestBus::Events::SubmitMetrics)
+                ->Event(
+                    "SubmitMetrics", &AWSMetricsRequestBus::Events::SubmitMetrics,
+                    { { { "Metrics Attributes list", "The list of metrics attributes to submit." },
+                        { "Event priority", "Priority of the event. Defaults to 0, which is highest priority." }, 
+                        { "Event source override", "Event source used to override the default, 'AWSMetricGem'." },
+                        { "Buffer metrics", "Whether to buffer metrics and send them in a batch." } } })
                 ->Event("FlushMetrics", &AWSMetricsRequestBus::Events::FlushMetrics)
                 ;
 

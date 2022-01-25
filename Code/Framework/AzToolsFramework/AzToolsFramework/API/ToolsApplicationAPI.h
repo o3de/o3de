@@ -764,12 +764,6 @@ namespace AzToolsFramework
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
-        /// Allow interception of selection / left-mouse clicks in ObjectMode, for customizing selection behavior.
-        virtual void HandleObjectModeSelection(const AZ::Vector2& /*point*/, int /*flags*/, bool& /*handled*/) {}
-
-        /// Allow interception of cursor, for customizing selection behavior.
-        virtual void UpdateObjectModeCursor(AZ::u32& /*cursorId*/, AZStd::string& /*cursorStr*/) {}
-
         /// Creates editor-side representation of an underlying entity.
         virtual void CreateEditorRepresentation(AZ::Entity* /*entity*/) { }
 
@@ -832,6 +826,10 @@ namespace AzToolsFramework
         /// Path will be empty if component should have no icon.
         virtual AZStd::string GetComponentEditorIcon(const AZ::Uuid& /*componentType*/, AZ::Component* /*component*/) { return AZStd::string(); }
 
+        //! Return path to icon for component type.
+        //! Path will be empty if component type should have no icon.
+        virtual AZStd::string GetComponentTypeEditorIcon(const AZ::Uuid& /*componentType*/) { return AZStd::string(); }
+
         /**
          * Return the icon image path based on the component type and where it is used.
          * \param componentType         component type
@@ -880,9 +878,6 @@ namespace AzToolsFramework
         /// Return the icon texture id (from internal IconManager) for a given entity icon path.
         /// This can be passed to DrawTextureLabel to draw an entity icon.
         virtual int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) = 0;
-
-        /// Returns if the Display Helpers option is toggled on in the Editor.
-        virtual bool DisplayHelpersVisible() = 0;
     };
 
     using EditorRequestBus = AZ::EBus<EditorRequests>;
@@ -928,6 +923,9 @@ namespace AzToolsFramework
 
         /// Notify that the MainWindow has been fully initialized
         virtual void NotifyMainWindowInitialized(QMainWindow* /*mainWindow*/) {}
+
+        /// Notify that the Editor has been fully initialized
+        virtual void NotifyEditorInitialized() {}
 
         /// Signal that an asset should be highlighted / selected
         virtual void SelectAsset(const QString& /* assetPath */) {}

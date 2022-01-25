@@ -16,6 +16,7 @@
 
 #include <Integration/ActorComponentBus.h>
 #include <Integration/Assets/ActorAsset.h>
+#include <Integration/Rendering/RenderFlag.h>
 
 namespace EMotionFX
 {
@@ -33,16 +34,7 @@ namespace EMotionFX
             virtual ~RenderActorInstance() = default;
 
             virtual void OnTick(float timeDelta) = 0;
-
-            struct DebugOptions
-            {
-                bool m_drawAABB = false;
-                bool m_drawSkeleton = false;
-                bool m_drawRootTransform = false;
-                AZ::Transform m_rootWorldTransform = AZ::Transform::CreateIdentity();
-                bool m_emfxDebugDraw = false;
-            };
-            virtual void DebugDraw(const DebugOptions& debugOptions) = 0;
+            virtual void DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags) = 0;
 
             SkinningMethod GetSkinningMethod() const;
             virtual void SetSkinningMethod(SkinningMethod skinningMethod);

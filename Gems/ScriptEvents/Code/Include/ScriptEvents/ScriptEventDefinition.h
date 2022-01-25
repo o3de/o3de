@@ -11,7 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <ScriptEvents/ScriptEventParameter.h>
-#include <ScriptEvents/ScriptEventMethod.h>
+#include <ScriptEvents/ScriptEventsMethod.h>
 #include <ScriptEvents/Internal/VersionedProperty.h>
 
 namespace ScriptEvents

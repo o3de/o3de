@@ -16,7 +16,7 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Name/Name.h>
 
-namespace MaterialEditor 
+namespace MaterialEditor
 {
     class MaterialEditorCoreComponent;
 }
@@ -34,24 +34,29 @@ namespace AZ
     {
         class NameData;
     };
-    
+
     //! Maintains a list of unique strings for Name objects.
     //! The main benefit of the Name system is very fast string equality comparison, because every
-    //! unique name has a unique ID. The NameDictionary's purpose is to guarantee name IDs do not 
+    //! unique name has a unique ID. The NameDictionary's purpose is to guarantee name IDs do not
     //! collide. It also saves memory by removing duplicate strings.
     //!
-    //! Benchmarks have shown that creating a new Name object can be quite slow when the name doesn't 
-    //! already exist in the NameDictionary, but is comparable to creating an AZStd::string for names 
+    //! Benchmarks have shown that creating a new Name object can be quite slow when the name doesn't
+    //! already exist in the NameDictionary, but is comparable to creating an AZStd::string for names
     //! that already exist.
     class NameDictionary final
     {
+    public:
         AZ_CLASS_ALLOCATOR(NameDictionary, AZ::OSAllocator, 0);
+    private:
 
         friend Module;
         friend Name;
         friend Internal::NameData;
         friend UnitTest::NameDictionaryTester;
-        
+        template<typename T, typename... Args> friend constexpr auto AZStd::construct_at(T*, Args&&... args)
+            -> AZStd::enable_if_t<AZStd::is_void_v<AZStd::void_t<decltype(new (AZStd::declval<void*>()) T(AZStd::forward<Args>(args)...))>>, T*>;
+        template<typename T> constexpr friend void AZStd::destroy_at(T*);
+
     public:
 
         static void Create();
@@ -62,7 +67,7 @@ namespace AZ
 
         //! Makes a Name from the provided raw string. If an entry already exists in the dictionary, it is shared.
         //! Otherwise, it is added to the internal dictionary.
-        //! 
+        //!
         //! @param name The name to resolve against the dictionary.
         //! @return A Name instance holding a dictionary entry associated with the provided raw string.
         Name MakeName(AZStd::string_view name);
@@ -72,8 +77,8 @@ namespace AZ
         //! @return A Name instance. If the hash was not found, the Name will be empty.
         Name FindName(Name::Hash hash) const;
 
-    private:
         NameDictionary();
+    private:
         ~NameDictionary();
 
         void ReportStats() const;
@@ -84,13 +89,13 @@ namespace AZ
         // Attempts to release the name from the dictionary, but checks to make sure
         // a reference wasn't taken by another thread.
         void TryReleaseName(Name::Hash hash);
-        
+
         //////////////////////////////////////////////////////////////////////////
 
         // Calculates a hash for the provided name string.
         // Does not attempt to resolve hash collisions; that is handled elsewhere.
         Name::Hash CalcHash(AZStd::string_view name);
-                
+
         AZStd::unordered_map<Name::Hash, Internal::NameData*> m_dictionary;
         mutable AZStd::shared_mutex m_sharedMutex;
     };

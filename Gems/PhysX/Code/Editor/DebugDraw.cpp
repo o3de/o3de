@@ -56,9 +56,9 @@ namespace PhysX
         bool IsDrawColliderReadOnly()
         {
             bool helpersVisible = false;
-            AzToolsFramework::EditorRequestBus::BroadcastResult(helpersVisible,
-                &AzToolsFramework::EditorRequests::DisplayHelpersVisible);
-            // if helpers are visible, draw colliders is NOT read only and can be changed.
+            AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::BroadcastResult(
+                helpersVisible, &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::HelpersVisible);
+            // if helpers are visible, draw colliders is not read only and can be changed
             return !helpersVisible;
         }
 
@@ -148,16 +148,16 @@ namespace PhysX
                     using VisibilityFunc = bool(*)();
 
                     editContext->Class<Collider>(
-                        "PhysX Collider Debug Draw", "Manages global and per-collider debug draw settings and logic")
+                        "PhysX Collider Debug Draw", "Global and per-collider debug draw preferences.")
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Collider::m_locallyEnabled, "Draw collider",
-                            "Shows the geometry for the collider in the viewport")
+                            "Display collider geometry in the viewport.")
                             ->Attribute(AZ::Edit::Attributes::CheckboxTooltip,
                                 "If set, the geometry of this collider is visible in the viewport. 'Draw Helpers' needs to be enabled to use.")
                             ->Attribute(AZ::Edit::Attributes::Visibility,
                                 VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Button, &Collider::m_globalButtonState, "Draw collider",
-                            "Shows the geometry for the collider in the viewport")
+                            "Display collider geometry in the viewport.")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
                             ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
                                 "A global setting is overriding this property (to disable the override, "
@@ -264,7 +264,11 @@ namespace PhysX
             case Physics::ShapeType::CookedMesh:
             {
                 const auto& cookedMeshConfig = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfig);
-                physx::PxBase* meshData = static_cast<physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
+                const physx::PxBase* constMeshData = static_cast<const physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
+
+                // Specifically removing the const from the meshData pointer because the physx APIs expect this pointer to be non-const.
+                physx::PxBase* meshData = const_cast<physx::PxBase*>(constMeshData);
+
                 if (meshData)
                 {
                     if (meshData->is<physx::PxTriangleMesh>())
@@ -676,7 +680,64 @@ namespace PhysX
             }
         }
 
-        AZ::Transform Collider::GetColliderLocalTransform(const Physics::ColliderConfiguration& colliderConfig,
+        void Collider::DrawHeightfield(
+            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
+            [[maybe_unused]] const Physics::ColliderConfiguration& colliderConfig,
+            [[maybe_unused]] const Physics::HeightfieldShapeConfiguration& heightfieldShapeConfig,
+            [[maybe_unused]] const AZ::Vector3& colliderScale,
+            [[maybe_unused]] const bool forceUniformScaling) const
+        {
+            const int numColumns = heightfieldShapeConfig.GetNumColumns();
+            const int numRows = heightfieldShapeConfig.GetNumRows();
+
+            const float minXBounds = -(numColumns * heightfieldShapeConfig.GetGridResolution().GetX()) / 2.0f;
+            const float minYBounds = -(numRows * heightfieldShapeConfig.GetGridResolution().GetY()) / 2.0f;
+
+            auto heights = heightfieldShapeConfig.GetSamples();
+            
+            for (int xIndex = 0; xIndex < numColumns - 1; xIndex++)
+            {
+                for (int yIndex = 0; yIndex < numRows - 1; yIndex++)
+                {
+                    const int index0 = yIndex * numColumns + xIndex;
+                    const int index1 = yIndex * numColumns + xIndex + 1;
+                    const int index2 = (yIndex + 1) * numColumns + xIndex;
+                    const int index3 = (yIndex + 1) * numColumns + xIndex + 1;
+
+                    const float x0 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * xIndex;
+                    const float x1 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * (xIndex + 1);
+                    const float y0 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * yIndex;
+                    const float y1 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * (yIndex + 1);
+
+                    // Always draw top and left line of quad
+                    debugDisplay.DrawLine(
+                        AZ::Vector3(x0, y0, heights[index0].m_height),
+                        AZ::Vector3(x1, y0, heights[index1].m_height));
+                    debugDisplay.DrawLine(
+                        AZ::Vector3(x0, y0, heights[index0].m_height),
+                        AZ::Vector3(x0, y1, heights[index2].m_height));
+
+                    // Draw bottom line in last row
+                    if (yIndex == numRows - 2)
+                    {
+                        debugDisplay.DrawLine(
+                            AZ::Vector3(x1, y1, heights[index3].m_height),
+                            AZ::Vector3(x0, y1, heights[index2].m_height));
+                    }
+
+                    // Draw right line in last column
+                    if (xIndex == numColumns - 2)
+                    {
+                        debugDisplay.DrawLine(
+                            AZ::Vector3(x1, y0, heights[index1].m_height),
+                            AZ::Vector3(x1, y1, heights[index3].m_height));
+                    }
+                }
+            }
+        }
+
+        AZ::Transform Collider::GetColliderLocalTransform(
+            const Physics::ColliderConfiguration& colliderConfig,
             const AZ::Vector3& colliderScale) const
         {
             // Apply entity world transform scale to collider offset

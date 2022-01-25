@@ -82,5 +82,6 @@ namespace AZ
         
         VkImageUsageFlags ImageUsageFlagsOfFormatFeatureFlags(VkFormatFeatureFlags formatFeatureFlags);
         VkAccessFlags GetSupportedAccessFlags(VkPipelineStageFlags pipelineStageFlags);
+        bool ShouldApplyDeviceAddressBit(RHI::BufferBindFlags bindFlags);
     }
 }

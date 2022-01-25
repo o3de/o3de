@@ -68,14 +68,14 @@ namespace AZ::IO::ZipDir
     {
         for (FileEntryTree::SubdirMap::iterator it = pTree->GetDirBegin(); it != pTree->GetDirEnd(); ++it)
         {
-            AddAllFiles(it->second.get(), (AZ::IO::Path(strRoot) / it->first).Native());
+            AddAllFiles(it->second.get(), (AZ::IO::Path(strRoot, AZ::IO::PosixPathSeparator) / it->first).Native());
         }
 
         for (FileEntryTree::FileMap::iterator it = pTree->GetFileBegin(); it != pTree->GetFileEnd(); ++it)
         {
             FileRecord rec;
             rec.pFileEntryBase = pTree->GetFileEntry(it);
-            rec.strPath = (AZ::IO::Path(strRoot) / it->first).Native();
+            rec.strPath = (AZ::IO::Path(strRoot, AZ::IO::PosixPathSeparator) / it->first).Native();
             push_back(rec);
         }
     }

@@ -37,7 +37,8 @@ namespace AZ
         class GenericStream;
     }
 
-    namespace ObjectStreamInternal {
+    namespace ObjectStreamInternal
+    {
         class ObjectStreamImpl;
     }
 

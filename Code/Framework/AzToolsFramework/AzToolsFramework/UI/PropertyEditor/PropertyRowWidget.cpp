@@ -421,6 +421,7 @@ namespace AzToolsFramework
     {
         QString label{ text };
         m_nameLabel->setText(label);
+        m_nameLabel->setOpenExternalLinks(true);
         m_nameLabel->setVisible(!label.isEmpty());
         // setting the stretches to 0 in case of an empty label really hides the label (i.e. even the reserved space)
         m_mainLayout->setStretch(0, label.isEmpty() ? 0 : LabelColumnStretch);
@@ -1102,10 +1103,7 @@ namespace AzToolsFramework
             {
                 m_dropDownArrow->hide();
             }
-            m_indent->changeSize((m_treeDepth * m_treeIndentation) + m_leafIndentation, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
-            m_leftHandSideLayout->invalidate();
-            m_leftHandSideLayout->update();
-            m_leftHandSideLayout->activate();
+            SetIndentSize(m_treeDepth * m_treeIndentation + m_leafIndentation);
         }
         else
         {
@@ -1117,10 +1115,7 @@ namespace AzToolsFramework
                 connect(m_dropDownArrow, &QCheckBox::clicked, this, &PropertyRowWidget::OnClickedExpansionButton);
             }
             m_dropDownArrow->show();
-            m_indent->changeSize((m_treeDepth * m_treeIndentation), 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
-            m_leftHandSideLayout->invalidate();
-            m_leftHandSideLayout->update();
-            m_leftHandSideLayout->activate();
+            SetIndentSize(m_treeDepth * m_treeIndentation);
             m_dropDownArrow->setChecked(m_expanded);
         }
     }
@@ -1720,10 +1715,9 @@ namespace AzToolsFramework
         }
         else
         {
-            m_indicatorButton->setVisible(true);
-
             QPixmap pixmap(imagePath);
             m_indicatorButton->setIcon(pixmap);
+            m_indicatorButton->setVisible(true);
         };
     }
 

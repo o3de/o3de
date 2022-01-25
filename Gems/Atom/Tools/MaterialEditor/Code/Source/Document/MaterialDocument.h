@@ -7,18 +7,17 @@
  */
 #pragma once
 
-#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
-#include <Atom/Document/MaterialDocumentRequestBus.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
+#include <Document/MaterialDocumentRequestBus.h>
 
 namespace MaterialEditor
 {
@@ -29,7 +28,6 @@ namespace MaterialEditor
         : public AtomToolsFramework::AtomToolsDocument
         , public MaterialDocumentRequestBus::Handler
         , private AZ::TickBus::Handler
-        , private AZ::Data::AssetBus::MultiHandler
         , private AzToolsFramework::AssetSystemBus::Handler
     {
     public:
@@ -105,12 +103,8 @@ namespace MaterialEditor
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Data::AssetBus::Router overrides...
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        //////////////////////////////////////////////////////////////////////////
-
-        bool SavePropertiesToSourceData(AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
+        bool SavePropertiesToSourceData(
+            const AZStd::string& exportPath, AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
 
         bool OpenInternal(AZStd::string_view loadPath);
 
@@ -137,11 +131,8 @@ namespace MaterialEditor
         // Material instance being edited
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
 
-        // Asset used to open document
-        AZ::Data::AssetId m_sourceAssetId;
-
         // Set of assets that can trigger a document reload
-        AZStd::unordered_set<AZ::Data::AssetId> m_dependentAssetIds;
+        AZStd::unordered_set<AZStd::string> m_sourceDependencies;
 
         // Track if document saved itself last to skip external modification notification
         bool m_saveTriggeredInternally = false;

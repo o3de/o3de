@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import errno
 import logging
 import os
+import stat
 import psutil
 import subprocess
 import sys
@@ -208,20 +209,6 @@ class TestUnZip(unittest.TestCase):
 
         self.assertEqual(path, expected_path)
 
-    @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    def test_Unzip_ReleaseBuild_JoinCalledWithNoPathNoExtension(self, mock_join, mock_check_free, mock_exists):
-
-        path = ''
-        self.src_path = r'C:\packages\lumberyard-1.2.0.3-54321-pc-1234.zip'
-        mock_exists.return_value = self.exists
-
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            path = self.call_decomp(self.dest_path, self.src_path)
-
-        mock_join.assert_called_once_with(self.dest_path, 'lumberyard-1.2.0.3-54321-pc-1234')
-
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
     @mock.patch('ly_test_tools.environment.file_system.check_free_space')
@@ -375,20 +362,6 @@ class TestUnTgz(unittest.TestCase):
 
         self.assertEqual(path, expected_path)
 
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    @mock.patch('os.stat')
-    def test_Untgz_ReleaseBuild_JoinCalledWithNoPathNoExtension(self, mock_stat, mock_join, mock_check_free):
-
-        mock_stat.return_value = self.src_stat
-
-        path = ''
-        self.src_path = r'C:\packages\lumberyard-1.2.0.3-54321-pc-1234.zip'
-        with mock.patch(self.decomp_obj_name, self.mock_decomp):
-            path = self.call_decomp(self.dest_path, self.src_path)
-
-        mock_join.assert_called_once_with(self.dest_path, 'lumberyard-1.2.0.3-54321-pc-1234')
-
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
     @mock.patch('ly_test_tools.environment.file_system.check_free_space')
@@ -482,24 +455,33 @@ class TestChangePermissions(unittest.TestCase):
         self.assertEqual(file_system.change_permissions('.', 0o777), False)
 
 
+class MockStatResult():
+    def __init__(self, st_mode):
+        self.st_mode = st_mode
+
 class TestUnlockFile(unittest.TestCase):
 
     def setUp(self):
         self.file_name = 'file'
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    def test_UnlockFile_WriteLocked_UnlockFile(self, mock_access, mock_chmod):
+    def test_UnlockFile_WriteLocked_UnlockFile(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = False
+        os.stat.return_value = MockStatResult(stat.S_IREAD)
 
         success = file_system.unlock_file(self.file_name)
+        mock_chmod.assert_called_once_with(self.file_name, stat.S_IREAD | stat.S_IWRITE)
 
         self.assertTrue(success)
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    def test_UnlockFile_AlreadyUnlocked_LogAlreadyUnlocked(self, mock_access, mock_chmod):
+    def test_UnlockFile_AlreadyUnlocked_LogAlreadyUnlocked(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = True
+        os.stat.return_value = MockStatResult(stat.S_IREAD | stat.S_IWRITE)
 
         success = file_system.unlock_file(self.file_name)
 
@@ -511,19 +493,24 @@ class TestLockFile(unittest.TestCase):
     def setUp(self):
         self.file_name = 'file'
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    def test_UnlockFile_UnlockedFile_FileLockedSuccessReturnsTrue(self, mock_access, mock_chmod):
+    def test_LockFile_UnlockedFile_FileLockedSuccessReturnsTrue(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = True
+        os.stat.return_value = MockStatResult(stat.S_IREAD | stat.S_IWRITE)
 
         success = file_system.lock_file(self.file_name)
+        mock_chmod.assert_called_once_with(self.file_name, stat.S_IREAD)
 
         self.assertTrue(success)
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    def test_UnlockFile_AlreadyLocked_FileLockedFailedReturnsFalse(self, mock_access, mock_chmod):
+    def test_LockFile_AlreadyLocked_FileLockedFailedReturnsFalse(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = False
+        os.stat.return_value = MockStatResult(stat.S_IREAD)
 
         success = file_system.lock_file(self.file_name)
 
@@ -764,7 +751,7 @@ class TestFileBackup(unittest.TestCase):
         self._dummy_file = 'dummy.txt'
         self._dummy_backup_file = os.path.join(self._dummy_dir, '{}.bak'.format(self._dummy_file))
 
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_BackupSettings_SourceExists_BackupCreated(self, mock_path_isdir, mock_backup_exists, mock_copy):
@@ -776,7 +763,7 @@ class TestFileBackup(unittest.TestCase):
         mock_copy.assert_called_with(self._dummy_file, self._dummy_backup_file)
 
     @mock.patch('ly_test_tools.environment.file_system.logger.warning')
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_BackupSettings_BackupExists_WarningLogged(self, mock_path_isdir, mock_backup_exists, mock_copy, mock_logger_warning):
@@ -789,7 +776,7 @@ class TestFileBackup(unittest.TestCase):
         mock_logger_warning.assert_called_once()
 
     @mock.patch('ly_test_tools.environment.file_system.logger.warning')
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_BackupSettings_SourceNotExists_WarningLogged(self, mock_path_isdir, mock_backup_exists, mock_copy, mock_logger_warning):
@@ -802,7 +789,7 @@ class TestFileBackup(unittest.TestCase):
         mock_logger_warning.assert_called_once()
 
     @mock.patch('ly_test_tools.environment.file_system.logger.warning')
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_BackupSettings_CannotCopy_WarningLogged(self, mock_path_isdir, mock_backup_exists, mock_copy, mock_logger_warning):
@@ -834,7 +821,7 @@ class TestFileBackupRestore(unittest.TestCase):
         self._dummy_file = 'dummy.txt'
         self._dummy_backup_file = os.path.join(self._dummy_dir, '{}.bak'.format(self._dummy_file))
 
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_RestoreSettings_BackupRestore_Success(self, mock_path_isdir, mock_exists, mock_copy):
@@ -845,7 +832,7 @@ class TestFileBackupRestore(unittest.TestCase):
         mock_copy.assert_called_with(self._dummy_backup_file, self._dummy_file)
 
     @mock.patch('ly_test_tools.environment.file_system.logger.warning')
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_RestoreSettings_CannotCopy_WarningLogged(self, mock_path_isdir, mock_exists, mock_copy, mock_logger_warning):
@@ -859,7 +846,7 @@ class TestFileBackupRestore(unittest.TestCase):
         mock_logger_warning.assert_called_once()
 
     @mock.patch('ly_test_tools.environment.file_system.logger.warning')
-    @mock.patch('shutil.copy')
+    @mock.patch('shutil.copy2')
     @mock.patch('os.path.exists')
     @mock.patch('os.path.isdir')
     def test_RestoreSettings_BackupNotExists_WarningLogged(self, mock_path_isdir, mock_exists, mock_copy, mock_logger_warning):

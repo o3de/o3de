@@ -99,6 +99,7 @@ class FileResourceSelectorWidgetHandler
     : QObject
     , public AzToolsFramework::PropertyHandler < CReflectedVarResource, FileResourceSelectorWidget >
 {
+    Q_OBJECT
 public:
     AZ_CLASS_ALLOCATOR(FileResourceSelectorWidgetHandler, AZ::SystemAllocator, 0);
 

@@ -121,7 +121,7 @@ namespace AZ
             m_fence->Init(*device, RHI::FenceState::Reset);
 
             // Load shader and srg
-            const char* ShaderPath = "shader/decomposemsimage.azshader";
+            const char* ShaderPath = "shaders/decomposemsimage.azshader";
             m_decomposeShader = LoadCriticalShader(ShaderPath);
 
             if (m_decomposeShader == nullptr)

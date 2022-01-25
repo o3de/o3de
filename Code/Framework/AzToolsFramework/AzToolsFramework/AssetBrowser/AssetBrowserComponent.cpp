@@ -102,7 +102,7 @@ namespace AzToolsFramework
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
             AssetSystemBus::Handler::BusDisconnect();
-            m_assetBrowserModel.release();
+            m_assetBrowserModel.reset();
             EntryCache::DestroyInstance();
         }
 
@@ -232,11 +232,6 @@ namespace AzToolsFramework
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".lua"))
                 {
                     return SourceFileDetails("Icons/AssetBrowser/Lua_16.svg");
-                }
-
-                if (AzFramework::StringFunc::Equal(extension.c_str(), ".mtl"))
-                {
-                    return SourceFileDetails("Icons/AssetBrowser/Material_16.svg");
                 }
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str()))

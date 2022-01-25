@@ -138,8 +138,8 @@ namespace AZ
                 Both,
             };
 
-            bool CreateSphereBuffersAndViews();
-            void CreateSphereMeshData(MeshData& meshData, uint32_t numRings, uint32_t numSections);
+            bool CreateSphereBuffersAndViews(AuxGeomShapeType sphereShapeType);
+            void CreateSphereMeshData(MeshData& meshData, uint32_t numRings, uint32_t numSections, AuxGeomShapeType sphereShapeType);
 
             bool CreateQuadBuffersAndViews();
             void CreateQuadMeshDataSide(MeshData& meshData, bool isUp, bool drawLines);
@@ -152,8 +152,8 @@ namespace AZ
             bool CreateConeBuffersAndViews();
             void CreateConeMeshData(MeshData& meshData, uint32_t numRings, uint32_t numSections);
 
-            bool CreateCylinderBuffersAndViews();
-            void CreateCylinderMeshData(MeshData& meshData, uint32_t numSections);
+            bool CreateCylinderBuffersAndViews(AuxGeomShapeType cylinderShapeType);
+            void CreateCylinderMeshData(MeshData& meshData, uint32_t numSections, AuxGeomShapeType cylinderShapeType);
 
             bool CreateBoxBuffersAndViews();
             void CreateBoxMeshData(MeshData& meshData);

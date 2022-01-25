@@ -67,9 +67,6 @@ namespace AZ
 
             //! Notifies when the PrepareRender phase is ending
             virtual void OnEndPrepareRender() {}
-
-            //! Notifies when the render tick for a given frame has finished.
-            virtual void OnFrameEnd() {}
         };
 
         using SceneNotificationBus = AZ::EBus<SceneNotification>;

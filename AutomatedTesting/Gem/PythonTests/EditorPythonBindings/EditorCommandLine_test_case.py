@@ -20,12 +20,6 @@ if (engroot is not None and len(engroot) is not 0):
     print ('engroot is {}'.format(engroot))
     print ('editor engroot set')
 
-# make sure the @devroot@ exists as a azlmbr.paths property
-devroot = azlmbr.paths.devroot
-if (devroot is not None and len(devroot) != 0):
-    print ('devroot is {}'.format(devroot))
-    print ('editor devroot set')
-
 # resolving a basic path
 path = azlmbr.paths.resolve_path('@engroot@/engineassets/texturemsg/defaultsolids.mtl')
 if (len(path) != 0 and path.find('@engroot@') == -1):

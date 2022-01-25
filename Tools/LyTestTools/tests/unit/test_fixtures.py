@@ -323,20 +323,19 @@ class TestFixtures(object):
     @mock.patch('ly_test_tools.environment.watchdog.CrashLogWatchdog')
     def test_CrashLogWatchdog_Instantiates_CreatesWatchdog(self, under_test):
         mock_workspace = mock.MagicMock()
-        mock_path = 'C:/foo'
-        mock_workspace.paths.project_log.return_value = mock_path
+        mock_workspace.paths.crash_log.return_value = mock.MagicMock()
         mock_request = mock.MagicMock()
         mock_request.addfinalizer = mock.MagicMock()
         mock_raise_on_crash = mock.MagicMock()
         mock_watchdog = test_tools_fixtures._crash_log_watchdog(mock_request, mock_workspace, mock_raise_on_crash)
 
-        under_test.assert_called_once_with(os.path.join(mock_path, 'error.log'), raise_on_condition=mock_raise_on_crash)
+        under_test.assert_called_once_with(mock_workspace.paths.crash_log.return_value, raise_on_condition=mock_raise_on_crash)
 
     @mock.patch('ly_test_tools.environment.watchdog.CrashLogWatchdog.start')
     def test_CrashLogWatchdog_Instantiates_StartsThread(self, under_test):
         mock_workspace = mock.MagicMock()
         mock_path = 'C:/foo'
-        mock_workspace.paths.project_log.return_value = mock_path
+        mock_workspace.paths.crash_log.return_value = mock_path
         mock_request = mock.MagicMock()
         mock_request.addfinalizer = mock.MagicMock()
         mock_raise_on_crash = mock.MagicMock()
@@ -348,7 +347,7 @@ class TestFixtures(object):
     def test_CrashLogWatchdog_Instantiates_AddsTeardown(self):
         mock_workspace = mock.MagicMock()
         mock_path = 'C:/foo'
-        mock_workspace.paths.project_log.return_value = mock_path
+        mock_workspace.paths.crash_log.return_value = mock_path
         mock_request = mock.MagicMock()
         mock_request.addfinalizer = mock.MagicMock()
         mock_raise_on_crash = mock.MagicMock()
@@ -361,7 +360,7 @@ class TestFixtures(object):
     def test_CrashLogWatchdog_Teardown_CallsStop(self, mock_stop):
         mock_workspace = mock.MagicMock()
         mock_path = 'C:/foo'
-        mock_workspace.paths.project_log.return_value = mock_path
+        mock_workspace.paths.crash_log.return_value = mock_path
         mock_request = mock.MagicMock()
         mock_request.addfinalizer = mock.MagicMock()
         mock_raise_condition = mock.MagicMock()

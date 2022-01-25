@@ -19,10 +19,9 @@ namespace Config
 
     CConfigGroup::~CConfigGroup()
     {
-        for (TConfigVariables::const_iterator it = m_vars.begin();
-             it != m_vars.end(); ++it)
+        for (IConfigVar* var : m_vars)
         {
-            delete (*it);
+            delete var;
         }
     }
 
@@ -31,17 +30,15 @@ namespace Config
         m_vars.push_back(var);
     }
 
-    uint32 CConfigGroup::GetVarCount()
+    AZ::u32 CConfigGroup::GetVarCount()
     {
-        return static_cast<uint32>(m_vars.size());
+        return aznumeric_cast<AZ::u32>(m_vars.size());
     }
 
     IConfigVar* CConfigGroup::GetVar(const char* szName)
     {
-        for (TConfigVariables::const_iterator it = m_vars.begin();
-             it != m_vars.end(); ++it)
+        for (IConfigVar* var : m_vars)
         {
-            IConfigVar* var = (*it);
             if (0 == _stricmp(szName, var->GetName().c_str()))
             {
                 return var;
@@ -53,20 +50,19 @@ namespace Config
 
     const IConfigVar* CConfigGroup::GetVar(const char* szName) const
     {
-        for (TConfigVariables::const_iterator it = m_vars.begin();
-             it != m_vars.end(); ++it)
+        for (const IConfigVar* var : m_vars)
         {
-            IConfigVar* var = (*it);
             if (0 == _stricmp(szName, var->GetName().c_str()))
             {
                 return var;
             }
+
         }
 
         return nullptr;
     }
 
-    IConfigVar* CConfigGroup::GetVar(uint index)
+    IConfigVar* CConfigGroup::GetVar(AZ::u32 index)
     {
         if (index < m_vars.size())
         {
@@ -76,7 +72,7 @@ namespace Config
         return nullptr;
     }
 
-    const IConfigVar* CConfigGroup::GetVar(uint index) const
+    const IConfigVar* CConfigGroup::GetVar(AZ::u32 index) const
     {
         if (index < m_vars.size())
         {
@@ -89,114 +85,110 @@ namespace Config
     void CConfigGroup::SaveToXML(XmlNodeRef node)
     {
         // save only values that don't have default values
-        for (TConfigVariables::const_iterator it = m_vars.begin();
-             it != m_vars.end(); ++it)
+        for (const IConfigVar* var : m_vars)
         {
-            IConfigVar* var = (*it);
-            if (!var->IsFlagSet(IConfigVar::eFlag_DoNotSave))
+            if (var->IsFlagSet(IConfigVar::eFlag_DoNotSave) || var->IsDefault())
             {
-                if (!var->IsDefault())
-                {
-                    const char* szName = var->GetName().c_str();
+                continue;
+            }
 
-                    switch (var->GetType())
-                    {
-                    case IConfigVar::eType_BOOL:
-                    {
-                        bool currentValue = false;
-                        var->Get(&currentValue);
-                        node->setAttr(szName, currentValue);
-                        break;
-                    }
+            const char* szName = var->GetName().c_str();
 
-                    case IConfigVar::eType_INT:
-                    {
-                        int currentValue = 0;
-                        var->Get(&currentValue);
-                        node->setAttr(szName, currentValue);
-                        break;
-                    }
+            switch (var->GetType())
+            {
+            case IConfigVar::eType_BOOL:
+            {
+                bool currentValue = false;
+                var->Get(&currentValue);
+                node->setAttr(szName, currentValue);
+                break;
+            }
 
-                    case IConfigVar::eType_FLOAT:
-                    {
-                        float currentValue = 0;
-                        var->Get(&currentValue);
-                        node->setAttr(szName, currentValue);
-                        break;
-                    }
+            case IConfigVar::eType_INT:
+            {
+                int currentValue = 0;
+                var->Get(&currentValue);
+                node->setAttr(szName, currentValue);
+                break;
+            }
 
-                    case IConfigVar::eType_STRING:
-                    {
-                        AZStd::string currentValue;
-                        var->Get(&currentValue);
-                        node->setAttr(szName, currentValue.c_str());
-                        break;
-                    }
-                    }
-                }
+            case IConfigVar::eType_FLOAT:
+            {
+                float currentValue = 0;
+                var->Get(&currentValue);
+                node->setAttr(szName, currentValue);
+                break;
+            }
+
+            case IConfigVar::eType_STRING:
+            {
+                AZStd::string currentValue;
+                var->Get(&currentValue);
+                node->setAttr(szName, currentValue.c_str());
+                break;
+            }
             }
         }
     }
 
     void CConfigGroup::LoadFromXML(XmlNodeRef node)
     {
-        // save only values that don't have default values
-        for (TConfigVariables::const_iterator it = m_vars.begin();
-             it != m_vars.end(); ++it)
+        // load values that are save-able
+        for (IConfigVar* var : m_vars)
         {
-            IConfigVar* var = (*it);
-            if (!var->IsFlagSet(IConfigVar::eFlag_DoNotSave))
+            if (var->IsFlagSet(IConfigVar::eFlag_DoNotSave))
             {
-                const char* szName = var->GetName().c_str();
+                continue;
+            }
+            const char* szName = var->GetName().c_str();
 
-                switch (var->GetType())
+            switch (var->GetType())
+            {
+            case IConfigVar::eType_BOOL:
+            {
+                bool currentValue = false;
+                var->GetDefault(&currentValue);
+                if (node->getAttr(szName, currentValue))
                 {
-                case IConfigVar::eType_BOOL:
-                {
-                    bool currentValue = false;
-                    var->GetDefault(&currentValue);
-                    if (node->getAttr(szName, currentValue))
-                    {
-                        var->Set(&currentValue);
-                    }
-                    break;
+                    var->Set(&currentValue);
                 }
+                break;
+            }
 
-                case IConfigVar::eType_INT:
+            case IConfigVar::eType_INT:
+            {
+                int currentValue = 0;
+                var->GetDefault(&currentValue);
+                if (node->getAttr(szName, currentValue))
                 {
-                    int currentValue = 0;
-                    var->GetDefault(&currentValue);
-                    if (node->getAttr(szName, currentValue))
-                    {
-                        var->Set(&currentValue);
-                    }
-                    break;
+                    var->Set(&currentValue);
                 }
+                break;
+            }
 
-                case IConfigVar::eType_FLOAT:
+            case IConfigVar::eType_FLOAT:
+            {
+                float currentValue = 0;
+                var->GetDefault(&currentValue);
+                if (node->getAttr(szName, currentValue))
                 {
-                    float currentValue = 0;
-                    var->GetDefault(&currentValue);
-                    if (node->getAttr(szName, currentValue))
-                    {
-                        var->Set(&currentValue);
-                    }
-                    break;
+                    var->Set(&currentValue);
                 }
+                break;
+            }
 
-                case IConfigVar::eType_STRING:
+            case IConfigVar::eType_STRING:
+            {
+                AZStd::string currentValue;
+                var->GetDefault(&currentValue);
+                QString readValue(currentValue.c_str());
+                if (node->getAttr(szName, readValue))
                 {
-                    AZStd::string currentValue;
-                    var->GetDefault(&currentValue);
-                    QString readValue(currentValue.c_str());
-                    if (node->getAttr(szName, readValue))
-                    {
-                        currentValue = readValue.toUtf8().data();
-                        var->Set(&currentValue);
-                    }
-                    break;
+                    currentValue = readValue.toUtf8().data();
+                    var->Set(&currentValue);
                 }
-                }
+                break;
+            }
             }
         }
     }

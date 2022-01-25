@@ -21,10 +21,6 @@ namespace AzNetworking
     static const bool net_TcpUseEncryption = false;
 #endif
 
-    AZ_CVAR(bool, net_TcpTimeoutConnections, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Boolean value on whether we should timeout Tcp connections");
-    AZ_CVAR(AZ::TimeMs, net_TcpHearthbeatTimeMs, AZ::TimeMs{  2 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Tcp connection heartbeat frequency");
-    AZ_CVAR(AZ::TimeMs, net_TcpTimeoutTimeMs,    AZ::TimeMs{ 10 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time in milliseconds before we timeout an idle Tcp connection");
-
     TcpNetworkInterface::TcpNetworkInterface(AZ::Name name, IConnectionListener& connectionListener, TrustZone trustZone, TcpListenThread& listenThread)
         : m_name(name)
         , m_trustZone(trustZone)
@@ -97,8 +93,6 @@ namespace AzNetworking
         }
 
         AZLOG_INFO("Adding new socket %d", static_cast<int32_t>(tcpSocket->GetSocketFd()));
-        const TimeoutId newTimeoutId = m_connectionTimeoutQueue.RegisterItem(static_cast<uint64_t>(tcpSocket->GetSocketFd()), net_TcpHearthbeatTimeMs);
-        connection->SetTimeoutId(newTimeoutId);
         connection->SendReliablePacket(CorePackets::InitiateConnectionPacket());
         m_connectionListener.OnConnect(connection.get());
         m_connectionSet.AddConnection(AZStd::move(connection));
@@ -109,17 +103,11 @@ namespace AzNetworking
     {
         const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
 
-        // Time out any stale connections
-        {
-            ConnectionTimeoutFunctor functor(*this);
-            m_connectionTimeoutQueue.UpdateTimeouts(functor);
-        }
-
         AcceptNewConnections();
 
         auto readCallback = [this, startTimeMs](SocketFd socketFd) { HandleConnectionRecv(socketFd, startTimeMs); };
         auto writeCallback = [this](SocketFd socketFd) { HandleConnectionSend(socketFd); };
-        m_tcpSocketManager.ProcessEvents(AZ::TimeMs{ 0 }, readCallback, writeCallback);
+        m_tcpSocketManager.ProcessEvents(AZ::Time::ZeroTimeMs, readCallback, writeCallback);
 
         FlushQueuedRemoves();
 
@@ -174,14 +162,14 @@ namespace AzNetworking
         return connection->Disconnect(reason, TerminationEndpoint::Local);
     }
 
-    void TcpNetworkInterface::SetTimeoutEnabled(bool timeoutEnabled)
+    void TcpNetworkInterface::SetTimeoutMs(AZ::TimeMs timeoutMs)
     {
-        m_timeoutEnabled = timeoutEnabled;
+        m_timeoutMs = timeoutMs;
     }
 
-    bool TcpNetworkInterface::IsTimeoutEnabled() const
+    AZ::TimeMs TcpNetworkInterface::GetTimeoutMs() const
     {
-        return m_timeoutEnabled;
+        return m_timeoutMs;
     }
 
     void TcpNetworkInterface::QueueNewConnection(const PendingConnection& pendingConnection)
@@ -257,8 +245,7 @@ namespace AzNetworking
             return;
         }
         AZLOG(NET_TcpTraffic, "Adding new socket %d", static_cast<int32_t>(tcpSocket.GetSocketFd()));
-        const TimeoutId timeoutId = m_connectionTimeoutQueue.RegisterItem(static_cast<uint64_t>(tcpSocket.GetSocketFd()), net_TcpTimeoutTimeMs);
-        AZStd::unique_ptr<TcpConnection> connection = AZStd::make_unique<TcpConnection>(connectionId, remoteAddress, *this, tcpSocket, timeoutId);
+        AZStd::unique_ptr<TcpConnection> connection = AZStd::make_unique<TcpConnection>(connectionId, remoteAddress, *this, tcpSocket);
         AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Acceptor, "Invalid role for connection");
         GetConnectionListener().OnConnect(connection.get());
         m_connectionSet.AddConnection(AZStd::move(connection));
@@ -285,7 +272,6 @@ namespace AzNetworking
         m_pendingRemoves.resize_no_construct(0);
     }
 
-
     TcpNetworkInterface::PendingConnection::PendingConnection(SocketFd socketFd, uint32_t remoteIpAddress, uint16_t remotePort, uint16_t listenPort)
         : m_socketFd(socketFd)
         , m_remoteIpAddress(remoteIpAddress)
@@ -293,35 +279,5 @@ namespace AzNetworking
         , m_listenPort(listenPort)
     {
         ;
-    }
-
-    TcpNetworkInterface::ConnectionTimeoutFunctor::ConnectionTimeoutFunctor(TcpNetworkInterface& networkInterface)
-        : m_networkInterface(networkInterface)
-    {
-        ;
-    }
-
-    TimeoutResult TcpNetworkInterface::ConnectionTimeoutFunctor::HandleTimeout(TimeoutQueue::TimeoutItem& item)
-    {
-        const SocketFd socketFd = static_cast<SocketFd>(item.m_userData);
-        TcpConnection* tcpConnection = m_networkInterface.m_connectionSet.GetConnection(socketFd);
-
-        if (tcpConnection == nullptr)
-        {
-            // We've already deleted this connection
-            return TimeoutResult::Delete;
-        }
-
-        if (tcpConnection->GetConnectionRole() == ConnectionRole::Connector)
-        {
-            tcpConnection->SendReliablePacket(CorePackets::HeartbeatPacket());
-        }
-        else if (net_TcpTimeoutConnections && m_networkInterface.IsTimeoutEnabled())
-        {
-            tcpConnection->Disconnect(DisconnectReason::Timeout, TerminationEndpoint::Local);
-            return TimeoutResult::Delete;
-        }
-
-        return TimeoutResult::Refresh;
     }
 }

@@ -18,7 +18,7 @@
 #include <QPointer>
 #include "ActionManager.h"
 #include "QtViewPaneManager.h"
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #endif
 
 class MainWindow;
@@ -28,7 +28,7 @@ struct QtViewPane;
 
 class LevelEditorMenuHandler
     : public QObject
-    , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+    , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
     , private AzToolsFramework::EditorMenuRequestBus::Handler
 {
     Q_OBJECT
@@ -88,9 +88,11 @@ private:
 
     void AddDisableActionInSimModeListener(QAction* action);
 
-    // EditorComponentModeNotificationBus
-    void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-    void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
+    // ViewportEditorModeNotificationsBus overrides ...
+    void OnEditorModeActivated(
+        const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+    void OnEditorModeDeactivated(
+        const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
     // EditorMenuRequestBus
     void AddEditMenuAction(QAction* action) override;

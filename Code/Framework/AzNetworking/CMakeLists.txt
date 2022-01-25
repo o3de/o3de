@@ -6,8 +6,8 @@
 #
 #
 
-ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 ly_add_target(
     NAME AzNetworking STATIC
@@ -25,7 +25,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            3rdParty::zlib
             3rdParty::zstd
             3rdParty::OpenSSL
         PUBLIC

@@ -7,6 +7,7 @@
  */
 #include "VersionConverters.h"
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/Utils.h>
 
 #include <ScriptCanvas/Core/Contracts/DisallowReentrantExecutionContract.h>

@@ -1,8 +1,8 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "Materials\\Presets\\MacBeth\\24_black_2-0_1-50D.material",
-    "propertyLayoutVersion": 3,
+    "parentMaterial": "24_black_2-0_1-50D.material",
+    "materialType": "../../Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
             "color": [
@@ -11,6 +11,8 @@
                 1.0,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
+            "textureMap": "24_black_2-0_1-50D_sRGB.tif",
             "useTexture": true
         }
     }

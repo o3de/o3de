@@ -6,4 +6,12 @@
 #
 #
 
-set(VKVALIDATION_RUNTIME_DEPENDENCIES $<$<NOT:$<CONFIG:Release>>:${LY_NDK_DIR}/sources/third_party/vulkan/src/build-android/jniLibs/arm64-v8a/libVkLayer_khronos_validation.so>)
+set(LY_ANDROID_VULKAN_VALIDATION_PATH "${LY_NDK_DIR}/sources/third_party/vulkan/src/build-android/jniLibs" CACHE PATH "Path to the Vulkan Validation Layers libs for Android")
+
+if(NOT EXISTS ${LY_ANDROID_VULKAN_VALIDATION_PATH})
+    message(FATAL_ERROR
+        "Unable to locate the Android Vulkan validation layer libs at ${LY_ANDROID_VULKAN_VALIDATION_PATH}.  "
+        "If using NDK r23 or above, these libs are distributed separately via https://github.com/KhronosGroup/Vulkan-ValidationLayers")
+endif()
+
+set(VKVALIDATION_RUNTIME_DEPENDENCIES $<$<NOT:$<CONFIG:Release>>:${LY_ANDROID_VULKAN_VALIDATION_PATH}/arm64-v8a/libVkLayer_khronos_validation.so>)

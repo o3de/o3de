@@ -12,6 +12,7 @@
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzFramework/Input/Channels/InputChannelId.h>
 
 namespace SandboxEditor
@@ -31,6 +32,9 @@ namespace SandboxEditor
     //! Note: EditorViewportSettingsCallbacks is implemented in EditorViewportSettings.cpp - a change
     //! event will fire when a value in the settings registry (editorpreferences.setreg) is modified.
     SANDBOX_API AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks();
+
+    SANDBOX_API AZ::u64 MaxItemsShownInAssetBrowserSearch();
+    SANDBOX_API void SetMaxItemsShownInAssetBrowserSearch(AZ::u64 numberOfItemsShown);
 
     SANDBOX_API bool GridSnappingEnabled();
     SANDBOX_API void SetGridSnapping(bool enabled);
@@ -98,6 +102,12 @@ namespace SandboxEditor
     SANDBOX_API bool CameraCaptureCursorForLook();
     SANDBOX_API void SetCameraCaptureCursorForLook(bool capture);
 
+    SANDBOX_API AZ::Vector3 CameraDefaultEditorPosition();
+    SANDBOX_API void SetCameraDefaultEditorPosition(const AZ::Vector3& position);
+
+    SANDBOX_API float CameraDefaultOrbitDistance();
+    SANDBOX_API void SetCameraDefaultOrbitDistance(float distance);
+
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
     SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);
 
@@ -136,4 +146,7 @@ namespace SandboxEditor
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitPanChannelId();
     SANDBOX_API void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId);
+
+    SANDBOX_API AzFramework::InputChannelId CameraFocusChannelId();
+    SANDBOX_API void SetCameraFocusChannelId(AZStd::string_view cameraFocusId);
 } // namespace SandboxEditor

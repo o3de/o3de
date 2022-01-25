@@ -10,6 +10,8 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+
 ly_add_target(
     NAME AzQtComponents SHARED
     NAMESPACE AZ
@@ -26,6 +28,7 @@ ly_add_target(
             AzQtComponents
         PUBLIC
             .
+            ${pal_dir}
     COMPILE_DEFINITIONS
         PRIVATE
             AZ_QT_COMPONENTS_EXPORT_SYMBOLS
@@ -53,6 +56,7 @@ ly_add_target(
             .
             AzQtComponents
             AzQtComponents/Gallery
+            ${pal_dir}
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Svg
@@ -86,6 +90,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 Tests
                 AzQtComponents
+                ${pal_dir}
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzQtComponents

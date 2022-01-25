@@ -581,6 +581,11 @@ namespace EMStudio
                 animGraph->SetFileName(filename.c_str());
             }
 
+            if (parameters.GetValueAsBool("updateDirtyFlag", this))
+            {
+                animGraph->SetDirtyFlag(false);
+            }
+
             GetMainWindow()->GetFileManager()->SourceAssetChanged(filename);
 
             // Add file in case it did not exist before (when saving it the first time).

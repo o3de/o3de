@@ -22,6 +22,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h> // Used as the allocator for most components.
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ
 {

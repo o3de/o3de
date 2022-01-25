@@ -64,7 +64,7 @@ namespace AWSCore
 
     void AWSCoreConfiguration::InitSourceProjectFolderPath()
     {
-        auto sourceProjectFolder = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        auto sourceProjectFolder = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
         if (!sourceProjectFolder)
         {
             AZ_Error(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);

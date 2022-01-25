@@ -110,7 +110,7 @@ namespace UnitTest
         std::array<char, SIZE> m_buffer;
     };
 
-    class Integ_StreamSecureSocketDriverTestsBindSocketEmpty
+    class DISABLED_StreamSecureSocketDriverTestsBindSocketEmpty
         : public GridMateMPTestFixture
     {
     public:
@@ -134,7 +134,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_StreamSecureSocketDriverTestsConnection
+    class DISABLED_StreamSecureSocketDriverTestsConnection
         : public GridMateMPTestFixture
     {
     public:
@@ -146,7 +146,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_StreamSecureSocketDriverTestsConnectionAndHelloWorld
+    class DISABLED_StreamSecureSocketDriverTestsConnectionAndHelloWorld
         : public GridMateMPTestFixture
     {
     public:
@@ -190,7 +190,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_StreamSecureSocketDriverTestsPingPong
+    class DISABLED_StreamSecureSocketDriverTestsPingPong
         : public GridMateMPTestFixture
     {
     public:
@@ -425,13 +425,13 @@ namespace UnitTest
 
         void BuildStateMachine()
         {
-            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_TOP), AZ::HSM::StateHandler(this, &Integ_StreamSecureSocketDriverTestsPingPong::OnStateTop), AZ::HSM::InvalidStateId, TS_START);
-            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_START), AZ::HSM::StateHandler(this, &Integ_StreamSecureSocketDriverTestsPingPong::OnStateStart), TS_TOP);
-            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_SERVER_GET_PING), AZ::HSM::StateHandler(this, &Integ_StreamSecureSocketDriverTestsPingPong::OnStateServerGetPing), TS_TOP);
-            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_PING_GET_SERVER), AZ::HSM::StateHandler(this, &Integ_StreamSecureSocketDriverTestsPingPong::OnStatePingGetServer), TS_TOP);
-            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_SERVER_GET_PONG), AZ::HSM::StateHandler(this, &Integ_StreamSecureSocketDriverTestsPingPong::OnStateServerGetPong), TS_TOP);
-            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_PONG_GET_SERVER), AZ::HSM::StateHandler(this, &Integ_StreamSecureSocketDriverTestsPingPong::OnStatePongGetServer), TS_TOP);
-            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_IN_ERROR), AZ::HSM::StateHandler(this, &Integ_StreamSecureSocketDriverTestsPingPong::OnStateInError), TS_TOP);
+            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_TOP), AZ::HSM::StateHandler(this, &DISABLED_StreamSecureSocketDriverTestsPingPong::OnStateTop), AZ::HSM::InvalidStateId, TS_START);
+            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_START), AZ::HSM::StateHandler(this, &DISABLED_StreamSecureSocketDriverTestsPingPong::OnStateStart), TS_TOP);
+            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_SERVER_GET_PING), AZ::HSM::StateHandler(this, &DISABLED_StreamSecureSocketDriverTestsPingPong::OnStateServerGetPing), TS_TOP);
+            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_PING_GET_SERVER), AZ::HSM::StateHandler(this, &DISABLED_StreamSecureSocketDriverTestsPingPong::OnStatePingGetServer), TS_TOP);
+            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_SERVER_GET_PONG), AZ::HSM::StateHandler(this, &DISABLED_StreamSecureSocketDriverTestsPingPong::OnStateServerGetPong), TS_TOP);
+            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_PONG_GET_SERVER), AZ::HSM::StateHandler(this, &DISABLED_StreamSecureSocketDriverTestsPingPong::OnStatePongGetServer), TS_TOP);
+            m_stateMachine.SetStateHandler(AZ_HSM_STATE_NAME(TS_IN_ERROR), AZ::HSM::StateHandler(this, &DISABLED_StreamSecureSocketDriverTestsPingPong::OnStateInError), TS_TOP);
             m_stateMachine.Start();
         }
 
@@ -486,10 +486,10 @@ namespace UnitTest
 }
 
 GM_TEST_SUITE(StreamSecureSocketDriverTests)
-    GM_TEST(Integ_StreamSecureSocketDriverTestsBindSocketEmpty);
-    GM_TEST(Integ_StreamSecureSocketDriverTestsConnection);
-    GM_TEST(Integ_StreamSecureSocketDriverTestsConnectionAndHelloWorld);
-    GM_TEST(Integ_StreamSecureSocketDriverTestsPingPong);
+    GM_TEST(DISABLED_StreamSecureSocketDriverTestsBindSocketEmpty);
+    GM_TEST(DISABLED_StreamSecureSocketDriverTestsConnection);
+    GM_TEST(DISABLED_StreamSecureSocketDriverTestsConnectionAndHelloWorld);
+    GM_TEST(DISABLED_StreamSecureSocketDriverTestsPingPong);
 GM_TEST_SUITE_END()
 
 #endif // AZ_TRAIT_GRIDMATE_ENABLE_OPENSSL

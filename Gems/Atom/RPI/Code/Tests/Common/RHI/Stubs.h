@@ -61,7 +61,7 @@ namespace UnitTest
             void EndFrameInternal() override {}
             void WaitForIdleInternal() override {}
             void CompileMemoryStatisticsInternal(AZ::RHI::MemoryStatisticsBuilder&) override {}
-            void UpdateCpuTimingStatisticsInternal([[maybe_unused]] AZ::RHI::CpuTimingStatistics& cpuTimingStatistics) const override {}
+            void UpdateCpuTimingStatisticsInternal() const override {}
             AZStd::chrono::microseconds GpuTimestampToMicroseconds([[maybe_unused]] uint64_t gpuTimestamp, [[maybe_unused]] AZ::RHI::HardwareQueueClass queueClass) const override
             {
                 return AZStd::chrono::microseconds();

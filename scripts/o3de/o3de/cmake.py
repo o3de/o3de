@@ -13,10 +13,10 @@ import logging
 import os
 import pathlib
 
-from o3de import manifest
+from o3de import manifest, utils
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.cmake')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 enable_gem_start_marker = 'set(ENABLED_GEMS'
 enable_gem_end_marker = ')'
@@ -235,14 +235,22 @@ def get_enabled_gem_cmake_file(project_name: str = None,
     enable_gem_filename = "enabled_gems.cmake"
 
     if platform == 'Common':
-        project_code_dir = project_path / 'Gem/Code'
-        if project_code_dir.is_dir():
-            dependencies_file_path = project_code_dir / enable_gem_filename
-            return dependencies_file_path.resolve()
-        return (project_path / 'Code' / enable_gem_filename).resolve()
+        possible_project_enable_gem_filename_paths = [
+            pathlib.Path(project_path / 'Gem' / enable_gem_filename),
+            pathlib.Path(project_path / 'Gem/Code' / enable_gem_filename),
+            pathlib.Path(project_path / 'Code' / enable_gem_filename)
+        ]
+        for possible_project_enable_gem_filename_path in possible_project_enable_gem_filename_paths:
+            if possible_project_enable_gem_filename_path.is_file():
+                return possible_project_enable_gem_filename_path.resolve()
+        return possible_project_enable_gem_filename_paths[0].resolve()
     else:
-        project_code_dir = project_path / 'Gem/Code/Platform' / platform
-        if project_code_dir.is_dir():
-            dependencies_file_path = project_code_dir / enable_gem_filename
-            return dependencies_file_path.resolve()
-        return (project_path / 'Code/Platform' / platform / enable_gem_filename).resolve()
+        possible_project_platform_enable_gem_filename_paths = [
+            pathlib.Path(project_path / 'Gem/Platform' / platform / enable_gem_filename),
+            pathlib.Path(project_path / 'Gem/Code/Platform' / platform / enable_gem_filename),
+            pathlib.Path(project_path / 'Code/Platform' / platform / enable_gem_filename)
+        ]
+        for possible_project_platform_enable_gem_filename_path in possible_project_platform_enable_gem_filename_paths:
+            if possible_project_platform_enable_gem_filename_path.is_file():
+                return possible_project_platform_enable_gem_filename_path.resolve()
+        return possible_project_platform_enable_gem_filename_paths[0].resolve()

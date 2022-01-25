@@ -8,8 +8,6 @@
 
 #include <CoreLights/DiskLightFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
@@ -313,6 +311,11 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowBias, bias);
         }
 
+        void DiskLightFeatureProcessor::SetNormalShadowBias(LightHandle handle, float bias)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetNormalShadowBias, bias);
+        }
+
         void DiskLightFeatureProcessor::SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution, shadowmapSize);
@@ -321,11 +324,6 @@ namespace AZ
         void DiskLightFeatureProcessor::SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowFilterMethod, method);
-        }
-            
-        void DiskLightFeatureProcessor::SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
         }
         
         void DiskLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)

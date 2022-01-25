@@ -28,6 +28,19 @@ namespace AZ
     private:
         using VariableDescriptor = ExpressionEvaluation::ExpressionTree::VariableDescriptor;
 
+        static constexpr AZStd::string_view EmptyAnyIdentifier = "Empty AZStd::any";
+
+        static bool IsEmptyAny(const rapidjson::Value& typeId)
+        {
+            if (typeId.IsString())
+            {
+                AZStd::string_view typeName(typeId.GetString(), typeId.GetStringLength());
+                return typeName == EmptyAnyIdentifier;
+            }
+
+            return false;
+        }
+
         JsonSerializationResult::Result Load
             ( void* outputValue
             , [[maybe_unused]] const Uuid& outputValueTypeId
@@ -62,22 +75,25 @@ namespace AZ
                         , JsonSerialization::TypeIdFieldIdentifier));
             }
 
-            result.Combine(LoadTypeId(typeId, typeIdMember->value, context));
-            if (typeId.IsNull())
+            if (!IsEmptyAny(typeIdMember->value))
             {
-                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic
-                    , "ExpressionTreeVariableDescriptorSerializer::Load failed to load the AZ TypeId of the value");
-            }
+                result.Combine(LoadTypeId(typeId, typeIdMember->value, context));
+                if (typeId.IsNull())
+                {
+                    return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic
+                        , "ExpressionTreeVariableDescriptorSerializer::Load failed to load the AZ TypeId of the value");
+                }
 
-            AZStd::any storage = context.GetSerializeContext()->CreateAny(typeId);
-            if (storage.empty() || storage.type() != typeId)
-            {
-                return context.Report(result, "ExpressionTreeVariableDescriptorSerializer::Load failed to load a value matched the "
-                    "reported AZ TypeId. The C++ declaration may have been deleted or changed.");
-            }
+                AZStd::any storage = context.GetSerializeContext()->CreateAny(typeId);
+                if (storage.empty() || storage.type() != typeId)
+                {
+                    return context.Report(result, "ExpressionTreeVariableDescriptorSerializer::Load failed to load a value matched the "
+                        "reported AZ TypeId. The C++ declaration may have been deleted or changed.");
+                }
 
-            result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&storage), typeId, inputValue, "Value", context));
-            outputDatum->m_value = storage;
+                result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&storage), typeId, inputValue, "Value", context));
+                outputDatum->m_value = storage;
+            }
             // any storage end
 
             return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
@@ -123,20 +139,32 @@ namespace AZ
                 , azrtti_typeid<decltype(inputScriptDataPtr->m_supportedTypes)>()
                 , context));
 
-            rapidjson::Value typeValue;
-            result.Combine(StoreTypeId(typeValue, inputScriptDataPtr->m_value.type(), context));
-            outputValue.AddMember
-                ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
-                , AZStd::move(typeValue)
-                , context.GetJsonAllocator());
+            if (!inputScriptDataPtr->m_value.empty())
+            {
+                rapidjson::Value typeValue;
+                result.Combine(StoreTypeId(typeValue, inputScriptDataPtr->m_value.type(), context));
+                outputValue.AddMember
+                    ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
+                    , AZStd::move(typeValue)
+                    , context.GetJsonAllocator());
 
-            result.Combine(ContinueStoringToJsonObjectField
-                ( outputValue
-                , "Value"
-                , AZStd::any_cast<void>(const_cast<AZStd::any*>(&inputScriptDataPtr->m_value))
-                , defaultScriptDataPtr ? AZStd::any_cast<void>(const_cast<AZStd::any*>(&defaultScriptDataPtr->m_value)) : nullptr
-                , inputScriptDataPtr->m_value.type()
-                , context));
+                result.Combine(ContinueStoringToJsonObjectField
+                    ( outputValue
+                    , "Value"
+                    , AZStd::any_cast<void>(const_cast<AZStd::any*>(&inputScriptDataPtr->m_value))
+                    , defaultScriptDataPtr ? AZStd::any_cast<void>(const_cast<AZStd::any*>(&defaultScriptDataPtr->m_value)) : nullptr
+                    , inputScriptDataPtr->m_value.type()
+                    , context));
+            }
+            else
+            {
+                rapidjson::Value emptyAny;
+                emptyAny.SetString(EmptyAnyIdentifier.data(), aznumeric_caster(EmptyAnyIdentifier.size()), context.GetJsonAllocator());
+                outputValue.AddMember
+                    ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
+                    , AZStd::move(emptyAny)
+                    , context.GetJsonAllocator());
+            }
 
             return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
                 ? "VariableDescriptor Store finished saving VariableDescriptor"

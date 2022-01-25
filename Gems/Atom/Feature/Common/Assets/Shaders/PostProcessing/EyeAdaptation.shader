@@ -1,5 +1,5 @@
 {
-    "Source": "EyeAdaptation",
+    "Source": "EyeAdaptation.azsl",
     
     
     "ProgramSettings" :

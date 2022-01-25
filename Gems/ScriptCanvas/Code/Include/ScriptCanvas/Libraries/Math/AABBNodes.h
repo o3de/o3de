@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {
         using namespace Data;
         using namespace MathNodeUtilities;
-        static const char* k_categoryName = "Math/AABB";
+        static constexpr const char* k_categoryName = "Math/AABB";
 
         AZ_INLINE AABBType AddAABB(AABBType a, const AABBType& b)
         {

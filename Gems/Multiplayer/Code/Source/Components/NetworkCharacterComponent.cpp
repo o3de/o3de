@@ -8,6 +8,7 @@
 
 #include <Multiplayer/Components/NetworkCharacterComponent.h>
 #include <Multiplayer/Components/NetworkRigidBodyComponent.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Character.h>
@@ -19,7 +20,7 @@
 
 namespace Multiplayer
 {
-    
+
     bool CollisionLayerBasedControllerFilter(const physx::PxController& controllerA, const physx::PxController& controllerB)
     {
         PHYSX_SCENE_READ_LOCK(controllerA.getActor()->getScene());
@@ -82,7 +83,7 @@ namespace Multiplayer
 
         return physx::PxQueryHitType::eNONE;
     }
-    
+
     void NetworkCharacterComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -93,6 +94,17 @@ namespace Multiplayer
         }
         NetworkCharacterComponentBase::Reflect(context);
         NetworkCharacterComponentController::Reflect(context);
+    }
+
+    void NetworkCharacterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        NetworkCharacterComponentBase::GetRequiredServices(required);
+        required.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
+    }
+
+    void NetworkCharacterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
     }
 
     NetworkCharacterComponent::NetworkCharacterComponent()
@@ -116,7 +128,7 @@ namespace Multiplayer
                 callbackManager->SetObjectPreFilter(CollisionLayerBasedObjectPreFilter);
             }
         }
-        
+
         if (!HasController())
         {
             GetNetworkTransformComponent()->TranslationAddEvent(m_translationEventHandler);
@@ -134,7 +146,7 @@ namespace Multiplayer
     }
 
     void NetworkCharacterComponent::OnSyncRewind()
-    { 
+    {
         if (m_physicsCharacter == nullptr)
         {
             return;
@@ -195,7 +207,7 @@ namespace Multiplayer
         // Ensure any entities that we might interact with are properly synchronized to their rewind state
         if (IsAuthority())
         {
-            const AZ::Aabb entityStartBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityLocalBoundsUnion(GetEntity()->GetId());
+            const AZ::Aabb entityStartBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(GetEntity()->GetId());
             const AZ::Aabb entityFinalBounds = entityStartBounds.GetTranslated(velocity);
             AZ::Aabb entitySweptBounds = entityStartBounds;
             entitySweptBounds.AddAabb(entityFinalBounds);

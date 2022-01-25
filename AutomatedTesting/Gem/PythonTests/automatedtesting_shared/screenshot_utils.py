@@ -187,7 +187,3 @@ def prepare_for_screenshot_compare(remote_console_instance):
     """
     wait_for(lambda: _retry_command(remote_console_instance, 'r_displayinfo 0',
                                     '$3r_DisplayInfo = $60 $5[DUMPTODISK, RESTRICTEDMODE]$4'))
-    wait_for(lambda: _retry_command(remote_console_instance, 'r_antialiasingmode 0',
-                                    '$3r_AntialiasingMode = $60 $5[]$4'))
-    wait_for(lambda: _retry_command(remote_console_instance, 'e_WaterOcean 0',
-                                    '$3e_WaterOcean = $60 $5[]$4'))

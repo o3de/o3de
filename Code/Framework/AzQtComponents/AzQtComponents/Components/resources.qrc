@@ -390,6 +390,14 @@
     <file>img/UI20/toolbar/Y_axis.svg</file>
     <file>img/UI20/toolbar/Z_axis.svg</file>
     <file>img/UI20/toolbar/XY2_copy.svg</file>
+    <file>img/UI20/toolbar/joints/Damping.svg</file>
+    <file>img/UI20/toolbar/joints/MaxForce.svg</file>
+    <file>img/UI20/toolbar/joints/MaxTorque.svg</file>
+    <file>img/UI20/toolbar/joints/SnapPosition.svg</file>
+    <file>img/UI20/toolbar/joints/SnapRotation.svg</file>
+    <file>img/UI20/toolbar/joints/Stiffness.svg</file>
+    <file>img/UI20/toolbar/joints/SwingLimits.svg</file>
+    <file>img/UI20/toolbar/joints/TwistLimits.svg</file>
     <file>img/triangle0.png</file>
     <file>img/triangle0_highlighted.png</file>
     <file>img/line.png</file>

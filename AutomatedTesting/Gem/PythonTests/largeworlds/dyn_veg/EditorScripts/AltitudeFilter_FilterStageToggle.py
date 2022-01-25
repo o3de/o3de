@@ -43,14 +43,16 @@ def AltitudeFilter_FilterStageToggle():
     POSTPROCESS_INSTANCE_COUNT = 34
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
     general.set_current_view_position(512.0, 480.0, 38.0)
 
     # Create basic vegetation entity
     position = math.Vector3(512.0, 512.0, 32.0)
-    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    vegetation = dynveg.create_vegetation_area("vegetation", position, 16.0, 16.0, 16.0, asset_path)
+
+    flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    flower_prefab = dynveg.create_temp_mesh_prefab(flower_asset_path, "AltFilter_PinkFlower2")[0]
+
+    vegetation = dynveg.create_temp_prefab_vegetation_area("vegetation", position, 16.0, 16.0, 16.0, flower_prefab)
 
     # Add a Vegetation Altitude Filter to the vegetation area entity
     vegetation.add_component("Vegetation Altitude Filter")

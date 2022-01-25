@@ -293,7 +293,7 @@ namespace MCore
     // check if the test point is inside the polygon
     AZ::Vector2 ClosestPointToPoly(const AZ::Vector2* polyPoints, size_t numPoints, const AZ::Vector2& testPoint)
     {
-        AZ::Vector2 result;
+        AZ::Vector2 result = AZ::Vector2::CreateZero();
         float closestDist = FLT_MAX;
         for (size_t i = 0; i < numPoints; ++i)
         {

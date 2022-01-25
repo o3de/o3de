@@ -15,7 +15,7 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSpace.h>
@@ -28,7 +28,7 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
-    AZ_CVAR_EXTERNED(bool, cl_manipulatorDrawDebug);
+    AZ_CVAR_EXTERNED(bool, ed_manipulatorDrawDebug);
 
     namespace UndoSystem
     {

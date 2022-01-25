@@ -91,9 +91,6 @@ namespace EMotionFX
         m_simulatedObjectSetup      = AZStd::make_shared<SimulatedObjectSetup>(this);
 
         m_optimizeSkeleton          = false;
-#if defined(EMFX_DEVELOPMENT_BUILD)
-        m_isOwnedByRuntime           = false;
-#endif // EMFX_DEVELOPMENT_BUILD
 
         // make sure we have at least allocated the first LOD of materials and facial setups
         m_materials.reserve(4);  // reserve space for 4 lods
@@ -436,6 +433,17 @@ namespace EMotionFX
         {
             m_morphSetups.resize(numLODs);
             AZStd::fill(begin(m_morphSetups), AZStd::next(begin(m_morphSetups), numLODs), nullptr);
+        }
+        else
+        {
+            if (m_morphSetups.size() < numLODs)
+            {
+                AZ::u32 num = m_morphSetups.empty() ? 0 : (AZ::u32)m_morphSetups.size();
+                for (AZ::u32 i = num; i < numLODs; ++i)
+                {
+                    m_morphSetups.push_back(nullptr);
+                }
+            }
         }
     }
 
@@ -2072,25 +2080,6 @@ namespace EMotionFX
     bool Actor::GetIsUsedForVisualization() const
     {
         return m_usedForVisualization;
-    }
-
-    void Actor::SetIsOwnedByRuntime(bool isOwnedByRuntime)
-    {
-#if defined(EMFX_DEVELOPMENT_BUILD)
-        m_isOwnedByRuntime = isOwnedByRuntime;
-#else
-        AZ_UNUSED(isOwnedByRuntime);
-#endif
-    }
-
-
-    bool Actor::GetIsOwnedByRuntime() const
-    {
-#if defined(EMFX_DEVELOPMENT_BUILD)
-        return m_isOwnedByRuntime;
-#else
-        return true;
-#endif
     }
 
     const AZ::Aabb& Actor::GetStaticAabb() const

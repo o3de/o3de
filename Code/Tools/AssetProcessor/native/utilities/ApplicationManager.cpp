@@ -16,7 +16,8 @@
 #include <AzFramework/Logging/LoggingComponent.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 
-#include "native/resourcecompiler/RCBuilder.h"
+#include <native/resourcecompiler/RCBuilder.h>
+#include <native/utilities/StatsCapture.h>
 
 #include <QLocale>
 #include <QTranslator>
@@ -200,6 +201,10 @@ ApplicationManager::~ApplicationManager()
         delete m_appDependencies[idx];
     }
 
+    // end stats capture (dump and shutdown)
+    AssetProcessor::StatsCapture::Dump();
+    AssetProcessor::StatsCapture::Shutdown();
+
     qInstallMessageHandler(nullptr);
 
     //deleting QCoreApplication/QApplication
@@ -225,44 +230,6 @@ bool ApplicationManager::InitiatedShutdown() const
 {
     return m_duringShutdown;
 }
-
-void ApplicationManager::GetExternalBuilderFileList(QStringList& externalBuilderModules)
-{
-    externalBuilderModules.clear();
-
-    static const char* builder_folder_name = "Builders";
-
-    // LY_ASSET_BUILDERS is defined by the CMakeLists.txt. The asset builders add themselves to a variable that
-    // is populated to allow selective building of those asset builder targets.
-    // This allows left over Asset builders in the output directory to not be loaded by the AssetProcessor
-#if !defined(LY_ASSET_BUILDERS)
-    #error LY_ASSET_BUILDERS was not defined for ApplicationManager.cpp
-#endif
-
-    QDir builderDir = QDir::toNativeSeparators(QString(this->m_frameworkApp.GetExecutableFolder()));
-    builderDir.cd(QString(builder_folder_name));
-    if (builderDir.exists())
-    {
-        AZStd::vector<AZStd::string> tokens;
-        AZ::StringFunc::Tokenize(AZStd::string_view(LY_ASSET_BUILDERS), tokens, ',');
-        AZStd::string builderLibrary;
-        for (const AZStd::string& token : tokens)
-        {
-            QString assetBuilderPath(token.c_str());
-            if (builderDir.exists(assetBuilderPath))
-            {
-                externalBuilderModules.push_back(builderDir.absoluteFilePath(assetBuilderPath));
-            }
-        }
-    }
-
-    if (externalBuilderModules.empty())
-    {
-        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "AssetProcessor was unable to locate any external builders\n");
-    }
-}
-
-
 
 QDir ApplicationManager::GetSystemRoot() const
 {
@@ -454,15 +421,6 @@ void ApplicationManager::PopulateApplicationDependencies()
         m_filesOfInterest.push_back(dir.absoluteFilePath(pathWithPlatformExtension));
     }
 
-    // Get the external builder modules to add to the files of interest
-    QStringList builderModuleFileList;
-    GetExternalBuilderFileList(builderModuleFileList);
-    for (const QString& builderModuleFile : builderModuleFileList)
-    {
-        m_filesOfInterest.push_back(builderModuleFile);
-    }
-
-
     QDir assetRoot;
     AssetUtilities::ComputeAssetRoot(assetRoot);
 
@@ -505,6 +463,14 @@ bool ApplicationManager::StartAZFramework()
     AzFramework::Application::Descriptor appDescriptor;
     AZ::ComponentApplication::StartupParameters params;
 
+    QDir projectPath{ AssetUtilities::ComputeProjectPath() };
+    if (!projectPath.exists("project.json"))
+    {
+        AZStd::string errorMsg = AZStd::string::format("Path '%s' is not a valid project path.", projectPath.path().toUtf8().constData());
+        AssetProcessor::MessageInfoBus::Broadcast(&AssetProcessor::MessageInfoBus::Events::OnErrorMessage, errorMsg.c_str());
+        return false;
+    }
+
     QString projectName = AssetUtilities::ComputeProjectName();
 
     // Prevent loading of gems in the Create method of the ComponentApplication
@@ -519,7 +485,6 @@ bool ApplicationManager::StartAZFramework()
 
     //Registering all the Components
     m_frameworkApp.RegisterComponentDescriptor(AzFramework::LogComponent::CreateDescriptor());
-
 
     Reflect();
 
@@ -564,6 +529,8 @@ bool ApplicationManager::StartAZFramework()
 
 bool ApplicationManager::ActivateModules()
 {
+     AssetProcessor::StatsCapture::BeginCaptureStat("LoadingModules");
+
     // we load the editor xml for our modules since it contains the list of gems we need for tools to function (not just runtime)
     connect(&m_frameworkApp, &AssetProcessorAZApplication::AssetProcessorStatus, this,
         [this](AssetProcessor::AssetProcessorStatusEntry entry)
@@ -580,6 +547,8 @@ bool ApplicationManager::ActivateModules()
     }
 
     m_frameworkApp.LoadDynamicModules();
+
+    AssetProcessor::StatsCapture::EndCaptureStat("LoadingModules");
     return true;
 }
 
@@ -610,6 +579,9 @@ ApplicationManager::BeforeRunStatus ApplicationManager::BeforeRun()
             Please ensure that the bootstrap.cfg file is present and not locked by any other program.\n");
         return ApplicationManager::BeforeRunStatus::Status_Failure;
     }
+
+    // enable stats capture from this point on
+    AssetProcessor::StatsCapture::Initialize();
 
     return ApplicationManager::BeforeRunStatus::Status_Success;
 }

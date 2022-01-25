@@ -18,7 +18,6 @@
 #include <Editor/EditorLevelSettingsComponent.h>
 #include <Editor/EditorMeshBlockerComponent.h>
 #include <Editor/EditorPositionModifierComponent.h>
-#include <Editor/EditorReferenceShapeComponent.h>
 #include <Editor/EditorRotationModifierComponent.h>
 #include <Editor/EditorScaleModifierComponent.h>
 #include <Editor/EditorShapeIntersectionFilterComponent.h>
@@ -50,7 +49,6 @@ namespace Vegetation
             EditorLevelSettingsComponent::CreateDescriptor(),
             EditorMeshBlockerComponent::CreateDescriptor(),
             EditorPositionModifierComponent::CreateDescriptor(),
-            EditorReferenceShapeComponent::CreateDescriptor(),
             EditorRotationModifierComponent::CreateDescriptor(),
             EditorScaleModifierComponent::CreateDescriptor(),
             EditorShapeIntersectionFilterComponent::CreateDescriptor(),

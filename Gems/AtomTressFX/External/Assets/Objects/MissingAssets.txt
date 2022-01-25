@@ -1,0 +1,2 @@
+The assets in this folder (HairAsset and RatBoy folders) were removed and can be downloaded from GitHub:
+https://github.com/GPUOpen-Effects/TressFX/tree/master/bin/Objects

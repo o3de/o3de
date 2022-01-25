@@ -18,6 +18,27 @@
 namespace ImageProcessingAtomEditor
 {
     using namespace ImageProcessingAtom;
+
+    AZStd::string GetImageFileMask(const AZStd::string& imageFilePath)
+    {
+        const char FileMaskDelimiter = '_';
+
+        //get file name
+        AZStd::string fileName;
+        QString lowerFileName = imageFilePath.data();
+        lowerFileName = lowerFileName.toLower();
+        AzFramework::StringFunc::Path::GetFileName(lowerFileName.toUtf8().constData(), fileName);
+
+        //get the substring from last '_'
+        size_t lastUnderScore = fileName.find_last_of(FileMaskDelimiter);
+        if (lastUnderScore != AZStd::string::npos)
+        {
+            return fileName.substr(lastUnderScore);
+        }
+
+        return AZStd::string();
+    }
+
     TexturePresetSelectionWidget::TexturePresetSelectionWidget(EditorTextureSetting& textureSetting, QWidget* parent /*= nullptr*/)
         : QWidget(parent)
         , m_ui(new Ui::TexturePresetSelectionWidget)
@@ -29,41 +50,39 @@ namespace ImageProcessingAtomEditor
         m_presetList.clear();
         auto& presetFilterMap = BuilderSettingManager::Instance()->GetPresetFilterMap();
 
-        AZStd::set<AZStd::string> noFilterPresetList;
-
-        // Check if there is any filtered preset list first
-        for(auto& presetFilter : presetFilterMap)
+        if (m_listAllPresets)
         {
-            if (presetFilter.first.empty())
-            {
-                noFilterPresetList = presetFilter.second;
-            }
-            else if (IsMatchingWithFileMask(m_textureSetting->m_textureName, presetFilter.first))
-            {
-                for(const AZStd::string& presetName : presetFilter.second)
-                {
-                    m_presetList.insert(presetName);
-                }
-            }
+            m_presetList = BuilderSettingManager::Instance()->GetFullPresetList();
         }
-        // If no filtered preset list available or should list all presets, use non-filter list
-        if (m_presetList.size() == 0 || m_listAllPresets)
+        else
         {
-            m_presetList = noFilterPresetList;
+            auto fileMask = GetImageFileMask(m_textureSetting->m_textureName);
+            auto itr = presetFilterMap.find(fileMask);
+            if (itr != presetFilterMap.end())
+            {
+                m_presetList = itr->second;
+            }
+            else
+            {
+                m_presetList = BuilderSettingManager::Instance()->GetFullPresetList();
+            }
         }
 
-        foreach (const AZStd::string& presetName, m_presetList)
+        QStringList stringList;
+        foreach (const auto& presetName, m_presetList)
         {
-            m_ui->presetComboBox->addItem(QString(presetName.c_str()));
+            stringList.append(QString(presetName.GetCStr()));
         }
+        stringList.sort();
+        m_ui->presetComboBox->addItems(stringList);
 
         // Set current preset
-        const AZ::Uuid& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
+        const auto& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
         const PresetSettings* presetSetting = BuilderSettingManager::Instance()->GetPreset(currPreset);
 
         if (presetSetting)
         {
-            m_ui->presetComboBox->setCurrentText(presetSetting->m_name.c_str());
+            m_ui->presetComboBox->setCurrentText(presetSetting->m_name.GetCStr());
             QObject::connect(m_ui->presetComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TexturePresetSelectionWidget::OnChangePreset);
 
             // Suppress engine reduction checkbox
@@ -109,20 +128,20 @@ namespace ImageProcessingAtomEditor
 
     void TexturePresetSelectionWidget::OnRestButton()
     {
-        m_textureSetting->SetToPreset(AZStd::string(m_ui->presetComboBox->currentText().toUtf8().data()));
+        m_textureSetting->SetToPreset(PresetName(m_ui->presetComboBox->currentText().toUtf8().data()));
         EditorInternalNotificationBus::Broadcast(&EditorInternalNotificationBus::Events::OnEditorSettingsChanged, true, BuilderSettingManager::s_defaultPlatform);
     }
 
     void TexturePresetSelectionWidget::OnChangePreset(int index)
     {
         QString text = m_ui->presetComboBox->itemText(index);
-        m_textureSetting->SetToPreset(AZStd::string(text.toUtf8().data()));
+        m_textureSetting->SetToPreset(PresetName(text.toUtf8().data()));
         EditorInternalNotificationBus::Broadcast(&EditorInternalNotificationBus::Events::OnEditorSettingsChanged, true, BuilderSettingManager::s_defaultPlatform);
     }
 
     void ImageProcessingAtomEditor::TexturePresetSelectionWidget::OnPresetInfoButton()
     {
-        const AZ::Uuid& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
+        const auto& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
         const PresetSettings* presetSetting = BuilderSettingManager::Instance()->GetPreset(currPreset);
         m_presetPopup.reset(new PresetInfoPopup(presetSetting, this));
         m_presetPopup->installEventFilter(this);
@@ -136,7 +155,7 @@ namespace ImageProcessingAtomEditor
             bool oldState = m_ui->serCheckBox->blockSignals(true);
             m_ui->serCheckBox->setChecked(m_textureSetting->GetMultiplatformTextureSetting().m_suppressEngineReduce);
             // If the preset's SER is true, texture setting should not override
-            const AZ::Uuid& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
+            const auto& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
             const PresetSettings* presetSetting = BuilderSettingManager::Instance()->GetPreset(currPreset);
             if (presetSetting)
             {
@@ -173,8 +192,9 @@ namespace ImageProcessingAtomEditor
         AZStd::string conventionText = "";
         if (presetSettings)
         {
+            auto fileMasks = BuilderSettingManager::Instance()->GetFileMasksForPreset(presetSettings->m_name);
             int i = 0;
-            for (const PlatformName& filemask : presetSettings->m_fileMasks)
+            for (const auto& filemask : fileMasks)
             {
                 conventionText +=  i > 0 ? " " + filemask : filemask;
                 i++;

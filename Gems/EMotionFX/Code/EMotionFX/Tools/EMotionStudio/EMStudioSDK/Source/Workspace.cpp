@@ -23,6 +23,7 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 #include <EMotionFX/Source/ActorManager.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -105,7 +106,9 @@ namespace EMStudio
             }
         }
 
-        commandString = AZStd::string::format("%s -filename \"%s\"", command, resultFileName.c_str());
+        AZStd::string resultFilenameString = resultFileName.c_str();
+        AzFramework::StringFunc::AssetDatabasePath::Normalize(resultFilenameString);
+        commandString = AZStd::string::format("%s -filename \"%s\"", command, resultFilenameString.c_str());
 
         if (additionalParameters)
         {
@@ -428,7 +431,25 @@ namespace EMStudio
                 continue;
             }
 
-            AzFramework::StringFunc::Replace(commands[i], "@assets@/", assetCacheFolder.c_str(), true /* case sensitive */);
+            // Temp solution after we refactor / remove the actor manager.
+            // We only need to create the actor instance by ourselves when openGLRenderPlugin is present.
+            // Atom render viewport will create actor instance along with the actor component.
+            PluginManager* pluginManager = GetPluginManager();
+            if (!pluginManager->FindActivePlugin(static_cast<uint32>(OpenGLRenderPlugin::CLASS_ID)))
+            {
+                if (commands[i].find("CreateActorInstance") == 0)
+                {
+                    continue;
+                }
+            }
+
+            AzFramework::StringFunc::Replace(commands[i], "@products@", assetCacheFolder.c_str());
+            AzFramework::StringFunc::Replace(commands[i], "@assets@", assetCacheFolder.c_str());
+            AzFramework::StringFunc::Replace(commands[i], "@root@", assetCacheFolder.c_str());
+            AzFramework::StringFunc::Replace(commands[i], "@projectplatformcache@", assetCacheFolder.c_str());
+            AzFramework::StringFunc::Replace(commands[i], "//", AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
+            AzFramework::StringFunc::Replace(commands[i], "\\\\", AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
+            AzFramework::StringFunc::Replace(commands[i], "/\\", AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
 
             // add the command to the command group
             commandGroup->AddCommandString(commands[i]);

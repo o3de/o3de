@@ -63,5 +63,5 @@ namespace ScriptCanvasEditor::Nodes
 
     // SlotGroup will control how elements are grouped.
     // Invalid will cause the slots to put themselves into whatever category they belong to by default.
-    AZ::EntityId DisplayScriptCanvasSlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::Slot& slot, GraphCanvas::SlotGroup group = GraphCanvas::SlotGroups::Invalid);
+    AZ::EntityId DisplayScriptCanvasSlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::Slot& slot, int slotIndex, GraphCanvas::SlotGroup group = GraphCanvas::SlotGroups::Invalid);
 }

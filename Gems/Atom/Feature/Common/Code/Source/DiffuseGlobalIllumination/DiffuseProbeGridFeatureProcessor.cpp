@@ -69,8 +69,7 @@ namespace AZ
             m_probeGridRenderData.m_probeRayTraceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::RayTraceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeIrradianceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::IrradianceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeDistanceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::DistanceImageFormat, 0, 0);
-            m_probeGridRenderData.m_probeRelocationImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::RelocationImageFormat, 0, 0);
-            m_probeGridRenderData.m_probeClassificationImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::ClassificationImageFormat, 0, 0);
+            m_probeGridRenderData.m_probeDataImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::ProbeDataImageFormat, 0, 0);
 
             // load shader
             // Note: the shader may not be available on all platforms
@@ -154,10 +153,11 @@ namespace AZ
                 // sort the probes by descending inner volume size, so the smallest volumes are rendered last
                 auto sortFn = [](AZStd::shared_ptr<DiffuseProbeGrid> const& probe1, AZStd::shared_ptr<DiffuseProbeGrid> const& probe2) -> bool
                 {
-                    const Aabb& aabb1 = probe1->GetAabbWs();
-                    const Aabb& aabb2 = probe2->GetAabbWs();
-                    float size1 = aabb1.GetXExtent() * aabb1.GetZExtent() * aabb1.GetYExtent();
-                    float size2 = aabb2.GetXExtent() * aabb2.GetZExtent() * aabb2.GetYExtent();
+                    const Obb& obb1 = probe1->GetObbWs();
+                    const Obb& obb2 = probe2->GetObbWs();
+                    float size1 = obb1.GetHalfLengthX() * obb1.GetHalfLengthZ() * obb1.GetHalfLengthY();
+                    float size2 = obb2.GetHalfLengthX() * obb2.GetHalfLengthZ() * obb2.GetHalfLengthY();
+
                     return (size1 > size2);
                 };
 
@@ -295,6 +295,12 @@ namespace AZ
             probeGrid->SetNormalBias(normalBias);
         }
 
+        void DiffuseProbeGridFeatureProcessor::SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe)
+        {
+            AZ_Assert(probeGrid.get(), "SetNumRaysPerProbe called with an invalid handle");
+            probeGrid->SetNumRaysPerProbe(numRaysPerProbe);
+        }
+
         void DiffuseProbeGridFeatureProcessor::SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier)
         {
             AZ_Assert(probeGrid.get(), "SetAmbientMultiplier called with an invalid handle");
@@ -324,15 +330,13 @@ namespace AZ
             DiffuseProbeGridBakeTexturesCallback callback,
             const AZStd::string& irradianceTextureRelativePath,
             const AZStd::string& distanceTextureRelativePath,
-            const AZStd::string& relocationTextureRelativePath,
-            const AZStd::string& classificationTextureRelativePath)
+            const AZStd::string& probeDataTextureRelativePath)
         {
             AZ_Assert(probeGrid.get(), "BakeTextures called with an invalid handle");
 
             AddNotificationEntry(irradianceTextureRelativePath);
             AddNotificationEntry(distanceTextureRelativePath);
-            AddNotificationEntry(relocationTextureRelativePath);
-            AddNotificationEntry(classificationTextureRelativePath);
+            AddNotificationEntry(probeDataTextureRelativePath);
 
             probeGrid->GetTextureReadback().BeginTextureReadback(callback);
         }
@@ -414,15 +418,13 @@ namespace AZ
         bool DiffuseProbeGridFeatureProcessor::AreBakedTexturesReferenced(
             const AZStd::string& irradianceTextureRelativePath,
             const AZStd::string& distanceTextureRelativePath,
-            const AZStd::string& relocationTextureRelativePath,
-            const AZStd::string& classificationTextureRelativePath)
+            const AZStd::string& probeDataTextureRelativePath)
         {
             for (auto& diffuseProbeGrid : m_diffuseProbeGrids)
             {
                 if ((diffuseProbeGrid->GetBakedIrradianceRelativePath() == irradianceTextureRelativePath) ||
                     (diffuseProbeGrid->GetBakedDistanceRelativePath() == distanceTextureRelativePath) ||
-                    (diffuseProbeGrid->GetBakedRelocationRelativePath() == relocationTextureRelativePath) ||
-                    (diffuseProbeGrid->GetBakedClassificationRelativePath() == classificationTextureRelativePath))
+                    (diffuseProbeGrid->GetBakedProbeDataRelativePath() == probeDataTextureRelativePath))
                 {
                     return true;
                 }
@@ -535,7 +537,7 @@ namespace AZ
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
             request.m_initialData = m_boxIndices.data();
-            AZ::RHI::ResultCode result = m_bufferPool->InitBuffer(request);
+            [[maybe_unused]] AZ::RHI::ResultCode result = m_bufferPool->InitBuffer(request);
             AZ_Error("DiffuseProbeGridFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create index buffer view
@@ -602,12 +604,12 @@ namespace AZ
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             if (device->GetFeatures().m_rayTracing == false)
             {
-                RPI::PassHierarchyFilter updatePassFilter(AZ::Name("DiffuseProbeGridUpdatePass"));
-                const AZStd::vector<RPI::Pass*>& updatePasses = RPI::PassSystemInterface::Get()->FindPasses(updatePassFilter);
-                for (RPI::Pass* pass : updatePasses)
-                {
-                    pass->SetEnabled(false);
-                }
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                    {
+                        pass->SetEnabled(false);
+                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    });
             }
         }
 

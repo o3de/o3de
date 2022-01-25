@@ -20,6 +20,8 @@
 AZ_CVAR(uint32_t, bg_hierarchyEntityMaxLimit, 16, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Maximum allowed size of network entity hierarchies, including top level entity.");
 
+static constexpr int CommonHierarchyEntityMaxLimit = 16; // Should match @bg_hierarchyEntityMaxLimit
+
 namespace Multiplayer
 {
     void NetworkHierarchyRootComponent::Reflect(AZ::ReflectContext* context)
@@ -51,6 +53,7 @@ namespace Multiplayer
     void NetworkHierarchyRootComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("NetworkHierarchyRootComponent"));
+        provided.push_back(AZ_CRC_CE("MultiplayerInputDriver"));
     }
 
     void NetworkHierarchyRootComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -105,7 +108,7 @@ namespace Multiplayer
             {
                 if (const AZ::Entity* childEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(childEntityId))
                 {
-                    SetRootForEntity(nullptr, childEntity);
+                    SetRootForEntity(GetEntity(), nullptr, childEntity);
                 }
             }
         }
@@ -173,6 +176,29 @@ namespace Multiplayer
         }
     }
 
+    static AZStd::tuple<NetworkHierarchyRootComponent*, NetworkHierarchyChildComponent*> GetHierarchyComponents(const AZ::Entity* entity)
+    {
+        NetworkHierarchyChildComponent* childComponent = nullptr;
+        NetworkHierarchyRootComponent* rootComponent = nullptr;
+
+        for (AZ::Component* component : entity->GetComponents())
+        {
+            if (component->GetUnderlyingComponentType() == NetworkHierarchyChildComponent::TYPEINFO_Uuid())
+            {
+                childComponent = static_cast<NetworkHierarchyChildComponent*>(component);
+                break;
+            }
+
+            if (component->GetUnderlyingComponentType() == NetworkHierarchyRootComponent::TYPEINFO_Uuid())
+            {
+                rootComponent = static_cast<NetworkHierarchyRootComponent*>(component);
+                break;
+            }
+        }
+
+        return AZStd::tie(rootComponent, childComponent);
+    }
+
     void NetworkHierarchyRootComponent::OnParentChanged([[maybe_unused]] AZ::EntityId oldParent, AZ::EntityId newParent)
     {
         // If the parent is part of a hierarchy, it will detect this entity as a new child and rebuild hierarchy.
@@ -181,10 +207,10 @@ namespace Multiplayer
 
         if (AZ::Entity* parentEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(newParent))
         {
-            if (parentEntity->FindComponent<NetworkHierarchyRootComponent>() == nullptr &&
-                parentEntity->FindComponent<NetworkHierarchyChildComponent>() == nullptr)
+            auto [rootComponent, childComponent] = GetHierarchyComponents(parentEntity);
+            if (rootComponent == nullptr && childComponent == nullptr)
             {
-                RebuildHierarchy();
+                SetRootForEntity(nullptr, nullptr, GetEntity());
             }
             else
             {
@@ -194,7 +220,7 @@ namespace Multiplayer
         else
         {
             // Detached from parent
-            RebuildHierarchy();
+            SetRootForEntity(nullptr, nullptr, GetEntity());
         }
     }
 
@@ -203,10 +229,9 @@ namespace Multiplayer
         AZStd::vector<AZ::Entity*> previousEntities;
         m_hierarchicalEntities.swap(previousEntities);
 
-        m_hierarchicalEntities.push_back(GetEntity()); // Add the root.
+        m_hierarchicalEntities.reserve(bg_hierarchyEntityMaxLimit);
 
-        uint32_t currentEntityCount = aznumeric_cast<uint32_t>(m_hierarchicalEntities.size());
-        RecursiveAttachHierarchicalEntities(GetEntityId(), currentEntityCount);
+        InternalBuildHierarchyList(GetEntity());
 
         bool hierarchyChanged = false;
 
@@ -223,14 +248,14 @@ namespace Multiplayer
             {
                 // This is a newly added entity to the network hierarchy.
                 hierarchyChanged = true;
-                SetRootForEntity(GetEntity(), currentEntity);
+                SetRootForEntity(nullptr, GetEntity(), currentEntity);
             }
         }
 
         // These entities were removed since last rebuild.
         for (const AZ::Entity* previousEntity : previousEntities)
         {
-            SetRootForEntity(nullptr, previousEntity);
+            SetRootForEntity(GetEntity(), nullptr, previousEntity);
         }
 
         if (!previousEntities.empty())
@@ -244,86 +269,248 @@ namespace Multiplayer
         }
     }
 
-    void NetworkHierarchyRootComponent::SetRootForEntity(AZ::Entity* root, const AZ::Entity* childEntity)
+    void NetworkHierarchyRootComponent::InternalBuildHierarchyList(AZ::Entity* underEntity)
     {
-        if (auto* hierarchyChildComponent = childEntity->FindComponent<NetworkHierarchyChildComponent>())
-        {
-            hierarchyChildComponent->SetTopLevelHierarchyRootEntity(root);
-        }
-        else if (auto* hierarchyRootComponent = childEntity->FindComponent<NetworkHierarchyRootComponent>())
-        {
-            hierarchyRootComponent->SetTopLevelHierarchyRootEntity(root);
-        }
-    }
+        AZ::ComponentApplicationRequests* componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
 
-    bool NetworkHierarchyRootComponent::RecursiveAttachHierarchicalEntities(AZ::EntityId underEntity, uint32_t& currentEntityCount)
-    {
-        AZStd::vector<AZ::EntityId> allChildren;
-        AZ::TransformBus::EventResult(allChildren, underEntity, &AZ::TransformBus::Events::GetChildren);
+        AZStd::deque<AZ::Entity*, AZStd::allocator, CommonHierarchyEntityMaxLimit> candidates;
+        candidates.push_back(underEntity);
 
-        for (const AZ::EntityId& newChildId : allChildren)
+        while (!candidates.empty())
         {
-            if (!RecursiveAttachHierarchicalChild(newChildId, currentEntityCount))
+            AZ::Entity* candidate = candidates.front();
+            candidates.pop_front();
+
+            if (candidate)
             {
-                return false;
-            }
-        }
+                auto [hierarchyRootComponent, hierarchyChildComponent] = GetHierarchyComponents(candidate);
 
-        return true;
-    }
-
-    bool NetworkHierarchyRootComponent::RecursiveAttachHierarchicalChild(AZ::EntityId entity, uint32_t& currentEntityCount)
-    {
-        if (currentEntityCount >= bg_hierarchyEntityMaxLimit)
-        {
-            AZLOG_WARN("Entity %s is trying to build a network hierarchy that is too large. bg_hierarchyEntityMaxLimit is currently set to (%u)",
-                GetEntity()->GetName().c_str(), static_cast<uint32_t>(bg_hierarchyEntityMaxLimit));
-            return false;
-        }
-
-        if (AZ::Entity* childEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entity))
-        {
-            auto* hierarchyChildComponent = childEntity->FindComponent<NetworkHierarchyChildComponent>();
-            auto* hierarchyRootComponent = childEntity->FindComponent<NetworkHierarchyRootComponent>();
-
-            if ((hierarchyChildComponent && hierarchyChildComponent->IsHierarchyEnabled()) ||
-                (hierarchyRootComponent && hierarchyRootComponent->IsHierarchyEnabled()))
-            {
-                m_hierarchicalEntities.push_back(childEntity);
-                ++currentEntityCount;
-
-                if (!RecursiveAttachHierarchicalEntities(entity, currentEntityCount))
+                if ((hierarchyChildComponent && hierarchyChildComponent->IsHierarchyEnabled()) ||
+                    (hierarchyRootComponent && hierarchyRootComponent->IsHierarchyEnabled()))
                 {
-                    return false;
+                    m_hierarchicalEntities.push_back(candidate);
+
+                    if (m_hierarchicalEntities.size() >= bg_hierarchyEntityMaxLimit)
+                    {
+                        AZLOG_WARN("Network hierarchy size exceeded, current limit is %d, root entity was %s",
+                            static_cast<int>(bg_hierarchyEntityMaxLimit),
+                            GetEntity()->GetName().c_str());
+                        return;
+                    }
+
+                    const AZStd::vector<AZ::EntityId> allChildren = candidate->GetTransform()->GetChildren();
+                    for (const AZ::EntityId& newChildId : allChildren)
+                    {
+                        candidates.push_back(componentApplicationRequests->FindEntity(newChildId));
+                    }
                 }
             }
         }
-
-        return true;
     }
 
-    void NetworkHierarchyRootComponent::SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot)
+    void NetworkHierarchyRootComponent::SetRootForEntity(AZ::Entity* previousKnownRoot, AZ::Entity* newRoot, const AZ::Entity* childEntity)
     {
-        m_rootEntity = hierarchyRoot;
+        auto [hierarchyRootComponent, hierarchyChildComponent] = GetHierarchyComponents(childEntity);
 
-        if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
+        if (hierarchyChildComponent)
         {
-            NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
-            if (hierarchyRoot)
+            hierarchyChildComponent->SetTopLevelHierarchyRootEntity(previousKnownRoot, newRoot);
+        }
+        else if (hierarchyRootComponent)
+        {
+            hierarchyRootComponent->SetTopLevelHierarchyRootEntity(previousKnownRoot, newRoot);
+        }
+    }
+
+    void NetworkHierarchyRootComponent::SetTopLevelHierarchyRootEntity(AZ::Entity* previousHierarchyRoot, AZ::Entity* newHierarchyRoot)
+    {
+        if (newHierarchyRoot)
+        {
+            if (m_rootEntity != newHierarchyRoot)
             {
-                const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(hierarchyRoot->GetId());
-                controller->SetHierarchyRoot(netRootId);
-            }
-            else
-            {
-                controller->SetHierarchyRoot(InvalidNetEntityId);
+                m_rootEntity = newHierarchyRoot;
+
+                if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
+                {
+                    NetworkHierarchyRootComponentController* controller = static_cast<NetworkHierarchyRootComponentController*>(GetController());
+                    const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
+                    controller->SetHierarchyRoot(netRootId);
+                }
+
+                GetNetBindComponent()->SetOwningConnectionId(m_rootEntity->FindComponent<NetBindComponent>()->GetOwningConnectionId());
+                m_networkHierarchyChangedEvent.Signal(m_rootEntity->GetId());
             }
         }
-
-        if (m_rootEntity == nullptr)
+        else if ((previousHierarchyRoot && m_rootEntity == previousHierarchyRoot) || !previousHierarchyRoot)
         {
+            m_rootEntity = nullptr;
+
+            if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
+            {
+                NetworkHierarchyRootComponentController* controller = static_cast<NetworkHierarchyRootComponentController*>(GetController());
+                controller->SetHierarchyRoot(InvalidNetEntityId);
+            }
+
+            GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
+            m_networkHierarchyLeaveEvent.Signal();
+
             // We lost the parent hierarchical entity, so as a root we need to re-build our own hierarchy.
             RebuildHierarchy();
         }
+    }
+
+    void NetworkHierarchyRootComponent::SetOwningConnectionId(AzNetworking::ConnectionId connectionId)
+    {
+        NetworkHierarchyRootComponentBase::SetOwningConnectionId(connectionId);
+        if (IsHierarchicalChild() == false)
+        {
+            m_previousOwningConnectionId = connectionId;
+        }
+    }
+
+    NetworkHierarchyRootComponentController::NetworkHierarchyRootComponentController(NetworkHierarchyRootComponent& parent)
+        : NetworkHierarchyRootComponentControllerBase(parent)
+    {
+
+    }
+
+    void NetworkHierarchyRootComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+
+    }
+
+    void NetworkHierarchyRootComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+
+    }
+
+    Multiplayer::MultiplayerController::InputPriorityOrder NetworkHierarchyRootComponentController::GetInputOrder() const
+    {
+        return Multiplayer::MultiplayerController::InputPriorityOrder::SubEntities;
+    }
+
+    void NetworkHierarchyRootComponentController::CreateInput(Multiplayer::NetworkInput& input, float deltaTime)
+    {
+        NetworkHierarchyRootComponent& component = GetParent();
+        if (!component.IsHierarchicalRoot())
+        {
+            return;
+        }
+
+        INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+        AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
+
+        const AZStd::vector<AZ::Entity*>& entities = component.m_hierarchicalEntities;
+
+        auto* networkInput = input.FindComponentInput<NetworkHierarchyRootComponentNetworkInput>();
+        networkInput->m_childInputs.clear();
+        networkInput->m_childInputs.reserve(entities.size());
+
+        for (AZ::Entity* child : entities)
+        {
+            if (child == component.GetEntity())
+            {
+                continue; // Avoid infinite recursion
+            }
+
+            NetEntityId childNetEntitydId = networkEntityManager->GetNetEntityIdById(child->GetId());
+            AZ_Assert(childNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
+
+            ConstNetworkEntityHandle childEntityHandle = networkEntityManager->GetEntity(childNetEntitydId);
+            NetBindComponent* netComp = childEntityHandle.GetNetBindComponent();
+
+            AZ_Assert(netComp, "No NetBindComponent, this should be impossible");
+            // Validate we still have a controller and we aren't in the middle of removing them
+            if (netComp->HasController())
+            {
+                NetworkInputChild subInput;
+                subInput.Attach(childEntityHandle);
+                subInput.GetNetworkInput().SetClientInputId(input.GetClientInputId());
+
+                netComp->CreateInput(subInput.GetNetworkInput(), deltaTime);
+
+                // make sure our input sub commands have the same time as the original
+                subInput.GetNetworkInput().SetClientInputId(input.GetClientInputId());
+                networkInput->m_childInputs.emplace_back(subInput);
+            }
+        }
+    }
+
+    void NetworkHierarchyRootComponentController::ProcessInput(Multiplayer::NetworkInput& input, float deltaTime)
+    {
+        if (auto* networkInput = input.FindComponentInput<NetworkHierarchyRootComponentNetworkInput>())
+        {
+            INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+            AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
+
+            // Build a set of Net IDs for the children
+            AZStd::unordered_set<NetEntityId> currentChildren;
+            NetworkHierarchyRootComponent& component = GetParent();
+            for (AZ::Entity* child : component.m_hierarchicalEntities)
+            {
+                if (child == component.GetEntity()) // Skip the root entity
+                {
+                    continue;
+                }
+
+                NetEntityId childNetEntitydId = networkEntityManager->GetNetEntityIdById(child->GetId());
+                AZ_Assert(childNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
+                currentChildren.insert(childNetEntitydId);
+            }
+
+            // Process the input for the child entities
+            for (NetworkInputChild& subInput : networkInput->m_childInputs)
+            {
+                const ConstNetworkEntityHandle& inputOwnerHandle = subInput.GetOwner();
+                NetEntityId inputOwnerNetEntitydId = inputOwnerHandle.GetNetEntityId();
+
+                if (currentChildren.count(inputOwnerNetEntitydId) == 0)
+                {
+                    // Skip the input for entities which are not a part of this hierarchy
+                    continue;
+                }
+
+                ConstNetworkEntityHandle localEntityHandle = networkEntityManager->GetEntity(inputOwnerNetEntitydId);
+                if (localEntityHandle.Exists())
+                {
+                    auto* netComp = localEntityHandle.GetNetBindComponent();
+                    AZ_Assert(netComp, "No NetBindComponent, this should be impossible");
+                    // We do not rewind entity role changes, so make sure we are the correct role prior to processing
+                    if (netComp->HasController())
+                    {
+                        subInput.GetNetworkInput().SetClientInputId(input.GetClientInputId());
+                        netComp->ProcessInput(subInput.GetNetworkInput(), deltaTime);
+                    }
+                }
+            }
+        }
+    }
+
+    bool NetworkHierarchyRootComponent::SerializeEntityCorrection(AzNetworking::ISerializer& serializer)
+    {
+        bool result = true;
+
+        INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+        AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
+
+        for (AZ::Entity* child : m_hierarchicalEntities)
+        {
+            if (child == GetEntity())
+            {
+                // Skip the root entity
+                continue;
+            }
+
+            NetEntityId childNetEntitydId = networkEntityManager->GetNetEntityIdById(child->GetId());
+            AZ_Assert(childNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
+
+            ConstNetworkEntityHandle childEntityHandle = networkEntityManager->GetEntity(childNetEntitydId);
+            NetBindComponent* netBindComponent = childEntityHandle.GetNetBindComponent();
+            AZ_Assert(netBindComponent, "No NetBindComponent, this should be impossible");
+
+            result = result && netBindComponent->SerializeEntityCorrection(serializer);
+        }
+
+        return result;
     }
 }

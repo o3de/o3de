@@ -60,9 +60,14 @@ namespace AZ
             }
         }
 
-        AZStd::sys_time_t ShaderVariantAsset::GetBuildTimestamp() const
+        AZ::u64 ShaderVariantAsset::GetBuildTimestamp() const
         {
             return m_buildTimestamp;
+        }
+
+        uint32_t ShaderVariantAsset::GetSupervariantIndex() const
+        {
+            return (m_assetId.m_subId >> SupervariantIndexBitPosition) & SupervariantIndexMaxValue;
         }
 
         const RHI::ShaderStageFunction* ShaderVariantAsset::GetShaderStageFunction(RHI::ShaderStage shaderStage) const

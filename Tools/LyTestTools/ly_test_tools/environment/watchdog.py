@@ -14,8 +14,8 @@ import re
 import psutil
 import time
 
+import ly_test_tools
 import ly_test_tools.environment.process_utils as process_utils
-from ly_test_tools import WINDOWS
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class Watchdog(object):
     DEFAULT_JOIN_TIMEOUT = 10  # seconds
 
     def __init__(self, bool_fn, interval=1, raise_on_condition=True, name='ly_test_watchdog', error_message=''):
-        # type: (func, int, bool, str, str) -> Watchdog
+        # type: (function, int, bool, str, str) -> Watchdog
         """
         A Watchdog object that takes in a boolean function. It spawns a thread that loops over the boolean function
         until it returns True. If the boolean function returns True, then a flag will be set and an exception
@@ -44,7 +44,7 @@ class Watchdog(object):
         """
         self.caught_failure = False
         self.name = name
-        
+
         self._bool_fn = bool_fn
         self._interval = interval
         self._raise_on_condition = raise_on_condition
@@ -66,7 +66,7 @@ class Watchdog(object):
         self.caught_failure = False
 
     def stop(self, join_timeout=DEFAULT_JOIN_TIMEOUT):
-        # type: () -> None
+        # type: (int) -> None
         """
         Stops the watchdog's thread if it's executing by enabling its shutdown Event. If the target function's condition
         was found, then it will either raise an exception or log an error message.
@@ -106,7 +106,7 @@ class Watchdog(object):
         """
         The main function of the watchdog thread. It will repeatedly call its target function until the target function
         returns True, in which it will set the self.caught_failure attribute to True.
-        
+
         :return: None
         """
         while True:
@@ -128,7 +128,7 @@ class ProcessUnresponsiveWatchdog(Watchdog):
         Watches a process ID and reports if it is unresponsive for a given timeout. If multiple processes need to be
         watched, then multiple watchdogs should be instantiated.
         Note: This is for windows OS only.
-        
+
         :param process_id: The process id to watch
         :param interval: The interval (in seconds) for how frequently the bool_fn is called on the thread.
         :param raise_on_condition: If True, raises an exception when bool_fn returns True. If False, logs an error
@@ -138,8 +138,8 @@ class ProcessUnresponsiveWatchdog(Watchdog):
         :param unresponsive_timeout_seconds: How long the process needs to be unresponsive for in order for the watchdog
         to report (in seconds).
         """
-        if not WINDOWS:
-            raise (NotImplementedError, "Process watchdog is only implemented on Windows.")
+        if not ly_test_tools.WINDOWS:
+            pass # TODO add non-windows support
         self._unresponsive_timeout = unresponsive_timeout_seconds
         self._calculated_timeout_point = None
         self._pid = process_id

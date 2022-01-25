@@ -882,7 +882,6 @@ LANSession::OnStateHostMigrateSession(AZ::HSM& sm, const AZ::HSM::Event& e)
                 {
                     // check the output for more info
                     AZStd::string errorMsg = AZStd::string::format("Failed to initialize socket at port %d!", hostPort);
-                    EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionError, this, errorMsg);
                     EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionError, this, errorMsg);
                     // We can't be a real host if we failed to provide matching services.
                     Leave(false);
@@ -1146,7 +1145,6 @@ void LANSessionService::OnServiceRegistered(IGridMate* gridMate)
 
     LANSessionServiceBus::Handler::BusConnect(gridMate);
 
-    EBUS_DBG_EVENT(Debug::SessionDrillerBus, OnSessionServiceReady);
     EBUS_EVENT_ID(m_gridMate, SessionEventBus, OnSessionServiceReady);
 }
 

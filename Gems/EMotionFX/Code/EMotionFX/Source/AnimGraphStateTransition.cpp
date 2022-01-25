@@ -326,7 +326,7 @@ namespace EMotionFX
         uniqueData->m_totalSeconds   = 0.0f;
         uniqueData->m_blendProgress  = 0.0f;
 
-        m_targetNode->SetSyncIndex(animGraphInstance, MCORE_INVALIDINDEX32);
+        m_targetNode->SetSyncIndex(animGraphInstance, InvalidIndex);
 
         // Trigger action
         for (AnimGraphTriggerAction* action : m_actionSetup.GetActions())

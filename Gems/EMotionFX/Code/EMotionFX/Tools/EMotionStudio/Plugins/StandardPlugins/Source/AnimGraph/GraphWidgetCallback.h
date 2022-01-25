@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_GRAPHWIDGETCALLBACK_H
-#define __EMSTUDIO_GRAPHWIDGETCALLBACK_H
+#pragma once
 
 // include required headers
 #include <MCore/Source/StandardHeaders.h>
@@ -36,5 +35,3 @@ namespace EMStudio
         NodeGraphWidget* m_graphWidget;
     };
 }   // namespace EMStudio
-
-#endif

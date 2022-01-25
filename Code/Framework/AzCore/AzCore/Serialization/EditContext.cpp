@@ -34,7 +34,7 @@ namespace AZ
             }
             classIt->ClearElements();
         }
-        for (auto enumIt : m_enumData)
+        for (auto& enumIt : m_enumData)
         {
             enumIt.second.ClearAttributes();
         }
@@ -103,7 +103,7 @@ namespace AZ
         //=========================================================================
         void ElementData::ClearAttributes()
         {
-            for (auto attrib : m_attributes)
+            for (auto& attrib : m_attributes)
             {
                 delete attrib.second;
             }

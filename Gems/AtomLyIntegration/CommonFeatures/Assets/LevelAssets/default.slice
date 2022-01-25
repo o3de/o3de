@@ -836,7 +836,7 @@
 										</Class>
 										<Class name="AZ::Render::MeshComponentController" field="Controller" type="{D0F35FAC-4194-4C89-9487-D000DDB8B272}">
 											<Class name="AZ::Render::MeshComponentConfig" field="Configuration" version="1" type="{63737345-51B1-472B-9355-98F99993909B}">
-												<Class name="Asset" field="ModelAsset" value="id={935F694A-8639-515B-8133-81CDC7948E5B}:1087c6db,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/groudplane/groundplane_521x521m.azmodel},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
+												<Class name="Asset" field="ModelAsset" value="id={0CD745C0-6AA8-569A-A68A-73A3270986C4}:10904372,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/groudplane/groundplane_512x512m.azmodel},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 												<Class name="AZ::s64" field="SortKey" value="0" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
 												<Class name="unsigned char" field="LodOverride" value="255" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
 												<Class name="bool" field="ExcludeFromReflectionCubeMaps" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>

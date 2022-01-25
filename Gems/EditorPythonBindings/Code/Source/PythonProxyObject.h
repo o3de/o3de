@@ -58,6 +58,8 @@ namespace EditorPythonBindings
         //! Performs an equality operation to compare this object with another object
         bool DoEqualityEvaluation(pybind11::object pythonOther);
 
+        pybind11::object ToJson();
+
         //! Perform a comparison of a Python operator
         enum class Comparison
         {

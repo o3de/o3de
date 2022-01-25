@@ -46,6 +46,9 @@ namespace EMotionFX
         public:
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+            // Use this bus to register custom EMotionFX plugin.
+            virtual void OnRegisterPlugin() = 0;
         };
         using SystemNotificationBus = AZ::EBus<SystemNotifications>;
 

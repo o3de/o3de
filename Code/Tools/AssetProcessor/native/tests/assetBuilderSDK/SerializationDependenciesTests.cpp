@@ -7,6 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <Tests/SerializeContextFixture.h>
 

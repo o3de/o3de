@@ -5,15 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <AzCore/Console/IConsole.h>
 
 #include <Credential/AWSCVarCredentialHandler.h>
 
 namespace AWSCore
 {
-    AZ_CVAR(AZ::CVarFixedString, cl_awsAccessKey, "", nullptr, AZ::ConsoleFunctorFlags::Null, "Override AWS access key");
-    AZ_CVAR(AZ::CVarFixedString, cl_awsSecretKey, "", nullptr, AZ::ConsoleFunctorFlags::Null, "Override AWS secret key");
+    AZ_CVAR(AZ::CVarFixedString, cl_awsAccessKey, "", nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Override AWS access key");
+    AZ_CVAR(AZ::CVarFixedString, cl_awsSecretKey, "", nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Override AWS secret key");
 
     static constexpr char AWSCVARCREDENTIALHANDLER_ALLOC_TAG[] = "AWSCVarCredentialHandler";
 
@@ -36,12 +35,12 @@ namespace AWSCore
 
     std::shared_ptr<Aws::Auth::AWSCredentialsProvider> AWSCVarCredentialHandler::GetCredentialsProvider()
     {
-        auto accessKey = static_cast<AZ::CVarFixedString>(cl_awsAccessKey);
-        auto secretKey = static_cast<AZ::CVarFixedString>(cl_awsSecretKey);
+        const auto accessKey = static_cast<AZ::CVarFixedString>(cl_awsAccessKey);
+        const auto secretKey = static_cast<AZ::CVarFixedString>(cl_awsSecretKey);
 
         if (!accessKey.empty() && !secretKey.empty())
         {
-            AZStd::lock_guard<AZStd::mutex> credentialsLock{m_credentialMutex};
+            AZStd::lock_guard<AZStd::mutex> credentialsLock{ m_credentialMutex };
             m_cvarCredentialsProvider = Aws::MakeShared<Aws::Auth::SimpleAWSCredentialsProvider>(
                 AWSCVARCREDENTIALHANDLER_ALLOC_TAG, accessKey.c_str(), secretKey.c_str());
             return m_cvarCredentialsProvider;
@@ -52,7 +51,7 @@ namespace AWSCore
     void AWSCVarCredentialHandler::ResetCredentialsProvider()
     {
         // Must reset credential provider after AWSNativeSDKs init or before AWSNativeSDKs shutdown
-        AZStd::lock_guard<AZStd::mutex> credentialsLock{m_credentialMutex};
+        AZStd::lock_guard<AZStd::mutex> credentialsLock{ m_credentialMutex };
         m_cvarCredentialsProvider.reset();
     }
 } // namespace AWSCore

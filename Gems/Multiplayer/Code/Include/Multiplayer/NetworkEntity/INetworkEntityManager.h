@@ -21,10 +21,12 @@ namespace Multiplayer
     class NetworkEntityAuthorityTracker;
     class NetworkEntityRpcMessage;
     class MultiplayerComponentRegistry;
+    class IEntityDomain;
 
     using EntityExitDomainEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using ControllersActivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
     using ControllersDeactivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
+    using NetEntityIdSet = AZStd::unordered_set<NetEntityId>;
 
     //! @class INetworkEntityManager
     //! @brief The interface for managing all networked entities.
@@ -33,10 +35,22 @@ namespace Multiplayer
     public:
         AZ_RTTI(INetworkEntityManager, "{109759DE-9492-439C-A0B1-AE46E6FD029C}");
 
-        using OwnedEntitySet = AZStd::unordered_set<ConstNetworkEntityHandle>;
         using EntityList = AZStd::vector<NetworkEntityHandle>;
 
         virtual ~INetworkEntityManager() = default;
+
+        //! Configures the NetworkEntityManager.
+        //! @param hostId       the hostId of this NetworkEntityManager (invalid for clients)
+        //! @param entityDomain the entity domain used to determine which entities this manager has authority over
+        virtual void Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain) = 0;
+
+        //! Returns whether or not the network entity manager has been initialized.
+        //! @return boolean true if this network entity manager has been intialized
+        virtual bool IsInitialized() const = 0;
+
+        //! Returns the entity domain associated with this network entity manager, this will be nullptr on clients.
+        //! @return boolean the entity domain for this network entity manager
+        virtual IEntityDomain* GetEntityDomain() const = 0;
 
         //! Returns the NetworkEntityTracker for this INetworkEntityManager instance.
         //! @return the NetworkEntityTracker for this INetworkEntityManager instance
@@ -52,7 +66,7 @@ namespace Multiplayer
 
         //! Returns the HostId for this INetworkEntityManager instance.
         //! @return the HostId for this INetworkEntityManager instance
-        virtual HostId GetHostId() const = 0;
+        virtual const HostId& GetHostId() const = 0;
 
         //! Creates new entities of the given archetype
         //! @param prefabEntryId the name of the spawnable to spawn
@@ -166,5 +180,21 @@ namespace Multiplayer
         //! Handle a local rpc message.
         //! @param entityRpcMessage the local rpc message to handle
         virtual void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) = 0;
+
+        //! Handles a set of entities transitioning between entity domains.
+        //! @param entitiesNotInDomain the set of entities that are no longer contained within our entity domain
+        virtual void HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain) = 0;
+
+        //! Forcibly assumes authoritative control over the given entity.
+        //! This should only be used in the event of the unexpected loss of the previous authority, any other usage could corrupt the simulation.
+        //! @param entityHandle the entity to forcibly assume authoritative control over
+        virtual void ForceAssumeAuthority(const ConstNetworkEntityHandle& entityHandle) = 0;
+
+        //! Overrides the default timeout time used during entity migrations.
+        //! @param timeoutTimeMs the timeout time to use in milliseconds
+        virtual void SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs) = 0;
+
+        //! Visualization of network entity manager state.
+        virtual void DebugDraw() const = 0;
     };
 }

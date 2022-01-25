@@ -35,8 +35,8 @@ INSTALL
 It is recommended to set up these these tools with Lumberyard's CMake build commands.
 Assuming CMake is already setup on your operating system, below are some sample build commands:
     cd /path/to/lumberyard/dev/
-    mkdir windows_vs2019
-    cd windows_vs2019
+    mkdir windows
+    cd windows
     cmake -E time cmake --build . --target ALL_BUILD --config profile
 
 To manually install the project in development mode using your own installed Python interpreter:

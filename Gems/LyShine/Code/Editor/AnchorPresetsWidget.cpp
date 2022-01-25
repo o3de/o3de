@@ -27,8 +27,6 @@ AnchorPresetsWidget::AnchorPresetsWidget(int defaultPresetIndex,
     , m_presetIndex(defaultPresetIndex)
     , m_buttons(AnchorPresets::PresetIndexCount, nullptr)
 {
-    setFixedSize(UICANVASEDITOR_ANCHOR_WIDGET_FIXED_SIZE, UICANVASEDITOR_ANCHOR_WIDGET_FIXED_SIZE);
-
     // The layout.
     QGridLayout* grid = new QGridLayout(this);
     grid->setContentsMargins(0, 0, 0, 0);
@@ -38,6 +36,7 @@ AnchorPresetsWidget::AnchorPresetsWidget(int defaultPresetIndex,
     {
         for (int presetIndex = 0; presetIndex < AnchorPresets::PresetIndexCount; ++presetIndex)
         {
+            QLayout* boxLayout = new QVBoxLayout();
             PresetButton* button = new PresetButton(UICANVASEDITOR_ANCHOR_ICON_PATH_DEFAULT(presetIndex),
                     UICANVASEDITOR_ANCHOR_ICON_PATH_HOVER(presetIndex),
                     UICANVASEDITOR_ANCHOR_ICON_PATH_SELECTED(presetIndex),
@@ -50,8 +49,9 @@ AnchorPresetsWidget::AnchorPresetsWidget(int defaultPresetIndex,
                         presetChanger(presetIndex);
                     },
                     this);
-
-            grid->addWidget(button, (presetIndex / 4), (presetIndex % 4));
+            boxLayout->addWidget(button);
+            boxLayout->setContentsMargins(2, 2, 2, 2);
+            grid->addItem(boxLayout, (presetIndex / 4), (presetIndex % 4));
 
             m_buttons[ presetIndex ] = button;
         }

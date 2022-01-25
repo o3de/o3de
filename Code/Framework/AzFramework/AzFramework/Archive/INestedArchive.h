@@ -11,7 +11,9 @@
 
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/Archive/Codec.h>
 
 namespace AZ::IO
@@ -71,6 +73,13 @@ namespace AZ::IO
             // multiple times
             FLAGS_DONT_COMPACT = 1 << 5,
 
+            // if this is set, validate header data when opening the archive
+            FLAGS_VALIDATE_HEADERS = 1 << 9,
+
+            // if this is set, validate header data when opening the archive and validate CRCs when decompressing
+            // & reading files.
+            FLAGS_FULL_VALIDATE = 1 << 10,
+
             // Disable a pak file without unloading it, this flag is used in combination with patches and multiplayer
             // to ensure that specific paks stay in the position(to keep the same priority) but being disabled
             // when running multiplayer
@@ -127,6 +136,10 @@ namespace AZ::IO
         // Summary:
         //   Deletes all files and directories in the archive.
         virtual int RemoveAll() = 0;
+
+        // Summary:
+        //   Lists all the files in the archive.
+        virtual int ListAllFiles(AZStd::vector<AZ::IO::Path>& outFileEntries) = 0;
 
         // Summary:
         //   Finds the file; you don't have to close the returned handle.

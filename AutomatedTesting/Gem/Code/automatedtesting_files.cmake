@@ -11,4 +11,5 @@ set(FILES
     Source/AutomatedTestingModule.cpp
     Source/AutomatedTestingSystemComponent.cpp
     Source/AutomatedTestingSystemComponent.h
+    Source/AutoGen/NetworkTestPlayerComponent.AutoComponent.xml
 )

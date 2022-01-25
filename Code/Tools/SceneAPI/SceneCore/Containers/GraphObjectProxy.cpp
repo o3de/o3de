@@ -194,8 +194,8 @@ namespace AZ
                     if (baseClass)
                     {
                         m_behaviorClass = behaviorClass;
+                        return true;
                     }
-                    return true;
                 }
                 return false;
             }

@@ -10,6 +10,7 @@
 #include "EditorDefs.h"
 
 #include "Settings.h"
+#include "EditorViewportSettings.h"
 
 // Qt
 #include <QGuiApplication>
@@ -111,8 +112,6 @@ SEditorSettings::SEditorSettings()
     m_showCircularDependencyError = true;
     bAutoloadLastLevelAtStartup = false;
     bMuteAudio = false;
-    bEnableGameModeVR = false;
-
 
     objectHideMask = 0;
     objectSelectMask = 0xFFFFFFFF; // Initially all selectable.
@@ -143,9 +142,6 @@ SEditorSettings::SEditorSettings()
     viewports.bShowMeshStatsOnMouseOver = false;
     viewports.bDrawEntityLabels = false;
     viewports.bShowTriggerBounds = false;
-    viewports.bShowIcons = true;
-    viewports.bDistanceScaleIcons = true;
-    viewports.bShowSizeBasedIcons = false;
     viewports.nShowFrozenHelpers = true;
     viewports.bFillSelectedShapes = false;
     viewports.nTopMapTextureResolution = 512;
@@ -472,7 +468,7 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, ESystemC
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SEditorSettings::Save()
+void SEditorSettings::Save(bool isEditorClosing)
 {
     QString strStringPlaceholder;
 
@@ -487,7 +483,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "AutoBackupTime", autoBackupTime);
     SaveValue("Settings", "AutoBackupMaxCount", autoBackupMaxCount);
     SaveValue("Settings", "AutoRemindTime", autoRemindTime);
-    SaveValue("Settings", "MaxDisplayedItemsNumInSearch", maxNumberOfItemsShownInSearch);
     SaveValue("Settings", "CameraMoveSpeed", cameraMoveSpeed);
     SaveValue("Settings", "CameraRotateSpeed", cameraRotateSpeed);
     SaveValue("Settings", "StylusMode", stylusMode);
@@ -536,8 +531,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "ShowMeshStatsOnMouseOver", viewports.bShowMeshStatsOnMouseOver);
     SaveValue("Settings", "DrawEntityLabels", viewports.bDrawEntityLabels);
     SaveValue("Settings", "ShowTriggerBounds", viewports.bShowTriggerBounds);
-    SaveValue("Settings", "ShowIcons", viewports.bShowIcons);
-    SaveValue("Settings", "ShowSizeBasedIcons", viewports.bShowSizeBasedIcons);
     SaveValue("Settings", "ShowFrozenHelpers", viewports.nShowFrozenHelpers);
     SaveValue("Settings", "FillSelectedShapes", viewports.bFillSelectedShapes);
     SaveValue("Settings", "MapTextureResolution", viewports.nTopMapTextureResolution);
@@ -640,14 +633,16 @@ void SEditorSettings::Save()
     // --- Settings Registry values
 
     // Prefab System UI
-    AzFramework::ApplicationRequests::Bus::Broadcast(
-        &AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     prefabLoaderInterface->SetSaveAllPrefabsPreference(levelSaveSettings.saveAllPrefabsPreference);
 
-    SaveSettingsRegistryFile();
+    if (!isEditorClosing)
+    {
+        SaveSettingsRegistryFile();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -682,7 +677,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "AutoBackupTime", autoBackupTime);
     LoadValue("Settings", "AutoBackupMaxCount", autoBackupMaxCount);
     LoadValue("Settings", "AutoRemindTime", autoRemindTime);
-    LoadValue("Settings", "MaxDisplayedItemsNumInSearch", maxNumberOfItemsShownInSearch);
     LoadValue("Settings", "CameraMoveSpeed", cameraMoveSpeed);
     LoadValue("Settings", "CameraRotateSpeed", cameraRotateSpeed);
     LoadValue("Settings", "StylusMode", stylusMode);
@@ -737,8 +731,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowMeshStatsOnMouseOver", viewports.bShowMeshStatsOnMouseOver);
     LoadValue("Settings", "DrawEntityLabels", viewports.bDrawEntityLabels);
     LoadValue("Settings", "ShowTriggerBounds", viewports.bShowTriggerBounds);
-    LoadValue("Settings", "ShowIcons", viewports.bShowIcons);
-    LoadValue("Settings", "ShowSizeBasedIcons", viewports.bShowSizeBasedIcons);
     LoadValue("Settings", "ShowFrozenHelpers", viewports.nShowFrozenHelpers);
     LoadValue("Settings", "FillSelectedShapes", viewports.bFillSelectedShapes);
     LoadValue("Settings", "MapTextureResolution", viewports.nTopMapTextureResolution);
@@ -935,8 +927,9 @@ void SEditorSettings::LoadDefaultGamePaths()
         searchPaths[EDITOR_PATH_MATERIALS].push_back((Path::GetEditingGameDataFolder() + "/Materials").c_str());
     }
 
-    AZStd::string iconsPath;
-    AZ::StringFunc::Path::Join(Path::GetEditingRootFolder().c_str(), "Editor/UI/Icons", iconsPath);
+    auto iconsPath = AZ::IO::Path(AZ::Utils::GetEnginePath()) / "Assets";
+    iconsPath /= "Editor/UI/Icons";
+    iconsPath.MakePreferred();
     searchPaths[EDITOR_PATH_UI_ICONS].push_back(iconsPath.c_str());
 }
 
@@ -1135,7 +1128,7 @@ void SEditorSettings::SaveSettingsRegistryFile()
         return;
     }
 
-    bool saved{};
+    [[maybe_unused]] bool saved{};
     constexpr auto configurationMode = AZ::IO::SystemFile::SF_OPEN_CREATE
         | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH
         | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
@@ -1173,7 +1166,7 @@ AzToolsFramework::ConsoleColorTheme SEditorSettings::GetConsoleColorTheme() cons
     return consoleBackgroundColorTheme;
 }
 
-int SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
+AZ::u64 SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
 {
-    return SEditorSettings::maxNumberOfItemsShownInSearch;
+    return SandboxEditor::MaxItemsShownInAssetBrowserSearch();
 }

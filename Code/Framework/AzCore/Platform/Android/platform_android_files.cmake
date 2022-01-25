@@ -81,6 +81,8 @@ set(FILES
     ../../AzCore/Android/JNI/Internal/JStringUtils_impl.h
     ../../AzCore/Android/JNI/Internal/Object_impl.h
     ../../AzCore/Android/JNI/Internal/Signature_impl.h
+    AzCore/Debug/Profiler_Platform.inl
+    AzCore/Debug/Profiler_Android.inl
 )
 if (LY_TEST_PROJECT)
     ly_add_source_properties(

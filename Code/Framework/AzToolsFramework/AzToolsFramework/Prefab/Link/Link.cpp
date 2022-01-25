@@ -122,12 +122,12 @@ namespace AzToolsFramework
                 !m_instanceName.empty();
         }
 
-        const TemplateId& Link::GetSourceTemplateId() const
+        TemplateId Link::GetSourceTemplateId() const
         {
             return m_sourceTemplateId;
         }
 
-        const TemplateId& Link::GetTargetTemplateId() const
+        TemplateId Link::GetTargetTemplateId() const
         {
             return m_targetTemplateId;
         }

@@ -7,7 +7,6 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <Mocks/ITimerMock.h>
 #include <Mocks/ICryPakMock.h>
 #include <Mocks/IConsoleMock.h>
 #include <Mocks/ISystemMock.h>
@@ -31,7 +30,6 @@ struct MockGlobalEnvironment
 {
     MockGlobalEnvironment()
     {
-        m_stubEnv.pTimer = &m_stubTimer;
         m_stubEnv.pCryPak = &m_stubPak;
         m_stubEnv.pConsole = &m_stubConsole;
         m_stubEnv.pSystem = &m_stubSystem;
@@ -45,7 +43,6 @@ struct MockGlobalEnvironment
 
 private:
     SSystemGlobalEnvironment m_stubEnv;
-    testing::NiceMock<TimerMock> m_stubTimer;
     testing::NiceMock<CryPakMock> m_stubPak;
     testing::NiceMock<ConsoleMock> m_stubConsole;
     testing::NiceMock<SystemMock> m_stubSystem;
@@ -284,15 +281,17 @@ public:
 
 TEST_F(SurfaceDataTestApp, SurfaceData_TestRegisteredTags)
 {
+    // Check that only the unassigned tag exists if no other providers are registered.
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> registeredTags = SurfaceData::SurfaceTag::GetRegisteredTags();
 
-    for (const auto& searchTerm : SurfaceData::Constants::s_allTagNames)
-    {
-        ASSERT_TRUE(AZStd::find_if(registeredTags.begin(), registeredTags.end(), [searchTerm](decltype(registeredTags)::value_type pair)
+    const auto& searchTerm = SurfaceData::Constants::s_unassignedTagName;
+
+    ASSERT_TRUE(AZStd::find_if(
+        registeredTags.begin(), registeredTags.end(),
+        [=](decltype(registeredTags)::value_type pair)
         {
             return pair.second == searchTerm;
         }));
-    }
 }
 
 #if AZ_TRAIT_DISABLE_FAILED_SURFACE_DATA_TESTS

@@ -35,8 +35,7 @@ namespace AWSCore
         this->setDefaultButton(QMessageBox::Save);
         this->button(QMessageBox::Cancel)->hide();
         this->setIcon(QMessageBox::Information);
-        QGridLayout* layout = (QGridLayout*)this->layout();
-        if (layout)
+        if (QGridLayout* layout = static_cast<QGridLayout*>(this->layout()))
         {
             layout->setVerticalSpacing(20);
             layout->setHorizontalSpacing(10);

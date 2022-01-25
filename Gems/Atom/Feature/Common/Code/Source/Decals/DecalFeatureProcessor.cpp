@@ -8,8 +8,6 @@
 
 #include <Decals/DecalFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>

@@ -8,10 +8,13 @@
 
 set(FILES
     Include/AtomToolsFramework/Application/AtomToolsApplication.h
+    Include/AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h
+    Include/AtomToolsFramework/AssetGridDialog/AssetGridDialog.h
     Include/AtomToolsFramework/Communication/LocalServer.h
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
     Include/AtomToolsFramework/Document/AtomToolsDocument.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentApplication.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h
@@ -28,7 +31,7 @@ set(FILES
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
-    Include/AtomToolsFramework/Viewport/RenderViewportWidgetNotificationBus.h
+    Include/AtomToolsFramework/Viewport/ViewportInteractionImpl.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
@@ -36,10 +39,16 @@ set(FILES
     Include/AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h
     Source/Application/AtomToolsApplication.cpp
+    Source/AssetBrowser/AtomToolsAssetBrowser.cpp
+    Source/AssetBrowser/AtomToolsAssetBrowser.qrc
+    Source/AssetBrowser/AtomToolsAssetBrowser.ui
+    Source/AssetGridDialog/AssetGridDialog.cpp
+    Source/AssetGridDialog/AssetGridDialog.ui
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
     Source/Document/AtomToolsDocument.cpp
+    Source/Document/AtomToolsDocumentApplication.cpp
     Source/Document/AtomToolsDocumentMainWindow.cpp
     Source/Document/AtomToolsDocumentSystemSettings.cpp
     Source/Document/AtomToolsDocumentSystemComponent.cpp
@@ -56,7 +65,24 @@ set(FILES
     Source/Util/Util.cpp
     Source/Viewport/RenderViewportWidget.cpp
     Source/Viewport/ModularViewportCameraController.cpp
+    Source/Viewport/ViewportInteractionImpl.cpp
     Source/Window/AtomToolsMainWindow.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewContent.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRendererCaptureRequest.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRendererInterface.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRendererSystemRequestBus.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewerFeatureProcessorProviderBus.h
+    Source/PreviewRenderer/PreviewRenderer.cpp
+    Source/PreviewRenderer/PreviewRenderer.h
+    Source/PreviewRenderer/PreviewRendererState.h
+    Source/PreviewRenderer/PreviewRendererIdleState.cpp
+    Source/PreviewRenderer/PreviewRendererIdleState.h
+    Source/PreviewRenderer/PreviewRendererLoadState.cpp
+    Source/PreviewRenderer/PreviewRendererLoadState.h
+    Source/PreviewRenderer/PreviewRendererCaptureState.cpp
+    Source/PreviewRenderer/PreviewRendererCaptureState.h
+    Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
+    Source/PreviewRenderer/PreviewRendererSystemComponent.h
 )

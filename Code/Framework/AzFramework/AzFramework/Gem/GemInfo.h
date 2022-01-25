@@ -29,6 +29,10 @@ namespace AzFramework
         AZStd::vector<AZ::IO::Path> m_absoluteSourcePaths; //!< Where the gem's source path folder are located(as an absolute path)
 
         static constexpr const char* GetGemAssetFolder() { return "Assets"; }
+        static constexpr const char* GetGemRegistryFolder()
+        {
+            return "Registry";
+        }
     };
 
     //! Returns a list of GemInfo of all the gems that are active for the for the specified game project. 

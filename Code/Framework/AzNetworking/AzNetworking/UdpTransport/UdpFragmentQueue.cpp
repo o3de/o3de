@@ -20,7 +20,13 @@ namespace AzNetworking
 
     void UdpFragmentQueue::Update()
     {
-        m_timeoutQueue.UpdateTimeouts(*this);
+        m_timeoutQueue.UpdateTimeouts([this](TimeoutQueue::TimeoutItem& item)
+        {
+            const SequenceId fragmentSequence = static_cast<SequenceId>(item.m_userData & 0xFF);
+            AZLOG(NET_FragmentQueue, "Timing out unreliable fragmented packet %u", static_cast<uint32_t>(fragmentSequence));
+            m_packetFragments.erase(fragmentSequence);
+            return TimeoutResult::Delete;
+        });
     }
 
     void UdpFragmentQueue::Reset()
@@ -162,13 +168,5 @@ namespace AzNetworking
         }
 
         return handledPacket;
-    }
-
-    TimeoutResult UdpFragmentQueue::HandleTimeout(TimeoutQueue::TimeoutItem& item)
-    {
-        const SequenceId fragmentSequence = static_cast<SequenceId>(item.m_userData & 0xFF);
-        AZLOG(NET_FragmentQueue, "Timing out unreliable fragmented packet %u", static_cast<uint32_t>(fragmentSequence));
-        m_packetFragments.erase(fragmentSequence);
-        return TimeoutResult::Delete;
     }
 }

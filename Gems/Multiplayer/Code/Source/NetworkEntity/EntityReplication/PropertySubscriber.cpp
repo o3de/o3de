@@ -7,7 +7,7 @@
  */
 
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
-#include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 
 namespace Multiplayer
@@ -26,7 +26,7 @@ namespace Multiplayer
 
     bool PropertySubscriber::IsDeleting() const
     {
-        return m_markForRemovalTimeMs > AZ::TimeMs{ 0 };
+        return m_markForRemovalTimeMs > AZ::Time::ZeroTimeMs;
     }
 
     bool PropertySubscriber::IsDeleted() const

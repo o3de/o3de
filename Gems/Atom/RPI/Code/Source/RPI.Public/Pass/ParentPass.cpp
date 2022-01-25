@@ -9,11 +9,15 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomCore/std/containers/vector_set.h>
 
+#include <Atom/RPI.Public/Pass/SlowClearPass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/Pass/PassAttachment.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
+#include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
+#include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
 
 namespace AZ
@@ -149,29 +153,6 @@ namespace AZ
             return index.IsValid() ? m_children[index.GetIndex()] : Ptr<Pass>(nullptr);
         }
 
-        Ptr<Pass> ParentPass::FindPassByNameRecursive(const Name& passName) const
-        {
-            for (const Ptr<Pass>& child : m_children)
-            {
-                if (child->GetName() == passName)
-                {
-                    return child.get();
-                }
-
-                ParentPass* asParent = child->AsParent();
-                if (asParent)
-                {
-                    auto pass = asParent->FindPassByNameRecursive(passName);
-                    if (pass)
-                    {
-                        return pass;
-                    }
-                }
-            }
-
-            return nullptr;
-        }
-
         const Pass* ParentPass::FindPass(RHI::DrawListTag drawListTag) const
         {
             if (HasDrawListTag() && GetDrawListTag() == drawListTag)
@@ -219,7 +200,7 @@ namespace AZ
             }
         }
 
-        // --- PassTemplate related functions ---
+        // --- Child creation ---
 
         void ParentPass::CreatePassesFromTemplate()
         {
@@ -240,6 +221,49 @@ namespace AZ
             }
         }
 
+        void ParentPass::CreateClearPassFromBinding(PassAttachmentBinding& binding, PassRequest& clearRequest)
+        {
+            if (binding.m_unifiedScopeDesc.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear ||
+                binding.m_unifiedScopeDesc.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear)
+            {
+                // Set the name of the child clear pass as well as the binding it's connected to
+                clearRequest.m_passName = ConcatPassName(Name("Clear"), binding.m_name);
+                clearRequest.m_connections[0].m_attachmentRef.m_attachment = binding.m_name;
+
+                // Set the pass clear value to the clear value of the attachment binding
+                SlowClearPassData* clearData = static_cast<SlowClearPassData*>(clearRequest.m_passData.get());
+                clearData->m_clearValue = binding.m_unifiedScopeDesc.m_loadStoreAction.m_clearValue;
+
+                // Create and add the pass
+                Ptr<Pass> clearPass = PassSystemInterface::Get()->CreatePassFromRequest(&clearRequest);
+                if (clearPass)
+                {
+                    AddChild(clearPass);
+                }
+            }
+
+        }
+
+        void ParentPass::CreateClearPassesFromBindings()
+        {
+            PassRequest clearRequest;
+            clearRequest.m_templateName = Name("SlowClearPassTemplate");
+            clearRequest.m_passData = AZStd::make_shared<SlowClearPassData>();
+            clearRequest.m_connections.push_back();
+            clearRequest.m_connections[0].m_localSlot = Name("ClearInputOutput");
+            clearRequest.m_connections[0].m_attachmentRef.m_pass = Name("Parent");
+
+            for (uint32_t idx = 0; idx < GetInputCount(); ++idx)
+            {
+                CreateClearPassFromBinding(GetInputBinding(idx), clearRequest);
+            }
+
+            for (uint32_t idx = 0; idx < GetInputOutputCount(); ++idx)
+            {
+                CreateClearPassFromBinding(GetInputOutputBinding(idx), clearRequest);
+            }
+        }
+
         // --- Pass behavior functions ---
 
         void ParentPass::CreateChildPasses()
@@ -252,6 +276,7 @@ namespace AZ
             m_flags.m_alreadyCreatedChildren = true;
 
             RemoveChildren();
+            CreateClearPassesFromBindings();
             CreatePassesFromTemplate();
             CreateChildPassesInternal();
 

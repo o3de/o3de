@@ -75,14 +75,30 @@ namespace AZ::MeshBuilder
             return skinningInfo;
         }
 
-        static float CalcSkinInfluencesTotalWeight(const MeshBuilderSkinningInfo* skinInfo, size_t vtxNum)
+        static AZStd::vector<MeshBuilderSkinningInfo::Influence> GetInfluenceVector(const MeshBuilderSkinningInfo* skinInfo, size_t vtxNum)
         {
             const size_t numInfluence = skinInfo->GetNumInfluences(vtxNum);
-            float totalWeight = 0.0f;
+            AZStd::vector<MeshBuilderSkinningInfo::Influence> influences;
+            influences.reserve(numInfluence);
             for (size_t i = 0; i < numInfluence; ++i)
             {
-                const MeshBuilderSkinningInfo::Influence& inf = skinInfo->GetInfluence(vtxNum, i);
-                totalWeight += inf.mWeight;
+                influences.push_back(skinInfo->GetInfluence(vtxNum, i));
+            }
+            return influences;
+        }
+
+        static float CalcSkinInfluencesTotalWeight(const MeshBuilderSkinningInfo* skinInfo, size_t vtxNum)
+        {
+            AZStd::vector<MeshBuilderSkinningInfo::Influence> influences = GetInfluenceVector(skinInfo, vtxNum);
+            return CalcTotalWeight(influences);
+        }
+
+        static float CalcTotalWeight(const AZStd::vector<MeshBuilderSkinningInfo::Influence>& influences)
+        {
+            float totalWeight = 0.0f;
+            for (const auto& influence : influences)
+            {
+                totalWeight += influence.mWeight;
             }
             return totalWeight;
         }
@@ -96,12 +112,13 @@ namespace AZ::MeshBuilder
 
         MeshBuilderSkinningInfo* testSkinInfo = meshBuilder->GetSkinningInfo();
         const float expectedTotalWeight = 1.0f;
-        testSkinInfo->Optimize(testParam.maxInfluencesAfterOptimization);
         for (size_t v = 0; v < testParam.numOrgVertices; ++v)
         {
-            const size_t numInfluence = testSkinInfo->GetNumInfluences(v);
-            EXPECT_EQ(numInfluence, testParam.maxInfluencesAfterOptimization);
-            const float totalWeight = CalcSkinInfluencesTotalWeight(testSkinInfo, v);
+            AZStd::vector<MeshBuilderSkinningInfo::Influence> influences = GetInfluenceVector(testSkinInfo, v);
+           
+            testSkinInfo->Optimize(influences, testParam.maxInfluencesAfterOptimization);
+            EXPECT_EQ(influences.size(), testParam.maxInfluencesAfterOptimization);
+            const float totalWeight = CalcTotalWeight(influences);
             EXPECT_NEAR(totalWeight, expectedTotalWeight, 0.00001f /* tolerance */) << "totalWeight of all influences in a vertex should be 1.0f.";
         }
     }

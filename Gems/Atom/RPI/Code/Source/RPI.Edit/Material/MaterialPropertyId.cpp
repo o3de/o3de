@@ -88,22 +88,6 @@ namespace AZ
         {
         }
         
-        MaterialPropertyId::MaterialPropertyId(const AZStd::array_view<AZStd::string> names)
-        {
-            for (const auto& name : names)
-            {
-                if (!IsValidName(name))
-                {
-                    AZ_Error("MaterialPropertyId", false, "'%s' is not a valid identifier.", name.c_str());
-                    return;
-                }
-            }
-
-            AZStd::string fullName;
-            AzFramework::StringFunc::Join(fullName, names.begin(), names.end(), ".");
-            m_fullName = fullName;
-        }
-        
         MaterialPropertyId::MaterialPropertyId(const AZStd::array_view<AZStd::string> groupNames, AZStd::string_view propertyName)
         {
             for (const auto& name : groupNames)
@@ -132,6 +116,22 @@ namespace AZ
                 fullName = AZStd::string::format("%s.%.*s", fullName.c_str(), AZ_STRING_ARG(propertyName));
                 m_fullName = fullName;
             }
+        }
+
+        MaterialPropertyId::MaterialPropertyId(const AZStd::array_view<AZStd::string> names)
+        {
+            for (const auto& name : names)
+            {
+                if (!IsValidName(name))
+                {
+                    AZ_Error("MaterialPropertyId", false, "'%s' is not a valid identifier.", name.c_str());
+                    return;
+                }
+            }
+
+            AZStd::string fullName; // m_fullName is a Name, not a string, so we have to join into a local variable temporarily.
+            AzFramework::StringFunc::Join(fullName, names.begin(), names.end(), ".");
+            m_fullName = fullName;
         }
 
         MaterialPropertyId::operator const Name&() const

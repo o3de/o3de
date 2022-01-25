@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/BufferView.h>
@@ -79,15 +80,11 @@ namespace AZ
             m_dispatchItem.m_pipelineState = m_morphTargetShader->AcquirePipelineState(pipelineStateDescriptor);
 
             // Get the threads-per-group values from the compute shader [numthreads(x,y,z)]
-            const auto& numThreads = m_morphTargetShader->GetAsset()->GetAttribute(RHI::ShaderStage::Compute, AZ::Name{ "numthreads" });
             auto& arguments = m_dispatchItem.m_arguments.m_direct;
-            if (numThreads)
+            const auto outcome = RPI::GetComputeShaderNumThreads(m_morphTargetShader->GetAsset(), arguments);
+            if (!outcome.IsSuccess())
             {
-                const auto& args = *numThreads;
-                // Check that the arguments are valid integers, and fall back to 1,1,1 if there is an error
-                arguments.m_threadsPerGroupX = static_cast<uint16_t>(args[0].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[0]) : 1);
-                arguments.m_threadsPerGroupY = static_cast<uint16_t>(args[1].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[1]) : 1);
-                arguments.m_threadsPerGroupZ = static_cast<uint16_t>(args[2].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[2]) : 1);
+                AZ_Error("MorphTargetDispatchItem", false, outcome.GetError().c_str());
             }
 
             arguments.m_totalNumberOfThreadsX = m_morphTargetMetaData.m_vertexCount;

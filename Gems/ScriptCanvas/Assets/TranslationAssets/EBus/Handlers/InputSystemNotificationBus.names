@@ -1,0 +1,27 @@
+{
+    "entries": [
+        {
+            "base": "InputSystemNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Input System",
+                "category": "Input"
+            },
+            "methods": [
+                {
+                    "base": "OnPreInputUpdate",
+                    "details": {
+                        "name": "On Pre Input Update"
+                    }
+                },
+                {
+                    "base": "OnPostInputUpdate",
+                    "details": {
+                        "name": "On Post Input Update"
+                    }
+                }
+            ]
+        }
+    ]
+}

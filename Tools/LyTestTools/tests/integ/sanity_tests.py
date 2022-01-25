@@ -63,7 +63,6 @@ class TestAutomatedTestingProject(object):
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
-    @pytest.mark.skipif(not ly_test_tools.WINDOWS, reason="Editor currently only functions on Windows")
     def test_StartEditor_Sanity(self, project):
         """
         The `test_StartEditor_Sanity` test function is similar to the previous example with minor adjustments. A
@@ -86,7 +85,7 @@ class TestAutomatedTestingProject(object):
             # Call the Editor executable
             with editor.start():
                 # Wait for the process to exist
-                waiter.wait_for(lambda: process_utils.process_exists("Editor", ignore_extensions=True))
+                waiter.wait_for(lambda: process_utils.process_exists("Editor.exe", ignore_extensions=True))
         finally:
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)

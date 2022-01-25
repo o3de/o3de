@@ -249,7 +249,7 @@ ILINE DestinationType alias_cast(SourceType pPtr)
 // Mostly used only for debugging!
 //////////////////////////////////////////////////////////////////////////
 void   CrySleep(unsigned int dwMilliseconds);
-int    CryMessageBox(const char* lpText, const char* lpCaption, unsigned int uType);
+void   CryMessageBox(const char* lpText, const char* lpCaption, unsigned int uType);
 
 //---------------------------------------------------------------------------
 // Useful function to clean the structure.

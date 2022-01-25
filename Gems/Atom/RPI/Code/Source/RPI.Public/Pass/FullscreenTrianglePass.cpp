@@ -9,6 +9,7 @@
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 #include <Atom/RPI.Reflect/Pass/FullscreenTrianglePassData.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
@@ -46,16 +47,19 @@ namespace AZ
 
         void FullscreenTrianglePass::OnShaderReinitialized(const Shader&)
         {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderReinitialized", this);
             LoadShader();
         }
 
         void FullscreenTrianglePass::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>&)
         {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderAssetReinitialized", this);
             LoadShader();
         }
 
         void FullscreenTrianglePass::OnShaderVariantReinitialized(const ShaderVariant&)
         {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderVariantReinitialized", this);
             LoadShader();
         }
 
@@ -129,12 +133,20 @@ namespace AZ
         void FullscreenTrianglePass::InitializeInternal()
         {
             RenderPass::InitializeInternal();
+            
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::InitializeInternal", this);
 
             // This draw item purposefully does not reference any geometry buffers.
             // Instead it's expected that the extended class uses a vertex shader 
             // that generates a full-screen triangle completely from vertex ids.
             RHI::DrawLinear draw = RHI::DrawLinear();
             draw.m_vertexCount = 3;
+
+            if (m_shader == nullptr)
+            {
+                AZ_Error("PassSystem", false, "[FullscreenTrianglePass]: Shader not loaded!");
+                return;
+            }
 
             RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
 

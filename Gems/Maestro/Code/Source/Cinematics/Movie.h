@@ -14,9 +14,11 @@
 
 #pragma once
 #include <AzCore/std/containers/map.h>
+#include <AzCore/Time/ITime.h>
 
 #include <CryCommon/TimeValue.h>
 #include <CryCommon/StaticInstance.h>
+#include <CryCommon/StlUtils.h>
 
 #include "IMovieSystem.h"
 #include "IShader.h"
@@ -191,7 +193,7 @@ public:
     void SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNodeRef& xmlNode) override;
     void SerializeParamType(CAnimParamType& animParamType, XmlNodeRef& xmlNode, bool bLoading, const uint version) override;
 
-    static const char* GetParamTypeName(const CAnimParamType& animParamType);
+    const char* GetParamTypeName(const CAnimParamType& animParamType);
 
     void OnCameraCut();
 
@@ -235,7 +237,7 @@ private:
     IMovieUser* m_pUser;
     IMovieCallback* m_pCallback;
 
-    CTimeValue m_lastUpdateTime;
+    AZ::TimeUs m_lastUpdateTime;
 
     typedef AZStd::vector<AZStd::intrusive_ptr<IAnimSequence> > Sequences;
     Sequences m_sequences;
@@ -268,15 +270,10 @@ private:
     int m_captureFrame;
     bool m_bEndCapture;
     ICaptureKey m_captureKey;
-    float m_fixedTimeStepBackUp;
-    float m_maxStepBackUp;
-    float m_smoothingBackUp;
+    AZ::TimeMs m_fixedTimeStepBackUp;
     float m_maxTimeStepForMovieSystemBackUp;
     ICVar* m_cvar_capture_frame_once;
     ICVar* m_cvar_capture_folder;
-    ICVar* m_cvar_t_FixedStep;
-    ICVar* m_cvar_t_MaxStep;
-    ICVar* m_cvar_t_Smoothing;
     ICVar* m_cvar_sys_maxTimeStepForMovieSystem;
     ICVar* m_cvar_capture_frames;
     ICVar* m_cvar_capture_file_prefix;
@@ -293,6 +290,23 @@ private:
     uint32 m_nextSequenceId;
 
     void ShowPlayedSequencesDebug();
+
+
+    using AnimParamSystemString = AZStd::string;
+
+    template <typename KeyType, typename MappedType, typename Compare = stl::less_stricmp<KeyType>>
+    using AnimSystemOrderedMap = AZStd::map<KeyType, MappedType, Compare>;
+    template <typename KeyType, typename MappedType, typename Hasher = AZStd::hash<KeyType>, typename EqualKey = AZStd::equal_to<>>
+    using AnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey>;
+
+    AnimSystemUnorderedMap<AnimNodeType, AnimParamSystemString> m_animNodeEnumToStringMap;
+    AnimSystemOrderedMap<AnimParamSystemString, AnimNodeType> m_animNodeStringToEnumMap;
+
+    AnimSystemUnorderedMap<AnimParamType, AnimParamSystemString> m_animParamEnumToStringMap;
+    AnimSystemOrderedMap<AnimParamSystemString, AnimParamType> m_animParamStringToEnumMap;
+
+    void RegisterNodeTypes();
+    void RegisterParamTypes();
 
 public:
     static float m_mov_cameraPrecacheTime;

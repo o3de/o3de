@@ -147,7 +147,6 @@ namespace ProjectSettingsTool
         // The process used to reconfigure settings
         QProcess m_reconfigureProcess;
 
-        AZStd::string m_devRoot;
         AZStd::string m_projectRoot;
         AZStd::string m_projectName;
 

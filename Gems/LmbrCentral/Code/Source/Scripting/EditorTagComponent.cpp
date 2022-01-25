@@ -38,7 +38,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/tag/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/gameplay/tag/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTagComponent::m_tags, "Tags", "The tags that will be on this entity by default")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorTagComponent::OnTagChanged);
             }

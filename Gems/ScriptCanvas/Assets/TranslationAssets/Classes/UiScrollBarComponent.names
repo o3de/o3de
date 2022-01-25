@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "UiScrollBarComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UiScrollBarComponent"
+            }
+        }
+    ]
+}

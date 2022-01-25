@@ -10,19 +10,25 @@
 
 namespace Multiplayer 
 {
+    void FullOwnershipEntityDomain::SetAabb([[maybe_unused]] const AZ::Aabb& aabb)
+    {
+        ; // Do nothing, by definition we own everything
+    }
+
+    const AZ::Aabb& FullOwnershipEntityDomain::GetAabb() const
+    {
+        static AZ::Aabb nullAabb = AZ::Aabb::CreateNull();
+        return nullAabb;
+    }
+
     bool FullOwnershipEntityDomain::IsInDomain([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) const
     {
         return true;
     }
 
-    void FullOwnershipEntityDomain::ActivateTracking([[maybe_unused]] const INetworkEntityManager::OwnedEntitySet& ownedEntitySet)
+    void FullOwnershipEntityDomain::HandleLossOfAuthoritativeReplicator([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle)
     {
-        ;
-    }
-
-    void FullOwnershipEntityDomain::RetrieveEntitiesNotInDomain([[maybe_unused]] EntitiesNotInDomain& outEntitiesNotInDomain) const
-    {
-        ;
+        AZ_Assert(false, "FullOwnershipEntityDomain has authoritative control over all entities, something unexpected has happened");
     }
 
     void FullOwnershipEntityDomain::DebugDraw() const

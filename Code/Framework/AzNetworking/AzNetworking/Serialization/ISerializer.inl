@@ -12,7 +12,7 @@
 #include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/std/typetraits/is_same.h>
 #include <AzCore/std/typetraits/is_enum.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>

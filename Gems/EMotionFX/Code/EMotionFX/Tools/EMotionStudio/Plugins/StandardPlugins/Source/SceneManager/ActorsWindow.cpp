@@ -123,12 +123,6 @@ namespace EMStudio
                 continue;
             }
 
-            // ignore engine actors
-            if (actor->GetIsOwnedByRuntime())
-            {
-                continue;
-            }
-
             // create a tree item for the new attachment
             QTreeWidgetItem* newItem = new QTreeWidgetItem(m_treeWidget);
 
@@ -487,16 +481,6 @@ namespace EMStudio
         // create the context menu
         QMenu menu(this);
         menu.setToolTipsVisible(true);
-
-        bool actorSelected = false;
-        for (const QTreeWidgetItem* item : items)
-        {
-            if (item->parent() == nullptr)
-            {
-                actorSelected = true;
-                break;
-            }
-        }
 
         bool instanceSelected = false;
         const int selectedItemCount = items.count();

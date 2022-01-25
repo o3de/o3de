@@ -15,7 +15,9 @@
 #include <AzToolsFramework/Asset/AssetProcessorMessages.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AzToolsFramework
 {
@@ -350,26 +352,6 @@ namespace AzToolsFramework
             {
                 return false;
             }
-        }
-
-        const char* AssetSystemComponent::GetAbsoluteDevGameFolderPath()
-        {
-            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-            if (fileIO)
-            {
-                return fileIO->GetAlias("@devassets@");
-            }
-            return "";
-        }
-
-        const char* AssetSystemComponent::GetAbsoluteDevRootFolderPath()
-        {
-            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-            if (fileIO)
-            {
-                return fileIO->GetAlias("@devroot@");
-            }
-            return "";
         }
 
         void AssetSystemComponent::OnSystemTick()

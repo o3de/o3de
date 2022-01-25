@@ -116,8 +116,8 @@ namespace AzToolsFramework
         {
             m_manipulatorView->Draw(
                 GetManipulatorManagerId(), managerState, GetManipulatorId(),
-                { TransformUniformScale(GetSpace()), GetNonUniformScale(), m_localStart, MouseOver() }, debugDisplay, cameraState,
-                mouseInteraction);
+                ManipulatorState{ TransformUniformScale(GetSpace()), GetNonUniformScale(), m_localStart, MouseOver() }, debugDisplay,
+                cameraState, mouseInteraction);
         }
     }
 

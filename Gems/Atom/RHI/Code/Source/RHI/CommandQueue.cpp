@@ -32,6 +32,23 @@ namespace AZ
                 return ResultCode::InvalidOperation;
             }
 #endif
+
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+
+                static constexpr AZStd::string_view presentStatName("Present");
+                static constexpr AZ::Crc32 presentStatId(presentStatName);
+                rhiMetrics.GetStatsManager().AddStatistic(presentStatId, presentStatName, /*units=*/"clocks", /*failIfExist=*/false);
+
+                if (!GetName().IsEmpty())
+                {
+                    const AZStd::string commandQueueName(GetName().GetCStr());
+                    const AZ::Crc32 commandQueueId(GetName().GetHash());
+                    rhiMetrics.GetStatsManager().AddStatistic(commandQueueId, commandQueueName, /*units=*/"clocks", /*failIfExist=*/false);
+                }
+            }
+
             const ResultCode resultCode = InitInternal(device, descriptor);
 
             if (resultCode == ResultCode::Success)
@@ -43,7 +60,7 @@ namespace AZ
                 m_isWorkQueueEmpty = true;
                 
                 AZStd::thread_desc threadDesc{ GetName().GetCStr() };
-                m_thread = AZStd::thread([&]() { ProcessQueue(); }, &threadDesc);
+                m_thread = AZStd::thread(threadDesc, [&]() { ProcessQueue(); });
             }
             return resultCode;
         }
@@ -54,6 +71,7 @@ namespace AZ
             {
                 m_isQuitting = true;
                 m_workQueueCondition.notify_all();
+                m_flushCommandsCondition.notify_all();
                 if (m_thread.joinable())
                 {
                    m_thread.join();
@@ -85,9 +103,10 @@ namespace AZ
         void CommandQueue::FlushCommands()
         {
             AZ_PROFILE_SCOPE(RHI, "CommandQueue: FlushCommands");
-            while (!m_isWorkQueueEmpty && !m_isQuitting)
+            AZStd::unique_lock<AZStd::mutex> lock(m_flushCommandsMutex);
+            if (!m_isWorkQueueEmpty && !m_isQuitting)
             {
-                AZStd::this_thread::yield();
+                m_flushCommandsCondition.wait(lock, [this]() { return m_isWorkQueueEmpty.load() || m_isQuitting.load(); });
             }
         }
         
@@ -102,7 +121,11 @@ namespace AZ
                     
                     if (m_workQueue.empty())
                     {
-                        m_isWorkQueueEmpty = true;
+                        {
+                            AZStd::unique_lock<AZStd::mutex> flushCommandsLock(m_flushCommandsMutex);
+                            m_isWorkQueueEmpty = true;
+                            m_flushCommandsCondition.notify_all();
+                        }
                         m_workQueueCondition.wait(lock, [this]() { return !m_workQueue.empty() || m_isQuitting; });
                     }
                     

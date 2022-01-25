@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{ED542A26-BBB3-5747-A40C-2CD08C369C54}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Normal And Point",
+                "category": "Math/Plane",
+                "tooltip": "returns the plane which includes the Point with the specified Normal"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Normal_0",
+                    "details": {
+                        "name": "Normal"
+                    }
+                },
+                {
+                    "base": "DataInput_Point_1",
+                    "details": {
+                        "name": "Point"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

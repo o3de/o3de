@@ -11,7 +11,6 @@
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/CommandQueue.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
@@ -33,6 +32,7 @@ namespace AZ
             
             // Use separate work submission queue from the hw copy queue to avoid the per frame sync.
             m_copyQueue = CommandQueue::Create();
+            m_copyQueue->SetName(AZ::Name("AsyncUpload Queue"));
 
             RHI::CommandQueueDescriptor commandQueueDescriptor;
             commandQueueDescriptor.m_hardwareQueueClass = RHI::HardwareQueueClass::Copy;
@@ -119,21 +119,21 @@ namespace AZ
 
             m_copyQueue->QueueCommand([=](void* queue)
             {
-                AZ_TRACE_METHOD_NAME("Upload Buffer");
+                AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
                 size_t pendingByteOffset = 0;
                 size_t pendingByteCount = byteCount;
                 CommandQueue* commandQueue = static_cast<CommandQueue*>(queue);
                 
                 while (pendingByteCount > 0)
                 {
-                    AZ_TRACE_METHOD_NAME("Upload Buffer Chunk");
+                    AZ_PROFILE_SCOPE(RHI, "Upload Buffer Chunk");
 
                     FramePacket* framePacket = BeginFramePacket(commandQueue);
 
                     const size_t bytesToCopy = AZStd::min(pendingByteCount, m_descriptor.m_stagingSizeInBytes);
 
                     {
-                        AZ_TRACE_METHOD_NAME("Copy CPU buffer");
+                        AZ_PROFILE_SCOPE(RHI, "Copy CPU buffer");
                         memcpy(framePacket->m_stagingResourceData, sourceData + pendingByteOffset, bytesToCopy);
                         Platform::SynchronizeBufferOnCPU(framePacket->m_stagingResource, 0, bytesToCopy);
                     }
@@ -378,7 +378,7 @@ namespace AZ
         {
             AZ_Assert(!m_recordingFrame, "The previous frame packet isn't ended");
 
-            AZ_TRACE_METHOD_NAME("AsyncUploadQueue: Wait copy frame");
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: Wait copy frame");
             FramePacket& framePacket = m_framePackets[m_frameIndex];
             framePacket.m_fence.WaitOnCpu(); // ensure any previous uploads using this frame have completed
                         
@@ -399,7 +399,7 @@ namespace AZ
             {
                 AZ_Assert(m_recordingFrame, "The frame packet wasn't started. You need to call StartFramePacket first.");
 
-                AZ_TRACE_METHOD_NAME("AsyncUploadQueue: Execute command");
+                AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: Execute command");
                 FramePacket& framePacket = m_framePackets[m_frameIndex];
                 framePacket.m_fence.SignalFromGpu(framePacket.m_mtlCommandBuffer); // signal fence when this upload haas completed
 

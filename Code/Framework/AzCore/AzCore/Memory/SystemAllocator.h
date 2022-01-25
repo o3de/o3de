@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SYS_ALLOCATOR_H
-#define AZCORE_SYS_ALLOCATOR_H
+#pragma once
 
 #include <AzCore/Memory/Memory.h>
 
@@ -120,7 +119,5 @@ namespace AZ
     };
 }
 
-#endif // AZCORE_SYS_ALLOCATOR_H
-#pragma once
 
 

@@ -104,7 +104,6 @@ namespace AZ
 
         void addTestEnvironment(ITestEnvironment* env);
         void addTestEnvironments(std::vector<ITestEnvironment*> envs);
-        void excludeIntegTests();
         
         //! A hook that can be used to read any other misc parameters and remove them before google sees them.
         //! Note that this modifies argc and argv to delete the parameters it consumes.
@@ -266,7 +265,6 @@ namespace AZ
             ::testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();   \
             listeners.Append(new AZ::Test::OutputEventListener);                                        \
         }                                                                                               \
-        AZ::Test::excludeIntegTests();                                                                  \
         AZ::Test::ApplyGlobalParameters(&argc, argv);                                                   \
         AZ::Test::printUnusedParametersWarning(argc, argv);                                             \
         AZ::Test::addTestEnvironments({TEST_ENV});                                                      \

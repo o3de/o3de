@@ -27,7 +27,6 @@
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
 #include <EMotionFX/Source/AnimGraphReferenceNode.h>
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Parameter/BoolParameter.h>
 #include <EMotionFX/Source/Parameter/FloatSliderParameter.h>
@@ -43,6 +42,7 @@
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/ProvidesUI/AnimGraph/SimpleAnimGraphUIFixture.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/Mocks/EventHandler.h>
 
 namespace EMotionFX
@@ -423,7 +423,10 @@ namespace EMotionFX
         using testing::Eq;
         using testing::Not;
 
-        AutoRegisteredActor actor = EMotionFX::ActorFactory::CreateAndInit<EMotionFX::SimpleJointChainActor>(1);
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 1);
+
         auto motionSet = AZStd::make_unique<EMotionFX::MotionSet>();
 
         {
@@ -432,7 +435,7 @@ namespace EMotionFX
         }
 
         auto* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(0);
-        auto* actorInstance = EMotionFX::ActorInstance::Create(actor.get());
+        auto* actorInstance = EMotionFX::ActorInstance::Create(actorAsset->GetActor());
         auto* animGraphInstance = EMotionFX::AnimGraphInstance::Create(animGraph, actorInstance, motionSet.get());
         actorInstance->SetAnimGraphInstance(animGraphInstance);
 

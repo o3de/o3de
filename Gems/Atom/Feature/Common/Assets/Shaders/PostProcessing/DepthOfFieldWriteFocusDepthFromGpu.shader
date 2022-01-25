@@ -1,5 +1,5 @@
 {
-    "Source": "DepthOfFieldWriteFocusDepthFromGpu",
+    "Source": "DepthOfFieldWriteFocusDepthFromGpu.azsl",
     
     "ProgramSettings" :
     {
@@ -10,6 +10,7 @@
             "type" : "Compute"
         }
         ]
-    }
+    },
+    "DisabledRHIBackends": ["metal"]
 
 }

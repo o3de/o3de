@@ -667,7 +667,7 @@ namespace EMStudio
     }
 
 
-    void MotionWindowPlugin::Render(RenderPlugin* renderPlugin, EMStudioPlugin::RenderInfo* renderInfo)
+    void MotionWindowPlugin::LegacyRender(RenderPlugin* renderPlugin, EMStudioPlugin::RenderInfo* renderInfo)
     {
         MCommon::RenderUtil* renderUtil = renderInfo->m_renderUtil;
 

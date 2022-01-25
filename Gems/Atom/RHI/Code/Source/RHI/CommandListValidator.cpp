@@ -19,8 +19,6 @@
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI/FrameAttachment.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -31,7 +29,7 @@ namespace AZ
             {
                 return;
             }
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             AZ_Assert(m_scope == nullptr, "BeginScope called twice.");
             m_scope = &scope;
 
@@ -58,7 +56,6 @@ namespace AZ
             {
                 return true;
             }
-            AZ_TRACE_METHOD();
             ValidateViewContext context;
             context.m_scopeName = m_scope->GetId().GetCStr();
             context.m_srgName = shaderResourceGroup.GetName().GetCStr();

@@ -10,6 +10,7 @@
 
 #include "PackedFloat2.h"
 
+#include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>

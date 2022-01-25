@@ -76,9 +76,6 @@ namespace ImGui
         // Sets up initial window size and listens for changes
         void InitWindowSize();
 
-        // A function to toggle through the available ImGui Visibility States
-        void ToggleThroughImGuiVisibleState(int controllerIndex);
-
     private:
         ImGuiContext* m_imguiContext = nullptr;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
@@ -96,8 +93,6 @@ namespace ImGui
         std::vector<uint16> m_idxBuffer;
 
         //Controller navigation
-        static const int MaxControllerNumber = 4;
-        int m_currentControllerIndex;
         bool m_button1Pressed, m_button2Pressed, m_menuBarStatusChanged;
 
         bool m_hardwardeMouseConnected = false;

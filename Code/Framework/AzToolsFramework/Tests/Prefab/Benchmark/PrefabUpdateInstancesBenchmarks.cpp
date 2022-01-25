@@ -36,7 +36,7 @@ namespace Benchmark
 
             AZStd::unique_ptr<Instance> enclosingInstance = m_prefabSystemComponent->CreatePrefab(
                 {},
-                MakeInstanceList( AZStd::move(nestedInstance) ),
+                MakeInstanceList(AZStd::move(nestedInstance)),
                 enclosingTemplatePath);
 
             TemplateId templateToInstantiateId = enclosingInstance->GetTemplateId();
@@ -99,7 +99,7 @@ namespace Benchmark
             {
                 currentInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},
-                    MakeInstanceList( AZStd::move(currentInstanceRoot) ),
+                    MakeInstanceList(AZStd::move(currentInstanceRoot)),
                     m_paths[currentDepth - 1]);
             }
 
@@ -151,7 +151,7 @@ namespace Benchmark
             {
                 currentInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},
-                    MakeInstanceList( AZStd::move(currentInstanceRoot) ),
+                    MakeInstanceList(AZStd::move(currentInstanceRoot)),
                     m_paths[currentDepth]);
             }
 
@@ -214,7 +214,7 @@ namespace Benchmark
 
                 currentInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},
-                    MakeInstanceList( AZStd::move(currentInstanceRoot), AZStd::move(extraNestedInstance) ),
+                    MakeInstanceList(AZStd::move(currentInstanceRoot), AZStd::move(extraNestedInstance)),
                     m_paths[currentDepth]);
             }
 

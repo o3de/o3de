@@ -15,7 +15,6 @@
 // box-filtered from the MSAA sub-pixels of the reflection texture.
 
 #include <scenesrg.srgi>
-#include <viewsrg.srgi>
 
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
@@ -25,8 +24,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2DMS<float4>  m_reflection;
 }
-
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 // Vertex Shader
 VSOutput MainVS(VSInput input)

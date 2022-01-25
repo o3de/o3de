@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "{BA107060-249D-4818-9CEC-7573718273FC}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Heart Beat",
+                "category": "Timing",
+                "tooltip": "While active, will signal the output at the given interval."
+            },
+            "slots": [
+                {
+                    "base": "Input_Start_0",
+                    "details": {
+                        "name": "Start"
+                    }
+                },
+                {
+                    "base": "Input_Stop_1",
+                    "details": {
+                        "name": "Stop"
+                    }
+                },
+                {
+                    "base": "Output_Pulse_0",
+                    "details": {
+                        "name": "Pulse"
+                    }
+                },
+                {
+                    "base": "DataInput_Interval_0",
+                    "details": {
+                        "name": "Interval"
+                    }
+                }
+            ]
+        }
+    ]
+}

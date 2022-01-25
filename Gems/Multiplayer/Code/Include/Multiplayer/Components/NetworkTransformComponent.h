@@ -50,7 +50,7 @@ namespace Multiplayer
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
     private:
-        void OnTransformChangedEvent(const AZ::Transform& worldTm);
+        void OnTransformChangedEvent(const AZ::Transform& localTm, const AZ::Transform& worldTm);
         void OnParentIdChangedEvent(AZ::EntityId oldParent, AZ::EntityId newParent);
 
         AZ::TransformChangedEvent::Handler m_transformChangedHandler;

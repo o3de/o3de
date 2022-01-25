@@ -23,6 +23,7 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(ScreenHeader)
     QT_FORWARD_DECLARE_CLASS(NewProjectSettingsScreen)
     QT_FORWARD_DECLARE_CLASS(GemCatalogScreen)
+    QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
 
     class CreateProjectCtrl
         : public ScreenWidget
@@ -62,11 +63,9 @@ namespace O3DE::ProjectManager
         QPushButton* m_secondaryButton = nullptr;
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
-        QString m_projectTemplatePath;
-        ProjectInfo m_projectInfo;
-        
         NewProjectSettingsScreen* m_newProjectSettingsScreen = nullptr;
         GemCatalogScreen* m_gemCatalogScreen = nullptr;
+        GemRepoScreen* m_gemRepoScreen = nullptr;
     };
 
 } // namespace O3DE::ProjectManager

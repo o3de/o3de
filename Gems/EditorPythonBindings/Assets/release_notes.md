@@ -59,7 +59,7 @@ The API:
 - ExecuteByString(string) – runs a string buffer in the Python VM; it returns no value
 - ExecuteByFilename(string) – loads a file off of the disk to execute in the
     Python VM; the call returns no value. The filename can contain an alias such as
-    ‘\@devroot\@’ to execute a project relative file inside the Editor
+    ‘\@projectroot\@’ to execute a project relative file inside the Editor
 
 #### New Console Commands
 

@@ -356,7 +356,6 @@ namespace Vegetation
         AreaSystemRequestBus::Handler::BusConnect();
         GradientSignal::SectorDataRequestBus::Handler::BusConnect();
         SystemConfigurationRequestBus::Handler::BusConnect();
-        InstanceStatObjEventBus::Handler::BusConnect();
         CrySystemEventBus::Handler::BusConnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
@@ -378,7 +377,6 @@ namespace Vegetation
         AreaSystemRequestBus::Handler::BusDisconnect();
         GradientSignal::SectorDataRequestBus::Handler::BusDisconnect();
         SystemConfigurationRequestBus::Handler::BusDisconnect();
-        InstanceStatObjEventBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();

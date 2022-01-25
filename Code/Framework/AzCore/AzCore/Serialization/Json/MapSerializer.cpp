@@ -7,6 +7,7 @@
  */
 
 #include <algorithm>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/BasicContainerSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/MapSerializer.h>

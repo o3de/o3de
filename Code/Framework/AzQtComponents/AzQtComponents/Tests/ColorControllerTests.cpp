@@ -164,11 +164,7 @@ namespace
     }
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ZERO_COLOR_CONVERSION_TEST
-TEST(AzQtComponents, DISABLED_ColorConversionsTestAllZeros)
-#else
 TEST(AzQtComponents, ColorConversionsTestAllZeros)
-#endif // AZ_TRAIT_DISABLE_FAILED_ZERO_COLOR_CONVERSION_TEST
 {
     TestConversions({ 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 });
 }

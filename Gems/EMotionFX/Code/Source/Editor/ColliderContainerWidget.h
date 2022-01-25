@@ -152,17 +152,31 @@ namespace EMotionFX
          * @param[in] renderInfo Needed to access the render util.
          * @param[in] colliderColor The collider color.
          */
-        static void RenderColliders(const AzPhysics::ShapeColliderPairList& colliders,
+        //! Deprecated: remove after openglrenderwidget is gone.
+        static void LegacyRenderColliders(const AzPhysics::ShapeColliderPairList& colliders,
             const ActorInstance* actorInstance,
             const Node* node,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
             const MCore::RGBAColor& colliderColor);
 
-        static void RenderColliders(PhysicsSetup::ColliderConfigType colliderConfigType,
+        //! Deprecated: remove after openglrenderwidget is gone.
+        static void LegacyRenderColliders(
+            PhysicsSetup::ColliderConfigType colliderConfigType,
             const MCore::RGBAColor& defaultColor,
             const MCore::RGBAColor& selectedColor,
             EMStudio::RenderPlugin* renderPlugin,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo);
+
+        static void RenderColliders(
+            const AzPhysics::ShapeColliderPairList& colliders,
+            const ActorInstance* actorInstance,
+            const Node* node,
+            const AZ::Color& colliderColor);
+
+        static void RenderColliders(
+            PhysicsSetup::ColliderConfigType colliderConfigType,
+            const AZ::Color& defaultColor,
+            const AZ::Color& selectedColor);
 
         static int s_layoutSpacing;
 

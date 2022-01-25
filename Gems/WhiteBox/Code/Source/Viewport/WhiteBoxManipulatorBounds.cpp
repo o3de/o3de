@@ -48,10 +48,10 @@ namespace WhiteBox
             float time;
             AZ::Vector3 normal;
             const float rayLength = 1000.0f;
-            const int intersected = AZ::Intersect::IntersectSegmentTriangleCCW(
+            const bool intersected = AZ::Intersect::IntersectSegmentTriangleCCW(
                 rayOrigin, rayOrigin + rayDirection * rayLength, p0, p1, p2, normal, time);
 
-            if (intersected != 0)
+            if (intersected)
             {
                 rayIntersectionDistance = time * rayLength;
                 intersectedTriangleIndex = triangleIndex / 3;

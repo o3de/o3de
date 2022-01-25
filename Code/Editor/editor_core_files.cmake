@@ -7,17 +7,12 @@
 #
 
 set(FILES
-    BaseLibrary.h
-    BaseLibraryItem.h
     UsedResources.h
     UIEnumsDatabase.h
     Include/EditorCoreAPI.cpp
     Include/IErrorReport.h
-    Include/IBaseLibraryManager.h
     Include/IFileUtil.h
     Include/EditorCoreAPI.h
-    Include/IEditorMaterial.h
-    Include/IEditorMaterialManager.h
     Include/IImageUtil.h
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.qrc
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.cpp
@@ -35,8 +30,6 @@ set(FILES
     Controls/QBitmapPreviewDialogImp.h
     Controls/QToolTipWidget.h
     Controls/QToolTipWidget.cpp
-    BaseLibraryItem.cpp
-    BaseLibrary.cpp
     UsedResources.cpp
     UIEnumsDatabase.cpp
     LyViewPaneNames.h

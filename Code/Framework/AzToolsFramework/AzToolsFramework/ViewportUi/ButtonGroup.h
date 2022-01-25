@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
 namespace AzToolsFramework::ViewportUi::Internal
@@ -24,6 +25,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         ~ButtonGroup() = default;
 
         void SetHighlightedButton(ButtonId buttonId);
+        void ClearHighlightedButton();
 
         void SetViewportUiElementId(ViewportUiElementId id);
         ViewportUiElementId GetViewportUiElementId() const;
@@ -39,5 +41,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         AZ::Event<ButtonId> m_buttonTriggeredEvent;
         ViewportUiElementId m_viewportUiId;
         AZStd::unordered_map<ButtonId, AZStd::unique_ptr<Button>> m_buttons;
+        ButtonId m_highlightedButtonId = InvalidButtonId;
     };
 } // namespace AzToolsFramework::ViewportUi::Internal

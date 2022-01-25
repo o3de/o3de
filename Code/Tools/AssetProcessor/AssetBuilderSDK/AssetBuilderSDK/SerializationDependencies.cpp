@@ -7,6 +7,7 @@
  */
 
 #include <AssetBuilderSDK/SerializationDependencies.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace AssetBuilderSDK
 {

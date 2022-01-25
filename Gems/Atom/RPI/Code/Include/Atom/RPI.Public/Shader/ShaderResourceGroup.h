@@ -133,6 +133,9 @@ namespace AZ
             /// Returns an array of RPI buffers associated with the buffer shader input index.
             AZStd::array_view<Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::array_view<Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputBufferIndex inputIndex) const;
+            
+            //! Reset image and buffer views so that it won't hold references for any RHI resources
+            void ResetViews();
 
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access of RHI Image types.

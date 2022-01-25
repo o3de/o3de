@@ -9,6 +9,8 @@
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/ActorUpdateScheduler.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/MultiThreadScheduler.h>
 #include <Tests/SystemComponentFixture.h>
 #include <Tests/TestAssetCode/JackActor.h>

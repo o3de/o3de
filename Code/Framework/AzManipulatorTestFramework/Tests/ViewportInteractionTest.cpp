@@ -15,7 +15,8 @@ namespace UnitTest
     {
     public:
         AValidViewportInteraction()
-            : m_viewportInteraction(AZStd::make_unique<AzManipulatorTestFramework::ViewportInteraction>())
+            : m_viewportInteraction(
+                  AZStd::make_unique<AzManipulatorTestFramework::ViewportInteraction>(AZStd::make_shared<NullDebugDisplayRequests>()))
         {
         }
 

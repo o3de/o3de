@@ -41,21 +41,15 @@ namespace AzToolsFramework
         : public ViewportEditorModeTrackerInterface
     {
     public:
-        //! Registers this object with the AZ::Interface.
-        void RegisterInterface();
-
-        //! Unregisters this object with the AZ::Interface.
-        void UnregisterInterface();
-
         // ViewportEditorModeTrackerInterface overrides ...
-        AZ::Outcome<void, AZStd::string> ActivateMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
-        AZ::Outcome<void, AZStd::string> DeactivateMode(const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) override;
-        const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
+        AZ::Outcome<void, AZStd::string> ActivateMode(const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo, ViewportEditorMode mode) override;
+        AZ::Outcome<void, AZStd::string> DeactivateMode(const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo, ViewportEditorMode mode) override;
+        const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo) const override;
         size_t GetTrackedViewportCount() const override;
-        bool IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const override;
+        bool IsViewportModeTracked(const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo) const override;
 
     private:
-        using ViewportEditorModesMap = AZStd::unordered_map<typename ViewportEditorModeInfo::IdType, ViewportEditorModes>;
-        ViewportEditorModesMap m_viewportEditorModesMap; //!< Editor mode state per viewport.
+        using ViewportEditorModesMap = AZStd::unordered_map<typename ViewportEditorModeTrackerInfo::IdType, ViewportEditorModes>;
+        ViewportEditorModesMap m_viewportEditorModesMap; //!< Editor mode states per tracker.
     };
 } // namespace AzToolsFramework

@@ -721,12 +721,6 @@ namespace EMotionFX
         bool GetIsUsedForVisualization() const;
 
         /**
-         * Marks the actor as used by the engine runtime, as opposed to the tool suite.
-         */
-        void SetIsOwnedByRuntime(bool isOwnedByRuntime);
-        bool GetIsOwnedByRuntime() const;
-
-        /**
          * Recursively find the parent bone that is enabled in a given LOD, starting from a given node.
          * For example if you have a finger bone, while the finger bones are disabled in the skeletal LOD, this function will return the index to the hand bone.
          * This is because the hand bone will most likely be the first active bone in that LOD, when moving up the hierarchy.
@@ -940,8 +934,5 @@ namespace EMotionFX
         bool                                            m_usedForVisualization;      /**< Indicates if the actor is used for visualization specific things and is not used as a normal in-game actor. */
         bool                                            m_optimizeSkeleton;         /**< Indicates if we should perform/ */
         bool                                            m_isReady = false;          /**< If actor as well as its dependent files are fully loaded and initialized.*/
-#if defined(EMFX_DEVELOPMENT_BUILD)
-        bool                                            m_isOwnedByRuntime;          /**< Set if the actor is used/owned by the engine runtime. */
-#endif // EMFX_DEVELOPMENT_BUILD
     };
 } // namespace EMotionFX

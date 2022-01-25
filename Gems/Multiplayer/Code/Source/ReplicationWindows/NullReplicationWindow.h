@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Multiplayer/ReplicationWindows/IReplicationWindow.h>
+#include <AzNetworking/ConnectionLayer/IConnection.h>
 
 namespace Multiplayer
 {
@@ -16,7 +17,7 @@ namespace Multiplayer
         : public IReplicationWindow
     {
     public:
-        NullReplicationWindow() = default;
+        NullReplicationWindow(AzNetworking::IConnection* connection);
 
         //! IReplicationWindow interface
         //! @{
@@ -25,10 +26,13 @@ namespace Multiplayer
         uint32_t GetMaxProxyEntityReplicatorSendCount() const override;
         bool IsInWindow(const ConstNetworkEntityHandle& entityPtr, NetEntityRole& outNetworkRole) const override;
         void UpdateWindow() override;
+        AzNetworking::PacketId SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector) override;
+        void SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable) override;
         void DebugDraw() const override;
         //! @}
 
     private:
         ReplicationSet m_emptySet;
+        AzNetworking::IConnection* m_connection = nullptr;
     };
 }

@@ -524,7 +524,7 @@ namespace EditorPythonBindings
                 {
                     AZ::IO::Path newSourcePath = jsonSourcePathPointer;
                     // Resolve any file aliases first - Do not use ResolvePath() as that assumes
-                    // any relative path is underneath the @assets@ alias
+                    // any relative path is underneath the @products@ alias
                     if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
                     {
                         AZ::IO::FixedMaxPath replacedAliasPath;
@@ -597,11 +597,10 @@ namespace EditorPythonBindings
     {
         AZStd::unordered_set<AZStd::string> pyPackageSites(pythonPathStack.begin(), pythonPathStack.end());
 
-        const char* engineRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
+        AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
 
         // set PYTHON_HOME
-        AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, engineRoot);
+        AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, engineRoot.c_str());
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
             AZ_Warning("python", false, "Python home path must exist! path:%s", pyBasePath.c_str());
@@ -803,7 +802,7 @@ namespace EditorPythonBindings
             return Result::Error_InvalidFilename;
         }
 
-        // support the alias version of a script such as @devroot@/Editor/Scripts/select_story_anim_objects.py
+        // support the alias version of a script such as @engroot@/Editor/Scripts/select_story_anim_objects.py
         AZStd::string theFilename(filename);
         {
             char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };

@@ -206,6 +206,6 @@ namespace GameStateSamples
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline const char* GameStateLevelRunning::GetPauseButtonCanvasAssetPath()
     {
-        return "@assets@/ui/canvases/defaultpausebuttonfortouchscreens.uicanvas";
+        return "@products@/ui/canvases/defaultpausebuttonfortouchscreens.uicanvas";
     }
 }

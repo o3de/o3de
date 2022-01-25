@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionGlobalFullscreen",
+    "Source" : "ReflectionGlobalFullscreen.azsl",
 
     "RasterState" :
     {

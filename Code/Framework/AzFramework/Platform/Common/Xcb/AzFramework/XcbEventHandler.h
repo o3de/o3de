@@ -25,8 +25,7 @@ namespace AzFramework
         virtual void HandleXcbEvent(xcb_generic_event_t* event) = 0;
     };
 
-    class XcbEventHandlerBusTraits
-        : public AZ::EBusTraits
+    class XcbEventHandlerBusTraits : public AZ::EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////

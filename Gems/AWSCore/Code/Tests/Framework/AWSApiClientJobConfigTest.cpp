@@ -6,9 +6,6 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
-#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 #include <aws/core/auth/AWSCredentialsProvider.h>
 #include <aws/s3/S3Client.h>
 
@@ -19,19 +16,20 @@
 using namespace AWSCore;
 
 class AWSApiClientJobConfigTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public AWSCoreFixture
     , public AWSCredentialRequestBus::Handler
 {
 public:
-    void SetUp() override
+    AWSApiClientJobConfigTest()
+        : m_credentialHandlerCounter(0)
     {
-        AWSNativeSDKInit::InitializationManager::InitAwsApi();
-        m_credentialHandlerCounter = 0;
     }
 
-    void TearDown() override
+    void SetUp() override
     {
-        AWSNativeSDKInit::InitializationManager::Shutdown();
+        AWSCoreFixture::SetUpFixture();
+
+        m_credentialHandlerCounter = 0;
     }
 
     // AWSCredentialRequestBus interface implementation

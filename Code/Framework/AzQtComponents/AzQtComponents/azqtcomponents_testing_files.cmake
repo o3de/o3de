@@ -9,6 +9,7 @@
 set(FILES
     Tests/AzQtComponentTests.cpp
     Tests/ColorControllerTests.cpp
+    Tests/FileDialogTests.cpp
     Tests/FloatToStringConversionTests.cpp
     Tests/HexParsingTests.cpp
     Tests/StyleSheetCacheTests.cpp

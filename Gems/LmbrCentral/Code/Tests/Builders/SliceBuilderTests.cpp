@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -310,7 +311,6 @@ namespace UnitTest
         SerializeContext* GetSerializeContext() override { return m_serializeContext; }
         BehaviorContext* GetBehaviorContext() override { return nullptr; }
         JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}

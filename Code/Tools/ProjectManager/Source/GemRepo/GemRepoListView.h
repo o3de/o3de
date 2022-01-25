@@ -25,5 +25,9 @@ namespace O3DE::ProjectManager
     public:
         explicit GemRepoListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent = nullptr);
         ~GemRepoListView() = default;
+
+    signals:
+        void RemoveRepo(const QModelIndex& modelIndex);
+        void RefreshRepo(const QModelIndex& modelIndex);
     };
 } // namespace O3DE::ProjectManager

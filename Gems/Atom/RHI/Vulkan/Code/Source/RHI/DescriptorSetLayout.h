@@ -76,7 +76,7 @@ namespace AZ
             const AZStd::vector<VkDescriptorBindingFlags>& GetNativeBindingFlags() const;
             const RHI::ShaderResourceGroupLayout* GetShaderResourceGroupLayout() const;
 
-            static const uint32_t MaxUnboundedArrayDescriptors = (1024 * 1024 * 2); // 2M
+            static const uint32_t MaxUnboundedArrayDescriptors = 900000; //Using this number as it needs to be less than maxDescriptorSetSampledImages limit of 1048576
             bool GetHasUnboundedArray() const { return m_hasUnboundedArray; }
 
         private:

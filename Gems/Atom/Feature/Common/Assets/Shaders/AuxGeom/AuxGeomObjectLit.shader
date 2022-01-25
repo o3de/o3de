@@ -1,5 +1,5 @@
 {
-    "Source" : "AuxGeomObjectLit",
+    "Source" : "AuxGeomObjectLit.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }

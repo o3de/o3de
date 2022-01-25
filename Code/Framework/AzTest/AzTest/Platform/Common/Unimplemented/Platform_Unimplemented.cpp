@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Platform.h"
+#include <AzTest/Platform.h>
 #include <iostream>
 
 class ModuleHandle

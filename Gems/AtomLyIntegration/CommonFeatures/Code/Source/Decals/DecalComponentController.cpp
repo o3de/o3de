@@ -8,6 +8,7 @@
 
 #include <Decals/DecalComponentController.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -229,7 +230,7 @@ namespace AZ
         {
             DecalNotificationBus::Event(m_entityId, &DecalNotifications::OnMaterialChanged, m_configuration.m_materialAsset);
 
-            if (m_featureProcessor && m_configuration.m_materialAsset.GetId().IsValid())
+            if (m_featureProcessor)
             {
                 m_featureProcessor->SetDecalMaterial(m_handle, m_configuration.m_materialAsset.GetId());
             }

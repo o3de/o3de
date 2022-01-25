@@ -19,6 +19,8 @@
 #include <Atom/RPI.Public/Pass/PassSystem.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
 
+#include <Atom/RPI.Public/RenderPipeline.h>
+
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <Common/RPITestFixture.h>
@@ -573,7 +575,7 @@ namespace UnitTest
         EXPECT_TRUE(pass != nullptr);
     }
 
-    TEST_F(PassTests, PassHierarchyFilter)
+    TEST_F(PassTests, PassFilter_PassHierarchy)
     {
         m_data->AddPassTemplatesToLibrary();
 
@@ -588,61 +590,54 @@ namespace UnitTest
         parent1->AsParent()->AddChild(pass);
 
         {
-            // Filter with only pass name
-            PassHierarchyFilter filter(Name("pass1"));
-            EXPECT_TRUE(filter.Matches(pass.get()));
-        }
-
-        {
             // Filter with pass hierarchy which has only one element
-            PassHierarchyFilter filter({ Name("pass1") });
+            PassFilter filter = PassFilter::CreateWithPassHierarchy({Name("pass1")});
             EXPECT_TRUE(filter.Matches(pass.get()));
         }
 
         {
-            // Filter with empty pass hierarchy. Result one assert
+            // Filter with empty pass hierarchy, triggers one assert
             AZ_TEST_START_TRACE_SUPPRESSION;
-            PassHierarchyFilter filter(AZStd::vector<Name>{});
+            PassFilter filter = PassFilter::CreateWithPassHierarchy(AZStd::vector<Name>{});
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-            EXPECT_FALSE(filter.Matches(pass.get()));
         }
         
         {
             // Filters with partial hierarchy by using string vector
             AZStd::vector<AZStd::string> passHierarchy1 = { "parent1", "pass1" };
-            PassHierarchyFilter filter1(passHierarchy1);
+            PassFilter filter1 = PassFilter::CreateWithPassHierarchy(passHierarchy1);
             EXPECT_TRUE(filter1.Matches(pass.get()));
 
             AZStd::vector<AZStd::string> passHierarchy2 = { "parent2", "pass1" };
-            PassHierarchyFilter filter2(passHierarchy2);
+            PassFilter filter2 = PassFilter::CreateWithPassHierarchy(passHierarchy2);
             EXPECT_TRUE(filter2.Matches(pass.get()));
 
             AZStd::vector<AZStd::string> passHierarchy3 = { "parent3", "parent2", "pass1" };
-            PassHierarchyFilter filter3(passHierarchy3);
+            PassFilter filter3 = PassFilter::CreateWithPassHierarchy(passHierarchy3);
             EXPECT_TRUE(filter3.Matches(pass.get()));
         }
 
         {
             // Filters with partial hierarchy by using Name vector
             AZStd::vector<Name> passHierarchy1 = { Name("parent1"), Name("pass1") };
-            PassHierarchyFilter filter1(passHierarchy1);
+            PassFilter filter1 = PassFilter::CreateWithPassHierarchy(passHierarchy1);
             EXPECT_TRUE(filter1.Matches(pass.get()));
 
             AZStd::vector<Name> passHierarchy2 = { Name("parent2"), Name("pass1")};
-            PassHierarchyFilter filter2(passHierarchy2);
+            PassFilter filter2 = PassFilter::CreateWithPassHierarchy(passHierarchy2);
             EXPECT_TRUE(filter2.Matches(pass.get()));
 
             AZStd::vector<Name> passHierarchy3 = { Name("parent3"), Name("parent2"), Name("pass1") };
-            PassHierarchyFilter filter3(passHierarchy3);
+            PassFilter filter3 = PassFilter::CreateWithPassHierarchy(passHierarchy3);
             EXPECT_TRUE(filter3.Matches(pass.get()));
         }
 
         {
             // Find non-leaf pass
-            PassHierarchyFilter filter1(AZStd::vector<AZStd::string>{"parent3", "parent1"});
+            PassFilter filter1 = PassFilter::CreateWithPassHierarchy(AZStd::vector<AZStd::string>{"parent3", "parent1"});
             EXPECT_TRUE(filter1.Matches(parent1.get()));
-
-            PassHierarchyFilter filter2(Name("parent1"));
+            
+            PassFilter filter2 = PassFilter::CreateWithPassHierarchy({ Name("parent1") });
             EXPECT_TRUE(filter2.Matches(parent1.get()));
             EXPECT_FALSE(filter2.Matches(pass.get()));
         }
@@ -650,11 +645,131 @@ namespace UnitTest
         {
             // Failed to find pass
             // Mis-matching hierarchy 
-            PassHierarchyFilter filter1(AZStd::vector<AZStd::string>{"Parent1", "Parent3", "pass1"});
+            PassFilter filter1 = PassFilter::CreateWithPassHierarchy(AZStd::vector<AZStd::string>{"Parent1", "Parent3", "pass1"});
             EXPECT_FALSE(filter1.Matches(pass.get()));
             // Mis-matching name
-            PassHierarchyFilter filter2(AZStd::vector<AZStd::string>{"Parent1", "pass1"});
+            PassFilter filter2 = PassFilter::CreateWithPassHierarchy(AZStd::vector<AZStd::string>{"Parent1", "pass1"});
             EXPECT_FALSE(filter2.Matches(parent1.get()));
         }
+    }
+
+    TEST_F(PassTests, PassFilter_Empty_Success)
+    {
+        m_data->AddPassTemplatesToLibrary();
+
+        // create a pass tree
+        Ptr<Pass> pass = m_passSystem->CreatePassFromClass(Name("Pass"), Name("pass1"));
+        Ptr<Pass> parent1 = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("parent1"));
+        Ptr<Pass> parent2 = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("parent2"));
+        Ptr<Pass> parent3 = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("parent3"));
+
+        parent3->AsParent()->AddChild(parent2);
+        parent2->AsParent()->AddChild(parent1);
+        parent1->AsParent()->AddChild(pass);
+
+        PassFilter filter;
+
+        // Any pass can match an empty filter
+        EXPECT_TRUE(filter.Matches(pass.get()));
+        EXPECT_TRUE(filter.Matches(parent1.get()));
+        EXPECT_TRUE(filter.Matches(parent2.get()));
+        EXPECT_TRUE(filter.Matches(parent3.get()));
+    }
+        
+    TEST_F(PassTests, PassFilter_PassClass_Success)
+    {
+        m_data->AddPassTemplatesToLibrary();
+
+        // create a pass tree
+        Ptr<Pass> pass = m_passSystem->CreatePassFromClass(Name("Pass"), Name("pass1"));
+        Ptr<Pass> depthPass = m_passSystem->CreatePassFromTemplate(Name("DepthPrePass"), Name("depthPass"));
+        Ptr<Pass> parent1 = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("parent1"));
+
+        parent1->AsParent()->AddChild(pass);
+        parent1->AsParent()->AddChild(depthPass);
+
+        PassFilter filter1 = PassFilter::CreateWithPassClass<Pass>();
+
+        EXPECT_TRUE(filter1.Matches(pass.get()));
+        EXPECT_FALSE(filter1.Matches(parent1.get()));
+
+        PassFilter filter2 = PassFilter::CreateWithPassClass<ParentPass>();
+        EXPECT_FALSE(filter2.Matches(pass.get()));
+        EXPECT_TRUE(filter2.Matches(parent1.get()));
+    }
+            
+    TEST_F(PassTests, PassFilter_PassTemplate_Success)
+    {
+        m_data->AddPassTemplatesToLibrary();
+
+        // create a pass tree
+        Ptr<Pass> childPass = m_passSystem->CreatePassFromClass(Name("Pass"), Name("pass1"));
+        Ptr<Pass> parent1 = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("parent1"));
+
+        PassFilter filter1 = PassFilter::CreateWithTemplateName(Name("Pass"), (Scene*) nullptr);
+        // childPass doesn't have a template 
+        EXPECT_FALSE(filter1.Matches(childPass.get()));
+
+        PassFilter filter2 = PassFilter::CreateWithTemplateName(Name("ParentPass"), (Scene*) nullptr);
+        EXPECT_TRUE(filter2.Matches(parent1.get()));
+    }
+
+    TEST_F(PassTests, ForEachPass_PassTemplateFilter_Success)
+    {
+        m_data->AddPassTemplatesToLibrary();
+
+        // create a pass tree
+        Ptr<Pass> pass = m_passSystem->CreatePassFromClass(Name("Pass"), Name("pass1"));
+        Ptr<Pass> parent1 = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("parent1"));
+        Ptr<Pass> parent2 = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("parent2"));
+        Ptr<Pass> parent3 = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("parent3"));
+
+        parent3->AsParent()->AddChild(parent2);
+        parent2->AsParent()->AddChild(parent1);
+        parent1->AsParent()->AddChild(pass);
+
+        // Create render pipeline
+        const RPI::PipelineViewTag viewTag{ "viewTag1" };
+        RPI::RenderPipelineDescriptor desc;
+        desc.m_mainViewTagName = viewTag.GetStringView();
+        desc.m_name = "TestPipeline";
+        RPI::RenderPipelinePtr pipeline = RPI::RenderPipeline::CreateRenderPipeline(desc);
+        Ptr<Pass> parent4 = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("parent4"));
+        pipeline->GetRootPass()->AddChild(parent4);
+
+        Name templateName = Name("ParentPass");
+        PassFilter filter1 = PassFilter::CreateWithTemplateName(templateName, (RenderPipeline*)nullptr);
+
+        int count = 0;
+        m_passSystem->ForEachPass(filter1,  [&count, templateName](RPI::Pass* pass) -> PassFilterExecutionFlow
+            {
+                EXPECT_TRUE(pass->GetPassTemplate()->m_name == templateName);
+                count++;
+                return PassFilterExecutionFlow::ContinueVisitingPasses; 
+            });
+
+        // three from CreatePassFromTemplate() calls and one from Render Pipeline.
+        EXPECT_TRUE(count == 4);
+
+        count = 0;
+        m_passSystem->ForEachPass(filter1,  [&count, templateName](RPI::Pass* pass) -> PassFilterExecutionFlow
+            {
+                EXPECT_TRUE(pass->GetPassTemplate()->m_name == templateName);
+                count++;
+                return PassFilterExecutionFlow::StopVisitingPasses;
+            });
+        EXPECT_TRUE(count == 1);
+
+        PassFilter filter2 = PassFilter::CreateWithTemplateName(templateName, pipeline.get());
+        count = 0;
+        m_passSystem->ForEachPass(filter2,  [&count]([[maybe_unused]] RPI::Pass* pass) -> PassFilterExecutionFlow
+            {
+                count++;
+                return PassFilterExecutionFlow::ContinueVisitingPasses;
+            });
+
+        // only the ParentPass in the render pipeline was found
+        EXPECT_TRUE(count == 1);
+
     }
 }

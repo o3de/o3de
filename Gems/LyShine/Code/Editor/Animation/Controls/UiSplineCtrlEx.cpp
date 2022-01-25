@@ -2182,18 +2182,6 @@ void AbstractSplineWidget::MoveSelectedKeys(Vec2 offset, bool copyKeys)
         }
     }
 
-    int rangeMin = aznumeric_cast<int>(TimeToXOfs(affectedRangeMin));
-    int rangeMax = aznumeric_cast<int>(TimeToXOfs(affectedRangeMax));
-
-    if (m_timeRange.start == affectedRangeMin)
-    {
-        rangeMin = m_rcSpline.left();
-    }
-    if (m_timeRange.end == affectedRangeMax)
-    {
-        rangeMax = m_rcSpline.right();
-    }
-
     if (m_pTimelineCtrl)
     {
         m_pTimelineCtrl->update();

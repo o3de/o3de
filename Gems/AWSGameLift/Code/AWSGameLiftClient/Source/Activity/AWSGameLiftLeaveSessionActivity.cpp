@@ -6,10 +6,11 @@
  *
  */
 
-#include <Activity/AWSGameLiftLeaveSessionActivity.h>
-
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
+
+#include <Activity/AWSGameLiftLeaveSessionActivity.h>
 
 namespace AWSGameLift
 {

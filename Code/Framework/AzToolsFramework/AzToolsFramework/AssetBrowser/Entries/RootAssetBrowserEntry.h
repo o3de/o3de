@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/IO/Path/Path.h>

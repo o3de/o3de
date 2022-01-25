@@ -726,10 +726,12 @@ namespace EMotionFX
     {
         MCore::LockGuardRecursive lock(m_mutex);
 
-        return AZStd::accumulate(begin(m_childSets), end(m_childSets), size_t{0}, [](size_t total, const MotionSet* motionSet)
+        size_t result = 0;
+        for (const MotionSet* motionSet : m_childSets)
         {
-            return total + motionSet->GetIsOwnedByRuntime();
-        });
+            result += !motionSet->GetIsOwnedByRuntime();
+        }
+        return result;
     }
 
 

@@ -69,7 +69,7 @@ def AreaNodes_DependentComponentsAdded():
 
     # Open an existing simple level
     helper.init_idle()
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')
@@ -96,7 +96,7 @@ def AreaNodes_DependentComponentsAdded():
         'SpawnerAreaNode': [
             'Vegetation Layer Spawner',
             'Vegetation Asset List',
-            'Vegetation Reference Shape'
+            'Shape Reference'
         ],
         'MeshBlockerAreaNode': [
             'Vegetation Layer Blocker (Mesh)',
@@ -104,7 +104,7 @@ def AreaNodes_DependentComponentsAdded():
         ],
         'BlockerAreaNode': [
             'Vegetation Layer Blocker',
-            'Vegetation Reference Shape'
+            'Shape Reference'
         ]
     }
 

@@ -73,6 +73,9 @@ namespace AZ
 
             static void Output(const char* window, const char* message);
 
+            /// Called by output to handle the actual output, does not interact with ebus or allow interception
+            static void RawOutput(const char* window, const char* message);
+
             static void PrintCallstack(const char* window, unsigned int suppressCount = 0, void* nativeContext = 0);
 
             /// PEXCEPTION_POINTERS on Windows, always NULL on other platforms
@@ -262,17 +265,17 @@ namespace AZ
 
 #else // !AZ_ENABLE_TRACING
 
-    #define AZ_Assert(...)               AZ_UNUSED(__VA_ARGS__);
-    #define AZ_Error(...)                AZ_UNUSED(__VA_ARGS__);
-    #define AZ_ErrorOnce(...)            AZ_UNUSED(__VA_ARGS__);
-    #define AZ_Warning(...)              AZ_UNUSED(__VA_ARGS__);
-    #define AZ_WarningOnce(...)          AZ_UNUSED(__VA_ARGS__);
-    #define AZ_TracePrintf(...)          AZ_UNUSED(__VA_ARGS__);
-    #define AZ_TracePrintfOnce(...)      AZ_UNUSED(__VA_ARGS__);
+    #define AZ_Assert(...)
+    #define AZ_Error(...)
+    #define AZ_ErrorOnce(...)
+    #define AZ_Warning(...)
+    #define AZ_WarningOnce(...)
+    #define AZ_TracePrintf(...)
+    #define AZ_TracePrintfOnce(...)
 
-    #define AZ_Verify(...)               AZ_UNUSED(__VA_ARGS__);
-    #define AZ_VerifyError(...)          AZ_UNUSED(__VA_ARGS__);
-    #define AZ_VerifyWarning(...)        AZ_UNUSED(__VA_ARGS__);
+    #define AZ_Verify(expression, ...)                  AZ_UNUSED(expression)
+    #define AZ_VerifyError(window, expression, ...)     AZ_UNUSED(expression)
+    #define AZ_VerifyWarning(window, expression, ...)   AZ_UNUSED(expression)
 
 #endif  // AZ_ENABLE_TRACING
 

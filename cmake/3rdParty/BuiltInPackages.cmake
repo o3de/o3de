@@ -12,10 +12,19 @@
 # cmake/3rdParty/Platform/Windows/BuiltInPackages_windows.cmake
 
 #include the platform-specific 3rd party packages.
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 
-set(LY_PAL_PACKAGE_FILE_NAME ${CMAKE_CURRENT_LIST_DIR}/${pal_dir}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+set(LY_PAL_PACKAGE_FILE_NAME ${pal_dir}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 include(${LY_PAL_PACKAGE_FILE_NAME})
 
 # add the above file to the ALLFILES list, so that they show up in IDEs
 set(ALLFILES ${ALLFILES} ${LY_PAL_PACKAGE_FILE_NAME})
+
+# temporary compatibility: 
+# Some 3p libraries may still refer to zlib as "3rdParty::zlib" instead of
+# the correct "3rdParty::ZLIB" (Case difference).  Until those libraries are updated
+# we alias the casing here.  This also provides backward compatibility for Gems that use 3rdParty::zlib
+# that are not part of the core O3DE repo.
+ly_download_associated_package(ZLIB)
+find_package(ZLIB)
+add_library(3rdParty::zlib ALIAS 3rdParty::ZLIB)

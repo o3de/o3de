@@ -7,20 +7,30 @@ labels: 'needs-triage,needs-sig,kind/bug'
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+A clear and concise description of what the bug is. Try to isolate the issue to help the community to reproduce it easily and increase chances for a fast fix.
 
-**To Reproduce**
+**Steps to reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+2. Click on '...'
+3. Select attached asset '...'
+4. Scroll down to '...'
+5. See error
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Actual behavior**
+A clear and concise description of what actually happened.
+
+**Assets required**
+Provide sample assets needed to reproduce the issue.
+
+**Screenshots/Video**
+If applicable, add screenshots and/or a video to help explain your problem.
+
+**Found in Branch**
+Name of or link to the branch where the issue occurs.
 
 **Desktop/Device (please complete the following information):**
  - Device: [e.g. PC, Mac, iPhone, Samsung] 

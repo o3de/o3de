@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include "UnitTestRunner.h"
 #include "native/utilities/IniConfiguration.h"
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <QString>
 #endif
 

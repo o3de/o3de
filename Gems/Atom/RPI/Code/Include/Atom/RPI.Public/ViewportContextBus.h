@@ -67,6 +67,9 @@ namespace AZ
             virtual ViewportContextPtr GetViewportContextByName(const Name& contextName) const = 0;
             //! Gets the registered ViewportContext with the corresponding ID, if any.
             virtual ViewportContextPtr GetViewportContextById(AzFramework::ViewportId id) const = 0;
+            //! Gets the registered ViewportContext with matching RPI::Scene, if any.
+            //! This function will return the first result.
+            virtual ViewportContextPtr GetViewportContextByScene(const Scene* scene) const = 0;
             //! Maps a ViewportContext to a new name, inheriting the View stack (if any) registered to that context name.
             //! This can be used to switch "default" viewports by registering a viewport with the default ViewportContext name
             //! but note that only one ViewportContext can be mapped to a context name at a time.
@@ -110,13 +113,11 @@ namespace AZ
             virtual void OnViewportSizeChanged(AzFramework::WindowSize size){AZ_UNUSED(size);}
             //! Called when the window DPI scaling changes for a given viewport context.
             virtual void OnViewportDpiScalingChanged(float dpiScale){AZ_UNUSED(dpiScale);}
-            //! Called when the active view changes for a given viewport context.
+            //! Called when the active view for a given viewport context name changes.
             virtual void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view){AZ_UNUSED(view);}
             //! Called when the viewport is to be rendered.
-            //! Add draws to this function if they only need to be rendered to this viewport. 
-            virtual void OnRenderTick(){}
-            //! Called when the viewport finishes rendering a frame.
-            virtual void OnFrameEnd(){}
+            //! Add draws to this functions if they only need to be rendered to this viewport. 
+            virtual void OnRenderTick(){};
 
         protected:
             ~ViewportContextNotifications() = default;

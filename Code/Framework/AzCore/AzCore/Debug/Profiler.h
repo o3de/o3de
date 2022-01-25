@@ -8,11 +8,7 @@
 #pragma once
 
 #include <AzCore/Debug/Budget.h>
-
-#ifdef USE_PIX
-#include <AzCore/PlatformIncl.h>
-#include <WinPixEventRuntime/pix3.h>
-#endif
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
 #if defined(AZ_PROFILER_MACRO_DISABLE) // by default we never disable the profiler registers as their overhead should be minimal, you can
                                        // still do that for your code though.
@@ -44,7 +40,10 @@
 #define AZ_PROFILE_INTERVAL_START(...)
 #define AZ_PROFILE_INTERVAL_START_COLORED(...)
 #define AZ_PROFILE_INTERVAL_END(...)
-#define AZ_PROFILE_INTERVAL_SCOPED(...)
+#define AZ_PROFILE_INTERVAL_SCOPED(budget, scopeNameId, ...) \
+    static constexpr AZ::Crc32 AZ_JOIN(blockId, __LINE__)(scopeNameId); \
+    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(AZ_CRC_CE(#budget), AZ_JOIN(blockId, __LINE__));
+
 #endif
 
 #ifndef AZ_PROFILE_DATAPOINT

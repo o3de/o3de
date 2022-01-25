@@ -86,12 +86,12 @@ namespace AZ
             virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
             //! Sets the shadow bias
             virtual void SetShadowBias(LightHandle handle, float bias) = 0;
+            //! Sets the normal shadow bias
+            virtual void SetNormalShadowBias(LightHandle handle, float bias) = 0;
             //! Sets the shadowmap size (width and height) of the light.
             virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
             //! Specifies filter method of shadows.
             virtual void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) = 0;
-            //! Specifies the width of boundary between shadowed area and lit area in radians. The degree ofshadowed gradually changes on the boundary. 0 disables softening.
-            virtual void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) = 0;
             //! Sets sample count for filtering of shadow boundary (up to 64)
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
             //! Sets the Esm exponent to use. Higher values produce a steeper falloff in the border areas between light and shadow.

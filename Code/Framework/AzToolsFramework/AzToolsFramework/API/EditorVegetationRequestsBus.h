@@ -10,6 +10,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Vector2.h>
 
 class CVegetationMap;
 struct CVegetationInstance;

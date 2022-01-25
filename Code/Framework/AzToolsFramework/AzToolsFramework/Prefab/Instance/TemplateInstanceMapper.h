@@ -26,10 +26,10 @@ namespace AzToolsFramework
             TemplateInstanceMapper();
             ~TemplateInstanceMapper() override;
 
-            InstanceSetConstReference FindInstancesOwnedByTemplate(const TemplateId& templateId) const override;
+            InstanceSetConstReference FindInstancesOwnedByTemplate(TemplateId templateId) const override;
 
-            bool RegisterTemplate(const TemplateId& templateId);
-            bool UnregisterTemplate(const TemplateId& templateId);
+            bool RegisterTemplate(TemplateId templateId);
+            bool UnregisterTemplate(TemplateId templateId);
 
         protected:
             bool RegisterInstanceToTemplate(Instance& instance) override;

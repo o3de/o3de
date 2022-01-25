@@ -38,7 +38,7 @@ namespace AzToolsFramework
         virtual SettingOutcome GetValue(const AZStd::string_view path) = 0;
         virtual SettingOutcome SetValue(const AZStd::string_view path, const AZStd::any& value) = 0;
         virtual ConsoleColorTheme GetConsoleColorTheme() const = 0;
-        virtual int GetMaxNumberOfItemsShownInSearchView() const = 0;
+        virtual AZ::u64 GetMaxNumberOfItemsShownInSearchView() const = 0;
     };
 
     using EditorSettingsAPIBus = AZ::EBus<EditorSettingsAPIRequests>;

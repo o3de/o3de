@@ -127,7 +127,7 @@ namespace Multiplayer
     MultiplayerDebugPerEntityReporter::MultiplayerDebugPerEntityReporter()
         : m_updateDebugOverlay([this]() { UpdateDebugOverlay(); }, AZ::Name("UpdateDebugPerEntityOverlay"))
     {
-        m_updateDebugOverlay.Enqueue(AZ::TimeMs{ 0 }, true);
+        m_updateDebugOverlay.Enqueue(AZ::Time::ZeroTimeMs, true);
 
         m_eventHandlers.m_entitySerializeStart = decltype(m_eventHandlers.m_entitySerializeStart)([this](AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName)
             {

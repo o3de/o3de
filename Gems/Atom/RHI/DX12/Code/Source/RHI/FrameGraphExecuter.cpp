@@ -12,8 +12,6 @@
 #include <RHI/CommandQueueContext.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
-#include <AzCore/Debug/EventTrace.h>
-
 
 namespace AZ
 {

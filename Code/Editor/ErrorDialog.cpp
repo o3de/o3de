@@ -25,9 +25,9 @@ namespace SandboxEditor
         connect(m_ui->okButton, &QPushButton::clicked, this, &ErrorDialog::OnOK);
         connect(
             m_ui->messages, 
-            SIGNAL(itemSelectionChanged()), 
+            &QTreeWidget::itemSelectionChanged,
             this, 
-            SLOT(MessageSelectionChanged()));
+            &ErrorDialog::MessageSelectionChanged);
     }
 
     ErrorDialog::~ErrorDialog()

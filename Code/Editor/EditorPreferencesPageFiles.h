@@ -69,18 +69,15 @@ private:
         int m_remindTime;
     };
 
-    struct AssetBrowserSearch
+    struct AssetBrowserSettings
     {
-        AZ_TYPE_INFO(AssetBrowserSearch, "{9FBFCD24-9452-49DF-99F4-2711443CEAAE}")
-
-        int m_maxNumberOfItemsShownInSearch;
+        AZ_TYPE_INFO(AssetBrowserSettings, "{5F407EC4-BBD1-4A87-92DB-D938D7127BB0}")
+        AZ::u64 m_maxNumberOfItemsShownInSearch;
     };
 
     Files m_files;
     ExternalEditors m_editors;
     AutoBackup m_autoBackup;
-    AssetBrowserSearch m_assetBrowserSearch;
+    AssetBrowserSettings m_assetBrowserSettings;
     QIcon m_icon;
 };
-
-

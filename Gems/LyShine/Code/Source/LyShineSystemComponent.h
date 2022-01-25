@@ -13,6 +13,7 @@
 #include <AzFramework/InGameUI/UiFrameworkBus.h>
 
 #include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <ILevelSystem.h>
 
 #include <LyShine/Bus/UiSystemBus.h>
 #include <LyShine/Bus/UiCanvasManagerBus.h>
@@ -37,6 +38,7 @@ namespace LyShine
         , protected LyShineAllocatorScope
         , protected UiFrameworkBus::Handler
         , protected CrySystemEventBus::Handler
+        , public ILevelSystemListener
     {
     public:
         AZ_COMPONENT(LyShineSystemComponent, lyShineSystemComponentUuid);
@@ -92,6 +94,10 @@ namespace LyShine
         void OnCrySystemShutdown(ISystem&) override;
         ////////////////////////////////////////////////////////////////////////////
 
+        ////////////////////////////////////////////////////////////////////////
+        // ILevelSystemListener interface implementation
+        void OnUnloadComplete(const char* levelName) override;
+
         void BroadcastCursorImagePathname();
 
 #if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
@@ -101,7 +107,7 @@ namespace LyShine
 
     protected:  // data
 
-        CLyShine* m_pLyShine = nullptr;
+        AZStd::unique_ptr<ILyShine> m_lyShine;
 
         AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset> m_cursorImagePathname;
 

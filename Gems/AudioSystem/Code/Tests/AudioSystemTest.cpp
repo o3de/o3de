@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -1051,7 +1052,7 @@ public:
         // Replace with a new LocalFileIO...
         m_fileIO = AZStd::make_unique<AZ::IO::LocalFileIO>();
         AZ::IO::FileIOBase::SetInstance(m_fileIO.get());
-        
+
         AZStd::string rootFolder(AZ::Test::GetCurrentExecutablePath());
         AZ::StringFunc::Path::Join(rootFolder.c_str(), "Test.Assets/Gems/AudioSystem/ATLData", rootFolder);
 

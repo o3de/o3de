@@ -498,7 +498,7 @@ namespace ScriptCanvas
         void SanityCheckDynamicDisplay();
         void SanityCheckDynamicDisplay(ExploredDynamicGroupCache& exploredGroupCache);
 
-        bool ConvertSlotToReference(const SlotId& slotId);
+        bool ConvertSlotToReference(const SlotId& slotId, bool isNewSlot = false);
         bool ConvertSlotToValue(const SlotId& slotId);
 
         NamedEndpoint CreateNamedEndpoint(SlotId slotId) const;
@@ -525,6 +525,7 @@ namespace ScriptCanvas
 
         void SignalDeserialized();
 
+        virtual AZStd::string GetNodeTypeName() const;
         virtual AZStd::string GetDebugName() const;
         virtual AZStd::string GetNodeName() const;
 
@@ -886,6 +887,8 @@ protected:
         // The SlotIterator& parameter is populated with an iterator to the inserted or found slot within the slot list 
         AZ::Outcome<SlotIdIteratorMap::iterator, AZStd::string> FindOrInsertSlot(AZ::s64 index, const SlotConfiguration& slotConfig, SlotIterator& iterOut);
 
+    public:
+
         // This function is only called once, when the node is added to a graph, as opposed to Init(), which will be called 
         // soon after construction, or after deserialization. So the functionality in configure does not need to be idempotent.
         void Configure();
@@ -1091,7 +1094,7 @@ protected:
             {
                 DataSlotConfiguration slotConfiguration;
 
-                slotConfiguration.m_name = AZStd::string::format("%s: %s", t_Traits::GetResultName(0), Data::GetName(Data::FromAZType<AZStd::decay_t<ResultType>>()).data());
+                slotConfiguration.m_name = t_Traits::GetResultName(0);
                 slotConfiguration.SetType(Data::FromAZType<AZStd::decay_t<ResultType>>());
                 slotConfiguration.SetConnectionType(ConnectionType::Output);
 
@@ -1113,7 +1116,7 @@ protected:
             {
                 DataSlotConfiguration slotConfiguration;
 
-                slotConfiguration.m_name = AZStd::string::format("%s: %s", t_Traits::GetResultName(Index), Data::GetName(Data::FromAZType<AZStd::decay_t<AZStd::tuple_element_t<Index, ResultType>>>()).data());
+                slotConfiguration.m_name = t_Traits::GetResultName(Index);
                 slotConfiguration.SetType(Data::FromAZType<AZStd::decay_t<AZStd::tuple_element_t<Index, ResultType>>>());
 
                 slotConfiguration.SetConnectionType(connectionType);                

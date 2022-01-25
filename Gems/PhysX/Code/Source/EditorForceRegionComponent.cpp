@@ -164,7 +164,7 @@ namespace PhysX
             {
                 // EditorForceRegionComponent
                 editContext->Class<EditorForceRegionComponent>(
-                    "PhysX Force Region", "The force region component is used to apply a physical force on objects within the region")
+                    "PhysX Force Region", "The force region component is used to apply a physical force on objects within the region.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/ForceVolume.svg")
@@ -173,9 +173,10 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/force-region/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("PhysXTriggerService", 0x3a117d7b))
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_visibleInEditor, "Visible", "Always show the component in viewport")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_debugForces, "Debug Forces", "Draws debug arrows when an entity enters a force region. This occurs in gameplay mode to show the force direction on an entity.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_forces, "Forces", "Forces in force region")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_visibleInEditor, "Visible", "Always show the component in viewport.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_debugForces, "Debug Forces",
+                        "Draws debug arrows when an entity enters a force region. This occurs in gameplay mode to show the force direction on an entity.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_forces, "Forces", "Forces in force region.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorForceRegionComponent::OnForcesChanged)
                     ;

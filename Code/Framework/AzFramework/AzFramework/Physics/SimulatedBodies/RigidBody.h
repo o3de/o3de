@@ -89,9 +89,9 @@ namespace AzPhysics
         //! @param inertiaTensorOverride Optional override of the inertia. Note: This parameter will be ignored if COMPUTE_INERTIA is passed in flags.
         //! @param massOverride Optional override of the mass. Note: This parameter will be ignored if COMPUTE_MASS is passed in flags.
         virtual void UpdateMassProperties(MassComputeFlags flags = MassComputeFlags::DEFAULT,
-            const AZ::Vector3* centerOfMassOffsetOverride = nullptr,
-            const AZ::Matrix3x3* inertiaTensorOverride = nullptr,
-            const float* massOverride = nullptr) = 0;
+            const AZ::Vector3& centerOfMassOffsetOverride = AZ::Vector3::CreateZero(),
+            const AZ::Matrix3x3& inertiaTensorOverride = AZ::Matrix3x3::CreateIdentity(),
+            const float massOverride = 1.0f) = 0;
     };
    
 } // namespace AzPhysics

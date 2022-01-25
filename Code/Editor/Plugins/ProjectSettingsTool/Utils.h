@@ -17,7 +17,7 @@
 namespace ProjectSettingsTool
 {
     void* ConvertFunctorToVoid(AZStd::pair<QValidator::State, const QString>(*func)(const QString&));
-    AZStd::string GetDevRoot();
+    AZStd::string GetEngineRoot();
     AZStd::string GetProjectRoot();
     AZStd::string GetProjectName();
 

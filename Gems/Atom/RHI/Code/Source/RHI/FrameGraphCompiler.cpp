@@ -17,7 +17,6 @@
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/optional.h>
@@ -288,7 +287,7 @@ namespace AZ
                 return;
             }
 
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             /**
              * Each attachment declares which queue classes it can be used on. We require that the first scope be on the most

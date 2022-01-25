@@ -15,6 +15,7 @@
 #include <EMotionFX/Source/BlendTreeBlend2Node.h>
 #include <EMotionFX/Source/BlendTreeBlendNNode.h>
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Parameter/FloatSliderParameter.h>
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <MCore/Source/AttributeFloat.h>

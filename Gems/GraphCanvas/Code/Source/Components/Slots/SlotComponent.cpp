@@ -91,14 +91,6 @@ namespace GraphCanvas
 
     void SlotComponent::Activate()
     {
-        SetTranslationKeyedName(m_slotConfiguration.m_name);
-
-        // Default tooltip.
-        if (m_slotConfiguration.m_tooltip.empty())
-        {
-            SetTranslationKeyedTooltip(m_slotConfiguration.m_name);
-        }
-
         SlotRequestBus::Handler::BusConnect(GetEntityId());
         SceneMemberRequestBus::Handler::BusConnect(GetEntityId());
     }
@@ -172,24 +164,6 @@ namespace GraphCanvas
 
     void SlotComponent::SetName(const AZStd::string& name)
     {
-        if (name == m_slotConfiguration.m_name.GetDisplayString())
-        {
-            return;
-        }
-
-        m_slotConfiguration.m_name.SetFallback(name);
-
-        // Default tooltip.
-        if (m_slotConfiguration.m_tooltip.empty())
-        {
-            m_slotConfiguration.m_tooltip = m_slotConfiguration.m_name;
-        }
-
-        SlotNotificationBus::Event(GetEntityId(), &SlotNotifications::OnNameChanged, m_slotConfiguration.m_name);
-    }
-
-    void SlotComponent::SetTranslationKeyedName(const TranslationKeyedString& name)
-    {
         if (name == m_slotConfiguration.m_name)
         {
             return;
@@ -206,25 +180,22 @@ namespace GraphCanvas
         SlotNotificationBus::Event(GetEntityId(), &SlotNotifications::OnNameChanged, m_slotConfiguration.m_name);
     }
 
-    void SlotComponent::SetTooltip(const AZStd::string& tooltip)
+    void SlotComponent::SetDetails(const AZStd::string& name, const AZStd::string& tooltip)
     {
-        if (tooltip == m_slotConfiguration.m_tooltip.GetDisplayString())
+        if (name != m_slotConfiguration.m_name)
         {
-            return;
+            m_slotConfiguration.m_name = name;
+            SlotNotificationBus::Event(GetEntityId(), &SlotNotifications::OnNameChanged, m_slotConfiguration.m_name);
         }
 
-        m_slotConfiguration.m_tooltip.SetFallback(tooltip);
-
-        // Default tooltip.
-        if (m_slotConfiguration.m_tooltip.empty())
+        if (tooltip != m_slotConfiguration.m_tooltip)
         {
-            m_slotConfiguration.m_tooltip = m_slotConfiguration.m_name;
+            m_slotConfiguration.m_tooltip = tooltip;
+            SlotNotificationBus::Event(GetEntityId(), &SlotNotifications::OnTooltipChanged, m_slotConfiguration.m_tooltip);
         }
-
-        SlotNotificationBus::Event(GetEntityId(), &SlotNotifications::OnTooltipChanged, m_slotConfiguration.m_tooltip);
     }
 
-    void SlotComponent::SetTranslationKeyedTooltip(const TranslationKeyedString& tooltip)
+    void SlotComponent::SetTooltip(const AZStd::string& tooltip)
     {
         if (tooltip == m_slotConfiguration.m_tooltip)
         {
@@ -521,8 +492,8 @@ namespace GraphCanvas
     {
         slotConfiguration.m_connectionType = GetConnectionType();
 
-        slotConfiguration.m_name = GetTranslationKeyedName();
-        slotConfiguration.m_tooltip = GetTranslationKeyedTooltip();
+        slotConfiguration.m_name = m_slotConfiguration.m_name;
+        slotConfiguration.m_tooltip = m_slotConfiguration.m_tooltip;
 
         slotConfiguration.m_slotGroup = GetSlotGroup();
     }
