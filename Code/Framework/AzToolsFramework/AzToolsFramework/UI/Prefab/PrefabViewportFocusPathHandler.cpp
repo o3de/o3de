@@ -73,6 +73,9 @@ namespace AzToolsFramework::Prefab
     {
         // Push new Path
         m_breadcrumbsWidget->pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
+
+        // If root instance is focused, disable the back button; else enable it.
+        m_backButton->setEnabled(m_prefabFocusPublicInterface->GetPrefabFocusPathLength(m_editorEntityContextId) > 1);
     }
 
 } // namespace AzToolsFramework::Prefab

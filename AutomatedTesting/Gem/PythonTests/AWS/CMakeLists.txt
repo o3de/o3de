@@ -12,12 +12,6 @@
 ################################################################################
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-    # Only enable AWS automated tests on Windows
-    set(SUPPORTED_PLATFORMS "Windows" "Linux")
-    if (NOT "${PAL_PLATFORM_NAME}" IN_LIST SUPPORTED_PLATFORMS)
-        return()
-    endif()
-
     ly_add_pytest(
         NAME AutomatedTesting::AWSTests
         TEST_SUITE awsi

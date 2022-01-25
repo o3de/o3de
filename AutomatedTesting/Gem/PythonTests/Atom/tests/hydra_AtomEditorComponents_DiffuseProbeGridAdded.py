@@ -90,7 +90,7 @@ def AtomEditorComponents_DiffuseProbeGrid_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a Diffuse Probe Grid entity with no components.
@@ -168,10 +168,12 @@ def AtomEditorComponents_DiffuseProbeGrid_AddedToEntity():
 
         # 12. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, diffuse_probe_grid_entity.exists())
 
         # 13. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not diffuse_probe_grid_entity.exists())
 
         # 14. Look for errors or asserts.

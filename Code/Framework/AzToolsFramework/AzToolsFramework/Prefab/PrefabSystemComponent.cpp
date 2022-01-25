@@ -506,7 +506,7 @@ namespace AzToolsFramework
             //Remove all Links owned by the Template from TemplateToLinkIdsMap.
             Template& templateToDelete = findTemplateResult->get();
             const Template::Links& linkIdsToDelete = templateToDelete.GetLinks();
-            bool result;
+            [[maybe_unused]] bool result;
             for (auto linkId : linkIdsToDelete)
             {
                 result = RemoveLinkIdFromTemplateToLinkIdsMap(linkId);
@@ -774,7 +774,7 @@ namespace AzToolsFramework
             }
 
             Link& link = findLinkResult->get();
-            bool result;
+            [[maybe_unused]] bool result;
             result = RemoveLinkIdFromTemplateToLinkIdsMap(linkId, link);
             AZ_Assert(result,
                 "Prefab - PrefabSystemComponent::RemoveLink - "
