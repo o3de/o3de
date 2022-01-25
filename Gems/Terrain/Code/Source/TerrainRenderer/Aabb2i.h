@@ -21,7 +21,11 @@ namespace Terrain
         Aabb2i(const Vector2i& min, const Vector2i& max);
 
         Aabb2i operator+(const Vector2i& offset) const;
+        Aabb2i& operator+=(const Vector2i& offset);
         Aabb2i operator-(const Vector2i& offset) const;
+        Aabb2i& operator-=(const Vector2i& offset);
+        bool operator==(const Aabb2i& other) const;
+        bool operator!=(const Aabb2i& other) const;
 
         Aabb2i GetClamped(Aabb2i rhs) const;
         bool IsValid() const;

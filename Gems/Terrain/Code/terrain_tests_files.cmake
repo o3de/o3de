@@ -7,14 +7,15 @@
 #
 
 set(FILES
-    Tests/TerrainTest.cpp
-    Tests/TerrainSystemTest.cpp
+    Tests/ClipmapBoundsTests.cpp
     Tests/LayerSpawnerTests.cpp
-    Tests/TerrainPhysicsColliderTests.cpp
-    Tests/SurfaceMaterialsListTest.cpp
     Tests/MockAxisAlignedBoxShapeComponent.h
     Tests/TerrainHeightGradientListTests.cpp
     Tests/TerrainMacroMaterialTests.cpp
+    Tests/SurfaceMaterialsListTest.cpp
+    Tests/TerrainPhysicsColliderTests.cpp
     Tests/TerrainSurfaceGradientListTests.cpp
     Tests/TerrainSystemBenchmarks.cpp
+    Tests/TerrainSystemTest.cpp
+    Tests/TerrainTest.cpp
 )

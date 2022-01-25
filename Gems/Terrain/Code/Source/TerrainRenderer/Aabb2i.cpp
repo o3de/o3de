@@ -18,12 +18,40 @@ namespace Terrain
 
     Aabb2i Aabb2i::operator+(const Vector2i& rhs) const
     {
-        return { m_min + rhs, m_max + rhs };
+        Aabb2i returnValue = *this;
+        returnValue += rhs;
+        return returnValue;
+    }
+    
+    Aabb2i& Aabb2i::operator+=(const Vector2i& rhs)
+    {
+        m_min += rhs;
+        m_max += rhs;
+        return *this;
     }
 
     Aabb2i Aabb2i::operator-(const Vector2i& rhs) const
     {
-        return *this + -rhs;
+        Aabb2i returnValue = *this;
+        returnValue -= rhs;
+        return returnValue;
+    }
+    
+    Aabb2i& Aabb2i::operator-=(const Vector2i& rhs)
+    {
+        m_min -= rhs;
+        m_max -= rhs;
+        return *this;
+    }
+    
+    bool Aabb2i::operator==(const Aabb2i& other) const
+    {
+        return m_min == other.m_min && m_max == other.m_max;
+    }
+
+    bool Aabb2i::operator!=(const Aabb2i& other) const
+    {
+        return !(*this == other);
     }
 
     Aabb2i Aabb2i::GetClamped(Aabb2i rhs) const

@@ -1,0 +1,290 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <TerrainRenderer/ClipmapBounds.h>
+#include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Math/MathUtils.h>
+
+namespace Terrain
+{
+    bool ClipmapBoundsRegion::operator==(const ClipmapBoundsRegion& other) const
+    {
+        return m_localAabb == other.m_localAabb && m_worldAabb.IsClose(other.m_worldAabb);
+    }
+    
+    bool ClipmapBoundsRegion::operator!=(const ClipmapBoundsRegion& other) const
+    {
+        return !(*this == other);
+    }
+
+    ClipmapBounds::ClipmapBounds(const ClipmapBoundsDescritor& desc)
+        : m_size(desc.m_size)
+        , m_halfSize(desc.m_size >> 1)
+        , m_margin(AZ::GetMax<uint32_t>(desc.m_margin, 1))
+        , m_scale(desc.m_scale)
+        , m_rcpScale(1.0f / desc.m_scale)
+    {
+        AZ_Assert(m_size % m_margin == 0, "ClipmapBounds: m_size should be a mulitple of m_margin")
+
+        // recalculate m_center
+        UpdateCenter(desc.m_center);
+    }
+    
+    AZStd::vector<ClipmapBoundsRegion> ClipmapBounds::UpdateCenter(const AZ::Vector2& newCenter, AZ::Aabb* untouchedRegion)
+    {
+        return UpdateCenter(GetClipSpaceVector(newCenter), untouchedRegion);
+    }
+
+    AZStd::vector<ClipmapBoundsRegion> ClipmapBounds::UpdateCenter(const Vector2i& newCenter, AZ::Aabb* untouchedRegion)
+    {
+        AZStd::vector<Aabb2i> updateRegions;
+        Vector2i updatedCenter = m_center;
+
+        // Update the snapped center if the new center has drifted beyond the margin
+        auto UpdateDim = [&](int32_t centerDim, int32_t& snappedCenterDim) -> void
+        {
+            int32_t diff = centerDim - snappedCenterDim;
+            
+            // Force rounding down for negatives
+            if (centerDim < 0)
+            {
+                centerDim -= m_margin;
+            }
+
+            if (diff >= m_margin)
+            {
+                snappedCenterDim = (centerDim / m_margin) * m_margin;
+            }
+            if (diff < -m_margin)
+            {
+                snappedCenterDim = ((centerDim / m_margin) + 1) * m_margin;
+            }
+        };
+        UpdateDim(newCenter.m_x, updatedCenter.m_x);
+        UpdateDim(newCenter.m_y, updatedCenter.m_y);
+
+        // If the new snapped center isn't the same as the old, then generate update regions in clipmap space
+
+        int32_t xDiff = updatedCenter.m_x - m_center.m_x;
+        int32_t updateWidth = AZStd::GetMin<uint32_t>(abs(xDiff), m_size);
+
+        if (updatedCenter.m_x != m_center.m_x)
+        {
+            updateRegions.push_back();
+            Aabb2i& updateRegion = updateRegions.back();
+            
+            if (updatedCenter.m_x < m_center.m_x)
+            {
+                updateRegion.m_min.m_x = updatedCenter.m_x - m_halfSize;
+                updateRegion.m_max.m_x = updateRegion.m_min.m_x + updateWidth;
+            }
+            else
+            {
+                updateRegion.m_max.m_x = updatedCenter.m_x + m_halfSize;
+                updateRegion.m_min.m_x = updateRegion.m_max.m_x - updateWidth;
+            }
+            updateRegion.m_min.m_y = updatedCenter.m_y - m_halfSize;
+            updateRegion.m_max.m_y = updatedCenter.m_y + m_halfSize;
+        }
+        
+        if (updatedCenter.m_y != m_center.m_y && updateWidth < m_size)
+        {
+            updateRegions.push_back();
+            Aabb2i& updateRegion = updateRegions.back();
+            
+            uint32_t updateHeight = AZStd::GetMin<uint32_t>(abs(updatedCenter.m_y - m_center.m_y), m_size);
+            if (updatedCenter.m_y < m_center.m_y)
+            {
+                updateRegion.m_min.m_y = updatedCenter.m_y - m_halfSize;
+                updateRegion.m_max.m_y = updateRegion.m_min.m_y + updateHeight;
+            }
+            else
+            {
+                updateRegion.m_max.m_y = updatedCenter.m_y + m_halfSize;
+                updateRegion.m_min.m_y = updateRegion.m_max.m_y - updateHeight;
+            }
+
+            if (xDiff < 0)
+            {
+                updateRegion.m_min.m_x = updatedCenter.m_x - m_halfSize + updateWidth;
+                updateRegion.m_max.m_x = updatedCenter.m_x + m_halfSize;
+            }
+            else if (xDiff > 0)
+            {
+                updateRegion.m_min.m_x = updatedCenter.m_x - m_halfSize;
+                updateRegion.m_max.m_x = updatedCenter.m_x + m_halfSize - updateWidth;
+            }
+        }
+
+        if (untouchedRegion)
+        {
+            // Default to the entire area being untouched.
+            AZ::Aabb worldBounds = GetWorldBounds();
+            float maxX = worldBounds.GetMax().GetX();
+            float minX = worldBounds.GetMin().GetX();
+            float maxY = worldBounds.GetMax().GetY();
+            float minY = worldBounds.GetMin().GetY();
+
+            if (updatedCenter.m_x < m_center.m_x)
+            {
+                maxX = (updatedCenter.m_x + m_halfSize) * m_rcpScale;
+            }
+            else if (updatedCenter.m_x > m_center.m_x)
+            {
+                minX = (updatedCenter.m_x - m_halfSize) * m_rcpScale;
+            }
+            if (updatedCenter.m_y < m_center.m_y)
+            {
+                maxY = (updatedCenter.m_y + m_halfSize) * m_rcpScale;
+            }
+            else if (updatedCenter.m_y > m_center.m_y)
+            {
+                minY = (updatedCenter.m_y - m_halfSize) * m_rcpScale;
+            }
+
+            untouchedRegion->Set(AZ::Vector3(minX, minY, 0.0f), AZ::Vector3(maxX, maxY, 0.0f));
+        }
+
+        m_center = updatedCenter;
+        
+        m_modCenter.m_x = (m_size + (m_center.m_x % m_size)) % m_size;
+        m_modCenter.m_y = (m_size + (m_center.m_y % m_size)) % m_size;
+
+        AZStd::vector<ClipmapBoundsRegion> boundsUpdate;
+        for (Aabb2i& updateRegion : updateRegions)
+        {
+            AZStd::vector<ClipmapBoundsRegion> update = TransformRegion(updateRegion);
+            boundsUpdate.insert(boundsUpdate.end(), update.begin(), update.end());
+        }
+
+        return boundsUpdate;
+    }
+    
+    AZStd::vector<ClipmapBoundsRegion> ClipmapBounds::TransformRegion(AZ::Aabb worldSpaceRegion)
+    {
+        AZ::Vector2 worldMin = AZ::Vector2(worldSpaceRegion.GetMin().GetX(), worldSpaceRegion.GetMin().GetY());
+        AZ::Vector2 worldMax = AZ::Vector2(worldSpaceRegion.GetMax().GetX(), worldSpaceRegion.GetMax().GetY());
+
+        Aabb2i clipSpaceRegion;
+        clipSpaceRegion.m_min = GetClipSpaceVector(worldMin);
+        clipSpaceRegion.m_max = GetClipSpaceVector(worldMax);
+
+        return TransformRegion(clipSpaceRegion);
+    }
+
+    AZStd::vector<ClipmapBoundsRegion> ClipmapBounds::TransformRegion(Aabb2i region)
+    {
+        AZStd::vector<ClipmapBoundsRegion> transformedRegions;
+
+        Aabb2i clampedRegion = region.GetClamped(GetLocalBounds());
+        if (!clampedRegion.IsValid())
+        {
+            // Early out if the region is outside the bounds
+            return transformedRegions;
+        }
+
+        Vector2i minCorner = m_center - m_halfSize;
+
+        Vector2i minBoundary;
+        minBoundary.m_x = (minCorner.m_x / m_size - (minCorner.m_x < 0 ? 1 : 0)) * m_size;
+        minBoundary.m_y = (minCorner.m_y / m_size - (minCorner.m_y < 0 ? 1 : 0)) * m_size;
+
+        Aabb2i blTile = Aabb2i(minBoundary, minBoundary + m_size);
+        Aabb2i localBounds = GetLocalBounds();
+        
+        // For each of the 4 quadrants:
+        auto calculateQuadrant = [&](Aabb2i tile)
+        {
+            Aabb2i regionClampedToTile = clampedRegion.GetClamped(tile);
+            if (regionClampedToTile.IsValid())
+            {
+                transformedRegions.push_back(
+                    ClipmapBoundsRegion({
+                        GetWorldSpaceAabb(regionClampedToTile),
+                        regionClampedToTile - tile.m_min
+                    })
+                );
+            }
+        };
+
+        calculateQuadrant(blTile);
+        calculateQuadrant(blTile + Vector2i(m_size, 0));
+        calculateQuadrant(blTile + Vector2i(0, m_size));
+        calculateQuadrant(blTile + Vector2i(m_size, m_size));
+        
+        return transformedRegions;
+
+        /*
+        Vector2i minCorner = m_modCenter - m_halfSize;
+        
+        Vector2i blOffset = {
+            m_modCenter.m_x < m_halfSize ? -m_halfSize : m_halfSize,
+            m_modCenter.m_y < m_halfSize ? -m_halfSize : m_halfSize
+        };
+        blOffset -= m_modCenter;
+
+        AZStd::vector<ClipmapBoundsRegion> update;
+        Aabb2i localBounds = GetLocalBounds();
+
+        // For each of the 4 quadrants:
+        auto calculateQuadrant = [&](Vector2i quadrantOffset)
+        {
+            //Aabb2i offsetUpdateArea = region + minCorner + quadrantOffset;
+            Aabb2i offsetUpdateArea = region + quadrantOffset;
+            Aabb2i updateSectionBounds = localBounds.GetClamped(offsetUpdateArea);
+            if (updateSectionBounds.IsValid())
+            {
+                update.push_back(ClipmapBoundsRegion({
+                    AZ::Aabb::CreateFromMinMaxValues(
+                        updateSectionBounds.m_min.m_x * m_scale, updateSectionBounds.m_min.m_y * m_scale, 0.0f,
+                        updateSectionBounds.m_max.m_x * m_scale, updateSectionBounds.m_max.m_y * m_scale, 0.0f
+                    ),
+                    updateSectionBounds - localBounds.m_min
+                }));
+            }
+        };
+        
+        calculateQuadrant(blOffset);
+        calculateQuadrant(blOffset + Vector2i(m_size, 0));
+        calculateQuadrant(blOffset + Vector2i(0, m_size));
+        calculateQuadrant(blOffset + Vector2i(m_size, m_size));
+
+        return update;
+        */
+    }
+
+    AZ::Aabb ClipmapBounds::GetWorldBounds()
+    {
+        Aabb2i localBounds = GetLocalBounds();
+        
+        return AZ::Aabb::CreateFromMinMaxValues(
+            localBounds.m_min.m_x * m_scale, localBounds.m_min.m_y * m_scale, 0.0f,
+            localBounds.m_max.m_x * m_scale, localBounds.m_max.m_y * m_scale, 0.0f);
+    }
+
+    Aabb2i ClipmapBounds::GetLocalBounds() const
+    {
+        return Aabb2i(m_center - m_halfSize, m_center + m_halfSize);
+    }
+    
+    Vector2i ClipmapBounds::GetClipSpaceVector(const AZ::Vector2& worldSpaceVector) const
+    {
+        // Get rounded integer x/y coords in clipmap space.
+        int32_t x = AZStd::lround(worldSpaceVector.GetX() * m_rcpScale);
+        int32_t y = AZStd::lround(worldSpaceVector.GetY() * m_rcpScale);
+        return Vector2i(x, y);
+    }
+
+    AZ::Aabb ClipmapBounds::GetWorldSpaceAabb(const Aabb2i& clipSpaceAabb) const
+    {
+        return AZ::Aabb::CreateFromMinMaxValues(
+            clipSpaceAabb.m_min.m_x * m_scale, clipSpaceAabb.m_min.m_y * m_scale, 0.0f,
+            clipSpaceAabb.m_max.m_x * m_scale, clipSpaceAabb.m_max.m_y * m_scale, 0.0f
+        );
+    }
+}
