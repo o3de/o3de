@@ -13,7 +13,6 @@
 #include <AzToolsFramework/Viewport/ViewportInteractionHelpers.h>
 
 #include <EMStudio/AnimViewportInputController.h>
-#include <EMStudio/ManipulatorInteractionRequestBus.h>
 
 
 namespace EMStudio
@@ -132,7 +131,9 @@ namespace EMStudio
                 return MouseInteractionEvent(MouseInteraction{}, MouseEvent::Up, false);
             }();
 
-            ManipulatorRequestBus::BroadcastResult(interactionHandled, &ManipulatorRequests::HandleMouseEvent, mouseInteractionEvent);
+            AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::EventResult(interactionHandled,
+                GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::HandleMouseInteraction,
+                mouseInteractionEvent);
         }
 
         return interactionHandled;

@@ -48,7 +48,7 @@ namespace EMStudio
         delete m_importActorCallback;
         delete m_removeActorCallback;
 
-        ManipulatorRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
     }
 
     const char* AtomRenderPlugin::GetName() const
@@ -137,7 +137,8 @@ namespace EMStudio
         EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("ImportActor", m_importActorCallback);
         EMStudioManager::GetInstance()->GetCommandManager()->RegisterCommandCallback("RemoveActor", m_removeActorCallback);
 
-        ManipulatorRequestBus::Handler::BusConnect();
+        AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusConnect(
+            m_animViewportWidget->GetViewportContext()->GetId());
 
         return true;
     }
@@ -335,7 +336,7 @@ namespace EMStudio
         debugDisplay->DepthTestOn();
     }
 
-    bool AtomRenderPlugin::HandleMouseEvent(
+    bool AtomRenderPlugin::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent)
     {
         if (!m_manipulatorManager)

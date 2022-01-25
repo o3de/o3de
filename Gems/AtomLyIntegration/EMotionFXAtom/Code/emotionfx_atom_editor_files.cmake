@@ -24,5 +24,4 @@ set(FILES
     Tools/EMStudio/AnimViewportRequestBus.h
     Tools/EMStudio/AnimViewportInputController.h
     Tools/EMStudio/AnimViewportInputController.cpp
-    Tools/EMStudio/ManipulatorInteractionRequestBus.h
 )

@@ -17,9 +17,7 @@
 #include <MCore/Source/Command.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
-
 #include <EMStudio/AnimViewportWidget.h>
-#include <EMStudio/ManipulatorInteractionRequestBus.h>
 #include <QWidget>
 #endif
 
@@ -32,7 +30,7 @@ namespace EMStudio
 {
     class AtomRenderPlugin
         : public DockWidgetPlugin
-        , private EMStudio::ManipulatorRequestBus::Handler
+        , private AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -67,8 +65,8 @@ namespace EMStudio
         void SetManipulatorMode(RenderOptions::ManipulatorMode mode);
 
     private:
-        // ManipulatorRequestBus overrides...
-        bool HandleMouseEvent(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent) override;
+        // AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus overrides...
+        bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent) override;
 
         void SetupManipulators();
         void OnManipulatorMoved(const AZ::Vector3& position);
