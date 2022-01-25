@@ -44,13 +44,13 @@ namespace Terrain
             AZ_Error(TerrainMeshManagerName, false, "Failed to create Terrain render buffers!");
             return;
         }
-        
+
         OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         m_isInitialized = true;
     }
-    
+
     bool TerrainMeshManager::IsInitialized() const
     {
         return m_isInitialized;
@@ -64,7 +64,7 @@ namespace Terrain
         m_rebuildSectors = true;
         m_isInitialized = false;
     }
-    
+
     bool TerrainMeshManager::CheckRebuildSurfaces(MaterialInstance materialInstance, AZ::RPI::Scene& parentScene)
     {
         if (!m_rebuildSectors)
@@ -84,7 +84,7 @@ namespace Terrain
         const float xLastPatchStart = AZStd::floorf(m_worldBounds.GetMax().GetX() / GridMeters) * GridMeters;
         const float yFirstPatchStart = AZStd::floorf(m_worldBounds.GetMin().GetY() / GridMeters) * GridMeters;
         const float yLastPatchStart = AZStd::floorf(m_worldBounds.GetMax().GetY() / GridMeters) * GridMeters;
-            
+
         const auto& materialAsset = materialInstance->GetAsset();
         const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
 
@@ -101,7 +101,7 @@ namespace Terrain
                 for (auto& lod : m_patchModel->GetLods())
                 {
                     objectSrgData.m_xyScale = m_sampleSpacing * GridSize;
-                        
+
                     auto objectSrg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
                     if (!objectSrg)
                     {
@@ -114,7 +114,7 @@ namespace Terrain
                     AZ::RPI::ModelLod& modelLod = *lod.get();
                     sectorData.m_drawPackets.emplace_back(modelLod, 0, materialInstance, objectSrg);
                     AZ::RPI::MeshDrawPacket& drawPacket = sectorData.m_drawPackets.back();
-                        
+
                     sectorData.m_srgs.emplace_back(objectSrg);
 
                     // set the shader option to select forward pass IBL specular if necessary
@@ -136,7 +136,7 @@ namespace Terrain
         }
         return true;
     }
-    
+
     void TerrainMeshManager::DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process)
     {
         for (auto& sectorData : m_sectorData)
@@ -194,7 +194,7 @@ namespace Terrain
     {
         Reset();
     }
-    
+
     void TerrainMeshManager::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != 0)
@@ -202,7 +202,7 @@ namespace Terrain
             AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 worldBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-            
+
             AZ::Vector2 queryResolution2D = AZ::Vector2(1.0f);
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 queryResolution2D, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
@@ -241,7 +241,7 @@ namespace Terrain
         }
 
         patchdata.m_indices.reserve(gridSize * gridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
-        
+
         for (uint16_t y = 0; y < gridSize; ++y)
         {
             for (uint16_t x = 0; x < gridSize; ++x)
@@ -260,7 +260,7 @@ namespace Terrain
             }
         }
     }
-    
+
     AZ::Outcome<AZ::Data::Asset<AZ::RPI::BufferAsset>> TerrainMeshManager::CreateBufferAsset(
         const void* data, const AZ::RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName)
     {
@@ -291,7 +291,6 @@ namespace Terrain
         modelAssetCreator.Begin(AZ::Uuid::CreateRandom());
 
         uint16_t gridSize = GridSize;
-        [[maybe_unused]] float gridSpacing = GridSpacing;
 
         for (uint32_t i = 0; i < AZ::RPI::ModelLodAsset::LodCountMax && gridSize > 0; ++i)
         {
@@ -300,7 +299,7 @@ namespace Terrain
 
             const auto positionBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_positions.size()), AZ::RHI::Format::R32G32_FLOAT);
             const auto positionsOutcome = CreateBufferAsset(patchData.m_positions.data(), positionBufferViewDesc, "TerrainPatchPositions");
-        
+
             const auto indexBufferViewDesc = AZ::RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(patchData.m_indices.size()), AZ::RHI::Format::R16_UINT);
             const auto indicesOutcome = CreateBufferAsset(patchData.m_indices.data(), indexBufferViewDesc, "TerrainPatchIndices");
 
@@ -309,7 +308,7 @@ namespace Terrain
                 AZ_Error(TerrainMeshManagerName, false, "Failed to create GPU buffers for Terrain");
                 return false;
             }
-            
+
             AZ::RPI::ModelLodAssetCreator modelLodAssetCreator;
             modelLodAssetCreator.Begin(AZ::Uuid::CreateRandom());
 
@@ -324,11 +323,10 @@ namespace Terrain
 
             AZ::Data::Asset<AZ::RPI::ModelLodAsset> modelLodAsset;
             modelLodAssetCreator.End(modelLodAsset);
-        
+
             modelAssetCreator.AddLodAsset(AZStd::move(modelLodAsset));
 
             gridSize = gridSize / 2;
-            gridSpacing *= 2.0f;
         }
 
         AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
@@ -338,7 +336,7 @@ namespace Terrain
 
         return success;
     }
-    
+
     template<typename Callback>
     void TerrainMeshManager::ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback)
     {

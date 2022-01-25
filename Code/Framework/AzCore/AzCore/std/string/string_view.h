@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/iterator.h>
 #include <AzCore/std/limits.h>
@@ -613,8 +614,9 @@ namespace AZStd
         {}
 
         template <typename It, typename End, typename = AZStd::enable_if_t<
-            Internal::satisfies_contiguous_iterator_concept_v<It>
-            && is_same_v<typename AZStd::iterator_traits<It>::value_type, value_type>
+            contiguous_iterator<It>
+            && sized_sentinel_for<End, It>
+            && is_same_v<iter_value_t<It>, value_type>
             && !is_convertible_v<End, size_type>>
         >
         constexpr basic_string_view(It first, End last)
@@ -961,23 +963,6 @@ namespace AZStd
     using string_view = basic_string_view<char>;
     using wstring_view = basic_string_view<wchar_t>;
 
-    template<class Element, class Traits = AZStd::char_traits<Element>>
-    using basic_const_string = basic_string_view<Element, Traits>;
-    using const_string = string_view;
-    using const_wstring = wstring_view;
-
-    template <class Element, class Traits = AZStd::char_traits<Element>>
-    constexpr typename basic_string_view<Element, Traits>::const_iterator begin(basic_string_view<Element, Traits> sv)
-    {
-        return sv.begin();
-    }
-
-    template <class Element, class Traits = AZStd::char_traits<Element>>
-    constexpr typename basic_string_view<Element, Traits>::const_iterator end(basic_string_view<Element, Traits> sv)
-    {
-        return sv.end();
-    }
-
     inline namespace literals
     {
         inline namespace string_view_literals
@@ -1023,6 +1008,15 @@ namespace AZStd
     };
 
 } // namespace AZStd
+
+namespace AZStd::ranges
+{
+    template <class Element, class Traits>
+    inline constexpr bool enable_borrowed_range<basic_string_view<Element, Traits>> = true;
+
+    template <class Element, class Traits>
+    inline constexpr bool enable_view<basic_string_view<Element, Traits>> = true;
+}
 
 //! Use this macro to simplify safe printing of a string_view which may not be null-terminated.
 //! Example: AZStd::string::format("Safely formatted: %.*s", AZ_STRING_ARG(myString));

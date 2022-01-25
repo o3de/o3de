@@ -586,14 +586,14 @@ def test_update_device_file_timestamp(tmpdir):
 
 @pytest.mark.parametrize(
     "test_config, test_package_name, test_device_storage_path", [
-        pytest.param('profile', 'com.amazon.lumberyard.foo', '/data/fool_storage'),
-        pytest.param('debug', 'com.amazon.lumberyard.foo', '/data/fool_storage'),
-        pytest.param('profile', 'com.amazon.lumberyard.bar', '/data/fool_storage'),
-        pytest.param('debug', 'com.amazon.lumberyard.bar', '/data/fool_storage'),
-        pytest.param('profile', 'com.amazon.lumberyard.foo', '/data/fool_storage2'),
-        pytest.param('debug', 'com.amazon.lumberyard.foo', '/data/fool_storage2'),
-        pytest.param('profile', 'com.amazon.lumberyard.bar', '/data/fool_storage2'),
-        pytest.param('debug', 'com.amazon.lumberyard.bar', '/data/fool_storage2')
+        pytest.param('profile', 'org.o3de.foo', '/data/fool_storage'),
+        pytest.param('debug', 'org.o3de.foo', '/data/fool_storage'),
+        pytest.param('profile', 'org.o3de.bar', '/data/fool_storage'),
+        pytest.param('debug', 'org.o3de.bar', '/data/fool_storage'),
+        pytest.param('profile', 'org.o3de.foo', '/data/fool_storage2'),
+        pytest.param('debug', 'org.o3de.foo', '/data/fool_storage2'),
+        pytest.param('profile', 'org.o3de.bar', '/data/fool_storage2'),
+        pytest.param('debug', 'org.o3de.bar', '/data/fool_storage2')
     ]
 )
 def test_execute_success(tmpdir, test_config, test_package_name, test_device_storage_path):
@@ -658,14 +658,14 @@ def test_execute_success(tmpdir, test_config, test_package_name, test_device_sto
 
 @pytest.mark.parametrize(
     "test_game_name, test_config, test_package_name, test_device_storage_path, test_asset_type", [
-        pytest.param('game1','profile', 'com.amazon.lumberyard.foo', '/data/fool_storage', 'android'),
-        pytest.param('game1','debug', 'com.amazon.lumberyard.foo', '/data/fool_storage', 'android'),
-        pytest.param('game2','profile', 'com.amazon.lumberyard.bar', '/data/fool_storage', 'android'),
-        pytest.param('game2','debug', 'com.amazon.lumberyard.bar', '/data/fool_storage', 'android'),
-        pytest.param('game3','profile', 'com.amazon.lumberyard.foo', '/data/fool_storage2', 'pc'),
-        pytest.param('game3','debug', 'com.amazon.lumberyard.foo', '/data/fool_storage2', 'pc'),
-        pytest.param('game4','profile', 'com.amazon.lumberyard.bar', '/data/fool_storage2', 'pc'),
-        pytest.param('game4','debug', 'com.amazon.lumberyard.bar', '/data/fool_storage2', 'pc')
+        pytest.param('game1','profile', 'org.o3de.foo', '/data/fool_storage', 'android'),
+        pytest.param('game1','debug', 'org.o3de.foo', '/data/fool_storage', 'android'),
+        pytest.param('game2','profile', 'org.o3de.bar', '/data/fool_storage', 'android'),
+        pytest.param('game2','debug', 'org.o3de.bar', '/data/fool_storage', 'android'),
+        pytest.param('game3','profile', 'org.o3de.foo', '/data/fool_storage2', 'pc'),
+        pytest.param('game3','debug', 'org.o3de.foo', '/data/fool_storage2', 'pc'),
+        pytest.param('game4','profile', 'org.o3de.bar', '/data/fool_storage2', 'pc'),
+        pytest.param('game4','debug', 'org.o3de.bar', '/data/fool_storage2', 'pc')
     ]
 )
 def test_execute_clean_deploy_success(tmpdir, test_game_name, test_config, test_package_name, test_device_storage_path, test_asset_type):
@@ -754,14 +754,14 @@ def test_execute_clean_deploy_success(tmpdir, test_game_name, test_config, test_
 
 @pytest.mark.parametrize(
     "test_config, test_package_name, test_device_storage_path", [
-        pytest.param('profile', 'com.amazon.lumberyard.foo', '/data/fool_storage'),
-        pytest.param('debug', 'com.amazon.lumberyard.foo', '/data/fool_storage'),
-        pytest.param('profile', 'com.amazon.lumberyard.bar', '/data/fool_storage'),
-        pytest.param('debug', 'com.amazon.lumberyard.bar', '/data/fool_storage'),
-        pytest.param('profile', 'com.amazon.lumberyard.foo', '/data/fool_storage2'),
-        pytest.param('debug', 'com.amazon.lumberyard.foo', '/data/fool_storage2'),
-        pytest.param('profile', 'com.amazon.lumberyard.bar', '/data/fool_storage2'),
-        pytest.param('debug', 'com.amazon.lumberyard.bar', '/data/fool_storage2')
+        pytest.param('profile', 'org.o3de.foo', '/data/fool_storage'),
+        pytest.param('debug', 'org.o3de.foo', '/data/fool_storage'),
+        pytest.param('profile', 'org.o3de.bar', '/data/fool_storage'),
+        pytest.param('debug', 'org.o3de.bar', '/data/fool_storage'),
+        pytest.param('profile', 'org.o3de.foo', '/data/fool_storage2'),
+        pytest.param('debug', 'org.o3de.foo', '/data/fool_storage2'),
+        pytest.param('profile', 'org.o3de.bar', '/data/fool_storage2'),
+        pytest.param('debug', 'org.o3de.bar', '/data/fool_storage2')
     ]
 )
 def test_execute_incremental_deploy_success(tmpdir, test_config, test_package_name, test_device_storage_path):
