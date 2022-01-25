@@ -8,16 +8,16 @@
 
 #include <Viewport/MaterialViewportComponent.h>
 #include <Viewport/MaterialViewportModule.h>
-#include <Viewport/PerformanceMonitorComponent.h>
 
 namespace MaterialEditor
 {
     MaterialViewportModule::MaterialViewportModule()
     {
         // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-        m_descriptors.insert(m_descriptors.end(), {
-            MaterialViewportComponent::CreateDescriptor(),
-            PerformanceMonitorComponent::CreateDescriptor(),
+        m_descriptors.insert(
+            m_descriptors.end(),
+            {
+                MaterialViewportComponent::CreateDescriptor(),
             });
     }
 
@@ -25,7 +25,6 @@ namespace MaterialEditor
     {
         return AZ::ComponentTypeList{
             azrtti_typeid<MaterialViewportComponent>(),
-            azrtti_typeid<PerformanceMonitorComponent>(),
         };
     }
-}
+} // namespace MaterialEditor

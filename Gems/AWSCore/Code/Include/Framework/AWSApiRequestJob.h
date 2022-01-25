@@ -177,6 +177,11 @@ namespace AWSCore
         using OnSuccessFunction = AZStd::function<void(AwsApiRequestJob* job)>;
         using OnFailureFunction = AZStd::function<void(AwsApiRequestJob* job)>;
 
+        class Function;
+
+        template<class Allocator = AZ::SystemAllocator>
+        static AwsApiRequestJob* Create(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig());
+
         static Config* GetDefaultConfig()
         {
             static AwsApiJobConfigHolder<Config> s_configHolder{};
@@ -187,32 +192,6 @@ namespace AWSCore
             : AwsApiClientJobType(isAutoDelete, config)
         {
         }
-
-        AwsApiRequestJob(bool queueOnSuccess,
-                         OnSuccessFunction onSuccess,
-                         bool queueOnFailure,
-                         OnFailureFunction onFailure,
-                         bool queueDelete,
-                         IConfig* config = GetDefaultConfig()
-        ) : AwsApiClientJobType(false, config)
-          , m_queueOnSuccess{ queueOnSuccess }
-          , m_onSuccess{ onSuccess }
-          , m_queueOnFailure{ queueOnFailure }
-          , m_onFailure{ onFailure }
-          , m_queueDelete{ queueDelete }
-        {
-        }
-
-        AwsApiRequestJob(OnSuccessFunction onSuccess,
-                         OnFailureFunction onFailure,
-                         IConfig* config = GetDefaultConfig()
-        ) : AwsApiRequestJob(true, onSuccess, true, onFailure, true, config)
-        {
-        }
-
-        RequestType request;
-        ResultType result;
-        ErrorType error;
 
         /// Override AZ:Job defined method to reset request state when
         /// the job object is reused.
@@ -231,20 +210,11 @@ namespace AWSCore
             return m_wasSuccess;
         }
 
+        RequestType request;
+        ResultType result;
+        ErrorType error;
+
     protected:
-        bool m_wasSuccess{ false };
-
-        // Flag and optional function call to queue for onSuccess events
-        bool m_queueOnSuccess{ false };
-        OnSuccessFunction m_onSuccess{};
-
-        // Flag and optional function call to queue for onFailure events
-        bool m_queueOnFailure{ false };
-        OnFailureFunction m_onFailure{};
-
-        // Flag to queue the delete during the DoCleanup calls
-        bool m_queueDelete{ false };
-
         void Process() override
         {
 
@@ -302,56 +272,86 @@ namespace AWSCore
         /// Called when request has completed successfully.
         virtual void OnSuccess()
         {
-            if (m_queueOnSuccess)
-            {
-                AZStd::function<void()> callbackHandler = [this]()
-                {
-                    if (m_onSuccess)
-                    {
-                        m_onSuccess(this);
-                    }
-                    delete this;
-                };
-                AZ::TickBus::QueueFunction(callbackHandler);
-            }
         }
 
         /// Called when the request fails.
         virtual void OnFailure()
         {
-            if (m_queueOnFailure)
-            {
-                AZStd::function<void()> callbackHandler = [this]()
-                {
-                    if (m_onFailure)
-                    {
-                        m_onFailure(this);
-                    }
-                    delete this;
-                };
-                AZ::TickBus::QueueFunction(callbackHandler);
-            }
         }
 
-        /// Called when request can't process and still requires cleanup (Specifically for our derived class Function which does not use auto delete)
+        /// Called when request can't process and still requires cleanup (Specifically for the derived class AwsApiRequestJob<RequestTraits>::Function which does not use auto delete)
         virtual void DoCleanup()
         {
-            if (m_queueDelete)
-            {
-                AZStd::function<void()> callbackHandler = [this]()
-                {
-                    delete this;
-                };
-                AZ::TickBus::QueueFunction(callbackHandler);
-            }
         }
 
-    public:
-        template<class Allocator = AZ::SystemAllocator>
-        static AwsApiRequestJob* Create(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
-        {
-            return azcreate(AwsApiRequestJob, (onSuccess, onFailure, config), Allocator);
-        }
+        bool m_wasSuccess{ false };
     };
 
+    /// A specialization of AwsApiRequestJob that lets you provide functions
+    /// that are called on success or failure of the request.
+    template<class RequestTraits>
+    class AwsApiRequestJob<RequestTraits>::Function 
+        : public AwsApiRequestJob
+    {
+    public:
+        // To use a different allocator, extend this class and use this macro.
+        AZ_CLASS_ALLOCATOR(Function, AZ::SystemAllocator, 0);
+
+        Function(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
+            : AwsApiRequestJobType(
+                  false, config) // No auto delete - we need to perform our callbacks on the main thread so we queue them through tickbus
+            , m_onSuccess{ onSuccess }
+            , m_onFailure{ onFailure }
+        {
+        }
+
+    private:
+        void OnSuccess() override
+        {
+            AZStd::function<void()> callbackHandler = [this]()
+            {
+                if (m_onSuccess)
+                {
+                    m_onSuccess(this);
+                }
+                delete this;
+            };
+            AZ::TickBus::QueueFunction(callbackHandler);
+        }
+
+        void OnFailure() override
+        {
+            AZStd::function<void()> callbackHandler = [this]()
+            {
+                if (m_onFailure)
+                {
+                    m_onFailure(this);
+                }
+                delete this;
+            };
+            AZ::TickBus::QueueFunction(callbackHandler);
+        }
+
+        // Code doesn't use auto delete - this allows code to make sure things get cleaned up in cases where success or failure can't be
+        // called.
+        void DoCleanup() override
+        {
+            AZStd::function<void()> callbackHandler = [this]()
+            {
+                delete this;
+            };
+            AZ::TickBus::QueueFunction(callbackHandler);
+        }
+
+        OnSuccessFunction m_onSuccess;
+        OnFailureFunction m_onFailure;
+    };
+
+    template<class RequestTraits>
+    template<class Allocator>
+    AwsApiRequestJob<RequestTraits>* AwsApiRequestJob<RequestTraits>::Create(
+        OnSuccessFunction onSuccess, OnFailureFunction onFailure, IConfig* config)
+    {
+        return azcreate(Function, (onSuccess, onFailure, config), Allocator);
+    }
 } // namespace AWSCore

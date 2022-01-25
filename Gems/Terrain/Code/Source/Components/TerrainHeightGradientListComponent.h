@@ -68,6 +68,7 @@ namespace Terrain
         //////////////////////////////////////////////////////////////////////////
         // TerrainAreaHeightRequestBus
         void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists) override;
+        void GetHeights(AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation

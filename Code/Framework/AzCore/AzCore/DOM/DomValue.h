@@ -22,6 +22,8 @@
 
 namespace AZ::Dom
 {
+    class PathEntry;
+    class Path;
     using KeyType = AZ::Name;
 
     //! The type of underlying value stored in a value. \see Value
@@ -379,6 +381,17 @@ namespace AZ::Dom
         // Visitor API...
         Visitor::Result Accept(Visitor& visitor, bool copyStrings) const;
         AZStd::unique_ptr<Visitor> GetWriteHandler();
+
+        // Path API...
+        Value& operator[](const PathEntry& entry);
+        const Value& operator[](const PathEntry& entry) const;
+        Value& operator[](const Path& path);
+        const Value& operator[](const Path& path) const;
+
+        const Value* FindChild(const PathEntry& entry) const;
+        Value* FindMutableChild(const PathEntry& entry);
+        const Value* FindChild(const Path& path) const;
+        Value* FindMutableChild(const Path& path);
 
         //! Gets the internal value of this Value. Note that this value's types may not correspond one-to-one with the Type enumeration,
         //! as internally the same type might have different storage mechanisms. Where possible, prefer using the typed API.

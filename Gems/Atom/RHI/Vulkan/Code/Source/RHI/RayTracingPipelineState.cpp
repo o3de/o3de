@@ -170,7 +170,7 @@ namespace AZ
             createInfo.basePipelineHandle = nullptr;
             createInfo.basePipelineIndex = 0;
 
-            VkResult result = vkCreateRayTracingPipelinesKHR(device.GetNativeDevice(), nullptr, nullptr, 1, &createInfo, nullptr, &m_pipeline);
+            [[maybe_unused]] VkResult result = vkCreateRayTracingPipelinesKHR(device.GetNativeDevice(), nullptr, nullptr, 1, &createInfo, nullptr, &m_pipeline);
             AZ_Assert(result == VK_SUCCESS, "vkCreateRayTracingPipelinesKHR failed");
 
             // retrieve the shader handles

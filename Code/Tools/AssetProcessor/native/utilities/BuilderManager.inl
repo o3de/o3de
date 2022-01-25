@@ -19,7 +19,7 @@ namespace AssetProcessor
         TNetResponse netResponse;
         netRequest.m_request = request;
 
-        AZ::u32 type;
+        [[maybe_unused]] AZ::u32 type;
         QByteArray data;
         AZStd::binary_semaphore wait;
 

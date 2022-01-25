@@ -12,6 +12,7 @@
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 
 namespace AZ
 {
@@ -47,11 +48,16 @@ namespace AZ
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
-            // shader
-            Data::Instance<RPI::Shader> m_shader;
-            const RHI::PipelineState* m_pipelineState = nullptr;
-            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
-            RHI::DispatchDirect m_dispatchArgs;
+            // shaders
+            struct DiffuseProbeGridShader
+            {
+                Data::Instance<RPI::Shader> m_shader;
+                const RHI::PipelineState* m_pipelineState = nullptr;
+                RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
+                RHI::DispatchDirect m_dispatchArgs;
+            };
+
+            AZStd::vector<DiffuseProbeGridShader> m_shaders;
         };
     }   // namespace Render
 }   // namespace AZ

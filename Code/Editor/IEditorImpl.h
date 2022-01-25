@@ -361,7 +361,6 @@ protected:
     QString m_selectFileBuffer;
     QString m_levelNameBuffer;
 
-    IAWSResourceManager* m_awsResourceManager;
 
     //! True if the editor is in material edit mode. Fast preview of materials.
     //! In this mode only very limited functionality is available.

@@ -102,7 +102,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a Material entity with no components.
@@ -184,10 +184,12 @@ def AtomEditorComponents_Material_AddedToEntity():
 
         # 16. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, material_entity.exists())
 
         # 17. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not material_entity.exists())
 
         # 18. Look for errors or asserts.

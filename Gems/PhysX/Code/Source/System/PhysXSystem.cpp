@@ -5,18 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Math/MathUtils.h>
+#include <System/PhysXSystem.h>
+
+#include <PxPhysicsAPI.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <Scene/PhysXScene.h>
+#include <System/PhysXAllocator.h>
+#include <System/PhysXCpuDispatcher.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Asset/AssetManager.h>
 
-#include <Scene/PhysXScene.h>
-#include <System/PhysXSystem.h>
-#include <System/PhysXAllocator.h>
-#include <System/PhysXCpuDispatcher.h>
-#include <PhysX/Debug/PhysXDebugConfiguration.h>
-
-#include <PxPhysicsAPI.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)

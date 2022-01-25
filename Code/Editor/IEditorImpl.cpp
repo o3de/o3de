@@ -17,12 +17,6 @@
 // Qt
 #include <QByteArray>
 
-// AWS Native SDK
-AZ_PUSH_DISABLE_WARNING(4251 4355 4996, "-Wunknown-warning-option")
-#include <aws/core/utils/memory/stl/AWSString.h>
-#include <aws/core/platform/FileSystem.h>
-AZ_POP_DISABLE_WARNING
-
 // AzCore
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
@@ -76,9 +70,6 @@ AZ_POP_DISABLE_WARNING
 #include "Editor/AzAssetBrowser/AzAssetBrowserRequestHandler.h"
 #include "Editor/AssetEditor/AssetEditorRequestsHandler.h"
 
-// AWSNativeSDK
-#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
-
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
 static CCryEditDoc * theDocument;
@@ -130,7 +121,6 @@ CEditorImpl::CEditorImpl()
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
     , m_pExportManager(nullptr)
-    , m_awsResourceManager(nullptr)
     , m_bMatEditMode(false)
     , m_bShowStatusText(true)
     , m_bInitialized(false)

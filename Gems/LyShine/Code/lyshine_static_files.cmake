@@ -11,6 +11,7 @@ set(FILES
     Include/LyShine/IRenderGraph.h
     Include/LyShine/ISprite.h
     Include/LyShine/ILyShine.h
+    Include/LyShine/UiAssetTypes.h
     Include/LyShine/UiBase.h
     Include/LyShine/UiLayoutCellBase.h
     Include/LyShine/UiSerializeHelpers.h
@@ -26,6 +27,7 @@ set(FILES
     Include/LyShine/Bus/UiCanvasManagerBus.h
     Include/LyShine/Bus/UiCanvasUpdateNotificationBus.h
     Include/LyShine/Bus/UiCheckboxBus.h
+    Include/LyShine/Bus/UiCursorBus.h
     Include/LyShine/Bus/UiDraggableBus.h
     Include/LyShine/Bus/UiDropdownBus.h
     Include/LyShine/Bus/UiDropdownOptionBus.h

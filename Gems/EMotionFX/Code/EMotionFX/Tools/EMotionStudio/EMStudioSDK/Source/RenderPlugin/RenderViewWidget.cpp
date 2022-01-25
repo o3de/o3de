@@ -50,8 +50,6 @@ namespace EMStudio
         m_plugin->CreateRenderWidget(this, &m_renderWidget, &renderWidget);
         verticalLayout->addWidget(renderWidget);
 
-        new QActionGroup(this);
-
         QActionGroup* group = new QActionGroup(this);
         group->setExclusive(true);
 

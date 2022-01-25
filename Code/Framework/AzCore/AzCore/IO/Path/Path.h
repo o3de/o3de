@@ -43,9 +43,9 @@ namespace AZ::IO
     public:
         using string_view_type = AZStd::string_view;
         using value_type = char;
-        using const_iterator = const PathIterator<PathView>;
+        using const_iterator = PathIterator<const PathView>;
         using iterator = const_iterator;
-        friend PathIterator<PathView>;
+        friend const_iterator;
 
         // constructors and destructor
         constexpr PathView() = default;
@@ -319,9 +319,9 @@ namespace AZ::IO
         using value_type = typename StringType::value_type;
         using traits_type = typename StringType::traits_type;
         using string_view_type = AZStd::string_view;
-        using const_iterator = const PathIterator<BasicPath>;
+        using const_iterator = PathIterator<const BasicPath>;
         using iterator = const_iterator;
-        friend PathIterator<BasicPath>;
+        friend const_iterator;
 
         // constructors and destructor
         constexpr BasicPath() = default;
@@ -692,7 +692,7 @@ namespace AZ::IO
         friend PathType;
 
         using iterator_category = AZStd::bidirectional_iterator_tag;
-        using value_type = PathType;
+        using value_type = AZStd::remove_cv_t<PathType>;
         using difference_type = ptrdiff_t;
         using pointer = const value_type*;
         using reference = const value_type&;
@@ -703,8 +703,9 @@ namespace AZ::IO
 
         constexpr PathIterator() = default;
         constexpr PathIterator(const PathIterator&) = default;
-
+        constexpr PathIterator(PathIterator&&) noexcept = default;
         constexpr PathIterator& operator=(const PathIterator&) = default;
+        constexpr PathIterator& operator=(PathIterator&&) noexcept = default;
 
         constexpr reference operator*() const;
 
@@ -733,10 +734,10 @@ namespace AZ::IO
         ParserState m_state{ Singular };
     };
 
-    template <typename PathType1>
-    constexpr bool operator==(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
-    template <typename PathType1>
-    constexpr bool operator!=(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
+    template <typename PathType>
+    constexpr bool operator==(const PathIterator<PathType>& lhs, const PathIterator<PathType>& rhs);
+    template <typename PathType>
+    constexpr bool operator!=(const PathIterator<PathType>& lhs, const PathIterator<PathType>& rhs);
 }
 
 #include <AzCore/IO/Path/Path.inl>
