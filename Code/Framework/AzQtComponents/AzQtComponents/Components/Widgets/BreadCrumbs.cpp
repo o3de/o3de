@@ -105,12 +105,12 @@ namespace AzQtComponents
     
     QIcon BreadCrumbs::iconAt(int index)
     {
-        if (index < 0 || index >= m_currentPathSize)
+        if (index < 0 || index >= m_currentPathSize || m_currentPathIcons[index].isNull())
         {
             return QIcon(m_defaultIcon);
         }
 
-        return !m_currentPathIcons[index].isNull() ? QIcon(m_currentPathIcons[index]) : QIcon(m_defaultIcon);
+        return QIcon(m_currentPathIcons[index]);
     }
 
     bool BreadCrumbs::getPushPathOnLinkActivation() const
