@@ -12,6 +12,16 @@ namespace AZ
 {
     namespace Utils
     {
+        int16_t CalcMaxChannelDifference(AZStd::array_view<uint8_t> bufferA, AZStd::array_view<uint8_t> bufferB, size_t index)
+        {
+            // We use the max error from a single channel instead of accumulating the error from each channel.
+            // This normalizes differences so that for example black vs red has the same weight as black vs yellow.
+            const int16_t diffR = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[index]) - aznumeric_cast<int16_t>(bufferB[index])));
+            const int16_t diffG = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[index + 1]) - aznumeric_cast<int16_t>(bufferB[index + 1])));
+            const int16_t diffB = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[index + 2]) - aznumeric_cast<int16_t>(bufferB[index + 2])));
+            return AZ::GetMax(AZ::GetMax(diffR, diffG), diffB);
+        }
+
         ImageDiffResultCode CalcImageDiffRms(
             AZStd::array_view<uint8_t> bufferA, const RHI::Size& sizeA, RHI::Format formatA,
             AZStd::array_view<uint8_t> bufferB, const RHI::Size& sizeB, RHI::Format formatB,
@@ -65,14 +75,7 @@ namespace AZ
 
             for (size_t i = 0; i < bufferA.size(); i += BytesPerPixel)
             {
-                // We use the max error from a single channel instead of accumulating the error from each channel.
-                // This normalizes differences so that for example black vs red has the same weight as black vs yellow.
-                const int16_t diffR = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[i]) - aznumeric_cast<int16_t>(bufferB[i])));
-                const int16_t diffG = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[i + 1]) - aznumeric_cast<int16_t>(bufferB[i + 1])));
-                const int16_t diffB = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[i + 2]) - aznumeric_cast<int16_t>(bufferB[i + 2])));
-                const int16_t maxDiff = AZ::GetMax(AZ::GetMax(diffR, diffG), diffB);
-
-                const float finalDiffNormalized = maxDiff / 255.0f;
+                const float finalDiffNormalized = CalcMaxChannelDifference(bufferA, bufferB, i) / 255.0f;
                 const float squared = finalDiffNormalized * finalDiffNormalized;
 
                 if (diffScore)
