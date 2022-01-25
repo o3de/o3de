@@ -12,6 +12,10 @@
         },
         "nightly-clean": {
             "CLEAN_WORKSPACE": true
+        },
+        "snapshot": {
+            "CLEAN_WORKSPACE": true,
+            "CREATE_SNAPSHOT": true
         }
     },
     "PIPELINE_JENKINS_PARAMETERS": {
