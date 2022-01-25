@@ -72,7 +72,7 @@ namespace O3DE::ProjectManager
             painter->restore();
         }
 
-        int currentHorizontalOffset = CalcHeaderXPos(HeaderOrder::Name);
+        int currentHorizontalOffset = CalcColumnXBounds(HeaderOrder::Name).first;
 
         // Repo name
         QString repoName = GemRepoModel::GetName(modelIndex);
@@ -199,21 +199,21 @@ namespace O3DE::ProjectManager
         return QFontMetrics(font).boundingRect(text);
     }
 
-    int GemRepoItemDelegate::CalcHeaderXPos(HeaderOrder header, bool calcEnd) const
+    QPair<int, int> GemRepoItemDelegate::CalcColumnXBounds(HeaderOrder header) const
     {
-        return m_headerWidget->CalcHeaderXPos(static_cast<int>(header), calcEnd);
+        return m_headerWidget->CalcColumnXBounds(static_cast<int>(header));
     }
 
     QRect GemRepoItemDelegate::CalcDeleteButtonRect(const QRect& contentRect) const
     {
-        const int deleteHeaderEndX = CalcHeaderXPos(HeaderOrder::Delete, /*calcEnd*/true);
+        const int deleteHeaderEndX = CalcColumnXBounds(HeaderOrder::Delete).second;
         const QPoint topLeft = QPoint(deleteHeaderEndX - s_iconSize - s_contentMargins.right(), contentRect.center().y() - s_iconSize / 2);
         return QRect(topLeft, QSize(s_iconSize, s_iconSize));
     }
 
     QRect GemRepoItemDelegate::CalcRefreshButtonRect(const QRect& contentRect) const
     {
-        const int headerEndX = CalcHeaderXPos(HeaderOrder::Update, /*calcEnd*/ true);
+        const int headerEndX = CalcColumnXBounds(HeaderOrder::Update).second;
         const int leftX = headerEndX - s_refreshIconSize - s_refreshIconSpacing;
         // Dividing size by 3 centers much better
         const QPoint topLeft = QPoint(leftX, contentRect.center().y() - s_refreshIconSize / 3);

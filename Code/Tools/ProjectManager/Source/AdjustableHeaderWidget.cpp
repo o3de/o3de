@@ -97,23 +97,21 @@ namespace O3DE::ProjectManager
         });
     }
 
-    int AdjustableHeaderWidget::CalcHeaderXPos(int headerIndex, bool calcEnd) const
+    QPair<int, int> AdjustableHeaderWidget::CalcColumnXBounds(int headerIndex) const
     {
-        // Total the widths of all headers before this one or including it if calcEnd is true
-        int xPos = 0;
+        // Total the widths of all headers before this one in first and including it in second
+        QPair<int, int> bounds(0, 0);
 
-        if (!calcEnd)
+        for (int curIndex = 0; curIndex <= headerIndex; ++curIndex)
         {
-            // Don't include this header in the x pos calculations, find the start of the header
-            --headerIndex;
+            if (curIndex == headerIndex)
+            {
+                bounds.first = bounds.second;
+            }
+            bounds.second += m_header->sectionSize(curIndex);
         }
 
-        for (; headerIndex >= 0; --headerIndex)
-        {
-            xPos += m_header->sectionSize(headerIndex);
-        }
-
-        return xPos;
+        return bounds;
     }
 
 

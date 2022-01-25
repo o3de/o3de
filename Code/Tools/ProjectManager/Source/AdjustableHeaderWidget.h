@@ -10,9 +10,11 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QTableWidget>
+
 #include <QHeaderView>
 #include <QStringList>
 #include <QVector>
+#include <QPair>
 #endif
 
 namespace O3DE::ProjectManager
@@ -31,7 +33,7 @@ namespace O3DE::ProjectManager
             QWidget* parent = nullptr);
         ~AdjustableHeaderWidget() = default;
 
-        int CalcHeaderXPos(int headerIndex, bool calcEnd = false) const;
+        QPair<int, int> CalcColumnXBounds(int headerIndex) const;
 
         inline constexpr static int s_headerTextIndent = 7;
         inline constexpr static int s_headerWidgetHeight = 24;

@@ -102,7 +102,7 @@ namespace O3DE::ProjectManager
             QStringList{ tr("Gem Name"), tr("Gem Summary"), tr("Status") },
             QVector<int>{
                 GemItemDelegate::s_defaultSummaryStartX - 30,
-                headerTableMinWidth - GemItemDelegate::s_defaultSummaryStartX - GemItemDelegate::s_buttonWidth - GemItemDelegate::s_extraSummarySpacing - GemItemDelegate::s_itemMargins.left() - GemItemDelegate::s_contentMargins.right(),
+                0, // Section is set to stretch to fit
                 GemItemDelegate::s_buttonWidth + GemItemDelegate::s_itemMargins.left() + GemItemDelegate::s_itemMargins.right() + GemItemDelegate::s_contentMargins.right()
             },
             minHeaderSectionWidth,

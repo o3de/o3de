@@ -12,7 +12,6 @@
 
 #include <QMovie>
 #include <QHeaderView>
-#include <QScrollBar>
 
 namespace O3DE::ProjectManager
 {

@@ -296,7 +296,6 @@ namespace O3DE::ProjectManager
 
         middleVLayout->addSpacing(30);
 
-        constexpr int headerTableMinWidth = MinWindowWidth - inspectorWidth - middleLayoutIndent * 2;
         constexpr int minHeaderSectionWidth = 120;
 
         m_gemRepoHeaderTable = new AdjustableHeaderWidget(

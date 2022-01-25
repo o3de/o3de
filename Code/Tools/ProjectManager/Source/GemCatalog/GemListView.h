@@ -23,8 +23,8 @@ namespace O3DE::ProjectManager
     {
         Q_OBJECT // AUTOMOC
 
-    public: explicit GemListView(
-                  QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, QWidget* parent = nullptr);
+    public:
+        explicit GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, QWidget* parent = nullptr);
         ~GemListView() = default;
     };
 } // namespace O3DE::ProjectManager

@@ -84,7 +84,7 @@ namespace O3DE::ProjectManager
 
         void CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
-        int CalcHeaderXPos(HeaderOrder header, bool calcEnd = false) const;
+        QPair<int, int> CalcColumnXBounds(HeaderOrder header) const;
         QRect CalcButtonRect(const QRect& contentRect) const;
         QRect CalcSummaryRect(const QRect& contentRect, bool hasTags) const;
         void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
