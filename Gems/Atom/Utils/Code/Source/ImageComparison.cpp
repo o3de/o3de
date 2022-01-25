@@ -75,7 +75,7 @@ namespace AZ
 
             for (size_t i = 0; i < bufferA.size(); i += BytesPerPixel)
             {
-                const float finalDiffNormalized = aznumeric_cast<float>(CalcMaxChannelDifference(bufferA, bufferB, i) / 255.0f);
+                const float finalDiffNormalized = aznumeric_cast<float>(CalcMaxChannelDifference(bufferA, bufferB, i)) / 255.0f;
                 const float squared = finalDiffNormalized * finalDiffNormalized;
 
                 if (diffScore)
