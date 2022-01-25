@@ -201,6 +201,7 @@ namespace AZ
 
             debugDisplay.PushMatrix(worldTM);
 
+            debugDisplay.SetColor(AZ::Colors::White);
             debugDisplay.DrawWireBox(localAabb.GetMin(), localAabb.GetMax());
 
             debugDisplay.PopMatrix();
