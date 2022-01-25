@@ -78,6 +78,13 @@ namespace AzQtComponents
         //! Sets the current breadcrumb path without updating the navigation stack.
         void setCurrentPath(const QString& newPath);
 
+        //! Sets a default icon for path elements.
+        void setDefaultIcon(const QString& iconPath);
+        //! Sets an icon for the path element at index.
+        void setIconAt(int index, const QString& iconPath);
+        //! Gets the icon for the path element at index.
+        QIcon iconAt(int index);
+
         //! Returns true if activating a link should automatically push a new path to the navigation stack.
         bool getPushPathOnLinkActivation() const;
         //! Sets whether activating a link should automatically push a new path to the navigation stack.
@@ -134,6 +141,7 @@ namespace AzQtComponents
         void onLinkActivated(const QString& link);
 
     private:
+        QString generateIconHtml(int index);
         void fillLabel();
         void changePath(const QString& newPath);
 
@@ -155,6 +163,14 @@ namespace AzQtComponents
         QStringList m_truncatedPaths;
         AZ_POP_DISABLE_WARNING
         bool m_pushPathOnLinkActivation = true;
+        int m_currentPathSize = 0;
+
+        QString m_defaultIcon;
+        AZ_PUSH_DISABLE_WARNING(
+            4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::BreadCrumbs::m_currentPathIcons': class 'QVector<QIcon>' needs to have
+                                              // dll-interface to be used by clients of class 'AzQtComponents::BreadCrumbs'
+        QVector<QString> m_currentPathIcons;
+        AZ_POP_DISABLE_WARNING
 
         friend class Style;
 

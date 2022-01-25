@@ -12,13 +12,12 @@
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <QHBoxLayout>
-#include <QToolButton>
-#include <QToolBar>
 #include <QLabel>
-#include <QHBoxLayout>
-#include <QSettings>
 #include <QMenu>
 #include <QResizeEvent>
+#include <QSettings>
+#include <QToolBar>
+#include <QToolButton>
 AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents
@@ -46,7 +45,7 @@ namespace AzQtComponents
         m_label = new QLabel(this);
         m_label->setObjectName(g_labelName);
         boxLayout->addWidget(m_label);
-        m_label->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+        m_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         connect(m_label, &QLabel::linkActivated, this, &BreadCrumbs::onLinkActivated);
     }
 
@@ -82,7 +81,36 @@ namespace AzQtComponents
         // clean up the path to use all the first separator in the list of separators
         m_currentPath.replace(g_windowsSeparator, g_separator);
 
+        // update internals
+        m_currentPathSize = m_currentPath.split(g_separator, Qt::SkipEmptyParts).size();
+        m_currentPathIcons.resize(m_currentPathSize);
+
         fillLabel();
+    }
+
+    void BreadCrumbs::setDefaultIcon(const QString& icon)
+    {
+        m_defaultIcon = icon;
+    }
+
+    void BreadCrumbs::setIconAt(int index, const QString& icon)
+    {
+        if (index < 0 || index >= m_currentPathSize)
+        {
+            return;
+        }
+
+        m_currentPathIcons[index] = icon;
+    }
+    
+    QIcon BreadCrumbs::iconAt(int index)
+    {
+        if (index < 0 || index >= m_currentPathSize)
+        {
+            return QIcon(m_defaultIcon);
+        }
+
+        return !m_currentPathIcons[index].isNull() ? QIcon(m_currentPathIcons[index]) : QIcon(m_defaultIcon);
     }
 
     bool BreadCrumbs::getPushPathOnLinkActivation() const
@@ -220,6 +248,26 @@ namespace AzQtComponents
         QWidget::resizeEvent(event);
     }
 
+    QString BreadCrumbs::generateIconHtml(int index)
+    {
+        QString imagePath;
+
+        if (index >= 0 && index < m_currentPathIcons.size())
+        {
+            imagePath = m_currentPathIcons[index];
+        }
+
+        if (imagePath.isEmpty())
+        {
+            imagePath = m_defaultIcon;
+        }
+
+        return !imagePath.isEmpty() ? QStringLiteral("<img width=\"16\" height=\"16\" style=\"vertical-align: middle\" src=\"%1\">%2%2")
+                                          .arg(imagePath)
+                                          .arg("&nbsp;")
+                                    : "";
+    }
+
     void BreadCrumbs::fillLabel()
     {
         QString htmlString = "";
@@ -247,7 +295,10 @@ namespace AzQtComponents
             plainTextPath = m_truncatedPaths.takeLast();
         }
 
-        htmlString.prepend(plainTextPath);
+        int index = m_currentPathSize - 1;
+
+        htmlString.prepend(generateIconHtml(index) + plainTextPath);
+        --index;
 
         while (!m_truncatedPaths.isEmpty())
         {
@@ -262,7 +313,7 @@ namespace AzQtComponents
 
             const QString linkPath = buildPathFromList(fullPath, m_truncatedPaths.size());
             const QString& part = m_truncatedPaths.takeLast();
-            htmlString.prepend(QString("%1").arg(formatLink(linkPath, part)));
+            htmlString.prepend(QString("%1%2").arg(generateIconHtml(index--)).arg(formatLink(linkPath, part)));
         }
 
         m_label->setText(htmlString);
