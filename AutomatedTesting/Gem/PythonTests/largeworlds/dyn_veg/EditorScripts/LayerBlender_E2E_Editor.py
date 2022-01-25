@@ -85,18 +85,14 @@ def LayerBlender_E2E_Editor():
 
     # 2) Create 2 vegetation areas with different meshes
     purple_position = math.Vector3(504.0, 512.0, 32.0)
-    purple_asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity_1 = dynveg.create_dynamic_slice_vegetation_area("Purple Spawner",
-                                                                                 purple_position,
-                                                                                 16.0, 16.0, 1.0,
-                                                                                 purple_asset_path)
+    purple_flower_prefab_path = os.path.join("assets", "prefabs", "PurpleFlower.spawnable")
+    spawner_entity_1 = dynveg.create_prefab_vegetation_area("Purple Spawner", purple_position, 16.0, 16.0, 1.0,
+                                                            purple_flower_prefab_path)
 
     pink_position = math.Vector3(520.0, 512.0, 32.0)
-    pink_asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity_2 = dynveg.create_dynamic_slice_vegetation_area("Pink Spawner",
-                                                                                 pink_position,
-                                                                                 16.0, 16.0, 1.0,
-                                                                                 pink_asset_path)
+    pink_flower_prefab_path = os.path.join("assets", "prefabs", "PinkFlower.spawnable")
+    spawner_entity_2 = dynveg.create_prefab_vegetation_area("Pink Spawner", pink_position, 16.0, 16.0, 1.0,
+                                                            pink_flower_prefab_path)
 
     base_position = math.Vector3(512.0, 512.0, 32.0)
     dynveg.create_surface_entity("Surface Entity",
@@ -135,11 +131,11 @@ def LayerBlender_E2E_Editor():
     pink_count = 0
     purple_count = 0
     for instance in instances:
-        purple_asset_path = purple_asset_path.replace("\\", "/").lower()
-        pink_asset_path = pink_asset_path.replace("\\", "/").lower()
-        if instance.descriptor.spawner.GetSliceAssetPath() == pink_asset_path:
+        purple_flower_prefab_path = purple_flower_prefab_path.replace("\\", "/").lower()
+        pink_flower_prefab_path = pink_flower_prefab_path.replace("\\", "/").lower()
+        if instance.descriptor.spawner.GetPrefabAssetPath() == pink_flower_prefab_path:
             pink_count += 1
-        elif instance.descriptor.spawner.GetSliceAssetPath() == purple_asset_path:
+        elif instance.descriptor.spawner.GetPrefabAssetPath() == purple_flower_prefab_path:
             purple_count += 1
     Report.result(Tests.instances_blended, pink_count == purple_count and (pink_count + purple_count == num_expected))
 
@@ -152,11 +148,11 @@ def LayerBlender_E2E_Editor():
     components.TransformBus(bus.Event, "MoveEntity", search_entity_ids[0], cam_position)
     azlmbr.components.TransformBus(bus.Event, "SetLocalRotation", search_entity_ids[0], cam_rot_degrees_vector)
 
-    # 6) Save and export to engine
+    # 6) Save the created level
     general.save_level()
-    general.export_to_engine()
-    pak_path = os.path.join(paths.products, "levels", lvl_name, "level.pak")
-    Report.result(Tests.saved_and_exported, os.path.exists(pak_path))
+    level_prefab_path = os.path.join(paths.products, "levels", lvl_name, f"{lvl_name}.spawnable")
+    success = helper.wait_for_condition(lambda: os.path.exists(level_prefab_path), 5.0)
+    Report.result(Tests.saved_and_exported, success)
 
 
 if __name__ == "__main__":

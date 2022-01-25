@@ -100,8 +100,6 @@ set(FILES
     platform_impl.cpp
     Win32specific.h
     Win64specific.h
-    LyShine/UiAssetTypes.h
-    LyShine/Bus/UiCursorBus.h
     Maestro/Bus/EditorSequenceAgentComponentBus.h
     Maestro/Bus/EditorSequenceBus.h
     Maestro/Bus/EditorSequenceComponentBus.h

@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/StringFunc/StringFunc.h>

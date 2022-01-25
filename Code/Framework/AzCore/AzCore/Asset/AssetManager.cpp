@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetManager_private.h>
 #include <AzCore/Asset/AssetDataStream.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/MathUtils.h>

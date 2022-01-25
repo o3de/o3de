@@ -19,7 +19,7 @@ if(NOT CMAKE_C_COMPILER AND NOT CMAKE_CXX_COMPILER AND NOT "$ENV{CC}" AND NOT "$
     file(GLOB clang_versions ${path_search})
     if(clang_versions)
         # Find and pick the highest installed version
-        list(SORT clang_versions COMPARE NATURAL)
+        list(SORT clang_versions COMPARE NATURAL ORDER DESCENDING)
         list(GET clang_versions 0 clang_higher_version_path)
         string(REGEX MATCH "clang-([0-9.]*)" clang_higher_version ${clang_higher_version_path})
         if(CMAKE_MATCH_1)

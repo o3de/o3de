@@ -316,10 +316,10 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    class Graph;
+    class EditorGraph;
     
-    using GraphPtr = Graph*;
-    using GraphPtrConst = const Graph*;
+    using GraphPtr = EditorGraph*;
+    using GraphPtrConst = const EditorGraph*;
 
     class SourceDescription
     {
@@ -411,11 +411,11 @@ namespace ScriptCanvas
 
         const Graph* GetGraph() const;
 
-        const ScriptCanvasEditor::Graph* GetEditorGraph() const;
+        const ScriptCanvasEditor::EditorGraph* GetEditorGraph() const;
 
         Graph* ModGraph();
 
-        ScriptCanvasEditor::Graph* ModEditorGraph();
+        ScriptCanvasEditor::EditorGraph* ModEditorGraph();
 
         AZStd::unique_ptr<AZ::Entity> m_scriptCanvasEntity;
     private:

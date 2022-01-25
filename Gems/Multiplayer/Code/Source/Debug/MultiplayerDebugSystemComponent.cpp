@@ -429,7 +429,6 @@ namespace Multiplayer
             }
             ImGui::NewLine();
         }
-        ImGui::End();
     }
 
     void DrawMultiplayerStats()
@@ -480,7 +479,6 @@ namespace Multiplayer
             ImGui::EndTable();
             ImGui::NewLine();
         }
-        ImGui::End();
     }
 
     void MultiplayerDebugSystemComponent::OnImGuiUpdate()
@@ -491,6 +489,7 @@ namespace Multiplayer
             {
                 DrawNetworkingStats();
             }
+            ImGui::End();
         }
 
         if (m_displayMultiplayerStats)
@@ -499,6 +498,7 @@ namespace Multiplayer
             {
                 DrawMultiplayerStats();
             }
+            ImGui::End();
         }
 
         if (m_displayPerEntityStats)
@@ -516,6 +516,7 @@ namespace Multiplayer
                     m_reporter->OnImGuiUpdate();
                 }
             }
+            ImGui::End();
         }
 
         if (m_displayHierarchyDebugger)
@@ -532,6 +533,7 @@ namespace Multiplayer
                     m_hierarchyDebugger->OnImGuiUpdate();
                 }
             }
+            ImGui::End();
         }
         else
         {

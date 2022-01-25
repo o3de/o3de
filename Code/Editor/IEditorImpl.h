@@ -157,7 +157,6 @@ public:
     void LockSelection(bool bLock) override;
     bool IsSelectionLocked() override;
 
-    IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) override;
     CMusicManager* GetMusicManager() override { return m_pMusicManager; };
 
     IEditorFileMonitor* GetFileMonitor() override;
@@ -294,11 +293,8 @@ public:
     void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) override;
 
     SSystemGlobalEnvironment* GetEnv() override;
-    IBaseLibraryManager* GetMaterialManagerLibrary() override; // Vladimir@Conffx
-    IEditorMaterialManager* GetIEditorMaterialManager() override; // Vladimir@Conffx
     IImageUtil* GetImageUtil() override;  // Vladimir@conffx
     SEditorSettings* GetEditorSettings() override;
-    IEditorPanelUtils* GetEditorPanelUtils() override;
     ILogFile* GetLogFile() override { return m_pLogFile; }
 
     void UnloadPlugins() override;
@@ -356,7 +352,6 @@ protected:
     CErrorsDlg* m_pErrorsDlg;
     //! Source control interface.
     ISourceControl* m_pSourceControl;
-    IEditorPanelUtils* m_panelEditorUtils;
 
     CSelectionTreeManager* m_pSelectionTreeManager;
 
@@ -374,7 +369,6 @@ protected:
     QString m_selectFileBuffer;
     QString m_levelNameBuffer;
 
-    IAWSResourceManager* m_awsResourceManager;
     std::unique_ptr<WinWidget::WinWidgetManager> m_winWidgetManager;
 
     //! True if the editor is in material edit mode. Fast preview of materials.

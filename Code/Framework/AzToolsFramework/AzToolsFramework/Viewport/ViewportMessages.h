@@ -150,6 +150,9 @@ namespace AzToolsFramework
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         };
 
+        //! A bus to listen to just the MouseViewportRequests.
+        using ViewportMouseRequestBus = AZ::EBus<MouseViewportRequests, ViewportEBusTraits>;
+
         //! Requests that can be made to the viewport to query and modify its state.
         class ViewportInteractionRequests
         {

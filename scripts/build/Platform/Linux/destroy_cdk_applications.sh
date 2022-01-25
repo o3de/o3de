@@ -11,7 +11,7 @@
 # 1) Node.js is installed
 # 2) Node.js version >= 10.13.0, except for versions 13.0.0 - 13.6.0. A version in active long-term support is recommended.
 
-SOURCE_DIRECTORY=$(dirname "$0")
+SOURCE_DIRECTORY=$PWD
 PATH=$SOURCE_DIRECTORY/python:$PATH
 GEM_DIRECTORY=$SOURCE_DIRECTORY/Gems
 
@@ -61,13 +61,21 @@ then
     exit 1
 fi
 
+echo [cdk_installation] Install nvm $NVM_VERSION
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+echo [cdk_installation] Install the current version of nodejs
+nvm install node
+
 echo [cdk_installation] Install the latest version of CDK
-if ! sudo npm uninstall -g aws-cdk;
+if ! npm uninstall -g aws-cdk;
 then
     echo [cdk_bootstrap] Failed to uninstall the current version of CDK
     exit 1
 fi
-if ! sudo npm install -g aws-cdk@latest;
+if ! npm install -g aws-cdk@latest;
 then
     echo [cdk_bootstrap] Failed to install the latest version of CDK
     exit 1
@@ -75,9 +83,13 @@ fi
 
 # Set temporary AWS credentials from the assume role
 credentials=$(aws sts assume-role --query Credentials.[SecretAccessKey,SessionToken,AccessKeyId] --output text --role-arn $ASSUME_ROLE_ARN --role-session-name o3de-Automation-session)
-AWS_SECRET_ACCESS_KEY=$(echo "$credentials" | cut -d' ' -f1)
-AWS_SESSION_TOKEN=$(echo "$credentials" | cut -d' ' -f2)
-AWS_ACCESS_KEY_ID=$(echo "$credentials" | cut -d' ' -f3)
+export AWS_SECRET_ACCESS_KEY=$(echo $credentials | cut -d' ' -f1)
+export AWS_SESSION_TOKEN=$(echo $credentials | cut -d' ' -f2)
+export AWS_ACCESS_KEY_ID=$(echo $credentials | cut -d' ' -f3)
+
+if [[ -z "$O3DE_AWS_PROJECT_NAME" ]]; then
+   export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+fi
 
 ERROR_EXISTS=0
 DestroyCDKApplication AWSCore

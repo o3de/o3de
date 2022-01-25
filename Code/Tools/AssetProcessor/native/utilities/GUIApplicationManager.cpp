@@ -318,16 +318,8 @@ bool GUIApplicationManager::Run()
 
     qApp->setQuitOnLastWindowClosed(false);
 
-    QTimer::singleShot(0, this, [this]()
-    {
-        if (!PostActivate())
-        {
-            QuitRequested();
-            m_startedSuccessfully = false;
-        }
-    });
-
     m_duringStartup = false;
+    m_startedSuccessfully = true;
 
     int resultCode =  qApp->exec(); // this blocks until the last window is closed.
 
@@ -483,6 +475,7 @@ bool GUIApplicationManager::PostActivate()
 {
     if (!ApplicationManagerBase::PostActivate())
     {
+        m_startedSuccessfully = false;
         return false;
     }
 

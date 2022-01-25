@@ -72,7 +72,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightConfig::m_direction, "Direction", "")
                         ->DataElement(Edit::UIHandlers::Color, &LightConfig::m_color, "Color", "Color of the light")
-                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetLinearRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::Default, &LightConfig::m_intensity, "Intensity", "Intensity of the light in the set photometric unit.")
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow")

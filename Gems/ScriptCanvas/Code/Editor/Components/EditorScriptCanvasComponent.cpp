@@ -242,16 +242,16 @@ namespace ScriptCanvasEditor
         SetName(m_sourceHandle.Path().Filename().Native());
     }
 
-    void EditorScriptCanvasComponent::OpenEditor(const AZ::Data::AssetId&, const AZ::Data::AssetType&)
+    void EditorScriptCanvasComponent::OpenEditor([[maybe_unused]] const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
     {
         AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
-         
+
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-         
+
         if (m_sourceHandle.IsDescriptionValid())
         {
             GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, m_sourceHandle, Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
-         
+
             if (!openOutcome)
             {
                 AZ_Warning("Script Canvas", openOutcome, "%s", openOutcome.GetError().data());
@@ -261,7 +261,7 @@ namespace ScriptCanvasEditor
         {
             AzToolsFramework::EntityIdList selectedEntityIds;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-         
+
             // Going to bypass the multiple selected entities flow for right now.
             if (selectedEntityIds.size() == 1)
             {
@@ -279,7 +279,7 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::InitializeSource(const SourceHandle& sourceHandle)
     {
-        m_sourceHandle = sourceHandle;
+        m_sourceHandle = sourceHandle.Describe();
     }
 
     //=========================================================================
@@ -345,6 +345,7 @@ namespace ScriptCanvasEditor
         }
 
         m_variableOverrides = parseOutcome.TakeValue();
+        m_variableOverrides.SetHandlesToDescription();
         m_runtimeDataIsValid = true;
     }
 
@@ -373,13 +374,7 @@ namespace ScriptCanvasEditor
     void EditorScriptCanvasComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
     {
         m_sourceHandle = SourceHandle(nullptr, assetId.m_guid, {});
-
-        auto completeAsset = CompleteDescription(m_sourceHandle);
-        if (completeAsset)
-        {
-            m_sourceHandle = *completeAsset;
-        }
-
+        CompleteDescriptionInPlace(m_sourceHandle);
         OnScriptCanvasAssetChanged(SourceChangeDescription::SelectionChanged);
         SetName(m_sourceHandle.Path().Filename().Native());
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
@@ -399,7 +394,7 @@ namespace ScriptCanvasEditor
         OnScriptCanvasAssetChanged(SourceChangeDescription::SelectionChanged);
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
-    
+
     void EditorScriptCanvasComponent::OnScriptCanvasAssetChanged(SourceChangeDescription changeDescription)
     {
         ScriptCanvas::GraphIdentifier newIdentifier = GetGraphIdentifier();
@@ -417,20 +412,11 @@ namespace ScriptCanvasEditor
             ClearVariables();
         }
 
+        m_sourceHandle = m_previousHandle;
+
         if (m_sourceHandle.IsDescriptionValid())
         {
-            if (!m_sourceHandle.Get())
-            {
-                if (auto loaded = LoadFromFile(m_sourceHandle.Path().c_str()); loaded.IsSuccess())
-                {
-                    m_sourceHandle = SourceHandle(loaded.TakeValue(), m_sourceHandle.Id(), m_sourceHandle.Path().c_str());
-                }
-            }
-
-            if (m_sourceHandle.Get())
-            {
-                UpdatePropertyDisplay(m_sourceHandle);
-            }
+            UpdatePropertyDisplay();
         }
 
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
@@ -492,14 +478,11 @@ namespace ScriptCanvasEditor
         return ScriptCanvas::GraphIdentifier(m_sourceHandle.Id(), 0);
     }
 
-    void EditorScriptCanvasComponent::UpdatePropertyDisplay(const SourceHandle& sourceHandle)
+    void EditorScriptCanvasComponent::UpdatePropertyDisplay()
     {
-        if (sourceHandle.IsGraphValid())
-        {
-            BuildGameEntityData();
-            UpdateName();
-            AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
-        }
+        BuildGameEntityData();
+        UpdateName();
+        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
     void EditorScriptCanvasComponent::ClearVariables()

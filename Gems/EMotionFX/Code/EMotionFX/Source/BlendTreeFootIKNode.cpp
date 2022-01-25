@@ -258,9 +258,9 @@ namespace EMotionFX
     // Calculate the matrix to rotate the solve plane.
     void BlendTreeFootIKNode::CalculateMatrix(const AZ::Vector3& goal, const AZ::Vector3& bendDir, AZ::Matrix3x3* outForward)
     {
-        const AZ::Vector3 x = MCore::SafeNormalize(goal);
+        const AZ::Vector3 x = goal.GetNormalizedSafe();
         const float dot = bendDir.Dot(x);
-        const AZ::Vector3 y = MCore::SafeNormalize(bendDir - (dot * x));
+        const AZ::Vector3 y = (bendDir - (dot * x)).GetNormalizedSafe();
         const AZ::Vector3 z = x.Cross(y);
         outForward->SetRow(0, x);
         outForward->SetRow(1, y);

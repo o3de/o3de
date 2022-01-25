@@ -217,7 +217,7 @@ namespace AzToolsFramework
                     });
 
                 EditorActionRequestBus::Broadcast(
-                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("com.o3de.action.editortransform.prefabopen"),
+                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("org.o3de.action.editortransform.prefabopen"),
                     m_actions.back().get());
             }
 
@@ -237,7 +237,7 @@ namespace AzToolsFramework
                     });
 
                 EditorActionRequestBus::Broadcast(
-                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("com.o3de.action.editortransform.prefabclose"),
+                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("org.o3de.action.editortransform.prefabclose"),
                     m_actions.back().get());
             }
         }
@@ -341,7 +341,8 @@ namespace AzToolsFramework
             }
 
             // Instantiate Prefab
-            if (selectedEntities.size() == 1 && !readOnlyEntityInSelection && !onlySelectedEntityIsClosedPrefabContainer)
+            if (selectedEntities.size() == 0 ||
+                selectedEntities.size() == 1 && !readOnlyEntityInSelection && !onlySelectedEntityIsClosedPrefabContainer)
             {
                 QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
                 instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));

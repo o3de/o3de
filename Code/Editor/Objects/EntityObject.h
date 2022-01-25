@@ -27,6 +27,7 @@
 #define CLASS_ENVIRONMENT_LIGHT "EnvironmentLight"
 
 class CEntityObject;
+class CSelectionGroup;
 class QMenu;
 
 /*!

@@ -124,19 +124,25 @@ namespace AzToolsFramework
             * Generates a new Prefab Instance based on the Template whose source is stored in filepath.
             * @param filePath The path to the prefab source file containing the template being instantiated.
             * @param parent Reference of the target instance the instantiated instance will be placed under.
+            * @param instantiatedEntitiesCallback An optional callback that can be used to modify the instantiated entities.
             * @return A unique_ptr to the newly instantiated instance. Null if operation failed.
             */
             AZStd::unique_ptr<Instance> InstantiatePrefab(
-                AZ::IO::PathView filePath, InstanceOptionalReference parent = AZStd::nullopt) override;
+                AZ::IO::PathView filePath,
+                InstanceOptionalReference parent = AZStd::nullopt,
+                const InstantiatedEntitiesCallback& instantiatedEntitiesCallback = {}) override;
 
             /**
             * Generates a new Prefab Instance based on the Template referenced by templateId.
             * @param templateId The id of the template being instantiated.
             * @param parent Reference of the target instance the instantiated instance will be placed under.
+            * @param instantiatedEntitiesCallback An optional callback that can be used to modify the instantiated entities.
             * @return A unique_ptr to the newly instantiated instance. Null if operation failed.
             */
             AZStd::unique_ptr<Instance> InstantiatePrefab(
-                TemplateId templateId, InstanceOptionalReference parent = AZStd::nullopt) override;
+                TemplateId templateId,
+                InstanceOptionalReference parent = AZStd::nullopt,
+                const InstantiatedEntitiesCallback& instantiatedEntitiesCallback = {}) override;
 
             /**
             * Add a new Link into Prefab System Component and create a unique id for it.

@@ -246,6 +246,16 @@ namespace ScriptCanvasBuilder
         }
     }
 
+    void BuildVariableOverrides::SetHandlesToDescription()
+    {
+        m_source = m_source.Describe();
+
+        for (auto& dependency : m_dependencies)
+        {
+            dependency.SetHandlesToDescription();
+        }
+    }
+
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& buildOverrides)
     {
         ScriptCanvas::RuntimeDataOverrides runtimeOverrides;

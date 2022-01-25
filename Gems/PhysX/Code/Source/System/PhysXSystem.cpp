@@ -5,18 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Math/MathUtils.h>
+#include <System/PhysXSystem.h>
+
+#include <PxPhysicsAPI.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <Scene/PhysXScene.h>
+#include <System/PhysXAllocator.h>
+#include <System/PhysXCpuDispatcher.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Asset/AssetManager.h>
 
-#include <Scene/PhysXScene.h>
-#include <System/PhysXSystem.h>
-#include <System/PhysXAllocator.h>
-#include <System/PhysXCpuDispatcher.h>
-#include <PhysX/Debug/PhysXDebugConfiguration.h>
-
-#include <PxPhysicsAPI.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
@@ -103,15 +105,13 @@ namespace PhysX
         if (auto* settingsRegistry = AZ::SettingsRegistry::Get();
             settingsRegistry != nullptr)
         {
-            // Automatically register the event if it's not registered, because
-            // this system is initialized before the settings registry has loaded the event list.
             AZ::ComponentApplicationLifecycle::RegisterHandler(
                 *settingsRegistry, m_componentApplicationLifecycleHandler,
                 [this]([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type)
                 {
                     InitializeMaterialLibrary();
                 },
-                "LegacySystemInterfaceCreated"); // LegacySystemInterfaceCreated is signaled after critical assets have been processed
+                "CriticalAssetsCompiled");
         }
 
         m_state = State::Initialized;

@@ -48,6 +48,7 @@ set(FILES
     native/tests/InternalBuilders/SettingsRegistryBuilderTests.cpp
     native/tests/MissingDependencyScannerTests.cpp
     native/tests/SourceFileRelocatorTests.cpp
+    native/tests/PathDependencyManagerTests.cpp
     native/tests/AssetProcessorMessagesTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.h

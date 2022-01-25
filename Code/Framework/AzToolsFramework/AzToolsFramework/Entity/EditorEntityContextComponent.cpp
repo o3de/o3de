@@ -226,7 +226,9 @@ namespace AzToolsFramework
     AZ::EntityId EditorEntityContextComponent::CreateNewEditorEntity(const char* name)
     {
         AZ::Entity* entity = CreateEntity(name);
+        AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
         FinalizeEditorEntity(entity);
+
         return entity->GetId();
     }
 
@@ -253,6 +255,7 @@ namespace AzToolsFramework
             return AZ::EntityId();
         }
         entity = aznew AZ::Entity(entityId, name);
+        AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
         AddEntity(entity);
         FinalizeEditorEntity(entity);
 
@@ -268,10 +271,12 @@ namespace AzToolsFramework
         {
             return;
         }
-        SetupEditorEntity(entity);
 
         // Store creation undo command.
+        if (m_isLegacySliceService)
         {
+            SetupEditorEntity(entity);
+
             ScopedUndoBatch undoBatch("Create Entity");
 
             EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(entity->GetId()));
