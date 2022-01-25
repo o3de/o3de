@@ -42,7 +42,7 @@ namespace Terrain
         AZ::Aabb m_worldAabb;
 
         //! The clipmaps bounds of the updated region. Will always be between 0 and size.
-        //! Min inclusive, max exclusive. i.e., a single pixel would be min [0, 0], max [1, 1].
+        //! Min inclusive, max exclusive. e.g., a single pixel would be min 0,0 and max 1,1.
         Aabb2i m_localAabb;
 
         bool operator==(const ClipmapBoundsRegion& other) const;
