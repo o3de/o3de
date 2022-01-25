@@ -349,7 +349,7 @@ class Prefab:
         wait_for_propagation()
 
         new_prefab_instance = PrefabInstance(self.file_path, EditorEntity(container_entity_id))
-        assert not new_prefab_instance in self.instances, "This prefab instance is already existed before this instantiation."
+        assert not new_prefab_instance in self.instances, "This prefab instance already existed before this instantiation."
         if name:
             new_prefab_instance.container_entity.set_name(name)
 
