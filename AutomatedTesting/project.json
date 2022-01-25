@@ -14,7 +14,6 @@
     "display_name": "AutomatedTesting",
     "icon_path": "preview.png",
     "external_subdirectories": [
-        "D:/Gems/EasyTerrain",
         "Gem"
     ]
 }
