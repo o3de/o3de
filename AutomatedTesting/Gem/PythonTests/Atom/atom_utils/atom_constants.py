@@ -32,6 +32,8 @@ GLOBAL_ILLUMINATION_QUALITY = {
     'High': 2,
 }
 
+# Level list used in Editor Level Load Test
+LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest", "Sponza"]
 
 class AtomComponentProperties:
     """
