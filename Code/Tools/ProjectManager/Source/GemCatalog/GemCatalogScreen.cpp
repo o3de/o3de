@@ -94,9 +94,6 @@ namespace O3DE::ProjectManager
 
         GemListHeaderWidget* catalogHeaderWidget = new GemListHeaderWidget(m_proxyModel);
 
-        const int headerTableMinWidth = MinWindowWidth - sidePanelWidth * 2 - GemItemDelegate::s_itemMargins.left() -
-            GemItemDelegate::s_itemMargins.right() - verticalScrollBarWidth;
-
         constexpr int minHeaderSectionWidth = 100;
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
             QStringList{ tr("Gem Name"), tr("Gem Summary"), tr("Status") },

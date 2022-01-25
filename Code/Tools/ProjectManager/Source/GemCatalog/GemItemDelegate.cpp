@@ -217,7 +217,6 @@ namespace O3DE::ProjectManager
             // we must manually handle html links because we aren't using QLabels
             const QStringList featureTags = GemModel::GetFeatures(modelIndex);
             const bool hasTags = !featureTags.isEmpty();
-            const int summaryStartX = m_headerWidget->m_header->sectionSize(0);
             const QRect summaryRect = CalcSummaryRect(contentRect, hasTags);
             if (summaryRect.contains(mouseEvent->pos()))
             {
