@@ -1752,11 +1752,12 @@ namespace UnitTest
         IO::ByteContainerStream<AZStd::vector<char>> stream(&buffer);
         ASSERT_TRUE(Utils::SaveObjectToStream(stream, DataStream::ST_XML, &testType, m_serializeContext.get()));
 
-        constexpr const char* expectedValue = R"(<ObjectStream version="3">
-	<Class name="ElementOverrideType" type="{BAA18B6C-3CB3-476C-8B41-21EA7CE1F4CF}">
-		<Class name="int" field="field" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-	</Class>
-</ObjectStream>)";
+        constexpr const char* expectedValue =
+            R"(<ObjectStream version="3">)" "\n"
+            "\t" R"(<Class name="ElementOverrideType" type="{BAA18B6C-3CB3-476C-8B41-21EA7CE1F4CF}">)" "\n"
+            "\t\t" R"(<Class name="int" field="field" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>)" "\n"
+            "\t" R"(</Class>)" "\n"
+            R"(</ObjectStream>)";
 
         AZStd::string result(buffer.data(), stream.GetLength());
         AZ::StringFunc::TrimWhiteSpace(result, true, true);
@@ -1775,9 +1776,10 @@ namespace UnitTest
         IO::ByteContainerStream<AZStd::vector<char>> stream(&buffer);
         ASSERT_TRUE(Utils::SaveObjectToStream(stream, DataStream::ST_XML, &testType, m_serializeContext.get()));
 
-        constexpr const char* expectedValue = R"(<ObjectStream version="3">
-	<Class name="float" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-</ObjectStream>)";
+        constexpr const char* expectedValue =
+            R"(<ObjectStream version="3">)" "\n"
+            "\t" R"(<Class name="float" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>)" "\n"
+            R"(</ObjectStream>)";
 
         AZStd::string result(buffer.data(), stream.GetLength());
         AZ::StringFunc::TrimWhiteSpace(result, true, true);
