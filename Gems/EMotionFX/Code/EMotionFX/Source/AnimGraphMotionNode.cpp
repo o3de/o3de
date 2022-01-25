@@ -664,7 +664,7 @@ namespace EMotionFX
                 const float randomRange = previousIndexCumulativeWeight + m_motionRandomSelectionCumulativeWeights.back().second - currentIndexCumulativeWeight;
 
                 // Picking a random number between [0, randomRange)
-                float randomValue = animGraphInstance->GetLcgRandom().GetRandomFloat() * randomRange;
+                const float randomValue = animGraphInstance->GetLcgRandom().GetRandomFloat() * randomRange;
                 // Remapping the value onto the existing non normalized cumulative probabilities
                 float remappedRandomValue = randomValue;
                 if (randomValue > previousIndexCumulativeWeight)
