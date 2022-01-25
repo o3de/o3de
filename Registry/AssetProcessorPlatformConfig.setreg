@@ -480,17 +480,6 @@
                     "glob": "*.der",
                     "params": "copy"
                 },
-                "RC PhysXMeshAsset": {
-                    "glob": "*.pxmesh",
-                    "params": "copy",
-                    "productAssetType": "{7A2871B9-5EAB-4DE0-A901-B0D2C6920DDB}"
-                },
-                // Copy over cooked PhysX heightfield
-                "RC PhysX HeightField": {
-                    "glob": "*.pxheightfield",
-                    "params": "copy",
-                    "productAssetType": "{B61189FE-B2D7-4AF1-8951-CB5C0F7834FC}"
-                },
                 "RC filetag": {
                     "glob": "*.filetag",
                     "params": "copy",
