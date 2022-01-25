@@ -9,6 +9,7 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/concepts/concepts.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/typetraits/typetraits.h>
 
@@ -101,7 +102,7 @@ namespace AZStd::Internal
         //! Invokes destructor on all elements in range
         //! No-op on empty container
         //! Nothing to destroy since the storage is empty.
-        template <typename InputIt, typename = enable_if_t<Internal::is_input_iterator_v<InputIt>>>
+        template <typename InputIt, typename = enable_if_t<input_iterator<InputIt>>>
         static constexpr void unsafe_destroy(InputIt, InputIt) noexcept
         {
         }
@@ -214,7 +215,7 @@ namespace AZStd::Internal
         //!  Destructs elements in the range [begin, end).
         //! This does not modify the size of the storage
         //! This is a no-op for trivial types
-        template <typename InputIt, typename = enable_if_t<Internal::is_input_iterator_v<InputIt>>>
+        template <typename InputIt, typename = enable_if_t<input_iterator<InputIt>>>
         void unsafe_destroy(InputIt, InputIt) noexcept
         {
         }
@@ -334,7 +335,7 @@ namespace AZStd::Internal
         //! Destructs elements in the range [begin, end).
         //! This does not modify the size of the storage
         //! Invokes the destuctor via the AZStd::destroy method
-        template <typename InputIt, typename = enable_if_t<Internal::is_input_iterator_v<InputIt>>>
+        template <typename InputIt, typename = enable_if_t<input_iterator<InputIt>>>
         void unsafe_destroy(InputIt first, InputIt last) noexcept(is_nothrow_destructible_v<value_type>)
         {
             AZSTD_CONTAINER_ASSERT(first >= data() && first <= data() + size(), "begin iterator is not in range of storage");
@@ -410,7 +411,7 @@ namespace AZStd
             AZStd::uninitialized_fill_n(data(), numElements, value);
         }
 
-        template <class InputIt, typename = AZStd::enable_if_t<Internal::is_input_iterator_v<InputIt>>>
+        template <class InputIt, typename = AZStd::enable_if_t<input_iterator<InputIt>>>
         fixed_vector(InputIt first, InputIt last)
         {
             resize_no_construct(AZStd::distance(first, last));
@@ -615,7 +616,7 @@ namespace AZStd
             insert(end(), numElements, value);
         }
 
-        template <class InputIt, typename = AZStd::enable_if_t<Internal::is_input_iterator_v<InputIt>>>
+        template <class InputIt, typename = AZStd::enable_if_t<input_iterator<InputIt>>>
         void assign(InputIt first, InputIt last)
         {
             clear();
@@ -641,8 +642,18 @@ namespace AZStd
                 return &newElement;
             }
 
-            AZStd::uninitialized_move(insertPosPtr, dataEnd, insertPosPtr + 1);
+            // We need to move data with care, it is overlapping.
+
+            // first move the last element into the uninitialized position as that will not overlap.
+            pointer nonOverlap = dataEnd - 1;
+            AZStd::uninitialized_move(nonOverlap, dataEnd, dataEnd);
+
+            // copy the memory backwards while performing AZStd::move on the existing elements the area with overlapping memory
+            // to move the elments to the right by 1
+            AZStd::move_backward(insertPosPtr, nonOverlap, dataEnd);
+            // add new elements
             AZStd::construct_at(insertPosPtr, AZStd::forward<Args>(args)...);
+            resize_no_construct(size() + 1);
             return iterator(insertPosPtr);
         }
         iterator insert(const_iterator insertPos, const_reference value)
@@ -707,7 +718,7 @@ namespace AZStd
             }
         }
 
-        template<class InputIt, typename = AZStd::enable_if_t<Internal::is_input_iterator_v<InputIt>>>
+        template<class InputIt, typename = AZStd::enable_if_t<input_iterator<InputIt>>>
         void insert(const_iterator insertPos, InputIt first, InputIt last)
         {
             // specialize for iterator categories.

@@ -10,6 +10,7 @@
 
 #include <AzCore/AzCore_Traits_Platform.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/concepts/concepts.h>
 
 namespace AZ::IO::Internal
 {
@@ -17,7 +18,7 @@ namespace AZ::IO::Internal
     {
         return elem == '/' || elem == '\\';
     }
-    template <typename InputIt, typename EndIt, typename = AZStd::enable_if_t<AZStd::Internal::is_input_iterator_v<InputIt>>>
+    template <typename InputIt, typename EndIt, typename = AZStd::enable_if_t<AZStd::input_iterator<InputIt>>>
     static constexpr bool HasDrivePrefix(InputIt first, EndIt last)
     {
         size_t prefixSize = AZStd::distance(first, last);
@@ -46,7 +47,7 @@ namespace AZ::IO::Internal
     //! Windows root names can have include drive letter within them
     template <typename InputIt>
     constexpr auto ConsumeRootName(InputIt entryBeginIter, InputIt entryEndIter, const char preferredSeparator)
-        -> AZStd::enable_if_t<AZStd::Internal::is_forward_iterator_v<InputIt>, InputIt>
+        -> AZStd::enable_if_t<AZStd::forward_iterator<InputIt>, InputIt>
     {
         if (preferredSeparator == PosixPathSeparator)
         {
@@ -147,7 +148,7 @@ namespace AZ::IO::Internal
     //! If the preferred separator is '/' just checks if the path starts with a '/
     //! Otherwise a check for a Windows absolute path occurs
     //! Windows absolute paths can include a RootName
-    template <typename InputIt, typename EndIt, typename = AZStd::enable_if_t<AZStd::Internal::is_input_iterator_v<InputIt>>>
+    template <typename InputIt, typename EndIt, typename = AZStd::enable_if_t<AZStd::input_iterator<InputIt>>>
     static constexpr bool IsAbsolute(InputIt first, EndIt last, const char preferredSeparator)
     {
         size_t pathSize = AZStd::distance(first, last);
@@ -208,11 +209,11 @@ namespace AZ::IO::parser
     enum ParserState : uint8_t
     {
         // Zero is a special sentinel value used by default constructed iterators.
-        PS_BeforeBegin = PathIterator<PathView>::BeforeBegin,
-        PS_InRootName = PathIterator<PathView>::InRootName,
-        PS_InRootDir = PathIterator<PathView>::InRootDir,
-        PS_InFilenames = PathIterator<PathView>::InFilenames,
-        PS_AtEnd = PathIterator<PathView>::AtEnd
+        PS_BeforeBegin = PathView::const_iterator::BeforeBegin,
+        PS_InRootName = PathView::const_iterator::InRootName,
+        PS_InRootDir = PathView::const_iterator::InRootDir,
+        PS_InFilenames = PathView::const_iterator::InFilenames,
+        PS_AtEnd = PathView::const_iterator::AtEnd
     };
 
     struct PathParser
