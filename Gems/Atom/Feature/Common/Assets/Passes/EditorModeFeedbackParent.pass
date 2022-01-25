@@ -7,30 +7,28 @@
             "Name": "EditorModeFeedbackParentTemplate",
             "PassClass": "ParentPass",
             "Slots": [
-                // SwapChain here is only used to reference the frame height and format
+                // Depth data for mask geometry and feedback effects
                 {
-                    "Name": "SwapChainOutput",
-                    "SlotType": "InputOutput"
-                },
-                {
-                    "Name": "DepthStencilInputOutput",
-                    "SlotType": "InputOutput"
-                },
-                {
-                    "Name": "EditorModeFeedbackInput",
+                    "Name": "InputDepth",
                     "SlotType": "Input"
                 },
+                // Existing swapchain data
                 {
-                    "Name": "EditorModeFeedbackOutput",
+                    "Name": "InputColor",
+                    "SlotType": "Input"
+                },
+                // Swapchain data after feedback effects have been applied
+                {
+                    "Name": "Output",
                     "SlotType": "Output"
                 }
             ],
             "Connections": [
                 {
-                    "LocalSlot": "EditorModeFeedbackOutput",
+                    "LocalSlot": "Output",
                     "AttachmentRef": {
                         "Pass": "EditorModeFeedbackPass",
-                        "Attachment": "EditorModeFeedbackOutput"
+                        "Attachment": "Output"
                     }
                 }
             ],
@@ -41,17 +39,10 @@
                     "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "DepthStencilInputOutput",
+                            "LocalSlot": "InputDepth",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "DepthStencilInputOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "SwapChainOutput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "InputDepth"
                             }
                         }
                     ]
@@ -62,17 +53,24 @@
                     "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "EditorModeMaskInput",
+                            "LocalSlot": "InputDepth",
                             "AttachmentRef": {
-                                "Pass": "EditorModeMaskPass",
-                                "Attachment": "EditorModeMaskOutput"
+                                "Pass": "Parent",
+                                "Attachment": "InputDepth"
                             }
                         },
                         {
-                            "LocalSlot": "EditorModeFeedbackInput",
+                            "LocalSlot": "InputEntityMask",
+                            "AttachmentRef": {
+                                "Pass": "EditorModeMaskPass",
+                                "Attachment": "OutputEntityMask"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputColor",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "EditorModeFeedbackInput"
+                                "Attachment": "InputColor"
                             }
                         }
                     ]
@@ -81,13 +79,3 @@
         }
     }
 }
-
-
-// P1 (mask write)
-// P2 (mask read, color read, color write)
-
-
-//PostProccess -> EditorModeFeedback
-//
-//PostProccess -> EditorModeFeedbackMask (write out some data to a mask texture)
-//             -> EditorModeFeedback (read from mask and color from previous pass output)

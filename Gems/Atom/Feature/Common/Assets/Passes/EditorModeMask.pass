@@ -7,19 +7,13 @@
             "Name": "EditorModeMaskTemplate",
             "PassClass": "EditorModeMaskPass",
             "Slots": [
-                // SwapChain here is only used to reference the frame height and format
                 {
-                    "Name": "SwapChainOutput",
-                    "SlotType": "InputOutput",
-                    "ShaderInputName": "NoBind"
-                },
-                {
-                    "Name": "DepthStencilInputOutput",
+                    "Name": "InputDepth",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "DepthStencil"
                 },
                 {
-                    "Name": "EditorModeMaskOutput",
+                    "Name": "OutputEntityMask",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
@@ -37,25 +31,25 @@
             ],
             "ImageAttachments": [
                 {
-                    "Name": "EditorModeMaskOutputAttachment",
+                    "Name": "OutputEntityMaskAttachment",
                     "SizeSource": {
                         "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Pass": "This",
+                            "Attachment": "InputDepth"
                         }
                     },
-                    "FormatSource": {
-                        "Pass": "Parent",
-                        "Attachment": "SwapChainOutput"
+                    "ImageDescriptor": {
+                        "Format": "R8G8B8A8_UNORM",
+                        "SharedQueueMask": "Graphics"
                     }
                 }
             ],
             "Connections": [
                 {
-                    "LocalSlot": "EditorModeMaskOutput",
+                    "LocalSlot": "OutputEntityMask",
                     "AttachmentRef": {
                         "Pass": "This",
-                        "Attachment": "EditorModeMaskOutputAttachment"
+                        "Attachment": "OutputEntityMaskAttachment"
                     }
                 }
             ],

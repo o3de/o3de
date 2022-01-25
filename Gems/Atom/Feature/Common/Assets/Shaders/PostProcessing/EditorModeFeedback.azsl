@@ -14,7 +14,9 @@
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_framebuffer;
-    Texture2D<float4> m_mask;
+    Texture2D<float4> m_depth;
+    Texture2D<float4> m_entityMask;
+    
     Sampler LinearSampler
     {
         MinFilter = Linear;
@@ -50,17 +52,17 @@ float2 normalizedUV(float2 uv)
 float selectedEntityOutliner(float2 unormalizedUv)
 {
     float r = 0.;
-    float lineThickness = 15.;
+    float lineThickness = 10.;
      
     // Selected entity mask value
-    float S = PassSrg::m_mask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv)).a;
+    float S = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv)).a;
      
     // Outliner kernal
     for(float u = -lineThickness; u <= lineThickness; u+=1.)
     {
         for(float v = -lineThickness; v <= lineThickness; v+=1.)
         {
-            r += PassSrg::m_mask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(u,v))).r;
+            r += PassSrg::m_entityMask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(u,v))).r;
         }
     }
      
@@ -72,12 +74,20 @@ float selectedEntityOutliner(float2 unormalizedUv)
 PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
+
+    uint2 uMaskSize;
+    PassSrg::m_entityMask.GetDimensions(uMaskSize.x, uMaskSize.y);
+
+    maskSize.x = float(uMaskSize.x);
+    maskSize.y = float(uMaskSize.y);
+
+    float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
  
     // Fetch the pixel color from the input texture
     float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
  
     // Get the mask value at this point
-    float4 mask = PassSrg::m_mask.Sample(PassSrg::PointSampler, IN.m_texCoord);
+    float4 mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
     // Averge the colors to get a desaturated effect
     float sat = (color.r + color.g + color.b) / 3.0;
@@ -88,14 +98,6 @@ PSOutput MainPS(VSOutput IN)
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color.rgb = lerp(unmasked.rgb, mask.rgb, mask.a);
     OUT.m_color.a = 1.0;
-
-    uint2 uMaskSize;
-    PassSrg::m_mask.GetDimensions(uMaskSize.x, uMaskSize.y);
-
-    maskSize.x = float(uMaskSize.x);
-    maskSize.y = float(uMaskSize.y);
-
-    float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
 
     float outline = selectedEntityOutliner(unnormalizedUV);
     float3 outlineColor = float3(.96, 0.65, 0.13);
