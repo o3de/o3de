@@ -195,10 +195,24 @@
                     "Enabled": true,
                     "Connections": [
                         {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
                             "LocalSlot": "EditorModeFeedbackInput",
                             "AttachmentRef": {
                                 "Pass": "LightAdaptation",
                                 "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SwapChainOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SwapChainOutput"
                             }
                         }
                     ]

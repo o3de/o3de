@@ -45,6 +45,7 @@
 #include <PostProcessing/BloomParentPass.h>
 #include <PostProcessing/HDRColorGradingPass.h>
 #include <PostProcessing/EditorModeFeedbackPass.h>
+#include <PostProcessing/EditorModeMaskPass.h>
 #include <PostProcessing/DepthUpsamplePass.h>
 #include <PostProcessing/DepthOfFieldCompositePass.h>
 #include <PostProcessing/DepthOfFieldBokehBlurPass.h>
@@ -224,6 +225,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("BlendColorGradingLutsPass"), &BlendColorGradingLutsPass::Create);
             passSystem->AddPassCreator(Name("HDRColorGradingPass"), &HDRColorGradingPass::Create);
             passSystem->AddPassCreator(Name("EditorModeFeedbackPass"), &EditorModeFeedbackPass::Create);
+            passSystem->AddPassCreator(Name("EditorModeMaskPass"), &EditorModeMaskPass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
             passSystem->AddPassCreator(Name("LutGenerationPass"), &LutGenerationPass::Create);

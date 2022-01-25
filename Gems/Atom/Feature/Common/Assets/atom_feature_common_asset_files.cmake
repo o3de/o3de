@@ -88,6 +88,7 @@ set(FILES
     Passes/CheckerboardResolveDepth.pass
     Passes/EditorModeFeedbackParent.pass
     Passes/EditorModeFeedback.pass
+    Passes/EditorModeMask.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -439,6 +440,8 @@ set(FILES
     Shaders/PostProcessing/HDRColorGrading.shader
     Shaders/PostProcessing/EditorModeFeedback.azsl
     Shaders/PostProcessing/EditorModeFeedback.shader
+    Shaders/PostProcessing/EditorModeMask.azsl
+    Shaders/PostProcessing/EditorModeMask.shader
     Shaders/PostProcessing/LookModificationTransform.azsl
     Shaders/PostProcessing/LookModificationTransform.shader
     Shaders/PostProcessing/LuminanceHeatmap.azsl

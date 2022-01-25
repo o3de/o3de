@@ -7,12 +7,31 @@
             "Name": "EditorModeMaskTemplate",
             "PassClass": "EditorModeMaskPass",
             "Slots": [
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "NoBind"
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
                 {
                     "Name": "EditorModeMaskOutput",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
-                        "LoadAction": "DontCare"
+                        "ClearValue": {
+                            "Value": [
+                                1.0,
+                                0.0,
+                                1.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
                     }
                 }
             ],
@@ -33,24 +52,17 @@
             ],
             "Connections": [
                 {
-                    "LocalSlot": "EditorModeFeedbackOutput",
+                    "LocalSlot": "EditorModeMaskOutput",
                     "AttachmentRef": {
                         "Pass": "This",
-                        "Attachment": "EditorModeFeedbackOutputAttachment"
+                        "Attachment": "EditorModeMaskOutputAttachment"
                     }
                 }
             ],
-            "FallbackConnections": [
-                {
-                    "Input" : "EditorModeFeedbackInput",
-                    "Output" : "EditorModeFeedbackOutput"
-                }
-            ],
             "PassData": {
-                "$type": "FullscreenTrianglePassData",
-                "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeFeedback.shader"
-                }
+                "$type": "RasterPassData",
+                "DrawListTag": "editormodemask",
+                "PipelineViewTag": "MainCamera"
             }
         }
     }

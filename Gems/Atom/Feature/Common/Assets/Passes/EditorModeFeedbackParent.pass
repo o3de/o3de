@@ -7,6 +7,15 @@
             "Name": "EditorModeFeedbackParentTemplate",
             "PassClass": "ParentPass",
             "Slots": [
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput"
+                },
                 {
                     "Name": "EditorModeFeedbackInput",
                     "SlotType": "Input"
@@ -27,10 +36,38 @@
             ],
             "PassRequests": [
                 {
+                    "Name": "EditorModeMaskPass",
+                    "TemplateName": "EditorModeMaskTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SwapChainOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SwapChainOutput"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "EditorModeFeedbackPass",
                     "TemplateName": "EditorModeFeedbackTemplate",
                     "Enabled": true,
                     "Connections": [
+                        {
+                            "LocalSlot": "EditorModeMaskInput",
+                            "AttachmentRef": {
+                                "Pass": "EditorModeMaskPass",
+                                "Attachment": "EditorModeMaskOutput"
+                            }
+                        },
                         {
                             "LocalSlot": "EditorModeFeedbackInput",
                             "AttachmentRef": {

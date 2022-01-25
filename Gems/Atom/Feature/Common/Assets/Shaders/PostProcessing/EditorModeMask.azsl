@@ -1,0 +1,119 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <viewsrg.srgi>
+#define UvSetCount 2
+#include <Atom/RPI/ShaderResourceGroups/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
+
+
+option enum class DebugVertexStream { Normals, Tangents, Bitangents, UVs, TangentW } o_debugVertexStream = DebugVertexStream::Normals;
+option enum class ReconstructionMethods { UseVertexData, UseSurfaceGradient, ReconstructBitangent} o_reconstructionMethod = ReconstructionMethods::UseVertexData;
+
+struct VSInput
+{
+    // Base fields (required by the template azsli file)...
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+ 
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv0 : UV0;
+};
+
+struct VSOutput
+{
+    // Base fields (required by the template azsli file)...
+    // "centroid" is needed for SV_Depth to compile
+    precise linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+
+    // VertexHelper expects the output tangent to be stripped of the w component, so we preserve it here
+    float m_bitangentSign : UV8;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv[UvSetCount] : UV1;
+};
+
+VSOutput MainVS(VSInput IN)
+{
+    VSOutput OUT;    
+    OUT.m_worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+
+    // Only UV0 is supported
+    OUT.m_uv[0] = IN.m_uv0;
+    OUT.m_uv[1] = IN.m_uv0;    
+    
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+
+    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent.xyz, OUT.m_bitangent);
+
+    OUT.m_tangent.w = IN.m_tangent.w;
+    return OUT;
+}
+
+struct PixelOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PixelOutput MainPS(VSOutput IN)
+{
+    PixelOutput OUT;
+    
+    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
+    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
+    
+    if(o_reconstructionMethod == ReconstructionMethods::ReconstructBitangent)
+    {
+        bitangents[0] = cross(IN.m_normal.xyz, IN.m_tangent.xyz) * sign(IN.m_bitangentSign);
+    }
+    else if(o_reconstructionMethod == ReconstructionMethods::UseSurfaceGradient)
+    {
+        const bool isBackface = false;
+        SurfaceGradientNormalMapping_Init(IN.m_normal, IN.m_worldPosition, isBackface);
+        for (uint i = 0; i < UvSetCount; ++i)
+        {
+            SurfaceGradientNormalMapping_GenerateTB(IN.m_uv[i], tangents[i], bitangents[i]); 
+        } 
+    }
+
+
+    float3 outColor = float3(1.0, 1.0, 1.0);
+    switch(o_debugVertexStream)
+        {
+        case DebugVertexStream::Normals:
+            outColor = IN.m_normal;
+            break;
+        case DebugVertexStream::Tangents:
+            outColor = tangents[0];
+            break;
+        case DebugVertexStream::Bitangents:
+            outColor = bitangents[0];
+            break;
+        case DebugVertexStream::UVs:
+            outColor = float3(IN.m_uv[0].x, IN.m_uv[0].y, 0.0f);
+            break;            
+        case DebugVertexStream::TangentW:
+            outColor = float3(IN.m_bitangentSign < 0.0f ? 1.0f : 0.0f, IN.m_bitangentSign < 0.0f ? 0.0f : 1.0f, 0.0f);
+            break;
+        }
+
+    OUT.m_color.rgb = normalize(outColor) * 0.5 + 0.5;
+	OUT.m_color.a = 1.0;
+
+    OUT.m_color = float4(0.0,0.0,1.0,1.0);
+    return OUT;
+} 

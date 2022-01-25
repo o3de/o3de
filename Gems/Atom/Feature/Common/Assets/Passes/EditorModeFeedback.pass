@@ -8,6 +8,12 @@
             "PassClass": "EditorModeFeedbackPass",
             "Slots": [
                 {
+                    "Name": "EditorModeMaskInput",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_mask",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
                     "Name": "EditorModeFeedbackInput",
                     "SlotType": "Input",
                     "ShaderInputName": "m_framebuffer",

@@ -14,11 +14,22 @@
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_framebuffer;
+    Texture2D<float4> m_mask;
     Sampler LinearSampler
     {
         MinFilter = Linear;
         MagFilter = Linear;
         MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
         AddressU = Clamp;
         AddressV = Clamp;
         AddressW = Clamp;
@@ -35,11 +46,15 @@ PSOutput MainPS(VSOutput IN)
     // Fetch the pixel color from the input texture
     float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
  
+    float4 mask = PassSrg::m_mask.Sample(PassSrg::PointSampler, IN.m_texCoord);
+
     // Averge the colors to get a desaturated effect
     float sat = (color.r + color.g + color.b) / 3.0;
  
     OUT.m_color.rgb = lerp(color, float3(sat, sat, sat), PassSrg::m_desaturationAmount);
     OUT.m_color.w = 1;
  
+    OUT.m_color.rgb = mask.rgb;
+
     return OUT;
 }
