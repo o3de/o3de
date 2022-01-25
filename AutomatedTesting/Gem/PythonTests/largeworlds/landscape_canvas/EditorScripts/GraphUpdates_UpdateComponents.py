@@ -96,7 +96,6 @@ def GraphUpdates_UpdateComponent():
     general.open_pane('Landscape Canvas')
     open_graph_id = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'OnGraphEntity', prefab_lc_root)
     Report.critical_result(Tests.existing_graph_opened, open_graph_id.IsValid())
-    #general.idle_wait_frames(60)
 
     # Find the Rotation Modifier node on the BushSpawner entity
     rotation_modifier_node = lc.find_nodes_matching_entity_component('Vegetation Rotation Modifier', bush_spawner_id)
