@@ -211,6 +211,27 @@ namespace EMotionFX::MotionMatching
         return AZ::GetAbs(normalizedDirectionDifference);
     }
 
+    float Feature::CalcResidual(float value) const
+    {
+        if (m_residualType == ResidualType::Squared)
+        {
+            return value * value;
+        }
+
+        return AZ::Abs(value);
+    }
+
+    float Feature::CalcResidual(const AZ::Vector3& a, const AZ::Vector3& b) const
+    {
+        const float euclideanDistance = (b - a).GetLength();
+        return CalcResidual(euclideanDistance);
+    }
+
+    AZ::Crc32 Feature::GetCostFactorVisibility() const
+    {
+        return AZ::Edit::PropertyVisibility::Show;
+    }
+
     void Feature::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -220,8 +241,16 @@ namespace EMotionFX::MotionMatching
         }
 
         serializeContext->Class<Feature>()
-            ->Version(1)
-            ->Field("id", &Feature::m_id);
+            ->Version(2)
+            ->Field("id", &Feature::m_id)
+            ->Field("name", &Feature::m_name)
+            ->Field("jointName", &Feature::m_jointName)
+            ->Field("relativeToJointName", &Feature::m_relativeToJointName)
+            ->Field("debugDraw", &Feature::m_debugDrawEnabled)
+            ->Field("debugColor", &Feature::m_debugColor)
+            ->Field("costFactor", &Feature::m_costFactor)
+            ->Field("residualType", &Feature::m_residualType)
+            ;
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (!editContext)
@@ -229,9 +258,22 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<Feature>("Feature", "Base class for the frame data")
+        editContext->Class<Feature>("Feature", "Base class for a feature")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+            ->DataElement(AZ::Edit::UIHandlers::Default, &Feature::m_name, "Name", "Custom name of the feature used for identification and debug visualizations.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &Feature::m_jointName, "Joint", "The joint to extract the data from.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &Feature::m_relativeToJointName, "Relative To Joint", "When extracting feature data, convert it to relative-space to the given joint.")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &Feature::m_debugDrawEnabled, "Debug Draw", "Are debug visualizations enabled for this feature?")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &Feature::m_debugColor, "Debug Draw Color", "Color used for debug visualizations to identify the feature.")
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Feature::m_costFactor, "Cost Factor", "The cost factor for the feature is multiplied with the actual and can be used to change a feature's influence in the motion matching search.")
+                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+                ->Attribute(AZ::Edit::Attributes::Visibility, &Feature::GetCostFactorVisibility)
+            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &Feature::m_residualType, "Residual", "Use 'Squared' in case minimal differences should be ignored and larger differences should overweight others. Use 'Absolute' for linear differences and don't want the mentioned effect.")
+                ->EnumAttribute(ResidualType::Absolute, "Absolute")
+                ->EnumAttribute(ResidualType::Squared, "Squared")
+            ;
     }
 } // namespace EMotionFX::MotionMatching

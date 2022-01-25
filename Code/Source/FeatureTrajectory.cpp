@@ -308,7 +308,7 @@ namespace EMotionFX::MotionMatching
                     controlPointFacingDirRelativeSpace);
 
                 // As we got two different costs for the position, double the cost of the facing direction to equal out the influence.
-                cost += posDistance + posDeltaDistance + facingDirectionCost * 2.0f;
+                cost += CalcResidual(posDistance) + CalcResidual(posDeltaDistance) + CalcResidual(facingDirectionCost) * 2.0f;
             }
 
             lastControlPoint = controlPointPos;
@@ -332,6 +332,11 @@ namespace EMotionFX::MotionMatching
         return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetPastControlPoints(), AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1));
     }
 
+    AZ::Crc32 FeatureTrajectory::GetCostFactorVisibility() const
+    {
+        return AZ::Edit::PropertyVisibility::Hide;
+    }
+
     void FeatureTrajectory::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -341,7 +346,15 @@ namespace EMotionFX::MotionMatching
         }
 
         serializeContext->Class<FeatureTrajectory, Feature>()
-            ->Version(1);
+            ->Version(2)
+            ->Field("pastTimeRange", &FeatureTrajectory::m_pastTimeRange)
+            ->Field("numPastSamples", &FeatureTrajectory::m_numPastSamples)
+            ->Field("pastCostFactor", &FeatureTrajectory::m_pastCostFactor)
+            ->Field("futureTimeRange", &FeatureTrajectory::m_futureTimeRange)
+            ->Field("numFutureSamples", &FeatureTrajectory::m_numFutureSamples)
+            ->Field("futureCostFactor", &FeatureTrajectory::m_futureCostFactor)
+            ->Field("facingAxis", &FeatureTrajectory::m_facingAxis)
+            ;
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (!editContext)
@@ -349,10 +362,40 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<FeatureTrajectory>("FeatureTrajectory", "Joint past and future trajectory data.")
+        editContext->Class<FeatureTrajectory>("FeatureTrajectory", "Matches the joint past and future trajectory.")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+            ->DataElement(AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_numPastSamples, "Past Samples", "The number of samples stored per frame for the past trajectory. [Default = 4 samples to represent the trajectory history]")
+                ->Attribute(AZ::Edit::Attributes::Min, 1)
+                ->Attribute(AZ::Edit::Attributes::Max, 100)
+                ->Attribute(AZ::Edit::Attributes::Step, 1)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_pastTimeRange, "Past Time Range", "The time window the samples are distributed along for the trajectory history. [Default = 0.7 seconds]")
+                ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+                ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
+                ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_pastCostFactor, "Past Cost Factor", "The cost factor is multiplied with the cost from the trajectory history and can be used to change the influence of the trajectory history match in the motion matching search.")
+                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_numFutureSamples, "Future Samples", "The number of samples stored per frame for the future trajectory. [Default = 6 samples to represent the future trajectory]")
+                ->Attribute(AZ::Edit::Attributes::Min, 1)
+                ->Attribute(AZ::Edit::Attributes::Max, 100)
+                ->Attribute(AZ::Edit::Attributes::Step, 1)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_futureTimeRange, "Future Time Range", "The time window the samples are distributed along for the future trajectory. [Default = 1.2 seconds]")
+                ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+                ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
+                ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+            ->DataElement(AZ::Edit::UIHandlers::Default, &FeatureTrajectory::m_futureCostFactor, "Future Cost Factor", "The cost factor is multiplied with the cost from the future trajectory and can be used to change the influence of the future trajectory match in the motion matching search.")
+                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &FeatureTrajectory::m_facingAxis, "Facing Axis", "The facing direction of the character. Which axis of the joint transform is facing forward? [Default = Looking into Y-axis direction]")
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &FeatureTrajectory::UpdateFacingAxis)
+                ->EnumAttribute(Axis::X, "X")
+                ->EnumAttribute(Axis::X_NEGATIVE, "-X")
+                ->EnumAttribute(Axis::Y, "Y")
+                ->EnumAttribute(Axis::Y_NEGATIVE, "-Y")
+            ;
     }
 
     size_t FeatureTrajectory::GetNumDimensions() const

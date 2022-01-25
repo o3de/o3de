@@ -109,6 +109,5 @@ namespace EMotionFX::MotionMatching
         float m_outputTimeInMs = 0.0f;
 
         ImGuiMonitor m_imguiMonitor;
-
     };
 } // namespace EMotionFX::MotionMatching

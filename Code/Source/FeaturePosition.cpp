@@ -72,7 +72,7 @@ namespace EMotionFX::MotionMatching
         const AZ::Vector3 worldInputPosition = context.m_currentPose.GetWorldSpaceTransform(m_jointIndex).m_position;
         const AZ::Vector3 relativeInputPosition = invRootTransform.TransformPoint(worldInputPosition);
         const AZ::Vector3 framePosition = GetFeatureData(context.m_featureMatrix, frameIndex); // This is already relative to the root node
-        return (framePosition - relativeInputPosition).GetLength();
+        return CalcResidual(relativeInputPosition, framePosition);
     }
 
     void FeaturePosition::Reflect(AZ::ReflectContext* context)
@@ -92,10 +92,10 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        editContext->Class<FeaturePosition>("FeaturePosition", "Joint position data.")
+        editContext->Class<FeaturePosition>("FeaturePosition", "Matches joint positions.")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+            ;
     }
 
     size_t FeaturePosition::GetNumDimensions() const

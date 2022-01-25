@@ -136,6 +136,8 @@ namespace EMotionFX::MotionMatching
             const Sample& sample,
             const AZ::Vector3& samplePosWorldSpace) const;
 
+        AZ::Crc32 GetCostFactorVisibility() const override;
+
         float m_pastTimeRange = 0.7f; //< The time window the samples are distributed along for the past trajectory.
         size_t m_numPastSamples = 4; //< The number of samples stored per frame for the past (history) trajectory.
         float m_pastCostFactor = 0.5f; //< Normalized value to weight or scale the future trajectory cost.
