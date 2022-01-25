@@ -27,6 +27,8 @@ set(FILES
     Source/Components/TerrainWorldDebuggerComponent.h
     Source/Components/TerrainWorldRendererComponent.cpp
     Source/Components/TerrainWorldRendererComponent.h
+    Source/TerrainRaycast/TerrainRaycastContext.cpp
+    Source/TerrainRaycast/TerrainRaycastContext.h
     Source/TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.cpp
     Source/TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h
     Source/TerrainRenderer/Components/TerrainMacroMaterialComponent.cpp
