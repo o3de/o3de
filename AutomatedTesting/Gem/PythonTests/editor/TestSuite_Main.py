@@ -66,6 +66,7 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_ComponentCRUD_Add_Delete_Components(EditorSharedTest):
         from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
 
+    @pytest.mark.skip("Passes locally/fails on Jenkins. https://github.com/o3de/o3de/issues/6747")
     class test_Docking_BasicDockedTools(EditorSharedTest):
         from .EditorScripts import Docking_BasicDockedTools as test_module
 
