@@ -66,8 +66,7 @@ def Edit_UndoNodeDelete_PrefabEntity():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("", "Base")
+    hydra.open_base_level()
 
     # Instantiate slice
     transform = math.Transform_CreateIdentity()

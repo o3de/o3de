@@ -23,7 +23,7 @@ class Tests:
         "Failed to find Distribution Filter component on BushSpawner entity"
     )
     existing_graph_opened = (
-        "Opened existing graph from slice",
+        "Opened existing graph from prefab",
         "Failed to open existing graph"
     )
     dist_filter_node_found = (
@@ -101,9 +101,8 @@ def ComponentUpdates_UpdateGraph():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
-    # Open a simple level and instantiate LC_BushFlowerBlender.slice
-    helper.init_idle()
-    helper.open_level("", "Base")
+    # Open a simple level and instantiate BushFlowerBlender.prefab
+    hydra.open_base_level()
     transform = math.Transform_CreateIdentity()
     position = math.Vector3(64.0, 64.0, 32.0)
     transform.invoke('SetPosition', position)
@@ -119,8 +118,8 @@ def ComponentUpdates_UpdateGraph():
     # Allow a few seconds for matching entity to be found
     helper.wait_for_condition(lambda: len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)) > 0, 5.0)
     lc_matching_entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
-    slice_root_id = lc_matching_entities[0]         #Entity with Landscape Canvas component
-    Report.critical_result(Tests.lc_entity_found, slice_root_id.IsValid())
+    prefab_root_id = lc_matching_entities[0]         #Entity with Landscape Canvas component
+    Report.critical_result(Tests.lc_entity_found, prefab_root_id.IsValid())
 
     # Find the BushSpawner entity
     search_filter.names = ["BushSpawner"]
@@ -140,7 +139,7 @@ def ComponentUpdates_UpdateGraph():
 
     # Open Landscape Canvas and the existing graph
     general.open_pane('Landscape Canvas')
-    open_graph = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'OnGraphEntity', slice_root_id)
+    open_graph = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'OnGraphEntity', prefab_root_id)
     Report.critical_result(Tests.existing_graph_opened, open_graph.IsValid())
 
     # Verify that Distribution Filter node is present on the graph

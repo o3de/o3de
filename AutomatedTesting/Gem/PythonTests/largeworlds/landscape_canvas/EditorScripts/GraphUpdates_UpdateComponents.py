@@ -68,7 +68,6 @@ def GraphUpdates_UpdateComponent():
 
     import automatedtesting_shared.landscape_canvas_utils as lc
     import editor_python_test_tools.hydra_editor_utils as hydra
-    import editor_python_test_tools.prefab_utils as prefab_utils
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -86,9 +85,9 @@ def GraphUpdates_UpdateComponent():
     search_filter = entity.SearchFilter()
     search_filter.names = ["LandscapeCanvas"]
     helper.wait_for_condition(lambda: len(entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)) > 0, 5.0)
+    prefab_lc_root = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)[0]
 
     # Find needed entities in the loaded level
-    prefab_lc_root = hydra.find_entity_by_name('LandscapeCanvas')
     bush_spawner_id = hydra.find_entity_by_name('BushSpawner')
     flower_spawner_id = hydra.find_entity_by_name('FlowerSpawner')
     inverted_perlin_noise_id = hydra.find_entity_by_name('Invert')
@@ -97,12 +96,14 @@ def GraphUpdates_UpdateComponent():
     general.open_pane('Landscape Canvas')
     open_graph_id = landscapecanvas.LandscapeCanvasRequestBus(bus.Broadcast, 'OnGraphEntity', prefab_lc_root)
     Report.critical_result(Tests.existing_graph_opened, open_graph_id.IsValid())
+    #general.idle_wait_frames(60)
 
     # Find the Rotation Modifier node on the BushSpawner entity
     rotation_modifier_node = lc.find_nodes_matching_entity_component('Vegetation Rotation Modifier', bush_spawner_id)
 
     # Remove the Rotation Modifier node
     graph.GraphControllerRequestBus(bus.Event, 'RemoveNode', open_graph_id, rotation_modifier_node[0])
+    general.idle_wait_frames(2)
 
     # Verify node was removed
     rotation_modifier_node = lc.find_nodes_matching_entity_component('Vegetation Rotation Modifier', bush_spawner_id)
@@ -119,8 +120,7 @@ def GraphUpdates_UpdateComponent():
 
     # Remove the Vegetation Layer Spawner node and verify the corresponding entity is deleted
     graph.GraphControllerRequestBus(bus.Event, 'RemoveNode', open_graph_id, layer_spawner_node[0])
-    general.idle_wait_frames(1)
-    general.idle_wait_frames(5)
+    general.idle_wait_frames(2)
     layer_spawner_node = lc.find_nodes_matching_entity_component('Vegetation Layer Spawner', bush_spawner_id)
     bush_spawner_id = hydra.find_entity_by_name('BushSpawner')
     Report.result(Tests.entity_deleted, not layer_spawner_node and not bush_spawner_id)
@@ -135,7 +135,7 @@ def GraphUpdates_UpdateComponent():
     graph.GraphControllerRequestBus(bus.Event, 'AddConnectionBySlotId', open_graph_id, invert_node[0],
                                     outbound_gradient_slot, rotation_modifier_node[0], inbound_gradient_z_slot)
 
-    general.idle_wait(1.0)      # Add a small wait to ensure component property has time to update
+    general.idle_wait_frames(2)     # Add a small wait to ensure component property has time to update
 
     # Verify the Gradient Entity Id reference on the Rotation Modifier component was properly set
     rotation_type_id = hydra.get_component_type_id('Vegetation Rotation Modifier')

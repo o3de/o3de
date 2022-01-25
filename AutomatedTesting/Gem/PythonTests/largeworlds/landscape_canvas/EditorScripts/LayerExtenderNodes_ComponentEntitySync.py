@@ -63,7 +63,6 @@ def LayerExtenderNodes_ComponentEntitySync():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 

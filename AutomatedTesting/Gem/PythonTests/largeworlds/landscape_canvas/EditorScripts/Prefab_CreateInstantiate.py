@@ -25,8 +25,8 @@ def Prefab_CreateInstantiate():
     Test Steps:
      1) Open a simple level
      2) Create a new entity with a Landscape Canvas component
-     3) Create a slice of the new entity
-     4) Instantiate a new copy of the slice
+     3) Create a prefab of the new entity
+     4) Instantiate a new copy of the prefab
      Note:
     - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
@@ -42,8 +42,7 @@ def Prefab_CreateInstantiate():
     from editor_python_test_tools.prefab_utils import Prefab
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("", "Base")
+    hydra.open_base_level()
 
     # Create entity with Landscape Canvas component
     position = math.Vector3(512.0, 512.0, 32.0)
@@ -54,11 +53,11 @@ def Prefab_CreateInstantiate():
     lc_prefab_filename = "LC_PrefabTest"
     lc_prefab, lc_prefab_instance = Prefab.create_prefab([landscape_canvas], lc_prefab_filename)
 
-    # Verify if slice is created
+    # Verify if prefab is created
     helper.wait_for_condition(lambda: lc_prefab.is_prefab_loaded(lc_prefab_filename), 5.0)
     Report.result(Tests.prefab_created, lc_prefab.is_prefab_loaded(lc_prefab_filename))
 
-    # Instantiate slice
+    # Instantiate prefab
     lc_prefab_instance2 = lc_prefab.instantiate()
     helper.wait_for_condition(lambda: lc_prefab_instance2.has_editor_prefab_component(), 5.0)
     Report.result(Tests.prefab_instantiated, lc_prefab_instance2.has_editor_prefab_component())
