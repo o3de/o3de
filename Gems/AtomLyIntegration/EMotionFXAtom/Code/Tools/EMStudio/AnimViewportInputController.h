@@ -18,7 +18,7 @@ namespace AzToolsFramework
 
 namespace EMStudio
 {
-    // Provide input control for manipulators in AnimViewport
+    //! Provide input control for manipulators in AnimViewport
     class AnimViewportInputController
         : public AzFramework::SingleViewportController
     {
@@ -26,14 +26,11 @@ namespace EMStudio
         AZ_TYPE_INFO(AnimViewportInputController, "{A1629CB6-2292-4B7D-8B49-F614BD4746AA}");
         AZ_CLASS_ALLOCATOR(AnimViewportInputController, AZ::SystemAllocator, 0)
 
-        // AzFramework::ViewportControllerInstance interface overrides...
+        // AzFramework::SingleViewportController overrides...
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
 
     private:
-        static AzToolsFramework::ViewportInteraction::MouseButton GetMouseButton(const AzFramework::InputChannel& inputChannel);
-        static bool IsMouseMove(const AzFramework::InputChannel& inputChannel);
-        static AzToolsFramework::ViewportInteraction::KeyboardModifier GetKeyboardModifier(const AzFramework::InputChannel& inputChannel);
 
         AzToolsFramework::ViewportInteraction::MouseInteraction m_mouseInteraction;
     };
-}
+} // namespace EMStudio

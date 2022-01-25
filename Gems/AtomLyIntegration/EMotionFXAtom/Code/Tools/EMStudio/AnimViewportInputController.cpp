@@ -10,6 +10,7 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewportInteractionHelpers.h>
 
 #include <EMStudio/AnimViewportInputController.h>
 #include <EMStudio/ManipulatorInteractionRequestBus.h>
@@ -17,53 +18,6 @@
 
 namespace EMStudio
 {
-    AzToolsFramework::ViewportInteraction::MouseButton AnimViewportInputController::GetMouseButton(
-        const AzFramework::InputChannel& inputChannel)
-    {
-        using AzToolsFramework::ViewportInteraction::MouseButton;
-        using InputButton = AzFramework::InputDeviceMouse::Button;
-        const AzFramework::InputChannelId& id = inputChannel.GetInputChannelId();
-        if (id == InputButton::Left)
-        {
-            return MouseButton::Left;
-        }
-        if (id == InputButton::Middle)
-        {
-            return MouseButton::Middle;
-        }
-        if (id == InputButton::Right)
-        {
-            return MouseButton::Right;
-        }
-        return MouseButton::None;
-    }
-
-    bool AnimViewportInputController::IsMouseMove(const AzFramework::InputChannel& inputChannel)
-    {
-        return inputChannel.GetInputChannelId() == AzFramework::InputDeviceMouse::SystemCursorPosition;
-    }
-
-    AzToolsFramework::ViewportInteraction::KeyboardModifier AnimViewportInputController::GetKeyboardModifier(
-        const AzFramework::InputChannel& inputChannel)
-    {
-        using AzToolsFramework::ViewportInteraction::KeyboardModifier;
-        using Key = AzFramework::InputDeviceKeyboard::Key;
-        const auto& id = inputChannel.GetInputChannelId();
-        if (id == Key::ModifierAltL || id == Key::ModifierAltR)
-        {
-            return KeyboardModifier::Alt;
-        }
-        if (id == Key::ModifierCtrlL || id == Key::ModifierCtrlR)
-        {
-            return KeyboardModifier::Ctrl;
-        }
-        if (id == Key::ModifierShiftL || id == Key::ModifierShiftR)
-        {
-            return KeyboardModifier::Shift;
-        }
-        return KeyboardModifier::None;
-    }
-
     bool AnimViewportInputController::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
         using AzFramework::InputChannel;
@@ -74,6 +28,7 @@ namespace EMStudio
         using AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
         using AzToolsFramework::ViewportInteraction::ProjectedViewportRay;
         using AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
+        using AzToolsFramework::ViewportInteraction::Helpers;
 
         bool interactionHandled = false;
         float wheelDelta = 0.0f;
@@ -81,7 +36,7 @@ namespace EMStudio
         AZStd::optional<MouseEvent> eventType;
 
         const auto state = event.m_inputChannel.GetState();
-        if (IsMouseMove(event.m_inputChannel))
+        if (Helpers::IsMouseMove(event.m_inputChannel))
         {
             const auto* position = event.m_inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
             AZ_Assert(position, "Expected PositionData2D but found nullptr");
@@ -104,7 +59,7 @@ namespace EMStudio
 
             eventType = MouseEvent::Move;
         }
-        else if (auto mouseButton = GetMouseButton(event.m_inputChannel); mouseButton != MouseButton::None)
+        else if (auto mouseButton = Helpers::GetMouseButton(event.m_inputChannel); mouseButton != MouseButton::None)
         {
             const AZ::u32 mouseButtonValue = static_cast<AZ::u32>(mouseButton);
             overrideButton = mouseButton;
@@ -124,7 +79,7 @@ namespace EMStudio
                 }
             }
         }
-        else if (auto keyboardModifier = GetKeyboardModifier(event.m_inputChannel); keyboardModifier != KeyboardModifier::None)
+        else if (auto keyboardModifier = Helpers::GetKeyboardModifier(event.m_inputChannel); keyboardModifier != KeyboardModifier::None)
         {
             if (state == InputChannel::State::Began || state == InputChannel::State::Updated)
             {

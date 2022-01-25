@@ -48,10 +48,7 @@ namespace EMStudio
         delete m_importActorCallback;
         delete m_removeActorCallback;
 
-        if (ManipulatorRequestBus::Handler::BusIsConnected())
-        {
-            ManipulatorRequestBus::Handler::BusDisconnect();
-        }
+        ManipulatorRequestBus::Handler::BusDisconnect();
     }
 
     const char* AtomRenderPlugin::GetName() const
@@ -154,7 +151,7 @@ namespace EMStudio
         AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
         worldTransform.SetTranslation(m_animViewportWidget->GetAnimViewportRenderer()->GetCharacterCenter());
 
-        // Setup the translate manipulator
+        // Setup the translation manipulator
         m_translationManipulators.SetSpace(worldTransform);
         AzToolsFramework::ConfigureTranslationManipulatorAppearance3d(&m_translationManipulators);
         m_translationManipulators.InstallLinearManipulatorMouseMoveCallback(
@@ -328,11 +325,13 @@ namespace EMStudio
             keyboardModifiers, &AztfVi::EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
 
         debugDisplay->DepthTestOff();
+        const AzFramework::ScreenPoint screenPoint = AztfVi::ScreenPointFromQPoint(m_animViewportWidget->mapFromGlobal(QCursor::pos()));
         m_manipulatorManager->DrawManipulators(
             *debugDisplay, m_animViewportWidget->GetCameraState(),
-            BuildMouseInteractionInternal(
-                AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), keyboardModifiers,
-                BuildMousePick(m_animViewportWidget->mapFromGlobal(QCursor::pos()))));
+            AztfVi::BuildMouseInteraction(
+                AztfVi::BuildMousePick(m_animViewportWidget->GetCameraState(), screenPoint),
+                AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())),
+                AztfVi::InteractionId(AZ::EntityId(), m_animViewportWidget->GetViewportContext()->GetId()), keyboardModifiers ));
         debugDisplay->DepthTestOn();
     }
 
@@ -366,30 +365,6 @@ namespace EMStudio
         default:
             return false;
         }
-    }
-
-    AzToolsFramework::ViewportInteraction::MousePick AtomRenderPlugin::BuildMousePick(const QPoint& point) const
-    {
-        AzToolsFramework::ViewportInteraction::MousePick mousePick;
-        mousePick.m_screenCoordinates = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point);
-        const auto [origin, direction] = m_animViewportWidget->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
-        mousePick.m_rayOrigin = origin;
-        mousePick.m_rayDirection = direction;
-        return mousePick;
-    }
-
-    AzToolsFramework::ViewportInteraction::MouseInteraction AtomRenderPlugin::BuildMouseInteractionInternal(
-        const AzToolsFramework::ViewportInteraction::MouseButtons buttons,
-        const AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers,
-        const AzToolsFramework::ViewportInteraction::MousePick& mousePick) const
-    {
-        AzToolsFramework::ViewportInteraction::MouseInteraction mouse;
-        mouse.m_interactionId.m_cameraId = AZ::EntityId(AZ::EntityId::InvalidEntityId);
-        mouse.m_interactionId.m_viewportId = m_animViewportWidget->GetViewportContext()->GetId();
-        mouse.m_mouseButtons = buttons;
-        mouse.m_mousePick = mousePick;
-        mouse.m_keyboardModifiers = modifiers;
-        return mouse;
     }
 
     // Command callbacks

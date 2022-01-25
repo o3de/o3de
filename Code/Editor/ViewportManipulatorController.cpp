@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportInteractionHelpers.h>
 
 #include <QApplication>
 
@@ -32,53 +33,6 @@ namespace SandboxEditor
     }
 
     ViewportManipulatorControllerInstance::~ViewportManipulatorControllerInstance() = default;
-
-    AzToolsFramework::ViewportInteraction::MouseButton ViewportManipulatorControllerInstance::GetMouseButton(
-        const AzFramework::InputChannel& inputChannel)
-    {
-        using AzToolsFramework::ViewportInteraction::MouseButton;
-        using InputButton = AzFramework::InputDeviceMouse::Button;
-        const auto& id = inputChannel.GetInputChannelId();
-        if (id == InputButton::Left)
-        {
-            return MouseButton::Left;
-        }
-        if (id == InputButton::Middle)
-        {
-            return MouseButton::Middle;
-        }
-        if (id == InputButton::Right)
-        {
-            return MouseButton::Right;
-        }
-        return MouseButton::None;
-    }
-
-    bool ViewportManipulatorControllerInstance::IsMouseMove(const AzFramework::InputChannel& inputChannel)
-    {
-        return inputChannel.GetInputChannelId() == AzFramework::InputDeviceMouse::SystemCursorPosition;
-    }
-
-    AzToolsFramework::ViewportInteraction::KeyboardModifier ViewportManipulatorControllerInstance::GetKeyboardModifier(
-        const AzFramework::InputChannel& inputChannel)
-    {
-        using AzToolsFramework::ViewportInteraction::KeyboardModifier;
-        using Key = AzFramework::InputDeviceKeyboard::Key;
-        const auto& id = inputChannel.GetInputChannelId();
-        if (id == Key::ModifierAltL || id == Key::ModifierAltR)
-        {
-            return KeyboardModifier::Alt;
-        }
-        if (id == Key::ModifierCtrlL || id == Key::ModifierCtrlR)
-        {
-            return KeyboardModifier::Ctrl;
-        }
-        if (id == Key::ModifierShiftL || id == Key::ModifierShiftR)
-        {
-            return KeyboardModifier::Shift;
-        }
-        return KeyboardModifier::None;
-    }
 
     bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
@@ -97,6 +51,7 @@ namespace SandboxEditor
         using AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
         using AzToolsFramework::ViewportInteraction::ProjectedViewportRay;
         using AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
+        using AzToolsFramework::ViewportInteraction::Helpers;
 
         bool interactionHandled = false;
         float wheelDelta = 0.0f;
@@ -109,7 +64,7 @@ namespace SandboxEditor
         const bool finishedProcessingEvents = event.m_priority == InteractionPriority;
 
         const auto state = event.m_inputChannel.GetState();
-        if (IsMouseMove(event.m_inputChannel))
+        if (Helpers::IsMouseMove(event.m_inputChannel))
         {
             // Cache the ray trace results when doing manipulator interaction checks, no need to recalculate after
             if (event.m_priority == ManipulatorPriority)
@@ -136,7 +91,7 @@ namespace SandboxEditor
 
             eventType = MouseEvent::Move;
         }
-        else if (auto mouseButton = GetMouseButton(event.m_inputChannel); mouseButton != MouseButton::None)
+        else if (auto mouseButton = Helpers::GetMouseButton(event.m_inputChannel); mouseButton != MouseButton::None)
         {
             const AZ::u32 mouseButtonValue = static_cast<AZ::u32>(mouseButton);
             overrideButton = mouseButton;
@@ -178,7 +133,7 @@ namespace SandboxEditor
                 }
             }
         }
-        else if (auto keyboardModifier = GetKeyboardModifier(event.m_inputChannel); keyboardModifier != KeyboardModifier::None)
+        else if (auto keyboardModifier = Helpers::GetKeyboardModifier(event.m_inputChannel); keyboardModifier != KeyboardModifier::None)
         {
             if (state == InputChannel::State::Began || state == InputChannel::State::Updated)
             {

@@ -67,14 +67,8 @@ namespace EMStudio
         void SetManipulatorMode(RenderOptions::ManipulatorMode mode);
 
     private:
+        // ManipulatorRequestBus overrides...
         bool HandleMouseEvent(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent) override;
-
-        // From a series of input primitives, compose a complete mouse interaction.
-        AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteractionInternal(
-            AzToolsFramework::ViewportInteraction::MouseButtons buttons,
-            AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers,
-            const AzToolsFramework::ViewportInteraction::MousePick& mousePick) const;
-        AzToolsFramework::ViewportInteraction::MousePick BuildMousePick(const QPoint& point) const;
 
         void SetupManipulators();
         void OnManipulatorMoved(const AZ::Vector3& position);
