@@ -114,6 +114,5 @@ PixelOutput MainPS(VSOutput IN)
     OUT.m_color.rgb = normalize(outColor) * 0.5 + 0.5;
 	OUT.m_color.a = 1.0;
 
-    OUT.m_color = float4(0.0,0.0,1.0,1.0);
     return OUT;
 } 

@@ -38,6 +38,36 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float4 m_color;
     float m_desaturationAmount;
 }
+
+static float2 maskSize;
+
+float2 normalizedUV(float2 uv)
+{
+    return uv/maskSize;
+}
+ 
+// Entity outliner effect
+float selectedEntityOutliner(float2 unormalizedUv)
+{
+    float r = 0.;
+    float lineThickness = 15.;
+     
+    // Selected entity mask value
+    float S = PassSrg::m_mask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv)).a;
+     
+    // Outliner kernal
+    for(float u = -lineThickness; u <= lineThickness; u+=1.)
+    {
+        for(float v = -lineThickness; v <= lineThickness; v+=1.)
+        {
+            r += PassSrg::m_mask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(u,v))).r;
+        }
+    }
+     
+    // Only apply the outliner effect to fragments not part of S
+    // Could just do an early exit above when S > 0.0...
+    return min(1.0, (r / lineThickness) * (1.0 - S));
+}
  
 PSOutput MainPS(VSOutput IN)
 {
@@ -46,15 +76,30 @@ PSOutput MainPS(VSOutput IN)
     // Fetch the pixel color from the input texture
     float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
  
+    // Get the mask value at this point
     float4 mask = PassSrg::m_mask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
     // Averge the colors to get a desaturated effect
     float sat = (color.r + color.g + color.b) / 3.0;
- 
-    OUT.m_color.rgb = lerp(color, float3(sat, sat, sat), PassSrg::m_desaturationAmount);
-    OUT.m_color.w = 1;
- 
-    OUT.m_color.rgb = mask.rgb;
+
+    // Calculate the visual effect for non-mask entities
+    float3 unmasked = lerp(color, float3(sat, sat, sat), PassSrg::m_desaturationAmount);
+    
+    // Apply the visual effect to non-mask entities, leaving mask entities untouched
+    OUT.m_color.rgb = lerp(unmasked.rgb, mask.rgb, mask.a);
+    OUT.m_color.a = 1.0;
+
+    uint2 uMaskSize;
+    PassSrg::m_mask.GetDimensions(uMaskSize.x, uMaskSize.y);
+
+    maskSize.x = float(uMaskSize.x);
+    maskSize.y = float(uMaskSize.y);
+
+    float2 unnormalizedUV = float2(IN.m_texCoord.x * maskSize.x, IN.m_texCoord.y * maskSize.y);
+
+    float outline = selectedEntityOutliner(unnormalizedUV);
+    float3 outlineColor = float3(.96, 0.65, 0.13);
+    OUT.m_color.rgb = lerp(OUT.m_color.rgb, outlineColor, outline);
 
     return OUT;
 }
