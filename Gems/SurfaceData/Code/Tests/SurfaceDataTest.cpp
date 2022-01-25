@@ -259,12 +259,12 @@ public:
         m_application.Destroy();
     }
 
-    bool ValidateRegionListSize(AZ::Aabb bounds, AZ::Vector2 stepSize, const SurfaceData::SurfacePointListPerPosition& outputList)
+    bool ValidateRegionListSize(AZ::Aabb bounds, AZ::Vector2 stepSize, const SurfaceData::SurfacePointLists& outputLists)
     {
         // We expect the output list to contain width * height output entries.
         // The right edge of the AABB should be treated as exclusive, so a 4x4 box with 1 step size will produce 16 entries (0, 1, 2, 3 on each dimension),
         // but a 4.1 x 4.1 box with 1 step size will produce 25 entries (0, 1, 2, 3, 4 on each dimension).
-        return (outputList.size() == aznumeric_cast<size_t>(ceil(bounds.GetXExtent() * stepSize.GetX()) * ceil(bounds.GetYExtent() * stepSize.GetY())));
+        return (outputLists.size() == aznumeric_cast<size_t>(ceil(bounds.GetXExtent() * stepSize.GetX()) * ceil(bounds.GetYExtent() * stepSize.GetY())));
     }
 
 
@@ -501,7 +501,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion)
     // Query for all the surface points from (0, 0, 16) - (4, 4, 16) with a step size of 1.
     // Note that the Z range is deliberately chosen to be outside the surface provider range to demonstrate
     // that it is ignored when selecting points.
-    SurfaceData::SurfacePointListPerPosition availablePointsPerPosition;
+    SurfaceData::SurfacePointLists availablePointsPerPosition;
     AZ::Vector2 stepSize(1.0f, 1.0f);
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f, 0.0f, 16.0f), AZ::Vector3(4.0f, 4.0f, 16.0f));
     SurfaceData::SurfaceTagVector testTags = providerTags;
@@ -513,19 +513,15 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion)
     EXPECT_TRUE(ValidateRegionListSize(regionBounds, stepSize, availablePointsPerPosition));
 
     // We expect every entry in the output list to have two surface points, at heights 0 and 4, sorted in
-    // decreasing height order.  The XY positions should match the query positions, and the masks list should
-    // be the same size as the set of masks the provider owns.  We *could* check every mask as well for completeness,
-    // but that seems like overkill.
-    for (auto& queryPosition : availablePointsPerPosition)
+    // decreasing height order.  The masks list should be the same size as the set of masks the provider owns.
+    // We *could* check every mask as well for completeness, but that seems like overkill.
+    for (auto& pointList : availablePointsPerPosition)
     {
-        const SurfaceData::SurfacePointList& pointList = queryPosition.second;
         EXPECT_TRUE(pointList.size() == 2);
         EXPECT_TRUE(pointList[0].m_position.GetZ() == 4.0f);
         EXPECT_TRUE(pointList[1].m_position.GetZ() == 0.0f);
         for (auto& point : pointList)
         {
-            EXPECT_TRUE(queryPosition.first.GetX() == point.m_position.GetX());
-            EXPECT_TRUE(queryPosition.first.GetY() == point.m_position.GetY());
             EXPECT_TRUE(point.m_masks.size() == providerTags.size());
         }
     }
@@ -543,7 +539,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingMas
 
     // Query for all the surface points from (0, 0, 0) - (4, 4, 4) with a step size of 1.
     // We only include a surface tag that does NOT exist in the surface provider.
-    SurfaceData::SurfacePointListPerPosition availablePointsPerPosition;
+    SurfaceData::SurfacePointLists availablePointsPerPosition;
     AZ::Vector2 stepSize(1.0f, 1.0f);
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(4.0f));
     SurfaceData::SurfaceTagVector testTags = { SurfaceData::SurfaceTag(m_testSurfaceNoMatchCrc) };
@@ -558,7 +554,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingMas
     // any of the masks from our mock surface provider.
     for (auto& queryPosition : availablePointsPerPosition)
     {
-        EXPECT_TRUE(queryPosition.second.size() == 0);
+        EXPECT_TRUE(queryPosition.size() == 0);
     }
 }
 
@@ -573,7 +569,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingReg
                                      AZ::Vector3(0.0f), AZ::Vector3(8.0f), AZ::Vector3(0.25f, 0.25f, 4.0f));
 
     // Query for all the surface points from (16, 16) - (20, 20) with a step size of 1.
-    SurfaceData::SurfacePointListPerPosition availablePointsPerPosition;
+    SurfaceData::SurfacePointLists availablePointsPerPosition;
     AZ::Vector2 stepSize(1.0f, 1.0f);
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(16.0f), AZ::Vector3(20.0f));
     SurfaceData::SurfaceTagVector testTags = providerTags;
@@ -586,9 +582,8 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingReg
 
     // We expect every entry in the output list to have no surface points, since the input points don't overlap with
     // our surface provider.
-    for (auto& queryPosition : availablePointsPerPosition)
+    for (auto& pointList : availablePointsPerPosition)
     {
-        const SurfaceData::SurfacePointList& pointList = queryPosition.second;
         EXPECT_TRUE(pointList.size() == 0);
     }
 }
@@ -626,7 +621,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_ProviderModif
 
     for (auto& tagTest : tagTests)
     {
-        SurfaceData::SurfacePointListPerPosition availablePointsPerPosition;
+        SurfaceData::SurfacePointLists availablePointsPerPosition;
         AZ::Vector2 stepSize(1.0f, 1.0f);
         AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(4.0f));
         SurfaceData::SurfaceTagVector testTags = tagTest;
@@ -639,9 +634,8 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_ProviderModif
 
         // We expect every entry in the output list to have two surface points (with heights 0 and 4),
         // and each point should have both the "test_surface1" and "test_surface2" tag.
-        for (auto& queryPosition : availablePointsPerPosition)
+        for (auto& pointList : availablePointsPerPosition)
         {
-            const SurfaceData::SurfacePointList& pointList = queryPosition.second;
             EXPECT_TRUE(pointList.size() == 2);
             for (auto& point : pointList)
             {
@@ -673,7 +667,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_SimilarPoints
 
 
     // Query for all the surface points from (0, 0) - (4, 4) with a step size of 1.
-    SurfaceData::SurfacePointListPerPosition availablePointsPerPosition;
+    SurfaceData::SurfacePointLists availablePointsPerPosition;
     AZ::Vector2 stepSize(1.0f, 1.0f);
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(4.0f));
     SurfaceData::SurfaceTagVector testTags = { SurfaceData::SurfaceTag(m_testSurface1Crc), SurfaceData::SurfaceTag(m_testSurface2Crc) };
@@ -686,9 +680,8 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_SimilarPoints
 
     // We expect every entry in the output list to have two surface points, not four.  The two points
     // should have both surface tags on them.
-    for (auto& queryPosition : availablePointsPerPosition)
+    for (auto& pointList : availablePointsPerPosition)
     {
-        const SurfaceData::SurfacePointList& pointList = queryPosition.second;
         EXPECT_TRUE(pointList.size() == 2);
         for (auto& point : pointList)
         {
@@ -718,7 +711,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_DissimilarPoi
 
 
     // Query for all the surface points from (0, 0) - (4, 4) with a step size of 1.
-    SurfaceData::SurfacePointListPerPosition availablePointsPerPosition;
+    SurfaceData::SurfacePointLists availablePointsPerPosition;
     AZ::Vector2 stepSize(1.0f, 1.0f);
     AZ::Aabb regionBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(4.0f));
     SurfaceData::SurfaceTagVector testTags = { SurfaceData::SurfaceTag(m_testSurface1Crc), SurfaceData::SurfaceTag(m_testSurface2Crc) };
@@ -731,9 +724,8 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_DissimilarPoi
 
     // We expect every entry in the output list to have four surface points with one tag each,
     // because the points are far enough apart that they won't merge.
-    for (auto& queryPosition : availablePointsPerPosition)
+    for (auto& pointList : availablePointsPerPosition)
     {
-        const SurfaceData::SurfacePointList& pointList = queryPosition.second;
         EXPECT_TRUE(pointList.size() == 4);
         for (auto& point : pointList)
         {
