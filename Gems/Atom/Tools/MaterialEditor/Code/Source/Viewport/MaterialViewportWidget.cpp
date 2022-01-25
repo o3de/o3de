@@ -50,7 +50,6 @@
 #include <Viewport/MaterialViewportRequestBus.h>
 #include <Viewport/MaterialViewportSettings.h>
 #include <Viewport/MaterialViewportWidget.h>
-#include <Viewport/PerformanceMonitorRequestBus.h>
 #include <Viewport/ui_MaterialViewportWidget.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -461,8 +460,6 @@ namespace MaterialEditor
         AtomToolsFramework::RenderViewportWidget::OnTick(deltaTime, time);
 
         m_renderPipeline->AddToRenderTickOnce();
-
-        PerformanceMonitorRequestBus::Broadcast(&PerformanceMonitorRequestBus::Handler::GatherMetrics);
 
         if (m_shadowCatcherMaterial)
         {
