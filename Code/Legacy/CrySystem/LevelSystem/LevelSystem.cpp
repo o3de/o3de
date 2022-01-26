@@ -15,7 +15,7 @@
 #include <ILocalizationManager.h>
 #include "CryPath.h"
 
-#include <LoadScreenBus.h>
+#include <CryCommon/LoadScreenBus.h>
 #include <CryCommon/StaticInstance.h>
 
 #include <AzCore/Time/ITime.h>

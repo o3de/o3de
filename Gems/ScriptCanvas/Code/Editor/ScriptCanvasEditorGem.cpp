@@ -26,8 +26,6 @@
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
 
-#include <Debugger/Debugger.h>
-
 #include <Editor/ReflectComponent.h>
 #include <Editor/SystemComponent.h>
 
