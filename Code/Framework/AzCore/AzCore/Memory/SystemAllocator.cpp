@@ -118,9 +118,9 @@ namespace AZ
                 AZ_Assert(!g_isSystemSchemaUsed, "AZ::SystemAllocator MUST be created first! It's the source of all allocations!");
 
 #if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-            m_schema = new (&g_systemSchema) HphaSchema(heapDesc);
+                m_schema = new (&g_systemSchema) HphaSchema(heapDesc);
 #elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-            m_schema = new (&g_systemSchema) MallocSchema(heapDesc);
+                m_schema = new (&g_systemSchema) MallocSchema(heapDesc);
 #endif
                 g_isSystemSchemaUsed = true;
                 isReady = true;
@@ -292,7 +292,7 @@ namespace AZ
     //=========================================================================
     SystemAllocator::size_type SystemAllocator::AllocationSize(pointer_type ptr)
     {
-    size_type allocSize = MemorySizeAdjustedDown(m_schema->AllocationSize(ptr));
+        size_type allocSize = MemorySizeAdjustedDown(m_schema->AllocationSize(ptr));
 
         return allocSize;
     }
