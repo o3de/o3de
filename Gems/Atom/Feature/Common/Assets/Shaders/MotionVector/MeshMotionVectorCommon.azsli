@@ -11,8 +11,6 @@
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-
 struct VSInput
 {
     float3 m_position : POSITION;
@@ -47,21 +45,22 @@ VSOutput MainVS(VSInput IN)
 {
     VSOutput OUT;
  
-    OUT.m_worldPos = mul(SceneSrg::GetObjectToWorldMatrix(ObjectSrg::m_objectId), float4(IN.m_position, 1.0)).xyz;
+    VertexLocalToWorld(IN.m_position, OUT.m_worldPos);
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPos, 1.0));
 
     if (o_prevPosition_isBound)
     {
-        OUT.m_worldPosPrev = mul(SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
+        LocalToWorldPrev(IN.m_optional_prevPosition, OUT.m_worldPosPrev);
     }
     else
     {
-        OUT.m_worldPosPrev = mul(SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId), float4(IN.m_position, 1.0)).xyz;
+        LocalToWorldPrev(IN.m_position, OUT.m_worldPosPrev);
     }
 
     return OUT;
 }
 
+// NOTE: This shader doesn't yet address alpha-clipped geometry, or geometry that leverages PDO
 PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;

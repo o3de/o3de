@@ -6,7 +6,4 @@
  *
  */
 
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <DepthPassCommon.azsli>
-
-// Use the depth pass shader with the default object srg

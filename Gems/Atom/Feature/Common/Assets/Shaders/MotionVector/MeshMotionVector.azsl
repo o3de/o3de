@@ -6,7 +6,4 @@
  *
  */
 
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <MeshMotionVectorCommon.azsli>
-
-// Use the mesh motion vector with the default object srg

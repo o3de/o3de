@@ -1,6 +1,11 @@
 {
     "Source" : "MeshMotionVectorSkin.azsl",
 
+    "Requirements": [
+      "VertexLocalToWorld",
+      "LocalToWorldPrev"
+    ],
+
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
     },

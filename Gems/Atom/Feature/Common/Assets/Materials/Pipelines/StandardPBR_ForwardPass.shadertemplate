@@ -1,6 +1,14 @@
 {
     "Source" : "./StandardPBR_ForwardPass.azsl",
 
+    "Requirements": [
+        "EvaluateUVs",
+        // TODO: provide a non-parallax variant that doesn't require a world-space TBN
+        "EvaluateWorldSpaceTBN",
+        "EvaluatePixelDepth",
+        "EvaluateEnhancedSurfaceAlphaClip"
+    ],
+
     "DepthStencilState" :
     {
         "Depth" :
@@ -30,6 +38,7 @@
         }
     },
 
+
     "CompilerHints" : { 
         "DisableOptimizations" : false
     },
@@ -43,7 +52,7 @@
           "type": "Vertex"
         },
         {
-          "name": "StandardPbr_ForwardPassPS_EDS",
+          "name": "StandardPbr_ForwardPassPS",
           "type": "Fragment"
         }
       ]

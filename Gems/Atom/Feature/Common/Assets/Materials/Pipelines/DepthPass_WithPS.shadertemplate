@@ -1,5 +1,13 @@
 {
-    "Source" : "./StandardPBR_DepthPass_WithPS.azsl",
+    "Source" : "./DepthPass_WithPS.azsl",
+
+    "Requirements": [
+      "VertexLocalToWorld",
+      "EvaluateUVs",
+      "EvaluateWorldSpaceTBN",
+      "EvaluatePixelDepth",
+      "MaybeClip"
+    ],
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }

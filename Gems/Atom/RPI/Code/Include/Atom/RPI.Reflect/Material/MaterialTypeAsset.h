@@ -16,6 +16,7 @@
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
+#include <Atom/RPI.Reflect/Material/ShaderFunctionCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
@@ -158,7 +159,14 @@ namespace AZ
             //! Defines the topology of user-facing inputs to the material
             Ptr<MaterialPropertiesLayout> m_materialPropertiesLayout;
 
-            //! The set of shaders that will be used for this material
+            //! The set of pipeline tags needed to couple this material type with a material pipeline
+            AZStd::vector<AZStd::string> m_pipelineTags;
+
+            //! The set of shader functions that will be used for this material
+            ShaderFunctionCollection m_shaderFunctionCollection;
+
+            //! The set of shaders that will be used for this material. This field is not serialized but
+            //! is initialized in memory based on the material type's associated material pipeline
             ShaderCollection m_shaderCollection;
 
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.

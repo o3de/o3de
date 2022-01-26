@@ -6,7 +6,4 @@
  *
  */
 
-#include <Atom/Features/Skin/SkinObjectSrg.azsli>
 #include <DepthPassCommon.azsli>
-
-// Use the depth pass shader with the skin object srg

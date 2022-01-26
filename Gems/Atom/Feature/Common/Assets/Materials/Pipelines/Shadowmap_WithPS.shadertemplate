@@ -1,5 +1,13 @@
 {
-    "Source" : "./StandardPBR_Shadowmap_WithPS.azsl",
+    "Source" : "./Shadowmap_WithPS.azsl",
+
+    "Requirements": [
+      "VertexLocalToWorld",
+      "EvaluateUVs",
+      "EvaluateWorldSpaceTBN",
+      "EvaluatePixelDepth",
+      "MaybeClip"
+    ],
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }

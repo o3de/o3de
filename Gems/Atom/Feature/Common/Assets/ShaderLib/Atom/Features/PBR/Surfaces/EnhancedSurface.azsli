@@ -21,14 +21,19 @@ class Surface
 
     // ------- BasePbrSurfaceData -------
     
-    float3 position;            //!< Position in world-space
-    float3 normal;              //!< Normal in world-space
-    float3 vertexNormal;        //!< Vertex normal in world-space
-    float3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
-    float3 specularF0;          //!< Fresnel f0 spectral value of the surface
-    float roughnessLinear;      //!< Perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
-    float roughnessA;           //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
-    float roughnessA2;          //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance
+    float3 position;                   //!< Position in world-space
+    float3 normal;                     //!< Normal in world-space
+    float3 vertexNormal;               //!< Vertex normal in world-space
+    float3 albedo;                     //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
+    float3 specularF0;                 //!< Fresnel f0 spectral value of the surface
+    float roughnessLinear;             //!< Perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
+    float roughnessA;                  //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
+    float roughnessA2;                 //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance
+    float3 emissiveLighting;           //!< Lighting emitted from the surface
+    float diffuseAmbientOcclusion;     //!< Diffuse occlusion factor (0 = dark, 1 = lit)
+    float specularOcclusion;           //!< Specular occlusion (0 = dark, 1 = lit)
+    float subsurfaceScatteringQuality; //!< Subsurface scattering quality
+    float3 scatterDistance;            //!< Subsurface scatter distance
 
     //! Applies specular anti-aliasing to roughnessA2 
     void ApplySpecularAA();
