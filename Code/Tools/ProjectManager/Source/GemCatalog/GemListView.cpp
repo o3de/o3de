@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
                     });
             });
         
-        connect(header, &AdjustableHeaderWidget::sectionsResized, [=] { repaint(); });
+        connect(header, &AdjustableHeaderWidget::sectionsResized, [=] { update(); });
 
         setItemDelegate(itemDelegate);
     }
