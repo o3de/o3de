@@ -95,26 +95,26 @@ namespace Multiplayer
             AZStd::vector<MultiplayerAuditingElement>&& entryDetails) = 0;
     };
 
-    #define AZ_MPAUDIT_INPUT_REWINDABLE(INPUT, REWINDABLE, VALUE_TYPE)                                                          \
-    if (AZ::Interface<Multiplayer::IMultiplayerDebug>::Get())                                                                   \
-    {                                                                                                                           \
-        Multiplayer::MultiplayerAuditingElement detail;                                                                         \
-        detail.name = INPUT.GetOwnerName();                                                                                     \
-        detail.elements.push_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<VALUE_TYPE>>(                        \
-            #REWINDABLE, REWINDABLE.Get(), REWINDABLE.GetAuthority()));                                                         \
-        AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->AddAuditEntry(                                                    \
-            Multiplayer::MultiplayerAuditCategory::Event, INPUT.GetClientInputId(), INPUT.GetHostFrameId(),                     \
-            AZStd::string::format("%s rewindable: %s", INPUT.GetOwnerName().c_str(), #REWINDABLE), { AZStd::move(detail) });    \
+    #define AZ_MPAUDIT_INPUT_REWINDABLE(INPUT, REWINDABLE, VALUE_TYPE)                                                            \
+    if (AZ::Interface<Multiplayer::IMultiplayerDebug>::Get())                                                                     \
+    {                                                                                                                             \
+        Multiplayer::MultiplayerAuditingElement detail;                                                                           \
+        detail.m_name = INPUT.GetOwnerName();                                                                                     \
+        detail.m_elements.push_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<VALUE_TYPE>>(                        \
+            #REWINDABLE, REWINDABLE.Get(), REWINDABLE.GetAuthority()));                                                           \
+        AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->AddAuditEntry(                                                      \
+            Multiplayer::MultiplayerAuditCategory::Event, INPUT.GetClientInputId(), INPUT.GetHostFrameId(),                       \
+            AZStd::string::format("%s rewindable: %s", INPUT.GetOwnerName().c_str(), #REWINDABLE), { AZStd::move(detail) });      \
     }
 
-    #define AZ_MPAUDIT_INPUT_VALUE(INPUT, VALUE, VALUE_TYPE)                                                                    \
-    if (AZ::Interface<Multiplayer::IMultiplayerDebug>::Get())                                                                   \
-    {                                                                                                                           \
-        Multiplayer::MultiplayerAuditingElement detail;                                                                         \
-        detail.name = INPUT.GetOwnerName();                                                                                     \
-        detail.elements.push_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<VALUE_TYPE>>(#VALUE, VALUE, VALUE)); \
-        AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->AddAuditEntry(                                                    \
-            Multiplayer::MultiplayerAuditCategory::Event, INPUT.GetClientInputId(), INPUT.GetHostFrameId(),                     \
-            AZStd::string::format("%s: %s", INPUT.GetOwnerName().c_str(), #VALUE), { AZStd::move(detail) });                    \
+    #define AZ_MPAUDIT_INPUT_VALUE(INPUT, VALUE, VALUE_TYPE)                                                                      \
+    if (AZ::Interface<Multiplayer::IMultiplayerDebug>::Get())                                                                     \
+    {                                                                                                                             \
+        Multiplayer::MultiplayerAuditingElement detail;                                                                           \
+        detail.m_name = INPUT.GetOwnerName();                                                                                     \
+        detail.m_elements.push_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<VALUE_TYPE>>(#VALUE, VALUE, VALUE)); \
+        AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->AddAuditEntry(                                                      \
+            Multiplayer::MultiplayerAuditCategory::Event, INPUT.GetClientInputId(), INPUT.GetHostFrameId(),                       \
+            AZStd::string::format("%s: %s", INPUT.GetOwnerName().c_str(), #VALUE), { AZStd::move(detail) });                      \
     }
 }

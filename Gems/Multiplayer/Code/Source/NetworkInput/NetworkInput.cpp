@@ -86,14 +86,6 @@ namespace Multiplayer
         return m_hostBlendFactor;
     }
 
-    void NetworkInput::LogComponentInputDelta() const
-    {
-        for (uint16_t i = 0; i < m_componentInputs.size(); ++i)
-        {
-            //AZLOG_WARN(m_componentInputs[i].get()->GetInputDeltaLog().c_str());
-        }
-    }
-
     AZStd::vector<MultiplayerAuditingElement> NetworkInput::GetComponentInputDeltaLogs() const
     {
         AZStd::vector<MultiplayerAuditingElement> logs;

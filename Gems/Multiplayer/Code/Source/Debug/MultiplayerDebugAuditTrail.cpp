@@ -37,13 +37,13 @@ namespace Multiplayer
         return m_filter;
     }
 
-    void MultiplayerDebugAuditTrail::SetAuditTrailFilter(AZStd::string_view filter)
+    void MultiplayerDebugAuditTrail::SetAuditTrailFilter(const AZStd::string_view& filter)
     {
         m_filter = filter;
     }
 
     // --------------------------------------------------------------------------------------------
-    void MultiplayerDebugAuditTrail::OnImGuiUpdate(AZStd::deque<AuditTrailInput> auditTrailElems)
+    void MultiplayerDebugAuditTrail::OnImGuiUpdate(const AZStd::deque<AuditTrailInput>& auditTrailElems)
     {
 #if defined(IMGUI_ENABLED)
         const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;

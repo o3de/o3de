@@ -222,12 +222,16 @@ namespace Multiplayer
                 }
                 else
                 {
-                    // Add to Audit Trail here (server)
-                    AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
-                    if (!inputLogs.empty())
+                    if (cl_EnableDesyncDebugging)
                     {
-                        AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry( MultiplayerAuditCategory::Input,
-                            input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(), AZStd::move(inputLogs));
+                        // Add to Audit Trail here (server)
+                        AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
+                        if (!inputLogs.empty())
+                        {
+                            AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
+                                MultiplayerAuditCategory::Input, input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(),
+                                AZStd::move(inputLogs));
+                        }
                     }
                     AZLOG(NET_Prediction, "Processed InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
                 }
@@ -362,7 +366,6 @@ namespace Multiplayer
             NetworkInput& startReplayInput = m_inputHistory[startReplayIndex];
             AZLOG_WARN("** Autonomous Desync - Correcting clientInputId=%d from index=%d",
                 aznumeric_cast<int32_t>(inputId), startReplayIndex);
-            startReplayInput.LogComponentInputDelta();
 
 #ifndef AZ_RELEASE_BUILD
             auto iter = m_predictiveStateHistory.find(inputId);

@@ -51,7 +51,7 @@ namespace Multiplayer
         ~MultiplayerDebugAuditTrail();
 
         //! Main update loop.
-        void OnImGuiUpdate(AZStd::deque<AuditTrailInput> auditTrailElems);
+        void OnImGuiUpdate(const AZStd::deque<AuditTrailInput>& auditTrailElems);
 
         //! Draws hierarchy information over hierarchy root entities.
         void UpdateDebugOverlay();
@@ -63,7 +63,7 @@ namespace Multiplayer
         AZStd::string_view GetAuditTrialFilter();
 
         //! Sets string filter for the audit trail
-        void SetAuditTrailFilter(AZStd::string_view filter);
+        void SetAuditTrailFilter(const AZStd::string_view& filter);
     private:
         AZ::ScheduledEvent m_updateDebugOverlay;
 

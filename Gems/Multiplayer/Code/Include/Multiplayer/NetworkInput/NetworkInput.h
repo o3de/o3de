@@ -53,9 +53,13 @@ namespace Multiplayer
 
         bool Serialize(AzNetworking::ISerializer& serializer);
 
-        void LogComponentInputDelta() const;
+        //! Fetches a vector of datums detailing which values per component input were
+        //! not the default
+        //! @return A vector of datums detailing inputs and their non-default values
         AZStd::vector<MultiplayerAuditingElement> GetComponentInputDeltaLogs() const;
 
+        //! Returns the name of the owner entity of this input
+        //! @return An AZStd::string of the owning entity's name
         const AZStd::string GetOwnerName() const;
 
         const IMultiplayerComponentInput* FindComponentInput(NetComponentId componentId) const;
