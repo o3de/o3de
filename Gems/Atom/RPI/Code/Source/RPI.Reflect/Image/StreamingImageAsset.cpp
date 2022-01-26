@@ -315,9 +315,10 @@ namespace AZ
         {
             AZStd::array<T, 1> values = { aznumeric_cast<T>(0) };
 
-            auto position = AZStd::make_pair(x, y);
+            auto topLeft = AZStd::make_pair(x, y);
+            auto bottomRight = AZStd::make_pair(x + 1, y + 1);
             AZStd::span<T> valueSpan(values.begin(), values.size());
-            GetSubImagePixelValues(position, position, valueSpan, componentIndex, mip, slice);
+            GetSubImagePixelValues(topLeft, bottomRight, valueSpan, componentIndex, mip, slice);
 
             return values[0];
         }
@@ -354,9 +355,9 @@ namespace AZ
                 const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format);
 
                 size_t outValuesIndex = 0;
-                for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
+                for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
                 {
-                    for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
+                    for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                     {
                         size_t imageDataIndex = (y * width + x) * pixelSize;
 
@@ -381,9 +382,9 @@ namespace AZ
                 const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format);
 
                 size_t outValuesIndex = 0;
-                for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
+                for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
                 {
-                    for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
+                    for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                     {
                         size_t imageDataIndex = (y * width + x) * pixelSize;
 
@@ -408,9 +409,9 @@ namespace AZ
                 const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format);
 
                 size_t outValuesIndex = 0;
-                for (uint32_t y = topLeft.second; y <= bottomRight.second; ++y)
+                for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
                 {
-                    for (uint32_t x = topLeft.first; x <= bottomRight.first; ++x)
+                    for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                     {
                         size_t imageDataIndex = (y * width + x) * pixelSize;
 

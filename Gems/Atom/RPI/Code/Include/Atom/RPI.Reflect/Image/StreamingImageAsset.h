@@ -91,12 +91,15 @@ namespace AZ
             T GetSubImagePixelValue(uint32_t x, uint32_t y, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
 
             //! Retrieve a region of image pixel values (float) for specified mip and slice
+            //! NOTE: The topLeft coordinate is inclusive, whereas the bottomRight is exclusive
             void GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<float> outValues, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
 
             //! Retrieve a region of image pixel values (uint) for specified mip and slice
+            //! NOTE: The topLeft coordinate is inclusive, whereas the bottomRight is exclusive
             void GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::u32> outValues, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
 
             //! Retrieve a region of image pixel values (int) for specified mip and slice
+            //! NOTE: The topLeft coordinate is inclusive, whereas the bottomRight is exclusive
             void GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::s32> outValues, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
 
             //! Returns streaming image pool asset id of the pool that will be used to create the streaming image.
