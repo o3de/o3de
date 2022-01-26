@@ -6,12 +6,12 @@
  *
  */
 
+#include <Terrain/Passes/TerrainDetailTextureComputePass.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 #include <Atom/Utils/Utils.h>
-
 #include <Atom/RHI/RHISystemInterface.h>
-
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
@@ -21,9 +21,6 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
-
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-
 #include <Atom/Feature/RenderCommon.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
@@ -55,6 +52,8 @@ namespace Terrain
                 ->Version(0)
                 ;
         }
+
+        TerrainDetailTextureComputePassData::Reflect(context);
     }
 
     void TerrainFeatureProcessor::Activate()

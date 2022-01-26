@@ -12,5 +12,5 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    RWTexture2D<float4> m_clipmap;
+    RWTexture2D<float4> m_detailTexClipmap;
 }

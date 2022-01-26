@@ -18,36 +18,35 @@ namespace Terrain
 {
     class TerrainFeatureProcessor;
 
-    //! Custom data for the Clipmap Generation Pass.
-    struct ClipmapGenerationPassData
+    struct TerrainDetailTextureComputePassData
         : public AZ::RPI::ComputePassData
     {
-        AZ_RTTI(Terrain::ClipmapGenerationPassData, "{387F7457-16E5-4AA6-8D96-56ED4532CA8D}", AZ::RPI::ComputePassData);
-        AZ_CLASS_ALLOCATOR(Terrain::ClipmapGenerationPassData, AZ::SystemAllocator, 0);
+        AZ_RTTI(Terrain::TerrainDetailTextureComputePassData, "{387F7457-16E5-4AA6-8D96-56ED4532CA8D}", AZ::RPI::ComputePassData);
+        AZ_CLASS_ALLOCATOR(Terrain::TerrainDetailTextureComputePassData, AZ::SystemAllocator, 0);
 
-        ClipmapGenerationPassData() = default;
-        virtual ~ClipmapGenerationPassData() = default;
+        TerrainDetailTextureComputePassData() = default;
+        virtual ~TerrainDetailTextureComputePassData() = default;
 
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    class ClipmapGenerationPass
+    class TerrainDetailTextureComputePass
         : public AZ::RPI::ComputePass
     {
-        AZ_RPI_PASS(ClipmapGenerationPass);
+        AZ_RPI_PASS(TerrainDetailTextureComputePass);
 
     public:
-        AZ_RTTI(Terrain::ClipmapGenerationPass, "{69A8207B-3311-4BB1-BD4E-A08B5E0424B5}", AZ::RPI::ComputePass);
-        AZ_CLASS_ALLOCATOR(Terrain::ClipmapGenerationPass, AZ::SystemAllocator, 0);
-        virtual ~ClipmapGenerationPass() = default;
+        AZ_RTTI(Terrain::TerrainDetailTextureComputePass, "{69A8207B-3311-4BB1-BD4E-A08B5E0424B5}", AZ::RPI::ComputePass);
+        AZ_CLASS_ALLOCATOR(Terrain::TerrainDetailTextureComputePass, AZ::SystemAllocator, 0);
+        virtual ~TerrainDetailTextureComputePass() = default;
 
-        static AZ::RPI::Ptr<ClipmapGenerationPass> Create(const AZ::RPI::PassDescriptor& descriptor);
+        static AZ::RPI::Ptr<TerrainDetailTextureComputePass> Create(const AZ::RPI::PassDescriptor& descriptor);
 
         void SetFeatureProcessor(TerrainFeatureProcessor* terrainFeatureProcessor);
 
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
     private:
-        ClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
+        TerrainDetailTextureComputePass(const AZ::RPI::PassDescriptor& descriptor);
 
         void BuildCommandListInternal(const AZ::RHI::FrameGraphExecuteContext& context) override;
 

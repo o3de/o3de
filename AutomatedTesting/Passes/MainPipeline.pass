@@ -43,9 +43,9 @@
                     ]
                 },
                 {
-                    "Name": "ClipmapGenerationPass",
-                    "TemplateName": "ClipmapGenerationPassTemplate",
-                    "Enabled": false
+                    "Name": "TerrainDetailTextureComputePass",
+                    "TemplateName": "TerrainDetailTextureComputePassTemplate",
+                    "Enabled": true
                 },
                 {
                     "Name": "DepthPrePass",

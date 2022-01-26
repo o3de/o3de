@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "ClipmapGenerationSRG.azsli"
+#include "TerrainDetailTextureComputePassSrg.azsli"
 
 [numthreads(32,32,1)]
 void MainCS(
@@ -14,5 +14,5 @@ void MainCS(
     uint groupIndex : SV_GroupIndex)
 {
     // Simple code to paint the whole image yellow for debug purpose before we actually write clipmap generation code
-    PassSrg::m_clipmap[dispatchThreadID.xy].rgba = float4(1.0, 1.0, 0.0, 1.0);
+    PassSrg::m_detailTexClipmap[dispatchThreadID.xy].rgba = float4(1.0, 1.0, 0.0, 1.0);
 }

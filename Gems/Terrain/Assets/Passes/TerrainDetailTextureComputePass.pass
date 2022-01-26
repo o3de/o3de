@@ -5,19 +5,19 @@
     "ClassData": {
         // Note: all the data here works as placeholders.
         "PassTemplate": {
-            "Name": "ClipmapGenerationPassTemplate",
-            "PassClass": "ClipmapGenerationComputePass",
+            "Name": "TerrainDetailTextureComputePassTemplate",
+            "PassClass": "TerrainDetailTextureComputePass",
             "Slots": [
                 {
-                    "Name": "ClipmapOutput",
-                    "ShaderInputName": "m_clipmap",
+                    "Name": "DetailTextureClipmapOutput",
+                    "ShaderInputName": "m_detailTexClipmap",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "Shader"
                 }
             ],
             "ImageAttachments": [
                 {
-                    "Name": "Clipmap",
+                    "Name": "DetailTextureClipmap",
                     "ImageDescriptor": {
                         "Format": "R32G32B32A32_FLOAT",
                         "BindFlags": "3",
@@ -31,17 +31,17 @@
             ],
             "Connections": [
                 {
-                    "LocalSlot": "ClipmapOutput",
+                    "LocalSlot": "DetailTextureClipmapOutput",
                     "AttachmentRef": {
                         "Pass": "This",
-                        "Attachment": "Clipmap"
+                        "Attachment": "DetailTextureClipmap"
                     }
                 }
             ],
             "PassData": {
-                "$type": "Terrain::ClipmapGenerationPassData",
+                "$type": "Terrain::TerrainDetailTextureComputePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/Terrain/ClipmapGeneration.shader"
+                    "FilePath": "Shaders/Terrain/TerrainDetailTextureComputePass.shader"
                 },
                 "Target Thread Count X": 1024,
                 "Target Thread Count Y": 1024,

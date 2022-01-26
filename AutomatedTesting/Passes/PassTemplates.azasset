@@ -553,8 +553,8 @@
                 "Path": "Passes/LutGeneration.pass"
             },
             {
-                "Name": "ClipmapGenerationPassTemplate",
-                "Path": "Passes/ClipmapGeneration.pass"
+                "Name": "TerrainDetailTextureComputePassTemplate",
+                "Path": "Passes/TerrainDetailTextureComputePass.pass"
             }
         ]
     }

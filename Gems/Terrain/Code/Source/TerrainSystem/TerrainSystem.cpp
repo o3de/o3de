@@ -19,8 +19,6 @@
 
 #include <Terrain/Ebuses/TerrainAreaSurfaceRequestBus.h>
 
-#include <Terrain/Pass/ClipmapGenerationPassData.h>
-
 using namespace Terrain;
 
 bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, const AZ::EntityId& layer2id) const
@@ -70,11 +68,6 @@ TerrainSystem::~TerrainSystem()
     Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
 
     Deactivate();
-}
-
-void TerrainSystem::Reflect(AZ::ReflectContext* context)
-{
-    ClipmapGenerationPassData::Reflect(context);
 }
 
 void TerrainSystem::Activate()
