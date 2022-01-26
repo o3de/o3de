@@ -215,7 +215,7 @@ namespace UnitTest
             return image;
         }
 
-        void ValidateImageData(AZStd::array_view<uint8_t> data, const AZ::RHI::ImageSubresourceLayout& layout)
+        void ValidateImageData(AZStd::span<const uint8_t> data, const AZ::RHI::ImageSubresourceLayout& layout)
         {
             const uint32_t pixelSize = layout.m_size.m_width / layout.m_bytesPerRow;
 
@@ -260,7 +260,7 @@ namespace UnitTest
 
                 for (uint16_t arrayIndex = 0; arrayIndex < mipChain->GetArraySize(); ++arrayIndex)
                 {
-                    AZStd::array_view<uint8_t> imageData = mipChain->GetSubImageData(mipLevel, arrayIndex);
+                    AZStd::span<const uint8_t> imageData = mipChain->GetSubImageData(mipLevel, arrayIndex);
                     ValidateImageData(imageData, layout);
                 }
             }
@@ -574,7 +574,7 @@ namespace UnitTest
             EXPECT_EQ(mipChain->GetArraySize(), arraySize);
             EXPECT_EQ(mipChain->GetSubImageCount(), mipLevels * arraySize);
 
-            AZStd::array_view<uint8_t> dataView = mipChain->GetSubImageData(0);
+            AZStd::span<const uint8_t> dataView = mipChain->GetSubImageData(0);
             EXPECT_EQ(dataView[0], data[0]);
             EXPECT_EQ(dataView[1], data[1]);
             EXPECT_EQ(dataView[2], data[2]);

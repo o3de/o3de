@@ -9,7 +9,7 @@
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <CoreLights/ShadowmapAtlas.h>
 #include <CoreLights/ShadowmapPass.h>
@@ -36,7 +36,7 @@ namespace AZ
             void SetCameraViewName(const AZStd::string& viewName);
 
             //! This returns pipeline view tag for children.
-            const AZStd::array_view<RPI::PipelineViewTag> GetPipelineViewTags();
+            const AZStd::span<const RPI::PipelineViewTag> GetPipelineViewTags();
 
             //! This exposes the shadowmap atlas.
             ShadowmapAtlas& GetShadowmapAtlas();
