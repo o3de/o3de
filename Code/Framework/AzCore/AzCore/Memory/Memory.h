@@ -521,19 +521,6 @@ namespace AZ
 {
     namespace AllocatorStorage
     {
-        /// A private structure to create heap-storage for an allocator that won't expire until other static module members are destructed.
-        struct LazyAllocatorRef
-        {
-            using CreationFn = IAllocator*(*)(void*);
-            using DestructionFn = void(*)(IAllocator&);
-
-            ~LazyAllocatorRef();
-            void Init(size_t size, size_t alignment, CreationFn creationFn, DestructionFn destructionFn);
-
-            IAllocator* m_allocator = nullptr;
-            DestructionFn m_destructor = nullptr;
-        };
-
         /**
         * A base class for all storage policies. This exists to provide access to private IAllocator methods via template friends.
         */
@@ -640,87 +627,6 @@ namespace AZ
 
         template<class Allocator>
         EnvironmentVariable<Allocator> EnvironmentStoragePolicy<Allocator>::s_allocator;
-
-        /**
-        * ModuleStoragePolicy stores the allocator in a static variable that is local to the module using it.
-        * This forces separate instances of the allocator to exist in each module, and permits lazy instantiation.
-        * We only tolerate this for some special allocators, primarily to maintain backwards compatibility with CryEngine,
-        * since it still allocates outside of code in the data section.
-        *
-        * It has two ways of storing its allocator: either on the heap, which is the preferred way, since it guarantees
-        * the memory for the allocator won't be deallocated (such as in a DLL) before anyone that's using it. If disabled
-        * the allocator is stored in a static variable, which should only be used where this isn't a problem a shut-down
-        * time, such as on a console.
-        */
-        template<class Allocator, bool StoreAllocatorOnHeap>
-        struct ModuleStoragePolicyBase;
-        
-        template<class Allocator>
-        struct ModuleStoragePolicyBase<Allocator, false>: public StoragePolicyBase<Allocator>
-        {
-        protected:
-            // Use a static instance to store the allocator. This is not recommended when the order of shut-down with the module matters, as the allocator could have its memory destroyed 
-            // before the users of it are destroyed. The primary use case for this is allocators that need to support the CRT, as they cannot allocate from the heap.
-            static Allocator& GetModuleAllocatorInstance()
-            {
-                static Allocator* s_allocator = nullptr;
-                static typename AZStd::aligned_storage<sizeof(Allocator), AZStd::alignment_of<Allocator>::value>::type s_storage;
-
-                if (!s_allocator)
-                {
-                    s_allocator = new (&s_storage) Allocator;
-                    StoragePolicyBase<Allocator>::Create(*s_allocator, typename Allocator::Descriptor(), true);
-                }
-
-                return *s_allocator;
-            }
-        };
-
-        template<class Allocator>
-        struct ModuleStoragePolicyBase<Allocator, true> : public StoragePolicyBase<Allocator>
-        {
-        protected:
-            // Store-on-heap implementation uses the LazyAllocatorRef to create and destroy an allocator using heap-space so there isn't a problem with destruction order within the module.
-            static Allocator& GetModuleAllocatorInstance()
-            {
-                static LazyAllocatorRef s_allocator;
-
-                if (!s_allocator.m_allocator)
-                {
-                    s_allocator.Init(sizeof(Allocator), AZStd::alignment_of<Allocator>::value, [](void* mem) -> IAllocator* { return new (mem) Allocator; }, &StoragePolicyBase<Allocator>::Destroy);
-                    StoragePolicyBase<Allocator>::Create(*static_cast<Allocator*>(s_allocator.m_allocator), typename Allocator::Descriptor(), true);
-                }
-
-                return *static_cast<Allocator*>(s_allocator.m_allocator);
-            }
-        };
-
-        template<class Allocator, bool StoreAllocatorOnHeap = true>
-        class ModuleStoragePolicy : public ModuleStoragePolicyBase<Allocator, StoreAllocatorOnHeap>
-        {
-        public:
-            using Base = ModuleStoragePolicyBase<Allocator, StoreAllocatorOnHeap>;
-
-            static IAllocator& GetAllocator()
-            {
-                return Base::GetModuleAllocatorInstance();
-            }
-
-            static void Create(const typename Allocator::Descriptor& desc = typename Allocator::Descriptor())
-            {
-                StoragePolicyBase<Allocator>::Create(Base::GetModuleAllocatorInstance(), desc, true);
-            }
-
-            static void Destroy()
-            {
-                StoragePolicyBase<Allocator>::Destroy(Base::GetModuleAllocatorInstance());
-            }
-
-            static bool IsReady()
-            {
-                return Base::GetModuleAllocatorInstance().IsReady();
-            }
-        };
     }
 
     namespace Internal

@@ -12,7 +12,6 @@
 
 #include <GridMate/Carrier/Carrier.h>
 #include <GridMate/Carrier/Compressor.h>
-#include <GridMate/Carrier/Cripter.h>
 #include <GridMate/Carrier/DefaultHandshake.h>
 #include <GridMate/Carrier/DefaultTrafficControl.h>
 #include <GridMate/Carrier/Simulator.h>
