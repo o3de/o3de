@@ -41,7 +41,6 @@ PATH_EXCLUSIONS = (
     'python\\*',
     'build\\*',
     'install\\*',
-    'Code\\Framework\\AzCore\\AzCore\\Android\\*',
     'Gems\\ImGui\\External\\ImGui\\*',
     '*_Traits_*.h',
 )
