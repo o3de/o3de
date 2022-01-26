@@ -31,7 +31,6 @@ class CUndoBaseObject;
 class CObjectManager;
 class CGizmo;
 class CObjectArchive;
-struct SSubObjSelectionModifyContext;
 struct SRayHitInfo;
 class CPopupMenuItem;
 class QMenu;

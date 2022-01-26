@@ -12,6 +12,7 @@
 #include "EditorDefs.h"
 
 #include "IEditorImpl.h"
+#include <EditorCommonAPI.h>
 
 // Qt
 #include <QByteArray>
@@ -68,9 +69,6 @@
 #include "Editor/AssetDatabase/AssetDatabaseLocationListener.h"
 #include "Editor/AzAssetBrowser/AzAssetBrowserRequestHandler.h"
 #include "Editor/AssetEditor/AssetEditorRequestsHandler.h"
-
-// EditorCommon
-#include <WinWidget/WinWidgetManager.h>
 
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
@@ -166,8 +164,6 @@ CEditorImpl::CEditorImpl()
     m_selectedRegion.max = Vec3(0, 0, 0);
     DetectVersion();
     RegisterTools();
-
-    m_winWidgetManager.reset(new WinWidget::WinWidgetManager);
 
     m_pAssetDatabaseLocationListener = nullptr;
     m_pAssetBrowserRequestHandler = nullptr;
@@ -835,20 +831,6 @@ const QtViewPane* CEditorImpl::OpenView(QString sViewClassName, bool reuseOpened
 {
     auto openMode = reuseOpened ? QtViewPane::OpenMode::None : QtViewPane::OpenMode::MultiplePanes;
     return QtViewPaneManager::instance()->OpenPane(sViewClassName, openMode);
-}
-
-QWidget* CEditorImpl::OpenWinWidget(WinWidgetId openId)
-{
-    if (m_winWidgetManager)
-    {
-        return m_winWidgetManager->OpenWinWidget(openId);
-    }
-    return nullptr;
-}
-
-WinWidget::WinWidgetManager* CEditorImpl::GetWinWidgetManager() const
-{
-    return m_winWidgetManager.get();
 }
 
 QWidget* CEditorImpl::FindView(QString viewClassName)

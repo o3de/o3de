@@ -54,7 +54,7 @@
         "Gems/NvCloth",
         "Gems/PhysX",
         "Gems/PhysXDebug",
-        "Gems/Prefab",
+        "Gems/Prefab/PrefabBuilder",
         "Gems/Presence",
         "Gems/PrimitiveAssets",
         "Gems/Profiler",

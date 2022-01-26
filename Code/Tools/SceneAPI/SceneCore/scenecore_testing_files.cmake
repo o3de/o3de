@@ -11,7 +11,6 @@ set(FILES
     Mocks/DataTypes/GraphData/MockIMeshData.h
     Mocks/DataTypes/MockIGraphObject.h
     Mocks/DataTypes/Groups/MockIGroup.h
-    Mocks/DataTypes/Groups/MockIMeshGroup.h
     Mocks/DataTypes/ManifestBase/MockISceneNodeSelectionList.h
     Mocks/Events/MockAssetImportRequest.h
     Tests/TestsMain.cpp

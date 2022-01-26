@@ -188,14 +188,14 @@ foreach(project ${LY_PROJECTS})
     # when the external subdirectory contains relative paths of significant length
     string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
 
-    get_filename_component(project_folder_name ${project} NAME)
+    cmake_path(GET project FILENAME project_folder_name )
     list(APPEND LY_PROJECTS_FOLDER_NAME ${project_folder_name})
     add_subdirectory(${project} "${project_folder_name}-${full_directory_hash}")
     ly_generate_project_build_path_setreg(${full_directory_path})
-    add_project_json_external_subdirectories(${full_directory_path})
 
     # Get project name
     o3de_read_json_key(project_name ${full_directory_path}/project.json "project_name")
+    add_project_json_external_subdirectories(${full_directory_path} "${project_name}")
 
     install_project_asset_artifacts(${full_directory_path})
 
