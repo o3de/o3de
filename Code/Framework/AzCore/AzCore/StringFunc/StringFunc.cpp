@@ -757,7 +757,7 @@ namespace AZ::StringFunc
         }
         return value;
     }
-
+        
     template<typename StringType>
     void Tokenize(AZStd::string_view in, AZStd::vector<StringType>& tokens, const char delimiter, bool keepEmptyStrings, bool keepSpaceStrings)
     {
@@ -926,7 +926,7 @@ namespace AZ::StringFunc
 
         return found;
     }
-
+        
     template<typename StringType>
     void Tokenize(AZStd::string_view input, AZStd::vector<StringType>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings /*= false*/, bool keepSpaceStrings /*= false*/)
     {
@@ -957,7 +957,7 @@ namespace AZ::StringFunc
             offset = nextOffset + delimiters[nextMatch].size();
         }
     }
-    
+        
     template void Tokenize(AZStd::string_view input, AZStd::vector<AZStd::string>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings /*= false*/, bool keepSpaceStrings /*= false*/);
     template void Tokenize(AZStd::string_view input, AZStd::vector<AZStd::string_view>& tokens, const AZStd::vector<AZStd::string_view>& delimiters, bool keepEmptyStrings /*= false*/, bool keepSpaceStrings /*= false*/);
 
