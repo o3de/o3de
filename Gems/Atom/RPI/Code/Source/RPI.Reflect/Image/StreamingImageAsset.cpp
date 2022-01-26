@@ -93,42 +93,6 @@ namespace AZ
             AZ::u16 h;
         };
 
-        template <AZ::RHI::Format>
-        float RetrieveFloatValue(const AZ::u8* mem, size_t index)
-        {
-            static_assert(false, "Unsupported pixel format");
-        }
-
-        template <AZ::RHI::Format>
-        AZ::u32 RetrieveUintValue(const AZ::u8* mem, size_t index)
-        {
-            static_assert(false, "Unsupported pixel format");
-        }
-
-        template <AZ::RHI::Format>
-        AZ::s32 RetrieveIntValue(const AZ::u8* mem, size_t index)
-        {
-            static_assert(false, "Unsupported pixel format");
-        }
-
-        template <>
-        float RetrieveFloatValue<AZ::RHI::Format::Unknown>([[maybe_unused]] const AZ::u8* mem, [[maybe_unused]] size_t index)
-        {
-            return 0.0f;
-        }
-
-        template <>
-        AZ::u32 RetrieveUintValue<AZ::RHI::Format::Unknown>([[maybe_unused]] const AZ::u8* mem, [[maybe_unused]] size_t index)
-        {
-            return 0;
-        }
-
-        template <>
-        AZ::s32 RetrieveIntValue<AZ::RHI::Format::Unknown>([[maybe_unused]] const AZ::u8* mem, [[maybe_unused]] size_t index)
-        {
-            return 0;
-        }
-
         float ScaleValue(float value, float origMin, float origMax, float scaledMin, float scaledMax)
         {
             return ((value - origMin) / (origMax - origMin)) * (scaledMax - scaledMin) + scaledMin;
@@ -180,7 +144,8 @@ namespace AZ
                 return actualMem[index];
             }
             default:
-                return RetrieveFloatValue<AZ::RHI::Format::Unknown>(mem, index);
+                AZ_Assert(false, "Unsupported pixel format");
+                return 0.0f;
             }
         }
 
@@ -203,7 +168,8 @@ namespace AZ
                 return actualMem[index];
             }
             default:
-                return RetrieveUintValue<AZ::RHI::Format::Unknown>(mem, index);
+                AZ_Assert(false, "Unsupported pixel format");
+                return 0;
             }
         }
 
@@ -226,7 +192,8 @@ namespace AZ
                 return actualMem[index];
             }
             default:
-                return RetrieveIntValue<AZ::RHI::Format::Unknown>(mem, index);
+                AZ_Assert(false, "Unsupported pixel format");
+                return 0;
             }
         }
     }
