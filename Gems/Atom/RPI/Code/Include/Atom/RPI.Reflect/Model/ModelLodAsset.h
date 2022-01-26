@@ -101,10 +101,10 @@ namespace AZ
                 //! A helper method for returning this mesh's index buffer using a specific type for the elements.
                 //! @note It's the caller's responsibility to choose the right type for the buffer.
                 template<class T>
-                AZStd::array_view<T> GetIndexBufferTyped() const;
+                AZStd::span<const T> GetIndexBufferTyped() const;
 
                 //! Return an array view of the list of all stream buffer info (not including the index buffer)
-                AZStd::array_view<StreamBufferInfo> GetStreamBufferInfoList() const;
+                AZStd::span<const StreamBufferInfo> GetStreamBufferInfoList() const;
 
                 //! A helper method for returning a specific buffer asset view.
                 //! It will return nullptr if the semantic buffer is not found.
@@ -117,11 +117,11 @@ namespace AZ
                 //! In perf loop, re-use AZ::Name instance.
                 //! @note It's the caller's responsibility to choose the right type for the buffer.
                 template<class T>
-                AZStd::array_view<T> GetSemanticBufferTyped(const AZ::Name& semantic) const;
+                AZStd::span<const T> GetSemanticBufferTyped(const AZ::Name& semantic) const;
 
             private:
                 template<class T>
-                AZStd::array_view<T> GetBufferTyped(const BufferAssetView& bufferAssetView) const;
+                AZStd::span<const T> GetBufferTyped(const BufferAssetView& bufferAssetView) const;
 
                 AZ::Name m_name;
                 AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
@@ -143,7 +143,7 @@ namespace AZ
             };
 
             //! Returns an array view into the collection of meshes owned by this lod
-            AZStd::array_view<Mesh> GetMeshes() const;
+            AZStd::span<const Mesh> GetMeshes() const;
 
             //! Returns the model-space axis-aligned bounding box of all meshes in the lod
             const AZ::Aabb& GetAabb() const;
@@ -173,24 +173,24 @@ namespace AZ
         using ModelLodAssetHandler = AssetHandler<ModelLodAsset>;
 
         template<class T>
-        AZStd::array_view<T> ModelLodAsset::Mesh::GetIndexBufferTyped() const
+        AZStd::span<const T> ModelLodAsset::Mesh::GetIndexBufferTyped() const
         {
             return GetBufferTyped<T>(GetIndexBufferAssetView());
         }
 
         template<class T>
-        AZStd::array_view<T> ModelLodAsset::Mesh::GetSemanticBufferTyped(const AZ::Name& semantic) const
+        AZStd::span<const T> ModelLodAsset::Mesh::GetSemanticBufferTyped(const AZ::Name& semantic) const
         {
             const BufferAssetView* bufferAssetView = GetSemanticBufferAssetView(semantic);
-            return bufferAssetView ? GetBufferTyped<T>(*bufferAssetView) : AZStd::array_view<T>{};
+            return bufferAssetView ? GetBufferTyped<T>(*bufferAssetView) : AZStd::span<const T>{};
         }
 
         template<class T>
-        AZStd::array_view<T> ModelLodAsset::Mesh::GetBufferTyped(const BufferAssetView& bufferAssetView) const
+        AZStd::span<const T> ModelLodAsset::Mesh::GetBufferTyped(const BufferAssetView& bufferAssetView) const
         {
             if (const BufferAsset* bufferAsset = bufferAssetView.GetBufferAsset().Get())
             {
-                const AZStd::array_view<uint8_t> rawBuffer = bufferAsset->GetBuffer();
+                const AZStd::span<const uint8_t> rawBuffer = bufferAsset->GetBuffer();
                 if (!rawBuffer.empty())
                 {
                     const auto& bufferViewDescriptor = bufferAssetView.GetBufferViewDescriptor();
@@ -202,7 +202,7 @@ namespace AZ
                         "Size of buffer (%d) is not a multiple of the type's size specified (%d)",
                         endMeshRawBuffer - beginMeshRawBuffer, sizeof(T));
 
-                    return AZStd::array_view<T>(reinterpret_cast<const T*>(beginMeshRawBuffer), reinterpret_cast<const T*>(endMeshRawBuffer));
+                    return AZStd::span<const T>(reinterpret_cast<const T*>(beginMeshRawBuffer), reinterpret_cast<const T*>(endMeshRawBuffer));
                 }
             }
             return {};

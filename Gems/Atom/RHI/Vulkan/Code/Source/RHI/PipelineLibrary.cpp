@@ -31,7 +31,7 @@ namespace AZ
             VkPipelineCacheCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
             createInfo.pNext = nullptr;
-            createInfo.flags = 0; 
+            createInfo.flags = 0;
             createInfo.initialDataSize = 0;
             createInfo.pInitialData = nullptr;
 
@@ -59,7 +59,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::array_view<const RHI::PipelineLibrary *> libraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary * const> libraries)
         {
             auto& device = static_cast<Device&>(GetDevice());
             if (libraries.empty())

@@ -243,7 +243,7 @@ namespace AZ
 
         bool ModelLodAssetCreator::Clone(const Data::Asset<ModelLodAsset>& sourceAsset, Data::Asset<ModelLodAsset>& clonedResult, Data::AssetId& inOutLastCreatedAssetId)
         {
-            AZStd::array_view<ModelLodAsset::Mesh> sourceMeshes = sourceAsset->GetMeshes();
+            AZStd::span<const ModelLodAsset::Mesh> sourceMeshes = sourceAsset->GetMeshes();
             if (sourceMeshes.empty())
             {
                 return true;

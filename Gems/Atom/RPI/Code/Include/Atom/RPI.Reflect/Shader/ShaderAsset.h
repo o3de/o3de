@@ -158,8 +158,8 @@ namespace AZ
 
 
             //! Returns the set of shader resource group layouts owned by a given supervariant.
-            AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts( SupervariantIndex supervariantIndex) const;
-            AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const
+            AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts( SupervariantIndex supervariantIndex) const;
+            AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const
             {
                 return GetShaderResourceGroupLayouts(DefaultSupervariantIndex);
             }
