@@ -126,6 +126,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     AZ::AzFramework
+                    Gem::EMotionFX.Tests.Static
                     Gem::MotionMatching.Static
         )
 

@@ -21,6 +21,11 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(FeatureSchema, MotionMatchAllocator, 0)
 
+    FeatureSchema::~FeatureSchema()
+    {
+        Clear();
+    }
+
     Feature* FeatureSchema::GetFeature(size_t index) const
     {
         return m_features[index];
@@ -63,9 +68,9 @@ namespace EMotionFX::MotionMatching
         return m_features.size();
     }
 
-    Feature* FeatureSchema::FindFeatureById(const AZ::TypeId& featureTypeId) const
+    Feature* FeatureSchema::FindFeatureById(const AZ::TypeId& featureId) const
     {
-        const auto result = m_featuresById.find(featureTypeId);
+        const auto result = m_featuresById.find(featureId);
         if (result == m_featuresById.end())
         {
             return nullptr;
