@@ -745,7 +745,7 @@ namespace UnitTest
                 auto pixelDataValue = imageAsset->GetSubImagePixelValue<float>(x, y);
                 auto pixelExpectedValue = static_cast<uint8_t>(y * size.m_width + x) / static_cast<float>(std::numeric_limits<AZ::u8>::max());
 
-                EXPECT_TRUE(AZ::IsClose(pixelDataValue, pixelExpectedValue));
+                EXPECT_NEAR(pixelDataValue, pixelExpectedValue, Constants::Tolerance);
             }
         }
 
@@ -753,14 +753,13 @@ namespace UnitTest
         AZStd::vector<float> pixelValues(size.m_width * size.m_height);
         auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
         auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(size.m_width - 1, size.m_height - 1);
-        AZStd::span<float> valueSpan(pixelValues.begin(), pixelValues.size());
-        streamingImageAsset->GetSubImagePixelValues(topLeft, bottomRight, valueSpan);
+        streamingImageAsset->GetSubImagePixelValues(topLeft, bottomRight, pixelValues);
         for (uint32_t index = 0; index < pixelValues.size(); ++index)
         {
-            auto pixelDataValue = valueSpan[index];
+            auto pixelDataValue = pixelValues[index];
             auto pixelExpectedValue = static_cast<uint8_t>(index) / static_cast<float>(std::numeric_limits<AZ::u8>::max());
 
-            EXPECT_TRUE(AZ::IsClose(pixelDataValue, pixelExpectedValue));
+            EXPECT_NEAR(pixelDataValue, pixelExpectedValue, Constants::Tolerance);
         }
     }
 }
