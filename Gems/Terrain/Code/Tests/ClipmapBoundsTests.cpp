@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma once
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <gmock/gmock.h>
@@ -41,9 +40,10 @@ namespace UnitTest
         ) * worldBoundsSize;
 
         Terrain::Vector2i localMax = {
-            AZStd::lround(desc.m_worldSpaceCenter.GetX() / desc.m_clipToWorldScale) + int32_t(desc.m_size / 2ul),
-            AZStd::lround(desc.m_worldSpaceCenter.GetY() / desc.m_clipToWorldScale) + int32_t(desc.m_size / 2ul)
+            aznumeric_cast<int32_t>(AZStd::lround(desc.m_worldSpaceCenter.GetX() / desc.m_clipToWorldScale)),
+            aznumeric_cast<int32_t>(AZStd::lround(desc.m_worldSpaceCenter.GetY() / desc.m_clipToWorldScale))
         };
+        localMax += aznumeric_cast<int32_t>(desc.m_size / 2ul);
 
         int32_t intSize = int32_t(desc.m_size);
         Terrain::Vector2i localBoundary = {
