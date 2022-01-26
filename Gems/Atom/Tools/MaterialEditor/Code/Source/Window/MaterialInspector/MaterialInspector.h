@@ -9,12 +9,12 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Atom/Window/MaterialEditorWindowSettings.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <Window/MaterialEditorWindowSettings.h>
 #endif
 
 namespace MaterialEditor

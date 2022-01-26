@@ -10,6 +10,7 @@
 #include <FileIOBaseTestTypes.h>
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>

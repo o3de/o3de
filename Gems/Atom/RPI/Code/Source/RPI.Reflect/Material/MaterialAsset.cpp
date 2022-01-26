@@ -109,6 +109,81 @@ namespace AZ
             return m_wasPreFinalized;
         }
 
+        //! Attempts to convert a numeric MaterialPropertyValue to another numeric type @T,
+        //! since MaterialPropertyValue itself does not support any kind of casting.
+        //! If the original MaterialPropertyValue is not a numeric type, the original value is returned.
+        template<typename T>
+        MaterialPropertyValue CastNumericMaterialPropertyValue(const MaterialPropertyValue& value)
+        {
+            TypeId typeId = value.GetTypeId();
+
+            if (typeId == azrtti_typeid<bool>())
+            {
+                return aznumeric_cast<T>(value.GetValue<bool>());
+            }
+            else if (typeId == azrtti_typeid<int32_t>())
+            {
+                return aznumeric_cast<T>(value.GetValue<int32_t>());
+            }
+            else if (typeId == azrtti_typeid<uint32_t>())
+            {
+                return aznumeric_cast<T>(value.GetValue<uint32_t>());
+            }
+            else if (typeId == azrtti_typeid<float>())
+            {
+                return aznumeric_cast<T>(value.GetValue<float>());
+            }
+            else
+            {
+                return value;
+            }
+        }
+        
+        //! Attempts to convert an AZ::Vector[2-4] MaterialPropertyValue to another AZ::Vector[2-4] type @T.
+        //! Any extra elements will be dropped or set to 0.0 as needed.
+        //! If the original MaterialPropertyValue is not a Vector type, the original value is returned.
+        template<typename VectorT>
+        MaterialPropertyValue CastVectorMaterialPropertyValue(const MaterialPropertyValue& value)
+        {
+            float values[4] = {};
+
+            TypeId typeId = value.GetTypeId();
+            if (typeId == azrtti_typeid<Vector2>())
+            {
+                value.GetValue<Vector2>().StoreToFloat2(values);
+            }
+            else if (typeId == azrtti_typeid<Vector3>())
+            {
+                value.GetValue<Vector3>().StoreToFloat3(values);
+            }
+            else if (typeId == azrtti_typeid<Vector4>())
+            {
+                value.GetValue<Vector4>().StoreToFloat4(values);
+            }
+            else
+            {
+                return value;
+            }
+
+            typeId = azrtti_typeid<VectorT>();
+            if (typeId == azrtti_typeid<Vector2>())
+            {
+                return Vector2::CreateFromFloat2(values);
+            }
+            else if (typeId == azrtti_typeid<Vector3>())
+            {
+                return Vector3::CreateFromFloat3(values);
+            }
+            else if (typeId == azrtti_typeid<Vector4>())
+            {
+                return Vector4::CreateFromFloat4(values);
+            }
+            else
+            {
+                return value;
+            }
+        }
+        
         void MaterialAsset::Finalize(AZStd::function<void(const char*)> reportWarning, AZStd::function<void(const char*)> reportError)
         {
             if (m_wasPreFinalized)
@@ -180,9 +255,66 @@ namespace AZ
                     }
                     else
                     {
-                        if (ValidateMaterialPropertyDataType(value.GetTypeId(), name, propertyDescriptor, reportError))
+                        // The material asset could be finalized sometime after the original JSON is loaded, and the material type might not have been available
+                        // at that time, so the data type would not be known for each property. So each raw property's type was based on what appeared in the JSON
+                        // and here we have the first opportunity to resolve that value with the actual type. For example, a float property could have been specified in
+                        // the JSON as 7 instead of 7.0, which is valid. Similarly, a Color and a Vector3 can both be specified as "[0.0,0.0,0.0]" in the JSON file.
+
+                        MaterialPropertyValue finalValue = value;
+
+                        switch (propertyDescriptor->GetDataType())
                         {
-                            finalizedPropertyValues[propertyIndex.GetIndex()] = value;
+                        case MaterialPropertyDataType::Bool:
+                            finalValue = CastNumericMaterialPropertyValue<bool>(value);
+                            break;
+                        case MaterialPropertyDataType::Int:
+                            finalValue = CastNumericMaterialPropertyValue<int32_t>(value);
+                            break;
+                        case MaterialPropertyDataType::UInt:
+                            finalValue = CastNumericMaterialPropertyValue<uint32_t>(value);
+                            break;
+                        case MaterialPropertyDataType::Float:
+                            finalValue = CastNumericMaterialPropertyValue<float>(value);
+                            break;
+                        case MaterialPropertyDataType::Color:
+                            if (value.GetTypeId() == azrtti_typeid<Vector3>())
+                            {
+                                finalValue = Color::CreateFromVector3(value.GetValue<Vector3>());
+                            }
+                            else if (value.GetTypeId() == azrtti_typeid<Vector4>())
+                            {
+                                Vector4 vector4 = value.GetValue<Vector4>();
+                                finalValue = Color::CreateFromVector3AndFloat(vector4.GetAsVector3(), vector4.GetW());
+                            }
+                            break;
+                        case MaterialPropertyDataType::Vector2:
+                            finalValue = CastVectorMaterialPropertyValue<Vector2>(value);
+                            break;
+                        case MaterialPropertyDataType::Vector3:
+                            if (value.GetTypeId() == azrtti_typeid<Color>())
+                            {
+                                finalValue = value.GetValue<Color>().GetAsVector3();
+                            }
+                            else
+                            {
+                                finalValue = CastVectorMaterialPropertyValue<Vector3>(value);
+                            }
+                            break;
+                        case MaterialPropertyDataType::Vector4:
+                            if (value.GetTypeId() == azrtti_typeid<Color>())
+                            {
+                                finalValue = value.GetValue<Color>().GetAsVector4();
+                            }
+                            else
+                            {
+                                finalValue = CastVectorMaterialPropertyValue<Vector4>(value);
+                            }
+                            break;
+                        }
+
+                        if (ValidateMaterialPropertyDataType(finalValue.GetTypeId(), name, propertyDescriptor, reportError))
+                        {
+                            finalizedPropertyValues[propertyIndex.GetIndex()] = finalValue;
                         }
                     }
                 }

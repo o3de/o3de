@@ -123,7 +123,7 @@ namespace EMotionFX
             TargetType* targetBuffer = static_cast<TargetType*>(targetVertexAttributeLayer->GetData());
 
             // Fill the vertex attribute layer by iterating through the Atom meshes and copying over the vertex data for each.
-            size_t addedElements = 0;
+            [[maybe_unused]] size_t addedElements = 0;
             for (const AZ::RPI::ModelLodAsset::Mesh& atomMesh : sourceModelLod->GetMeshes())
             {
                 const uint32_t atomMeshVertexCount = atomMesh.GetVertexCount();
@@ -187,7 +187,7 @@ namespace EMotionFX
         const AZ::RPI::ModelLodAsset::Mesh& sourceMesh = sourceModelLod->GetMeshes()[0];
 
         // Copy the index buffer for the entire lod
-        AZStd::array_view<uint8_t> indexBuffer = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
+        AZStd::span<const uint8_t> indexBuffer = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
         const AZ::RHI::BufferViewDescriptor& indexBufferViewDescriptor = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBufferViewDescriptor();
         AZ_ErrorOnce("EMotionFX", indexBufferViewDescriptor.m_elementSize == 4, "Index buffer must stored as 4 bytes.");
         const size_t indexBufferCountsInBytes = indexBufferViewDescriptor.m_elementCount * indexBufferViewDescriptor.m_elementSize;
@@ -195,7 +195,9 @@ namespace EMotionFX
         memcpy(mesh->m_indices, indexBuffer.begin() + indexBufferOffsetInBytes, indexBufferCountsInBytes);
 
         // Set the polygon buffer
+        AZ_PUSH_DISABLE_WARNING_MSVC(4244); //  warning C4244: '=': conversion from 'const int' to 'uint8', possible loss of data
         AZStd::fill(mesh->m_polyVertexCounts, mesh->m_polyVertexCounts + mesh->m_numPolygons, 3);
+        AZ_POP_DISABLE_WARNING_MSVC
 
         // Skinning data from atom are stored in two separate buffer layer.
         AZ::u8 maxSkinInfluences = 255; // Later we will calculate this value from skinning data.

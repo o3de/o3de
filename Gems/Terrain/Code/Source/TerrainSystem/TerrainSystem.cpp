@@ -51,6 +51,7 @@ bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, co
 }
 
 TerrainSystem::TerrainSystem()
+    : m_terrainRaycastContext(*this)
 {
     Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
     AZ::TickBus::Handler::BusConnect();
@@ -438,6 +439,16 @@ void TerrainSystem::GetSurfacePointFromFloats(
     GetSurfacePoint(AZ::Vector3(x, y, 0.0f), outSurfacePoint, sampleFilter, terrainExistsPtr);
 }
 
+AzFramework::EntityContextId TerrainSystem::GetTerrainRaycastEntityContextId() const
+{
+    return m_terrainRaycastContext.GetEntityContextId();
+}
+
+AzFramework::RenderGeometry::RayResult TerrainSystem::GetClosestIntersection(
+    const AzFramework::RenderGeometry::RayRequest& ray) const
+{
+    return m_terrainRaycastContext.RayIntersect(ray);
+}
 
 AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const
 {
@@ -688,6 +699,16 @@ void TerrainSystem::ProcessSurfacePointsFromListOfVector2(
         GetSurfacePointFromVector2(position, surfacePoint, sampleFilter, &terrainExists);
         perPositionCallback(surfacePoint, terrainExists);
     }
+}
+
+AZStd::pair<size_t, size_t> TerrainSystem::GetNumSamplesFromRegion(
+    const AZ::Aabb& inRegion,
+    const AZ::Vector2& stepSize) const
+{
+    const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize.GetX()));
+    const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize.GetY()));
+
+    return AZStd::make_pair(numSamplesX, numSamplesY);
 }
 
 void TerrainSystem::ProcessHeightsFromRegion(

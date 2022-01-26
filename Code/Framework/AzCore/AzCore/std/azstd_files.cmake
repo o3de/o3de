@@ -19,6 +19,7 @@ set(FILES
     any.h
     base.h
     config.h
+    concepts/concepts.h
     createdestroy.h
     docs.h
     exceptions.h
@@ -27,11 +28,14 @@ set(FILES
     hash.cpp
     hash.h
     hash_table.h
+    iterator/iterator_primitives.h
     iterator.h
     limits.h
     numeric.h
     math.h
     optional.h
+    ranges/iter_move.h
+    ranges/ranges.h
     ratio.h
     reference_wrapper.h
     sort.h
@@ -151,6 +155,7 @@ set(FILES
     typetraits/alignment_of.h
     typetraits/config.h
     typetraits/common_type.h
+    typetraits/common_reference.h
     typetraits/conjunction.h
     typetraits/disjunction.h
     typetraits/extent.h
@@ -217,4 +222,6 @@ set(FILES
     typetraits/void_t.h
     typetraits/internal/type_sequence_traits.h
     typetraits/internal/is_template_copy_constructible.h
+    utility/declval.h
+    utility/move.h
 )

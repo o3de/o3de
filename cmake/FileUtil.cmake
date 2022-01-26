@@ -153,6 +153,36 @@ function(ly_get_last_path_segment_concat_sha256 absolute_path output_path)
     set(${output_path} ${last_path_segment_sha256_path} PARENT_SCOPE)
 endfunction()
 
+#! ly_get_root_subdirectory_which_is_parent: Locates the root source directory added the input directory
+#  as a subdirectory of the build, which an actual prefix of the input directory
+#  This is done by recursing through the PARENT_DIRECTORY "DIRECTORY" property
+#  The use for this is to locate the top most directory which called add_subdirectory from any input path
+#  i.e Given an
+#  LY_ROOT_FOLDER = D:\o3de
+#  EXTERNAL_SUBDIRS = [D:\TestGem, D:\o3de\Gems\MyGem]
+#  The LY_ROOT_FOLDER is responsible for invoking add_subdirectory on the external subdirectories
+#  so it in the PARENT_DIRECTORY property, of the subdirectory, though it might not be an actual "parent"
+#  If the input path to this function is D:\TestGem\Code, then the return value is D:\TestGem
+#  If the input path to this function is D:\o3de\Gems\MyGem, then the return value is D:\o3de
+
+# \arg:absolute_path - directory to locate top most parent "subdirectory", which is an "parent" of the input
+# \return:output_path- top most parent subdirectory, which is actual parent(i.e a prefix)
+function(ly_get_root_subdirectory_which_is_parent absolute_path output_path)
+    # Walk up the parent add_subdirectory calls until a parent directory which is not a prefix of the target directory
+    # is found
+    cmake_path(SET candidate_path ${absolute_path})
+    get_property(parent_subdir DIRECTORY ${candidate_path} PROPERTY PARENT_DIRECTORY)
+    cmake_path(IS_PREFIX parent_subdir ${candidate_path} is_parent_subdir)
+    while(parent_subdir AND is_parent_subdir)
+        cmake_path(SET candidate_path "${parent_subdir}")
+        get_property(parent_subdir DIRECTORY ${candidate_path} PROPERTY PARENT_DIRECTORY)
+        cmake_path(IS_PREFIX parent_subdir ${candidate_path} is_parent_subdir)
+    endwhile()
+
+    message(DEBUG "Root subdirectory of path \"${absolute_path}\" is \"${candidate_path}\"")
+    set(${output_path} ${candidate_path} PARENT_SCOPE)
+endfunction()
+
 #! ly_get_engine_relative_source_dir: Attempts to form a path relative to the BASE_DIRECTORY.
 #  If that fails the last path segment of the absolute_target_source_dir concatenated with a SHA256 hash to form a target directory
 # \arg:BASE_DIRECTORY - Directory to base relative path against. Defaults to LY_ROOT_FOLDER
@@ -167,14 +197,16 @@ function(ly_get_engine_relative_source_dir absolute_target_source_dir output_sou
     endif()
 
     # Get a relative target source directory to the LY root folder if possible
-    # Otherwise use the final component name
+    # Otherwise use the top most source directory which led to calling add_subdirectory on the input directory
+    ly_get_root_subdirectory_which_is_parent(${absolute_target_source_dir} root_subdir_of_target)
+    cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${root_subdir_of_target} OUTPUT_VARIABLE relative_target_source_dir)
+
     cmake_path(IS_PREFIX LY_ROOT_FOLDER ${absolute_target_source_dir} is_target_source_dir_subdirectory_of_engine)
-    if(is_target_source_dir_subdirectory_of_engine)
-        cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_source_dir)
-    else()
-        ly_get_last_path_segment_concat_sha256(${absolute_target_source_dir} target_source_dir_last_path_segment)
+    if(NOT is_target_source_dir_subdirectory_of_engine)
+        cmake_path(GET root_subdir_of_target FILENAME root_subdir_dirname)
+        set(relative_subdir ${relative_target_source_dir})
         unset(relative_target_source_dir)
-        cmake_path(APPEND relative_target_source_dir "External" ${target_source_dir_last_path_segment})
+        cmake_path(APPEND relative_target_source_dir "External" ${root_subdir_dirname} ${relative_subdir})
     endif()
 
     set(${output_source_dir} ${relative_target_source_dir} PARENT_SCOPE)

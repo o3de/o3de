@@ -19,8 +19,6 @@
 #include "Util/UndoUtil.h"
 #include <CryVersion.h>
 
-#include <WinWidgetId.h>
-
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Debug/Budget.h>
 
@@ -65,11 +63,6 @@ class CSelectionTreeManager;
 struct SEditorSettings;
 class CGameExporter;
 class IAWSResourceManager;
-
-namespace WinWidget
-{
-    class WinWidgetManager;
-}
 
 struct ISystem;
 struct IRenderer;
@@ -321,17 +314,6 @@ enum UpdateConentFlags
 enum MouseCallbackFlags
 {
     MK_CALLBACK_FLAGS = 0x100
-};
-
-//! Types of database items
-enum EDataBaseItemType
-{
-    EDB_TYPE_MATERIAL,
-    EDB_TYPE_PARTICLE,
-    EDB_TYPE_MUSIC,
-    EDB_TYPE_EAXPRESET,
-    EDB_TYPE_SOUNDMOOD,
-    EDB_TYPE_FLARE
 };
 
 enum EEditorPathName
@@ -596,10 +578,6 @@ struct IEditor
     virtual bool CloseView(const char* sViewClassName) = 0;
     virtual bool SetViewFocus(const char* sViewClassName) = 0;
     virtual void CloseView(const GUID& classId) = 0; // close ALL panels related to classId, used when unloading plugins.
-
-    // We want to open a view object but not wrap it in a view pane)
-    virtual QWidget* OpenWinWidget(WinWidgetId openId) = 0;
-    virtual WinWidget::WinWidgetManager* GetWinWidgetManager() const = 0;
 
     //! Opens standard color selection dialog.
     //! Initialized with the color specified in color parameter.

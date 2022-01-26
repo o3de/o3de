@@ -12,15 +12,10 @@
 #include "EditorDefs.h"
 
 #include "IEditorImpl.h"
+#include <EditorCommonAPI.h>
 
 // Qt
 #include <QByteArray>
-
-// AWS Native SDK
-AZ_PUSH_DISABLE_WARNING(4251 4355 4996, "-Wunknown-warning-option")
-#include <aws/core/utils/memory/stl/AWSString.h>
-#include <aws/core/platform/FileSystem.h>
-AZ_POP_DISABLE_WARNING
 
 // AzCore
 #include <AzCore/IO/Path/Path.h>
@@ -75,12 +70,6 @@ AZ_POP_DISABLE_WARNING
 #include "Editor/AzAssetBrowser/AzAssetBrowserRequestHandler.h"
 #include "Editor/AssetEditor/AssetEditorRequestsHandler.h"
 
-// EditorCommon
-#include <WinWidget/WinWidgetManager.h>
-
-// AWSNativeSDK
-#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
-
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
 static CCryEditDoc * theDocument;
@@ -132,7 +121,6 @@ CEditorImpl::CEditorImpl()
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
     , m_pExportManager(nullptr)
-    , m_awsResourceManager(nullptr)
     , m_bMatEditMode(false)
     , m_bShowStatusText(true)
     , m_bInitialized(false)
@@ -176,8 +164,6 @@ CEditorImpl::CEditorImpl()
     m_selectedRegion.max = Vec3(0, 0, 0);
     DetectVersion();
     RegisterTools();
-
-    m_winWidgetManager.reset(new WinWidget::WinWidgetManager);
 
     m_pAssetDatabaseLocationListener = nullptr;
     m_pAssetBrowserRequestHandler = nullptr;
@@ -845,20 +831,6 @@ const QtViewPane* CEditorImpl::OpenView(QString sViewClassName, bool reuseOpened
 {
     auto openMode = reuseOpened ? QtViewPane::OpenMode::None : QtViewPane::OpenMode::MultiplePanes;
     return QtViewPaneManager::instance()->OpenPane(sViewClassName, openMode);
-}
-
-QWidget* CEditorImpl::OpenWinWidget(WinWidgetId openId)
-{
-    if (m_winWidgetManager)
-    {
-        return m_winWidgetManager->OpenWinWidget(openId);
-    }
-    return nullptr;
-}
-
-WinWidget::WinWidgetManager* CEditorImpl::GetWinWidgetManager() const
-{
-    return m_winWidgetManager.get();
 }
 
 QWidget* CEditorImpl::FindView(QString viewClassName)

@@ -12,6 +12,8 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/span.h>
+#include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
 
 namespace AzFramework
@@ -161,6 +163,11 @@ namespace AzFramework
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
+            //! Returns the number of samples for a given region and step size. The first and second
+            //! elements of the pair correspond to the X and Y sample counts respectively.
+            virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize) const = 0;
+
             //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
             //! coordinates in the region.
             virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
@@ -180,6 +187,11 @@ namespace AzFramework
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
+            //! Get the terrain raycast entity context id.
+            virtual EntityContextId GetTerrainRaycastEntityContextId() const = 0;
+
+            //! Given a ray, return the closest intersection with terrain.
+            virtual RenderGeometry::RayResult GetClosestIntersection(const RenderGeometry::RayRequest& ray) const = 0;
 
         private:
             // Private variations of the GetSurfacePoint API exposed to BehaviorContext that returns a value instead of

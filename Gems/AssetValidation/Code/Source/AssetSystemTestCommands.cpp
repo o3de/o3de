@@ -120,9 +120,9 @@ namespace AssetValidation
             AZ::SimpleLcgRandom randomizer(seedValue);
             int lastTick = 0;
             AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> heldAssets;
-            AZStd::size_t heldCount{ 0 };
-            AZ::u64 changeCount{ 0 };
-            AZ::u64 blockCount{ 0 };
+            [[maybe_unused]] AZStd::size_t heldCount{ 0 };
+            [[maybe_unused]] AZ::u64 changeCount{ 0 };
+            [[maybe_unused]] AZ::u64 blockCount{ 0 };
             AZ_TracePrintf("TestChangeAssets", "Beginning run with %zu assets\n", assetList.size());
             while (!forceStop && runMs < runTime)
             {

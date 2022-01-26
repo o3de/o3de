@@ -58,13 +58,11 @@ set(FILES
     Util/ImageHistogram.h
     Util/Image.h
     Util/ColorUtils.cpp
-    Util/ColorUtils.h
     Undo/Undo.cpp
     Undo/IUndoManagerListener.h
     Undo/IUndoObject.h
     Undo/Undo.h
     Undo/UndoVariableChange.h
-    WinWidgetId.h
     QtUI/ColorButton.cpp
     QtUI/ColorButton.h
     QtUtil.h

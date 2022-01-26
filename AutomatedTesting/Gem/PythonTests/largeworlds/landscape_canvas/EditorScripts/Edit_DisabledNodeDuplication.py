@@ -59,8 +59,7 @@ def Edit_DisabledNodeDuplication():
         newEntityId = parameters[0]
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Open Landscape Canvas tool and verify
     general.open_pane('Landscape Canvas')

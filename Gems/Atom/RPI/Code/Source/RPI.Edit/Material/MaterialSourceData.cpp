@@ -8,7 +8,6 @@
 
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyValueSerializer.h>
-#include <Atom/RPI.Edit/Material/MaterialSourceDataSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
@@ -45,13 +44,17 @@ namespace AZ
         {
             if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
             {
-                jsonContext->Serializer<JsonMaterialSourceDataSerializer>()->HandlesType<MaterialSourceData>();
                 jsonContext->Serializer<JsonMaterialPropertyValueSerializer>()->HandlesType<MaterialSourceData::Property>();
             }
             else if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialSourceData>()
-                    ->Version(1)
+                    ->Version(2)
+                    ->Field("description", &MaterialSourceData::m_description)
+                    ->Field("materialType", &MaterialSourceData::m_materialType)
+                    ->Field("materialTypeVersion", &MaterialSourceData::m_materialTypeVersion)
+                    ->Field("parentMaterial", &MaterialSourceData::m_parentMaterial)
+                    ->Field("properties", &MaterialSourceData::m_properties)
                     ;
 
                 serializeContext->RegisterGenericType<PropertyMap>();
@@ -79,6 +82,12 @@ namespace AZ
         {
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
+
+            if (m_materialType.empty())
+            {
+                AZ_Error("MaterialSourceData", false, "materialType was not specified");
+                return Failure();
+            }
 
             Outcome<Data::AssetId> materialTypeAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, m_materialType, 0);
             if (!materialTypeAssetId)
@@ -194,6 +203,12 @@ namespace AZ
             bool elevateWarnings,
             AZStd::unordered_set<AZStd::string>* sourceDependencies) const
         {
+            if (m_materialType.empty())
+            {
+                AZ_Error("MaterialSourceData", false, "materialType was not specified");
+                return Failure();
+            }
+
             const auto materialTypeSourcePath = AssetUtils::ResolvePathReference(materialSourceFilePath, m_materialType);
             const auto materialTypeAssetId = AssetUtils::MakeAssetId(materialTypeSourcePath, 0);
             if (!materialTypeAssetId.IsSuccess())
@@ -325,16 +340,16 @@ namespace AZ
                         if (result == MaterialUtils::GetImageAssetResult::Missing)
                         {
                             materialAssetCreator.ReportWarning(
-                                "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
+                                "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
                                 property.second.m_value.GetValue<AZStd::string>().data());
                         }
                                     
                         imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
-                        materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
+                        materialAssetCreator.SetPropertyValue(propertyId, imageAsset);
                     }
                     else
                     {
-                        materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), property.second.m_value);
+                        materialAssetCreator.SetPropertyValue(propertyId, property.second.m_value);
                     }
                 }
             }

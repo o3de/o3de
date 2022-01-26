@@ -20,7 +20,7 @@
                 "Name": "Reflectance",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
-                "PixelFormat": "ASTC_6x6",
+                "PixelFormat": "ASTC_4x4",
                 "Swizzle": "rrr1",
                 "MaxTextureSize": 2048,
                 "IsPowerOf2": true,

@@ -8,8 +8,6 @@
 
 set(FILES
     Include/WhiteBox/WhiteBoxBus.h
-    Source/WhiteBoxAllocator.cpp
-    Source/WhiteBoxAllocator.h
     Source/WhiteBoxComponent.cpp
     Source/WhiteBoxComponent.h
     Source/WhiteBoxSystemComponent.cpp

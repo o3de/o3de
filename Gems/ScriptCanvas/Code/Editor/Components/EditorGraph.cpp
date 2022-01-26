@@ -49,11 +49,9 @@ AZ_POP_DISABLE_WARNING
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasAssetIdDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasBoolDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasEntityIdDataInterface.h>
-#include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasEnumDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasNumericDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasColorDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasCRCDataInterface.h>
-#include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasReadOnlyDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasStringDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasVectorDataInterface.h>
 #include <Editor/GraphCanvas/DataInterfaces/ScriptCanvasVariableDataInterface.h>
@@ -3779,7 +3777,7 @@ namespace ScriptCanvasEditor
             {
                 if (assetSanitizationSet.find(currentIter->first) == assetSanitizationSet.end())
                 {
-                    currentIter->second = {};
+                    currentIter->second = ScriptEvents::ScriptEventsAssetPtr{};
                     currentIter = GetGraphData()->m_scriptEventAssets.erase(currentIter);
                     graphNeedsDirtying = true;
                 }
