@@ -88,19 +88,6 @@ enum ESystemUpdateFlags
 };
 
 // Description:
-//   Configuration specification, depends on user selected machine specification.
-enum ESystemConfigSpec
-{
-    CONFIG_AUTO_SPEC = 0,
-    CONFIG_LOW_SPEC = 1,
-    CONFIG_MEDIUM_SPEC = 2,
-    CONFIG_HIGH_SPEC = 3,
-    CONFIG_VERYHIGH_SPEC = 4,
-
-    END_CONFIG_SPEC_ENUM, // MUST BE LAST VALUE. USED FOR ERROR CHECKING.
-};
-
-// Description:
 //   Configuration platform. Autodetected at start, can be modified through the editor.
 enum ESystemConfigPlatform
 {

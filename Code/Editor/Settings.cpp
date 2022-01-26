@@ -129,8 +129,6 @@ SEditorSettings::SEditorSettings()
     bVisualizeNavigationAccessibility = false;
     navigationDebugAgentType = 0;
 
-    editorConfigSpec = CONFIG_VERYHIGH_SPEC;  //arbitrary choice, but lets assume that we want things to initially look as good as possible in the editor.
-
     viewports.bAlwaysShowRadiuses = false;
     viewports.bSync2DViews = false;
     viewports.fDefaultAspectRatio = 800.0f / 600.0f;
@@ -166,7 +164,6 @@ SEditorSettings::SEditorSettings()
     bPreviewGeometryWindow = true;
     bBackupOnSave = true;
     backupOnSaveMaxCount = 3;
-    bApplyConfigSpecInEditor = true;
     showErrorDialogOnLoad = 1;
 
     consoleBackgroundColorTheme = AzToolsFramework::ConsoleColorTheme::Dark;
@@ -434,40 +431,6 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, QString&
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SEditorSettings::LoadValue(const char* sSection, const char* sKey, ESystemConfigSpec& value)
-{
-    if (bSettingsManagerMode)
-    {
-        int valueCheck = 0;
-
-        if (GetIEditor()->GetSettingsManager())
-        {
-            GetIEditor()->GetSettingsManager()->LoadSetting(sSection, sKey, valueCheck);
-        }
-
-        if (valueCheck >= CONFIG_AUTO_SPEC && valueCheck < END_CONFIG_SPEC_ENUM)
-        {
-            value = (ESystemConfigSpec)valueCheck;
-            SaveValue(sSection, sKey, value);
-        }
-    }
-    else
-    {
-        const SettingsGroup sg(sSection);
-        auto valuecheck = static_cast<ESystemConfigSpec>(s_editorSettings()->value(sKey, QVariant::fromValue<int>(value)).toInt());
-        if (valuecheck >= CONFIG_AUTO_SPEC && valuecheck < END_CONFIG_SPEC_ENUM)
-        {
-            value = valuecheck;
-
-            if (GetIEditor()->GetSettingsManager())
-            {
-                GetIEditor()->GetSettingsManager()->SaveSetting(sSection, sKey, value);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void SEditorSettings::Save(bool isEditorClosing)
 {
     QString strStringPlaceholder;
@@ -503,9 +466,6 @@ void SEditorSettings::Save(bool isEditorClosing)
 
     SaveValue("Settings", "BackupOnSave", bBackupOnSave);
     SaveValue("Settings", "SaveBackupMaxCount", backupOnSaveMaxCount);
-    SaveValue("Settings", "ApplyConfigSpecInEditor", bApplyConfigSpecInEditor);
-
-    SaveValue("Settings", "editorConfigSpec", editorConfigSpec);
 
     SaveValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
 
@@ -697,9 +657,6 @@ void SEditorSettings::Load()
 
     LoadValue("Settings", "BackupOnSave", bBackupOnSave);
     LoadValue("Settings", "SaveBackupMaxCount", backupOnSaveMaxCount);
-    LoadValue("Settings", "ApplyConfigSpecInEditor", bApplyConfigSpecInEditor);
-    LoadValue("Settings", "editorConfigSpec", editorConfigSpec);
-
 
     LoadValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
 
@@ -894,7 +851,6 @@ void SEditorSettings::PostInitApply()
 
     REGISTER_CVAR2_CB("ed_toolbarIconSize", &gui.nToolbarIconSize, gui.nToolbarIconSize, VF_NULL, "Override size of the toolbar icons 0-default, 16,32,...", ToolbarIconSizeChanged);
 
-    GetIEditor()->SetEditorConfigSpec(editorConfigSpec, GetISystem()->GetConfigPlatform());
     REGISTER_CVAR2("ed_backgroundUpdatePeriod", &backgroundUpdatePeriod, backgroundUpdatePeriod, 0, "Delay between frame updates (ms) when window is out of focus but not minimized. 0 = disable background update");
     REGISTER_CVAR2("ed_showErrorDialogOnLoad", &showErrorDialogOnLoad, showErrorDialogOnLoad, 0, "Show error dialog on level load");
     REGISTER_CVAR2_CB("ed_keepEditorActive", &keepEditorActive, 0, VF_NULL, "Keep the editor active, even if no focus is set", KeepEditorActiveChanged);
