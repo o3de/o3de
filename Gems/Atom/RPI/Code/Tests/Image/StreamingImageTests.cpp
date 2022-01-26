@@ -22,6 +22,7 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Image/DefaultStreamingImageController.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -742,7 +743,7 @@ namespace UnitTest
         {
             for (uint32_t x = 0; x < size.m_width; ++x)
             {
-                auto pixelDataValue = imageAsset->GetSubImagePixelValue<float>(x, y);
+                auto pixelDataValue = RPI::GetSubImagePixelValue<float>(imageAsset, x, y);
                 auto pixelExpectedValue = static_cast<uint8_t>(y * size.m_width + x) / static_cast<float>(std::numeric_limits<AZ::u8>::max());
 
                 EXPECT_NEAR(pixelDataValue, pixelExpectedValue, Constants::Tolerance);
@@ -753,7 +754,7 @@ namespace UnitTest
         AZStd::vector<float> pixelValues(size.m_width * size.m_height);
         auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
         auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(size.m_width, size.m_height);
-        streamingImageAsset->GetSubImagePixelValues(topLeft, bottomRight, pixelValues);
+        RPI::GetSubImagePixelValues(imageAsset, topLeft, bottomRight, pixelValues);
         for (uint32_t index = 0; index < pixelValues.size(); ++index)
         {
             auto pixelDataValue = pixelValues[index];

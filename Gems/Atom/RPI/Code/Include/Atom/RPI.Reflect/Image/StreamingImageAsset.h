@@ -12,7 +12,6 @@
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
-#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -86,22 +85,6 @@ namespace AZ
             //! Get image data for specified mip and slice. It may return empty array if its mipchain assets are not loaded
             AZStd::array_view<uint8_t> GetSubImageData(uint32_t mip, uint32_t slice);
 
-            //! Get single image pixel value for specified mip and slice
-            template<typename T>
-            T GetSubImagePixelValue(uint32_t x, uint32_t y, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
-
-            //! Retrieve a region of image pixel values (float) for specified mip and slice
-            //! NOTE: The topLeft coordinate is inclusive, whereas the bottomRight is exclusive
-            void GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<float> outValues, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
-
-            //! Retrieve a region of image pixel values (uint) for specified mip and slice
-            //! NOTE: The topLeft coordinate is inclusive, whereas the bottomRight is exclusive
-            void GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::u32> outValues, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
-
-            //! Retrieve a region of image pixel values (int) for specified mip and slice
-            //! NOTE: The topLeft coordinate is inclusive, whereas the bottomRight is exclusive
-            void GetSubImagePixelValues(AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::s32> outValues, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
-
             //! Returns streaming image pool asset id of the pool that will be used to create the streaming image.
             const Data::AssetId& GetPoolAssetId() const;
 
@@ -144,9 +127,6 @@ namespace AZ
             uint32_t m_totalImageDataSize = 0;
 
             StreamingImageFlags m_flags = StreamingImageFlags::None;
-
-            template<typename T>
-            T GetSubImagePixelValueInternal(uint32_t x, uint32_t y, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
         };
     }
 }
