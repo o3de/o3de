@@ -10,11 +10,6 @@
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
-#ifdef USE_PIX
-#include <AzCore/PlatformIncl.h>
-#include <WinPixEventRuntime/pix3.h>
-#endif
-
 #if defined(AZ_PROFILER_MACRO_DISABLE) // by default we never disable the profiler registers as their overhead should be minimal, you can
                                        // still do that for your code though.
 #define AZ_PROFILE_SCOPE(...)

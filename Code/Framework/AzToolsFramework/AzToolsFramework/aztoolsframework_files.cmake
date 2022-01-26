@@ -504,6 +504,8 @@ set(FILES
     Viewport/EditorContextMenu.cpp
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
+    Viewport/ViewportInteractionHelpers.h
+    Viewport/ViewportInteractionHelpers.cpp
     Viewport/ViewportMessages.h
     Viewport/ViewportMessages.cpp
     Viewport/ViewportTypes.h

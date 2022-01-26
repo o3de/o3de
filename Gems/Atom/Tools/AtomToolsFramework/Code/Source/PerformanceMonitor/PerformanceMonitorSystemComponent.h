@@ -10,25 +10,26 @@
 
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Statistics/RunningStatistic.h>
-#include <Viewport/PerformanceMonitorRequestBus.h>
+#include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    //! PerformanceMonitorComponent monitors performance within Material Editor
-    class PerformanceMonitorComponent
+    //! PerformanceMonitorSystemComponent monitors performance
+    class PerformanceMonitorSystemComponent
         : public AZ::Component
         , private PerformanceMonitorRequestBus::Handler
+        , private AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT(PerformanceMonitorComponent, "{C2F54D1B-A106-4922-82BE-ACB7A168D4AF}");
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        PerformanceMonitorComponent();
-        ~PerformanceMonitorComponent() = default;
+        AZ_COMPONENT(PerformanceMonitorSystemComponent, "{C2F54D1B-A106-4922-82BE-ACB7A168D4AF}");
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void Reflect(AZ::ReflectContext* context);
+
+        PerformanceMonitorSystemComponent() = default;
+        ~PerformanceMonitorSystemComponent() = default;
 
     private:
         // AZ::Component overrides...
@@ -36,9 +37,11 @@ namespace MaterialEditor
         void Activate() override;
         void Deactivate() override;
 
-        // PerformanceMonitorRequestBus::Handler interface overrides...
+        // AZ::TickBus::Handler overrides...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+        // PerformanceMonitorRequestBus::Handler overrides...
         void SetProfilerEnabled(bool enabled) override;
-        void GatherMetrics() override;
         const PerformanceMetrics& GetMetrics() override;
 
         void UpdateMetrics();
@@ -55,4 +58,4 @@ namespace MaterialEditor
         static constexpr int SampleCount = 10;
         int m_sample = 0;
     };
-}
+} // namespace AtomToolsFramework
