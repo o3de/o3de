@@ -18,3 +18,4 @@ EXPORT_LIST_OPTIONS = ( ( ('0', 'Selected with in texture folder',
 TAG_O3DE = '.o3de'
 USER_HOME = Path.home()
 DEFAULT_SDK_MANIFEST_PATH = Path.home().joinpath(f'{TAG_O3DE}','o3de_manifest.json')
+WIKI_URL = 'https://github.com/o3de/o3de/wiki/O3DE-DCCsi-Blender-Scene-Exporter'

@@ -13,9 +13,11 @@ import webbrowser
 from bpy_extras.io_utils import ExportHelper
 from bpy.types import Panel, Operator, PropertyGroup
 from bpy.props import EnumProperty, StringProperty, BoolProperty, PointerProperty
+import constants
 import fbx_exporter
 import o3de_utils
 import ui
+
 
 def message_box(message = "", title = "Message Box", icon = 'LIGHT'):
     """!
@@ -41,7 +43,7 @@ class WikiButton(bpy.types.Operator):
         """!
         This function will open a web browser window.
         """
-        webbrowser.open('https://github.com/o3de/o3de/wiki/')
+        webbrowser.open(constants.WIKI_URL)
         return{'FINISHED'}
 
 class ExportFiles(bpy.types.Operator):
