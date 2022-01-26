@@ -154,7 +154,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 
-    bool PrefabDocument::RefreshPrefabDom() const
+    void PrefabDocument::RefreshPrefabDom() const
     {
         if (m_isDirty)
         {
@@ -162,14 +162,11 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             if (PrefabDomUtils::StoreInstanceInPrefabDom(*m_instance, m_dom, m_referencedAssets))
             {
                 m_isDirty = false;
-                return true;
             }
             else
             {
                 AZ_Assert(false, "Failed to store Instance '%s' to PrefabDom.", m_name.c_str());
-                return false;
             }
         }
-        return true;
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

@@ -255,20 +255,23 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                     AZ::Data::AssetId assetId = asset->GetId();
                     AZ::Data::AssetType assetType = asset->GetType();
 
-                    // Always queue load as the next step will stop loading for all PreLoad assets
-                    *asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::QueueLoad);
-
-                    if (!asset->GetId().IsValid())
-                    {
-                        AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
-                        return false;
-                    }
-
                     if (loadBehavior == AZ::Data::AssetLoadBehavior::PreLoad)
                     {
                         // Only assets that are preloaded need to be waited on.
                         blockingAssets.push_back(asset);
+                        // Queue any pending request in parallel. Assets that were set to PreLoad will be waited for resulting
+                        // in the same overall load guarantees.
+                        asset->SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::QueueLoad);
                     }
+                    if (!asset->QueueLoad())
+                    {
+                        AZ_Error(
+                            "Prefab", false, "Failed to queue asset '%s' (%s) of type '%s' for loading while entering game mode.",
+                            asset->GetHint().c_str(), asset->GetId().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str(),
+                            asset->GetType().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
+                        return false;
+                    }
+
                     return false;
                 }
                 return true;
@@ -288,8 +291,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             if (asset->IsError())
             {
                 AZ_Error(
-                    "Prefab", false, "Asset with id %s failed to preload while entering game mode",
-                    asset->GetId().ToString<AZStd::string>().c_str());
+                    "Prefab", false, "Asset '%s' (%s) of type '%s' failed to preload while entering game mode", asset->GetHint().c_str(),
+                    asset->GetId().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str(),
+                    asset->GetType().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
 
                 continue;
             }
