@@ -75,7 +75,7 @@ def edit_engine_props(engine_path: pathlib.Path = None,
     if new_version:
         engine_json_data['O3DEVersion'] = new_version
 
-    # Update the gem_names field in the project.json
+    # Update the gem_names field in the engine.json
     _edit_gem_names(engine_json_data, new_gem_names, delete_gem_names, replace_gem_names)
 
     return 0 if manifest.save_o3de_manifest(engine_json_data, pathlib.Path(engine_path) / 'engine.json') else 1
