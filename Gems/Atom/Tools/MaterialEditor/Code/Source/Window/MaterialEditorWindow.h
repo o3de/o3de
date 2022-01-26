@@ -14,6 +14,7 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/ToolBar/MaterialEditorToolBar.h>
+#include <QTimer>
 AZ_POP_DISABLE_WARNING
 #endif
 
@@ -33,7 +34,7 @@ namespace MaterialEditor
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
         MaterialEditorWindow(QWidget* parent = 0);
-        ~MaterialEditorWindow() = default;
+        ~MaterialEditorWindow();
 
     protected:
         void ResizeViewportRenderTarget(uint32_t width, uint32_t height) override;
@@ -48,7 +49,14 @@ namespace MaterialEditor
 
         void closeEvent(QCloseEvent* closeEvent) override;
 
+        void SetupMetrics();
+        void UpdateMetrics();
+
         MaterialViewportWidget* m_materialViewport = {};
         MaterialEditorToolBar* m_toolBar = {};
+        QLabel* m_statusBarFps = {};
+        QLabel* m_statusBarCpuTime = {};
+        QLabel* m_statusBarGpuTime = {};
+        QTimer m_metricsTimer;
     };
 } // namespace MaterialEditor

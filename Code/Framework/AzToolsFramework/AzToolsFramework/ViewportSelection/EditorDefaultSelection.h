@@ -101,7 +101,7 @@ namespace AzToolsFramework
             {
             }
 
-            AZ::Crc32 m_uri; //!< Unique identifier for the Action. (In the form 'com.o3de.action.---").
+            AZ::Crc32 m_uri; //!< Unique identifier for the Action. (In the form 'org.o3de.action.---").
             AZStd::vector<AZStd::function<void()>> m_callbacks; //!< Callbacks associated with this Action (note: with multi-selections
                                                                 //!< there will be a callback per Entity/Component).
             AZStd::unique_ptr<QAction> m_action; //!< The QAction associated with the overrideWidget for all ComponentMode actions.
