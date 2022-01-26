@@ -17,6 +17,12 @@
                         "StoreAction": "Store"
                     }             
                 },
+                {
+                    "Name": "DepthShadowmaps",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_directionalLightShadowmap",
+                    "ScopeAttachmentUsage": "Shader"      
+                },                
                 // SwapChain here is only used to reference the frame height and format
                 {
                     "Name": "SwapChainOutput",

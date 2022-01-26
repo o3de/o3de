@@ -65,6 +65,7 @@ class DirectionalLightShadow
         uint lightIndex,
         float3 shadowCoords[ViewSrg::MaxCascadeCount],
         float3 normalVector,
+        float2 screenUv,
         out DebugInfo debugInfo);
 
     static float GetThickness(uint lightIndex, float3 shadowCoords[ViewSrg::MaxCascadeCount]);
@@ -90,7 +91,7 @@ class DirectionalLightShadow
 
     // This outputs visibility ratio (from 0.0 to 1.0) of the given coordinate
     // from the light origin without filtering.
-    float GetVisibilityFromLightNoFilter();
+    float GetVisibilityFromLightNoFilter(float2 screenUv);
 
     // This outputs visibility ratio (from 0.0 to 1.0) for PCF.
     float GetVisibilityFromLightPcf();
@@ -198,11 +199,10 @@ bool2 DirectionalLightShadow::IsShadowed(float3 shadowCoord, uint indexOfCascade
     return bool2(false, false);
 }
 
-float DirectionalLightShadow::GetVisibilityFromLightNoFilter()
+float DirectionalLightShadow::GetVisibilityFromLightNoFilter(float2 screenUv)
 {
     Texture2D<float> fullscreenShadow = PassSrg::m_fullscreenShadow;
-    float2 fullscreenCoord = 0.5;
-    return fullscreenShadow.SampleLevel(PassSrg::LinearSampler, fullscreenCoord, 0);
+    return fullscreenShadow.Load(float3(screenUv, 0));
     
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
     for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
@@ -380,6 +380,7 @@ float DirectionalLightShadow::GetVisibility(
     uint lightIndex,
     float3 shadowCoords[ViewSrg::MaxCascadeCount],
     float3 normalVector,
+    float2 screenUv,
     out DirectionalLightShadow::DebugInfo debugInfo)
 {
     DirectionalLightShadow shadow;
@@ -415,7 +416,7 @@ float DirectionalLightShadow::GetVisibility(
     switch (o_directional_shadow_filtering_method)
     {
         case ShadowFilterMethod::None:
-            visibility = shadow.GetVisibilityFromLightNoFilter();
+            visibility = shadow.GetVisibilityFromLightNoFilter(screenUv);
             break;
         case ShadowFilterMethod::Pcf:
             visibility = shadow.GetVisibilityFromLightPcf();

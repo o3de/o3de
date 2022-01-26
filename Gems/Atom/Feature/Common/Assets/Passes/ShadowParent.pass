@@ -157,8 +157,14 @@
                                 "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
-                        }                   
-                        
+                        },
+                        {
+                            "LocalSlot": "DepthShadowmaps",
+                            "AttachmentRef": {
+                                "Pass": "CascadedShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        }                                               
                     ]                    
                 }                
             ]

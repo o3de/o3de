@@ -128,20 +128,16 @@ namespace AZ
 
         void FullscreenShadowPass::SetConstantData()
         {
-            //struct ConstantData
-            //{
-            //    AZStd::array<float, 2> m_unprojectZ;
-            //    uint32_t depthBufferWidth;
-            //    uint32_t depthBufferHeight;
-            //} constantData;
+            struct ConstantData
+            {
+                AZStd::array<float, 2> m_screenSize;
+            } constantData;
 
-            //const RHI::Size resolution = GetDepthBufferDimensions();
-            //constantData.m_unprojectZ = ComputeUnprojectConstants();
-            //constantData.depthBufferWidth = resolution.m_width;
-            //constantData.depthBufferHeight = resolution.m_height;
+            const RHI::Size resolution = GetDepthBufferDimensions();
+            constantData.m_screenSize = { static_cast<float>(resolution.m_width), static_cast<float>(resolution.m_height) };
 
-            //[[maybe_unused]] bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
-            //AZ_Assert(setOk, "FullscreenShadowPass::SetConstantData() - could not set constant data");
+            [[maybe_unused]] bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
+            AZ_Assert(setOk, "FullscreenShadowPass::SetConstantData() - could not set constant data");
         }
 
         void FullscreenShadowPass::BuildInternal()

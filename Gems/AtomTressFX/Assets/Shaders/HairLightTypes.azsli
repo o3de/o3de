@@ -347,7 +347,7 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 //                            Directional Lights
 //==============================================================================
-void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
+void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float2 screenUv)
 {
     DirectionalLightShadow::DebugInfo debugInfo = {0, false};
 
@@ -364,6 +364,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             shadowIndex,
             lightingData.shadowCoords,
             surface.vertexNormal,
+            screenUv,
             debugInfo);
     }
 

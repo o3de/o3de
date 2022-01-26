@@ -11,7 +11,7 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 
-void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
+void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float2 screenUv)
 {
     DirectionalLightShadow::DebugInfo debugInfo = {0, false};
 
@@ -25,6 +25,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             shadowIndex,
             lightingData.shadowCoords,
             surface.vertexNormal,
+            screenUv,
             debugInfo);
             
         if (o_transmission_mode == TransmissionMode::ThickObject)

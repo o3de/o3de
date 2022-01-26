@@ -70,6 +70,7 @@ PSOutput ShadowCatcherPS(VSOutput IN)
             ViewSrg::m_shadowIndexDirectionalLight,
             IN.m_shadowCoords,
             IN.m_worldNormal,
+            0,
         debugInfo);
 
     if (o_shadeAll)

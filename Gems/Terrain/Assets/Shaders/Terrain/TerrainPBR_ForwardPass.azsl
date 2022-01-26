@@ -208,7 +208,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, IN.m_position.xy);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);
