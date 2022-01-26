@@ -11,7 +11,7 @@ set(o3de_gem_json ${o3de_gem_path}/gem.json)
 o3de_read_json_key(o3de_gem_name ${o3de_gem_json} "gem_name")
 o3de_restricted_path(${o3de_gem_json} o3de_gem_restricted_path)
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${o3de_gem_restricted_path}" ${o3de_gem_path} ${o3de_gem_name})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${o3de_gem_restricted_path}" ${o3de_gem_path} ${o3de_gem_name})
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
 # project cmake for this platform.

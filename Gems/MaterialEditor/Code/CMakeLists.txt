@@ -1,22 +1,22 @@
 
 # Currently we are in the Code folder: ${CMAKE_CURRENT_LIST_DIR}
 # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
-# Note: ly_get_list_relative_pal_filename will take care of the details for us, as this may be a restricted platform
+# Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
 #       in which case it will see if that platform is present here or in the restricted folder.
 #       i.e. It could here in our gem : Gems/MaterialEditor/Code/Platform/<platorm_name>  or
 #            <restricted_folder>/<platform_name>/Gems/MaterialEditor/Code
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${o3de_gem_restricted_path} ${o3de_gem_path} ${o3de_gem_name})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${o3de_gem_restricted_path} ${o3de_gem_path} ${o3de_gem_name})
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
 # traits for this platform. Traits for a platform are defines for things like whether or not something in this gem
 # is supported by this platform.
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-# Add the MaterialEditor.Static target
+# Add the O3DEMaterialEditor.Static target
 # Note: We include the common files and the platform specific files which are set in materialeditor_common_files.cmake
 # and in ${pal_dir}/materialeditor_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
 ly_add_target(
-    NAME MaterialEditor.Static STATIC
+    NAME O3DEMaterialEditor.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         materialeditor_files.cmake
@@ -32,9 +32,9 @@ ly_add_target(
             AZ::AzFramework
 )
 
-# Here add MaterialEditor target, it depends on the MaterialEditor.Static
+# Here add O3DEMaterialEditor target, it depends on the O3DEMaterialEditor.Static
 ly_add_target(
-    NAME MaterialEditor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME O3DEMaterialEditor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         materialeditor_shared_files.cmake
@@ -46,20 +46,20 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::MaterialEditor.Static
+            Gem::O3DEMaterialEditor.Static
 )
 
-# By default, we will specify that the above target MaterialEditor would be used by
+# By default, we will specify that the above target O3DEMaterialEditor would be used by
 # Client and Server type targets when this gem is enabled.  If you don't want it
 # active in Clients or Servers by default, delete one of both of the following lines:
-ly_create_alias(NAME MaterialEditor.Clients NAMESPACE Gem TARGETS Gem::MaterialEditor)
-ly_create_alias(NAME MaterialEditor.Servers NAMESPACE Gem TARGETS Gem::MaterialEditor)
+ly_create_alias(NAME O3DEMaterialEditor.Clients NAMESPACE Gem TARGETS Gem::O3DEMaterialEditor)
+ly_create_alias(NAME O3DEMaterialEditor.Servers NAMESPACE Gem TARGETS Gem::O3DEMaterialEditor)
 
-# If we are on a host platform, we want to add the host tools targets like the MaterialEditor.Editor target which
-# will also depend on MaterialEditor.Static
+# If we are on a host platform, we want to add the host tools targets like the O3DEMaterialEditor.Editor target which
+# will also depend on O3DEMaterialEditor.Static
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME MaterialEditor.Editor.Static STATIC
+        NAME O3DEMaterialEditor.Editor.Static STATIC
         NAMESPACE Gem
         AUTOMOC
         AUTORCC
@@ -73,11 +73,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                Gem::MaterialEditor.Static
+                Gem::O3DEMaterialEditor.Static
     )
 
     ly_add_target(
-        NAME MaterialEditor.Editor GEM_MODULE
+        NAME O3DEMaterialEditor.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
@@ -89,14 +89,14 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PUBLIC
-                Gem::MaterialEditor.Editor.Static
+                Gem::O3DEMaterialEditor.Editor.Static
     )
 
-    # By default, we will specify that the above target MaterialEditor would be used by
+    # By default, we will specify that the above target O3DEMaterialEditor would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
     # active in Tools or Builders by default, delete one of both of the following lines:
-    ly_create_alias(NAME MaterialEditor.Tools    NAMESPACE Gem TARGETS Gem::MaterialEditor.Editor)
-    ly_create_alias(NAME MaterialEditor.Builders NAMESPACE Gem TARGETS Gem::MaterialEditor.Editor)
+    ly_create_alias(NAME O3DEMaterialEditor.Tools    NAMESPACE Gem TARGETS Gem::O3DEMaterialEditor.Editor)
+    ly_create_alias(NAME O3DEMaterialEditor.Builders NAMESPACE Gem TARGETS Gem::O3DEMaterialEditor.Editor)
 
 
 endif()
@@ -106,11 +106,11 @@ endif()
 ################################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    # We globally support tests, see if we support tests on this platform for MaterialEditor.Static
+    # We globally support tests, see if we support tests on this platform for O3DEMaterialEditor.Static
     if(PAL_TRAIT_MATERIALEDITOR_TEST_SUPPORTED)
-        # We support MaterialEditor.Tests on this platform, add MaterialEditor.Tests target which depends on MaterialEditor.Static
+        # We support O3DEMaterialEditor.Tests on this platform, add O3DEMaterialEditor.Tests target which depends on O3DEMaterialEditor.Static
         ly_add_target(
-            NAME MaterialEditor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME O3DEMaterialEditor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 materialeditor_files.cmake
@@ -123,12 +123,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     AZ::AzFramework
-                    Gem::MaterialEditor.Static
+                    Gem::O3DEMaterialEditor.Static
         )
 
-        # Add MaterialEditor.Tests to googletest
+        # Add O3DEMaterialEditor.Tests to googletest
         ly_add_googletest(
-            NAME Gem::MaterialEditor.Tests
+            NAME Gem::O3DEMaterialEditor.Tests
         )
     endif()
 
@@ -136,9 +136,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         # We are a host platform, see if Editor tests are supported on this platform
         if(PAL_TRAIT_MATERIALEDITOR_EDITOR_TEST_SUPPORTED)
-            # We support MaterialEditor.Editor.Tests on this platform, add MaterialEditor.Editor.Tests target which depends on MaterialEditor.Editor
+            # We support O3DEMaterialEditor.Editor.Tests on this platform, add O3DEMaterialEditor.Editor.Tests target which depends on O3DEMaterialEditor.Editor
             ly_add_target(
-                NAME MaterialEditor.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+                NAME O3DEMaterialEditor.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
                 NAMESPACE Gem
                 FILES_CMAKE
                     materialeditor_editor_tests_files.cmake
@@ -149,12 +149,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::AzTest
-                        Gem::MaterialEditor.Editor
+                        Gem::O3DEMaterialEditor.Editor
             )
 
-            # Add MaterialEditor.Editor.Tests to googletest
+            # Add O3DEMaterialEditor.Editor.Tests to googletest
             ly_add_googletest(
-                NAME Gem::MaterialEditor.Editor.Tests
+                NAME Gem::O3DEMaterialEditor.Editor.Tests
             )
         endif()
     endif()
