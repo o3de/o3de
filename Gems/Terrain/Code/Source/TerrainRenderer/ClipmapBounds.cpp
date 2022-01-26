@@ -51,6 +51,17 @@ namespace Terrain
         int32_t xDiff = updatedCenter.m_x - m_center.m_x;
         int32_t updateWidth = AZStd::GetMin<uint32_t>(abs(xDiff), m_size);
 
+        /*
+        Calculate the update regions. In the common case, there will be two update regions that form either
+        an L or inverted L shape. To avoid double-counting the corner, it is always put in the vertical box:
+         _
+        | | 
+        | |____
+        |_|____|
+
+        */
+
+        // Calculate the vertical box
         if (updatedCenter.m_x != m_center.m_x)
         {
             updateRegions.push_back();
@@ -69,7 +80,8 @@ namespace Terrain
             updateRegion.m_min.m_y = updatedCenter.m_y - m_halfSize;
             updateRegion.m_max.m_y = updatedCenter.m_y + m_halfSize;
         }
-        
+
+        // Calculate the horizontal box
         if (updatedCenter.m_y != m_center.m_y && updateWidth < m_size)
         {
             updateRegions.push_back();
@@ -87,6 +99,7 @@ namespace Terrain
                 updateRegion.m_min.m_y = updateRegion.m_max.m_y - updateHeight;
             }
 
+            // If there was a vertical box, then don't double-count the corner of the update.
             if (xDiff < 0)
             {
                 updateRegion.m_min.m_x = updatedCenter.m_x - m_halfSize + updateWidth;
@@ -197,7 +210,7 @@ namespace Terrain
         return transformedRegions;
     }
 
-    AZ::Aabb ClipmapBounds::GetWorldBounds()
+    AZ::Aabb ClipmapBounds::GetWorldBounds() const
     {
         Aabb2i localBounds = GetLocalBounds();
         
@@ -206,7 +219,7 @@ namespace Terrain
             localBounds.m_max.m_x * m_scale, localBounds.m_max.m_y * m_scale, 0.0f);
     }
 
-    float ClipmapBounds::GetWorldSpaceSafeDistance()
+    float ClipmapBounds::GetWorldSpaceSafeDistance() const
     {
         return (m_halfSize - m_clipmapUpdateMultiple) * m_scale;
     }

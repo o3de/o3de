@@ -123,12 +123,12 @@ namespace Terrain
         ClipmapBoundsRegionList TransformRegion(Aabb2i clipSpaceRegion);
 
         //! Returns the bounds covered by this clipmap in world space. Z component is always 0.
-        AZ::Aabb GetWorldBounds();
+        AZ::Aabb GetWorldBounds() const;
 
         //! Returns the safe x and y distance from the center in world space. This is based on the scale,
         //! clipmap size, and m_clipmapUpdateMultiple. For example, a clipmap size 1024 with scale
         //! 0.25 and margin of 4 would have a safe distance of (1024 * 0.5 - 4) * 0.25 = 127.0f.
-        float GetWorldSpaceSafeDistance();
+        float GetWorldSpaceSafeDistance() const;
 
     private:
 
