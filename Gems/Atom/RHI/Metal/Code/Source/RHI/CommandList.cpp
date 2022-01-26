@@ -204,12 +204,12 @@ namespace AZ
 
         void CommandList::SetViewports(const RHI::Viewport* rhiViewports, uint32_t count)
         {
-            m_state.m_viewportState.Set(AZStd::span<constRHI::Viewport>(rhiViewports, count));
+            m_state.m_viewportState.Set(AZStd::span<const RHI::Viewport>(rhiViewports, count));
         }
 
         void CommandList::SetScissors(const RHI::Scissor* rhiScissors, uint32_t count)
         {
-            m_state.m_scissorState.Set(AZStd::span<constRHI::Scissor>(rhiScissors, count));
+            m_state.m_scissorState.Set(AZStd::span<const RHI::Scissor>(rhiScissors, count));
         }
 
         template <typename Item>

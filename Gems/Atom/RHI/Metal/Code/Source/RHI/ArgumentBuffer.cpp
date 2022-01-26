@@ -132,7 +132,7 @@ namespace AZ
                 resourceAdded = true;
             }
 
-            AZStd::span<constRHI::ShaderInputConstantDescriptor> shaderInputConstantList = m_srgLayout->GetShaderInputListForConstants();
+            AZStd::span<const RHI::ShaderInputConstantDescriptor> shaderInputConstantList = m_srgLayout->GetShaderInputListForConstants();
             if (!shaderInputConstantList.empty())
             {
                 const RHI::ShaderInputConstantDescriptor& shaderInputConstant = shaderInputConstantList[0];
@@ -160,7 +160,7 @@ namespace AZ
 
         void ArgumentBuffer::AttachConstantBuffer()
         {
-            AZStd::span<constRHI::ShaderInputConstantDescriptor> shaderInputConstantList = m_srgLayout->GetShaderInputListForConstants();
+            AZStd::span<const RHI::ShaderInputConstantDescriptor> shaderInputConstantList = m_srgLayout->GetShaderInputListForConstants();
             if (!shaderInputConstantList.empty())
             {
                 const RHI::ShaderInputConstantDescriptor& shaderInputConstant = shaderInputConstantList[0];
@@ -185,7 +185,7 @@ namespace AZ
 
         void ArgumentBuffer::UpdateImageViews(const RHI::ShaderInputImageDescriptor& shaderInputImage,
                                               const RHI::ShaderInputImageIndex shaderInputIndex,
-                                              const AZStd::span<constRHI::ConstPtr<RHI::ImageView>>& imageViews)
+                                              const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews)
         {
             int imageArrayLen = 0;
             AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
@@ -220,7 +220,7 @@ namespace AZ
 
         void ArgumentBuffer::UpdateSamplers(const RHI::ShaderInputSamplerDescriptor& shaderInputSampler,
                                             const RHI::ShaderInputSamplerIndex shaderInputIndex,
-                                            const AZStd::span<constRHI::SamplerState>& samplerStates)
+                                            const AZStd::span<const RHI::SamplerState>& samplerStates)
         {
             int samplerArrayLen = 0;
             AZStd::array<id<MTLSamplerState>, MaxEntriesInArgTable> mtlSamplers;
@@ -248,7 +248,7 @@ namespace AZ
 
         void ArgumentBuffer::UpdateBufferViews(const RHI::ShaderInputBufferDescriptor& shaderInputBuffer,
                                                const RHI::ShaderInputBufferIndex shaderInputIndex,
-                                               const AZStd::span<constRHI::ConstPtr<RHI::BufferView>>& bufferViews)
+                                               const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews)
         {
             int bufferArrayLen = 0;
             AZStd::array<id<MTLBuffer>, MaxEntriesInArgTable> mtlBuffers;
@@ -318,7 +318,7 @@ namespace AZ
             }
         }
 
-        void ArgumentBuffer::UpdateConstantBufferViews(AZStd::span<constuint8_t> rawData)
+        void ArgumentBuffer::UpdateConstantBufferViews(AZStd::span<const uint8_t> rawData)
         {
             AZ_Assert(rawData.size() <= m_constantBufferSize, "rawData size can not be bigger than constant Buffer Size");
             if ( (m_constantBufferSize > 0) && (rawData.size() <= m_constantBufferSize))

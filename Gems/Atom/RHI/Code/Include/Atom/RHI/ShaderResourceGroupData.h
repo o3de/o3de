@@ -118,31 +118,31 @@ namespace AZ
             //! Returns a single image view associated with the image shader input index and array offset.
             const ConstPtr<ImageView>& GetImageView(ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const;
 
-            //! Returns an array of image views associated with the given image shader input index.
+            //! Returns a span of image views associated with the given image shader input index.
             AZStd::span<const ConstPtr<ImageView>> GetImageViewArray(ShaderInputImageIndex inputIndex) const;
 
-            //! Returns an unbounded array of image views associated with the given buffer shader input index.
+            //! Returns an unbounded span of image views associated with the given buffer shader input index.
             AZStd::span<const ConstPtr<ImageView>> GetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex) const;
 
             //! Returns a single buffer view associated with the buffer shader input index and array offset.
             const ConstPtr<BufferView>& GetBufferView(ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const;
 
-            //! Returns an array of buffer views associated with the given buffer shader input index.
+            //! Returns a span of buffer views associated with the given buffer shader input index.
             AZStd::span<const ConstPtr<BufferView>> GetBufferViewArray(ShaderInputBufferIndex inputIndex) const;
 
-            //! Returns an unbounded array of buffer views associated with the given buffer shader input index.
+            //! Returns an unbounded span of buffer views associated with the given buffer shader input index.
             AZStd::span<const ConstPtr<BufferView>> GetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex) const;
 
             //! Returns a single sampler associated with the sampler shader input index and array offset.
             const SamplerState& GetSampler(ShaderInputSamplerIndex inputIndex, uint32_t arrayIndex) const;
 
-            //! Returns an array of samplers associated with the sampler shader input index.
+            //! Returns a span of samplers associated with the sampler shader input index.
             AZStd::span<const SamplerState> GetSamplerArray(ShaderInputSamplerIndex inputIndex) const;
 
             //! Returns constant data for the given shader input index as a template type.
             //! The stride of T must match the size of the constant input region. The number
-            //! of elements in the returned array is the number of evenly divisible elements.
-            //! If the strides do not match, an empty array is returned.
+            //! of elements in the returned span is the number of evenly divisible elements.
+            //! If the strides do not match, an empty span is returned.
             template <typename T>
             AZStd::span<const T> GetConstantArray(ShaderInputConstantIndex inputIndex) const;
 
@@ -157,12 +157,12 @@ namespace AZ
             template <typename T>
             T GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const;
 
-            //! Returns constant data for the given shader input index as an array of bytes.
+            //! Returns constant data for the given shader input index as a span of bytes.
             AZStd::span<const uint8_t> GetConstantRaw(ShaderInputConstantIndex inputIndex) const;
 
             //! Returns a {Buffer, Image, Sampler} shader resource group. Each resource type has its own separate group.
             //!  - The size of this group matches the size provided by ShaderResourceGroupLayout::GetGroupSizeFor{Buffer, Image, Sampler}.
-            //!  - Use ShaderResourceGroupLayout::GetGroupInterval to retrieve a [min, max) interval into the array.
+            //!  - Use ShaderResourceGroupLayout::GetGroupInterval to retrieve a [min, max) interval into the span.
             AZStd::span<const ConstPtr<ImageView>> GetImageGroup() const;
             AZStd::span<const ConstPtr<BufferView>> GetBufferGroup() const;
             AZStd::span<const SamplerState> GetSamplerGroup() const;

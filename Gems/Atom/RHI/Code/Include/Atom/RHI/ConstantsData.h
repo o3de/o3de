@@ -20,11 +20,11 @@ namespace AZ
 {
     namespace RHI
     {
-        //! The intent of this class is to provide fast and thin access to the underlying constant 
-        //! data (inline or from an SRG), with basic validation to protect the user. As a secondary objective, it provides type-specific convenience 
-        //! operations as long as they don't violate the primary "fast" and "thin" objectives. To clarify, thin means 
-        //! we don't make assumptions about the data or how the user wants to operate on the data, and the convenience 
-        //! operations boil down to thin wrappers for single calls to SetConstantRaw and GetConstantRaw. So these 
+        //! The intent of this class is to provide fast and thin access to the underlying constant
+        //! data (inline or from an SRG), with basic validation to protect the user. As a secondary objective, it provides type-specific convenience
+        //! operations as long as they don't violate the primary "fast" and "thin" objectives. To clarify, thin means
+        //! we don't make assumptions about the data or how the user wants to operate on the data, and the convenience
+        //! operations boil down to thin wrappers for single calls to SetConstantRaw and GetConstantRaw. So these
         //! convenience functions are provided in situations that are "low-hanging-fruit".
         class ConstantsData
         {
@@ -77,7 +77,7 @@ namespace AZ
             template <typename T>
             T GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const;
 
-            //! Returns constant data for the given shader input index as an array of bytes.
+            //! Returns constant data for the given shader input index as a span of bytes.
             AZStd::span<const uint8_t> GetConstantRaw(ShaderInputConstantIndex inputIndex) const;
 
             //! Returns the opaque constant data populated by calls to SetConstant and SetConstantData.

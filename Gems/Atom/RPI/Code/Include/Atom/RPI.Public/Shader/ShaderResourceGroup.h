@@ -111,7 +111,7 @@ namespace AZ
             const Data::Instance<Image>& GetImage(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
             const Data::Instance<Image>& GetImage(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex = 0) const;
 
-            /// Returns an array of RPI images associated with the image shader input index.
+            /// Returns a span of RPI images associated with the image shader input index.
             AZStd::span<const Data::Instance<Image>> GetImageArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const Data::Instance<Image>> GetImageArray(RHI::ShaderInputImageIndex inputIndex) const;
 
@@ -130,7 +130,7 @@ namespace AZ
             const Data::Instance<Buffer>& GetBuffer(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
             const Data::Instance<Buffer>& GetBuffer(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex = 0) const;
 
-            /// Returns an array of RPI buffers associated with the buffer shader input index.
+            /// Returns a span of RPI buffers associated with the buffer shader input index.
             AZStd::span<const Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const Data::Instance<Buffer>> GetBufferArray(RHI::ShaderInputBufferIndex inputIndex) const;
 
@@ -155,7 +155,7 @@ namespace AZ
             const RHI::ConstPtr<RHI::ImageView>& GetImageView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
             const RHI::ConstPtr<RHI::ImageView>& GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex = 0) const;
 
-            /// Returns an array of image views associated with the given image shader input index.
+            /// Returns a span of image views associated with the given image shader input index.
             AZStd::span<const RHI::ConstPtr<RHI::ImageView>> GetImageViewArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const RHI::ConstPtr<RHI::ImageView>> GetImageViewArray(RHI::ShaderInputImageIndex inputIndex) const;
 
@@ -177,7 +177,7 @@ namespace AZ
             const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex = 0) const;
             const RHI::ConstPtr<RHI::BufferView>& GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex = 0) const;
 
-            /// Returns an array of buffer views associated with the given buffer shader input index.
+            /// Returns a span of buffer views associated with the given buffer shader input index.
             AZStd::span<const RHI::ConstPtr<RHI::BufferView>> GetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const RHI::ConstPtr<RHI::BufferView>> GetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex) const;
 
@@ -196,7 +196,7 @@ namespace AZ
             const RHI::SamplerState& GetSampler(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const;
             const RHI::SamplerState& GetSampler(RHI::ShaderInputSamplerIndex inputIndex, uint32_t arrayIndex) const;
 
-            /// Returns an array of samplers associated with the sampler shader input index.
+            /// Returns a span of samplers associated with the sampler shader input index.
             AZStd::span<const RHI::SamplerState> GetSamplerArray(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const RHI::SamplerState> GetSamplerArray(RHI::ShaderInputSamplerIndex inputIndex) const;
 
@@ -227,7 +227,7 @@ namespace AZ
             template <typename T>
             bool SetConstant(RHI::ShaderInputConstantIndex inputIndex, const T& value, uint32_t arrayIndex);
 
-            /// Assigns an array of type T to the constant shader input.
+            /// Assigns a span of type T to the constant shader input.
             template <typename T>
             bool SetConstantArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::span<const T> values);
             template <typename T>
@@ -276,7 +276,7 @@ namespace AZ
             template <typename T>
             T GetConstant(RHI::ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const;
 
-            /// Returns constant data for the given shader input index as an array of bytes.
+            /// Returns constant data for the given shader input index as a span of bytes.
             AZStd::span<const uint8_t> GetConstantRaw(RHI::ShaderInputNameIndex& inputIndex) const;
             AZStd::span<const uint8_t> GetConstantRaw(RHI::ShaderInputConstantIndex inputIndex) const;
 

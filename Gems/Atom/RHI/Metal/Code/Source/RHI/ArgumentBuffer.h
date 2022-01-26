@@ -78,17 +78,17 @@ namespace AZ
 
             void UpdateImageViews(const RHI::ShaderInputImageDescriptor& shaderInputImage,
                                   const RHI::ShaderInputImageIndex shaderInputIndex,
-                                  const AZStd::span<constRHI::ConstPtr<RHI::ImageView>>& imageViews);
+                                  const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews);
 
             void UpdateSamplers(const RHI::ShaderInputSamplerDescriptor& shaderInputSampler,
                                 const RHI::ShaderInputSamplerIndex shaderInputIndex,
-                                const AZStd::span<constRHI::SamplerState>& samplerStates);
+                                const AZStd::span<const RHI::SamplerState>& samplerStates);
 
             void UpdateBufferViews(const RHI::ShaderInputBufferDescriptor& shaderInputBuffer,
                                    const RHI::ShaderInputBufferIndex shaderInputIndex,
-                                   const AZStd::span<constRHI::ConstPtr<RHI::BufferView>>& bufferViews);
+                                   const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews);
 
-            void UpdateConstantBufferViews(AZStd::span<constuint8_t> rawData);
+            void UpdateConstantBufferViews(AZStd::span<const uint8_t> rawData);
 
             id<MTLBuffer> GetArgEncoderBuffer() const;
             size_t GetOffset() const;

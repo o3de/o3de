@@ -550,7 +550,7 @@ namespace AZ
                                                                AZStd::string& argBufferStr,
                                                                uint32_t groupLayoutIndex) const
         {
-            AZStd::span<constRHI::ShaderInputConstantDescriptor> shaderInputConstantList = groupLayout.GetShaderInputListForConstants();
+            AZStd::span<const RHI::ShaderInputConstantDescriptor> shaderInputConstantList = groupLayout.GetShaderInputListForConstants();
             if (shaderInputConstantList.empty())
             {
                 return true;
