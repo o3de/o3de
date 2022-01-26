@@ -9,7 +9,7 @@
 set(FILES
     LmbrCentralEditorTest.cpp
     LmbrCentralReflectionTest.h
-    EditorShapeComponentIntersectionTests.cpp
+    EditorComponentIntersectionTests.cpp
     EditorBoxShapeComponentTests.cpp
     EditorSphereShapeComponentTests.cpp
     EditorCapsuleShapeComponentTests.cpp
