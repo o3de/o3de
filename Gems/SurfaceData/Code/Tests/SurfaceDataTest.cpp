@@ -7,9 +7,6 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <Mocks/ICryPakMock.h>
-#include <Mocks/IConsoleMock.h>
-#include <Mocks/ISystemMock.h>
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
@@ -25,28 +22,6 @@
 #include <SurfaceData/SurfaceDataModifierRequestBus.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
-
-struct MockGlobalEnvironment
-{
-    MockGlobalEnvironment()
-    {
-        m_stubEnv.pCryPak = &m_stubPak;
-        m_stubEnv.pConsole = &m_stubConsole;
-        m_stubEnv.pSystem = &m_stubSystem;
-        gEnv = &m_stubEnv;
-    }
-
-    ~MockGlobalEnvironment()
-    {
-        gEnv = nullptr;
-    }
-
-private:
-    SSystemGlobalEnvironment m_stubEnv;
-    testing::NiceMock<CryPakMock> m_stubPak;
-    testing::NiceMock<ConsoleMock> m_stubConsole;
-    testing::NiceMock<SystemMock> m_stubSystem;
-};
 
 // Simple class for mocking out a surface provider, so that we can control exactly what points we expect to query in our tests.
 // This can be used to either provide a surface or modify a surface.
@@ -210,8 +185,6 @@ TEST(SurfaceDataTest, ComponentsWithComponentApplication)
     appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
     appDesc.m_stackRecordLevels = 20;
 
-    MockGlobalEnvironment mocks;
-
     AZ::ComponentApplication app;
     AZ::Entity* systemEntity = app.Create(appDesc);
     ASSERT_TRUE(systemEntity != nullptr);
@@ -270,7 +243,6 @@ public:
 
     AZ::ComponentApplication m_application;
     AZ::Entity* m_systemEntity;
-    MockGlobalEnvironment m_mocks;
 
     // Test Surface Data tags that we can use for testing query functionality
     const AZ::Crc32 m_testSurface1Crc = AZ::Crc32("test_surface1");
