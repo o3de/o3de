@@ -448,9 +448,27 @@ function(ly_setup_cmake_install)
     # Transform the LY_EXTERNAL_SUBDIRS global property list into a json array
     set(indent "        ")
     get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+    list(REMOVE_DUPLICATES external_subdirs)
     foreach(external_subdir ${external_subdirs})
-        cmake_path(RELATIVE_PATH external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE engine_rel_external_subdir)
-        list(APPEND relative_external_subdirs "\"${engine_rel_external_subdir}\"")
+        # If an external subdirectory is not a subdirectory of the engine root, then
+        # prepend "External" to its subdirectory root
+        ly_get_root_subdirectory_which_is_parent(${external_subdir} root_subdir_of_external_subdir)
+        cmake_path(RELATIVE_PATH external_subdir BASE_DIRECTORY ${root_subdir_of_external_subdir} OUTPUT_VARIABLE engine_rel_external_subdir)
+
+        cmake_path(IS_PREFIX LY_ROOT_FOLDER ${external_subdir} is_subdirectory_of_engine)
+        if(NOT is_subdirectory_of_engine)
+            cmake_path(GET root_subdir_of_external_subdir FILENAME root_subdir_dirname)
+            set(relative_subdir ${engine_rel_external_subdir})
+            unset(engine_rel_external_subdir)
+            cmake_path(APPEND engine_rel_external_subdir "External" ${root_subdir_dirname} ${relative_subdir})
+        endif()
+
+        set(quoted_engine_rel_external_subdir "\"${engine_rel_external_subdir}\"")
+        if (quoted_engine_rel_external_subdir IN_LIST relative_external_subdirs)
+            message(WARNING "An external subdirectory \"${external_subdir}\" has been found twice when generating the engine.json for the install layout")
+        else()
+            list(APPEND relative_external_subdirs "\"${engine_rel_external_subdir}\"")
+        endif()
     endforeach()
     list(JOIN relative_external_subdirs ",\n${indent}" LY_INSTALL_EXTERNAL_SUBDIRS)
 
@@ -507,7 +525,17 @@ function(ly_setup_cmake_install)
     # Add to find_subdirectories all directories in which ly_add_target were called in
     get_property(all_subdirectories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
     foreach(target_subdirectory IN LISTS all_subdirectories)
-        cmake_path(RELATIVE_PATH target_subdirectory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_subdirectory)
+        ly_get_root_subdirectory_which_is_parent(${target_subdirectory} root_subdir_of_target)
+        cmake_path(RELATIVE_PATH target_subdirectory BASE_DIRECTORY ${root_subdir_of_target} OUTPUT_VARIABLE relative_target_subdirectory)
+
+        cmake_path(IS_PREFIX LY_ROOT_FOLDER ${target_subdirectory} is_subdirectory_of_engine)
+        if(NOT is_subdirectory_of_engine)
+            cmake_path(GET root_subdir_of_target FILENAME root_subdir_dirname)
+            set(relative_subdir ${relative_target_subdirectory})
+            unset(relative_target_subdirectory)
+            cmake_path(APPEND relative_target_subdirectory "External" ${root_subdir_dirname} ${relative_subdir})
+        endif()
+
         string(APPEND find_subdirectories "add_subdirectory(${relative_target_subdirectory})\n")
     endforeach()
     set(permutation_find_subdirectories ${CMAKE_CURRENT_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/o3de_subdirectories_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
@@ -657,12 +685,12 @@ function(ly_setup_assets)
         set_property(GLOBAL APPEND PROPERTY global_gem_candidate_dirs_prop ${gem_candidate_dir})
     endforeach()
 
-    # Iterate over each gem candidate directories and read populate a directory property
+    # Iterate over each gem candidate directories and populate a directory property
     # containing the files to copy over
     get_property(gem_candidate_dirs GLOBAL PROPERTY global_gem_candidate_dirs_prop)
     foreach(gem_candidate_dir IN LISTS gem_candidate_dirs)
         get_property(filtered_asset_paths DIRECTORY ${gem_candidate_dir} PROPERTY directory_filtered_asset_paths)
-        ly_get_last_path_segment_concat_sha256(${gem_candidate_dir} last_gem_root_path_segment)
+
         # Check if the gem is a subdirectory of the engine
         cmake_path(IS_PREFIX LY_ROOT_FOLDER ${gem_candidate_dir} is_gem_subdirectory_of_engine)
         
@@ -697,15 +725,16 @@ function(ly_setup_assets)
         # gem directories and files to install
         get_property(gems_assets_paths DIRECTORY ${gem_candidate_dir} PROPERTY gems_assets_paths)
         foreach(gem_absolute_path IN LISTS gems_assets_paths)
-            if(is_gem_subdirectory_of_engine)
-                cmake_path(RELATIVE_PATH gem_absolute_path BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE gem_install_dest_dir)
-            else()
-                # The gem resides outside of the LY_ROOT_FOLDER, so the destination is made relative to the
-                # gem candidate directory and placed under the "External" directory"
-                # directory
-                cmake_path(RELATIVE_PATH gem_absolute_path BASE_DIRECTORY ${gem_candidate_dir} OUTPUT_VARIABLE gem_relative_path)
+            # If an external subdirectory is not a subdirectory of the engine root, then
+            # prepend "External" to its subdirectory root
+            ly_get_root_subdirectory_which_is_parent(${gem_candidate_dir} root_subdir_of_gem)
+            cmake_path(RELATIVE_PATH gem_absolute_path BASE_DIRECTORY ${root_subdir_of_gem} OUTPUT_VARIABLE gem_install_dest_dir)
+
+            if(NOT is_gem_subdirectory_of_engine)
+                cmake_path(GET root_subdir_of_gem FILENAME root_subdir_dirname)
+                set(relative_subdir ${gem_install_dest_dir})
                 unset(gem_install_dest_dir)
-                cmake_path(APPEND gem_install_dest_dir "External" ${last_gem_root_path_segment} ${gem_relative_path})
+                cmake_path(APPEND gem_install_dest_dir "External" ${root_subdir_dirname} ${relative_subdir})
             endif()
 
             cmake_path(GET gem_install_dest_dir PARENT_PATH gem_install_dest_dir)
