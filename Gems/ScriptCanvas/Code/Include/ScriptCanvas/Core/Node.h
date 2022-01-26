@@ -31,6 +31,8 @@
 #include <ScriptCanvas/Execution/ExecutionBus.h>
 #include <ScriptCanvas/Grammar/Primitives.h>
 #include <ScriptCanvas/Variable/GraphVariable.h>
+#include <AzCore//std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/functional.h>
 
 #define SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(lambdaInterior)\
     int dummy[]{ 0, ( lambdaInterior , 0)... };\
@@ -60,6 +62,7 @@ namespace ScriptCanvas
         struct CallHelper;
     }
     class Graph;    
+    class Node;
 
     struct BehaviorContextMethodHelper;
 
@@ -390,10 +393,12 @@ namespace ScriptCanvas
         AZStd::string m_className;
         AZStd::string m_methodName;
         PropertyStatus m_propertyStatus = PropertyStatus::None;
+        AZStd::unique_ptr<Node> m_node;
+        AZStd::function<void(const Node&, Node&)> modify;
 
         bool IsValid()
         {
-            return !m_type.IsNull();
+            return !m_type.IsNull() || m_node != nullptr;
         }
     };
 

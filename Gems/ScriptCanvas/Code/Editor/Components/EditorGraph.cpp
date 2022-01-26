@@ -72,12 +72,15 @@ AZ_POP_DISABLE_WARNING
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 #include <Editor/View/Widgets/VariablePanel/GraphVariablesTableView.h>
 #include <Editor/View/Widgets/VariablePanel/VariableDockWidget.h>
+#include <Libraries/Core/GetVariable.h>
+#include <Libraries/Core/SetVariable.h>
 #include <Libraries/Core/Method.h>
 #include <Libraries/Core/MethodOverloaded.h>
 #include <Libraries/Core/EBusEventHandler.h>
 #include <Libraries/Core/ReceiveScriptEvent.h>
 #include <Libraries/Core/ScriptEventBase.h>
 #include <Libraries/Core/SendScriptEvent.h>
+
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Connection.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
@@ -692,9 +695,113 @@ namespace ScriptCanvasEditor
         }
     }
 
+    ScriptCanvas::Node* Graph::GetOrCreateNodeFromReplacementConfig(ScriptCanvas::NodeConfiguration& config)
+    {
+        if (config.m_node)
+        {
+            return config.m_node.release();
+        }
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        if (!serializeContext)
+        {
+            AZ_Warning("ScriptCanvas", false, "Failed to retrieve application serialize context.");
+            return nullptr;
+        }
+
+        const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(config.m_type);
+        if (!classData)
+        {
+            AZ_Warning("ScriptCanvas", false, "Failed to find replacement class with UUID %s from serialize context.", config.m_type.data);
+            return nullptr;
+        }
+
+        auto newNode = reinterpret_cast<ScriptCanvas::Node*>(classData->m_factory->Create(classData->m_name));
+        AZ_Warning("ScriptCanvas", newNode != nullptr, "Failed to create replacement Node (%s).", classData->m_name);
+        return newNode;
+    }
+
+    AZStd::optional<ScriptCanvas::NodeConfiguration> CreateVariableNodeThatRequiresUpdate
+        ( ScriptCanvas::Node& node, const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasGraphId)
+    {
+        ScriptCanvas::NodeConfiguration config;
+        config.modify = [variableId](const ScriptCanvas::Node& oldNode, ScriptCanvas::Node& newNode)
+        {
+            if (auto getVarNode = azrtti_cast<const ScriptCanvas::Nodes::Core::GetVariableNode*>(&oldNode))
+            {
+                azrtti_cast<ScriptCanvas::Nodes::Core::GetVariableNode*>(&newNode)->SetId(variableId);
+            }
+
+            if (auto setVarNode = azrtti_cast<const ScriptCanvas::Nodes::Core::SetVariableNode*>(&oldNode))
+            {
+                azrtti_cast<ScriptCanvas::Nodes::Core::SetVariableNode*>(&newNode)->SetId(variableId);
+            }
+        };
+
+
+        if (auto getVarNode = azrtti_cast<ScriptCanvas::Nodes::Core::GetVariableNode*>(&node);
+        getVarNode && getVarNode->GetId() == variableId)
+        {
+            auto nodeIdPair = ScriptCanvasEditor::Nodes::CreateGetVariableNodeResult(variableId, scriptCanvasGraphId);
+            if (nodeIdPair.node)
+            {
+                //config.m_node.reset(nodeIdPair.node);
+                config.m_type = azrtti_typeid<ScriptCanvas::Nodes::Core::GetVariableNode>();
+                return config;
+            }
+        }
+
+        if (auto setVarNode = azrtti_cast<ScriptCanvas::Nodes::Core::SetVariableNode*>(&node);
+        setVarNode && setVarNode->GetId() == variableId)
+        {
+            auto nodeIdPair = ScriptCanvasEditor::Nodes::CreateSetVariableNodeResult(variableId, scriptCanvasGraphId);
+            if (nodeIdPair.node)
+            {
+                //config.m_node.reset(nodeIdPair.node);
+                config.m_type = azrtti_typeid<ScriptCanvas::Nodes::Core::SetVariableNode>();
+                return config;
+            }
+        }
+
+        return AZStd::nullopt;
+    }
+
+    void Graph::RefreshVariableReferences(const ScriptCanvas::VariableId& variableId)
+    {
+        for (auto nodeEntity : GetNodeEntities())
+        {
+            if (auto node = FindNode(nodeEntity->GetId()))
+            {
+                if (auto configOptional = CreateVariableNodeThatRequiresUpdate(*node, variableId, GetScriptCanvasId()))
+                {
+                    ScriptCanvas::NodeUpdateSlotReport report;
+
+                    auto replaceOutcome = ReplaceNodeByConfig(node, *configOptional, report);
+                    if (replaceOutcome.IsSuccess())
+                    {
+                        node = replaceOutcome.GetValue();
+                    }
+                    else
+                    {
+                        // warn, report
+                    }
+                }
+
+                for (auto slot : node->ModAllSlots())
+                {
+                    if (slot->IsData())
+                    {
+                        slot->SetVariableReference(variableId, ScriptCanvas::Slot::IsVariableTypeChange::Yes);
+                    }
+                }
+            }
+        }
+    }
+
     AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceNodeByConfig
         ( ScriptCanvas::Node* oldNode
-        , const ScriptCanvas::NodeConfiguration& nodeConfig
+        , ScriptCanvas::NodeConfiguration& nodeConfig
         , ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport)
     {
         auto nodeEntity = oldNode->GetEntity();
@@ -704,25 +811,10 @@ namespace ScriptCanvasEditor
             return AZ::Failure();
         }
 
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        if (!serializeContext)
-        {
-            AZ_Warning("ScriptCanvas", false, "Failed to retrieve application serialize context.");
-            return AZ::Failure();
-        }
-
-        const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(nodeConfig.m_type);
-        if (!classData)
-        {
-            AZ_Warning("ScriptCanvas", false, "Failed to find replacement class with UUID %s from serialize context.", nodeConfig.m_type.data);
-            return AZ::Failure();
-        }
-
-        ScriptCanvas::Node* newNode = reinterpret_cast<ScriptCanvas::Node*>(classData->m_factory->Create(classData->m_name));
+        ScriptCanvas::Node* newNode = GetOrCreateNodeFromReplacementConfig(nodeConfig);
         if (!newNode)
         {
-            AZ_Warning("ScriptCanvas", false, "Failed to create replacement Node (%s).", classData->m_name);
+            AZ_Warning("ScriptCanvas", false, "Node %s did not provide a configuration for a replacement node.");
             return AZ::Failure();
         }
 
@@ -734,6 +826,11 @@ namespace ScriptCanvasEditor
         nodeEntity->AddComponent(newNode);
         AddNode(newNode->GetEntityId());
         ScriptCanvas::NodeUtils::InitializeNode(newNode, nodeConfig);
+
+        if (nodeConfig.modify)
+        {
+            nodeConfig.modify(*oldNode, *newNode);
+        }
 
         rollbackRequired = !SanityCheckNodeReplacement(oldNode, newNode, nodeUpdateSlotReport);
         auto& slotIdMap = nodeUpdateSlotReport.m_oldSlotsToNewSlots;
