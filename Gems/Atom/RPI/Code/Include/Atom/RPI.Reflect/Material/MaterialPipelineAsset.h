@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/std/containers/vector.h>
 
 #include "ShaderCollection.h"
 
@@ -40,6 +41,10 @@ namespace AZ::RPI
         uint32_t m_version = 1;
 
         Name m_name;
+
+        AZStd::string m_description;
+
+        AZStd::vector<AZStd::string> m_tags;
 
         ShaderCollection m_shaderCollection;
     };

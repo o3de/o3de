@@ -7,28 +7,53 @@
 
 set(FILES
     Materials/ReflectionProbe/ReflectionProbeVisualization.materialtype
+
+    Materials/Pipelines/DepthPass_WithPS.azsl
+    Materials/Pipelines/DepthPass_WithPS.shader
+    Materials/Pipelines/EnhancedPBR_ForwardPass_EDS.shader
+    Materials/Pipelines/EnhancedPBR_ForwardPass_EDS.shadervariantlist
+    Materials/Pipelines/EnhancedPBR_ForwardPass.azsl
+    Materials/Pipelines/EnhancedPBR_ForwardPass.shader
+    Materials/Pipelines/EnhancedPBR_ForwardPass.shadervariantlist
+    Materials/Pipelines/EnhancedSurface.materialpipeline
+    Materials/Pipelines/Shadowmap_WithPS.azsl
+    Materials/Pipelines/Shadowmap_WithPS.shader
+    Materials/Pipelines/StandardMultilayerPBR_DepthPass_WithPS.azsl
+    Materials/Pipelines/StandardMultilayerPBR_DepthPass_WithPS.shader
+    Materials/Pipelines/StandardMultilayerPBR_ForwardPass_EDS.shader
+    Materials/Pipelines/StandardMultilayerPBR_ForwardPass.azsl
+    Materials/Pipelines/StandardMultilayerPBR_ForwardPass.shader
+    Materials/Pipelines/StandardMultilayerPBR_Shadowmap_WithPS.azsl
+    Materials/Pipelines/StandardMultilayerPBR_Shadowmap_WithPS.shader
+    Materials/Pipelines/StandardMultilayerSurface.materialpipeline
+    Materials/Pipelines/StandardPBR_ForwardPass_EDS.shader
+    Materials/Pipelines/StandardPBR_ForwardPass_EDS.shadervariantlist
+    Materials/Pipelines/StandardPBR_ForwardPass.azsl
+    Materials/Pipelines/StandardPBR_ForwardPass.shader
+    Materials/Pipelines/StandardPBR_ForwardPass.shadervariantlist
+    Materials/Pipelines/StandardPBR_LowEndForward_EDS.shader
+    Materials/Pipelines/StandardPBR_LowEndForward.azsl
+    Materials/Pipelines/StandardPBR_LowEndForward.shader
+    Materials/Pipelines/StandardSurface.materialpipeline
+
     Materials/Special/ShadowCatcher.azsl
     Materials/Special/ShadowCatcher.materialtype
     Materials/Special/ShadowCatcher.shader
+
     Materials/Types/BuiltInShaderFunctions/EvaluateAlphaClipSurface.azsli
     Materials/Types/BuiltInShaderFunctions/EvaluateEnhancedAlphaClipSurface.azsli
     Materials/Types/BuiltInShaderFunctions/EvaluateEnhancedOpaqueSurface.azsli
+    Materials/Types/BuiltInShaderFunctions/EvaluateMultilayerOpaqueSurface.azsli
+    Materials/Types/BuiltInShaderFunctions/EvaluateMultilayerPixelDepth.azsli
     Materials/Types/BuiltInShaderFunctions/EvaluatePixelDepth.azsli
-    Materials/Types/BuiltInShaderFunctions/EvaluatePixelDepth_BlendMask.azsli
     Materials/Types/BuiltInShaderFunctions/EvaluateSurfaceTangentSpace.azsli
     Materials/Types/BuiltInShaderFunctions/EvaluateUVs.azsli
     Materials/Types/BuiltInShaderFunctions/EvaluateWorldSpaceTBN.azsli
     Materials/Types/BuiltInShaderFunctions/MaybeClip.azsli
     Materials/Types/BuiltInShaderFunctions/VertexLocalToWorld.azsli
+
     Materials/Types/EnhancedPBR.materialtype
     Materials/Types/EnhancedPBR_Common.azsli
-    Materials/Types/EnhancedPBR_DepthPass_WithPS.azsl
-    Materials/Types/EnhancedPBR_DepthPass_WithPS.shader
-    Materials/Types/EnhancedPBR_ForwardPass.azsl
-    Materials/Types/EnhancedPBR_ForwardPass.shader
-    Materials/Types/EnhancedPBR_ForwardPass_EDS.shader
-    Materials/Types/EnhancedPBR_Shadowmap_WithPS.azsl
-    Materials/Types/EnhancedPBR_Shadowmap_WithPS.shader
     Materials/Types/EnhancedPBR_SubsurfaceState.lua
     Materials/Types/Skin.azsl
     Materials/Types/Skin.materialtype
@@ -38,37 +63,20 @@ set(FILES
     Materials/Types/StandardMultilayerPBR.materialtype
     Materials/Types/StandardMultilayerPBR_ClearCoatEnableFeature.lua
     Materials/Types/StandardMultilayerPBR_Common.azsli
-    Materials/Types/StandardMultilayerPBR_DepthPass_WithPS.azsl
-    Materials/Types/StandardMultilayerPBR_DepthPass_WithPS.shader
     Materials/Types/StandardMultilayerPBR_Displacement.lua
-    Materials/Types/StandardMultilayerPBR_ForwardPass.azsl
-    Materials/Types/StandardMultilayerPBR_ForwardPass.shader
-    Materials/Types/StandardMultilayerPBR_ForwardPass_EDS.shader
     Materials/Types/StandardMultilayerPBR_LayerEnable.lua
     Materials/Types/StandardMultilayerPBR_ShaderEnable.lua
-    Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.azsl
-    Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.shader
     Materials/Types/StandardPBR.materialtype
     Materials/Types/StandardPBR_ClearCoatEnableFeature.lua
     Materials/Types/StandardPBR_ClearCoatState.lua
     Materials/Types/StandardPBR_Common.azsli
-    Materials/Types/StandardPBR_DepthPass_WithPS.azsl
-    Materials/Types/StandardPBR_DepthPass_WithPS.shader
     Materials/Types/StandardPBR_EmissiveState.lua
-    Materials/Types/StandardPBR_ForwardPass.azsl
-    Materials/Types/StandardPBR_ForwardPass.shader
-    Materials/Types/StandardPBR_ForwardPass_EDS.shader
     Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua
     Materials/Types/StandardPBR_HandleOpacityMode.lua
-    Materials/Types/StandardPBR_LowEndForward.azsl
-    Materials/Types/StandardPBR_LowEndForward.shader
-    Materials/Types/StandardPBR_LowEndForward_EDS.shader
     Materials/Types/StandardPBR_Metallic.lua
     Materials/Types/StandardPBR_ParallaxState.lua
     Materials/Types/StandardPBR_Roughness.lua
     Materials/Types/StandardPBR_ShaderEnable.lua
-    Materials/Types/StandardPBR_Shadowmap_WithPS.azsl
-    Materials/Types/StandardPBR_Shadowmap_WithPS.shader
     Materials/Types/MaterialInputs/AlphaInput.azsli
     Materials/Types/MaterialInputs/BaseColorInput.azsli
     Materials/Types/MaterialInputs/ClearCoatInput.azsli

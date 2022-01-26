@@ -6,4 +6,8 @@
  *
  */
 
-#include <ShadowmapCommon.azsli>
+#pragma once
+
+#define UvSetCount 2
+#define DetailUvSetCount 2
+#define TotalUvSetCount (UvSetCount + DetailUvSetCount)

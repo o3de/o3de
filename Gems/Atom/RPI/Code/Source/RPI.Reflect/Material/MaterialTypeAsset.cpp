@@ -48,6 +48,7 @@ namespace AZ
                     ->Version(5) // Material version update
                     ->Field("Version", &MaterialTypeAsset::m_version)
                     ->Field("VersionUpdates", &MaterialTypeAsset::m_materialVersionUpdates)
+                    ->Field("PipelineTags", &MaterialTypeAsset::m_pipelineTags)
                     ->Field("ShaderFunctions", &MaterialTypeAsset::m_shaderFunctionCollection)
                     ->Field("MaterialFunctors", &MaterialTypeAsset::m_materialFunctors)
                     ->Field("MaterialSrgShaderIndex", &MaterialTypeAsset::m_materialSrgShaderIndex)

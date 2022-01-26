@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ::RPI
 {
@@ -20,15 +21,14 @@ namespace AZ::RPI
         static void Reflect(AZ::ReflectContext* context);
 
     private:
-        //! File reference to srgi header containing SRG declaration
-        AZStd::string m_srgSource;
-        //! File reference to azlsi header containing function declaration
-        AZStd::string m_source;
+        //! List of file reference to azlsi headers containing SRG and function declarations
+        AZStd::vector<AZStd::string> m_sources;
     };
 
     class ShaderFunctionCollection
     {
     public:
+        AZ_TYPE_INFO(ShaderFunctionCollection, "{AB04514F-7112-4166-A8F8-07C0D865BCE0}");
         static void Reflect(AZ::ReflectContext* context);
 
         ShaderFunction* LookupShaderFunction(AZStd::string name);

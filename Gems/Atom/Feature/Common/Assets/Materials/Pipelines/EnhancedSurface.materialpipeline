@@ -1,7 +1,8 @@
 {
+    "version": 1,
     "name": "EnhancedSurface",
     "description": "Material shading pipeline for the enhanced surface",
-    "version": 1,
+    "tags": ["EnhancedSurface"],
     "shaders": [
         {
             "file": "./EnhancedPBR_ForwardPass.shader",

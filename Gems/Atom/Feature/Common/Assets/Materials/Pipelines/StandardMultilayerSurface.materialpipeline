@@ -1,7 +1,8 @@
 {
-    "name": "StandardSurface",
-    "description": "Material shading pipeline for the standard surface",
     "version": 1,
+    "name": "MultilayerSurface",
+    "description": "Material shading pipeline for the multilayer surface",
+    "tags": ["MultilayerSurface"],
     "shaders": [
         {
             "file": "./StandardMultilayerPBR_ForwardPass.shader",

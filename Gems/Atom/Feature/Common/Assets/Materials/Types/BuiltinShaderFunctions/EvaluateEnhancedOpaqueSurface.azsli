@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "../EnhancedPBR_Common.azsli"
-
 // Alpha
 #include "../MaterialInputs/AlphaInput.azsli"
 

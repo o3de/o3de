@@ -8,10 +8,7 @@
 
 #include "Atom/Features/ShaderQualityOptions.azsli"
 
-#include "StandardPBR_Common.azsli"
-
 // SRGs
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 
 // Pass Output

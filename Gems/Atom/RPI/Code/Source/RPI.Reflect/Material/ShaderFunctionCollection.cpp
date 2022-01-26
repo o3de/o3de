@@ -17,8 +17,7 @@ namespace AZ::RPI
         {
             sc->Class<ShaderFunctionCollection>()
                 ->Version(1)
-                ->Field("SRGSource", &ShaderFunction::m_srgSource)
-                ->Field("Source", &ShaderFunction::m_source);
+                ->Field("Sources", &ShaderFunction::m_sources);
         }
     }
 

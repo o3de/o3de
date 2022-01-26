@@ -1018,73 +1018,58 @@
             ]
         }
     },
-    "shaderFunctions": [
-        {
-            "file": "./ShaderFunctions/EvaluateVertex.azsli",
-            "tag": "EvaluateVertexPosition",
-            "objectSrg": "",
-            "materialSrg": ""
+    "pipelineTags": ["StandardSurface"],
+    "shaderFunctions": {
+        "EvaluateAlphaClipSurface": {
+            "sources": [
+                "./StandardPBR_Common.azsli",
+                "./BuiltinShaderFunctions/EvaluateAlphaClipSurface.azsli"
+            ]
         },
-        {
-            "file": "./ShaderFunctions/EvaluateVertex.azsli",
-            "tag": "EvaluateVertex",
-            "objectSrg": "",
-            "materialSrg": ""
+        "EvaluatePixelDepth": {
+            "sources": [
+                "Atom/Features/PBR/DefaultObjectSrg.azsl",
+                "./StandardPBR_Common.azsli",
+                "./BuiltinShaderFunctions/EvaluatePixelDepth.azsli"
+            ]
         },
-        {
-            "file": "./ShaderFunctions/EvaluateVertex_PDO.azsli",
-            "tag": "EvaluateVertex_PDO",
-            "objectSrg": "",
-            "materialSrg": ""
+        "EvaluateSurfaceTangentSpace": {
+            "sources": [
+                "Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli",
+                "./BuiltinShaderFunctions/EvaluateSurfaceTangentSpace.azsli"
+            ]
+        },
+        "EvaluateUVs": {
+            "sources": [
+                "./StandardPBR_Common.azsli",
+                "./BuiltinShaderFunctions/EvaluateUVs.azsli"
+            ]
+        },
+        "EvaluateWorldSpaceTBN": {
+            "sources": [
+                "Atom/Features/PBR/DefaultObjectSrg.azsl",
+                "./BuiltinShaderFunctions/EvaluateWorldSpaceTBN.azsli"
+            ]
+        },
+        "MaybeClip": {
+            "sources": [
+                "./StandardPBR_Common.azsli",
+                "./BuiltinShaderFunctions/MaybeClip.azsli"
+            ]
+        },
+        "VertexLocalToWorld": {
+            "sources": [
+                "Atom/Features/PBR/DefaultObjectSrg.azsl",
+                "./BuiltinShaderFunctions/VertexLocalToWorld.azsli"
+            ]
+        },
+        "VertexLocalToWorldPrev": {
+            "sources": [
+                "Atom/Features/PBR/DefaultObjectSrg.azsl",
+                "./BuiltinShaderFunctions/VertexLocalToWorld.azsli"
+            ]
         }
-    ],
-    "shaders": [
-        {
-            "file": "./StandardPBR_ForwardPass.shader",
-            "tag": "ForwardPass"
-        },
-        {
-            "file": "./StandardPBR_ForwardPass_EDS.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "./StandardPBR_LowEndForward.shader",
-            "tag": "LowEndForward"
-        },
-        {
-            "file": "./StandardPBR_LowEndForward_EDS.shader",
-            "tag": "LowEndForward_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "./StandardPBR_Shadowmap_WithPS.shader",
-            "tag": "Shadowmap_WithPS"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "./StandardPBR_DepthPass_WithPS.shader",
-            "tag": "DepthPass_WithPS"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        },
-        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMin.shader",
-            "tag": "DepthPassTransparentMin"
-        },
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMax.shader",
-            "tag": "DepthPassTransparentMax"
-        }        
-    ],
+    },
     "functors": [
         {
             // Maps 2D scale, offset, and rotate properties into a float3x3 transform matrix.

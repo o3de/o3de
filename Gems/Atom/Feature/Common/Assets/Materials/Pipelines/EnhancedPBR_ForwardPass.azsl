@@ -7,7 +7,6 @@
  */
 
 // SRGs
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 
 // Pass Output

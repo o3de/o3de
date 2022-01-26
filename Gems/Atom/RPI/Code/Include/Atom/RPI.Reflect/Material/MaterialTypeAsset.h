@@ -159,6 +159,9 @@ namespace AZ
             //! Defines the topology of user-facing inputs to the material
             Ptr<MaterialPropertiesLayout> m_materialPropertiesLayout;
 
+            //! The set of pipeline tags needed to couple this material type with a material pipeline
+            AZStd::vector<AZStd::string> m_pipelineTags;
+
             //! The set of shader functions that will be used for this material
             ShaderFunctionCollection m_shaderFunctionCollection;
 

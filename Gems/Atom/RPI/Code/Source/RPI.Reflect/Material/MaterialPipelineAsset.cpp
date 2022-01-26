@@ -20,6 +20,8 @@ namespace AZ::RPI
                 ->Version(1)
                 ->Field("Version", &MaterialPipelineAsset::m_version)
                 ->Field("Name", &MaterialPipelineAsset::m_name)
+                ->Field("Description", &MaterialPipelineAsset::m_description)
+                ->Field("Tags", &MaterialPipelineAsset::m_tags)
                 ->Field("ShaderCollection", &MaterialPipelineAsset::m_shaderCollection);
         }
     }
