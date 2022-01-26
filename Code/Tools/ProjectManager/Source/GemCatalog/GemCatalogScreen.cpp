@@ -45,7 +45,7 @@ namespace O3DE::ProjectManager
         // The width of either side panel (filters, inspector) in the catalog
         constexpr int sidePanelWidth = 240;
         // Querying qApp about styling reports the scroll bar being larger than it is so define it manually
-        const int verticalScrollBarWidth = 8;
+        constexpr int verticalScrollBarWidth = 8;
 
         m_gemModel = new GemModel(this);
         m_proxyModel = new GemSortFilterProxyModel(m_gemModel, this);
