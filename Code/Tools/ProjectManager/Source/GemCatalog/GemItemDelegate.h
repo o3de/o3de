@@ -24,7 +24,7 @@ namespace O3DE::ProjectManager
     class GemItemDelegate
         : public QStyledItemDelegate
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit GemItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent = nullptr);

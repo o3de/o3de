@@ -24,7 +24,7 @@ namespace O3DE::ProjectManager
     class AdjustableHeaderWidget
         : public QTableWidget
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit AdjustableHeaderWidget(const QStringList& headerLabels,

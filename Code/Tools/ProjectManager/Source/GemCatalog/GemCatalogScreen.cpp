@@ -47,6 +47,8 @@ namespace O3DE::ProjectManager
         // Querying qApp about styling reports the scroll bar being larger than it is so define it manually
         constexpr int verticalScrollBarWidth = 8;
 
+        setObjectName("GemCatalogScreen");
+
         m_gemModel = new GemModel(this);
         m_proxyModel = new GemSortFilterProxyModel(m_gemModel, this);
 

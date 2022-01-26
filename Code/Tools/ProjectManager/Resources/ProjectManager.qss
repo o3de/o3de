@@ -500,6 +500,10 @@ QProgressBar::chunk {
 
 /************** Gem Catalog **************/
 
+#GemCatalogScreen {
+    background-color: #333333;
+}
+
 #GemCatalogTitle {
     font-size: 18px;
 }
@@ -547,7 +551,7 @@ QProgressBar::chunk {
 }
 
 #adjustableHeaderWidget QHeaderView::section { 
-    background-color:#333333;
+    background-color: transparent;
 }
 
 #GemCatalogHeaderShowCountLabel {

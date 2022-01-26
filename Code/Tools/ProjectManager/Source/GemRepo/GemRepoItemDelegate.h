@@ -23,7 +23,7 @@ namespace O3DE::ProjectManager
     class GemRepoItemDelegate
         : public QStyledItemDelegate
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit GemRepoItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent = nullptr);

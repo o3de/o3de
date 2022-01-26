@@ -21,7 +21,7 @@ namespace O3DE::ProjectManager
     class GemListView
         : public QListView
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, AdjustableHeaderWidget* header, QWidget* parent = nullptr);

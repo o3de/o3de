@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
     class GemRepoListView
         : public QListView
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit GemRepoListView(
