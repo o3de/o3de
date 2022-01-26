@@ -19,7 +19,7 @@ namespace AZ
         /// A handle typed to the pipeline library. Used by the PipelineStateCache to abstract access.
         using PipelineLibraryHandle = Handle<uint32_t, class PipelineLibrary>;
 
-        
+
         //! PipelineState initialization is an expensive operation on certain platforms. If multiple pipeline states
         //! are created with little variation between them, the contents are still duplicated. This class is an allocation
         //! context for pipeline states, provided at PipelineState::Init, which will perform de-duplication of
@@ -58,7 +58,7 @@ namespace AZ
             //! libraries and merge them into a single unified library. The serialized data can then be
             //! extracted from the unified library. An error code is returned on failure and the behavior
             //! is as if the method was never called.
-            ResultCode MergeInto(AZStd::array_view<const PipelineLibrary*> librariesToMerge);
+            ResultCode MergeInto(AZStd::span<const PipelineLibrary* const> librariesToMerge);
 
             //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance.
             //! The data is opaque to the user and can only be used to re-initialize the library. Use
@@ -85,7 +85,7 @@ namespace AZ
             virtual void ShutdownInternal() = 0;
 
             /// Called when libraries are being merged into this one.
-            virtual ResultCode MergeIntoInternal(AZStd::array_view<const PipelineLibrary*> libraries) = 0;
+            virtual ResultCode MergeIntoInternal(AZStd::span<const PipelineLibrary* const> libraries) = 0;
 
             /// Called when the library is serializing out platform-specific data.
             virtual ConstPtr<PipelineLibraryData> GetSerializedDataInternal() const = 0;

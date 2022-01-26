@@ -9,7 +9,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>

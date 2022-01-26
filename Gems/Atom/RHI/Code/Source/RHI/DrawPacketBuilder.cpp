@@ -33,29 +33,29 @@ namespace AZ
             m_indexBufferView = indexBufferView;
         }
 
-        void DrawPacketBuilder::SetRootConstants(AZStd::array_view<uint8_t> rootConstants)
+        void DrawPacketBuilder::SetRootConstants(AZStd::span<const uint8_t> rootConstants)
         {
             m_rootConstants = rootConstants;
         }
 
-        void DrawPacketBuilder::SetScissors(AZStd::array_view<Scissor> scissors)
+        void DrawPacketBuilder::SetScissors(AZStd::span<const Scissor> scissors)
         {
             m_scissors = decltype(m_scissors)(scissors.begin(), scissors.end());
         }
 
         void DrawPacketBuilder::SetScissor(const Scissor& scissor)
         {
-            SetScissors(AZStd::array_view<Scissor>(&scissor, 1));
+            SetScissors(AZStd::span<const Scissor>(&scissor, 1));
         }
 
-        void DrawPacketBuilder::SetViewports(AZStd::array_view<Viewport> viewports)
+        void DrawPacketBuilder::SetViewports(AZStd::span<const Viewport> viewports)
         {
             m_viewports = decltype(m_viewports)(viewports.begin(), viewports.end());
         }
 
         void DrawPacketBuilder::SetViewport(const Viewport& viewport)
         {
-            SetViewports(AZStd::array_view<Viewport>(&viewport, 1));
+            SetViewports(AZStd::span<const Viewport>(&viewport, 1));
         }
 
         void DrawPacketBuilder::AddShaderResourceGroup(const ShaderResourceGroup* shaderResourceGroup)

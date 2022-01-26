@@ -772,7 +772,7 @@ namespace AZ
                 return;
             }
 
-            const AZStd::array_view<Data::Instance<RPI::ModelLod>>& modelLods = m_model->GetLods();
+            const AZStd::span<const Data::Instance<RPI::ModelLod>>& modelLods = m_model->GetLods();
             if (modelLods.empty())
             {
                 return;

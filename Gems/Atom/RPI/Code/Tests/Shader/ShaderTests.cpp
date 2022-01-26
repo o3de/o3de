@@ -538,7 +538,7 @@ namespace UnitTest
 
             auto shaderAsset = shader->GetAsset();
             EXPECT_EQ(shader->GetPipelineStateType(), shaderAsset->GetPipelineStateType());
-            EXPECT_EQ(shader->GetShaderResourceGroupLayouts(), shaderAsset->GetShaderResourceGroupLayouts());
+            EXPECT_EQ(shader->GetShaderResourceGroupLayouts().data(), shaderAsset->GetShaderResourceGroupLayouts().data());
             
             const RPI::ShaderVariant& rootShaderVariant = shader->GetVariant( RPI::ShaderVariantStableId{0} );
             
