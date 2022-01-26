@@ -122,7 +122,7 @@ namespace AZ
                         AZ::RPI::MaterialPropertyValue propertyValue =
                             editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()];
 
-                        AZ::RPI::MaterialPropertyValue propertyValueDefault = propertyDefinition.m_value;
+                        AZ::RPI::MaterialPropertyValue propertyValueDefault = propertyDefinition->m_value;
                         if (editData.m_materialParentAsset.IsReady())
                         {
                             propertyValueDefault = editData.m_materialParentAsset->GetPropertyValues()[propertyIndex.GetIndex()];
@@ -135,7 +135,7 @@ namespace AZ
                             propertyValue = AZ::RPI::MaterialPropertyValue::FromAny(propertyOverrideItr->second);
                         }
 
-                        if (!AtomToolsFramework::ConvertToExportFormat(path, propertyId, propertyDefinition, propertyValue))
+                        if (!AtomToolsFramework::ConvertToExportFormat(path, propertyId, *propertyDefinition, propertyValue))
                         {
                             AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to export: %s", path.c_str());
                             result = false;
@@ -151,7 +151,7 @@ namespace AZ
 
                         // TODO: Support populating the Material Editor with nested property sets, not just the top level.
                         const AZStd::string groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->m_name.size() - 1);
-                        exportData.m_properties[groupName][propertyDefinition.m_name].m_value = propertyValue;
+                        exportData.m_properties[groupName][propertyDefinition->m_name].m_value = propertyValue;
                         return true;
                     });
 

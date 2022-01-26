@@ -585,11 +585,11 @@ namespace MaterialEditor
         bool result = true;
 
         // populate sourceData with properties that meet the filter
-        m_materialTypeSourceData.EnumerateProperties([this, &sourceData, &propertyFilter, &result](const AZStd::string& propertyIdContext, const auto& propertyDefinition) {
+        m_materialTypeSourceData.EnumerateProperties([&](const AZStd::string& propertyIdContext, const auto& propertyDefinition) {
 
-            const AZStd::string propertyId = propertyIdContext + propertyDefinition->m_name;
+            Name propertyId{propertyIdContext + propertyDefinition->m_name};
 
-            const auto it = m_properties.find(Name{propertyId});
+            const auto it = m_properties.find(propertyId);
             if (it != m_properties.end() && propertyFilter(it->second))
             {
                 MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(it->second.GetValue());
@@ -603,7 +603,7 @@ namespace MaterialEditor
                     }
                     
                     // TODO: Support populating the Material Editor with nested property sets, not just the top level.
-                    const AZStd::string groupName = propertyId.substr(0, propertyId.size() - propertyDefinition->m_name.size() - 1);
+                    const AZStd::string groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->m_name.size() - 1);
                     sourceData.m_properties[groupName][propertyDefinition->m_name].m_value = propertyValue;
                 }
             }
@@ -897,12 +897,12 @@ namespace MaterialEditor
                 return false;
             }
         }
-    
+
         bool enumerateResult = m_materialTypeSourceData.EnumeratePropertySets(
-            [this, &materialTypeSourceFilePath](const AZStd::string&, const MaterialTypeSourceData::PropertySet* propertySet)
+            [this](const AZStd::string&, const MaterialTypeSourceData::PropertySet* propertySet)
             {
                 const MaterialFunctorSourceData::EditorContext editorContext = MaterialFunctorSourceData::EditorContext(
-                    materialTypeSourceFilePath, m_materialAsset->GetMaterialPropertiesLayout());
+                    m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout());
 
                 for (Ptr<MaterialFunctorSourceDataHolder> functorData : propertySet->GetFunctors())
                 {

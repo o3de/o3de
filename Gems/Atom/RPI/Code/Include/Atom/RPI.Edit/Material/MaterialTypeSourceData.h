@@ -76,6 +76,7 @@ namespace AZ
                 static const float DefaultMax;
                 static const float DefaultStep;
 
+                // TODO: Consider making this private and readonly because it is used as the key for lookups and collision validation.
                 AZStd::string m_name; //!< The name of the property within the property group. The full property ID will be groupName.propertyName.
 
                 MaterialPropertyVisibility m_visibility = MaterialPropertyVisibility::Default;
@@ -213,9 +214,9 @@ namespace AZ
             AZStd::string m_description; //< TODO: Make this private
 
             //! Version 1 is the default and should not contain any version update.
-            uint32_t m_version = 1;
+            uint32_t m_version = 1; //< TODO: Make this private
 
-            VersionUpdates m_versionUpdates;
+            VersionUpdates m_versionUpdates; //< TODO: Make this private
 
             //! A list of shader variants that are always used at runtime; they cannot be turned off
             AZStd::vector<ShaderVariantReferenceData> m_shaderCollection; //< TODO: Make this private
@@ -283,11 +284,7 @@ namespace AZ
                 MaterialTypeAssetCreator& materialTypeAssetCreator,
                 AZStd::vector<AZStd::string>& propertyNameContext,
                 const MaterialTypeSourceData::PropertySet* propertySet) const;
-                
-            //! Possibly renames @propertyId based on the material version update steps.
-            //! @return true if the property was renamed
-            bool ApplyPropertyRenames(MaterialPropertyId& propertyId) const;
-            
+                            
             //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data.
             //! Groups with the same name will be consolidated into a single entry.
             //! Operates on the old format PropertyLayout::m_groups, used for conversion to the new format.
