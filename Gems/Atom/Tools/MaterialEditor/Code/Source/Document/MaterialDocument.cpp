@@ -589,15 +589,15 @@ namespace MaterialEditor
 
             const MaterialPropertyId propertyId(groupName, propertyName);
 
-            const auto it = m_properties.find(propertyId.GetFullName());
+            const auto it = m_properties.find(propertyId);
             if (it != m_properties.end() && propertyFilter(it->second))
             {
                 MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(it->second.GetValue());
                 if (propertyValue.IsValid())
                 {
-                    if (!AtomToolsFramework::ConvertToExportFormat(exportPath, propertyId.GetFullName(), propertyDefinition, propertyValue))
+                    if (!AtomToolsFramework::ConvertToExportFormat(exportPath, propertyId, propertyDefinition, propertyValue))
                     {
-                        AZ_Error("MaterialDocument", false, "Material document property could not be converted: '%s' in '%s'.", propertyId.GetFullName().GetCStr(), m_absolutePath.c_str());
+                        AZ_Error("MaterialDocument", false, "Material document property could not be converted: '%s' in '%s'.", propertyId.GetCStr(), m_absolutePath.c_str());
                         result = false;
                         return false;
                     }
@@ -680,12 +680,6 @@ namespace MaterialEditor
                 return false;
             }
             m_materialTypeSourceData = materialTypeOutcome.GetValue();
-            
-            if (MaterialSourceData::ApplyVersionUpdatesResult::Failed == m_materialSourceData.ApplyVersionUpdates(m_absolutePath))
-            {
-                AZ_Error("MaterialDocument", false, "Material source data could not be auto updated to the latest version of the material type: '%s'.", m_materialSourceData.m_materialType.c_str());
-                return false;
-            }
         }
         else if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), MaterialTypeSourceData::Extension))
         {
@@ -719,7 +713,7 @@ namespace MaterialEditor
         // Long term, the material document should not be concerned with assets at all. The viewport window should be the
         // only thing concerned with assets or instances.
         auto materialAssetResult =
-            m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, elevateWarnings, true, &m_sourceDependencies);
+            m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, elevateWarnings, &m_sourceDependencies);
         if (!materialAssetResult)
         {
             AZ_Error("MaterialDocument", false, "Material asset could not be created from source data: '%s'.", m_absolutePath.c_str());
@@ -759,7 +753,7 @@ namespace MaterialEditor
             }
             
             auto parentMaterialAssetResult = parentMaterialSourceData.CreateMaterialAssetFromSourceData(
-                parentMaterialAssetIdResult.GetValue(), m_materialSourceData.m_parentMaterial, true, true);
+                parentMaterialAssetIdResult.GetValue(), m_materialSourceData.m_parentMaterial, true);
             if (!parentMaterialAssetResult)
             {
                 AZ_Error("MaterialDocument", false, "Material parent asset could not be created from source data: '%s'.", m_materialSourceData.m_parentMaterial.c_str());
@@ -789,7 +783,7 @@ namespace MaterialEditor
             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
             // Assign id before conversion so it can be used in dynamic description
-            propertyConfig.m_id = MaterialPropertyId(groupName, propertyName).GetCStr();
+            propertyConfig.m_id = MaterialPropertyId(groupName, propertyName);
 
             const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
             const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
@@ -860,7 +854,7 @@ namespace MaterialEditor
 
             propertyConfig = {};
             propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::String;
-            propertyConfig.m_id = MaterialPropertyId(UvGroupName, shaderInput).GetCStr();
+            propertyConfig.m_id = MaterialPropertyId(UvGroupName, shaderInput);
             propertyConfig.m_name = shaderInput;
             propertyConfig.m_displayName = shaderInput;
             propertyConfig.m_groupName = "UV Sets";

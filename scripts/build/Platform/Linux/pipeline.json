@@ -17,13 +17,6 @@
     "PIPELINE_JENKINS_PARAMETERS": {
         "nightly-incremental": [
             {
-                "parameter_name": "O3DE_AWS_PROJECT_NAME",
-                "parameter_type": "string",
-                "default_value": "",
-                "use_last_run_value": true,
-                "description": "The name of the O3DE project that stacks should be deployed for."
-            },
-            {
                 "parameter_name": "O3DE_AWS_DEPLOY_REGION",
                 "parameter_type": "string",
                 "default_value": "",
@@ -46,13 +39,6 @@
             }
         ],
         "nightly-clean": [
-            {
-                "parameter_name": "O3DE_AWS_PROJECT_NAME",
-                "parameter_type": "string",
-                "default_value": "",
-                "use_last_run_value": true,
-                "description": "The name of the O3DE project that stacks should be deployed for."
-            },
             {
                 "parameter_name": "O3DE_AWS_DEPLOY_REGION",
                 "parameter_type": "string",

@@ -112,7 +112,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(), m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);
@@ -138,7 +138,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(),m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);
@@ -165,7 +165,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(), m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);
@@ -194,7 +194,7 @@ namespace UnitTest
 
             Data::Asset<MaterialAsset> materialAsset;
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_materialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(), m_materialTypeAsset, true);
             EXPECT_TRUE(materialCreator.End(materialAsset));
 
             m_material = Material::Create(materialAsset);

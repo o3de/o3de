@@ -135,7 +135,7 @@ namespace GradientSignal
     }
 
     void ConstantGradientComponent::GetValues(
-        [[maybe_unused]] AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const
+        [[maybe_unused]] AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {

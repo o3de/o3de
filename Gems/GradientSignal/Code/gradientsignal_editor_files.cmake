@@ -21,7 +21,6 @@ set(FILES
     Source/Editor/EditorConstantGradientComponent.h
     Source/Editor/EditorDitherGradientComponent.cpp
     Source/Editor/EditorDitherGradientComponent.h
-    Source/Editor/EditorGradientComponentBase.cpp
     Source/Editor/EditorGradientSurfaceDataComponent.cpp
     Source/Editor/EditorGradientSurfaceDataComponent.h
     Source/Editor/EditorGradientTransformComponent.cpp

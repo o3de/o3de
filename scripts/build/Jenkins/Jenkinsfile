@@ -813,7 +813,7 @@ try {
                         }
                     }
 
-                    pipelineProperties.add(parameters(pipelineParameters))
+                    pipelineProperties.add(parameters(pipelineParameters.unique()))
                     properties(pipelineProperties)
 
                     // Stash the INCREMENTAL_BUILD_SCRIPT_PATH since all nodes will use it

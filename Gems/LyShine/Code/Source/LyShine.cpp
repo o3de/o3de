@@ -124,7 +124,7 @@ AllocateConstIntCVar(CLyShine, CV_ui_RunUnitTestsOnStartup);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CLyShine::CLyShine([[maybe_unused]] ISystem* system)
+CLyShine::CLyShine()
     : AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI())
     , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI())
     , m_draw2d(new CDraw2d)
@@ -386,8 +386,8 @@ void CLyShine::Update(float deltaTimeInSeconds)
     }
 
     // Tell the UI system the size of the viewport we are rendering to - this drives the
-    // canvas size for full screen UI canvases. It needs to be set before either pLyShine->Update or
-    // pLyShine->Render are called. It must match the viewport size that the input system is using.
+    // canvas size for full screen UI canvases. It needs to be set before either lyShine->Update or
+    // lyShine->Render are called. It must match the viewport size that the input system is using.
     SetViewportSize(m_uiRenderer->GetViewportSize());
 
     // Guard against nested updates. This can occur if a canvas update below triggers the load screen component's
@@ -708,10 +708,10 @@ void CLyShine::RenderUiCursor()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::DebugReportDrawCalls(IConsoleCmdArgs* cmdArgs)
 {
-    if (gEnv->pLyShine)
+    if (AZ::Interface<ILyShine>::Get())
     {
         // We want to use an internal-only non-static function so downcast to CLyShine
-        CLyShine* pLyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+        CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
 
         // There is an optional parameter which is a name to include in the output filename
         AZStd::string name;
@@ -721,7 +721,7 @@ void CLyShine::DebugReportDrawCalls(IConsoleCmdArgs* cmdArgs)
         }
 
         // Use the canvas manager to access all the loaded canvases
-        pLyShine->m_uiCanvasManager->DebugReportDrawCalls(name);
+        lyShine->m_uiCanvasManager->DebugReportDrawCalls(name);
     }
 }
 #endif
@@ -742,7 +742,7 @@ void CLyShine::RunUnitTests(IConsoleCmdArgs* cmdArgs)
         return;
     }
 
-    CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+    CLyShine* lyShine = static_cast<CLyShine*>(AZ::Interface<ILyShine>::Get());
     AZ_Assert(lyShine, "Attempting to run unit-tests prior to LyShine initialization!");
 
     TextMarkup::UnitTest(cmdArgs);

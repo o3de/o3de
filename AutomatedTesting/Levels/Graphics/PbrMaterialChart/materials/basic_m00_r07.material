@@ -1,7 +1,7 @@
 {
     "parentMaterial": "./basic.material",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "propertyLayoutVersion": 1,
+    "materialTypeVersion": 1,
     "properties": {
         "metallic": {
             "factor": 0.0

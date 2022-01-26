@@ -120,13 +120,14 @@ def RotationModifier_InstancesRotateWithinRange():
 
     # Main Script
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
     general.set_current_view_position(512.0, 480.0, 38.0)
 
     # 2) Set up vegetation entities
-    asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Spawner Entity", LEVEL_CENTER, 2.0, 2.0, 2.0, asset_path)
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "RotMod_PinkFlower")[0]
+    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", LEVEL_CENTER, 2.0, 2.0, 2.0,
+                                                               pink_flower_prefab)
 
     additional_components = [
         "Vegetation Rotation Modifier"

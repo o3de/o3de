@@ -7,5 +7,3 @@
  */
 #pragma once
 
-#define AZ_TRAIT_SHADER_MANAGEMENT_CONSOLE_EXT ""
-

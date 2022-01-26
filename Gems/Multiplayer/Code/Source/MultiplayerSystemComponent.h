@@ -184,7 +184,7 @@ namespace Multiplayer
         double m_serverSendAccumulator = 0.0;
         float m_renderBlendFactor = 0.0f;
         float m_tickFactor = 0.0f;
-        bool m_spawnNetboundEntities = true;
+        bool m_spawnNetboundEntities = false;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

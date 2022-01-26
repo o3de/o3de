@@ -58,6 +58,21 @@
       "CMAKE_TARGET": "all"
     }
   },
+  "profile_gcc_nounity": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "COMMAND": "build_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux_gcc",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLY_PARALLEL_LINK_JOBS=4 -DLY_GCC_BUILD_FOR_GCOV=OFF",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all",
+      "LY_MIN_MEMORY_PER_CORE": "2097152"
+    }
+ },
   "profile_nounity": {
     "TAGS": [
       "weekly-build-metrics"
@@ -85,6 +100,23 @@
       "CMAKE_TARGET": "all",
       "CTEST_OPTIONS": "-E (AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
       "TEST_RESULTS": "False"
+    }
+  },
+  "test_profile_gcc_nounity": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "COMMAND": "build_test_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux_gcc",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLY_PARALLEL_LINK_JOBS=4 -DLY_GCC_BUILD_FOR_GCOV=ON",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all",
+      "CTEST_OPTIONS": "-E (AutomatedTesting::Atom_TestSuite_Main|AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
+      "TEST_RESULTS": "False",
+      "LY_MIN_MEMORY_PER_CORE": "2097152"
     }
   },
   "test_profile_nounity": {
@@ -153,11 +185,11 @@
     "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
-      "OUTPUT_DIRECTORY": "build\\linux",
+      "OUTPUT_DIRECTORY": "build/linux",
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_awsi",
-      "CTEST_OPTIONS": "-L \"(SUITE_awsi)\" --no-tests=error",
+      "CTEST_OPTIONS": "-L (SUITE_awsi) --no-tests=error",
       "TEST_RESULTS": "True"
     }
   },

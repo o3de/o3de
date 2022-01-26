@@ -52,7 +52,7 @@ namespace
         spriteList.reserve(imageList.size());
         for (auto& textureAssetRef : imageList)
         {
-            ISprite* sprite = gEnv->pLyShine->LoadSprite(textureAssetRef.GetAssetPath().c_str());
+            ISprite* sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(textureAssetRef.GetAssetPath().c_str());
             if (sprite)
             {
                 spriteList.push_back(sprite);
@@ -383,7 +383,7 @@ void UiImageSequenceComponent::Init()
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }

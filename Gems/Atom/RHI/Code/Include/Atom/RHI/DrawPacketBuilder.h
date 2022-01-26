@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    class IAllocatorAllocate;
+    class IAllocator;
 
     namespace RHI
     {
@@ -50,7 +50,7 @@ namespace AZ
             // NOTE: This is configurable; just used to control the amount of memory held by the builder.
             static const size_t DrawItemCountMax = 16;
 
-            void Begin(IAllocatorAllocate* allocator);
+            void Begin(IAllocator* allocator);
 
             void SetDrawArguments(const DrawArguments& drawArguments);
 
@@ -77,7 +77,7 @@ namespace AZ
         private:
             void ClearData();
 
-            IAllocatorAllocate* m_allocator = nullptr;
+            IAllocator* m_allocator = nullptr;
             DrawArguments m_drawArguments;
             DrawListMask m_drawListMask = 0;
             DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;

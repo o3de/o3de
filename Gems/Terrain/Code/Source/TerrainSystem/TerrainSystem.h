@@ -23,6 +23,7 @@
 #include <AzCore/Jobs/JobFunction.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <TerrainRaycast/TerrainRaycastContext.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
 namespace Terrain
@@ -163,6 +164,11 @@ namespace Terrain
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 
+        //! Returns the number of samples for a given region and step size. The first and second
+        //! elements of the pair correspond to the X and Y sample counts respectively.
+        virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize) const override;
+
         //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
         //! coordinates in the region.
         virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
@@ -182,6 +188,9 @@ namespace Terrain
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 
+        AzFramework::EntityContextId GetTerrainRaycastEntityContextId() const override;
+        AzFramework::RenderGeometry::RayResult GetClosestIntersection(
+            const AzFramework::RenderGeometry::RayRequest& ray) const override;
 
     private:
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
@@ -225,5 +234,7 @@ namespace Terrain
 
         mutable AZStd::shared_mutex m_areaMutex;
         AZStd::map<AZ::EntityId, TerrainAreaData, TerrainLayerPriorityComparator> m_registeredAreas;
+
+        mutable TerrainRaycastContext m_terrainRaycastContext;
     };
 } // namespace Terrain

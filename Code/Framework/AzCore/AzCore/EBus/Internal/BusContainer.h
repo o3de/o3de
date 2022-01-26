@@ -93,14 +93,14 @@ namespace AZ
             // This struct will hold the handlers per address
             struct HandlerHolder;
             // This struct will hold each handler
-            using HandlerNode = HandlerNode<Interface, Traits, HandlerHolder>;
+            using HandlerNode = AZ::Internal::HandlerNode<Interface, Traits, HandlerHolder>;
             // Defines how handler holders are stored (will be some sort of map-like structure from id -> handler holder)
             using AddressStorage = AddressStoragePolicy<Traits, HandlerHolder>;
             // Defines how handlers are stored per address (will be some sort of list)
             using HandlerStorage = HandlerStoragePolicy<Interface, Traits, HandlerNode>;
 
             using Handler = IdHandler<Interface, Traits, ContainerType>;
-            using MultiHandler = MultiHandler<Interface, Traits, ContainerType>;
+            using MultiHandler = AZ::Internal::MultiHandler<Interface, Traits, ContainerType>;
             using BusPtr = AZStd::intrusive_ptr<HandlerHolder>;
 
             EBusContainer() = default;
@@ -774,13 +774,13 @@ namespace AZ
             // This struct will hold the handler per address
             struct HandlerHolder;
             // This struct will hold each handler
-            using HandlerNode = HandlerNode<Interface, Traits, HandlerHolder>;
+            using HandlerNode = AZ::Internal::HandlerNode<Interface, Traits, HandlerHolder>;
             // Defines how handler holders are stored (will be some sort of map-like structure from id -> handler holder)
             using AddressStorage = AddressStoragePolicy<Traits, HandlerHolder>;
             // No need for HandlerStorage, there's only 1 so it will always just be a HandlerNode*
 
             using Handler = IdHandler<Interface, Traits, ContainerType>;
-            using MultiHandler = MultiHandler<Interface, Traits, ContainerType>;
+            using MultiHandler = AZ::Internal::MultiHandler<Interface, Traits, ContainerType>;
             using BusPtr = AZStd::intrusive_ptr<HandlerHolder>;
 
             EBusContainer() = default;
@@ -1316,7 +1316,7 @@ namespace AZ
             // This struct will hold the handlers per address
             struct HandlerHolder;
             // This struct will hold each handler
-            using HandlerNode = HandlerNode<Interface, Traits, HandlerHolder>;
+            using HandlerNode = AZ::Internal::HandlerNode<Interface, Traits, HandlerHolder>;
             // Defines how handlers are stored per address (will be some sort of list)
             using HandlerStorage = HandlerStoragePolicy<Interface, Traits, HandlerNode>;
             // No need for AddressStorage, there's only 1

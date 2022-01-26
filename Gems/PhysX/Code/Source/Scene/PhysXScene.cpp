@@ -7,14 +7,6 @@
  */
 #include <Scene/PhysXScene.h>
 
-#include <AzCore/Debug/ProfilerBus.h>
-#include <AzCore/std/containers/variant.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/Character.h>
-#include <AzFramework/Physics/Collision/CollisionEvents.h>
-#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
-#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 
 #include <Collision.h>
 #include <RigidBody.h>
@@ -30,6 +22,16 @@
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/MathConversion.h>
 #include <Joint/PhysXJoint.h>
+
+#include <AzCore/Debug/ProfilerBus.h>
+#include <AzCore/std/containers/variant.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzFramework/Physics/Character.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 
 namespace PhysX
 {

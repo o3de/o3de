@@ -27,63 +27,84 @@ namespace AZ
 
         bool MaterialPropertyId::IsValid() const
         {
-            const bool groupNameIsValid = m_groupName.IsEmpty() || IsValidName(m_groupName);
-            const bool propertyNameIsValid = IsValidName(m_propertyName);
-            return groupNameIsValid && propertyNameIsValid;
+            return !m_fullName.IsEmpty();
         }
 
         MaterialPropertyId MaterialPropertyId::Parse(AZStd::string_view fullPropertyId)
         {
             AZStd::vector<AZStd::string> tokens;
-            AzFramework::StringFunc::Tokenize(fullPropertyId.data(), tokens, '.', true, true);
+            AzFramework::StringFunc::Tokenize(fullPropertyId, tokens, '.', true, true);
 
-            if (tokens.size() == 1)
+            if (tokens.empty())
             {
-                return MaterialPropertyId{"", tokens[0]};
+                AZ_Error("MaterialPropertyId", false, "Property ID is empty.", fullPropertyId.data());
+                return MaterialPropertyId{};
             }
-            else if (tokens.size() == 2)
+
+            for (const auto& token : tokens)
             {
-                return MaterialPropertyId{tokens[0], tokens[1]};
+                if (!IsValidName(token))
+                {
+                    AZ_Error("MaterialPropertyId", false, "Property ID '%.*s' is not a valid identifier.", AZ_STRING_ARG(fullPropertyId));
+                    return MaterialPropertyId{};
+                }
+            }
+
+            MaterialPropertyId id;
+            id.m_fullName = fullPropertyId;
+            return id;
+        }
+        
+        MaterialPropertyId::MaterialPropertyId(AZStd::string_view propertyName)
+        {
+            if (!IsValidName(propertyName))
+            {
+                AZ_Error("MaterialPropertyId", false, "Property name '%.*s' is not a valid identifier.", AZ_STRING_ARG(propertyName));
             }
             else
             {
-                AZ_Error("MaterialPropertyId", false, "Property ID '%s' is not a valid identifier.", fullPropertyId.data());
-                return MaterialPropertyId{};
+                m_fullName = propertyName;
             }
         }
 
         MaterialPropertyId::MaterialPropertyId(AZStd::string_view groupName, AZStd::string_view propertyName)
-            : MaterialPropertyId(Name{groupName}, Name{propertyName})
         {
-        }
-
-        MaterialPropertyId::MaterialPropertyId(const Name& groupName, const Name& propertyName)
-        {
-            AZ_Error("MaterialPropertyId", groupName.IsEmpty() || IsValidName(groupName), "Group name '%s' is not a valid identifier.", groupName.GetCStr());
-            AZ_Error("MaterialPropertyId", IsValidName(propertyName), "Property name '%s' is not a valid identifier.", propertyName.GetCStr());
-            m_groupName = groupName;
-            m_propertyName = propertyName;
-            if (groupName.IsEmpty())
+            if (!IsValidName(groupName))
             {
-                m_fullName = m_propertyName.GetStringView();
+                AZ_Error("MaterialPropertyId", false, "Group name '%.*s' is not a valid identifier.", AZ_STRING_ARG(groupName));
+            }
+            else if (!IsValidName(propertyName))
+            {
+                AZ_Error("MaterialPropertyId", false, "Property name '%.*s' is not a valid identifier.", AZ_STRING_ARG(propertyName));
             }
             else
             {
-                m_fullName = AZStd::string::format("%s.%s", m_groupName.GetCStr(), m_propertyName.GetCStr());
+                m_fullName = AZStd::string::format("%.*s.%.*s", AZ_STRING_ARG(groupName), AZ_STRING_ARG(propertyName));
             }
         }
-
-        const Name& MaterialPropertyId::GetGroupName() const
+        
+        MaterialPropertyId::MaterialPropertyId(const Name& groupName, const Name& propertyName)
+            : MaterialPropertyId(groupName.GetStringView(), propertyName.GetStringView())
         {
-            return m_groupName;
+        }
+        
+        MaterialPropertyId::MaterialPropertyId(const AZStd::array_view<AZStd::string> names)
+        {
+            for (const auto& name : names)
+            {
+                if (!IsValidName(name))
+                {
+                    AZ_Error("MaterialPropertyId", false, "'%s' is not a valid identifier.", name.c_str());
+                    return;
+                }
+            }
+
+            AZStd::string fullName; // m_fullName is a Name, not a string, so we have to join into a local variable temporarily.
+            AzFramework::StringFunc::Join(fullName, names.begin(), names.end(), ".");
+            m_fullName = fullName;
         }
 
-        const Name& MaterialPropertyId::GetPropertyName() const
-        {
-            return m_propertyName;
-        }
-
-        const Name& MaterialPropertyId::GetFullName() const
+        MaterialPropertyId::operator const Name&() const
         {
             return m_fullName;
         }
@@ -91,6 +112,11 @@ namespace AZ
         const char* MaterialPropertyId::GetCStr() const
         {
             return m_fullName.GetCStr();
+        }
+        
+        AZStd::string_view MaterialPropertyId::GetStringView() const
+        {
+            return m_fullName.GetStringView();
         }
 
         Name::Hash MaterialPropertyId::GetHash() const

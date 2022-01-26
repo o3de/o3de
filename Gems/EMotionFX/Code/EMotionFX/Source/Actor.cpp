@@ -434,6 +434,17 @@ namespace EMotionFX
             m_morphSetups.resize(numLODs);
             AZStd::fill(begin(m_morphSetups), AZStd::next(begin(m_morphSetups), numLODs), nullptr);
         }
+        else
+        {
+            if (m_morphSetups.size() < numLODs)
+            {
+                AZ::u32 num = m_morphSetups.empty() ? 0 : (AZ::u32)m_morphSetups.size();
+                for (AZ::u32 i = num; i < numLODs; ++i)
+                {
+                    m_morphSetups.push_back(nullptr);
+                }
+            }
+        }
     }
 
     // removes all node meshes and stacks
