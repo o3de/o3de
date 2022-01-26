@@ -5,6 +5,5 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma once
 
-#include <../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.h>
+#include <../Common/WinAPI/AzCore/Debug/Profiler_WinAPI.inl>

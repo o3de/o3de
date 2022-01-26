@@ -5,16 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <Viewport/PerformanceMetrics.h>
+#include <AtomToolsFramework/PerformanceMonitor/PerformanceMetrics.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
     //! Provides communication with Performance Monitor
-    class PerformanceMonitorRequests
-        : public AZ::EBusTraits
+    class PerformanceMonitorRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
@@ -23,11 +23,10 @@ namespace MaterialEditor
         //! Enable or disable CPU and GPU monitoring
         //! @param enabled whether performance monitoring should be enabled
         virtual void SetProfilerEnabled(bool enabled) = 0;
-        //! Gather performance metrics for the current frame
-        virtual void GatherMetrics() = 0;
+
         //! Get current metrics
         virtual const PerformanceMetrics& GetMetrics() = 0;
     };
 
     using PerformanceMonitorRequestBus = AZ::EBus<PerformanceMonitorRequests>;
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

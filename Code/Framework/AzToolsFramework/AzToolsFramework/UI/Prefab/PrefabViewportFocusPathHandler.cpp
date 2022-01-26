@@ -44,6 +44,9 @@ namespace AzToolsFramework::Prefab
         m_breadcrumbsWidget = breadcrumbsWidget;
         m_backButton = backButton;
 
+        // Add icons to the widget
+        m_breadcrumbsWidget->setDefaultIcon(QString(":/Entity/prefab_edit.svg"));
+
         // If a part of the path is clicked, focus on that instance
         connect(m_breadcrumbsWidget, &AzQtComponents::BreadCrumbs::linkClicked, this,
             [&](const QString&, int linkIndex)
@@ -73,6 +76,9 @@ namespace AzToolsFramework::Prefab
     {
         // Push new Path
         m_breadcrumbsWidget->pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
+
+        // Set root icon
+        m_breadcrumbsWidget->setIconAt(0, QString(":/Level/level.svg"));
 
         // If root instance is focused, disable the back button; else enable it.
         m_backButton->setEnabled(m_prefabFocusPublicInterface->GetPrefabFocusPathLength(m_editorEntityContextId) > 1);
