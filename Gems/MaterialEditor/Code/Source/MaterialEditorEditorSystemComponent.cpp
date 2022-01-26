@@ -58,12 +58,13 @@ namespace MaterialEditor
     void MaterialEditorEditorSystemComponent::NotifyRegisterViews()
     {
         AzToolsFramework::ViewPaneOptions options;
-        options.paneRect = QRect(100, 100, 500, 400);
+        options.isPreview = true; // indicates it's a pre-release tool
+        options.showInMenu = true;
         options.showOnToolsToolbar = true;
-        options.toolbarIcon = ":/MaterialEditor/toolbar_icon.svg";
+        options.toolbarIcon = ":/Menu/material_editor.svg";
 
         // Register our custom widget as a dockable tool with the Editor under an Examples sub-menu
-        AzToolsFramework::RegisterViewPane<MaterialEditorWidget>("MaterialEditor", "Examples", options);
+        AzToolsFramework::RegisterViewPane<MaterialEditorWidget>("O3DE Material Editor", "Tools", options);
     }
 
 } // namespace MaterialEditor
