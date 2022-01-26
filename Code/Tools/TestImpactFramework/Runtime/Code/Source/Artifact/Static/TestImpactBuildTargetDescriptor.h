@@ -44,7 +44,6 @@ namespace TestImpact
     struct BuildTargetDescriptor
     {
         BuildTargetDescriptor() = default;
-        BuildTargetDescriptor(BuildMetaData&& buildMetaData, TargetSources&& sources);
 
         BuildMetaData m_buildMetaData;
         TargetSources m_sources;

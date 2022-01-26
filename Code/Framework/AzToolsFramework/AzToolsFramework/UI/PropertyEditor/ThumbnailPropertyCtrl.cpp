@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzToolsFramework/Debug/TraceContext.h>
+#include <AzCore/PlatformDef.h>
 
 // 4251: 'QRawFont::d': class 'QExplicitlySharedDataPointer<QRawFontPrivate>' needs to have dll-interface to be used by clients of class
 // 'QRawFont' 4800: 'QTextEngine *const ': forcing value to bool 'true' or 'false' (performance warning)

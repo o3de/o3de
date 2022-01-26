@@ -42,7 +42,6 @@ namespace EMStudio
     class EMSTUDIO_API EMStudioPlugin
         : public QObject
     {
-        Q_OBJECT
         MCORE_MEMORYOBJECTCATEGORY(EMStudioPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
 
     public:
