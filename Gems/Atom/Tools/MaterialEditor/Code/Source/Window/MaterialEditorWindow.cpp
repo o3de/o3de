@@ -10,6 +10,7 @@
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -19,7 +20,6 @@
 #include <Window/MaterialEditorWindow.h>
 #include <Window/MaterialEditorWindowSettings.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
-#include <Window/PerformanceMonitor/PerformanceMonitorWidget.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
@@ -30,6 +30,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QStatusBar>
 #include <QUrl>
 #include <QWindow>
 AZ_POP_DISABLE_WARNING
@@ -95,10 +96,7 @@ namespace MaterialEditor
 
         AddDockWidget("Inspector", new MaterialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
         AddDockWidget("Viewport Settings", new ViewportSettingsInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
-        AddDockWidget("Performance Monitor", new PerformanceMonitorWidget, Qt::BottomDockWidgetArea, Qt::Horizontal);
-
         SetDockWidgetVisible("Viewport Settings", false);
-        SetDockWidgetVisible("Performance Monitor", false);
 
         // Restore geometry and show the window
         mainWindowWrapper->showFromSettings();
@@ -114,6 +112,14 @@ namespace MaterialEditor
         }
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
+
+        SetupMetrics();
+    }
+
+    MaterialEditorWindow::~MaterialEditorWindow()
+    {
+        AtomToolsFramework::PerformanceMonitorRequestBus::Broadcast(
+            &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, false);
     }
 
     void MaterialEditorWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
@@ -206,6 +212,38 @@ namespace MaterialEditor
         windowSettings->m_mainWindowState.assign(windowState.begin(), windowState.end());
 
         Base::closeEvent(closeEvent);
+    }
+
+    void MaterialEditorWindow::SetupMetrics()
+    {
+        m_statusBarCpuTime = new QLabel(this);
+        statusBar()->addPermanentWidget(m_statusBarCpuTime);
+        m_statusBarGpuTime = new QLabel(this);
+        statusBar()->addPermanentWidget(m_statusBarGpuTime);
+        m_statusBarFps = new QLabel(this);
+        statusBar()->addPermanentWidget(m_statusBarFps);
+
+        static constexpr int UpdateIntervalMs = 1000;
+        m_metricsTimer.setInterval(UpdateIntervalMs);
+        m_metricsTimer.start();
+        connect(&m_metricsTimer, &QTimer::timeout, this, &MaterialEditorWindow::UpdateMetrics);
+
+        AtomToolsFramework::PerformanceMonitorRequestBus::Broadcast(
+            &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, true);
+
+        UpdateMetrics();
+    }
+
+    void MaterialEditorWindow::UpdateMetrics()
+    {
+        AtomToolsFramework::PerformanceMetrics metrics = {};
+        AtomToolsFramework::PerformanceMonitorRequestBus::BroadcastResult(
+            metrics, &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::GetMetrics);
+
+        m_statusBarCpuTime->setText(tr("CPU Time %1 ms").arg(QString::number(metrics.m_cpuFrameTimeMs, 'f', 2)));
+        m_statusBarGpuTime->setText(tr("GPU Time %1 ms").arg(QString::number(metrics.m_gpuFrameTimeMs, 'f', 2)));
+        int frameRate = metrics.m_cpuFrameTimeMs > 0 ? aznumeric_cast<int>(1000 / metrics.m_cpuFrameTimeMs) : 0;
+        m_statusBarFps->setText(tr("FPS %1").arg(QString::number(frameRate)));
     }
 } // namespace MaterialEditor
 
