@@ -542,7 +542,7 @@ namespace Multiplayer
         optionalArgs.m_preInsertionCallback = [netSpawnableName, rootTransform = transform]
             (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableEntityContainerView entities)
         {
-            bool shouldUpdateTransform = (rootTransform.IsClose(AZ::Transform::Identity()) == false);
+            const bool shouldUpdateTransform = !rootTransform.IsClose(AZ::Transform::Identity());
 
             for (uint32_t netEntityIndex = 0, entitiesSize = aznumeric_cast<uint32_t>(entities.size());
                 netEntityIndex < entitiesSize; ++netEntityIndex)

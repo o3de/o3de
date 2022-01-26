@@ -11,7 +11,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetSerializer.h>
 
-namespace ScriptCanvasRuntimeAssetCpp
+namespace DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead
 {
     enum class RuntimeDataVersion
     {
@@ -72,7 +72,7 @@ namespace ScriptCanvas
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
             serializeContext->Class<RuntimeData>()
-                ->Version(static_cast<int>(ScriptCanvasRuntimeAssetCpp::RuntimeDataVersion::Current))
+                ->Version(static_cast<int>(DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead::RuntimeDataVersion::Current))
                 ->Field("input", &RuntimeData::m_input)
                 ->Field("debugMap", &RuntimeData::m_debugMap)
                 ->Field("script", &RuntimeData::m_script)
@@ -146,7 +146,7 @@ namespace ScriptCanvas
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeDataOverrides>()
-                ->Version(static_cast<unsigned int>(ScriptCanvasRuntimeAssetCpp::RuntimeDataOverridesVersion::Current))
+                ->Version(static_cast<unsigned int>(DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead::RuntimeDataOverridesVersion::Current))
                 ->Field("runtimeAsset", &RuntimeDataOverrides::m_runtimeAsset)
                 ->Field("variables", &RuntimeDataOverrides::m_variables)
                 ->Field("variableIndices", &RuntimeDataOverrides::m_variableIndices)
@@ -195,7 +195,7 @@ namespace ScriptCanvas
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
             serializeContext->Class<SubgraphInterfaceData>()
-                ->Version(static_cast<int>(ScriptCanvasRuntimeAssetCpp::FunctionRuntimeDataVersion::Current))
+                ->Version(static_cast<int>(DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead::FunctionRuntimeDataVersion::Current))
                 ->Field("name", &SubgraphInterfaceData::m_name)
                 ->Field("interface", &SubgraphInterfaceData::m_interface)
                 ;

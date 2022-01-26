@@ -28,7 +28,7 @@ void CEditorPreferencesPage_AWS::Reflect(AZ::SerializeContext& serialize)
     if (editContext)
     {
         editContext->Class<UsageOptions>("Options", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &UsageOptions::m_awsAttributionEnabled, "Allow O3DE to send information about your use of AWS Core Gem to AWS",
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &UsageOptions::m_awsAttributionEnabled, "Allow <a href=\"https://aws.amazon.com/privacy/\">O3DE</a> to send information about your use of AWS Core Gem to AWS",
             "");
 
         editContext->Class<CEditorPreferencesPage_AWS>("AWS Preferences", "AWS Preferences")
@@ -101,7 +101,7 @@ void CEditorPreferencesPage_AWS::SaveSettingsRegistryFile()
                 return;
             }
 
-            bool saved{};
+            [[maybe_unused]] bool saved{};
             constexpr auto configurationMode =
                 AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
             if (AZ::IO::SystemFile outputFile; outputFile.Open(resolvedPath.data(), configurationMode))

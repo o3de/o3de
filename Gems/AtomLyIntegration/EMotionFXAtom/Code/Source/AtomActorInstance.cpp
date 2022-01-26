@@ -38,6 +38,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/base.h>
 
+#include <numeric>
+
 namespace AZ::Render
 {
     static constexpr uint32_t s_maxActiveWrinkleMasks = 16;
@@ -377,6 +379,24 @@ namespace AZ::Render
     bool AtomActorInstance::GetVisibility() const
     {
         return IsVisible();
+    }
+
+    void AtomActorInstance::SetRayTracingEnabled(bool enabled)
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetRayTracingEnabled(*m_meshHandle, enabled);
+        }
+    }
+
+    bool AtomActorInstance::GetRayTracingEnabled() const
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            return m_meshFeatureProcessor->GetRayTracingEnabled(*m_meshHandle);
+        }
+
+        return false;
     }
 
     AZ::u32 AtomActorInstance::GetJointCount()

@@ -409,7 +409,7 @@ private:
 
     unsigned int m_id = 0;
 
-    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) {};
+    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) { return false; };
 };
 
 //////////////////////////////////////////////////////////////////////////

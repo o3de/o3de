@@ -24,7 +24,6 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Settings.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>

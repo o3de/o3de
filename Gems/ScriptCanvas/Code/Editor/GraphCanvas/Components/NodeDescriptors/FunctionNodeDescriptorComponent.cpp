@@ -14,7 +14,6 @@
 #include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Translation/TranslationHelper.h>
 
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
@@ -89,16 +88,9 @@ namespace ScriptCanvasEditor
 
     bool FunctionNodeDescriptorComponent::OnMouseDoubleClick(const QGraphicsSceneMouseEvent*)
     {
-        AZ::Data::AssetInfo assetInfo = AssetHelpers::GetSourceInfoByProductId(m_assetId, azrtti_typeid< ScriptCanvas::SubgraphInterfaceAsset>());
-
-        if (!assetInfo.m_assetId.IsValid())
-        {
-            return false;
-        }
-
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
         GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset
-            , SourceHandle( nullptr, assetInfo.m_assetId.m_guid, {} ), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
+            , SourceHandle( nullptr, m_assetId.m_guid, {} ), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
         return openOutcome.IsSuccess();
     }
 

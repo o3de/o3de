@@ -93,37 +93,28 @@ TEST_TEMPLATE_JSON_CONTENTS = """\
     "copyFiles": [
         {
             "file": "Code/Include/${Name}/${Name}Bus.h",
-            "origin": "Code/Include/${Name}/${Name}Bus.h",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": true
         },
         {
-            "file": "Code/Include/Platform/Salem/${Name}Bus.h",
-            "origin": "Code/Include/Platform/Salem/${Name}Bus.h",
-            "isTemplated": true,
-            "isOptional": false
+            "file": "Code/Include/Platform/Windows/${Name}Bus.h",
+            "isTemplated": true
         }
     ],
     "createDirectories": [
         {
-            "dir": "Code",
-            "origin": "Code"
+            "dir": "Code"
         },
         {
-            "dir": "Code/Include",
-            "origin": "Code/Include"
+            "dir": "Code/Include"
         },
         {
-            "dir": "Code/Include/${Name}",
-            "origin": "Code/Include/${Name}"
+            "dir": "Code/Include/${Name}"
         },
         {
-            "dir": "Code/Include/Platform",
-            "origin": "Code/Include/Platform"
+            "dir": "Code/Include/Platform"
         },
         {
-            "dir": "Code/Include/Platform/Salem",
-            "origin": "Code/Include/Platform/Salem"
+            "dir": "Code/Include/Platform/Windows"
         }
     ]
 }
@@ -174,10 +165,10 @@ def test_create_template(tmpdir,
     with gem_bus_file.open('w') as s:
         s.write(concrete_contents)
 
-    engine_gem_code_include_platform_salem = template_source_path / 'Code/Include/Platform/Salem'
-    engine_gem_code_include_platform_salem.mkdir(parents=True, exist_ok=True)
+    engine_gem_code_include_platform_windows = template_source_path / 'Code/Include/Platform/Windows'
+    engine_gem_code_include_platform_windows.mkdir(parents=True, exist_ok=True)
 
-    restricted_gem_bus_file = engine_gem_code_include_platform_salem / 'TestTemplateBus.h'
+    restricted_gem_bus_file = engine_gem_code_include_platform_windows / 'TestTemplateBus.h'
     with restricted_gem_bus_file.open('w') as s:
         s.write(concrete_contents)
 
@@ -209,9 +200,9 @@ def test_create_template(tmpdir,
         else:
             assert s_data == templated_contents_without_license
 
-        platform_template_folder = engine_root / 'Salem/Templates'
+        platform_template_folder = engine_root / 'Windows/Templates'
 
-        new_platform_default_name_bus_file = template_content_folder / 'Code/Include/Platform/Salem/${Name}Bus.h'
+        new_platform_default_name_bus_file = template_content_folder / 'Code/Include/Platform/Windows/${Name}Bus.h'
         assert new_platform_default_name_bus_file.is_file()
         with new_platform_default_name_bus_file.open('r') as s:
             s_data = s.read()
@@ -255,7 +246,7 @@ class TestCreateTemplate:
             s.write(templated_contents)
 
         template_content_folder = template_default_folder / 'Template'
-        platform_default_name_bus_dir = template_content_folder / 'Code/Include/Platform/Salem'
+        platform_default_name_bus_dir = template_content_folder / 'Code/Include/Platform/Windows'
         platform_default_name_bus_dir.mkdir(parents=True, exist_ok=True)
 
         platform_default_name_bus_file = platform_default_name_bus_dir / '${Name}Bus.h'
@@ -263,10 +254,13 @@ class TestCreateTemplate:
             s.write(templated_contents)
 
         template_dest_path = engine_root / instantiated_name
-        # Skip registeration in test
+        # Skip registration in test
         with patch('uuid.uuid4', return_value=uuid.uuid5(uuid.NAMESPACE_DNS, instantiated_name)) as uuid4_mock:
-            result = create_from_template_func(template_dest_path, template_path=template_default_folder, force=True,
-                                                          keep_license_text=keep_license_text, **create_from_template_kwargs)
+            result = create_from_template_func(template_dest_path,
+                                               template_path=template_default_folder,
+                                               keep_license_text=keep_license_text,
+                                               force=True,
+                                               **create_from_template_kwargs)
         if expect_failure:
             assert result != 0
         else:
@@ -281,7 +275,7 @@ class TestCreateTemplate:
                 s_data = s.read()
             assert s_data == concrete_contents
 
-            platform_test_bus_folder = test_folder / 'Code/Include/Platform/Salem'
+            platform_test_bus_folder = test_folder / 'Code/Include/Platform/Windows'
             assert platform_test_bus_folder.is_dir()
 
             platform_default_name_bus_file = platform_test_bus_folder / f'{instantiated_name}Bus.h'
@@ -338,9 +332,7 @@ class TestCreateTemplate:
         template_json_dict.setdefault('copyFiles', []).append(
         {
             "file": "project.json",
-            "origin": "project.json",
-            "isTemplated": True,
-            "isOptional": False
+            "isTemplated": True
         })
         # Convert the python dictionary back into a json string
         template_json_contents = json.dumps(template_json_dict, indent=4)
@@ -376,9 +368,7 @@ class TestCreateTemplate:
         template_json_dict.setdefault('copyFiles', []).append(
             {
                 "file": "gem.json",
-                "origin": "gem.json",
-                "isTemplated": True,
-                "isOptional": False
+                "isTemplated": True
             })
         #Convert dict back to string
         template_json_contents = json.dumps(template_json_dict, indent=4)

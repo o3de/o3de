@@ -25,7 +25,6 @@ namespace GraphCanvas
         , private GraphCanvasRequestBus::Handler
         , protected Styling::PseudoElementFactoryRequestBus::Handler
         , protected AzFramework::AssetCatalogEventBus::Handler
-        , protected AZ::Data::AssetBus::MultiHandler
 
     {
     public:
@@ -80,15 +79,17 @@ namespace GraphCanvas
         // AzFramework::AssetCatalogEventBus::Handler
         void OnCatalogLoaded(const char* /*catalogFile*/) override;
         void OnCatalogAssetChanged(const AZ::Data::AssetId&) override;
+        void OnCatalogAssetAdded(const AZ::Data::AssetId&) override;
+        void OnCatalogAssetRemoved(const AZ::Data::AssetId& /*assetId*/, const AZ::Data::AssetInfo& /*assetInfo*/) override;
         ////
+
+        void ReloadDatabase(const AZ::Data::AssetId&);
 
         AZStd::unique_ptr<TranslationAssetHandler> m_assetHandler;
 
         void RegisterTranslationBuilder();
         void UnregisterAssetHandler();
         TranslationAssetWorker m_translationAssetWorker;
-        AZStd::vector<AZ::Data::AssetId> m_translationAssets;
-        void PopulateTranslationDatabase();
 
         TranslationDatabase m_translationDatabase;
     };

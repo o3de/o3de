@@ -285,13 +285,19 @@ namespace AZ::Render
 
         const double frameIntervalSeconds = m_fpsInterval.count();
 
+        auto ClampedFloatDisplay = [](double value, const char* format) -> AZStd::string
+        {
+            constexpr float upperLimit = 10000.0f;
+            return value > upperLimit ? "inf" : AZStd::string::format(format, value);
+        };
+
         DrawLine(
             AZStd::string::format(
-                "FPS %.1f [%.0f..%.0f], %.1fms/frame, avg over %.1fs",
-                averageFPS,
-                minFPS,
-                maxFPS,
-                averageFrameMs,
+                "FPS %s [%s..%s], %sms/frame, avg over %.1fs",
+                ClampedFloatDisplay(averageFPS, "%.1f").c_str(),
+                ClampedFloatDisplay(minFPS, "%.0f").c_str(),
+                ClampedFloatDisplay(maxFPS, "%.0f").c_str(),
+                ClampedFloatDisplay(averageFrameMs, "%.1f").c_str(),
                 frameIntervalSeconds),
             AZ::Colors::Yellow);
     }

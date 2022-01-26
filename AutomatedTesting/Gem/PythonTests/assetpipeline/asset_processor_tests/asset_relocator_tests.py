@@ -169,17 +169,17 @@ class TestsAssetRelocator_WindowsAndMac(object):
 
     @pytest.mark.test_case_id("C21968388")
     @pytest.mark.assetpipeline
-    def test_WindowsMacPlatforms_MoveCorruptedSliceFile_MoveSuccess(self, request, workspace, ap_setup_fixture,
+    def test_WindowsMacPlatforms_MoveCorruptedPrefabFile_MoveSuccess(self, request, workspace, ap_setup_fixture,
                                                                     asset_processor):
         """
         Asset with UUID/AssetId reference in non-standard format is
         successfully scanned and relocated to the MoveOutput folder.
-        This test uses a pre-corrupted .slice file.
+        This test uses a pre-corrupted .prefab file.
 
         Test Steps:
-        1. Create temporary testing environment with a corrupted slice
-        2. Attempt to move the corrupted slice
-        3. Verify that corrupted slice was moved successfully
+        1. Create temporary testing environment with a corrupted prefab
+        2. Attempt to move the corrupted prefab
+        3. Verify that corrupted prefab was moved successfully
         """
 
         env = ap_setup_fixture
@@ -187,7 +187,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
         asset_folder = "C21968388"
         source_dir, _ = asset_processor.prepare_test_environment(env["tests_dir"], asset_folder)
 
-        filename = "DependencyScannerAsset.slice"
+        filename = "DependencyScannerAsset.prefab"
         file_path = os.path.join(source_dir, filename)
         dst_rel_path = os.path.join("MoveOutput", filename)
         dst_full_path = os.path.join(source_dir, dst_rel_path)

@@ -12,11 +12,11 @@
 #include <ACES/Aces.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
-#include <Atom/Viewport/MaterialViewportSettings.h>
-#include <Atom/Window/MaterialEditorWindowSettings.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <Viewport/MaterialViewportNotificationBus.h>
+#include <Viewport/MaterialViewportSettings.h>
+#include <Window/MaterialEditorWindowSettings.h>
 #endif
 
 namespace MaterialEditor

@@ -98,9 +98,6 @@ def disable_gem_in_project(gem_name: str = None,
 
 
 def _run_disable_gem_in_project(args: argparse) -> int:
-    if args.override_home_folder:
-        manifest.override_home_folder = args.override_home_folder
-
     return disable_gem_in_project(args.gem_name,
                                    args.gem_path,
                                    args.project_name,
@@ -132,9 +129,6 @@ def add_parser_args(parser):
     parser.add_argument('-egf', '--enabled-gem-file', type=pathlib.Path, required=False,
                                       help='The cmake enabled gem file in which gem names are to be removed from.'
                                            'If not specified it will assume ')
-
-    parser.add_argument('-ohf', '--override-home-folder', type=pathlib.Path, required=False,
-                                      help='By default the home folder is the user folder, override it to this folder.')
 
     parser.set_defaults(func=_run_disable_gem_in_project)
 

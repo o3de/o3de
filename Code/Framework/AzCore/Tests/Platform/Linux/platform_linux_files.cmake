@@ -9,4 +9,5 @@
 set(FILES
     Tests/UtilsTests_Linux.cpp
     ../Common/UnixLike/Tests/UtilsTests_UnixLike.cpp
+    Tests/Memory/AllocatorBenchmarks_Linux.cpp
 )

@@ -81,7 +81,7 @@ namespace UnitTest
 
     TEST_P(Rotation, Permutation)
     {
-        int expectedErrors = -1;
+        [[maybe_unused]] int expectedErrors = -1;
         AZ_TEST_START_TRACE_SUPPRESSION;
 
         // Given an orientation derived from the look at points

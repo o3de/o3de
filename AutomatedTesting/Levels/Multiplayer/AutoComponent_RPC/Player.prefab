@@ -1,0 +1,195 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "Player",
+        "Components": {
+            "Component_[10603663676997462041]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 10603663676997462041
+            },
+            "Component_[11066377844757909329]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 11066377844757909329
+            },
+            "Component_[11664640320098005944]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 11664640320098005944
+            },
+            "Component_[12551690377468870725]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 12551690377468870725,
+                "Parent Entity": ""
+            },
+            "Component_[16402163080075698011]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 16402163080075698011
+            },
+            "Component_[3491366785918494447]": {
+                "$type": "EditorLockComponent",
+                "Id": 3491366785918494447
+            },
+            "Component_[4830373679514129871]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 4830373679514129871
+            },
+            "Component_[5144323498211834874]": {
+                "$type": "SelectionComponent",
+                "Id": 5144323498211834874
+            },
+            "Component_[5267607163086533733]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 5267607163086533733
+            },
+            "Component_[6678300504118618849]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 6678300504118618849
+            },
+            "Component_[8384628950786300469]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 8384628950786300469,
+                "Child Entity Order": [
+                    "Entity_[10070247746456]"
+                ]
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[10070247746456]": {
+            "Id": "Entity_[10070247746456]",
+            "Name": "Player",
+            "Components": {
+                "Component_[1059478843478789313]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 1059478843478789313,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 9878555871810913249
+                        },
+                        {
+                            "ComponentId": 11481641385923146202,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 11440172471478606933,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 17461691807054668218,
+                            "SortIndex": 3
+                        },
+                        {
+                            "ComponentId": 15530420875454157766,
+                            "SortIndex": 4
+                        },
+                        {
+                            "ComponentId": 10596595655489113153,
+                            "SortIndex": 5
+                        }
+                    ]
+                },
+                "Component_[10596595655489113153]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 10596595655489113153,
+                    "m_name": "AutoComponent_RPC",
+                    "m_assetHolder": {
+                        "m_asset": {
+                            "assetId": {
+                                "guid": "{5ED120C4-07DC-56F1-80A7-37BFC98FD74E}"
+                            },
+                            "assetHint": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc.scriptcanvas"
+                        }
+                    },
+                    "runtimeDataIsValid": true,
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "assetId": {
+                                "guid": "{5ED120C4-07DC-56F1-80A7-37BFC98FD74E}"
+                            },
+                            "assetHint": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc.scriptcanvas"
+                        }
+                    }
+                },
+                "Component_[11440172471478606933]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 11440172471478606933,
+                    "m_template": {
+                        "$type": "Multiplayer::NetworkTransformComponent"
+                    }
+                },
+                "Component_[11481641385923146202]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 11481641385923146202,
+                    "m_template": {
+                        "$type": "NetBindComponent"
+                    }
+                },
+                "Component_[13110996849704981748]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 13110996849704981748
+                },
+                "Component_[1472895075383059499]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 1472895075383059499
+                },
+                "Component_[1526920553231193509]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 1526920553231193509
+                },
+                "Component_[15530420875454157766]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 15530420875454157766,
+                    "m_template": {
+                        "$type": "Multiplayer::LocalPredictionPlayerInputComponent"
+                    }
+                },
+                "Component_[1699895912837266792]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 1699895912837266792
+                },
+                "Component_[17461691807054668218]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 17461691807054668218,
+                    "m_template": {
+                        "$type": "AutomatedTesting::NetworkTestPlayerComponent"
+                    }
+                },
+                "Component_[3622545398462507871]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 3622545398462507871
+                },
+                "Component_[5778259918231688598]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 5778259918231688598,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{F322592F-43BC-50E7-903C-CC231846093F}",
+                                    "subId": 276443623
+                                },
+                                "assetHint": "objects/_primitives/_cylinder_1x1.azmodel"
+                            }
+                        }
+                    }
+                },
+                "Component_[7004633483882343256]": {
+                    "$type": "SelectionComponent",
+                    "Id": 7004633483882343256
+                },
+                "Component_[8469628382507693850]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 8469628382507693850
+                },
+                "Component_[9407892837096707905]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 9407892837096707905
+                },
+                "Component_[9878555871810913249]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 9878555871810913249,
+                    "Parent Entity": "ContainerEntity"
+                }
+            }
+        }
+    }
+}

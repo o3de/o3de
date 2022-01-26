@@ -19,8 +19,9 @@ fi
 pushd $OUTPUT_DIRECTORY
 
 # Find the CTEST_RUN_FLAGS from the CMakeCache.txt file, then replace the $<CONFIG> with the current configuration
-IFS='=' read -ra CTEST_RUN_FLAGS <<< $(cmake -N -LA . | grep "CTEST_RUN_FLAGS:STRING")
-CTEST_RUN_FLAGS=${CTEST_RUN_FLAGS[1]/$<CONFIG>/${CONFIGURATION}}
+CTEST_RUN_FLAGS=$(cmake -N -LA . | grep "CTEST_RUN_FLAGS:STRING")
+CTEST_RUN_FLAGS=${CTEST_RUN_FLAGS/CTEST_RUN_FLAGS:STRING=/}
+CTEST_RUN_FLAGS=${CTEST_RUN_FLAGS/$<CONFIG>/${CONFIGURATION}}
 
 # Run ctest
 echo [ci_build] ctest ${CTEST_RUN_FLAGS} ${CTEST_OPTIONS}

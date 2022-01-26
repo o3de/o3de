@@ -509,9 +509,9 @@ namespace ScriptCanvas
 
                 for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    if (!dependency.Get()->GetData().m_areStaticsInitialized)
+                    if (!dependency.Get()->m_runtimeData.m_areStaticsInitialized)
                     {
-                        InitializeInterpretedStatics(dependency.Get()->GetData());
+                        InitializeInterpretedStatics(dependency.Get()->m_runtimeData);
                     }
                 }
 

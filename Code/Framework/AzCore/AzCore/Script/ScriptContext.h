@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SCRIPT_CONTEXT_H
-#define AZCORE_SCRIPT_CONTEXT_H
+#pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/function/function_fwd.h>
@@ -797,7 +796,7 @@ namespace AZ
         // Note: Always use l over context->NativeContext(), as require may be called from a thread.
         using RequireHook = AZStd::function<int(lua_State* lua, ScriptContext* context, const char* module)>;
 
-        using StackVariableAllocator = StackVariableAllocator;
+        using StackVariableAllocator = AZ::StackVariableAllocator;
         /// Stack temporary memory
         
         /**
@@ -1032,4 +1031,3 @@ namespace AZ
     }
 
 } // namespace AZ
-#endif // AZCORE_SCRIPT_CONTEXT_H

@@ -12,8 +12,8 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
-
 
 namespace EMotionFX
 {
@@ -39,6 +39,8 @@ namespace EMotionFX
         virtual void CopyFrom(const PoseData* from) = 0;
 
         virtual void Blend(const Pose* destPose, float weight) = 0;
+
+        virtual void DebugDraw([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay, [[maybe_unused]] const AZ::Color& color) const {}
 
         bool IsUsed() const                     { return m_isUsed; }
         void SetIsUsed(bool isUsed)             { m_isUsed = isUsed; }

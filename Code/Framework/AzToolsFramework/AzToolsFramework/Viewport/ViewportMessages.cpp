@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/Render/IntersectorInterface.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
@@ -66,15 +67,19 @@ namespace AzToolsFramework
 
     AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, const float defaultDistance)
     {
-        AzFramework::RenderGeometry::RayResult renderGeometryIntersectionResult;
+        // attempt a ray intersection with any visible mesh or terrain and return the intersection position if successful
+        AZ::EBusReduceResult<AzFramework::RenderGeometry::RayResult, AzFramework::RenderGeometry::RayResultClosestAggregator> renderGeometryIntersectionResult;
         AzFramework::RenderGeometry::IntersectorBus::EventResult(
             renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(),
             &AzFramework::RenderGeometry::IntersectorBus::Events::RayIntersect, rayRequest);
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            renderGeometryIntersectionResult,
+            &AzFramework::Terrain::TerrainDataRequests::GetClosestIntersection,
+            rayRequest);
 
-        // attempt a ray intersection with any visible mesh and return the intersection position if successful
-        if (renderGeometryIntersectionResult)
+        if (renderGeometryIntersectionResult.value)
         {
-            return renderGeometryIntersectionResult.m_worldPosition;
+            return renderGeometryIntersectionResult.value.m_worldPosition;
         }
         else
         {

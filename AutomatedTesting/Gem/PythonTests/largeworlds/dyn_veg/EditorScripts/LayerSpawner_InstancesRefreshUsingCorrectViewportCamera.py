@@ -43,13 +43,13 @@ def LayerSpawner_InstancesRefreshUsingCorrectViewportCamera():
     import azlmbr.legacy.general as general
     import azlmbr.math as math
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Set up a test environment to validate that switching viewports correctly changes which camera
     # the vegetation system uses.
@@ -100,11 +100,12 @@ def LayerSpawner_InstancesRefreshUsingCorrectViewportCamera():
                                                          surface_height)
 
     # Create the two vegetation areas
-    test_slice_asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    first_veg_entity = dynveg.create_dynamic_slice_vegetation_area("Veg Area 1", first_entity_center_point, box_size, box_size,
-                                                                                 box_size, test_slice_asset_path)
-    second_veg_entity = dynveg.create_dynamic_slice_vegetation_area("Veg Area 2", second_entity_center_point, box_size, box_size,
-                                                                                  box_size, test_slice_asset_path)
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "SpawnerViewportRefresh_PinkFlower")[0]
+    first_veg_entity = dynveg.create_temp_prefab_vegetation_area("Veg Area 1", first_entity_center_point, box_size, box_size,
+                                                                 box_size, pink_flower_prefab)
+    second_veg_entity = dynveg.create_temp_prefab_vegetation_area("Veg Area 2", second_entity_center_point, box_size, box_size,
+                                                                  box_size, pink_flower_prefab)
 
     # When the first viewport is active, the first area should be full of instances, and the second should be empty
     general.set_active_viewport(0)

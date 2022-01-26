@@ -10,6 +10,7 @@
 
 #include <limits>
 #include <AzCore/IO/IStreamerTypes.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>

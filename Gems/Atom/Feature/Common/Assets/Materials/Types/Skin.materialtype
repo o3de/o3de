@@ -1087,6 +1087,12 @@
         {
             "type": "Lua",
             "args": {
+                "file": "Skin_SpecularF0.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
                 "file": "MaterialInputs/DetailMapsCommonFunctor.lua"
             }
         }

@@ -6,10 +6,9 @@
  *
  */
 
-#include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/TransformBus.h>
-
-#include <Source/Viewport/InputController/Behavior.h>
+#include <AzCore/Math/Vector3.h>
+#include <Viewport/InputController/Behavior.h>
 #include <Viewport/InputController/MaterialEditorViewportInputController.h>
 
 namespace MaterialEditor

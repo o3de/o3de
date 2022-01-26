@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_BENDSETUPINSTANCEDEBUGEVENTHANDLER_H
-#define __EMSTUDIO_BENDSETUPINSTANCEDEBUGEVENTHANDLER_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -45,5 +44,3 @@ namespace EMStudio
     private:
     };
 } // namespace EMStudio
-
-#endif

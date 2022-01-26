@@ -16,8 +16,6 @@ set(FILES
     Include/ScriptCanvas/Asset/ExecutionLogAssetBus.h
     Include/ScriptCanvas/Asset/RuntimeAsset.h
     Include/ScriptCanvas/Asset/RuntimeAssetHandler.h
-    Include/ScriptCanvas/Asset/ScriptCanvasAssetBase.h
-    Include/ScriptCanvas/Asset/ScriptCanvasAssetData.h
     Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h
     Include/ScriptCanvas/Core/ScriptCanvasBus.h
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.h

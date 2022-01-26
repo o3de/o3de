@@ -15,9 +15,9 @@ namespace AZ::IO
     // Class template instantations
     template class BasicPath<AZStd::string>;
     template class BasicPath<FixedMaxPathString>;
-    template class PathIterator<PathView>;
-    template class PathIterator<Path>;
-    template class PathIterator<FixedMaxPath>;
+    template class PathIterator<const PathView>;
+    template class PathIterator<const Path>;
+    template class PathIterator<const FixedMaxPath>;
 
     // Swap function instantiations
     template void swap<AZStd::string>(Path& lhs, Path& rhs) noexcept;
@@ -38,16 +38,16 @@ namespace AZ::IO
         const typename BasicPath<FixedMaxPathString>::value_type* rhs);
 
     // Iterator compare instantiations
-    template bool operator==<PathView>(const PathIterator<PathView>& lhs,
-        const PathIterator<PathView>& rhs);
-    template bool operator==<Path>(const PathIterator<Path>& lhs,
-        const PathIterator<Path>& rhs);
-    template bool operator==<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
-        const PathIterator<FixedMaxPath>& rhs);
-    template bool operator!=<PathView>(const PathIterator<PathView>& lhs,
-        const PathIterator<PathView>& rhs);
-    template bool operator!=<Path>(const PathIterator<Path>& lhs,
-        const PathIterator<Path>& rhs);
-    template bool operator!=<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
-        const PathIterator<FixedMaxPath>& rhs);
+    template bool operator==<const PathView>(const PathIterator<const PathView>& lhs,
+        const PathIterator<const PathView>& rhs);
+    template bool operator==<const Path>(const PathIterator<const Path>& lhs,
+        const PathIterator<const Path>& rhs);
+    template bool operator==<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+        const PathIterator<const FixedMaxPath>& rhs);
+    template bool operator!=<const PathView>(const PathIterator<const PathView>& lhs,
+        const PathIterator<const PathView>& rhs);
+    template bool operator!=<const Path>(const PathIterator<const Path>& lhs,
+        const PathIterator<const Path>& rhs);
+    template bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+        const PathIterator<const FixedMaxPath>& rhs);
 }
