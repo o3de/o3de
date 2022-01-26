@@ -7,44 +7,40 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
-import os
+#import os
 import json
+import constants
+from pathlib import Path
 
-# Const
-USER_NAME = os.getenv('username')
-DEFAULT_SDK_MANIFEST_PATH = os.path.join('C:\\', 'Users', '{}', '.o3de', 'o3de_manifest.json').format(USER_NAME)
 
 def LookatEngineManifest():
-    """
+    """!
     This function will look at your O3DE engine manifest JSON
     """
-    engineIsInstalled = None
+    engine_is_installed = None
     try:
-        with open(DEFAULT_SDK_MANIFEST_PATH, "r") as data_file:
+        with open(constants.DEFAULT_SDK_MANIFEST_PATH, "r") as data_file:
             data = json.load(data_file)
-            # Look at manifest defualt project
-            o3deDefaultProjectsFolder = data['default_projects_folder']
             # Look at manifest projects
-            o3deProjects = data['projects']
+            o3de_projects = data['projects']
             # Send if o3de is not installed
-            engineIsInstalled = True
-            return o3deDefaultProjectsFolder, o3deProjects, engineIsInstalled
+            engine_is_installed = True
+            return o3de_projects, engine_is_installed
     except:
-        o3deDefaultProjectsFolder = ''
-        o3deProjects = ['']
-        engineIsInstalled = False
-        return o3deDefaultProjectsFolder, o3deProjects, engineIsInstalled
+        o3de_projects = ['']
+        engine_is_installed = False
+        return o3de_projects, engine_is_installed
 
-def BuildProjectsList():
-    """
+def build_projects_list():
+    """!
     This function will build the o3de project list
     """
-    o3deDefaultProjectsFolder, o3deProjects, engineIsInstalled = LookatEngineManifest()
+    o3de_projects, engine_is_installed = LookatEngineManifest()
 
-    listOfo3deProjects = []
+    list_o3de_projects = []
     
-    if engineIsInstalled:
+    if engine_is_installed:
         # Make a list of projects to select from
-        for projectFullPath in o3deProjects:
-            listOfo3deProjects.append((projectFullPath, os.path.basename(projectFullPath), projectFullPath))
-    return listOfo3deProjects
+        for project_full_path in o3de_projects:
+            list_o3de_projects.append((project_full_path, Path(project_full_path).name, project_full_path))
+    return list_o3de_projects

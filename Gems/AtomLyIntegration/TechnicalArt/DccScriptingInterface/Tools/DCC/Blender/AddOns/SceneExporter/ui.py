@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
 import bpy
-import os
+from pathlib import Path
 import webbrowser
 from bpy_extras.io_utils import ExportHelper
 from bpy.types import Panel, Operator, PropertyGroup
@@ -17,25 +17,29 @@ import fbx_exporter
 import o3de_utils
 import ui
 
-def MessageBox(message = "", title = "Message Box", icon = 'LIGHT'):
-    """
+def message_box(message = "", title = "Message Box", icon = 'LIGHT'):
+    """!
     This function will show a messagebox to inform user.
+    @param message This is the message box main string message
+    @param title This is the title of the message box string
+    @param icon This is the Blender icon used in the message box gui
     """
     def draw(self, context):
+        """!
+        This function draws this gui element in Blender UI
+        """
         self.layout.label(text = message)
-    
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
-
 class WikiButton(bpy.types.Operator):
-    """
+    """!
     This Class is for the UI Wiki Button
     """
     bl_idname = "vin.wiki"
     bl_label = "O3DE Github Wiki"
 
     def execute(self, context):
-        """
-        This function will open a web browser window
+        """!
+        This function will open a web browser window.
         """
         webbrowser.open('https://github.com/o3de/o3de/wiki/')
         return{'FINISHED'}
@@ -45,34 +49,43 @@ class ExportFiles(bpy.types.Operator):
     bl_label = "SENDFILES"
 
     def execute(self, contex):
+        """!
+        This function will send to selected GLB to an O3DE Project Path.
         """
-        This function will send to selected GLB to an O3DE Project Path
-        """
-        fbx_exporter.fbxFileExporter('')
+        fbx_exporter.fbx_file_exporter('')
         return{'FINISHED'}
 
-class Projects_OT_ListDropDown(bpy.types.Operator):
-    """
-    This Class is for the O3DE Projects UI List Drop Down
+class ProjectsListDropDown(bpy.types.Operator):
+    """!
+    This Class is for the O3DE Projects UI List Drop Down.
     """
     bl_label = "Project List Dropdown"
     bl_idname = "wm.projectlist"
-    
+
     def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self)
-        
+        """!
+        This function will invoke the blender windowe manager
+        """
+        window_manager = context.window_manager
+        return window_manager.invoke_props_dialog(self)
+
     def draw(self, context):
+        """!
+        This function draws this gui element in Blender UI
+        """
         layout = self.layout
-        layout.prop(context.scene, 'projectsWorkingList')
+        layout.prop(context.scene, 'o3de_projects_list')
         
     def execute(self, context):
-        bpy.types.Scene.selectedo3deProjectPath = context.scene.projectsWorkingList
+        """!
+        This will update the UI with the current o3de Project Title.
+        """
+        bpy.types.Scene.selected_o3de_project_path = context.scene.o3de_projects_list
         return {'FINISHED'}
 
 class SceneExporterFileMenu(Operator, ExportHelper):
-    """
-    This function will export the 3d model as well
+    """!
+    This Class will export the 3d model as well
     as textures in the user selected path.
     """
     bl_idname = "O3DE_FileExport"  # important since its how bpy.ops.import_test.some_data is constructed
@@ -88,49 +101,63 @@ class SceneExporterFileMenu(Operator, ExportHelper):
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
     # Extra options
-    exportTexturesFolder : BoolProperty(
+    export_textures_folder : BoolProperty(
         name="Export Textures in a textures folder",
         description="Export Textures in textures folder",
         default=True,
     )
 
     def execute(self, context):
-        bpy.types.Scene.exportInTextureFolder = self.exportTexturesFolder
-        fbx_exporter.fbxFileExporter(self.filepath)
+        """!
+        This function will select the Export Texture Option
+        """
+        bpy.types.Scene.export_textures_folder = self.export_textures_folder
+        fbx_exporter.fbx_file_exporter(self.filepath)
         return{'FINISHED'}
 
-class ExportOptions_OT_ListDropDown(bpy.types.Operator):
-    """
+class ExportOptionsListDropDown(bpy.types.Operator):
+    """!
     This Class is for the O3DE Export Options UI List Drop Down
     """
     bl_label = "Texture Export Folder"
     bl_idname = "wm.exportoptions"
 
     def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self)
+        """!
+        This function will invoke the blender windowe manager
+        """
+        window_manager = context.window_manager
+        return window_manager.invoke_props_dialog(self)
         
     def draw(self, context):
+        """!
+        This function draws this gui element in Blender UI
+        """
         layout = self.layout
-        layout.prop(context.scene, 'exportOptionsList')
+        layout.prop(context.scene, 'export_options_list')
         
     def execute(self, context):
-        # Update Export Option Bool
-        if context.scene.exportOptionsList == '0':
-            bpy.types.Scene.exportInTextureFolder = True
-        elif context.scene.exportOptionsList == '1':
-            bpy.types.Scene.exportInTextureFolder = False
+        """!
+        This function will Update Export Option Bool
+        """
+        if context.scene.export_options_list == '0':
+            bpy.types.Scene.export_textures_folder = True
+        elif context.scene.export_options_list == '1':
+            bpy.types.Scene.export_textures_folder = False
         else:
-            bpy.types.Scene.exportInTextureFolder = None
+            bpy.types.Scene.export_textures_folder = None
         return {'FINISHED'}
 
-def FileExportMenuAdd(self, context):
-    """
+def file_export_menu_add(self, context):
+    """!
     This Function will add the Export to O3DE to the file menu Export
     """
     self.layout.operator(SceneExporterFileMenu.bl_idname, text="Export to O3DE")
 
 class O3deTools(Panel):
+    """!
+    This is the Blender UI Panel O3DE Tools Tab
+    """
     bl_idname = "O3DE_Tools"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -139,45 +166,49 @@ class O3deTools(Panel):
     bl_category = 'O3DE'
 
     def draw(self, context):
+        """!
+        This function draws this gui element in Blender UI. We will look at the Look at the
+        o3de engine manifest to see if o3de is currently install and gather the project paths
+        in a list drop down.
+        """
         layout = self.layout
         obj = context.object
-        scene = context.scene
         row = layout.row()
-        mainLable = layout.row()
+        installed_lable = layout.row()
+        # Look at the o3de Engine Manifest
+        o3de_projects, engine_is_installed = o3de_utils.LookatEngineManifest()
 
-        o3deDefaultProjectsFolder, o3deProjects, engineIsInstalled = o3de_utils.LookatEngineManifest()
+        if engine_is_installed: # Checks to see if O3DE is installed
 
-        if engineIsInstalled: # Checks to see if O3DE is installed
-
-            if not obj == None:
-                mainLable.label(text='MESH(S): ' + obj.name)
+            if not obj is None:
+                installed_lable.label(text='MESH(S): ' + obj.name)
             else:
-                mainLable.label(text='MESH(S): None')
+                installed_lable.label(text='MESH(S): None')
 
             row.operator("vin.wiki", text='O3DE Tools Wiki', icon="WORLD_DATA")
 
-            projectPathLable = layout.row()
-            if not bpy.types.Scene.selectedo3deProjectPath == '':
-                projectPathLable.label(text='PROJECT: {}'.format(os.path.basename(bpy.types.Scene.selectedo3deProjectPath)))
+            project_path_lable = layout.row()
+            if not bpy.types.Scene.selected_o3de_project_path == '':
+                project_path_lable.label(text=f'PROJECT: {Path(bpy.types.Scene.selected_o3de_project_path).name}')
             else:
-                projectPathLable.label(text='PROJECT: ')
+                project_path_lable.label(text='PROJECT: ')
             # This is the UI Export Option Label
-            exportOptionLabel = layout.row()
-            if bpy.types.Scene.exportInTextureFolder:
-                exportOptionLabel.label(text='Export Option: (TF)')
-            elif bpy.types.Scene.exportInTextureFolder == False:
-                exportOptionLabel.label(text='Export Option: (TWM)')
-            elif bpy.types.Scene.exportInTextureFolder == None:
-                exportOptionLabel.label(text='Export Option: (MO)')
+            export_option_label = layout.row()
+            if bpy.types.Scene.export_textures_folder:
+                export_option_label.label(text='Export Option: (TF)')
+            elif bpy.types.Scene.export_textures_folder is False:
+                export_option_label.label(text='Export Option: (TWM)')
+            elif bpy.types.Scene.export_textures_folder is None:
+                export_option_label.label(text='Export Option: (MO)')
             # This is the UI Porjects List
-            o3deProjectsPanel = layout.row()
-            o3deProjectsPanel.operator('wm.projectlist', text='O3DE Projects', icon="OUTLINER")
+            o3de_projects_panel = layout.row()
+            o3de_projects_panel.operator('wm.projectlist', text='O3DE Projects', icon="OUTLINER")
             # This is the UI Export Options List
-            o3deexportOptionsPanel = layout.row()
-            o3deexportOptionsPanel.operator('wm.exportoptions', text='Export Options', icon="OUTPUT")
+            o3de_export_options_panel = layout.row()
+            o3de_export_options_panel.operator('wm.exportoptions', text='Export Options', icon="OUTPUT")
             # This checks to see if we should enable the export button
             ui.ExportFiles = layout.row()
-            if bpy.types.Scene.selectedo3deProjectPath == '':
+            if bpy.types.Scene.selected_o3de_project_path == '':
                 ui.ExportFiles.enabled = False
             else:
                 ui.ExportFiles.enabled = True
@@ -186,5 +217,5 @@ class O3deTools(Panel):
         else:
             # If O3DE is not installed we tell the user
             row.operator("vin.wiki", text='O3DE Tools Wiki', icon="WORLD_DATA")
-            notInstalled = layout.row()
-            notInstalled.label(text='O3DE Needs to be installed')
+            not_installed = layout.row()
+            not_installed.label(text='O3DE Needs to be installed')

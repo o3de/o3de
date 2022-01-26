@@ -8,54 +8,57 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
 import bpy
-import os
 import re
 import ui
 import utils
 import o3de_utils
 from pathlib import Path
-# Optional Arguments for file menu exporter
-#fbxPath = Path('')
 
-def fbxFileExporter(fbxfilepath):
-    """
+def fbx_file_exporter(fbx_file_path):
+    """!
     This function will send to selected .FBX to an O3DE Project Path
+    @param fbx_file_path this is the o3de project path where the selected meshe(s)
+    will be exported as an .fbx
     """
-    exportFilePath = ''
+    export_file_path = ''
     # Validate a selection
-    validSelection, selectedName = utils.CheckSelected()
+    valid_selection, selected_name = utils.check_selected()
     # Remove some nasty invalid char
-    filename = re.sub(r'\W+', '', selectedName[0])
+    filename = re.sub(r'\W+', '', selected_name[0])
+    # file ext
+    file_name = f'{filename}.fbx'
     # FBX Exporter
-    if validSelection:
-        if fbxfilepath == '':
+    if valid_selection:
+        if fbx_file_path == '':
             # Build new path, check to see if this is a custom or tool made path
             # and if has the Assets Directory.
-            if os.path.exists(os.path.join(bpy.types.Scene.selectedo3deProjectPath, 'Assets')):
+            asset_path = Path(bpy.types.Scene.selected_o3de_project_path).joinpath('Assets')
+            if Path(asset_path).exists():
                 # TOOL MENU EXPORT
-                exportFilePath = os.path.join(bpy.types.Scene.selectedo3deProjectPath, 'Assets', '{}{}'.format(filename, '.fbx'))
+                export_file_path = Path(bpy.types.Scene.selected_o3de_project_path).joinpath('Assets', file_name)
                 # Clone Texture images and Repath images before export
-                fileMenuExport = False
-                if not bpy.types.Scene.exportInTextureFolder == None:
-                    utils.CloneAndRepathImages(fileMenuExport, bpy.types.Scene.selectedo3deProjectPath, projectSelectionList = o3de_utils.BuildProjectsList())
+                file_menu_export = False
+                if not bpy.types.Scene.export_textures_folder is None:
+                    utils.clone_repath_images(file_menu_export, bpy.types.Scene.selected_o3de_project_path, o3de_utils.build_projects_list())
             else:
                 # WAS ONCE FILE MENU EXPORT
-                exportFilePath = os.path.join(bpy.types.Scene.selectedo3deProjectPath, '{}{}'.format(filename, '.fbx'))
+                export_file_path = Path(bpy.types.Scene.selected_o3de_project_path).joinpath(file_name)
                 # Clone Texture images and Repath images before export
-                fileMenuExport = None # This is because it was first exported by the file menu export
-                if not bpy.types.Scene.exportInTextureFolder == None:
-                    utils.CloneAndRepathImages(fileMenuExport, bpy.types.Scene.selectedo3deProjectPath, projectSelectionList = o3de_utils.BuildProjectsList())
+                file_menu_export = None # This is because it was first exported by the file menu export
+                if not bpy.types.Scene.export_textures_folder is None:
+                    utils.clone_repath_images(file_menu_export, bpy.types.Scene.selected_o3de_project_path, o3de_utils.build_projects_list())
         else:
             # Build new path
-            exportFilePath = fbxfilepath
-            bpy.types.Scene.selectedo3deProjectPath = os.path.dirname(fbxfilepath)
+            export_file_path = fbx_file_path
+            source_file_path = Path(fbx_file_path) # Covert string to path
+            bpy.types.Scene.selected_o3de_project_path = Path(source_file_path.parent)
             # Clone Texture images and Repath images before export
-            fileMenuExport = True
-            if not bpy.types.Scene.exportInTextureFolder is None:
-                utils.CloneAndRepathImages(fileMenuExport, fbxfilepath, projectSelectionList = o3de_utils.BuildProjectsList())
+            file_menu_export = True
+            if not bpy.types.Scene.export_textures_folder is None:
+                utils.clone_repath_images(file_menu_export, source_file_path, o3de_utils.build_projects_list())
 
         bpy.ops.export_scene.fbx(
-            filepath=exportFilePath,
+            filepath=str(export_file_path),
             check_existing=False,
             filter_glob='*.fbx',
             use_selection=True,
@@ -91,8 +94,8 @@ def fbxFileExporter(fbxfilepath):
             use_metadata=True,
             axis_forward='-Z',
             axis_up='Y')
-        ui.MessageBox("3D Model Exported, please reload O3DE Level", "O3DE Tools", "LIGHT")
-        if not bpy.types.Scene.exportInTextureFolder is None:
+        ui.message_box("3D Model Exported, please reload O3DE Level", "O3DE Tools", "LIGHT")
+        if not bpy.types.Scene.export_textures_folder is None:
             utils.ReplaceStoredPaths()
     else:
-        ui.MessageBox("Nothing Selected!", "O3DE Tools", "ERROR")
+        ui.message_box("Nothing Selected!", "O3DE Tools", "ERROR")
