@@ -502,3 +502,95 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
 
     m_entity.reset();
 }
+
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMaterialAssignedWhenTagHasNoMapping)
+{
+    CreateEntity();
+
+    m_boxComponent = m_entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
+    m_app.RegisterComponentDescriptor(m_boxComponent->CreateDescriptor());
+
+    // Create two SurfaceTag/Material mappings and add them to the collider.
+    Terrain::TerrainPhysicsColliderConfig config;
+
+    const Physics::MaterialId defaultSurfaceMaterial = Physics::MaterialId::Create();
+    const Physics::MaterialId mat1 = Physics::MaterialId::Create();
+
+    const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
+    const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
+
+    Terrain::TerrainPhysicsSurfaceMaterialMapping mapping1;
+    mapping1.m_materialId = mat1;
+    mapping1.m_surfaceTag = tag1;
+    config.m_surfaceMaterialMappings.emplace_back(mapping1);
+    config.m_defaultMaterialSelection.SetMaterialId(defaultSurfaceMaterial);
+
+    // Intentionally don't set the mapping for "tag2". It's expected the default material will substitute.
+
+    m_colliderComponent = m_entity->CreateComponent<Terrain::TerrainPhysicsColliderComponent>(config);
+    m_app.RegisterComponentDescriptor(m_colliderComponent->CreateDescriptor());
+
+    m_entity->Activate();
+
+    // Validate material list is generated with the default material
+    {
+        AZStd::vector<Physics::MaterialId> materialList;
+        Physics::HeightfieldProviderRequestsBus::EventResult(
+            materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
+
+        // The materialList should be 2 items long: the default material and mat1.
+        EXPECT_EQ(materialList.size(), 2);
+        EXPECT_EQ(materialList[0], defaultSurfaceMaterial);
+        EXPECT_EQ(materialList[1], mat1);
+    }
+
+    const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
+    const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
+
+    NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
+    const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(boundsMin, boundsMax);
+    ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
+
+    const float mockHeight = 32768.0f;
+    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+
+    AzFramework::SurfaceData::SurfaceTagWeight return1;
+    return1.m_surfaceType = tag1;
+    return1.m_weight = 1.0f;
+
+    AzFramework::SurfaceData::SurfaceTagWeight return2;
+    return2.m_surfaceType = tag2;
+    return2.m_weight = 1.0f;
+
+    AzFramework::SurfaceData::SurfaceTagWeightList surfaceTags = { return1, return2 };
+
+    NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
+    ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
+    ON_CALL(terrainListener, ProcessSurfacePointsFromRegion).WillByDefault(
+        [this, mockHeight, &surfaceTags](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+    {
+        ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags, mockHeight);
+    }
+    );
+
+    // Validate material indices 
+    {
+        AZStd::vector<Physics::HeightMaterialPoint> heightsAndMaterials;
+        Physics::HeightfieldProviderRequestsBus::EventResult(
+            heightsAndMaterials, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
+
+        // We set the bounds to 256, so check that the correct number of entries are present.
+        EXPECT_EQ(heightsAndMaterials.size(), 256 * 256);
+
+        // Check an entry from the first half of the returned list.
+        EXPECT_EQ(heightsAndMaterials[0].m_materialIndex, 1);
+
+        // Check an entry from the second half of the list.
+        // This should point to the default material (0) since we don't have a mapping for "tag2"
+        EXPECT_EQ(heightsAndMaterials[256 * 128].m_materialIndex, 0);
+    }
+
+    m_entity.reset();
+}
