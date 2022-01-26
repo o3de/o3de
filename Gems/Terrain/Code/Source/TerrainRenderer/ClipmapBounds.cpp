@@ -173,7 +173,6 @@ namespace Terrain
         minBoundary.m_y = (minCorner.m_y / m_size - (minCorner.m_y < 0 ? 1 : 0)) * m_size;
 
         Aabb2i bottomLeftTile = Aabb2i(minBoundary, minBoundary + m_size);
-        Aabb2i localBounds = GetLocalBounds();
         
         // For each of the 4 quadrants:
         auto calculateQuadrant = [&](Aabb2i tile)
