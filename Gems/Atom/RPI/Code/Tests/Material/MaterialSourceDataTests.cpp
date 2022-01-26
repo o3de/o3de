@@ -93,20 +93,23 @@ namespace UnitTest
                     {
                         "version": 10,
                         "propertyLayout": {
-                            "properties": {
-                                "general": [
-                                    {"name": "MyBool", "type": "bool"},
-                                    {"name": "MyInt", "type": "Int"},
-                                    {"name": "MyUInt", "type": "UInt"},
-                                    {"name": "MyFloat", "type": "Float"},
-                                    {"name": "MyFloat2", "type": "Vector2"},
-                                    {"name": "MyFloat3", "type": "Vector3"},
-                                    {"name": "MyFloat4", "type": "Vector4"},
-                                    {"name": "MyColor", "type": "Color"},
-                                    {"name": "MyImage", "type": "Image"},
-                                    {"name": "MyEnum", "type": "Enum", "enumValues": ["Enum0", "Enum1", "Enum2"], "defaultValue": "Enum0"}
-                                ]
-                            }
+                            "propertySets": [
+                                {
+                                    "name": "general",
+                                    "properties": [
+                                        {"name": "MyBool", "type": "bool"},
+                                        {"name": "MyInt", "type": "Int"},
+                                        {"name": "MyUInt", "type": "UInt"},
+                                        {"name": "MyFloat", "type": "Float"},
+                                        {"name": "MyFloat2", "type": "Vector2"},
+                                        {"name": "MyFloat3", "type": "Vector3"},
+                                        {"name": "MyFloat4", "type": "Vector4"},
+                                        {"name": "MyColor", "type": "Color"},
+                                        {"name": "MyImage", "type": "Image"},
+                                        {"name": "MyEnum", "type": "Enum", "enumValues": ["Enum0", "Enum1", "Enum2"], "defaultValue": "Enum0"}
+                                    ]
+                                }
+                            ]
                         },
                         "shaders": [
                             {
@@ -580,18 +583,12 @@ namespace UnitTest
 
         errorMessageFinder.Reset();
         errorMessageFinder.AddExpectedErrorMessage("Could not find asset [DoesNotExist.materialtype]");
-                "properties": {
-                    [
-                        {
-                    "general": [
-                            "properties": [
-                    ]
         result = material.CreateMaterialAsset(AZ::Uuid::CreateRandom(), "test.material", AZ::RPI::MaterialAssetProcessingMode::PreBake, elevateWarnings);
         EXPECT_FALSE(result.IsSuccess());
         errorMessageFinder.CheckExpectedErrorsFound();
         
         errorMessageFinder.Reset();
-        EXPECT_TRUE(loadResult.ContainsMessage("[simpleMaterialType.materialtype]/propertyLayout/properties", "Successfully read"));
+        errorMessageFinder.AddExpectedErrorMessage("Could not find asset [DoesNotExist.materialtype]");
         errorMessageFinder.AddIgnoredErrorMessage("Failed to create material type asset ID", true);
         result = material.CreateMaterialAssetFromSourceData(AZ::Uuid::CreateRandom(), "test.material", elevateWarnings);
         EXPECT_FALSE(result.IsSuccess());
@@ -600,12 +597,6 @@ namespace UnitTest
     
     TEST_F(MaterialSourceDataTests, CreateMaterialAsset_MaterialPropertyNotFound)
     {
-                "properties": {
-                    [
-                        {
-                    "general": [
-                            "properties": [
-                    ]
         MaterialSourceData material;
         material.m_materialType = "@exefolder@/Temp/test.materialtype";
         AddPropertyGroup(material, "general");
