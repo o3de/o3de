@@ -114,28 +114,23 @@ namespace AZStd
             assign(count, ch);
         }
 
-        template<class InputIt, typename = enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_t>>>
+        template<class InputIt, typename = enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_t>>>
         inline basic_string(InputIt first, InputIt last, const Allocator& alloc = Allocator())
             : m_storage{ skip_element_tag{}, alloc }
         {   // construct from [first, last)
             assign(first, last);
         }
 
-        inline basic_string(const_pointer first, const_pointer last)
-        {   // construct from [first, last), const pointers
-            assign(first, last - first);
-        }
-
         inline basic_string(const this_type& rhs)
             : m_storage{ skip_element_tag{}, rhs.m_storage.second() }
         {
-            assign(rhs, 0, npos);
+            assign(rhs);
         }
 
         inline basic_string(this_type&& rhs)
-            : m_storage{ skip_element_tag{}, AZStd::move(rhs.m_storage.second()) }
+            : m_storage{ skip_element_tag{}, rhs.m_storage.second() }
         {
-            assign(AZStd::forward<this_type>(rhs));
+            assign(AZStd::move(rhs));
         }
 
         inline basic_string(const this_type& rhs, size_type rhsOffset, size_type count = npos)
@@ -251,14 +246,14 @@ namespace AZStd
 
         template<class InputIt>
         inline auto append(InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
+            -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {   // append [first, last)
-            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+            if constexpr (contiguous_iterator<InputIt>
                 && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
             {
                 return append(AZStd::to_address(first), AZStd::distance(first, last));
             }
-            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+            else if constexpr (forward_iterator<InputIt>)
             {
                 // Input Iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be appended one by one into the buffer
@@ -299,7 +294,7 @@ namespace AZStd
 
         inline this_type& assign(const this_type& rhs)
         {
-            return assign(rhs, 0, npos);
+            return this != &rhs ? assign(rhs, 0, npos) : *this;
         }
 
         inline this_type& assign(basic_string_view<Element, Traits> view)
@@ -319,7 +314,8 @@ namespace AZStd
                 pointer rhsData = rhs.data();
                 // Memmove the right hand side string data if it is using the short string optimization
                 // Otherwise set the pointer to the right hand side
-                if (rhs.m_storage.first().ShortStringOptimizationActive())
+                if (rhs.m_storage.first().ShortStringOptimizationActive() ||
+                    (get_allocator() != rhs.get_allocator() && !allocator_traits<allocator_type>::propagate_on_container_move_assignment::value))
                 {
                     Traits::move(data, rhsData, rhs.size() + 1); // string + null-terminator
                 }
@@ -395,14 +391,14 @@ namespace AZStd
 
         template<class InputIt>
         auto assign(InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
+            -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {
-            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+            if constexpr (contiguous_iterator<InputIt>
                 && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
             {
                 return assign(AZStd::to_address(first), AZStd::distance(first, last));
             }
-            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+            else if constexpr (forward_iterator<InputIt>)
             {
                 // forward iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be assigned one by one into the buffer
@@ -431,7 +427,7 @@ namespace AZStd
                     inputCopy.push_back(static_cast<Element>(*first));
                 }
 
-                return assign(inputCopy.c_str(), inputCopy.size());
+                return assign(AZStd::move(inputCopy));
             }
         }
         inline this_type& insert(size_type offset, const this_type& rhs) { return insert(offset, rhs, 0, npos); }
@@ -539,15 +535,15 @@ namespace AZStd
 
         template<class InputIt>
         auto insert(const_iterator insertPos, InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>
+            -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>
         {   // insert [_First, _Last) at _Where
             size_type insertOffset = AZStd::distance(cbegin(), insertPos);
-            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+            if constexpr (contiguous_iterator<InputIt>
                 && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
             {
                 insert(insertOffset, AZStd::to_address(first), AZStd::distance(first, last));
             }
-            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+            else if constexpr (forward_iterator<InputIt>)
             {
                 // Input Iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be inserted one by one into the buffer
@@ -834,14 +830,14 @@ namespace AZStd
 
         template<class InputIt>
         inline auto replace(const_iterator first, const_iterator last, InputIt replaceFirst, InputIt replaceLast)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
+            -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, this_type&>
         {
-            if constexpr (Internal::satisfies_contiguous_iterator_concept_v<InputIt>
+            if constexpr (contiguous_iterator<InputIt>
                 && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
             {
                 return replace(first, last, AZStd::to_address(replaceFirst), AZStd::distance(replaceFirst, replaceLast));
             }
-            else if constexpr (Internal::is_forward_iterator_v<InputIt>)
+            else if constexpr (forward_iterator<InputIt>)
             {
                 // Input Iterator pointer type doesn't match the const_pointer type
                 // So the elements need to be appended one by one into the buffer
@@ -1031,12 +1027,19 @@ namespace AZStd
                 // same allocator, swap storage
                 m_storage.first().swap(rhs.m_storage.first());
             }
+            else if (allocator_traits<allocator_type>::propagate_on_container_swap::value)
+            {
+                // The allocator propagates on swap, so the allocators can be swapped
+                m_storage.first().swap(rhs.m_storage.first());
+                using AZStd::swap;
+                swap(m_storage.second(), rhs.m_storage.second());
+            }
             else
             {
                 // different allocator, do multiple assigns
-                this_type tmp = *this;
-                *this = rhs;
-                rhs = tmp;
+                this_type tmp = AZStd::move(*this);
+                *this = AZStd::move(rhs);
+                rhs = AZStd::move(tmp);
             }
         }
 

@@ -217,7 +217,7 @@ namespace AzToolsFramework
                     });
 
                 EditorActionRequestBus::Broadcast(
-                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("com.o3de.action.editortransform.prefabopen"),
+                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("org.o3de.action.editortransform.prefabopen"),
                     m_actions.back().get());
             }
 
@@ -237,7 +237,7 @@ namespace AzToolsFramework
                     });
 
                 EditorActionRequestBus::Broadcast(
-                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("com.o3de.action.editortransform.prefabclose"),
+                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("org.o3de.action.editortransform.prefabclose"),
                     m_actions.back().get());
             }
         }

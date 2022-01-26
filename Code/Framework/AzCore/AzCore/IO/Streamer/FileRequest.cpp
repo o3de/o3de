@@ -12,22 +12,30 @@
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
 
-namespace AZ::IO
+//
+// Command structures.
+//
+
+namespace AZ::IO::Requests
 {
-    //
-    // Command structures.
-    //
+    ReadData::ReadData(void* output, u64 outputSize, const RequestPath& path, u64 offset, u64 size, bool sharedRead)
+        : m_path(path)
+        , m_output(output)
+        , m_outputSize(outputSize)
+        , m_offset(offset)
+        , m_size(size)
+        , m_sharedRead(sharedRead)
+    {
+    }
 
-    FileRequest::ExternalRequestData::ExternalRequestData(FileRequestPtr&& request)
-        : m_request(AZStd::move(request))
-    {}
-
-    FileRequest::RequestPathStoreData::RequestPathStoreData(RequestPath path)
-        : m_path(AZStd::move(path))
-    {}
-
-    FileRequest::ReadRequestData::ReadRequestData(RequestPath path, void* output, u64 outputSize, u64 offset, u64 size,
-        AZStd::chrono::system_clock::time_point deadline, IStreamerTypes::Priority priority)
+    ReadRequestData::ReadRequestData(
+        RequestPath path,
+        void* output,
+        u64 outputSize,
+        u64 offset,
+        u64 size,
+        AZStd::chrono::system_clock::time_point deadline,
+        IStreamerTypes::Priority priority)
         : m_path(AZStd::move(path))
         , m_allocator(nullptr)
         , m_deadline(deadline)
@@ -37,10 +45,16 @@ namespace AZ::IO
         , m_size(size)
         , m_priority(priority)
         , m_memoryType(IStreamerTypes::MemoryType::ReadWrite) // Only generic memory can be assigned externally.
-    {}
+    {
+    }
 
-    FileRequest::ReadRequestData::ReadRequestData(RequestPath path, IStreamerTypes::RequestMemoryAllocator* allocator,
-        u64 offset, u64 size, AZStd::chrono::system_clock::time_point deadline, IStreamerTypes::Priority priority)
+    ReadRequestData::ReadRequestData(
+        RequestPath path,
+        IStreamerTypes::RequestMemoryAllocator* allocator,
+        u64 offset,
+        u64 size,
+        AZStd::chrono::system_clock::time_point deadline,
+        IStreamerTypes::Priority priority)
         : m_path(AZStd::move(path))
         , m_allocator(allocator)
         , m_deadline(deadline)
@@ -50,9 +64,10 @@ namespace AZ::IO
         , m_size(size)
         , m_priority(priority)
         , m_memoryType(IStreamerTypes::MemoryType::ReadWrite) // Only generic memory can be assigned externally.
-    {}
+    {
+    }
 
-    FileRequest::ReadRequestData::~ReadRequestData()
+    ReadRequestData::~ReadRequestData()
     {
         if (m_allocator != nullptr)
         {
@@ -64,65 +79,80 @@ namespace AZ::IO
         }
     }
 
-    FileRequest::ReadData::ReadData(void* output, u64 outputSize, const RequestPath& path, u64 offset, u64 size, bool sharedRead)
-        : m_output(output)
-        , m_outputSize(outputSize)
-        , m_path(path)
-        , m_offset(offset)
-        , m_size(size)
-        , m_sharedRead(sharedRead)
-    {}
+    CreateDedicatedCacheData::CreateDedicatedCacheData(RequestPath path, const FileRange& range)
+        : m_path(AZStd::move(path))
+        , m_range(range)
+    {
+    }
 
-    FileRequest::CompressedReadData::CompressedReadData(CompressionInfo&& compressionInfo, void* output, u64 readOffset, u64 readSize)
+    DestroyDedicatedCacheData::DestroyDedicatedCacheData(RequestPath path, const FileRange& range)
+        : m_path(AZStd::move(path))
+        , m_range(range)
+    {
+    }
+
+    ExternalRequestData::ExternalRequestData(FileRequestPtr&& request)
+        : m_request(AZStd::move(request))
+    {
+    }
+
+    RequestPathStoreData::RequestPathStoreData(RequestPath path)
+        : m_path(AZStd::move(path))
+    {
+    }
+
+    CompressedReadData::CompressedReadData(CompressionInfo&& compressionInfo, void* output, u64 readOffset, u64 readSize)
         : m_compressionInfo(AZStd::move(compressionInfo))
         , m_output(output)
         , m_readOffset(readOffset)
         , m_readSize(readSize)
-    {}
+    {
+    }
 
-    FileRequest::FileExistsCheckData::FileExistsCheckData(const RequestPath& path)
+    FileExistsCheckData::FileExistsCheckData(const RequestPath& path)
         : m_path(path)
-    {}
+    {
+    }
 
-    FileRequest::FileMetaDataRetrievalData::FileMetaDataRetrievalData(const RequestPath& path)
+    FileMetaDataRetrievalData::FileMetaDataRetrievalData(const RequestPath& path)
         : m_path(path)
-    {}
+    {
+    }
 
-    FileRequest::CancelData::CancelData(FileRequestPtr target)
+    CancelData::CancelData(FileRequestPtr target)
         : m_target(AZStd::move(target))
-    {}
+    {
+    }
 
-    FileRequest::FlushData::FlushData(RequestPath path)
+    FlushData::FlushData(RequestPath path)
         : m_path(AZStd::move(path))
-    {}
+    {
+    }
 
-    FileRequest::RescheduleData::RescheduleData(FileRequestPtr target, AZStd::chrono::system_clock::time_point newDeadline,
+    RescheduleData::RescheduleData(
+        FileRequestPtr target,
+        AZStd::chrono::system_clock::time_point newDeadline,
         IStreamerTypes::Priority newPriority)
         : m_target(AZStd::move(target))
         , m_newDeadline(newDeadline)
         , m_newPriority(newPriority)
-    {}
+    {
+    }
 
-    FileRequest::CreateDedicatedCacheData::CreateDedicatedCacheData(RequestPath path, const FileRange& range)
-        : m_path(AZStd::move(path))
-        , m_range(range)
-    {}
-
-    FileRequest::DestroyDedicatedCacheData::DestroyDedicatedCacheData(RequestPath path, const FileRange& range)
-        : m_path(AZStd::move(path))
-        , m_range(range)
-    {}
-
-    FileRequest::ReportData::ReportData(ReportType reportType)
+    ReportData::ReportData(ReportType reportType)
         : m_reportType(reportType)
-    {}
+    {
+    }
 
-    FileRequest::CustomData::CustomData(AZStd::any data, bool failWhenUnhandled)
+    CustomData::CustomData(AZStd::any data, bool failWhenUnhandled)
         : m_data(AZStd::move(data))
         , m_failWhenUnhandled(failWhenUnhandled)
-    {}
+    {
+    }
+} // namespace AZ::IO::Requests
 
-
+namespace AZ::IO
+{
     //
     // FileRequest
     //
@@ -145,14 +175,14 @@ namespace AZ::IO
         m_parent = request->m_request.m_parent;
         request->m_request.m_parent = this;
         m_dependencies++;
-        m_command.emplace<ExternalRequestData>(AZStd::move(request));
+        m_command.emplace<Requests::ExternalRequestData>(AZStd::move(request));
     }
 
     void FileRequest::CreateRequestPathStore(FileRequest* parent, RequestPath path)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'CreateRequestPathStore', but another task was already assigned.");
-        m_command.emplace<RequestPathStoreData>(AZStd::move(path));
+        m_command.emplace<Requests::RequestPathStoreData>(AZStd::move(path));
         SetOptionalParent(parent);
     }
 
@@ -161,7 +191,7 @@ namespace AZ::IO
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'ReadRequest', but another task was already assigned.");
-        m_command.emplace<ReadRequestData>(AZStd::move(path), output, outputSize, offset, size, deadline, priority);
+        m_command.emplace<Requests::ReadRequestData>(AZStd::move(path), output, outputSize, offset, size, deadline, priority);
     }
 
     void FileRequest::CreateReadRequest(RequestPath path, IStreamerTypes::RequestMemoryAllocator* allocator, u64 offset, u64 size,
@@ -169,7 +199,7 @@ namespace AZ::IO
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'ReadRequest', but another task was already assigned.");
-        m_command.emplace<ReadRequestData>(AZStd::move(path), allocator, offset, size, deadline, priority);
+        m_command.emplace<Requests::ReadRequestData>(AZStd::move(path), allocator, offset, size, deadline, priority);
     }
 
     void FileRequest::CreateRead(FileRequest* parent, void* output, u64 outputSize, const RequestPath& path,
@@ -177,7 +207,7 @@ namespace AZ::IO
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'Read', but another task was already assigned.");
-        m_command.emplace<ReadData>(output, outputSize, AZStd::move(path), offset, size, sharedRead);
+        m_command.emplace<Requests::ReadData>(output, outputSize, AZStd::move(path), offset, size, sharedRead);
         SetOptionalParent(parent);
     }
 
@@ -192,7 +222,7 @@ namespace AZ::IO
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'CompressedRead', but another task was already assigned.");
-        m_command.emplace<CompressedReadData>(AZStd::move(compressionInfo), output, readOffset, readSize);
+        m_command.emplace<Requests::CompressedReadData>(AZStd::move(compressionInfo), output, readOffset, readSize);
         SetOptionalParent(parent);
     }
 
@@ -200,7 +230,7 @@ namespace AZ::IO
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'Wait', but another task was already assigned.");
-        m_command.emplace<WaitData>();
+        m_command.emplace<Requests::WaitData>();
         SetOptionalParent(parent);
     }
 
@@ -208,21 +238,21 @@ namespace AZ::IO
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'FileExistsCheck', but another task was already assigned.");
-        m_command.emplace<FileExistsCheckData>(path);
+        m_command.emplace<Requests::FileExistsCheckData>(path);
     }
 
     void FileRequest::CreateFileMetaDataRetrieval(const RequestPath& path)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'FileMetaDataRetrieval', but another task was already assigned.");
-        m_command.emplace<FileMetaDataRetrievalData>(path);
+        m_command.emplace<Requests::FileMetaDataRetrievalData>(path);
     }
 
     void FileRequest::CreateCancel(FileRequestPtr target)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'Cancel', but another task was already assigned.");
-        m_command.emplace<CancelData>(AZStd::move(target));
+        m_command.emplace<Requests::CancelData>(AZStd::move(target));
     }
 
     void FileRequest::CreateReschedule(FileRequestPtr target, AZStd::chrono::system_clock::time_point newDeadline,
@@ -230,28 +260,28 @@ namespace AZ::IO
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'Reschedule', but another task was already assigned.");
-        m_command.emplace<RescheduleData>(AZStd::move(target), newDeadline, newPriority);
+        m_command.emplace<Requests::RescheduleData>(AZStd::move(target), newDeadline, newPriority);
     }
 
     void FileRequest::CreateFlush(RequestPath path)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'Flush', but another task was already assigned.");
-        m_command.emplace<FlushData>(AZStd::move(path));
+        m_command.emplace<Requests::FlushData>(AZStd::move(path));
     }
 
     void FileRequest::CreateFlushAll()
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'FlushAll', but another task was already assigned.");
-        m_command.emplace<FlushAllData>();
+        m_command.emplace<Requests::FlushAllData>();
     }
 
     void FileRequest::CreateDedicatedCacheCreation(RequestPath path, const FileRange& range, FileRequest* parent)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'CreateDedicateCache', but another task was already assigned.");
-        m_command.emplace<CreateDedicatedCacheData>(AZStd::move(path), range);
+        m_command.emplace<Requests::CreateDedicatedCacheData>(AZStd::move(path), range);
         SetOptionalParent(parent);
     }
 
@@ -259,22 +289,22 @@ namespace AZ::IO
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'DestroyDedicateCache', but another task was already assigned.");
-        m_command.emplace<DestroyDedicatedCacheData>(AZStd::move(path), range);
+        m_command.emplace<Requests::DestroyDedicatedCacheData>(AZStd::move(path), range);
         SetOptionalParent(parent);
     }
 
-    void FileRequest::CreateReport(ReportData::ReportType reportType)
+    void FileRequest::CreateReport(Requests::ReportType reportType)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'Report', but another task was already assigned.");
-        m_command.emplace<ReportData>(reportType);
+        m_command.emplace<Requests::ReportData>(reportType);
     }
 
     void FileRequest::CreateCustom(AZStd::any data, bool failWhenUnhandled, FileRequest* parent)
     {
         AZ_Assert(AZStd::holds_alternative<AZStd::monostate>(m_command),
             "Attempting to set FileRequest to 'Custom', but another task was already assigned.");
-        m_command.emplace<CustomData>(AZStd::move(data), failWhenUnhandled);
+        m_command.emplace<Requests::CustomData>(AZStd::move(data), failWhenUnhandled);
         SetOptionalParent(parent);
     }
 
@@ -361,7 +391,7 @@ namespace AZ::IO
                     "Request does not contain a valid command. It may have been reset already or was never assigned a command.");
                 return true;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CustomData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CustomData>)
             {
                 return args.m_failWhenUnhandled;
             }
@@ -398,7 +428,7 @@ namespace AZ::IO
         const FileRequest* current = this;
         while (current)
         {
-            auto* link = AZStd::get_if<ExternalRequestData>(&current->m_command);
+            auto* link = AZStd::get_if<Requests::ExternalRequestData>(&current->m_command);
             if (!link)
             {
                 current = current->m_parent;

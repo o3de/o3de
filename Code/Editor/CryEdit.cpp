@@ -2115,8 +2115,6 @@ bool CCryEditApp::FixDanglingSharedMemory(const QString& sharedMemName) const
 
 int CCryEditApp::ExitInstance(int exitCode)
 {
-    AZ_TracePrintf("Exit", "Called ExitInstance() with exit code: 0x%x", exitCode);
-
     if (m_pEditor)
     {
         m_pEditor->OnBeginShutdownSequence();
