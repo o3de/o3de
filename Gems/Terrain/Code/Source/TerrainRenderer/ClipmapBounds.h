@@ -11,7 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector2.h>
-#include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/vector.h>
 #include <TerrainRenderer/Vector2i.h>
 #include <TerrainRenderer/Aabb2i.h>
 
@@ -36,7 +36,7 @@ namespace Terrain
 
         //! Scale of the clip map compared to the world. A scale of 0.5 means that
         //! a clipmap of size 1024 would cover 512 meters.
-        float m_scale = 1.0f;
+        float m_clipToWorldScale = 1.0f;
     };
 
     struct ClipmapBoundsRegion
@@ -92,7 +92,7 @@ namespace Terrain
         explicit ClipmapBounds(const ClipmapBoundsDescriptor& desc);
         ~ClipmapBounds() = default;
 
-        using ClipmapBoundsRegionList = AZStd::fixed_vector<ClipmapBoundsRegion, 4>;
+        using ClipmapBoundsRegionList = AZStd::vector<ClipmapBoundsRegion>;
 
         //! Updates the clipmap bounds using a world coordinate center position and returns
         //! 0-2 regions that need to be updated due to moving beyond the margins. These update
@@ -131,7 +131,12 @@ namespace Terrain
         float GetWorldSpaceSafeDistance();
 
     private:
-        
+
+        //! Returns the center point snapped to a multiple of m_clipmapUpdateMultiple. This isn't
+        //! a simple rounding operation. The value returned will only be different from the curernt
+        //! center if the value passed in is greater than m_clipmapUpdateMultiple away from the center.
+        Vector2i GetSnappedCenter(const Vector2i& center);
+
         //! Returns the bounds covered by the clipmap in local space
         Aabb2i GetLocalBounds() const;
 

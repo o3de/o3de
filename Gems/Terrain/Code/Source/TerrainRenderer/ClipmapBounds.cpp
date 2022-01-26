@@ -9,7 +9,6 @@
 #include <TerrainRenderer/ClipmapBounds.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/MathUtils.h>
-#include <AzCore/std/containers/vector.h>
 
 namespace Terrain
 {
@@ -27,14 +26,14 @@ namespace Terrain
         : m_size(desc.m_size)
         , m_halfSize(desc.m_size >> 1)
         , m_clipmapUpdateMultiple(AZ::GetMax<uint32_t>(desc.m_clipmapUpdateMultiple, 1))
-        , m_scale(desc.m_scale)
-        , m_rcpScale(1.0f / desc.m_scale)
+        , m_scale(desc.m_clipToWorldScale)
+        , m_rcpScale(1.0f / desc.m_clipToWorldScale)
     {
         AZ_Error("ClipmapBounds", m_scale > 0.0f, "ClipmapBounds should have a scale that is greater than 0.0f.");
         m_scale = AZ::GetMax(m_scale, AZ::Constants::FloatEpsilon);
 
         // recalculate m_center
-        UpdateCenter(desc.m_worldSpaceCenter);
+        m_center = GetSnappedCenter(GetClipSpaceVector(desc.m_worldSpaceCenter));
     }
     
     auto ClipmapBounds::UpdateCenter(const AZ::Vector2& newCenter, AZ::Aabb* untouchedRegion) -> ClipmapBoundsRegionList
@@ -45,33 +44,9 @@ namespace Terrain
     auto ClipmapBounds::UpdateCenter(const Vector2i& newCenter, AZ::Aabb* untouchedRegion) -> ClipmapBoundsRegionList
     {
         AZStd::vector<Aabb2i> updateRegions;
-        Vector2i updatedCenter = m_center;
-
-        // Update the snapped center if the new center has drifted beyond the margin
-        auto UpdateDim = [&](int32_t centerDim, int32_t& snappedCenterDim) -> void
-        {
-            int32_t diff = centerDim - snappedCenterDim;
-            
-            int32_t scaledCenterDim = (centerDim / m_clipmapUpdateMultiple);
-            if (centerDim < 0)
-            {
-                // Force rounding down for negatives
-                scaledCenterDim--;
-            }
-
-            if (diff >= m_clipmapUpdateMultiple)
-            {
-                snappedCenterDim = scaledCenterDim * m_clipmapUpdateMultiple;
-            }
-            if (diff < -m_clipmapUpdateMultiple)
-            {
-                snappedCenterDim = (scaledCenterDim + 1) * m_clipmapUpdateMultiple;
-            }
-        };
-        UpdateDim(newCenter.m_x, updatedCenter.m_x);
-        UpdateDim(newCenter.m_y, updatedCenter.m_y);
 
         // If the new snapped center isn't the same as the old, then generate update regions in clipmap space
+        Vector2i updatedCenter = GetSnappedCenter(newCenter);
 
         int32_t xDiff = updatedCenter.m_x - m_center.m_x;
         int32_t updateWidth = AZStd::GetMin<uint32_t>(abs(xDiff), m_size);
@@ -235,6 +210,37 @@ namespace Terrain
     float ClipmapBounds::GetWorldSpaceSafeDistance()
     {
         return (m_halfSize - m_clipmapUpdateMultiple) * m_scale;
+    }
+
+    Vector2i ClipmapBounds::GetSnappedCenter(const Vector2i& center)
+    {
+        Vector2i updatedCenter = m_center;
+
+        // Update the snapped center if the new center has drifted beyond the margin
+        auto UpdateDim = [&](int32_t centerDim, int32_t& snappedCenterDim) -> void
+        {
+            int32_t diff = centerDim - snappedCenterDim;
+            
+            int32_t scaledCenterDim = (centerDim / m_clipmapUpdateMultiple);
+            if (centerDim < 0)
+            {
+                // Force rounding down for negatives
+                scaledCenterDim--;
+            }
+
+            if (diff >= m_clipmapUpdateMultiple)
+            {
+                snappedCenterDim = scaledCenterDim * m_clipmapUpdateMultiple;
+            }
+            if (diff < -m_clipmapUpdateMultiple)
+            {
+                snappedCenterDim = (scaledCenterDim + 1) * m_clipmapUpdateMultiple;
+            }
+        };
+        UpdateDim(center.m_x, updatedCenter.m_x);
+        UpdateDim(center.m_y, updatedCenter.m_y);
+
+        return updatedCenter;
     }
 
     Aabb2i ClipmapBounds::GetLocalBounds() const
