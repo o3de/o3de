@@ -45,7 +45,7 @@
                 {
                     "Name": "TerrainDetailTextureComputePass",
                     "TemplateName": "TerrainDetailTextureComputePassTemplate",
-                    "Enabled": true
+                    "Enabled": false
                 },
                 {
                     "Name": "DepthPrePass",
