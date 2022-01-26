@@ -399,7 +399,7 @@ namespace AZ::IO
     constexpr auto PathView::begin() const -> const_iterator
     {
         auto pathParser = parser::PathParser::CreateBegin(m_path, m_preferred_separator);
-        PathIterator<PathView> it;
+        const_iterator it;
         it.m_path_ref = this;
         it.m_state = static_cast<typename const_iterator::ParserState>(pathParser.m_parser_state);
         it.m_path_entry_view = pathParser.m_path_raw_entry;
@@ -409,7 +409,7 @@ namespace AZ::IO
 
     constexpr auto PathView::end() const -> const_iterator
     {
-        PathIterator<PathView> it;
+        const_iterator it;
         it.m_state = const_iterator::AtEnd;
         it.m_path_ref = this;
         return it;
@@ -1262,7 +1262,7 @@ namespace AZ::IO
     constexpr auto BasicPath<StringType>::begin() const -> const_iterator
     {
         auto pathParser = parser::PathParser::CreateBegin(m_path, m_preferred_separator);
-        PathIterator<BasicPath> it;
+        const_iterator it;
         it.m_path_ref = this;
         it.m_state = static_cast<typename const_iterator::ParserState>(pathParser.m_parser_state);
         it.m_path_entry_view = pathParser.m_path_raw_entry;
@@ -1273,7 +1273,7 @@ namespace AZ::IO
     template <typename StringType>
     constexpr auto BasicPath<StringType>::end() const -> const_iterator
     {
-        PathIterator<BasicPath> it;
+        const_iterator it;
         it.m_state = const_iterator::AtEnd;
         it.m_path_ref = this;
         return it;
@@ -1529,16 +1529,16 @@ namespace AZ::IO
         const typename BasicPath<FixedMaxPathString>::value_type* rhs);
 
     // Iterator compare explicit declarations
-    extern template bool operator==<PathView>(const PathIterator<PathView>& lhs,
-        const PathIterator<PathView>& rhs);
-    extern template bool operator==<Path>(const PathIterator<Path>& lhs,
-        const PathIterator<Path>& rhs);
-    extern template bool operator==<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
-        const PathIterator<FixedMaxPath>& rhs);
-    extern template bool operator!=<PathView>(const PathIterator<PathView>& lhs,
-        const PathIterator<PathView>& rhs);
-    extern template bool operator!=<Path>(const PathIterator<Path>& lhs,
-        const PathIterator<Path>& rhs);
-    extern template bool operator!=<FixedMaxPath>(const PathIterator<FixedMaxPath>& lhs,
-        const PathIterator<FixedMaxPath>& rhs);
+    extern template bool operator==<const PathView>(const PathIterator<const PathView>& lhs,
+        const PathIterator<const PathView>& rhs);
+    extern template bool operator==<const Path>(const PathIterator<const Path>& lhs,
+        const PathIterator<const Path>& rhs);
+    extern template bool operator==<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+        const PathIterator<const FixedMaxPath>& rhs);
+    extern template bool operator!=<const PathView>(const PathIterator<const PathView>& lhs,
+        const PathIterator<const PathView>& rhs);
+    extern template bool operator!=<const Path>(const PathIterator<const Path>& lhs,
+        const PathIterator<const Path>& rhs);
+    extern template bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+        const PathIterator<const FixedMaxPath>& rhs);
 }

@@ -712,16 +712,6 @@ DWORD Sleep(DWORD dwMilliseconds)
 #endif
 }
 
-//////////////////////////////////////////////////////////////////////////
-DWORD SleepEx(DWORD dwMilliseconds, BOOL /*bAlertable*/)
-{
-    //TODO: implement
-    //  CRY_ASSERT_MESSAGE(0, "SleepEx not implemented yet");
-    printf("SleepEx not properly implemented yet\n");
-    Sleep(dwMilliseconds);
-    return 0;
-}
-
 #if defined(LINUX) || defined(APPLE)
 BOOL GetComputerName(LPSTR lpBuffer, LPDWORD lpnSize)
 {

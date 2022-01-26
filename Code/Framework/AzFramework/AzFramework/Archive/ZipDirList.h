@@ -28,7 +28,7 @@ namespace AZ::IO::ZipDir
     {
         void operator()(const AZStd::intrusive_refcount<AZStd::atomic_uint, FileDataRecordDeleter>* ptr) const;
 
-        AZ::IAllocatorAllocate* m_allocator{};
+        AZ::IAllocator* m_allocator{};
     };
     struct FileDataRecord
         : public FileRecord
@@ -36,7 +36,7 @@ namespace AZ::IO::ZipDir
     {
         FileDataRecord();
 
-        static auto New(const FileRecord& rThat, AZ::IAllocatorAllocate* allocator) ->AZStd::intrusive_ptr<FileDataRecord>;
+        static auto New(const FileRecord& rThat, AZ::IAllocator* allocator) ->AZStd::intrusive_ptr<FileDataRecord>;
 
         void* GetData() {return this + 1; }
     };

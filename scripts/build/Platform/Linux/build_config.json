@@ -185,11 +185,11 @@
     "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
-      "OUTPUT_DIRECTORY": "build\\linux",
+      "OUTPUT_DIRECTORY": "build/linux",
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_awsi",
-      "CTEST_OPTIONS": "-L \"(SUITE_awsi)\" --no-tests=error",
+      "CTEST_OPTIONS": "-L (SUITE_awsi) --no-tests=error",
       "TEST_RESULTS": "True"
     }
   },
