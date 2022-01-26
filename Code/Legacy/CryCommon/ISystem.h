@@ -46,7 +46,6 @@ namespace AZ::IO
 struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
-struct IProcess;
 struct ICryFont;
 struct IMovieSystem;
 namespace Audio
@@ -1294,15 +1293,7 @@ namespace Detail
 
 #endif
 
-#if defined(USE_CRY_ASSERT)
-static void AssertConsoleExists(void)
-{
-    CRY_ASSERT(gEnv->pConsole != NULL);
-}
-#define ASSERT_CONSOLE_EXISTS AssertConsoleExists()
-#else
 #define ASSERT_CONSOLE_EXISTS 0
-#endif // defined(USE_CRY_ASSERT)
 
 // the following macros allow the help text to be easily stripped out
 

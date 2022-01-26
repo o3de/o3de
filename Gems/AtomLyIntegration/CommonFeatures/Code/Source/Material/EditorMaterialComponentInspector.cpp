@@ -310,7 +310,7 @@ namespace AZ
                             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
                             // Assign id before conversion so it can be used in dynamic description
-                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, propertyDefinition.m_name).GetFullName();
+                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, propertyDefinition.m_name);
 
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
 

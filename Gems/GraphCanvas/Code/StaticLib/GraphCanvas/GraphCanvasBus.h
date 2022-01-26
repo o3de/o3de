@@ -135,7 +135,7 @@ namespace GraphCanvas
         //! The PropertyDisplay will take ownership of the DataInterface
         virtual NodePropertyDisplay* CreateBooleanNodePropertyDisplay(BooleanDataInterface* dataInterface) const = 0;
 
-        //! Creates a DoubleNodeProperty display using the specified DoubleDataInterface
+        //! Creates a DoubleNodeProperty display using the specified NumericDataInterface
         //! param: dataInterface is the interface to local data to be used in the operation of the NodePropertyDisplay.
         //! The PropertyDisplay will take ownership of the DataInterface
         virtual NodePropertyDisplay* CreateNumericNodePropertyDisplay(NumericDataInterface* dataInterface) const = 0;

@@ -8,7 +8,6 @@
 
 set(FILES
     StaticLib/GraphCanvas/Widgets/Resources/GraphCanvasEditorResources.qrc
-    StaticLib/GraphCanvas/Widgets/Resources/Resources.h
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeContainer.cpp
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeContainer.h
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeEvent.cpp
@@ -50,7 +49,6 @@ set(FILES
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/BooleanDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/ComboBoxDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/DataInterface.h
-    StaticLib/GraphCanvas/Components/NodePropertyDisplay/DoubleDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/EntityIdDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.cpp
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.h
@@ -77,7 +75,6 @@ set(FILES
     StaticLib/GraphCanvas/Editor/EditorTypes.h
     StaticLib/GraphCanvas/Editor/GraphCanvasProfiler.h
     StaticLib/GraphCanvas/Editor/GraphModelBus.h
-    StaticLib/GraphCanvas/Styling/definitions.cpp
     StaticLib/GraphCanvas/Styling/definitions.h
     StaticLib/GraphCanvas/Styling/PseudoElement.cpp
     StaticLib/GraphCanvas/Styling/PseudoElement.h
@@ -146,8 +143,6 @@ set(FILES
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/AlignmentMenuActions/AlignmentContextMenuActions.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/BookmarkConstructMenuActions.cpp
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/BookmarkConstructMenuActions.h
-    StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/CommentConstructMenuActions.cpp
-    StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/CommentConstructMenuActions.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructContextMenuAction.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.h
@@ -178,8 +173,6 @@ set(FILES
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuAction.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuActions.cpp
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuActions.h
-    StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneActionsMenuGroup.cpp
-    StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneActionsMenuGroup.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuAction.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.h

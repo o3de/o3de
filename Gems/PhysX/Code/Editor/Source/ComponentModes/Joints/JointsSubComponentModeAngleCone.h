@@ -11,6 +11,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/limits.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 #include <PhysX/EditorJointBus.h>

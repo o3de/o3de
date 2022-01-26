@@ -890,6 +890,7 @@ namespace AzToolsFramework
 
         m_actionGoToEntitiesInViewport = new QAction(tr("Find in viewport"), this);
         m_actionGoToEntitiesInViewport->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        m_actionGoToEntitiesInViewport->setShortcut(tr("Z"));
         connect(m_actionGoToEntitiesInViewport, &QAction::triggered, this, &EntityOutlinerWidget::GoToEntitiesInViewport);
         addAction(m_actionGoToEntitiesInViewport);
     }

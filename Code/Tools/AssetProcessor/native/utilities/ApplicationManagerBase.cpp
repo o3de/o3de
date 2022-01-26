@@ -544,7 +544,7 @@ void ApplicationManagerBase::InitConnectionManager()
             EBUS_EVENT(AssetProcessor::ConnectionBus, SendPerPlatform, 0, message, QString::fromUtf8(message.m_platform.c_str()));
         };
 
-    bool result = QObject::connect(GetAssetCatalog(), &AssetProcessor::AssetCatalog::SendAssetMessage, connectionAndChangeMessagesThreadContext, forwardMessageFunction, Qt::QueuedConnection);
+    [[maybe_unused]] bool result = QObject::connect(GetAssetCatalog(), &AssetProcessor::AssetCatalog::SendAssetMessage, connectionAndChangeMessagesThreadContext, forwardMessageFunction, Qt::QueuedConnection);
     AZ_Assert(result, "Failed to connect to AssetCatalog signal");
 
     //Application manager related stuff

@@ -11,13 +11,13 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 
+#include <AzFramework/IO/LocalFileIO.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Utils//Utils.h>
-
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
-#include <AzFramework/IO/LocalFileIO.h>
 
 namespace AZ
 {

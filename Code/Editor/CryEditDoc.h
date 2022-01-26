@@ -200,7 +200,6 @@ protected:
     QString m_pathName;
     QString m_slicePathName;
     QString m_title;
-    AZ::Data::AssetId m_envProbeSliceAssetId;
     float m_terrainSize;
     const char* m_envProbeSliceRelativePath = "EngineAssets/Slices/DefaultLevelSetup.slice";
     const float m_envProbeHeight = 200.0f;
