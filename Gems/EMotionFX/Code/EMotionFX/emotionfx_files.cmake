@@ -36,7 +36,6 @@ set(FILES
     Source/DebugDraw.cpp
     Source/DualQuatSkinDeformer.cpp
     Source/DualQuatSkinDeformer.h
-    Source/EMotionFX.h
     Source/EMotionFXConfig.h
     Source/EMotionFXManager.cpp
     Source/EMotionFXManager.h
