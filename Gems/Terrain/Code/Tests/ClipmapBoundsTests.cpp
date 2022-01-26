@@ -305,7 +305,7 @@ namespace UnitTest
             AZ::Aabb worldBounds = bounds.GetWorldBounds();
             for (auto& region : output)
             {
-                region.m_worldAabb.GetClamped(worldBounds) == region.m_worldAabb;
+                EXPECT_EQ(region.m_worldAabb.GetClamped(worldBounds), region.m_worldAabb);
             }
 
             // 4. The untouched region should also be inside the world bounds of the clipmap;
