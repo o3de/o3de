@@ -9,8 +9,6 @@
 #include <ScriptCanvas/Libraries/Core/ForEach.h>
 #include <ScriptCanvas/Utils/VersionConverters.h>
 
-#include <Libraries/Core/MethodUtility.h>
-
 namespace ScriptCanvas
 {
     namespace Nodes

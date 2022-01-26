@@ -49,7 +49,6 @@ class ToolbarCustomizationDialog;
 class QWidgetAction;
 class ActionManager;
 class ShortcutDispatcher;
-class CVarMenu;
 
 namespace AzQtComponents
 {
