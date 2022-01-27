@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Name/Name.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -34,8 +34,8 @@ namespace AZ
             explicit MaterialPropertyId(AZStd::string_view propertyName);
             MaterialPropertyId(AZStd::string_view groupName, AZStd::string_view propertyName);
             MaterialPropertyId(const Name& groupName, const Name& propertyName);
-            explicit MaterialPropertyId(const AZStd::array_view<AZStd::string> names);
-            MaterialPropertyId(const AZStd::array_view<AZStd::string> groupNames, AZStd::string_view propertyName);
+            explicit MaterialPropertyId(const AZStd::span<AZStd::string> names);
+            MaterialPropertyId(const AZStd::span<AZStd::string> groupNames, AZStd::string_view propertyName);
 
             AZ_DEFAULT_COPY_MOVE(MaterialPropertyId);
 

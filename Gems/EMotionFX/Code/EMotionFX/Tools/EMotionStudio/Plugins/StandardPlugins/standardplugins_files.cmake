@@ -52,15 +52,12 @@ set(FILES
     Source/AnimGraph/AnimGraphHierarchyWidget.cpp
     Source/AnimGraph/AnimGraphHierarchyWidget.h
     Source/AnimGraph/AnimGraphNodeWidget.h
-    Source/AnimGraph/AnimGraphNodeWidget.cpp
     Source/AnimGraph/AnimGraphOptions.cpp
     Source/AnimGraph/AnimGraphOptions.h
     Source/AnimGraph/AnimGraphPlugin.cpp
     Source/AnimGraph/AnimGraphPlugin.h
     Source/AnimGraph/AnimGraphPluginCallbacks.cpp
     Source/AnimGraph/ContextMenu.cpp
-    Source/AnimGraph/DebugEventHandler.cpp
-    Source/AnimGraph/DebugEventHandler.h
     Source/AnimGraph/GameController.cpp
     Source/AnimGraph/GameController.h
     Source/AnimGraph/GameControllerWindow.cpp

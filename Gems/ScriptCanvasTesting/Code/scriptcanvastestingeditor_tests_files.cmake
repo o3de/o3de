@@ -16,14 +16,12 @@ set(FILES
     Source/Framework/ScriptCanvasTestApplication.h
     Source/Framework/EntityRefTests.h
     Tests/ScriptCanvasTestingTest.cpp
-    Tests/ScriptCanvas_BehaviorContext.cpp
     Tests/ScriptCanvas_ContainerSupport.cpp
     Tests/ScriptCanvas_Core.cpp
     Tests/ScriptCanvas_EventHandlers.cpp
     Tests/ScriptCanvas_Math.cpp
     Tests/ScriptCanvas_MethodOverload.cpp
     Tests/ScriptCanvas_NodeGenerics.cpp
-    Tests/ScriptCanvas_Regressions.cpp
     Tests/ScriptCanvas_RuntimeInterpreted.cpp
     Tests/ScriptCanvas_Slots.cpp
     Tests/ScriptCanvas_StringNodes.cpp

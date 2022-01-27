@@ -15,7 +15,7 @@
 
 #include <Atom/RHI/QueryPool.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -59,15 +59,15 @@ namespace AZ
         protected:
             QueryPool(uint32_t queryCapacity, uint32_t queriesPerResult, RHI::QueryType queryType, RHI::PipelineStatisticsFlags statisticsFlags);
 
-            // Returns the RHI Query array.
-            AZStd::array_view<RHI::Ptr<RHI::Query>> GetRhiQueryArray() const;
+            // Returns the RHI Query array as a span.
+            AZStd::span<const RHI::Ptr<RHI::Query>> GetRhiQueryArray() const;
 
         private:
             // Distributes the RHI Query indices into sub-intervals. Each sub interval is assigned to a RPI Query.
             void CreateRhiQueryIntervals();
 
-            // Returns an array of RHI Queries depending on the indices that are provided.
-            AZStd::array_view<RHI::Ptr<RHI::Query>> GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
+            // Returns a span of RHI Queries depending on the indices that are provided.
+            AZStd::span<const RHI::Ptr<RHI::Query>> GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
             // Returns an array of raw RHI Query pointers depending on the indices that are provided.
             AZStd::vector<RHI::Query*> GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
 

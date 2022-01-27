@@ -240,7 +240,6 @@ set(FILES
     Jobs/JobManagerComponent.cpp
     Jobs/JobManagerComponent.h
     Jobs/JobManagerDesc.h
-    Jobs/LegacyJobExecutor.h
     Jobs/MultipleDependentJob.h
     Jobs/task_group.h
     Math/Aabb.cpp
@@ -369,8 +368,6 @@ set(FILES
     Memory/AllocatorBase.h
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
-    Memory/AllocatorOverrideShim.cpp
-    Memory/AllocatorOverrideShim.h
     Memory/AllocatorWrapper.h
     Memory/AllocatorScope.h
     Memory/BestFitExternalMapAllocator.cpp

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
@@ -46,11 +47,15 @@ namespace AtomToolsFramework
         AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
         SetDockWidgetVisible("Python Terminal", false);
 
+        SetupMetrics();
+
         AtomToolsMainWindowRequestBus::Handler::BusConnect();
     }
 
     AtomToolsMainWindow::~AtomToolsMainWindow()
     {
+        AtomToolsFramework::PerformanceMonitorRequestBus::Broadcast(
+            &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, false);
         AtomToolsMainWindowRequestBus::Handler::BusDisconnect();
     }
 
@@ -191,5 +196,38 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::OpenAbout()
     {
+    }
+
+
+    void AtomToolsMainWindow::SetupMetrics()
+    {
+        m_statusBarCpuTime = new QLabel(this);
+        statusBar()->addPermanentWidget(m_statusBarCpuTime);
+        m_statusBarGpuTime = new QLabel(this);
+        statusBar()->addPermanentWidget(m_statusBarGpuTime);
+        m_statusBarFps = new QLabel(this);
+        statusBar()->addPermanentWidget(m_statusBarFps);
+
+        static constexpr int UpdateIntervalMs = 1000;
+        m_metricsTimer.setInterval(UpdateIntervalMs);
+        m_metricsTimer.start();
+        connect(&m_metricsTimer, &QTimer::timeout, this, &AtomToolsMainWindow::UpdateMetrics);
+
+        AtomToolsFramework::PerformanceMonitorRequestBus::Broadcast(
+            &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, true);
+
+        UpdateMetrics();
+    }
+
+    void AtomToolsMainWindow::UpdateMetrics()
+    {
+        AtomToolsFramework::PerformanceMetrics metrics = {};
+        AtomToolsFramework::PerformanceMonitorRequestBus::BroadcastResult(
+            metrics, &AtomToolsFramework::PerformanceMonitorRequestBus::Handler::GetMetrics);
+
+        m_statusBarCpuTime->setText(tr("CPU Time %1 ms").arg(QString::number(metrics.m_cpuFrameTimeMs, 'f', 2)));
+        m_statusBarGpuTime->setText(tr("GPU Time %1 ms").arg(QString::number(metrics.m_gpuFrameTimeMs, 'f', 2)));
+        int frameRate = metrics.m_cpuFrameTimeMs > 0 ? aznumeric_cast<int>(1000 / metrics.m_cpuFrameTimeMs) : 0;
+        m_statusBarFps->setText(tr("FPS %1").arg(QString::number(frameRate)));
     }
 } // namespace AtomToolsFramework

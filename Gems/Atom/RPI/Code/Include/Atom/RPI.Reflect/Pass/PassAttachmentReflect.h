@@ -23,7 +23,7 @@
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
@@ -130,7 +130,7 @@ namespace AZ
         };
 
         using PassSlotList = AZStd::vector<PassSlot>;
-        using PassSlotListView = AZStd::array_view<PassSlot>;
+        using PassSlotListView = AZStd::span<const PassSlot>;
 
         //! Refers to a PassAttachment or a PassAttachmentBinding on an adjacent Pass in the hierarchy. Specifies the
         //! name of attachment or binding/slot as well as the name of the Pass on which the attachment or binding lives.
@@ -166,7 +166,7 @@ namespace AZ
         };
 
         using PassConnectionList = AZStd::vector<PassConnection>;
-        using PassConnectionListView = AZStd::array_view<PassConnection>;
+        using PassConnectionListView = AZStd::span<const PassConnection>;
 
         //! Specifies a connection from a Pass's output slot to one of it's input slots. This is used as a fallback
         //! for the output when the pass is disabled so the output can present a valid attachments to subsequent passes.
@@ -183,7 +183,7 @@ namespace AZ
         };
 
         using PassFallbackConnectionList = AZStd::vector<PassFallbackConnection>;
-        using PassFallbackConnectionListView = AZStd::array_view<PassFallbackConnection>;
+        using PassFallbackConnectionListView = AZStd::span<const PassFallbackConnection>;
 
         // --- Pass Attachment Descriptor Classes ---
 
@@ -269,7 +269,7 @@ namespace AZ
         };
 
         using PassImageAttachmentDescList = AZStd::vector<PassImageAttachmentDesc>;
-        using PassImageAttachmentDescListView = AZStd::array_view<PassAttachmentDesc>;
+        using PassImageAttachmentDescListView = AZStd::span<const PassAttachmentDesc>;
 
         //! A PassAttachmentDesc used for buffers
         struct PassBufferAttachmentDesc final
@@ -283,7 +283,7 @@ namespace AZ
         };
 
         using PassBufferAttachmentDescList = AZStd::vector<PassBufferAttachmentDesc>;
-        using PassBufferAttachmentDescListView = AZStd::array_view<PassBufferAttachmentDesc>;
+        using PassBufferAttachmentDescListView = AZStd::span<const PassBufferAttachmentDesc>;
 
     }   // namespace RPI
 
