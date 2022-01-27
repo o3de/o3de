@@ -8,9 +8,11 @@
 
 #pragma once
 
-namespace UnitTest
+#include <tests/assetmanager/AssetProcessorManagerTest.h>
+
+namespace UnitTests
 {
-    struct ModtimeScanningTest : public AssetProcessorManagerTest
+    struct ModtimeScanningTest : AssetProcessorManagerTest
     {
         void SetUpAssetProcessorManager();
         void SetUp() override;
@@ -31,7 +33,7 @@ namespace UnitTest
             AZStd::unordered_multimap<AZStd::string, QString> m_productPaths;
             AZStd::vector<QString> m_deletedSources;
             AZStd::shared_ptr<AssetProcessor::InternalMockBuilder> m_builderTxtBuilder;
-            UnitTests::MockBuilderInfoHandler m_mockBuilderInfoHandler;
+            MockBuilderInfoHandler m_mockBuilderInfoHandler;
         };
 
         AZStd::unique_ptr<StaticData> m_data;

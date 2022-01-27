@@ -11,7 +11,7 @@
 #include <QObject>
 #include <ToolsFileUtils/ToolsFileUtils.h>
 
-namespace UnitTest
+namespace UnitTests
 {
     using AssetFileInfo = AssetProcessor::AssetFileInfo;
 
