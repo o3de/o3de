@@ -2,36 +2,33 @@
     "description": "Base material for the reflection probe visualization model.",
     "version": 1,
     "propertyLayout": {
-        "propertySets": [
-            {
-                "name": "settings",
-                "properties": [
-                    {
-                        "name": "opacity",
-                        "displayName": "Opacity",
-                        "description": "Opacity of the shadow effect.",
-                        "type": "Float",
-                        "defaultValue": 0.5,
-                        "min": 0.0,
-                        "max": 1.0,
-                        "connection": {
-                            "type": "ShaderInput",
-                            "name": "m_opacity"
-                        }
-                    },
-                    {
-                        "name": "shadeAll",
-                        "displayName": "Shade All",
-                        "description": "Shades the entire geometry with the shadow color, not just what's in shadow. For debugging.",
-                        "type": "Bool",
-                        "connection": {
-                            "type": "ShaderOption",
-                            "name": "o_shadeAll"
-                        }
+        "properties": {
+            "settings": [
+                {
+                    "name": "opacity",
+                    "displayName": "Opacity",
+                    "description": "Opacity of the shadow effect.",
+                    "type": "Float",
+                    "defaultValue": 0.5,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_opacity"
                     }
-                ]
-            }
-        ]
+                },
+                {
+                    "name": "shadeAll",
+                    "displayName": "Shade All",
+                    "description": "Shades the entire geometry with the shadow color, not just what's in shadow. For debugging.",
+                    "type": "Bool",
+                    "connection": {
+                        "type": "ShaderOption",
+                        "name": "o_shadeAll"
+                    }
+                }
+            ]
+        }
     },
     "shaders": [
         {
@@ -39,3 +36,4 @@
         }
     ]
 }
+
