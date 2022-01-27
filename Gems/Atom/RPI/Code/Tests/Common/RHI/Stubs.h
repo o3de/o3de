@@ -266,7 +266,7 @@ namespace UnitTest
             void ShutdownInternal() override {}
             AZ::RHI::ResultCode MergeIntoInternal(AZStd::span<const AZ::RHI::PipelineLibrary* const>) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ConstPtr<AZ::RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr; }
-			bool SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const { return true;}
+            bool SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const { return true;}
         };
 
         class ShaderStageFunction
