@@ -20,6 +20,7 @@ namespace Multiplayer
 {
     struct EntityReplicationData;
     using ReplicationSet = AZStd::map<ConstNetworkEntityHandle, EntityReplicationData>;
+    struct MultiplayerAgentDatum;
 
     //! @class IMultiplayerSpawner
     //! @brief IMultiplayerSpawner routes spawning requests for connecting players from
@@ -38,8 +39,7 @@ namespace Multiplayer
 
         virtual ~IMultiplayerSpawner() = default;
 
-        virtual AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> OnPlayerJoin(
-            uint64_t userId, AzFramework::PlayerConnectionConfig config, Multiplayer::LongNetworkString ticket) = 0;
+        virtual AZStd::pair<Multiplayer::PrefabEntityId, AZ::Transform> OnPlayerJoin(uint64_t userId, const Multiplayer::MultiplayerAgentDatum& agentDatum) = 0;
 
         virtual void OnPlayerLeave(
             Multiplayer::ConstNetworkEntityHandle entityHandle, const Multiplayer::ReplicationSet& replicationSet, AzNetworking::DisconnectReason reason) = 0;

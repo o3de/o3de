@@ -528,9 +528,15 @@ namespace Multiplayer
             else if (spawner)
             {
                 // Route to spawner implementation
+                MultiplayerAgentDatum datum;
+                datum.m_agentType = MultiplayerAgentType::Client;
                 AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams =
-                    spawner->OnPlayerJoin(packet.GetTemporaryUserId(), config, packet.GetTicket());
+                    spawner->OnPlayerJoin(packet.GetTemporaryUserId(), datum);
                 controlledEntity = TrySpawnPlayerPrefab(spawnParams.first, spawnParams.second);
+            }
+            else
+            {
+                AZLOG_ERROR("No IMultiplyaerSpawner was available. Ensure that one is registered for usage on PlayerJoin.");
             }
 
             if (controlledEntity.Exists())
@@ -810,6 +816,10 @@ namespace Multiplayer
                     const ReplicationSet& replicationSet = connectionData->GetReplicationManager().GetReplicationWindow()->GetReplicationSet();
                     spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity(), replicationSet, reason);
                 }
+                else
+                {
+                    AZLOG_ERROR("No IMultiplayerSpawner found OnPlayerDisconnect. Ensure one is registered.");
+                }
 
                 if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
                 {
@@ -890,10 +900,17 @@ namespace Multiplayer
             if (spawner)
             {
                 // Route to spawner implementation
+                MultiplayerAgentDatum datum;
+                datum.m_agentType = MultiplayerAgentType::ClientServer;
                 AZStd::pair<PrefabEntityId, AZ::Transform> spawnParams =
-                    spawner->OnPlayerJoin(0, AzFramework::PlayerConnectionConfig(), "");
+                    spawner->OnPlayerJoin(0, datum);
                 controlledEntity = TrySpawnPlayerPrefab(spawnParams.first, spawnParams.second);
             }
+            else
+            {
+                AZLOG_ERROR("No IMultiplayerSpawner found for host's default player. Ensure one is registered.");
+            }
+
             if (controlledEntity.Exists())
             {
                 EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
