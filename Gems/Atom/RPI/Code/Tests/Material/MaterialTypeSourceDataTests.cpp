@@ -1645,12 +1645,12 @@ namespace UnitTest
         EXPECT_NE(material.FindProperty("groupC.groupD.foo"), nullptr);
         EXPECT_NE(material.FindProperty("groupC.groupE.bar"), nullptr);
 
-        EXPECT_EQ(material.FindProperty("groupA.foo")->m_name, "foo");
-        EXPECT_EQ(material.FindProperty("groupA.bar")->m_name, "bar");
-        EXPECT_EQ(material.FindProperty("groupB.foo")->m_name, "foo");
-        EXPECT_EQ(material.FindProperty("groupB.bar")->m_name, "bar");
-        EXPECT_EQ(material.FindProperty("groupC.groupD.foo")->m_name, "foo");
-        EXPECT_EQ(material.FindProperty("groupC.groupE.bar")->m_name, "bar");
+        EXPECT_EQ(material.FindProperty("groupA.foo")->GetName(), "foo");
+        EXPECT_EQ(material.FindProperty("groupA.bar")->GetName(), "bar");
+        EXPECT_EQ(material.FindProperty("groupB.foo")->GetName(), "foo");
+        EXPECT_EQ(material.FindProperty("groupB.bar")->GetName(), "bar");
+        EXPECT_EQ(material.FindProperty("groupC.groupD.foo")->GetName(), "foo");
+        EXPECT_EQ(material.FindProperty("groupC.groupE.bar")->GetName(), "bar");
         EXPECT_EQ(material.FindProperty("groupA.foo")->m_dataType, MaterialPropertyDataType::Bool);
         EXPECT_EQ(material.FindProperty("groupA.bar")->m_dataType, MaterialPropertyDataType::Image);
         EXPECT_EQ(material.FindProperty("groupB.foo")->m_dataType, MaterialPropertyDataType::Float);
@@ -1823,10 +1823,10 @@ namespace UnitTest
         EXPECT_TRUE(material.FindProperty("groupB.foo") != nullptr);
         EXPECT_TRUE(material.FindProperty("groupB.bar") != nullptr);
 
-        EXPECT_EQ(material.FindProperty("groupA.foo")->m_name, "foo");
-        EXPECT_EQ(material.FindProperty("groupA.bar")->m_name, "bar");
-        EXPECT_EQ(material.FindProperty("groupB.foo")->m_name, "foo");
-        EXPECT_EQ(material.FindProperty("groupB.bar")->m_name, "bar");
+        EXPECT_EQ(material.FindProperty("groupA.foo")->GetName(), "foo");
+        EXPECT_EQ(material.FindProperty("groupA.bar")->GetName(), "bar");
+        EXPECT_EQ(material.FindProperty("groupB.foo")->GetName(), "foo");
+        EXPECT_EQ(material.FindProperty("groupB.bar")->GetName(), "bar");
         EXPECT_EQ(material.FindProperty("groupA.foo")->m_dataType, MaterialPropertyDataType::Bool);
         EXPECT_EQ(material.FindProperty("groupA.bar")->m_dataType, MaterialPropertyDataType::Image);
         EXPECT_EQ(material.FindProperty("groupB.foo")->m_dataType, MaterialPropertyDataType::Float);

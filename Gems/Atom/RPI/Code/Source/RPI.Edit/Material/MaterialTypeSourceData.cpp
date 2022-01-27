@@ -160,7 +160,7 @@ namespace AZ
         {
             auto propertyIter = AZStd::find_if(m_properties.begin(), m_properties.end(), [name](const AZStd::unique_ptr<PropertyDefinition>& existingProperty)
                 {
-                    return existingProperty->m_name == name;
+                    return existingProperty->GetName() == name;    
                 });
 
             if (propertyIter != m_properties.end())
@@ -186,8 +186,7 @@ namespace AZ
                 return nullptr;
             }
 
-            m_properties.emplace_back(AZStd::make_unique<PropertyDefinition>());
-            m_properties.back()->m_name = name;
+            m_properties.emplace_back(AZStd::make_unique<PropertyDefinition>(name));
             return m_properties.back().get();
         }
 
@@ -195,7 +194,7 @@ namespace AZ
         {
             auto iter = AZStd::find_if(m_properties.begin(), m_properties.end(), [name](const AZStd::unique_ptr<PropertyDefinition>& existingProperty)
                 {
-                    return existingProperty->m_name == name;
+                    return existingProperty->GetName() == name;
                 });
 
             if (iter != m_properties.end())
@@ -298,7 +297,7 @@ namespace AZ
                     {
                         for (AZStd::unique_ptr<PropertyDefinition>& property : propertySet->m_properties)
                         {
-                            if (property->m_name == subPath[0])
+                            if (property->GetName() == subPath[0])
                             {
                                 return property.get();
                             }
@@ -440,7 +439,7 @@ namespace AZ
                             propertySet = m_propertyLayout.m_propertySets.back().get();
                         }
 
-                        PropertyDefinition* newProperty = propertySet->AddProperty(propertyDefinition.m_name);
+                        PropertyDefinition* newProperty = propertySet->AddProperty(propertyDefinition.GetName());
                         
                         *newProperty = propertyDefinition; 
                     }
@@ -518,7 +517,7 @@ namespace AZ
             {
                 // Register the property...
 
-                MaterialPropertyId propertyId{propertyNameContext, property->m_name};
+                MaterialPropertyId propertyId{propertyNameContext, property->GetName()};
 
                 if (!propertyId.IsValid())
                 {
@@ -529,7 +528,7 @@ namespace AZ
                 auto propertySetIter = AZStd::find_if(propertySet->GetPropertySets().begin(), propertySet->GetPropertySets().end(),
                     [&property](const AZStd::unique_ptr<PropertySet>& existingPropertySet)
                     {
-                        return existingPropertySet->GetName() == property->m_name;
+                        return existingPropertySet->GetName() == property->GetName();
                     });
 
                 if (propertySetIter != propertySet->GetPropertySets().end())
