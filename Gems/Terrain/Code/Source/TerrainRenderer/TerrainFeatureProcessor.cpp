@@ -213,11 +213,12 @@ namespace Terrain
             m_dirtyRegion.GetMax().GetX() + m_sampleSpacing, m_dirtyRegion.GetMax().GetY() + m_sampleSpacing, 0.0f);
         AZ::Aabb region;
         region.Set(m_dirtyRegion.GetMin(), maxBound);
+        AZ::Vector2 stepSize = AZ::Vector2(m_sampleSpacing);
 
         AZStd::pair<size_t, size_t> numSamples;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-            region, m_sampleSpacing);
+            region, stepSize);
 
         uint32_t updateWidth = static_cast<uint32_t>(numSamples.first);
         uint32_t updateHeight = static_cast<uint32_t>(numSamples.second);
@@ -244,10 +245,10 @@ namespace Terrain
 
                 pixels.push_back(uint16Height);
             };
-
+            
             AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                 &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-                region, m_sampleSpacing, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+                region, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
         }
 
         if (m_heightmapImage)

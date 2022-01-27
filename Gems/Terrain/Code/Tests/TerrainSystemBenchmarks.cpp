@@ -351,9 +351,10 @@ namespace UnitTest
                 {
                     benchmark::DoNotOptimize(surfacePoint.m_position.GetZ());
                 };
-                
+
+                AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion, worldBounds, queryResolution, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
             }
         );
     }
@@ -449,8 +450,9 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_normal);
                 };
                 
+                AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromRegion, worldBounds, queryResolution, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
             }
         );
     }
@@ -541,8 +543,9 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
                 };
                 
+                AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, worldBounds, queryResolution, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
             }
         );
     }
@@ -633,8 +636,9 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint);
                 };
                 
+                AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion, worldBounds, queryResolution, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
             }
         );
     }

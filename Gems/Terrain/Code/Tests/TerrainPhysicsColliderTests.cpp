@@ -70,7 +70,7 @@ protected:
         m_app.RegisterComponentDescriptor(m_colliderComponent->CreateDescriptor());
     }
 
-    void ProcessRegionLoop(const AZ::Aabb& inRegion, float stepSize,
+    void ProcessRegionLoop(const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
         AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
         AzFramework::SurfaceData::SurfaceTagWeightList* surfaceTags,
         float mockHeight)
@@ -80,17 +80,17 @@ protected:
             return;
         }
 
-        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize));
-        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize));
+        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize.GetX()));
+        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize.GetY()));
 
         AzFramework::SurfaceData::SurfacePoint surfacePoint;
         for (size_t y = 0; y < numSamplesY; y++)
         {
-            float fy = aznumeric_cast<float>(inRegion.GetMin().GetY() + (y * stepSize));
+            float fy = aznumeric_cast<float>(inRegion.GetMin().GetY() + (y * stepSize.GetY()));
             for (size_t x = 0; x < numSamplesX; x++)
             {
                 bool terrainExists = false;
-                float fx = aznumeric_cast<float>(inRegion.GetMin().GetX() + (x * stepSize));
+                float fx = aznumeric_cast<float>(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
                 surfacePoint.m_position.Set(fx, fy, mockHeight);
                 if (surfaceTags)
                 {
@@ -278,7 +278,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
     ON_CALL(terrainListener, ProcessHeightsFromRegion).WillByDefault(
-        [this](const AZ::Aabb& inRegion, float stepSize,
+        [this](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
         {
@@ -320,7 +320,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
     ON_CALL(terrainListener, ProcessHeightsFromRegion).WillByDefault(
-        [this, mockHeight](const AZ::Aabb& inRegion, float stepSize,
+        [this, mockHeight](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             [[maybe_unused]]  AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
         {
@@ -473,7 +473,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
     ON_CALL(terrainListener, ProcessSurfacePointsFromRegion).WillByDefault(
-        [this, mockHeight, &surfaceTags](const AZ::Aabb& inRegion, float stepSize,
+        [this, mockHeight, &surfaceTags](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
         {

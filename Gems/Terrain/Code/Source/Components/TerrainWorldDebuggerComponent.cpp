@@ -374,9 +374,10 @@ namespace Terrain
             previousHeight = surfacePoint.m_position.GetZ();
             rowHeights[xIndex] = surfacePoint.m_position.GetZ();
         };
-
+        
+        AZ::Vector2 stepSize = AZ::Vector2(gridResolution);
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-            region, gridResolution, ProcessHeightValue, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+            region, stepSize, ProcessHeightValue, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
     }
 
     void TerrainWorldDebuggerComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)

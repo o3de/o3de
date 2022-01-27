@@ -132,11 +132,14 @@ namespace PhysX
             Physics::HeightfieldShapeConfiguration& heightfieldConfig, physx::PxGeometryHolder& pxGeometry)
         {
             physx::PxHeightField* heightfield = nullptr;
-
-            const float gridSpacing = heightfieldConfig.GetGridResolution();
+            
+            const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
 
             const int32_t numCols = heightfieldConfig.GetNumColumns();
             const int32_t numRows = heightfieldConfig.GetNumRows();
+            
+            const float rowScale = gridSpacing.GetX();
+            const float colScale = gridSpacing.GetY();
 
             const float minHeightBounds = heightfieldConfig.GetMinHeightBounds();
             const float maxHeightBounds = heightfieldConfig.GetMaxHeightBounds();
@@ -208,7 +211,7 @@ namespace PhysX
             {
                 heightfieldConfig.SetCachedNativeHeightfield(heightfield);
 
-                physx::PxHeightFieldGeometry hfGeom(heightfield, physx::PxMeshGeometryFlags(), heightScale, gridSpacing, gridSpacing);
+                physx::PxHeightFieldGeometry hfGeom(heightfield, physx::PxMeshGeometryFlags(), heightScale, rowScale, colScale);
 
                 pxGeometry.storeAny(hfGeom);
             }
@@ -394,10 +397,10 @@ namespace PhysX
 
                         // PhysX heightfields have the origin at the corner, not the center, so add an offset to the passed-in transform
                         // to account for this difference.
-                        const float gridSpacing = heightfieldConfig.GetGridResolution();
+                        const AZ::Vector2 gridSpacing = heightfieldConfig.GetGridResolution();
                         AZ::Vector3 offset(
-                            -(gridSpacing * heightfieldConfig.GetNumColumns() / 2.0f),
-                            -(gridSpacing * heightfieldConfig.GetNumRows() / 2.0f),
+                            -(gridSpacing.GetX() * heightfieldConfig.GetNumColumns() / 2.0f),
+                            -(gridSpacing.GetY() * heightfieldConfig.GetNumRows() / 2.0f),
                             0.0f);
 
                         // PhysX heightfields are always defined to have the height in the Y direction, not the Z direction, so we need
@@ -1549,8 +1552,8 @@ namespace PhysX
         Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId)
         {
             Physics::HeightfieldShapeConfiguration configuration;
-
-            float gridSpacing = 1.0f;
+            
+            AZ::Vector2 gridSpacing(1.0f);
             Physics::HeightfieldProviderRequestsBus::EventResult(
                 gridSpacing, entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSpacing);
 

@@ -378,12 +378,12 @@ namespace Physics
         m_cachedNativeHeightfield = cachedNativeHeightfield;
     }
 
-    float HeightfieldShapeConfiguration::GetGridResolution() const
+    const AZ::Vector2& HeightfieldShapeConfiguration::GetGridResolution() const
     {
         return m_gridResolution;
     }
 
-    void HeightfieldShapeConfiguration::SetGridResolution(float gridResolution)
+    void HeightfieldShapeConfiguration::SetGridResolution(const AZ::Vector2& gridResolution)
     {
         m_gridResolution = gridResolution;
     }

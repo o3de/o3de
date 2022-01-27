@@ -167,24 +167,24 @@ namespace Terrain
         //! Returns the number of samples for a given region and step size. The first and second
         //! elements of the pair correspond to the X and Y sample counts respectively.
         virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
-            float stepSize) const override;
+            const AZ::Vector2& stepSize) const override;
 
         //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
         //! coordinates in the region.
         virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
-            float stepSize,
+            const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
-            float stepSize,
+            const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
-            float stepSize,
+            const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
-            float stepSize,
+            const AZ::Vector2& stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 
