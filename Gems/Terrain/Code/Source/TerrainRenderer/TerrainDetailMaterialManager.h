@@ -16,6 +16,7 @@
 
 #include <TerrainRenderer/Aabb2i.h>
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
+#include <TerrainRenderer/ClipmapBounds.h>
 #include <TerrainRenderer/TerrainAreaMaterialRequestBus.h>
 #include <TerrainRenderer/Vector2i.h>
 
@@ -178,21 +179,15 @@ namespace Terrain
         //! Updates a specific detail material with settings from a material instance
         void UpdateDetailMaterialData(uint16_t detailMaterialIndex, MaterialInstance material);
 
-        //! Checks to see if the detail material id texture needs to update based on new center and bounds. Any
+        //! Checks to see if the detail material id texture needs to update based on the camera position. Any
         //! required updates are then executed.
-        void CheckUpdateDetailTexture(const Aabb2i& newBounds, const Vector2i& newCenter);
+        void CheckUpdateDetailTexture(const AZ::Vector3& cameraPosition);
 
         //! Updates the detail texture in a given area
-        void UpdateDetailTexture(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel);
+        void UpdateDetailTexture(const AZ::Aabb& worldUpdateAabb, const Aabb2i& textureUpdateAabb);
 
         //! Finds the detail material Id for a surface type and position
         uint16_t GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position);
-
-        //! Calculates which regions of the detail material id texture need to be updated based on the update area. Since
-        //! the "center" of the detail material id texture can move, a single update region in contiguous world space may
-        //! map to up to 4 different areas on teh detail material id texture.
-        uint8_t CalculateUpdateRegions(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel,
-            AZStd::array<Aabb2i, 4>& textureSpaceAreas, AZStd::array<Aabb2i, 4>& scaledWorldSpaceAreas);
 
         DetailMaterialListRegion* FindByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
         DetailMaterialListRegion& FindOrCreateByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
@@ -208,15 +203,11 @@ namespace Terrain
         AZ::Render::GpuBufferHandler m_detailMaterialDataBuffer;
         
         AZ::Aabb m_dirtyDetailRegion{ AZ::Aabb::CreateNull() };
-        AZ::Vector3 m_previousCameraPosition = AZ::Vector3(AZStd::numeric_limits<float>::max(), 0.0, 0.0);
-        Aabb2i m_detailTextureBounds;
-        Vector2i m_detailTextureCenter;
+        ClipmapBounds m_detailMaterialIdBounds;
 
         AZ::RHI::ShaderInputImageIndex m_detailMaterialIdPropertyIndex;
         AZ::RHI::ShaderInputBufferIndex m_detailMaterialDataIndex;
-        AZ::RHI::ShaderInputConstantIndex m_detailCenterPropertyIndex;
-        AZ::RHI::ShaderInputConstantIndex m_detailAabbPropertyIndex;
-        AZ::RHI::ShaderInputConstantIndex m_detailHalfPixelUvPropertyIndex;
+        AZ::RHI::ShaderInputConstantIndex m_detailScalePropertyIndex;
 
         bool m_isInitialized{ false };
         bool m_detailMaterialBufferNeedsUpdate{ false };
