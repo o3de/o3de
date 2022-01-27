@@ -11,11 +11,11 @@
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
-#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/Utils/StableDynamicArray.h>
+#include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 
