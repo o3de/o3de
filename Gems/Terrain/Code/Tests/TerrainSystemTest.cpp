@@ -851,7 +851,7 @@ namespace UnitTest
         auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
-        const AZ::Vector2 stepSize { 1.0f, 1.0f };
+        const AZ::Vector2 stepSize(1.0f);
 
         const HeightTestRegionPoints testPoints[] = {
             { 0, 0, -2.0f, AZ::Vector2(-1.0f, -1.0f) },
@@ -909,7 +909,7 @@ namespace UnitTest
         auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
-        const AZ::Vector2 stepSize { 1.0f, 1.0f };
+        const AZ::Vector2 stepSize(1.0f);
 
         const NormalTestRegionPoints testPoints[] = {
             { 0, 0, AZ::Vector3(-0.5773f, -0.5773f, 0.5773f), AZ::Vector2(-1.0f, -1.0f) },
@@ -958,7 +958,7 @@ namespace UnitTest
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
-        const AZ::Vector2 stepSize { 1.0f, 1.0f };
+        const AZ::Vector2 stepSize(1.0f);
 
         AzFramework::SurfaceData::SurfaceTagWeightList expectedTags;
         SetupSurfaceWeightMocks(entity.get(), expectedTags);
@@ -1004,7 +1004,7 @@ namespace UnitTest
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
-        const AZ::Vector2 stepSize { 1.0f, 1.0f };
+        const AZ::Vector2 stepSize(1.0f);
 
         AzFramework::SurfaceData::SurfaceTagWeightList expectedTags;
         SetupSurfaceWeightMocks(entity.get(), expectedTags);

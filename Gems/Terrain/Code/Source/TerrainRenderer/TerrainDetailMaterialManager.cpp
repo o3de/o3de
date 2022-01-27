@@ -795,9 +795,9 @@ namespace Terrain
             
             AZ::Vector3 worldMin(quadrantWorldArea.m_min.m_x * DetailTextureScale, quadrantWorldArea.m_min.m_y * DetailTextureScale, 0.0f);
             AZ::Vector3 worldMax(quadrantWorldArea.m_max.m_x * DetailTextureScale, quadrantWorldArea.m_max.m_y * DetailTextureScale, 0.0f);
+            AZ::Vector2 stepSize(DetailTextureScale);
             AZ::Aabb region;
             region.Set(worldMin, worldMax);
-            AZ::Vector2 stepSize = AZ::Vector2(DetailTextureScale);
 
             AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion,
                 region, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
