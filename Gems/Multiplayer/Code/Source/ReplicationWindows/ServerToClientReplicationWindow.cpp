@@ -137,7 +137,7 @@ namespace Multiplayer
         );
 
         NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();        
-        IFilterEntityManager* filterEntityManager = GetMultiplayer()->GetFilterEntityManager();
+        IFilterEntityManager* filterEntityManager = AZ::Interface<IFilterEntityManager>::Get();
 
         // Add all the neighbours
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
@@ -229,7 +229,7 @@ namespace Multiplayer
         {
             if (netBindComponent->HasController())
             {
-                if (IFilterEntityManager* filter = GetMultiplayer()->GetFilterEntityManager())
+                if (IFilterEntityManager* filter = AZ::Interface<IFilterEntityManager>::Get())
                 {
                     if (filter->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
                     {

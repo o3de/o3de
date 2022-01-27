@@ -128,8 +128,6 @@ namespace Multiplayer
         float GetCurrentBlendFactor() const override;
         INetworkTime* GetNetworkTime() override;
         INetworkEntityManager* GetNetworkEntityManager() override;
-        void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
-        IFilterEntityManager* GetFilterEntityManager() override;
         void RegisterPlayerIdentifierForRejoin(uint64_t temporaryUserIdentifier, NetEntityId controlledEntityId) override;
         void CompleteClientMigration(uint64_t temporaryUserIdentifier, AzNetworking::ConnectionId connectionId, const HostId& publicHostId, ClientInputId migratedClientInputId) override;
         void SetShouldSpawnNetworkEntities(bool value) override;

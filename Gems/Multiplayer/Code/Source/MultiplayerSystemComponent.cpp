@@ -994,16 +994,6 @@ namespace Multiplayer
         return &m_networkEntityManager;
     }
 
-    void MultiplayerSystemComponent::SetFilterEntityManager(IFilterEntityManager* entityFilter)
-    {
-        m_filterEntityManager = entityFilter;
-    }
-
-    IFilterEntityManager* MultiplayerSystemComponent::GetFilterEntityManager()
-    {
-        return m_filterEntityManager;
-    }
-
     void MultiplayerSystemComponent::RegisterPlayerIdentifierForRejoin(uint64_t temporaryUserIdentifier, NetEntityId controlledEntityId)
     {
         m_playerRejoinData[temporaryUserIdentifier] = controlledEntityId;
