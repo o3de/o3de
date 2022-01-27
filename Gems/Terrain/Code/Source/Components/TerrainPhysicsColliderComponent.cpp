@@ -84,7 +84,7 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainPhysicsColliderConfig::m_defaultMaterialSelection,
-                        "Default Surface Physics Material", "Select a material to be used by maps surfaces by default")
+                        "Default Surface Physics Material", "Select a material to be used by unmapped surfaces by default")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings,
                         "Surface to Material Mappings", "Maps surfaces to physics materials")
