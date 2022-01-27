@@ -246,6 +246,11 @@ namespace AZ::Dom
         return m_entries.size();
     }
 
+    bool Path::IsEmpty() const
+    {
+        return m_entries.empty();
+    }
+
     PathEntry& Path::operator[](size_t index)
     {
         return m_entries[index];

@@ -395,7 +395,7 @@ namespace AZ::Dom
         const bool allowEndOfArray = (flags & ExistenceCheckFlags::AllowEndOfArray) != ExistenceCheckFlags::DefaultExistenceCheck;
 
         Path target = path;
-        if (target.Size() == 0)
+        if (target.IsEmpty())
         {
             Value wrapper(Dom::Type::Array);
             wrapper.ArrayPushBack(rootElement);

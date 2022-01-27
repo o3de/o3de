@@ -111,6 +111,7 @@ namespace AZ::Dom
         void Clear();
         PathEntry At(size_t index) const;
         size_t Size() const;
+        bool IsEmpty() const;
 
         PathEntry& operator[](size_t index);
         const PathEntry& operator[](size_t index) const;
