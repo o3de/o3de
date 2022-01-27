@@ -49,8 +49,6 @@ from pathlib import Path
 directory = Path.cwd()
 sys.path += [str(directory)]
 
-print(directory)
-print()
 from . import o3de_utils
 from . import ui
 from . import constants
