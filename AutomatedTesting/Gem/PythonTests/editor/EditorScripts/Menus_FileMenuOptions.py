@@ -38,7 +38,7 @@ def Menus_FileMenuOptions_Work():
         ("Save As",),
         ("Save Level Statistics",),
         ("Edit Project Settings",),
-        ("Edit Platform Settings",),   #Temporarily disabled due to https://github.com/o3de/o3de/issues/6604
+        ("Edit Platform Settings",),
         ("New Project",),
         ("Open Project",),
         ("Show Log File",),
