@@ -221,7 +221,7 @@ namespace Terrain
         {
             return AZ::Vector2(ceil(in.GetX()), ceil(in.GetY()));
         };
-        
+
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
         const AZ::Vector3 boundsMin = worldSize.GetMin();
         const AZ::Vector3 boundsMax = worldSize.GetMax();
@@ -273,7 +273,7 @@ namespace Terrain
     void TerrainPhysicsColliderComponent::GenerateHeightsInBounds(AZStd::vector<float>& heights) const
     {
         AZ_PROFILE_FUNCTION(Entity);
-        
+
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
         AZ::Aabb worldSize = GetHeightfieldAabb();
@@ -328,7 +328,7 @@ namespace Terrain
         AZStd::vector<Physics::HeightMaterialPoint>& heightMaterials) const
     {
         AZ_PROFILE_FUNCTION(Entity);
-        
+
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
 
         AZ::Aabb worldSize = GetHeightfieldAabb();
@@ -373,7 +373,7 @@ namespace Terrain
             point.m_materialIndex = GetMaterialIdIndex(materialId, materialList);
             heightMaterials.emplace_back(point);
         };
-        
+
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion,
             worldSize, gridResolution, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
     }
@@ -391,7 +391,7 @@ namespace Terrain
     {
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
         const AZ::Aabb bounds = GetHeightfieldAabb();
-        
+
         numColumns = aznumeric_cast<int32_t>((bounds.GetMax().GetX() - bounds.GetMin().GetX()) / gridResolution.GetX());
         numRows = aznumeric_cast<int32_t>((bounds.GetMax().GetY() - bounds.GetMin().GetY()) / gridResolution.GetY());
     }

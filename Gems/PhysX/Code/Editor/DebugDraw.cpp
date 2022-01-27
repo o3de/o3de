@@ -689,7 +689,7 @@ namespace PhysX
         {
             const int numColumns = heightfieldShapeConfig.GetNumColumns();
             const int numRows = heightfieldShapeConfig.GetNumRows();
-            
+
             const float minXBounds = -(numColumns * heightfieldShapeConfig.GetGridResolution().GetX()) / 2.0f;
             const float minYBounds = -(numRows * heightfieldShapeConfig.GetGridResolution().GetY()) / 2.0f;
 
@@ -703,7 +703,7 @@ namespace PhysX
                     const int index1 = yIndex * numColumns + xIndex + 1;
                     const int index2 = (yIndex + 1) * numColumns + xIndex;
                     const int index3 = (yIndex + 1) * numColumns + xIndex + 1;
-                    
+
                     const float x0 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * xIndex;
                     const float x1 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * (xIndex + 1);
                     const float y0 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * yIndex;

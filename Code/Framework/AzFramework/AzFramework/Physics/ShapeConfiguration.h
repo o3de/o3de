@@ -236,7 +236,7 @@ namespace Physics
 
     private:
         //! The number of meters between each heightfield sample in x and y.
-        AZ::Vector2 m_gridResolution{ 1.0f, 1.0f };
+        AZ::Vector2 m_gridResolution{ 1.0f };
         //! The number of columns in the heightfield sample grid.
         int32_t m_numColumns{ 0 };
         //! The number of rows in the heightfield sample grid.

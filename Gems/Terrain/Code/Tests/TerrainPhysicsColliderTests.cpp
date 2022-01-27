@@ -241,7 +241,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMaxBoun
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
-    
+
     float mockHeightResolution = 1.0f;
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
@@ -273,7 +273,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
-    
+
     float mockHeightResolution = 1.0f;
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));

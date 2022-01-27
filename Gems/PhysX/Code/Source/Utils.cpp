@@ -132,12 +132,12 @@ namespace PhysX
             Physics::HeightfieldShapeConfiguration& heightfieldConfig, physx::PxGeometryHolder& pxGeometry)
         {
             physx::PxHeightField* heightfield = nullptr;
-            
+
             const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
 
             const int32_t numCols = heightfieldConfig.GetNumColumns();
             const int32_t numRows = heightfieldConfig.GetNumRows();
-            
+
             const float rowScale = gridSpacing.GetX();
             const float colScale = gridSpacing.GetY();
 
@@ -1552,7 +1552,7 @@ namespace PhysX
         Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId)
         {
             Physics::HeightfieldShapeConfiguration configuration;
-            
+
             AZ::Vector2 gridSpacing(1.0f);
             Physics::HeightfieldProviderRequestsBus::EventResult(
                 gridSpacing, entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSpacing);
