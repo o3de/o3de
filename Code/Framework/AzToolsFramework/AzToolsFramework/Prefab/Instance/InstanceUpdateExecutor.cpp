@@ -165,28 +165,47 @@ namespace AzToolsFramework
             }
             instanceDom.CopyFrom(*instanceDomValueFromSource, instanceDom.GetAllocator());
 
-            // If our instance is the focused instance, replace the transform on the container
-            // with the one containing overrides to maintain the position.
-
-            // TODO
-
             // If the focused instance is not an ancestor of our instance, verify if it's a descendant.
             if (domSourceInstance != &focusedInstance->get())
             {
                 AZStd::string aliasPathToFocus;
                 auto focusedInstanceAncestor = ClimbUpToTargetInstance(&focusedInstance->get(), instance, aliasPathToFocus);
 
-                // If the focused instance is a descendant, we need to replace its portion of the dom with the template one.
+                // If the focused instance is a descendant (or the instance itself), we need to replace its portion of the dom with the template one.
                 if (focusedInstanceAncestor == instance)
                 {
+                    // Get the dom for the focused instance from its template
                     PrefabDom& focusedInstanceDom = m_prefabSystemComponentInterface->FindTemplateDom(focusedInstance->get().GetTemplateId());
                     PrefabDomPath domSourceToFocusPath(aliasPathToFocus.c_str());
+                    
+                    // Copy the focused instance dom inside the dom that will be used to refresh the instance.
                     domSourceToFocusPath.Set(instanceDom, focusedInstanceDom);
+
+                    // TODO - Do the same as the step below (copy container).
                 }
+            }
+            // If our instance is the focused instance, fix the container
+            else if (&focusedInstance->get() == instance)
+            {
+                // Get the container from the root
+                AZStd::string rootToInstancePath;
+                auto rootInstance = ClimbUpToTargetInstance(instance, nullptr, rootToInstancePath);
 
-                // Then, also replace the transform on the container (just like above - helper function?)
+                if (rootInstance != instance)
+                {
+                    AZStd::string rootToInstanceContainer =
+                        AZStd::string::format("%s/%s", rootToInstancePath.c_str(), PrefabDomUtils::ContainerEntityName);
+                    PrefabDomPath rootToInstanceContainerPath(rootToInstanceContainer.c_str());
 
-                // TODO
+                    PrefabDom rootDom;
+                    rootDom.CopyFrom(
+                        m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->GetTemplateId()), rootDom.GetAllocator());
+                    auto containerDomValue = rootToInstanceContainerPath.Get(rootDom);
+
+                    AZStd::string containerAlias = AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
+                    PrefabDomPath containerPath(containerAlias.c_str());
+                    containerPath.Set(instanceDom, *containerDomValue);
+                }
             }
 
             PrefabDomValueReference instanceDomFromRoot = *instanceDomValueFromSource;
