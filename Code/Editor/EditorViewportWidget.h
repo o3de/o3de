@@ -79,6 +79,8 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     float ManipulatorCircleBoundWidth() const override;
     bool StickySelectEnabled() const override;
     AZ::Vector3 DefaultEditorCameraPosition() const override;
+    bool IconsVisible() const override;
+    bool HelpersVisible() const override;
 };
 
 // EditorViewportWidget window
@@ -205,8 +207,6 @@ private:
     void* GetSystemCursorConstraintWindow() const override;
 
     // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...
-    AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
-    float TerrainHeight(const AZ::Vector2& position) override;
     bool ShowingWorldSpace() override;
     QWidget* GetWidgetForViewportContextMenu() override;
 
@@ -292,9 +292,6 @@ private:
     void PostCameraSet();
     // This switches the active camera to the next one in the list of (default, all custom cams).
     void CycleCamera();
-
-    AzFramework::CameraState GetCameraState();
-    AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
 
     QPoint WidgetToViewport(const QPoint& point) const;
     QPoint ViewportToWidget(const QPoint& point) const;

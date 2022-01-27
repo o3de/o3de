@@ -9,7 +9,6 @@
 #include "FontBuilderWorker.h"
 
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <LyShine/UiAssetTypes.h>
 
 #include <QString>
 #include <QFileInfo>
@@ -52,7 +51,8 @@ namespace CopyDependencyBuilder
         
         if (fileExtension == "font" || fileExtension == "fontfamily")
         {
-            return azrtti_typeid<LyShine::FontAsset>();
+            static AZ::Data::AssetType fontAssetType("{57767D37-0EBE-43BE-8F60-AB36D2056EF8}"); // form UiAssetTypes.h in the LyShine gem
+            return fontAssetType;
         }
 
         return AZ::Data::AssetType::CreateNull();

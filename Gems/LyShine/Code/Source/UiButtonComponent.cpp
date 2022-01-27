@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include <IRenderer.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/Bus/UiVisualBus.h>

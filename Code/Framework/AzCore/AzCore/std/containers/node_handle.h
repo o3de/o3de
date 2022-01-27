@@ -123,7 +123,8 @@ namespace AZStd
                 }
             }
 
-            friend void swap(node_handle& lhs, node_handle& rhs);
+            template <typename SwapNodeTraits, template <typename, typename> class SwapMapOrSetNodeHandleBase> 
+                friend void swap(node_handle<SwapNodeTraits, SwapMapOrSetNodeHandleBase>& lhs, node_handle<SwapNodeTraits, SwapMapOrSetNodeHandleBase>& rhs);
 
         private:
             node_handle(node_pointer_type node, const allocator_type& allocator)
@@ -152,8 +153,8 @@ namespace AZStd
             optional<allocator_type> m_allocator;
         };
 
-        template <typename NodeTraits, template <typename, typename> class MapOrSetNodeHandleBase>
-        void swap(node_handle<NodeTraits, MapOrSetNodeHandleBase>& lhs, node_handle<NodeTraits, MapOrSetNodeHandleBase>& rhs)
+        template <typename SwapNodeTraits, template <typename, typename> class SwapMapOrSetNodeHandleBase>
+        void swap(node_handle<SwapNodeTraits, SwapMapOrSetNodeHandleBase>& lhs, node_handle<SwapNodeTraits, SwapMapOrSetNodeHandleBase>& rhs)
         {
             lhs.swap(rhs);
         }

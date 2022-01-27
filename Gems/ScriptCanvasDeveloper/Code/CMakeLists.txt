@@ -8,7 +8,6 @@
 
 set(SCRIPT_CANVAS_DEV_COMMON_DEFINES
     SCRIPTCANVASDEVELOPER
-    NOT_USE_CRY_MEMORY_MANAGER
     AZCORE_ENABLE_MEMORY_TRACKING
 )
 
@@ -75,6 +74,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 ${SCRIPT_CANVAS_DEV_COMMON_DEFINES}
         BUILD_DEPENDENCIES
             PRIVATE
+                3rdParty::Qt::Test
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AzToolsFramework

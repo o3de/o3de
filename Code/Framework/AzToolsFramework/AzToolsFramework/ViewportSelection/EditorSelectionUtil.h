@@ -60,6 +60,9 @@ namespace AzToolsFramework
     //! Wrapper for EBus call to return the DPI scaling for a given viewport.
     float GetScreenDisplayScaling(int viewportId);
 
+    //! The default distance an entity is placed from the camera if there is no intersection.
+    float GetDefaultEntityPlacementDistance();
+
     //! A utility to return the center of several points.
     //! Take several positions and store the min and max of each in
     //! turn - when all points have been added return the center/midpoint.

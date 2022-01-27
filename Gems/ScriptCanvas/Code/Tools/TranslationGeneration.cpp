@@ -34,6 +34,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <Source/Translation/TranslationSerializer.h>
+#include "Data/DataRegistry.h"
 
 namespace ScriptCanvasEditorTools
 {
@@ -187,7 +188,7 @@ namespace ScriptCanvasEditorTools
         }
     }
 
-    AZ::Entity* TranslationGeneration::TranslateAZEvent(const AZ::BehaviorMethod& method)
+    AZ::Entity* TranslationGeneration::GetAZEventNode(const AZ::BehaviorMethod& method)
     {
         // Make sure the method returns an AZ::Event by reference or pointer
         if (AZ::MethodReturnsAzEventByReferenceOrPointer(method))
@@ -246,6 +247,11 @@ namespace ScriptCanvasEditorTools
             for (const auto& methodPair : behaviorClass->m_methods)
             {
                 const AZ::BehaviorMethod* behaviorMethod = methodPair.second;
+
+                if (TranslateSingleAZEvent(behaviorMethod))
+                {
+                    continue;
+                }
 
                 Method methodEntry;
 
@@ -362,20 +368,79 @@ namespace ScriptCanvasEditorTools
         return true;
     }
 
+    //! Generate the translation data for a specific AZ::Event
+    bool TranslationGeneration::TranslateSingleAZEvent(const AZ::BehaviorMethod* method)
+    {
+        AZ::Entity* node = GetAZEventNode(*method);
+        if (!node)
+        {
+            return false;
+        }
+
+        TranslationFormat translationRoot;
+
+        ScriptCanvas::Nodes::Core::AzEventHandler* nodeComponent = node->FindComponent<ScriptCanvas::Nodes::Core::AzEventHandler>();
+        nodeComponent->Init();
+        nodeComponent->Configure();
+
+        const ScriptCanvas::Nodes::Core::AzEventEntry& azEventEntry{ nodeComponent->GetEventEntry() };
+
+        Entry entry;
+        entry.m_key = azEventEntry.m_eventName;
+        entry.m_context = "AZEventHandler";
+        entry.m_details.m_name = azEventEntry.m_eventName;
+
+        SplitCamelCase(entry.m_details.m_name);
+
+        for (const ScriptCanvas::Slot& slot : nodeComponent->GetSlots())
+        {
+            Slot slotEntry;
+
+            if (slot.IsVisible())
+            {
+                slotEntry.m_key = slot.GetName();
+
+                if (slot.GetId() == azEventEntry.m_azEventInputSlotId)
+                {
+                    slotEntry.m_details.m_name = azEventEntry.m_eventName;
+                }
+                else
+                {
+                    slotEntry.m_details.m_name = slot.GetName();
+                }
+
+                entry.m_slots.push_back(slotEntry);
+            }
+        }
+
+        translationRoot.m_entries.push_back(entry);
+
+        // delete the node, don't need to keep it beyond this point
+        delete node;
+
+
+        AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(entry.m_key);
+
+        AZStd::string targetFile = AZStd::string::format("AZEvents/%s", filename.c_str());
+
+        SaveJSONData(targetFile, translationRoot);
+
+        translationRoot.m_entries.clear();
+
+        return true;
+    }
+
+
     void TranslationGeneration::TranslateAZEvents()
     {
         GraphCanvas::TranslationKey translationKey;
-        AZStd::vector<AZ::Entity*> nodes;
+        AZStd::vector<AZ::BehaviorMethod*> methods;
 
         // Methods
         for (const auto& behaviorMethod : m_behaviorContext->m_methods)
         {
-            const auto& method = *behaviorMethod.second;
-            AZ::Entity* node = TranslateAZEvent(method);
-            if (node)
-            {
-                nodes.push_back(node);
-            }
+            const auto method = behaviorMethod.second;
+            methods.push_back(method);
         }
 
         // Methods in classes
@@ -383,66 +448,14 @@ namespace ScriptCanvasEditorTools
         {
             for (auto behaviorMethod : behaviorClass.second->m_methods)
             {
-                const auto& method = *behaviorMethod.second;
-                AZ::Entity* node = TranslateAZEvent(method);
-                if (node)
-                {
-                    nodes.push_back(node);
-                }
+                const auto method = behaviorMethod.second;
+                methods.push_back(method);
             }
         }
 
-        TranslationFormat translationRoot;
-
-        for (auto& node : nodes)
+        for (auto& method : methods)
         {
-            ScriptCanvas::Nodes::Core::AzEventHandler* nodeComponent = node->FindComponent<ScriptCanvas::Nodes::Core::AzEventHandler>();
-            nodeComponent->Init();
-            nodeComponent->Configure();
-
-            const ScriptCanvas::Nodes::Core::AzEventEntry& azEventEntry{ nodeComponent->GetEventEntry() };
-
-            Entry entry;
-            entry.m_key = azEventEntry.m_eventName;
-            entry.m_context = "AZEventHandler";
-            entry.m_details.m_name = azEventEntry.m_eventName;
-
-            SplitCamelCase(entry.m_details.m_name);
-
-            for (const ScriptCanvas::Slot& slot : nodeComponent->GetSlots())
-            {
-                Slot slotEntry;
-
-                if (slot.IsVisible())
-                {
-                    slotEntry.m_key = slot.GetName();
-
-                    if (slot.GetId() == azEventEntry.m_azEventInputSlotId)
-                    {
-                        slotEntry.m_details.m_name = azEventEntry.m_eventName;
-                    }
-                    else
-                    {
-                        slotEntry.m_details.m_name = slot.GetName();
-                    }
-
-                    entry.m_slots.push_back(slotEntry);
-                }
-            }
-
-            translationRoot.m_entries.push_back(entry);
-
-            // delete the node, don't need to keep it beyond this point
-            delete node;
-
-
-            AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(entry.m_key);
-
-            AZStd::string targetFile = AZStd::string::format("AZEvents/%s", filename.c_str());
-
-            SaveJSONData(targetFile, translationRoot);
-
-            translationRoot.m_entries.clear();
+            TranslateSingleAZEvent(method);
         }
     }
 
@@ -483,6 +496,7 @@ namespace ScriptCanvasEditorTools
         {
             TranslateNode(node);
         }
+
     }
 
     void TranslationGeneration::TranslateNode(const AZ::TypeId& nodeTypeId)
@@ -557,8 +571,11 @@ namespace ScriptCanvasEditorTools
                 nodeComponent->Init();
                 nodeComponent->Configure();
 
-                int inputIndex = 0;
-                int outputIndex = 0;
+                int exeInputIndex = 0;
+                int exeOutputIndex = 0;
+
+                int dataInputIndex = 0;
+                int dataOutputIndex = 0;
 
                 const auto& allSlots = nodeComponent->GetAllSlots();
                 for (const auto& slot : allSlots)
@@ -569,16 +586,16 @@ namespace ScriptCanvasEditorTools
                     {
                         if (slot->GetDescriptor().IsInput())
                         {
-                            slotEntry.m_key = AZStd::string::format("Input_%s", slot->GetName().c_str());
-                            inputIndex++;
+                            slotEntry.m_key = AZStd::string::format("Input_%s_%d", slot->GetName().c_str(), exeInputIndex);
+                            exeInputIndex++;
 
                             slotEntry.m_details.m_name = slot->GetName();
                             slotEntry.m_details.m_tooltip = slot->GetToolTip();
                         }
                         else if (slot->GetDescriptor().IsOutput())
                         {
-                            slotEntry.m_key = AZStd::string::format("Output_%s", slot->GetName().c_str());
-                            outputIndex++;
+                            slotEntry.m_key = AZStd::string::format("Output_%s_%d", slot->GetName().c_str(), exeOutputIndex);
+                            exeOutputIndex++;
 
                             slotEntry.m_details.m_name = slot->GetName();
                             slotEntry.m_details.m_tooltip = slot->GetToolTip();
@@ -617,8 +634,8 @@ namespace ScriptCanvasEditorTools
 
                         if (slot->GetDescriptor().IsInput())
                         {
-                            slotEntry.m_key = AZStd::string::format("DataInput_%s", slot->GetName().c_str());
-                            inputIndex++;
+                            slotEntry.m_key = AZStd::string::format("DataInput_%s_%d", slot->GetName().c_str(), dataInputIndex);
+                            dataInputIndex++;
 
                             AZStd::string argumentKey = slotTypeKey;
                             AZStd::string argumentName = slot->GetName();
@@ -631,8 +648,8 @@ namespace ScriptCanvasEditorTools
                         }
                         else if (slot->GetDescriptor().IsOutput())
                         {
-                            slotEntry.m_key = AZStd::string::format("DataOutput_%s", slot->GetName().c_str());
-                            outputIndex++;
+                            slotEntry.m_key = AZStd::string::format("DataOutput_%s_%d", slot->GetName().c_str(), dataOutputIndex);
+                            dataOutputIndex++;
 
                             AZStd::string resultKey = slotTypeKey;
                             AZStd::string resultName = slot->GetName();
@@ -832,6 +849,33 @@ namespace ScriptCanvasEditorTools
         SaveJSONData(fileName, translationRoot);
     }
 
+    void TranslationGeneration::TranslateDataTypes()
+    {
+        TranslationFormat translationRoot;
+
+        auto dataRegistry = ScriptCanvas::GetDataRegistry();
+        
+        for (auto& typePair : dataRegistry->m_creatableTypes)
+        {
+            if (ScriptCanvas::Data::IsContainerType(typePair.first))
+            {
+                continue;
+            }
+
+            const AZStd::string typeIDStr = typePair.first.GetAZType().ToString<AZStd::string>();
+            AZStd::string typeName = ScriptCanvas::Data::GetName(typePair.first);
+
+            Entry entry;
+            entry.m_key = typeIDStr;
+            entry.m_context = "BehaviorType";
+            entry.m_details.m_name = typeName;
+
+            translationRoot.m_entries.emplace_back(entry);
+        }
+
+        SaveJSONData("Types/BehaviorTypes", translationRoot);
+    }
+
     void TranslationGeneration::TranslateMethod(AZ::BehaviorMethod* behaviorMethod, Method& methodEntry)
     {
         // Arguments (Input Slots)
@@ -915,12 +959,18 @@ namespace ScriptCanvasEditorTools
             AZStd::string methodName = "Get";
             methodName.append(cleanName);
             method.m_key = methodName;
+            method.m_context = "Getter";
             method.m_details.m_name = methodName;
             method.m_details.m_tooltip = behaviorProperty->m_getter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
 
             SplitCamelCase(method.m_details.m_name);
 
             TranslateMethod(behaviorProperty->m_getter, method);
+
+            // We know this is a getter, so there will only be one parameter, we will use the method name as a best
+            // guess for the argument name
+            SplitCamelCase(cleanName);
+            method.m_results[0].m_details.m_name = cleanName;
 
             entry->m_methods.push_back(method);
 
@@ -937,12 +987,18 @@ namespace ScriptCanvasEditorTools
             methodName.append(cleanName);
 
             method.m_key = methodName;
+            method.m_context = "Setter";
             method.m_details.m_name = methodName;
             method.m_details.m_tooltip = behaviorProperty->m_setter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
 
             SplitCamelCase(method.m_details.m_name);
 
             TranslateMethod(behaviorProperty->m_setter, method);
+
+            // We know this is a setter, so there will only be one parameter, we will use the method name as a best
+            // guess for the argument name
+            SplitCamelCase(cleanName);
+            method.m_arguments[1].m_details.m_name = cleanName;
 
             entry->m_methods.push_back(method);
         }
@@ -1307,7 +1363,7 @@ namespace ScriptCanvasEditorTools
 
         scratchBuffer.Clear();
 
-        AzQtComponents::ShowFileOnDesktop(endPath.c_str());
+ //       AzQtComponents::ShowFileOnDesktop(endPath.c_str());
 
     }
 

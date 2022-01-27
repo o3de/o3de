@@ -44,7 +44,7 @@ namespace AZ
             return resultCode;
         }
 
-        ResultCode PipelineLibrary::MergeInto(AZStd::array_view<const PipelineLibrary*> librariesToMerge)
+        ResultCode PipelineLibrary::MergeInto(AZStd::span<const PipelineLibrary* const> librariesToMerge)
         {
             if (!ValidateIsInitialized())
             {

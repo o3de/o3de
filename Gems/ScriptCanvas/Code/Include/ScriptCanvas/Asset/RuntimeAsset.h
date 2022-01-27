@@ -106,65 +106,20 @@ namespace ScriptCanvas
         void EnforcePreloadBehavior();
     };
 
-    class RuntimeAssetBase
+    class RuntimeAsset
         : public AZ::Data::AssetData
     {
     public:
-
-        AZ_RTTI(RuntimeAssetBase, "{19BAD220-E505-4443-AA95-743106748F37}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(RuntimeAssetBase, AZ::SystemAllocator, 0);
-        RuntimeAssetBase(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
-            : AZ::Data::AssetData(assetId, status)
-        {
-
-        }
-    };
-    template <typename DataType>
-    class RuntimeAssetTyped
-        : public RuntimeAssetBase
-    {
-    public:
-        AZ_RTTI(RuntimeAssetBase, "{C925213E-A1FA-4487-831F-9551A984700E}", RuntimeAssetBase);
-        AZ_CLASS_ALLOCATOR(RuntimeAssetBase, AZ::SystemAllocator, 0);
-
-        RuntimeAssetTyped(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
-            : RuntimeAssetBase(assetId, status)
-        {
-
-        }
+        AZ_RTTI(RuntimeAsset, "{3E2AC8CD-713F-453E-967F-29517F331784}", AZ::Data::AssetData);
 
         static const char* GetFileExtension() { return "scriptcanvas_compiled"; }
         static const char* GetFileFilter() { return "*.scriptcanvas_compiled"; }
 
-        const DataType& GetData() const { return m_runtimeData; }
-        DataType& GetData() { return m_runtimeData; }
-        void SetData(const DataType& runtimeData)
-        {
-            m_runtimeData = runtimeData;
-            // When setting data instead of serializing, immediately mark the asset as ready.
-            m_status = AZ::Data::AssetData::AssetStatus::Ready;
-        }
-
-        DataType m_runtimeData;
-
-    protected:
-        friend class RuntimeAssetHandler;
-        RuntimeAssetTyped(const RuntimeAssetTyped&) = delete;
-
-    };
-
-    class RuntimeAsset : public RuntimeAssetTyped<RuntimeData>
-    {
-    public:
-
-        AZ_RTTI(RuntimeAsset, "{3E2AC8CD-713F-453E-967F-29517F331784}", RuntimeAssetTyped<RuntimeData>);
+        RuntimeData m_runtimeData;
 
         RuntimeAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
-            : RuntimeAssetTyped<RuntimeData>(assetId, status)
-        {
-
-        }
-
+            : AZ::Data::AssetData(assetId, status)
+        {}
     };
 
     class SubgraphInterfaceAsset;
@@ -212,24 +167,19 @@ namespace ScriptCanvas
     };
 
     class SubgraphInterfaceAsset
-        : public RuntimeAssetTyped<SubgraphInterfaceData>
+        : public AZ::Data::AssetData
     {
     public:
-        AZ_RTTI(SubgraphInterfaceAsset, "{E22967AC-7673-4778-9125-AF49D82CAF9F}", RuntimeAssetTyped<SubgraphInterfaceData>);
+        AZ_RTTI(SubgraphInterfaceAsset, "{E22967AC-7673-4778-9125-AF49D82CAF9F}", AZ::Data::AssetData);
         AZ_CLASS_ALLOCATOR(SubgraphInterfaceAsset, AZ::SystemAllocator, 0);
-
-        SubgraphInterfaceAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
-            : RuntimeAssetTyped<SubgraphInterfaceData>(assetId, status)
-        {}
-
-        void SetData(const SubgraphInterfaceData& runtimeData)
-        {
-            m_runtimeData = runtimeData;
-        }
 
         static const char* GetFileExtension() { return "scriptcanvas_fn_compiled"; }
         static const char* GetFileFilter() { return "*.scriptcanvas_fn_compiled"; }
 
-        friend class SubgraphInterfaceAssetHandler;
+        SubgraphInterfaceData m_interfaceData;
+
+        SubgraphInterfaceAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
+            : AZ::Data::AssetData(assetId, status)
+        {}
     };
 }

@@ -31,10 +31,7 @@ struct IUnknown
 };
 #endif
 
-#ifdef __uuidof
-#undef __uuidof
-#endif
-#define __uuidof(T) T::uuid()
+#define __az_uuidof(T) T::uuid()
 
 #if defined(AZ_PLATFORM_LINUX) || defined(AZ_PLATFORM_MAC)
 
@@ -107,7 +104,7 @@ struct IClassDesc
     template<class Q>
     HRESULT STDMETHODCALLTYPE QueryInterface(Q** pp)
     {
-        return QueryInterface(__uuidof(Q), (void**)pp);
+        return QueryInterface(__az_uuidof(Q), (void**)pp);
     }
 
     //////////////////////////////////////////////////////////////////////////

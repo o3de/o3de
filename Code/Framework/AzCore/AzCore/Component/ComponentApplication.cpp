@@ -48,10 +48,6 @@
 #include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/IO/SystemFile.h>
 
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
-#include <AzCore/Debug/TraceMessagesDriller.h>
-#include <AzCore/Debug/EventTraceDriller.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 
@@ -156,9 +152,6 @@ namespace AZ
         m_reservedDebug = 0;
         m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
         m_stackRecordLevels = 5;
-        m_enableDrilling = false;
-        m_useOverrunDetection = false;
-        m_useMalloc = false;
     }
 
     bool AppDescriptorConverter(SerializeContext& serialize, SerializeContext::DataElementNode& node)
@@ -328,10 +321,6 @@ namespace AZ
                 ->Field("blockSize", &Descriptor::m_memoryBlocksByteSize)
                 ->Field("reservedOS", &Descriptor::m_reservedOS)
                 ->Field("reservedDebug", &Descriptor::m_reservedDebug)
-                ->Field("enableDrilling", &Descriptor::m_enableDrilling)
-                ->Field("useOverrunDetection", &Descriptor::m_useOverrunDetection)
-                ->Field("useMalloc", &Descriptor::m_useMalloc)
-                ->Field("allocatorRemappings", &Descriptor::m_allocatorRemappings)
                 ->Field("modules", &Descriptor::m_modules)
                 ;
 
@@ -367,9 +356,6 @@ namespace AZ
                         ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedOS, "OS reserved memory", "System memory reserved for OS (used only when 'Allocate all memory at startup' is true)")
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedDebug, "Memory reserved for debugger", "System memory reserved for Debug allocator, like memory tracking (used only when 'Allocate all memory at startup' is true)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_enableDrilling, "Enable Driller", "Enable Drilling support for the application (ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_useOverrunDetection, "Use Overrun Detection", "Use the overrun detection memory manager (only available on some platforms, ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_useMalloc, "Use Malloc", "Use malloc for memory allocations (for memory debugging only, ignored in Release builds)")
                     ;
             }
         }
@@ -486,9 +472,11 @@ namespace AZ
 
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
 
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
+        // Skip over merging the User Registry in non-debug and profile configurations
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+#endif
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
 
@@ -569,10 +557,6 @@ namespace AZ
         m_entityRemovedEvent.DisconnectAllHandlers();
         m_entityActivatedEvent.DisconnectAllHandlers();
         m_entityDeactivatedEvent.DisconnectAllHandlers();
-
-#if !defined(_RELEASE)
-        m_budgetTracker.Reset();
-#endif
 
         DestroyAllocator();
     }
@@ -763,6 +747,12 @@ namespace AZ
         static_cast<SettingsRegistryImpl*>(m_settingsRegistry.get())->ClearNotifiers();
         static_cast<SettingsRegistryImpl*>(m_settingsRegistry.get())->ClearMergeEvents();
 
+#if !defined(_RELEASE)
+        // the budget tracker must be cleaned up prior to module unloading to ensure
+        // budgets initialized cross boundary are freed properly
+        m_budgetTracker.Reset();
+#endif
+
         // Uninit and unload any dynamic modules.
         m_moduleManager->UnloadModules();
         ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "GemsUnloaded", R"({})");
@@ -884,7 +874,7 @@ namespace AZ
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create(desc);
             AZ::Debug::Trace::Instance().Init();
 
-            AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::GetAllocator().GetRecords();
+            AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::Get().GetRecords();
             if (records)
             {
                 records->SetMode(m_descriptor.m_recordingMode);
@@ -896,35 +886,6 @@ namespace AZ
 
             m_isSystemAllocatorOwner = true;
         }
-
-#ifndef RELEASE
-        if (m_descriptor.m_useOverrunDetection)
-        {
-            OverrunDetectionSchema::Descriptor overrunDesc(false);
-            s_overrunDetectionSchema = Environment::CreateVariable<OverrunDetectionSchema>(AzTypeInfo<OverrunDetectionSchema>::Name(), overrunDesc);
-            OverrunDetectionSchema* schemaPtr = &s_overrunDetectionSchema.Get();
-
-            AZ::AllocatorManager::Instance().SetOverrideAllocatorSource(schemaPtr);
-        }
-
-        if (m_descriptor.m_useMalloc)
-        {
-            AZ_Printf("Malloc", "WARNING: Malloc override is enabled. Registered allocators will use malloc instead of their normal allocation schemas.");
-            s_mallocSchema = Environment::CreateVariable<MallocSchema>(AzTypeInfo<MallocSchema>::Name());
-            MallocSchema* schemaPtr = &s_mallocSchema.Get();
-
-            AZ::AllocatorManager::Instance().SetOverrideAllocatorSource(schemaPtr);
-        }
-#endif
-
-        AllocatorManager& allocatorManager = AZ::AllocatorManager::Instance();
-
-        for (const auto& remapping : m_descriptor.m_allocatorRemappings)
-        {
-            allocatorManager.AddAllocatorRemapping(remapping.m_from.c_str(), remapping.m_to.c_str());
-        }
-
-        allocatorManager.FinalizeConfiguration();
     }
 
     void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)

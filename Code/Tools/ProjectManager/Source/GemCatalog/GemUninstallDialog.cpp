@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
 
         // Body
         QLabel* subTitleLabel = new QLabel(tr("Are you sure you want to uninstall %1?").arg(gemName));
-        subTitleLabel->setObjectName("gemCatalogDialogSubTitle");
+        subTitleLabel->setObjectName("dialogSubTitle");
         layout->addWidget(subTitleLabel);
 
         layout->addSpacing(10);

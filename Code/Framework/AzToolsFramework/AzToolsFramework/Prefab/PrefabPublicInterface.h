@@ -101,6 +101,13 @@ namespace AzToolsFramework
              */
             virtual PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(
                 AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) = 0;
+
+            /**
+             * Detects if an entity is owned by a procedural prefab.
+             * @param entityId The entity to query.
+             * @return True if the entity is owned by a procedural prefab instance, false otherwise.
+             */
+            virtual bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const = 0;
             
             /**
              * Detects if an entity is the container entity for its owning prefab instance.

@@ -50,6 +50,20 @@ int UnpackPointLightShadowIndex(const ViewSrg::PointLight light, const int face)
     return (light.m_shadowIndices[index] >> shiftAmount) & 0xFFFF;
 } 
 
+uint ComputeShadowIndex(const ViewSrg::PointLight light, const Surface surface)
+{
+    // shadow map size and bias are the same across all shadowmaps used by a specific point light, so just grab the first one
+    const uint lightIndex0 = UnpackPointLightShadowIndex(light, 0);
+    const float shadowmapSize = ViewSrg::m_projectedFilterParams[lightIndex0].m_shadowmapSize;
+    
+    // Note that the normal bias offset could potentially move the shadowed position from one map to another map inside the same point light shadow.
+    const float normalBias = ViewSrg::m_projectedShadows[lightIndex0].m_normalShadowBias;
+    const float3 biasedPosition = surface.position + ComputeNormalShadowOffset(normalBias, surface.vertexNormal, shadowmapSize);
+    
+    const int shadowCubemapFace = GetPointLightShadowCubemapFace(biasedPosition, light.m_position);
+    return UnpackPointLightShadowIndex(light, shadowCubemapFace);
+}
+
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
@@ -74,10 +88,8 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         float backShadowRatio = 0.0;
         if (o_enableShadows)
         {
-            const int shadowCubemapFace = GetPointLightShadowCubemapFace(surface.position, light.m_position);
-            const int shadowIndex = UnpackPointLightShadowIndex(light, shadowCubemapFace);
             const float3 lightDir = normalize(light.m_position - surface.position);
-             
+            const uint shadowIndex = ComputeShadowIndex(light, surface);
             litRatio *= ProjectedShadow::GetVisibility(
                     shadowIndex,
                     light.m_position,

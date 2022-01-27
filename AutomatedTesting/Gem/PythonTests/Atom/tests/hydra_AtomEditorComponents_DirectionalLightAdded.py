@@ -95,7 +95,7 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a Directional Light entity with no components.
@@ -168,10 +168,12 @@ def AtomEditorComponents_DirectionalLight_AddedToEntity():
 
         # 12. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, directional_light_entity.exists())
 
         # 13. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not directional_light_entity.exists())
 
         # 14. Look for errors and asserts.

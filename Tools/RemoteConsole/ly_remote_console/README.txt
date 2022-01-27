@@ -22,8 +22,7 @@ installed on your system.
 
 INSTALL
 -----------
-It is recommended to set up these these tools with the lmbr_test tool Lumberyard's root directory:
-  lmbr_test pysetup install
+Installation of these tools happen automatically when get_python and cmake is run.
 
 To manually install the project in development mode:
   python -m pip install -e .

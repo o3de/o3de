@@ -30,8 +30,6 @@ namespace ScriptCanvasEditor
 
     using GraphItemCommandNotificationBus = AZ::EBus<GraphItemCommandNotifications>;
 
-    class ScriptCanvasMemoryAsset;
-
     // This command is the base URSequencePoint command from which all Script Canvas undo/redo commands derive
     class GraphItemCommand
         : public AzToolsFramework::UndoSystem::URSequencePoint
@@ -46,7 +44,7 @@ namespace ScriptCanvasEditor
         void Undo() override;
         void Redo() override;
 
-        virtual void Capture(ScriptCanvasMemoryAsset& memoryAsset, bool captureUndo);
+        virtual void Capture(EditorGraph* graph, bool captureUndo);
 
         bool Changed() const override;
 
@@ -76,7 +74,7 @@ namespace ScriptCanvasEditor
 
         void Undo() override;
         void Redo() override;
-        void Capture(ScriptCanvasMemoryAsset& memoryAsset, bool captureUndo) override;
+        void Capture(EditorGraph* graph, bool captureUndo) override;
 
         void RestoreItem(const AZStd::vector<AZ::u8>& restoreBuffer) override;
 
@@ -103,7 +101,7 @@ namespace ScriptCanvasEditor
         void Undo() override;
         void Redo() override;
 
-        void Capture(ScriptCanvasMemoryAsset& memoryAsset, bool captureUndo) override;
+        void Capture(EditorGraph* graph, bool captureUndo) override;
 
     protected:
         GraphItemAddCommand(const GraphItemAddCommand&) = delete;
@@ -124,7 +122,7 @@ namespace ScriptCanvasEditor
         void Undo() override;
         void Redo() override;
 
-        void Capture(ScriptCanvasMemoryAsset& memoryAsset, bool captureUndo) override;
+        void Capture(EditorGraph* graph, bool captureUndo) override;
 
     protected:
         GraphItemRemovalCommand(const GraphItemRemovalCommand&) = delete;

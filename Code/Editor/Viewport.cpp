@@ -14,14 +14,11 @@
 // Qt
 #include <QPainter>
 
-// AzCore
-#include <AzCore/Console/IConsole.h>
-
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
+// AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
-#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -33,26 +30,12 @@
 #include "Objects/ObjectManager.h"
 #include "Util/3DConnexionDriver.h"
 #include "PluginManager.h"
-#include "Include/IRenderListener.h"
 #include "GameEngine.h"
 #include "Settings.h"
 
 #ifdef LoadCursor
 #undef LoadCursor
 #endif
-
-AZ_CVAR(
-    float,
-    ed_defaultEntityPlacementDistance,
-    10.0f,
-    nullptr,
-    AZ::ConsoleFunctorFlags::Null,
-    "The default distance to place an entity from the camera if no intersection is found");
-
-float GetDefaultEntityPlacementDistance()
-{
-    return ed_defaultEntityPlacementDistance;
-}
 
 //////////////////////////////////////////////////////////////////////
 // Viewport drag and drop support
@@ -63,7 +46,7 @@ void QtViewport::BuildDragDropContext(
 {
     context.m_hitLocation = AzToolsFramework::FindClosestPickIntersection(
         viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), AzToolsFramework::EditorPickRayLength,
-        GetDefaultEntityPlacementDistance());
+        AzToolsFramework::GetDefaultEntityPlacementDistance());
 }
 
 void QtViewport::dragEnterEvent(QDragEnterEvent* event)
@@ -241,61 +224,6 @@ void QtViewport::GetDimensions(int* pWidth, int* pHeight) const
     {
         *pHeight = height();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::RegisterRenderListener(IRenderListener*    piListener)
-{
-#ifdef _DEBUG
-    size_t nCount(0);
-    size_t nTotal(0);
-
-    nTotal = m_cRenderListeners.size();
-    for (nCount = 0; nCount < nTotal; ++nCount)
-    {
-        if (m_cRenderListeners[nCount] == piListener)
-        {
-            assert(!"Registered the same RenderListener multiple times.");
-            break;
-        }
-    }
-#endif //_DEBUG
-    m_cRenderListeners.push_back(piListener);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool QtViewport::UnregisterRenderListener(IRenderListener*  piListener)
-{
-    size_t nCount(0);
-    size_t nTotal(0);
-
-    nTotal = m_cRenderListeners.size();
-    for (nCount = 0; nCount < nTotal; ++nCount)
-    {
-        if (m_cRenderListeners[nCount] == piListener)
-        {
-            m_cRenderListeners.erase(m_cRenderListeners.begin() + nCount);
-            return true;
-        }
-    }
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool QtViewport::IsRenderListenerRegistered(IRenderListener*    piListener)
-{
-    size_t nCount(0);
-    size_t nTotal(0);
-
-    nTotal = m_cRenderListeners.size();
-    for (nCount = 0; nCount < nTotal; ++nCount)
-    {
-        if (m_cRenderListeners[nCount] == piListener)
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1180,18 +1108,6 @@ bool QtViewport::GetAdvancedSelectModeFlag()
     return m_bAdvancedSelectMode;
 }
 
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::ProcessRenderLisneters(DisplayContext& rstDisplayContext)
-{
-    size_t nCount(0);
-    size_t nTotal(0);
-
-    nTotal = m_cRenderListeners.size();
-    for (nCount = 0; nCount < nTotal; ++nCount)
-    {
-        m_cRenderListeners[nCount]->Render(rstDisplayContext);
-    }
-}
 //////////////////////////////////////////////////////////////////////////
 #if defined(AZ_PLATFORM_WINDOWS)
 // Note: Both CreateAnglesYPR and CreateOrientationYPR were copied verbatim from Cry_Camera.h which has been removed.

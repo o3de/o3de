@@ -37,8 +37,6 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
-    AZ_CVAR_EXTERNED(AZ::CVarFixedString, sv_defaultPlayerSpawnAsset);
-
     //! Multiplayer system component wraps the bridging logic between the game and transport layer.
     class MultiplayerSystemComponent final
         : public AZ::Component
@@ -186,7 +184,7 @@ namespace Multiplayer
         double m_serverSendAccumulator = 0.0;
         float m_renderBlendFactor = 0.0f;
         float m_tickFactor = 0.0f;
-        bool m_spawnNetboundEntities = true;
+        bool m_spawnNetboundEntities = false;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

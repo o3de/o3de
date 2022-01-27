@@ -22,7 +22,7 @@
 // ------- Diffuse Lighting -------
 
 //! Simple Lambertian BRDF. 
-float3 DiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight, float diffuseResponse)
+float3 DiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight, float3 diffuseResponse)
 {
     float NdotL = saturate(dot(normal, dirToLight));
     return albedo * NdotL * INV_PI * diffuseResponse;

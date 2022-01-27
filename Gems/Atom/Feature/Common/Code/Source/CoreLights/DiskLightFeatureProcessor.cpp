@@ -8,8 +8,6 @@
 
 #include <CoreLights/DiskLightFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>

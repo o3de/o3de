@@ -5,45 +5,45 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ComparisonExpression",
+                "name": "Comparison Expression",
                 "tooltip": "ComparisonExpression"
             },
             "slots": [
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Signal to perform the evaluation when desired."
                     }
                 },
                 {
-                    "base": "Output_True",
+                    "base": "Output_True_0",
                     "details": {
                         "name": "True",
                         "tooltip": "Signaled if the result of the operation is true."
                     }
                 },
                 {
-                    "base": "Output_False",
+                    "base": "Output_False_1",
                     "details": {
                         "name": "False",
                         "tooltip": "Signaled if the result of the operation is false."
                     }
                 },
                 {
-                    "base": "DataInput_Value A",
+                    "base": "DataInput_Value A_0",
                     "details": {
                         "name": "Value A"
                     }
                 },
                 {
-                    "base": "DataInput_Value B",
+                    "base": "DataInput_Value B_1",
                     "details": {
                         "name": "Value B"
                     }

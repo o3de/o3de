@@ -20,7 +20,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Application/Application.h>
 
-#include <AzFramework/Process/ProcessCommunicator.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 
@@ -31,7 +30,6 @@
 
 #include "native/utilities/assetUtils.h"
 #include "native/utilities/AssetBuilderInfo.h"
-#include "native/utilities/CommunicatorTracePrinter.h"
 
 #include <AssetProcessor_Traits_Platform.h>
 

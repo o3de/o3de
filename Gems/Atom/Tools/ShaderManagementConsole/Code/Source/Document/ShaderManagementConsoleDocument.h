@@ -7,12 +7,12 @@
  */
 #pragma once
 
-#include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 
 namespace ShaderManagementConsole
 {

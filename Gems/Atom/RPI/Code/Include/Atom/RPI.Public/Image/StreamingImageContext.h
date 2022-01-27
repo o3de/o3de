@@ -11,6 +11,7 @@
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/containers/intrusive_list.h>
 
 #include <Atom/RHI.Reflect/Limits.h>
 

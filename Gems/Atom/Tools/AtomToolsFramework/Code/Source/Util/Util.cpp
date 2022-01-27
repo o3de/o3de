@@ -62,6 +62,8 @@ namespace AtomToolsFramework
         const QFileInfo initialFileInfo(initialPath);
         const QString initialExt(initialFileInfo.completeSuffix());
 
+        // Instead of just passing in the absolute file path, we pass in the absolute folder path and the base name to prevent the file
+        // dialog from displaying multiple extensions when the extension contains a "."
         const QFileInfo selectedFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
             QApplication::activeWindow(),
             "Save File",
@@ -82,7 +84,9 @@ namespace AtomToolsFramework
             return QFileInfo();
         }
 
-        return selectedFileInfo;
+        // Reconstructing the file info from the absolute path and expected extension to compensate for an issue with the save file
+        // dialog adding the extension multiple times if it contains "." like *.lightingpreset.azasset
+        return QFileInfo(selectedFileInfo.absolutePath() + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + selectedFileInfo.baseName() + "." + initialExt);
     }
 
     QFileInfo GetOpenFileInfo(const AZStd::vector<AZ::Data::AssetType>& assetTypes)
@@ -164,13 +168,13 @@ namespace AtomToolsFramework
         return duplicateFileInfo;
     }
 
-    bool LaunchTool(const QString& baseName, const QString& extension, const QStringList& arguments)
+    bool LaunchTool(const QString& baseName, const QStringList& arguments)
     {
         AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
         AZ_Assert(!engineRoot.empty(), "Cannot query Engine Path");
 
-        AZ::IO::FixedMaxPath launchPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory())
-            / (baseName + extension).toUtf8().constData();
+        AZ::IO::FixedMaxPath launchPath =
+            AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / (baseName + AZ_TRAIT_OS_EXECUTABLE_EXTENSION).toUtf8().constData();
 
         return QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }

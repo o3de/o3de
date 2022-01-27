@@ -5,28 +5,27 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "Invalid Axis Aligned Bounding Box",
-                "category": "Math/Axis Aligned Bounding Box",
-                "tooltip": "returns an invalid AABB (min > max), adding any point to it will make it valid",
-                "subtitle": "Axis Aligned Bounding Box"
+                "name": "Null",
+                "category": "Math/AABB",
+                "tooltip": "returns an invalid AABB (min > max), adding any point to it will make it valid"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Invalid AABB"
+                        "name": "Result"
                     }
                 }
             ]

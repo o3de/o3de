@@ -57,6 +57,7 @@ ly_add_target(
     NAME ScriptCanvas.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
+        scriptcanvasgem_headers.cmake
         scriptcanvasgem_common_files.cmake
         scriptcanvasgem_runtime_asset_files.cmake
     INCLUDE_DIRECTORIES
@@ -87,6 +88,22 @@ ly_add_target(
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvasDebugger
+)
+
+ly_add_target(
+    NAME ScriptCanvas.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        scriptcanvasgem_headers.cmake
+    COMPILE_DEFINITIONS
+        INTERFACE
+            SCRIPTCANVAS_ERRORS_ENABLED
+            ${SCRIPT_CANVAS_COMMON_DEFINES}
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            .
+            Include
+            ${SCRIPT_CANVAS_AUTOGEN_BUILD_DIR}
 )
 
 ly_add_target(
@@ -121,32 +138,6 @@ ly_create_alias(NAME ScriptCanvas.Servers  NAMESPACE Gem TARGETS Gem::ScriptCanv
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME ScriptCanvasEditor STATIC
-        NAMESPACE Gem
-        AUTOMOC
-        FILES_CMAKE
-            scriptcanvasgem_editor_static_files.cmake
-        COMPILE_DEFINITIONS
-            PUBLIC
-                SCRIPTCANVAS_ERRORS_ENABLED
-            PRIVATE
-                SCRIPTCANVAS_EDITOR
-                ${SCRIPT_CANVAS_COMMON_DEFINES}
-        INCLUDE_DIRECTORIES
-            PUBLIC
-                .
-                Editor/Include
-                Editor/Static/Include
-                Editor/Assets
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzCore
-                AZ::AzToolsFramework
-                3rdParty::Qt::Widgets
-                Gem::ScriptCanvas
-    )
-
-    ly_add_target(
         NAME ScriptCanvas.Editor.Static STATIC
         NAMESPACE Gem
         AUTOMOC
@@ -164,11 +155,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 SCRIPTCANVAS_EDITOR
                 ${SCRIPT_CANVAS_COMMON_DEFINES}
         INCLUDE_DIRECTORIES
+            PUBLIC
+                Editor/Include
             PRIVATE
                 .
                 Editor
                 Tools
-                Editor/Include
                 ${SCRIPT_CANVAS_AUTOGEN_BUILD_DIR}
         BUILD_DEPENDENCIES  
             PUBLIC
@@ -177,7 +169,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 ${additional_dependencies}
                 Gem::ScriptCanvas
-                Gem::ScriptCanvasEditor
                 Gem::ScriptEvents.Static
                 Gem::GraphCanvasWidgets
                 Gem::ExpressionEvaluation.Static
@@ -189,7 +180,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME ScriptCanvas.Editor GEM_MODULE
-
         NAMESPACE Gem
         FILES_CMAKE
             scriptcanvasgem_editor_shared_files.cmake
@@ -200,10 +190,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 SCRIPTCANVAS_EDITOR
                 ${SCRIPT_CANVAS_COMMON_DEFINES}
         INCLUDE_DIRECTORIES
+            PUBLIC
+                Editor/Include
             PRIVATE
                 .
                 Editor
-                Editor/Include
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzToolsFramework
@@ -277,7 +268,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
-                    Gem::ScriptCanvasEditor
                     Gem::ScriptCanvas.Editor.Static
         )
         ly_add_googletest(

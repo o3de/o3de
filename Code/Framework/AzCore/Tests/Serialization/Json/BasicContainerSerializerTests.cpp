@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/forward_list.h>
 #include <AzCore/std/iterator.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 #include <Tests/Serialization/Json/TestCases_Classes.h>

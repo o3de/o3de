@@ -69,6 +69,45 @@ protected:
         m_colliderComponent = m_entity->CreateComponent<Terrain::TerrainPhysicsColliderComponent>(Terrain::TerrainPhysicsColliderConfig());
         m_app.RegisterComponentDescriptor(m_colliderComponent->CreateDescriptor());
     }
+
+    void ProcessRegionLoop(const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
+        AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+        AzFramework::SurfaceData::SurfaceTagWeightList* surfaceTags,
+        float mockHeight)
+    {
+        if (!perPositionCallback)
+        {
+            return;
+        }
+
+        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize.GetX()));
+        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize.GetY()));
+
+        AzFramework::SurfaceData::SurfacePoint surfacePoint;
+        for (size_t y = 0; y < numSamplesY; y++)
+        {
+            float fy = aznumeric_cast<float>(inRegion.GetMin().GetY() + (y * stepSize.GetY()));
+            for (size_t x = 0; x < numSamplesX; x++)
+            {
+                bool terrainExists = false;
+                float fx = aznumeric_cast<float>(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
+                surfacePoint.m_position.Set(fx, fy, mockHeight);
+                if (surfaceTags)
+                {
+                    surfacePoint.m_surfaceTags.clear();
+                    if (fy < 128.0)
+                    {
+                        surfacePoint.m_surfaceTags.push_back(surfaceTags->at(0));
+                    }
+                    else
+                    {
+                        surfacePoint.m_surfaceTags.push_back(surfaceTags->at(1));
+                    }
+                }
+                perPositionCallback(x, y, surfacePoint, terrainExists);
+            }
+        }
+    }
 };
 
 TEST_F(TerrainPhysicsColliderComponentTest, ActivateEntityActivateSuccess)
@@ -238,6 +277,14 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
+    ON_CALL(terrainListener, ProcessHeightsFromRegion).WillByDefault(
+        [this](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+        {
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, nullptr, 0.0f);
+        }
+    );
 
     int32_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
@@ -271,8 +318,15 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
 
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
-    ON_CALL(terrainListener, GetHeightFromFloats).WillByDefault(Return(mockHeight));
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
+    ON_CALL(terrainListener, ProcessHeightsFromRegion).WillByDefault(
+        [this, mockHeight](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            [[maybe_unused]]  AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+        {
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, nullptr, mockHeight);
+        }
+    );
 
     // Just return the bounds as setup. This is equivalent to the box being at the origin.
     NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
@@ -289,4 +343,162 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     EXPECT_NEAR(heights[0], expectedHeightValue, 0.01f);
 
     m_entity->Reset();
+}
+
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsMaterials)
+{
+    // Check that the TerrainPhysicsCollider returns all the assigned materials.
+    CreateEntity();
+
+    m_boxComponent = m_entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
+    m_app.RegisterComponentDescriptor(m_boxComponent->CreateDescriptor());
+
+    // Create two SurfaceTag/Material mappings and add them to the collider.
+    Terrain::TerrainPhysicsColliderConfig config;
+
+    const Physics::MaterialId mat1 = Physics::MaterialId::Create();
+    const Physics::MaterialId mat2 = Physics::MaterialId::Create();
+
+    const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
+    const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
+
+    Terrain::TerrainPhysicsSurfaceMaterialMapping mapping1;
+    mapping1.m_materialId = mat1;
+    mapping1.m_surfaceTag = tag1;
+    config.m_surfaceMaterialMappings.emplace_back(mapping1);
+
+    Terrain::TerrainPhysicsSurfaceMaterialMapping mapping2;
+    mapping2.m_materialId = mat2;
+    mapping2.m_surfaceTag = tag2;
+    config.m_surfaceMaterialMappings.emplace_back(mapping2);
+
+    m_colliderComponent = m_entity->CreateComponent<Terrain::TerrainPhysicsColliderComponent>(config);
+    m_app.RegisterComponentDescriptor(m_colliderComponent->CreateDescriptor());
+
+    m_entity->Activate();
+
+    AZStd::vector<Physics::MaterialId> materialList;
+    Physics::HeightfieldProviderRequestsBus::EventResult(
+        materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
+
+    // The materialList should be 3 items long: the two materials we've added, plus a default material.
+    EXPECT_EQ(materialList.size(), 3);
+
+    Physics::MaterialId defaultMaterial = Physics::MaterialId();
+    EXPECT_EQ(materialList[0], defaultMaterial);
+    EXPECT_EQ(materialList[1], mat1);
+    EXPECT_EQ(materialList[2], mat2);
+
+    m_entity.reset();
+}
+
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsMaterialsWhenNotMapped)
+{
+    // Check that the TerrainPhysicsCollider returns a default material when no surfaces are mapped.
+    CreateEntity();
+
+    m_boxComponent = m_entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
+    m_app.RegisterComponentDescriptor(m_boxComponent->CreateDescriptor());
+
+    m_colliderComponent = m_entity->CreateComponent<Terrain::TerrainPhysicsColliderComponent>();
+    m_app.RegisterComponentDescriptor(m_colliderComponent->CreateDescriptor());
+
+    m_entity->Activate();
+
+    AZStd::vector<Physics::MaterialId> materialList;
+    Physics::HeightfieldProviderRequestsBus::EventResult(
+        materialList, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList);
+
+    // The materialList should be 1 items long: which should be the default material.
+    EXPECT_EQ(materialList.size(), 1);
+
+    Physics::MaterialId defaultMaterial = Physics::MaterialId();
+    EXPECT_EQ(materialList[0], defaultMaterial);
+
+    m_entity.reset();
+}
+
+TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndMaterialsReturnsCorrectly)
+{
+    // Check that the TerrainPhysicsCollider returns a heightfield of the expected size.
+    CreateEntity();
+
+    m_boxComponent = m_entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
+    m_app.RegisterComponentDescriptor(m_boxComponent->CreateDescriptor());
+
+    // Create two SurfaceTag/Material mappings and add them to the collider.
+    Terrain::TerrainPhysicsColliderConfig config;
+
+    const Physics::MaterialId mat1 = Physics::MaterialId::Create();
+    const Physics::MaterialId mat2 = Physics::MaterialId::Create();
+
+    const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
+    const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
+
+    Terrain::TerrainPhysicsSurfaceMaterialMapping mapping1;
+    mapping1.m_materialId = mat1;
+    mapping1.m_surfaceTag = tag1;
+    config.m_surfaceMaterialMappings.emplace_back(mapping1);
+
+    Terrain::TerrainPhysicsSurfaceMaterialMapping mapping2;
+    mapping2.m_materialId = mat2;
+    mapping2.m_surfaceTag = tag2;
+    config.m_surfaceMaterialMappings.emplace_back(mapping2);
+
+    m_colliderComponent = m_entity->CreateComponent<Terrain::TerrainPhysicsColliderComponent>(config);
+    m_app.RegisterComponentDescriptor(m_colliderComponent->CreateDescriptor());
+
+    m_entity->Activate();
+
+    const AZ::Vector3 boundsMin = AZ::Vector3(0.0f);
+    const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
+
+    NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
+    const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(boundsMin, boundsMax);
+    ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
+
+    const float mockHeight = 32768.0f;
+    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+
+    AzFramework::SurfaceData::SurfaceTagWeight return1;
+    return1.m_surfaceType = tag1;
+    return1.m_weight = 1.0f;
+
+    AzFramework::SurfaceData::SurfaceTagWeight return2;
+    return2.m_surfaceType = tag2;
+    return2.m_weight = 1.0f;
+
+    AzFramework::SurfaceData::SurfaceTagWeightList surfaceTags = { return1, return2 };
+
+    NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
+    ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
+    ON_CALL(terrainListener, ProcessSurfacePointsFromRegion).WillByDefault(
+        [this, mockHeight, &surfaceTags](const AZ::Aabb& inRegion, const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampleFilter)
+        {
+            ProcessRegionLoop(inRegion, stepSize, perPositionCallback, &surfaceTags, mockHeight);
+        }
+    );
+
+    AZStd::vector<Physics::HeightMaterialPoint> heightsAndMaterials;
+
+    Physics::HeightfieldProviderRequestsBus::EventResult(
+        heightsAndMaterials, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
+
+    // We set the bounds to 256, so check that the correct number of entries are present.
+    EXPECT_EQ(heightsAndMaterials.size(), 256 * 256);
+
+    const float expectedHeightValue = 16384.0f;
+
+    // 
+    // Check an entry from the first half of the returned list.
+    EXPECT_EQ(heightsAndMaterials[0].m_materialIndex, 1);
+    EXPECT_NEAR(heightsAndMaterials[0].m_height, expectedHeightValue, 0.01f);
+
+    // Check an entry from the second half of the list
+    EXPECT_EQ(heightsAndMaterials[256 * 128].m_materialIndex, 2);
+    EXPECT_NEAR(heightsAndMaterials[256 * 128].m_height, expectedHeightValue, 0.01f);
+
+    m_entity.reset();
 }

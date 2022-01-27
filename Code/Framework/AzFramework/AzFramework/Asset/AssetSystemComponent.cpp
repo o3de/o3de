@@ -9,15 +9,16 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
@@ -27,6 +28,8 @@
 #include <AzFramework/Asset/NetworkAssetNotification_private.h>
 #include <AzFramework/Asset/Benchmark/BenchmarkCommands.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
+
+AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AzFramework
 {
@@ -302,7 +305,7 @@ namespace AzFramework
         // SystemTickBus overrides
         void AssetSystemComponent::OnSystemTick()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(AzFramework);
             LegacyAssetEventBus::ExecuteQueuedEvents();
         }
 

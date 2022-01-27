@@ -12,17 +12,20 @@ import sys
 
 from o3de import manifest
 
-def _run_get_registered(args: argparse) -> str or pathlib.Path:
-    if args.override_home_folder:
-        manifest.override_home_folder = args.override_home_folder
 
-    return manifest.get_registered(args.engine_name,
-                          args.project_name,
-                          args.gem_name,
-                          args.template_name,
-                          args.default_folder,
-                          args.repo_name,
-                          args.restricted_name)
+def _run_get_registered(args: argparse) -> int:
+    registered_path = manifest.get_registered(args.engine_name,
+                                              args.project_name,
+                                              args.gem_name,
+                                              args.template_name,
+                                              args.default_folder,
+                                              args.repo_name,
+                                              args.restricted_name)
+    # If a path has been found return 0
+    if registered_path:
+        print(registered_path)
+        return 0
+    return 1
 
 
 def add_parser_args(parser):
@@ -48,9 +51,6 @@ def add_parser_args(parser):
                        help='Repo name.')
     group.add_argument('-rsn', '--restricted-name', type=str, required=False,
                        help='Restricted name.')
-
-    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
-                        help='By default the home folder is the user folder, override it to this folder.')
 
     parser.set_defaults(func=_run_get_registered)
 

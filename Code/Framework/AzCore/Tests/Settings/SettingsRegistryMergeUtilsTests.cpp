@@ -539,6 +539,22 @@ tags=tools,renderer,metal)"
         EXPECT_STREQ("Bat", commandLine.GetMiscValue(2).c_str());
     }
 
+    TEST_F(SettingsRegistryMergeUtilsCommandLineFixture, RegsetFileArgument_DoesNotMergeNUL)
+    {
+        AZStd::string regsetFile = AZ::IO::SystemFile::GetNullFilename();
+        AZ::CommandLine commandLine;
+        commandLine.Parse({ "--regset-file", regsetFile });
+
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_registry, commandLine, false);
+
+        // Add a settings path to anchor loaded settings underneath
+        regsetFile = AZStd::string::format("%s::/AnchorPath/Of/Settings", AZ::IO::SystemFile::GetNullFilename());
+        commandLine.Parse({ "--regset-file", regsetFile });
+
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_registry, commandLine, false);
+        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::NoType, m_registry->GetType("/AnchorPath/Of/Settings"));
+    }
+
     using SettingsRegistryAncestorDescendantOrEqualPathFixture = SettingsRegistryMergeUtilsCommandLineFixture;
 
     TEST_F(SettingsRegistryAncestorDescendantOrEqualPathFixture, ValidateThatAncestorOrDescendantOrPathWithTheSameValue_Succeeds)

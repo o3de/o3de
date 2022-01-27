@@ -7,35 +7,35 @@
             "details": {
                 "name": "Distance Squared",
                 "category": "Math/Vector2",
-                "tooltip": "Returns the distance squared from B to A, (generally faster than the actual distance if only needed for comparison)"
+                "tooltip": "returns the distance squared from B to A, (generally faster than the actual distance if only needed for comparison)"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_A",
+                    "base": "DataInput_A_0",
                     "details": {
                         "name": "A"
                     }
                 },
                 {
-                    "base": "DataInput_B",
+                    "base": "DataInput_B_1",
                     "details": {
                         "name": "B"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

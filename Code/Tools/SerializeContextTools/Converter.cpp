@@ -553,8 +553,6 @@ namespace AZ
                 rapidjson::Value(descriptor.m_reservedOS), memoryDoc.GetAllocator());
             memoryDoc.AddMember(rapidjson::StringRef("reservedDebug"),
                 rapidjson::Value(descriptor.m_reservedDebug), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("enableDrilling"),
-                rapidjson::Value(descriptor.m_enableDrilling), memoryDoc.GetAllocator());
             documents.emplace_back(AZStd::move(memoryFilePath.Native()), AZStd::move(memoryDoc));
             
             return true;

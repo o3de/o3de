@@ -146,6 +146,7 @@ namespace AZ
 
         void RasterPass::UpdateDrawList()
         {
+            AZ_PROFILE_SCOPE(RPI, "RasterPass::UpdateDrawList");
              // DrawLists from dynamic draw
             AZStd::vector<RHI::DrawListView> drawLists = DynamicDrawInterface::Get()->GetDrawListsForPass(this);
 

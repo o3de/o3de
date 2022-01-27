@@ -9,10 +9,10 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Atom/Document/MaterialDocumentSettings.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <Document/MaterialDocumentSettings.h>
 #endif
 
 namespace MaterialEditor

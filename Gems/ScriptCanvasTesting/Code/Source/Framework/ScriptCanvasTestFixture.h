@@ -10,10 +10,8 @@
 
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Driller/Driller.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -67,7 +65,6 @@ namespace ScriptCanvasTests
                 {
                     ScriptCanvasEditor::TraceSuppressionBus::Broadcast(&ScriptCanvasEditor::TraceSuppressionRequests::SuppressPrintf, true);
                     AZ::ComponentApplication::Descriptor descriptor;
-                    descriptor.m_enableDrilling = false;
                     descriptor.m_useExistingAllocator = true;
 
                     AZ::DynamicModuleDescriptor dynamicModuleDescriptor;

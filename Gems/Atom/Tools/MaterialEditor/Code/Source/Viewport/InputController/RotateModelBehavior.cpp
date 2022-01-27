@@ -8,7 +8,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <Viewport/InputController/MaterialEditorViewportInputController.h>
-#include <Source/Viewport/InputController/RotateModelBehavior.h>
+#include <Viewport/InputController/RotateModelBehavior.h>
 
 namespace MaterialEditor
 {

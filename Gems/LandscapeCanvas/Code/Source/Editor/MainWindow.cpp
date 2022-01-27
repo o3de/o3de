@@ -19,13 +19,16 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <IEditor.h>
 
@@ -37,6 +40,7 @@
 
 // Qt
 #include <QApplication>
+#include <QMessageBox>
 #include <QStringList>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -103,6 +107,8 @@
 #include <Editor/Nodes/Shapes/TubeShapeNode.h>
 #include <Editor/Nodes/UI/GradientPreviewThumbnailItem.h>
 #include <EditorLandscapeCanvasComponent.h>
+
+#include <LmbrCentral/Shape/ReferenceShapeComponentBus.h>
 
 namespace LandscapeCanvasEditor
 {
@@ -201,15 +207,34 @@ namespace LandscapeCanvasEditor
     {
         using namespace AzToolsFramework;
 
-        static const QStringList preferredCategories = {
-            "Vegetation",
-            "Atom"
-        };
+        // A map of category names with preferred component names.
+        // There may be multiple component names for a category, as long as they provide different services.
+        const AZStd::map<QString, AZStd::vector<QString>> preferredComponentsByCategory = { { "Shape", { "Shape Reference" } } };
+
+        // Scan through the preferred categories to see whether any exist in the componentDataTable.
+        for (const auto& preferredComponentPair : preferredComponentsByCategory)
+        {
+            auto candidateDataTablePair = componentDataTable.find(preferredComponentPair.first);
+            if (candidateDataTablePair != componentDataTable.end())
+            {
+                // Now check all the preferred components for that category, and return the first one that exists in the candidate componentDataTable.
+                for (const auto& preferredComponentName : preferredComponentPair.second)
+                {
+                    const auto& candidateComponent = candidateDataTablePair->second.find(preferredComponentName);
+                    if (candidateComponent != candidateDataTablePair->second.end())
+                    {
+                        return candidateComponent->second->m_typeId;
+                    }
+                }
+            }
+        }
 
         // There are a couple of cases where we prefer certain categories of Components
-        // to be added over others (e.g. a Vegetation Shape Reference instead of actual LmbrCentral shapes),
+        // to be added over others,
         // so if those there are components in those categories, then choose them first.
         // Otherwise, just pick the first one in the list.
+        static const QStringList preferredCategories = { "Vegetation", "Atom" };
+
         ComponentPaletteUtil::ComponentDataTable::const_iterator categoryIt;
         for (const auto& categoryName : preferredCategories)
         {
@@ -427,6 +452,8 @@ namespace LandscapeCanvasEditor
         return config;
     }
 
+    AzFramework::EntityContextId MainWindow::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+    
     MainWindow::MainWindow(QWidget* parent)
         : GraphModelIntegration::EditorMainWindow(GetDefaultConfig(), parent)
     {
@@ -449,8 +476,14 @@ namespace LandscapeCanvasEditor
         AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(m_serializeContext, "Failed to acquire application serialize context.");
 
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            s_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+
         m_prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get();
         AZ_Assert(m_prefabFocusPublicInterface, "LandscapeCanvas - could not get PrefabFocusPublicInterface on construction.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(m_readOnlyEntityPublicInterface, "LandscapeCanvas - could not get ReadOnlyEntityPublicInterface on construction.");
 
         const GraphCanvas::EditorId& editorId = GetEditorId();
 
@@ -815,6 +848,26 @@ namespace LandscapeCanvasEditor
     void MainWindow::OnEditorOpened(GraphCanvas::EditorDockWidget* dockWidget)
     {
         using namespace AzFramework::Terrain;
+
+        // Detect if it's possible to create a new entity in the current context
+        AZ::EntityId focusRootEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId);
+        if (m_readOnlyEntityPublicInterface->IsReadOnly(focusRootEntityId))
+        {
+            // Abort
+            CloseEditor(dockWidget->GetDockWidgetId());
+
+            QWidget* activeWindow = AzToolsFramework::GetActiveWindow();
+
+            QMessageBox::warning(
+                activeWindow,
+                QString("Landscape Canvas Asset Creation Error"),
+                QString("Could not create new Landscape Canvas asset under read-only entity."),
+                QMessageBox::Ok,
+                QMessageBox::Ok
+            );
+
+            return;
+        }
 
         // Invoke the GraphCanvas base instead of the GraphModelIntegration::EditorMainWindow so that we
         // can do our own custom handling when opening an existing graph
@@ -1303,7 +1356,7 @@ namespace LandscapeCanvasEditor
             }
 
             // Special case for the Vegetation Area Placement Bounds, the slot actually represents a separate
-            // Vegetation Reference Shape or actual Shape component on the same Entity
+            // Reference Shape or actual Shape component on the same Entity
             AZ::Component* component = nullptr;
             auto targetBaseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
             if (targetBaseNode->GetBaseNodeType() == LandscapeCanvas::BaseNode::BaseNodeType::VegetationArea && targetSlot->GetName() == LandscapeCanvas::PLACEMENT_BOUNDS_SLOT_ID)
@@ -1379,7 +1432,7 @@ namespace LandscapeCanvasEditor
                     AzToolsFramework::EditorDisabledCompositionRequestBus::Event(targetEntityId, &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
                     for (auto disabledComponent : disabledComponents)
                     {
-                        if (disabledComponent->RTTI_GetType() == Vegetation::EditorReferenceShapeComponentTypeId)
+                        if (disabledComponent->RTTI_GetType() == LmbrCentral::EditorReferenceShapeComponentTypeId)
                         {
                             component = disabledComponent;
 
@@ -1401,7 +1454,7 @@ namespace LandscapeCanvasEditor
                     // If 'component' is still null then that means there is no Reference Shape component on our Entity, so we need to add one
                     if (!component)
                     {
-                        AZ::ComponentId componentId = AddComponentTypeIdToEntity(targetEntityId, Vegetation::EditorReferenceShapeComponentTypeId);
+                        AZ::ComponentId componentId = AddComponentTypeIdToEntity(targetEntityId, LmbrCentral::EditorReferenceShapeComponentTypeId);
 
                         component = targetEntity->FindComponent(componentId);
                     }

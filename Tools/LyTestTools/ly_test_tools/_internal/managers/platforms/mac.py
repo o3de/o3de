@@ -62,6 +62,12 @@ class _MacResourceLocator(AbstractResourceLocator):
         """
         return os.path.join(self.project_log(), "Editor.log")
 
+    def crash_log(self):
+        """
+        Return path to the project's crash log dir using the builds project and platform
+        :return: path to crash.log
+        """
+        return os.path.join(self.project_log(), "crash.log")
 
 class MacWorkspaceManager(AbstractWorkspaceManager):
     """

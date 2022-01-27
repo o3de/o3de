@@ -5,19 +5,32 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "ReferenceShapeConfig"
+                "name": "Reference Shape Config"
             },
             "methods": [
                 {
-                    "base": "shapeEntityId",
+                    "base": "GetshapeEntityId",
+                    "context": "Getter",
                     "details": {
-                        "name": "ReferenceShapeConfig::shapeEntityId::Getter"
+                        "name": "Getshape Entity Id"
                     },
                     "params": [
                         {
                             "typeid": "{3E49974D-2EE0-4AF9-92B9-229A22B515C3}",
                             "details": {
-                                "name": "ReferenceShapeConfig*"
+                                "name": "Vegetation Reference Shape"
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": "shape Entity Id"
+                            }
+                        },
+                        {
+                            "typeid": "",
+                            "details": {
+                                "name": ""
                             }
                         }
                     ],
@@ -25,28 +38,29 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId&",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "shapeEntityId",
+                    "base": "SetshapeEntityId",
+                    "context": "Setter",
                     "details": {
-                        "name": "ReferenceShapeConfig::shapeEntityId::Setter"
+                        "name": "Setshape Entity Id"
                     },
                     "params": [
                         {
                             "typeid": "{3E49974D-2EE0-4AF9-92B9-229A22B515C3}",
                             "details": {
-                                "name": "ReferenceShapeConfig*"
+                                "name": "Vegetation Reference Shape"
                             }
                         },
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "const EntityId&",
+                                "name": "shape Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }

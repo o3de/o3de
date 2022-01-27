@@ -14,7 +14,7 @@
 #include <ProjectUtils.h>
 #include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>
-#include <ProjectManagerSettings.h>
+#include <SettingsInterface.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
@@ -284,20 +284,17 @@ namespace O3DE::ProjectManager
                     {
                         currentButton = projectButtonIter.value();
                         currentButton->RestoreDefaultState();
-                        m_projectsFlowLayout->addWidget(currentButton);
                     }
                 }
 
                 // Check whether project manager has successfully built the project
                 if (currentButton)
                 {
-                    auto settingsRegistry = AZ::SettingsRegistry::Get();
+                    m_projectsFlowLayout->addWidget(currentButton);
+
                     bool projectBuiltSuccessfully = false;
-                    if (settingsRegistry)
-                    {
-                        QString settingsKey = GetProjectBuiltSuccessfullyKey(project.m_projectName);
-                        settingsRegistry->Get(projectBuiltSuccessfully, settingsKey.toStdString().c_str());
-                    }
+                    SettingsInterface::Get()->GetProjectBuiltSuccessfully(projectBuiltSuccessfully, project);
+
                     if (!projectBuiltSuccessfully)
                     {
                         currentButton->ShowBuildRequired();
@@ -345,6 +342,7 @@ namespace O3DE::ProjectManager
         }
 
         m_stack->setCurrentWidget(m_projectsContent);
+        m_projectsFlowLayout->update();
     }
 
     ProjectManagerScreen ProjectsScreen::GetScreenEnum()
@@ -403,7 +401,6 @@ namespace O3DE::ProjectManager
     {
         if (ProjectUtils::AddProjectDialog(this))
         {
-            ResetProjectsContent();
             emit ChangeScreenRequest(ProjectManagerScreen::Projects);
         }
     }
@@ -424,12 +421,12 @@ namespace O3DE::ProjectManager
                     return;
                 }
 
-                auto cmdPath = AZ::IO::FixedMaxPathString::format(
-                    "%s --regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(),
-                    fixedProjectPath.c_str());
-
                 AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-                processLaunchInfo.m_commandlineParameters = cmdPath;
+                processLaunchInfo.m_commandlineParameters = AZStd::vector<AZStd::string>{
+                    editorExecutablePath.String(),
+                    AZStd::string::format(R"(--regset="/Amazon/AzCore/Bootstrap/project_path=%s")", fixedProjectPath.c_str())
+                };
+                ;
                 bool launchSucceeded = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
                 if (!launchSucceeded)
                 {
@@ -494,7 +491,6 @@ namespace O3DE::ProjectManager
             // Open file dialog and choose location for copied project then register copy with O3DE
             if (ProjectUtils::CopyProjectDialog(projectInfo.m_path, newProjectInfo, this))
             {
-                ResetProjectsContent();
                 emit NotifyBuildProject(newProjectInfo);
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
@@ -507,7 +503,6 @@ namespace O3DE::ProjectManager
             // Unregister Project from O3DE and reload projects
             if (ProjectUtils::UnregisterProject(projectPath))
             {
-                ResetProjectsContent();
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
         }

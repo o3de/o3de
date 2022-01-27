@@ -7,7 +7,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 def CreatePrefab_WithSingleEntity():
 
-    CAR_PREFAB_FILE_NAME = 'car_prefab'
+    from pathlib import Path
+    CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report
@@ -24,6 +25,7 @@ def CreatePrefab_WithSingleEntity():
     # Creates a prefab from the new entity
     Prefab.create_prefab(car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
+    
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
     Report.start_test(CreatePrefab_WithSingleEntity)

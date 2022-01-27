@@ -80,15 +80,6 @@
         <file alias="debugger_disconnected">bug--minus.png</file>
         <file alias="debugger_connected">bug--plus.png</file>
     </qresource>    
-    <qresource prefix="/driller">
-        <file alias="active_color_swatch">active_color_swatch.png</file>
-        <file alias="export_button_disabled">export_button_disabled.png</file>
-        <file alias="export_button_enabled">export_button_enabled.png</file>
-        <file alias="drill_down_disabled">drill_down_disabled.png</file>
-        <file alias="drill_down_enabled">drill_down_enabled.png</file>
-        <file alias="inactive_color_swatch">inactive_color_swatch.png</file>
-        <file alias="settings_icon">settings_icon.png</file>
-    </qresource>
     <qresource prefix="/styles">
         <file>style_dark.qss</file>
     </qresource>

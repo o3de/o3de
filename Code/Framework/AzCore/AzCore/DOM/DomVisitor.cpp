@@ -8,7 +8,7 @@
 
 #include <AzCore/DOM/DomVisitor.h>
 
-namespace AZ::DOM
+namespace AZ::Dom
 {
     const char* VisitorError::CodeToString(VisitorErrorCode code)
     {
@@ -105,7 +105,12 @@ namespace AZ::DOM
         return VisitorSuccess();
     }
 
-    Visitor::Result Visitor::OpaqueValue([[maybe_unused]] const OpaqueType& value, [[maybe_unused]] Lifetime lifetime)
+    Visitor::Result Visitor::RefCountedString(AZStd::shared_ptr<const AZStd::vector<char>> value, Lifetime lifetime)
+    {
+        return String({ value->data(), value->size() }, lifetime);
+    }
+
+    Visitor::Result Visitor::OpaqueValue([[maybe_unused]] OpaqueType& value)
     {
         if (!SupportsOpaqueValues())
         {
@@ -236,4 +241,4 @@ namespace AZ::DOM
     {
         return (GetVisitorFlags() & VisitorFlags::SupportsOpaqueValues) != VisitorFlags::Null;
     }
-} // namespace AZ::DOM
+} // namespace AZ::Dom

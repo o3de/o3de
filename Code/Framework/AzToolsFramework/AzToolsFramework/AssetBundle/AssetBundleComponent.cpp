@@ -409,9 +409,6 @@ namespace AzToolsFramework
             return false;
         }
 
-        // Surface any errors during the renames
-        ScopedIOEventBusHandler renameHandler;
-
         // Rename all the temp files to the actual bundle names
         for (int idx = 0; idx < bundlePathDeltaCatalogPair.size(); ++idx)
         {
@@ -758,21 +755,6 @@ namespace AzToolsFramework
             }
         }
         return true;
-    }
-
-    ScopedIOEventBusHandler::ScopedIOEventBusHandler()
-    {
-        BusConnect();
-    }
-
-    ScopedIOEventBusHandler::~ScopedIOEventBusHandler()
-    {
-        BusDisconnect();
-    }
-
-    void ScopedIOEventBusHandler::OnError([[maybe_unused]] const AZ::IO::SystemFile* file, [[maybe_unused]] const char* fileName, [[maybe_unused]] int errorCode)
-    {
-        AZ_Error("AssetBundleComponent", false, "FileIO Error for file %s (errorCode %d)", file && file->Name() ? file->Name() : fileName, errorCode);
     }
 }
 

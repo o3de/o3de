@@ -186,9 +186,8 @@ namespace AZ
             //! Searches for a specific property. 
             //! Note this function can find properties using old versions of the property name; in that case,
             //! the name in the returned PropertyDefinition* will not match the @propertyName that was searched for.
-            //! @param materialTypeVersion indicates the version number of the property name being passed in. Only renames above this version number will be applied.
             //! @return the requested property, or null if it could not be found
-            const PropertyDefinition* FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion = 0) const;
+            const PropertyDefinition* FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName) const;
 
             //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data
             //! Groups with the same name will be consolidated into a single entry
@@ -212,9 +211,8 @@ namespace AZ
             Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
             
             //! Possibly renames @propertyId based on the material version update steps.
-            //! @param materialTypeVersion indicates the version number of the property name being passed in. Only renames above this version number will be applied.
             //! @return true if the property was renamed
-            bool ApplyPropertyRenames(MaterialPropertyId& propertyId, uint32_t materialTypeVersion = 0) const;
+            bool ApplyPropertyRenames(MaterialPropertyId& propertyId) const;
         };
 
         //! The wrapper class for derived material functors.

@@ -6,42 +6,42 @@
             "variant": "",
             "details": {
                 "name": "From Position Rotation And Half Lengths",
-                "category": "Math/Oriented Bounding Box",
-                "tooltip": "returns an Oriented Bounding Box from the position, rotation and half lengths"
+                "category": "Math/OBB",
+                "tooltip": "returns an OBB from the position, rotation and half lengths"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Position",
+                    "base": "DataInput_Position_0",
                     "details": {
                         "name": "Position"
                     }
                 },
                 {
-                    "base": "DataInput_Rotation",
+                    "base": "DataInput_Rotation_1",
                     "details": {
                         "name": "Rotation"
                     }
                 },
                 {
-                    "base": "DataInput_HalfLengths",
+                    "base": "DataInput_HalfLengths_2",
                     "details": {
-                        "name": "Half Lengths"
+                        "name": "HalfLengths"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

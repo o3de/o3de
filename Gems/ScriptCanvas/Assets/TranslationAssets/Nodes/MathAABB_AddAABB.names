@@ -5,38 +5,37 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "Add Axis Aligned Bounding Boxes",
-                "category": "Math/Axis Aligned Bounding Box",
-                "tooltip": "returns the AABB that is the (min(min(A), min(B)), max(max(A), max(B)))",
-                "subtitle": "Axis Aligned Bounding Box"
+                "name": "AddAABB",
+                "category": "Math/AABB",
+                "tooltip": "returns the AABB that is the (min(min(A), min(B)), max(max(A), max(B)))"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_AABB: A",
+                    "base": "DataInput_A_0",
                     "details": {
-                        "name": "First"
+                        "name": "A"
                     }
                 },
                 {
-                    "base": "DataInput_AABB: B",
+                    "base": "DataInput_B_1",
                     "details": {
-                        "name": "Second"
+                        "name": "B"
                     }
                 },
                 {
-                    "base": "DataOutput_Result: AABB",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

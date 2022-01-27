@@ -7,35 +7,35 @@
             "details": {
                 "name": "Project",
                 "category": "Math/Vector2",
-                "tooltip": "Returns the vector of A projected onto B, (Dot(A, B)/(Dot(B, B)) * B"
+                "tooltip": "returns the vector of A projected onto B, (Dot(A, B)/(Dot(B, B)) * B"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_A",
+                    "base": "DataInput_A_0",
                     "details": {
                         "name": "A"
                     }
                 },
                 {
-                    "base": "DataInput_B",
+                    "base": "DataInput_B_1",
                     "details": {
                         "name": "B"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

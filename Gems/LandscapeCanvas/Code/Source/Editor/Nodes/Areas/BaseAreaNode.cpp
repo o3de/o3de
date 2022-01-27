@@ -26,6 +26,8 @@
 #include "BaseAreaNode.h"
 #include <Editor/Core/GraphContext.h>
 
+#include <LmbrCentral/Shape/ReferenceShapeComponentBus.h>
+
 namespace LandscapeCanvas
 {
     void BaseAreaNode::Reflect(AZ::ReflectContext* context)
@@ -61,7 +63,7 @@ namespace LandscapeCanvas
             return nullptr;
         }
 
-        AZ::Component* component = entity->FindComponent(Vegetation::EditorReferenceShapeComponentTypeId);
+        AZ::Component* component = entity->FindComponent(LmbrCentral::EditorReferenceShapeComponentTypeId);
         if (component)
         {
             return component;

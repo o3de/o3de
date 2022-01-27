@@ -64,7 +64,7 @@ void CommandCanvasPropertiesChange::Recreate(bool isUndo)
         // Create a new canvas from the XML and release the old canvas, use the new entity context for
         // the new canvas
         const AZStd::string& xml = isUndo ? m_undoXml : m_redoXml;
-        gEnv->pLyShine->ReloadCanvasFromXml(xml, newEntityContext);
+        AZ::Interface<ILyShine>::Get()->ReloadCanvasFromXml(xml, newEntityContext);
 
         // Tell the editor window to use the new entity context
         m_editorWindow->ReplaceEntityContext(newEntityContext);

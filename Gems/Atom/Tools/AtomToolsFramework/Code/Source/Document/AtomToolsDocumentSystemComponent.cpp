@@ -24,6 +24,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QApplication>
 #include <QMessageBox>
 #include <QString>
+#include <QTimer>
 AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
@@ -68,6 +69,7 @@ namespace AtomToolsFramework
                 ->Event("SaveDocumentAsCopy", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy)
                 ->Event("SaveDocumentAsChild", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild)
                 ->Event("SaveAllDocuments", &AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments)
+                ->Event("GetDocumentCount", &AtomToolsDocumentSystemRequestBus::Events::GetDocumentCount)
                 ;
 
             behaviorContext->EBus<AtomToolsDocumentRequestBus>("AtomToolsDocumentRequestBus")
@@ -121,7 +123,6 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
         AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         AtomToolsDocumentSystemRequestBus::Handler::BusDisconnect();
         m_documentMap.clear();
@@ -160,25 +161,30 @@ namespace AtomToolsFramework
     void AtomToolsDocumentSystemComponent::OnDocumentExternallyModified(const AZ::Uuid& documentId)
     {
         m_documentIdsWithExternalChanges.insert(documentId);
-        if (!AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusConnect();
-        }
+        QueueReopenDocuments();
     }
 
     void AtomToolsDocumentSystemComponent::OnDocumentDependencyModified(const AZ::Uuid& documentId)
     {
         m_documentIdsWithDependencyChanges.insert(documentId);
-        if (!AZ::TickBus::Handler::BusIsConnected())
+        QueueReopenDocuments();
+    }
+
+    void AtomToolsDocumentSystemComponent::QueueReopenDocuments()
+    {
+        if (!m_queueReopenDocuments)
         {
-            AZ::TickBus::Handler::BusConnect();
+            m_queueReopenDocuments = true;
+            QTimer::singleShot(0, [this] { ReopenDocuments(); });
         }
     }
 
-    void AtomToolsDocumentSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void AtomToolsDocumentSystemComponent::ReopenDocuments()
     {
         for (const AZ::Uuid& documentId : m_documentIdsWithExternalChanges)
         {
+            m_documentIdsWithDependencyChanges.erase(documentId);
+
             AZStd::string documentPath;
             AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
@@ -190,8 +196,6 @@ namespace AtomToolsFramework
             {
                 continue;
             }
-
-            m_documentIdsWithDependencyChanges.erase(documentId);
 
             AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
@@ -235,7 +239,7 @@ namespace AtomToolsFramework
 
         m_documentIdsWithDependencyChanges.clear();
         m_documentIdsWithExternalChanges.clear();
-        AZ::TickBus::Handler::BusDisconnect();
+        m_queueReopenDocuments = false;
     }
 
     AZ::Uuid AtomToolsDocumentSystemComponent::OpenDocument(AZStd::string_view sourcePath)
@@ -452,6 +456,11 @@ namespace AtomToolsFramework
         }
 
         return result;
+    }
+
+    AZ::u32 AtomToolsDocumentSystemComponent::GetDocumentCount() const
+    {
+        return aznumeric_cast<AZ::u32>(m_documentMap.size());
     }
 
     AZ::Uuid AtomToolsDocumentSystemComponent::OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen)

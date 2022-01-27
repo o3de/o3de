@@ -117,6 +117,9 @@ namespace AtomToolsFramework
         void StartTrackingTransform(const AZ::Transform& worldFromLocal) override;
         void StopTrackingTransform() override;
         bool IsTrackingTransform() const override;
+        void SetCameraPivotAttached(const AZ::Vector3& pivot) override;
+        void SetCameraPivotDetached(const AZ::Vector3& pivot) override;
+        void SetCameraOffset(const AZ::Vector3& offset) override;
 
     private:
         //! Combine the current camera transform with any potential roll from the tracked

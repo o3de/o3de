@@ -89,7 +89,7 @@ namespace Profiler
         struct CpuTimingEntry
         {
             const AZStd::string& m_name;
-            double m_executeDuration;
+            double m_executeDuration = 0;
         };
 
         ImGuiCpuProfiler() = default;
@@ -175,8 +175,8 @@ namespace Profiler
         AZ::u64 m_savedRegionCount = 0;
 
         // Viewport tick bounds, these are used to convert tick space -> screen space and cull so we only draw onscreen objects
-        AZStd::sys_time_t m_viewportStartTick;
-        AZStd::sys_time_t m_viewportEndTick;
+        AZStd::sys_time_t m_viewportStartTick = 0;
+        AZStd::sys_time_t m_viewportEndTick = 0;
 
         // Map to store each thread's TimeRegions, individual vectors are sorted by start tick
         // note: we use size_t as a proxy for thread_id because native_thread_id_type differs differs from
@@ -215,7 +215,6 @@ namespace Profiler
 
         // Last captured CPU timing statistics
         AZStd::vector<CpuTimingEntry> m_cpuTimingStatisticsWhenPause;
-        AZStd::sys_time_t m_frameToFrameTime{};
 
         AZ::IO::FixedMaxPath m_lastCapturedFilePath;
 

@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "base": "{57BA2085-2225-5E7E-B132-9CCD0AFC55EA}",
+            "base": "{DF3A38B7-2C72-5CE5-BB8C-3293C7431F60}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "DivideByVector",
+                "name": "Divide By Vector",
                 "category": "Deprecated",
-                "tooltip": "This node is deprecated, use Divide (/), it provides contextual type and slot configurations.",
-                "subtitle": "Deprecated"
+                "tooltip": "This node is deprecated, use Divide (/), it provides contextual type and slots"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Vector3: Numerator",
+                    "base": "DataInput_Numerator_0",
                     "details": {
-                        "name": "Vector3: Numerator"
+                        "name": "Numerator"
                     }
                 },
                 {
-                    "base": "DataInput_Vector3: Divisor",
+                    "base": "DataInput_Divisor_1",
                     "details": {
-                        "name": "Vector3: Divisor"
+                        "name": "Divisor"
                     }
                 },
                 {
-                    "base": "DataOutput_Result: Vector3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

@@ -15,8 +15,8 @@ import sys
 
 from o3de import utils
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger('o3de.sha256')
+logging.basicConfig(format=utils.LOG_FORMAT)
 
 
 def sha256(file_path: str or pathlib.Path,
@@ -35,7 +35,7 @@ def sha256(file_path: str or pathlib.Path,
             logger.error(f'Json path {json_path} does not exist.')
             return 1
 
-    sha256 = hashlib.sha256(file_path.open('rb').read()).hexdigest()
+    the_sha256 = hashlib.sha256(file_path.open('rb').read()).hexdigest()
 
     if json_path:
         with json_path.open('r') as s:
@@ -44,7 +44,7 @@ def sha256(file_path: str or pathlib.Path,
             except json.JSONDecodeError as e:
                 logger.error(f'Failed to read Json path {json_path}: {str(e)}')
                 return 1
-        json_data.update({"sha256": sha256})
+        json_data.update({"sha256": the_sha256})
         utils.backup_file(json_path)
         with json_path.open('w') as s:
             try:
@@ -53,7 +53,7 @@ def sha256(file_path: str or pathlib.Path,
                 logger.error(f'Failed to write Json path {json_path}: {str(e)}')
                 return 1
     else:
-        print(sha256)
+        print(the_sha256)
     return 0
 
 
@@ -70,9 +70,9 @@ def add_parser_args(parser):
     :param parser: the caller passes an argparse parser like instance to this method
     """
     parser.add_argument('-f', '--file-path', type=str, required=True,
-                                  help='The path to the file you want to sha256.')
+                        help='The path to the file you want to sha256.')
     parser.add_argument('-j', '--json-path', type=str, required=False,
-                                  help='optional path to an o3de json file to add the "sha256" element to.')
+                        help='Optional path to an o3de json file to add the "sha256" element to.')
     parser.set_defaults(func=_run_sha256)
 
 

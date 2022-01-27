@@ -19,6 +19,22 @@ LIGHT_TYPES = {
 }
 
 
+# Attenuation Radius Mode options for the Light component.
+ATTENUATION_RADIUS_MODE = {
+    'automatic': 1,
+    'explicit': 0,
+}
+
+# Qualiity Level settings for Diffuse Global Illumination level component
+GLOBAL_ILLUMINATION_QUALITY = {
+    'Low': 0,
+    'Medium': 1,
+    'High': 2,
+}
+
+# Level list used in Editor Level Load Test
+LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest", "Sponza"]
+
 class AtomComponentProperties:
     """
     Holds Atom component related constants
@@ -117,6 +133,21 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
+    def diffuse_global_illumination(property: str = 'name') -> str:
+        """
+        Diffuse Global Illumination level component properties.
+        Controls global settings for Diffuse Probe Grid components.
+          - 'Quality Level' from atom_constants.py GLOBAL_ILLUMINATION_QUALITY
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Diffuse Global Illumination',
+            'Quality Level': 'Controller|Configuration|Quality Level'
+        }
+        return properties[property]
+
+    @staticmethod
     def diffuse_probe_grid(property: str = 'name') -> str:
         """
         Diffuse Probe Grid component properties. Requires one of 'shapes'.
@@ -148,12 +179,17 @@ class AtomComponentProperties:
     @staticmethod
     def display_mapper(property: str = 'name') -> str:
         """
-        Display Mapper component properties.
+        Display Mapper level component properties.
+          - 'Enable LDR color grading LUT' toggles the use of LDR color grading LUT
+          - 'LDR color Grading LUT' is the Low Definition Range (LDR) color grading for Look-up Textures (LUT) which is
+            an Asset.id value corresponding to a lighting asset file.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Display Mapper',
+            'Enable LDR color grading LUT': 'Controller|Configuration|Enable LDR color grading LUT',
+            'LDR color Grading LUT': 'Controller|Configuration|LDR color Grading LUT',
         }
         return properties[property]
 
@@ -161,11 +197,13 @@ class AtomComponentProperties:
     def entity_reference(property: str = 'name') -> str:
         """
         Entity Reference component properties.
+          - 'EntityIdReferences' component container of entityId references. Initially empty.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Entity Reference',
+            'EntityIdReferences': 'Controller|Configuration|EntityIdReferences',
         }
         return properties[property]
 
@@ -249,13 +287,27 @@ class AtomComponentProperties:
     def light(property: str = 'name') -> str:
         """
         Light component properties.
+          - 'Attenuation Radius Mode' controls whether the attenuation radius is calculated automatically or explicitly.
+          - 'Color' the RGB value to set for the color of the light.
+          - 'Enable shadow' toggle for enabling shadows for the light.
+          - 'Enable shutters' toggle for enabling shutters for the light.
+          - 'Inner angle' inner angle value for the shutters (in degrees)
+          - 'Intensity' the intensity of the light in the set photometric unit (float with no ceiling).
           - 'Light type' from atom_constants.py LIGHT_TYPES
+          - 'Outer angle' outer angle value for the shutters (in degrees)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Light',
+            'Attenuation Radius Mode': 'Controller|Configuration|Attenuation radius|Mode',
+            'Color': 'Controller|Configuration|Color',
+            'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
+            'Enable shutters': 'Controller|Configuration|Shutters|Enable shutters',
+            'Inner angle': 'Controller|Configuration|Shutters|Inner angle',
+            'Intensity': 'Controller|Configuration|Intensity',
             'Light type': 'Controller|Configuration|Light type',
+            'Outer angle': 'Controller|Configuration|Shutters|Outer angle',
         }
         return properties[property]
 
@@ -390,7 +442,7 @@ class AtomComponentProperties:
             'name': 'PostFX Shape Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
             'shapes': ['Axis Aligned Box Shape', 'Box Shape', 'Capsule Shape', 'Compound Shape', 'Cylinder Shape',
-                       'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Vegetation Reference Shape'],
+                       'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Shape Reference'],
         }
         return properties[property]
 

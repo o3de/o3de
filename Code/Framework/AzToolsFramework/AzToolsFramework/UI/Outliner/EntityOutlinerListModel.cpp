@@ -47,6 +47,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
@@ -65,6 +66,7 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerTreeView.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 ////////////////////////////////////////////////////////////////////////////
 // EntityOutlinerListModel
@@ -116,8 +118,12 @@ namespace AzToolsFramework
         ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-        AZ_Assert(m_editorEntityUiInterface != nullptr,
-            "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
+        AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(
+            (m_readOnlyEntityPublicInterface != nullptr),
+            "EntityOutlinerListModel requires a ReadOnlyEntityPublicInterface instance on Initialize.");
     }
 
     int EntityOutlinerListModel::rowCount(const QModelIndex& parent) const
@@ -254,17 +260,7 @@ namespace AzToolsFramework
                 if (s_paintingName && !m_filterString.empty())
                 {
                     // highlight characters in filter
-                    int highlightTextIndex = 0;
-                    do
-                    {
-                        highlightTextIndex = label.lastIndexOf(QString(m_filterString.c_str()), highlightTextIndex - 1, Qt::CaseInsensitive);
-                        if (highlightTextIndex >= 0)
-                        {
-                            const QString BACKGROUND_COLOR{ "#707070" };
-                            label.insert(highlightTextIndex + static_cast<int>(m_filterString.length()), "</span>");
-                            label.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
-                        }
-                    } while(highlightTextIndex > 0);
+                    label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
                 }
                 return label;
             }
@@ -313,7 +309,7 @@ namespace AzToolsFramework
 
         if (isEditorOnly)
         {
-            return QIcon(QString(":/Icons/Entity_Editor_Only.svg"));
+            return QIcon(QString(":/Entity/entity_editoronly.svg"));
         }
 
         AZ::Entity* entity = nullptr;
@@ -322,10 +318,10 @@ namespace AzToolsFramework
 
         if (!isInitiallyActive)
         {
-            return QIcon(QString(":/Icons/Entity_Not_Active.svg"));
+            return QIcon(QString(":/Entity/entity_notactive.svg"));
         }
 
-        return QIcon(QString(":/Icons/Entity.svg"));
+        return QIcon(QString(":/Entity/entity.svg"));
     }
 
     QVariant EntityOutlinerListModel::GetEntityTooltip(const AZ::EntityId& id) const
@@ -450,9 +446,15 @@ namespace AzToolsFramework
             if (value.canConvert<Qt::CheckState>())
             {
                 const auto entityId = GetEntityFromIndex(index);
-                auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
 
-                if (!entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId))
+                // Disable lock and visibility toggling if the UI Handler blocked it.
+                auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+                bool canToggleLockVisibility = !entityUiHandler || entityUiHandler->CanToggleLockVisibility(entityId);
+
+                // Disable lock and visibility toggling for read-only entities.
+                bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
+
+                if (canToggleLockVisibility && !isReadOnly)
                 {
                     switch (index.column())
                     {
@@ -534,6 +536,15 @@ namespace AzToolsFramework
             return Qt::ItemIsDropEnabled;
         }
 
+        AZ::EntityId entityId = GetEntityFromIndex(index);
+
+        // Only allow renaming the entity if the UI Handler did not block it.
+        auto entityUiHandler = m_editorEntityUiInterface ? m_editorEntityUiInterface->GetHandler(entityId) : nullptr;
+        bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
+
+        // Disable renaming for read-only entities.
+        bool isReadOnly = m_readOnlyEntityPublicInterface ? m_readOnlyEntityPublicInterface->IsReadOnly(entityId) : false;
+
         Qt::ItemFlags itemFlags = QAbstractItemModel::flags(index);
         switch (index.column())
         {
@@ -543,7 +554,21 @@ namespace AzToolsFramework
             break;
 
         case ColumnName:
-            itemFlags |= Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsEditable;
+            if (canRename && !isReadOnly)
+            {
+                itemFlags |= Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsEditable;
+            }
+            else
+            {
+                if (isReadOnly)
+                {
+                    itemFlags |= Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
+                }
+                else
+                {
+                    itemFlags |= Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsDragEnabled;
+                }
+            }
             break;
 
         default:
@@ -551,7 +576,8 @@ namespace AzToolsFramework
             break;
         }
 
-        if (AZ::EntityId entityId = GetEntityFromIndex(index); !m_focusModeInterface->IsInFocusSubTree(entityId))
+        // Disable entities outside the focus subtree.
+        if (!m_focusModeInterface->IsInFocusSubTree(entityId))
         {
             itemFlags &= !Qt::ItemIsEnabled;
         }
@@ -772,10 +798,17 @@ namespace AzToolsFramework
         [[maybe_unused]] int column,
         const QModelIndex& parent) const
     {
-        // Disable dropping assets on closed container entities.
         AZ::EntityId parentId = GetEntityFromIndex(parent);
+
+        // Disable dropping assets on closed container entities.
         if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
             !containerEntityInterface->IsContainerOpen(parentId))
+        {
+            return false;
+        }
+
+        // Disable dropping assets on read-only entities.
+        if (m_readOnlyEntityPublicInterface->IsReadOnly(parentId))
         {
             return false;
         }
@@ -1994,9 +2027,13 @@ namespace AzToolsFramework
         , m_lockCheckBoxes(parent, "Lock", EntityOutlinerListModel::PartiallyLockedRole, EntityOutlinerListModel::LockedAncestorRole)
     {
         m_editorEntityFrameworkInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerItemDelegate requires a EditorEntityFrameworkInterface instance on Construction.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(
+            (m_readOnlyEntityPublicInterface != nullptr),
+            "EntityOutlinerItemDelegate requires a ReadOnlyEntityPublicInterface instance on Construction.");
     }
 
     EntityOutlinerItemDelegate::CheckboxGroup::CheckboxGroup(QWidget* parent, AZStd::string prefix,
@@ -2108,6 +2145,12 @@ namespace AzToolsFramework
                 }
 
                 PaintEntityNameAsRichText(painter, customOption, index);
+
+                // Paint Read-Only icon if necessary
+                if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
+                {
+                    PaintReadOnlyIcon(painter, option, index);
+                }
             }
             break;
             default:
@@ -2166,10 +2209,10 @@ namespace AzToolsFramework
 
             backgroundPath.addRect(backgroundRect);
 
-            QColor backgroundColor = m_hoverColor;
+            QColor backgroundColor = s_hoverColor;
             if (isSelected)
             {
-                backgroundColor = m_selectedColor;
+                backgroundColor = s_selectedColor;
             }
 
             painter->fillPath(backgroundPath, backgroundColor);
@@ -2199,6 +2242,13 @@ namespace AzToolsFramework
         QPalette checkboxPalette;
         QColor transparentColor(0, 0, 0, 0);
         checkboxPalette.setColor(QPalette::ColorRole::Window, transparentColor);
+
+        // Disable hover rendering for read-only entities
+        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
+        {
+            isHovered = false;
+        }
 
         // We're only using these check boxes as renderers so their actual state doesn't matter.
         // We can set it right before we draw using information from the model data.
@@ -2316,24 +2366,25 @@ namespace AzToolsFramework
         optionV4.text.clear();
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
-        // Now we setup a Text Document so it can draw the rich text
-        QTextDocument textDoc;
-        textDoc.setDefaultFont(optionV4.font);
-        if (option.state & QStyle::State_Enabled)
-        {
-            textDoc.setDefaultStyleSheet("body {color: white}");
-        }
-        else
-        {
-            textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
-        }
-        textDoc.setHtml("<body>" + entityNameRichText + "</body>");
-        painter->translate(textRect.topLeft());
-        textDoc.setTextWidth(textRect.width());
-        textDoc.drawContents(painter, QRectF(0, 0, textRect.width(), textRect.height()));
+        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(entityNameRichText, painter, optionV4, textRect);
 
         painter->restore();
+
         EntityOutlinerListModel::s_paintingName = false;
+    }
+
+    void EntityOutlinerItemDelegate::PaintReadOnlyIcon(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    {
+        // Build the rect that will be used to paint the icon
+        QRect readOnlyRect = QRect(option.rect.topLeft() + s_readOnlyOffset, QSize(s_readOnlyRadius * 2, s_readOnlyRadius * 2));
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(s_readOnlyBackgroundColor);
+        painter->drawEllipse(readOnlyRect.center(), s_readOnlyRadius, s_readOnlyRadius);
+        s_readOnlyIcon.paint(painter, readOnlyRect);
+        painter->restore();
     }
 
     QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const

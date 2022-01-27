@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
@@ -160,6 +161,7 @@ namespace AzToolsFramework
         , private EditorManipulatorCommandUndoRedoRequestBus::Handler
         , private AZ::TransformNotificationBus::MultiHandler
         , private ViewportInteraction::ViewportSettingsNotificationBus::Handler
+        , private ReadOnlyEntityPublicNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -297,6 +299,9 @@ namespace AzToolsFramework
         // ViewportSettingsNotificationBus overrides ...
         void OnGridSnappingChanged(bool enabled) override;
 
+        // ReadOnlyEntityPublicNotificationBus overrides ...
+        void OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, bool readOnly) override;
+
         // Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
@@ -308,7 +313,7 @@ namespace AzToolsFramework
         bool PerformGroupDitto(AZ::EntityId entityId);
         bool PerformIndividualDitto(AZ::EntityId entityId);
         void PerformManipulatorDitto(AZ::EntityId entityId);
-        void PerformSnapToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
+        void PerformSnapToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);

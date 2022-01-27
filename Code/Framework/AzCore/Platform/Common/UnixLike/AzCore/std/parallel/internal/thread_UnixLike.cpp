@@ -35,7 +35,6 @@ namespace AZStd
 
             destroy_thread_info(ti);
             ThreadEventBus::Broadcast(&ThreadEventBus::Events::OnThreadExit, this_thread::get_id());
-            ThreadDrillerEventBus::Broadcast(&ThreadDrillerEventBus::Events::OnThreadExit, this_thread::get_id());
             pthread_exit(nullptr);
             return nullptr;
         }
@@ -88,7 +87,6 @@ namespace AZStd
             Platform::PostCreateThread(tId, name, cpuId);
 
             ThreadEventBus::Broadcast(&ThreadEventBus::Events::OnThreadEnter, thread::id(tId), desc);
-            ThreadDrillerEventBus::Broadcast(&ThreadDrillerEventBus::Events::OnThreadEnter, thread::id(tId), desc);
             return tId;
         }
     }

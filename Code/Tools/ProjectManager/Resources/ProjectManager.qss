@@ -232,6 +232,11 @@ QTabBar::tab:focus {
                             stop: 0 #555555, stop: 1.0 #777777);
 }
 
+#dialogSubTitle {
+    font-size:14px;
+    font-weight:600;
+}
+
 #horizontalSeparatingLine {
     color: #666666;
 }
@@ -243,10 +248,6 @@ QTabBar::tab:focus {
 /************** Project Settings **************/
 #projectSettings {
     margin-top:30px;
-}
-
-#projectPreviewLabel {
-    margin: 10px 0 5px 0;
 }
 
 #projectTemplate {
@@ -322,6 +323,16 @@ QTabBar::tab:focus {
 #projectTemplate QPushButton:focus {
     outline: none;
     border:none;
+}
+
+#projectSettingsSectionTitle
+{
+    font-size:18px;
+}
+
+#projectSmallInfoLabel
+{
+    font-size:10px;
 }
 
 #projectSettingsTab::tab-bar {
@@ -602,11 +613,6 @@ QProgressBar::chunk {
 #gemCatalogUninstallGemButton:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #951D1F, stop: 1.0 #C92724);
-}
-
-#gemCatalogDialogSubTitle {
-    font-size:14px;
-    font-weight:600;
 }
 
 /************** Filter Tag widget **************/

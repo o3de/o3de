@@ -5,16 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Math/MathUtils.h>
-#include <AzCore/Memory/SystemAllocator.h>
-
-#include <Scene/PhysXScene.h>
 #include <System/PhysXSystem.h>
-#include <System/PhysXAllocator.h>
-#include <System/PhysXCpuDispatcher.h>
-#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 #include <PxPhysicsAPI.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <Scene/PhysXScene.h>
+#include <System/PhysXAllocator.h>
+#include <System/PhysXCpuDispatcher.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <AzCore/Asset/AssetManager.h>
+
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
@@ -59,7 +63,7 @@ namespace PhysX
     {
         m_onMaterialLibraryReloadedCallback(asset);
     }
-    
+
     PhysXSystem::PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams)
         : m_registryManager(*registryManager)
         , m_materialLibraryAssetHelper(
@@ -97,7 +101,18 @@ namespace PhysX
             m_systemConfig = *physXConfig;
         }
 
-        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+        // If the settings registry isn't available, something earlier in startup will report that failure.
+        if (auto* settingsRegistry = AZ::SettingsRegistry::Get();
+            settingsRegistry != nullptr)
+        {
+            AZ::ComponentApplicationLifecycle::RegisterHandler(
+                *settingsRegistry, m_componentApplicationLifecycleHandler,
+                [this]([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type)
+                {
+                    InitializeMaterialLibrary();
+                },
+                "CriticalAssetsCompiled");
+        }
 
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
@@ -118,7 +133,7 @@ namespace PhysX
 
         RemoveAllScenes();
 
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        m_componentApplicationLifecycleHandler.Disconnect();
         m_materialLibraryAssetHelper.Disconnect();
         // Clear the asset reference in deactivate. The asset system is shut down before destructors are called
         // for system components, causing any hanging asset references to become crashes on shutdown in release builds.
@@ -362,10 +377,8 @@ namespace PhysX
         return &m_systemConfig;
     }
 
-    void PhysXSystem::OnCatalogLoaded([[maybe_unused]]const char* catalogFile)
+    void PhysXSystem::InitializeMaterialLibrary()
     {
-        // now that assets can be resolved, lets load the default material library.
-        
         if (!m_systemConfig.m_materialLibraryAsset.GetId().IsValid())
         {
             m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::InvalidId);
@@ -515,7 +528,7 @@ namespace PhysX
 
         AZ_Warning("PhysX", loadedSuccessfully,
             "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
-        
+
         return loadedSuccessfully;
     }
 

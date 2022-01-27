@@ -118,10 +118,11 @@ namespace AzManipulatorTestFramework
         return m_manipulatorManager->Interacting();
     }
 
-    DirectCallManipulatorViewportInteraction::DirectCallManipulatorViewportInteraction()
+    DirectCallManipulatorViewportInteraction::DirectCallManipulatorViewportInteraction(
+        AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests)
         : m_customManager(
               AZStd::make_unique<CustomManipulatorManager>(AzToolsFramework::ManipulatorManagerId(AZ::Crc32("TestManipulatorManagerId"))))
-        , m_viewportInteraction(AZStd::make_unique<ViewportInteraction>())
+        , m_viewportInteraction(AZStd::make_unique<ViewportInteraction>(AZStd::move(debugDisplayRequests)))
         , m_manipulatorManager(AZStd::make_unique<DirectCallManipulatorManager>(m_viewportInteraction.get(), m_customManager))
     {
     }

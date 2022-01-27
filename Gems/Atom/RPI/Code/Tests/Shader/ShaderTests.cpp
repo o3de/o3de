@@ -112,12 +112,12 @@ namespace UnitTest
             : AZ::RHI::ShaderStageFunction(shaderStage)
         {}
 
-        void SetIndex(size_t index)
+        void SetIndex(uint32_t index)
         {
             m_index = index;
         }
 
-        size_t m_index;
+        int32_t m_index;
 
         ShaderByteCode m_byteCode;
 
@@ -538,7 +538,11 @@ namespace UnitTest
 
             auto shaderAsset = shader->GetAsset();
             EXPECT_EQ(shader->GetPipelineStateType(), shaderAsset->GetPipelineStateType());
-            EXPECT_EQ(shader->GetShaderResourceGroupLayouts(), shaderAsset->GetShaderResourceGroupLayouts());
+            using ShaderResourceGroupLayoutSpan = AZStd::span<const AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout>>;
+            ShaderResourceGroupLayoutSpan shaderResourceGroupLayoutSpan = shader->GetShaderResourceGroupLayouts();
+            ShaderResourceGroupLayoutSpan shaderAssetResourceGroupLayoutSpan = shader->GetShaderResourceGroupLayouts();
+            EXPECT_EQ(shaderResourceGroupLayoutSpan.data(), shaderAssetResourceGroupLayoutSpan.data());
+            EXPECT_EQ(shaderResourceGroupLayoutSpan.size(), shaderAssetResourceGroupLayoutSpan.size());
             
             const RPI::ShaderVariant& rootShaderVariant = shader->GetVariant( RPI::ShaderVariantStableId{0} );
             

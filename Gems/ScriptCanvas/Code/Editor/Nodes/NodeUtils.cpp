@@ -12,6 +12,7 @@
 #include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Components/DynamicOrderingDynamicSlotComponent.h>
 
+#include <ScriptCanvas/Core/ModifiableDatumView.h>
 #include <ScriptCanvas/Core/NodeBus.h>
 
 namespace ScriptCanvasEditor::Nodes

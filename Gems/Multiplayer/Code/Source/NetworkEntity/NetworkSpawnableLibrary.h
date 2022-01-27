@@ -9,14 +9,13 @@
 #pragma once
 
 #include <Multiplayer/INetworkSpawnableLibrary.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace Multiplayer
 {
     /// Implementation of the network prefab library interface.
     class NetworkSpawnableLibrary final
         : public INetworkSpawnableLibrary
-        , private AzFramework::AssetCatalogEventBus::Handler
     {
     public:
         AZ_RTTI(NetworkSpawnableLibrary, "{65E15F33-E893-49C2-A8E2-B6A8A6EF31E0}", INetworkSpawnableLibrary);
@@ -24,17 +23,19 @@ namespace Multiplayer
         NetworkSpawnableLibrary();
         ~NetworkSpawnableLibrary();
 
-        /// INetworkSpawnableLibrary overrides.
+        //! INetworkSpawnableLibrary overrides.
+        //! @{
+        // Iterates over all assets (on-disk and in-memory) and stores any spawnables that are "network.spawnables"
+        // This allows users to look up network spawnable assets by name or id if needed later
         void BuildSpawnablesList() override;
         void ProcessSpawnableAsset(const AZStd::string& relativePath, AZ::Data::AssetId id) override;
         AZ::Name GetSpawnableNameFromAssetId(AZ::Data::AssetId assetId) override;
         AZ::Data::AssetId GetAssetIdByName(AZ::Name name) override;
-
-        /// AssetCatalogEventBus overrides.
-        void OnCatalogLoaded(const char* catalogFile) override;
+        //! @}
 
     private:
         AZStd::unordered_map<AZ::Name, AZ::Data::AssetId> m_spawnables;
         AZStd::unordered_map<AZ::Data::AssetId, AZ::Name> m_spawnablesReverseLookup;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
     };
 }

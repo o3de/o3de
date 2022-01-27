@@ -139,8 +139,8 @@ namespace Terrain
 
     AZ::Outcome<void, AZStd::string> TerrainWorldConfig::DetermineMessage(float numSamples)
     {
-        const float maximumSamplesAllowed = 8.0f * 1024.0f * 1024.0f;
-        if (numSamples < maximumSamplesAllowed)
+        const float maximumSamplesAllowed = 16.0f * 1024.0f * 1024.0f;
+        if (numSamples <= maximumSamplesAllowed)
         {
             return AZ::Success();
         }

@@ -7,6 +7,9 @@
  */
 
 #include <LinkWidget.h>
+#include <ExternalLinkDialog.h>
+#include <SettingsInterface.h>
+
 #include <QDesktopServices>
 #include <QEvent>
 #include <QMouseEvent>
@@ -26,7 +29,23 @@ namespace O3DE::ProjectManager
     {
         if (m_url.isValid())
         {
-            QDesktopServices::openUrl(m_url);
+            // Check if user request not to be shown external link warning dialog
+            bool skipDialog = false;
+            SettingsInterface::Get()->Get(skipDialog, ISettings::ExternalLinkWarningKey);
+
+            if (!skipDialog)
+            {
+                // Style does not apply if LinkLabel is parent so use parentWidget as parent instead
+                ExternalLinkDialog* linkDialog = new ExternalLinkDialog(m_url.toString(), parentWidget());
+                if (linkDialog->exec() == QDialog::Accepted)
+                {
+                    QDesktopServices::openUrl(m_url);
+                }
+            }
+            else
+            {
+                QDesktopServices::openUrl(m_url);
+            }
         }
 
         emit clicked();

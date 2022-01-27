@@ -5,14 +5,13 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "BaseTimerNode",
+                "name": "Base Timer Node",
                 "category": "Utilities",
-                "tooltip": "Provides a basic interaction layer for all time based nodes for users(handles swapping between ticks and seconds).",
-                "subtitle": "Utilities"
+                "tooltip": "Provides a basic interaction layer for all time based nodes for users(handles swapping between ticks and seconds)."
             },
             "slots": [
                 {
-                    "base": "DataInput_Delay",
+                    "base": "DataInput_Delay_0",
                     "details": {
                         "name": "Delay"
                     }

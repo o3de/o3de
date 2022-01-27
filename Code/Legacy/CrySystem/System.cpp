@@ -16,6 +16,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Debug/Budget.h>
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>
@@ -24,7 +25,6 @@
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
@@ -34,6 +34,7 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzCore/Interface/Interface.h>
 
+AZ_DEFINE_BUDGET(CrySystem);
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -115,8 +116,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <IMovieSystem.h>
 #include <ILog.h>
 #include <IAudioSystem.h>
-#include <IProcess.h>
-#include <LyShine/ILyShine.h>
 
 #include <LoadScreenBus.h>
 
@@ -134,7 +133,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include <PNoise3.h>
 
-#include <LyShine/Bus/UiCursorBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
 
@@ -373,14 +371,7 @@ void CSystem::ShutDown()
         m_pSystemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_FULL_SHUTDOWN, 0, 0);
     }
 
-    if (gEnv && gEnv->pLyShine)
-    {
-        gEnv->pLyShine->Release();
-        gEnv->pLyShine = nullptr;
-    }
-
     SAFE_RELEASE(m_env.pMovieSystem);
-    SAFE_RELEASE(m_env.pLyShine);
     SAFE_RELEASE(m_env.pCryFont);
     if (m_env.pConsole)
     {
@@ -525,7 +516,7 @@ void CSystem::SleepIfNeeded()
     int sleepMS = (int)(1000.0f * sleepTime + 0.5f);
     if (sleepMS > 0)
     {
-        AZ_PROFILE_FUNCTION(System);
+        AZ_PROFILE_FUNCTION(CrySystem);
         Sleep(sleepMS);
     }
 
@@ -564,7 +555,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     _mm_setcsr(_mm_getcsr() & ~0x280 | (g_cvars.sys_float_exceptions > 0 ? 0 : 0x280));
 #endif //WIN32
 
-    AZ_TRACE_METHOD();
+    AZ_PROFILE_FUNCTION(CrySystem);
 
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_pUserCallback)
@@ -1287,10 +1278,7 @@ void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 void CSystem::UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 {
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
-#if !defined(NDEBUG)
-    bool bRemoved =
-#endif
-        stl::find_and_erase(m_windowMessageHandlers, pHandler);
+    [[maybe_unused]] bool bRemoved = stl::find_and_erase(m_windowMessageHandlers, pHandler);
     assert(pHandler && bRemoved && "This IWindowMessageHandler was not registered");
 #else
     CRY_ASSERT(false && "This platform does not support window message handlers");
@@ -1381,7 +1369,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     // Fall through intended
     case WM_ENTERMENULOOP:
     {
-        UiCursorBus::Broadcast(&UiCursorInterface::IncrementVisibleCounter);
         return true;
     }
     case WM_CAPTURECHANGED:
@@ -1399,7 +1386,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     // Fall through intended
     case WM_EXITMENULOOP:
     {
-        UiCursorBus::Broadcast(&UiCursorInterface::DecrementVisibleCounter);
         return (uMsg != WM_CAPTURECHANGED);
     }
     case WM_SYSKEYUP:

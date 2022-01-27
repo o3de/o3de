@@ -124,7 +124,7 @@ namespace AZ
             , m_blockElementHeight{blockElementHeight}
         {}
 
-        ImageSubresourceLayoutPlaced::ImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, size_t offset)
+        ImageSubresourceLayoutPlaced::ImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, uint32_t offset)
             : ImageSubresourceLayout(subresourceLayout)
             , m_offset{offset}
         {}

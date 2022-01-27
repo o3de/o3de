@@ -17,7 +17,6 @@
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 
-#include <IRenderer.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/Bus/UiVisualBus.h>

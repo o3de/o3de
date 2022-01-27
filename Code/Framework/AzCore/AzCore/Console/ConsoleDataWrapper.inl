@@ -32,7 +32,16 @@ namespace AZ
     template <typename BASE_TYPE, ThreadSafety THREAD_SAFETY>
     inline void ConsoleDataWrapper<BASE_TYPE, THREAD_SAFETY>::operator =(const BASE_TYPE& rhs)
     {
+        const BASE_TYPE currentValue = this->m_value;
+        // Do the value assignment outside new value check.
+        // Client code can supply a type for m_value that overrides the operator= function and trigger side effects
+        // in the operator= function body. Doing the assignment outside the value change check avoids those side
+        // effects not being triggered because AzCore believes the value wouldn't change.
         this->m_value = rhs;
+        if (currentValue != rhs)
+        {
+            InvokeCallback();
+        }
     }
 
     template <typename BASE_TYPE, ThreadSafety THREAD_SAFETY>

@@ -7,7 +7,9 @@
         <file alias="prefab.svg">Entity/prefab.svg</file>
         <file alias="prefab_edit.svg">Entity/prefab_edit.svg</file>
         <file alias="prefab_edit_open.svg">Entity/prefab_edit_open.svg</file>
+        <file alias="prefab_edit_open_readonly.svg">Entity/prefab_edit_open_readonly.svg</file>
         <file alias="prefab_edit_close.svg">Entity/prefab_edit_close.svg</file>
+        <file alias="readonly.svg">Entity/readonly.svg</file>
     </qresource>
     <qresource prefix="/Level">
         <file alias="level.svg">Level/level.svg</file>

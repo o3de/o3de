@@ -19,26 +19,6 @@
 
 namespace AzQtComponents
 {
-    static const FancyDockingDropZoneConstants g_Constants;
-
-    FancyDockingDropZoneConstants::FancyDockingDropZoneConstants()
-    {
-        draggingDockWidgetOpacity = 0.6;
-        dropZoneOpacity = 0.4;
-        dropZoneSizeInPixels = 40;
-        minDockSizeBeforeDropZoneScalingInPixels = dropZoneSizeInPixels * 3;
-        dropZoneScaleFactor = 0.25;
-        centerTabDropZoneScale = 0.5;
-        centerTabIconScale = 0.5;
-        dropZoneColor = QColor(155, 155, 155);
-        dropZoneBorderColor = Qt::black;
-        dropZoneBorderInPixels = 1;
-        absoluteDropZoneSizeInPixels = 25;
-        dockingTargetDelayMS = 110;
-        dropZoneHoverFadeUpdateIntervalMS = 20;
-        dropZoneHoverFadeIncrement = dropZoneOpacity / (dockingTargetDelayMS / dropZoneHoverFadeUpdateIntervalMS);
-        centerDropZoneIconPath = QString(":/stylesheet/img/UI20/docking/tabs_icon.svg");
-    }
 
     FancyDockingDropZoneWidget::FancyDockingDropZoneWidget(QMainWindow* mainWindow, QWidget* coordinatesRelativeTo, QScreen* screen, FancyDockingDropZoneState* dropZoneState)
         // NOTE: this will not work with multiple monitors if this widget has a parent. The floating drop zone
@@ -154,7 +134,7 @@ namespace AzQtComponents
 
             // Draw all of the normal drop zones if they exist (if a dock widget is hovered over)
             painter.setPen(Qt::NoPen);
-            painter.setOpacity(g_Constants.dropZoneOpacity);
+            painter.setOpacity(FancyDockingDropZoneConstants::dropZoneOpacity);
             auto dropZones = m_dropZoneState->dropZones();
             for (auto it = dropZones.cbegin(); it != dropZones.cend(); ++it)
             {
@@ -189,7 +169,7 @@ namespace AzQtComponents
         // Otherwise, set the normal color
         else
         {
-            painter.setBrush(g_Constants.dropZoneColor);
+            painter.setBrush(FancyDockingDropZoneConstants::dropZoneColor);
         }
 
         // negate the window position to offset everything by that much
@@ -214,8 +194,8 @@ namespace AzQtComponents
             // Scale the tabs icon based on the drop zone size and our specified offset
             // Doing this through QIcon to make sure that SVG is rendered already in desired resolution
             const QSize& dropZoneSize = dropZoneRect.size();
-            const QSize requestedIconSize = dropZoneSize * g_Constants.centerTabIconScale;
-            const QIcon dropZoneIcon = QIcon(g_Constants.centerDropZoneIconPath);
+            const QSize requestedIconSize = dropZoneSize * FancyDockingDropZoneConstants::centerTabIconScale;
+            const QIcon dropZoneIcon = QIcon(FancyDockingDropZoneConstants::centerDropZoneIconPath);
             const QPixmap dropZonePixmap = dropZoneIcon.pixmap(requestedIconSize);
             const QSize receivedIconSize = dropZoneIcon.actualSize(requestedIconSize);
 
@@ -264,7 +244,7 @@ namespace AzQtComponents
             }
             else
             {
-                painter.setBrush(g_Constants.dropZoneColor);
+                painter.setBrush(FancyDockingDropZoneConstants::dropZoneColor);
             }
             painter.drawRect(absoluteDropZoneRect);
 
@@ -313,8 +293,8 @@ namespace AzQtComponents
         const QPoint innerBottomRight = innerDropZoneRect.bottomRight();
 
         // Draw the lines using the appropriate pen
-        QPen dropZoneBorderPen(g_Constants.dropZoneBorderColor);
-        dropZoneBorderPen.setWidth(g_Constants.dropZoneBorderInPixels);
+        QPen dropZoneBorderPen(FancyDockingDropZoneConstants::dropZoneBorderColor);
+        dropZoneBorderPen.setWidth(FancyDockingDropZoneConstants::dropZoneBorderInPixels);
         painter.setPen(dropZoneBorderPen);
         painter.setOpacity(1);
         painter.drawLine(topLeft, innerTopLeft);

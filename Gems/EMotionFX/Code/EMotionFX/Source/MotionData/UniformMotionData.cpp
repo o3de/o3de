@@ -130,7 +130,7 @@ namespace EMotionFX
         }
     }
 
-    Transform UniformMotionData::SampleJointTransform(const SampleSettings& settings, size_t jointSkeletonIndex) const
+    Transform UniformMotionData::SampleJointTransform(const MotionDataSampleSettings& settings, size_t jointSkeletonIndex) const
     {
         const Actor* actor = settings.m_actorInstance->GetActor();
         const MotionLinkData* motionLinkData = FindMotionLinkData(actor);
@@ -195,7 +195,7 @@ namespace EMotionFX
         return result;
     }
 
-    void UniformMotionData::SamplePose(const SampleSettings& settings, Pose* outputPose) const
+    void UniformMotionData::SamplePose(const MotionDataSampleSettings& settings, Pose* outputPose) const
     {
         AZ_Assert(settings.m_actorInstance, "Expecting a valid actor instance.");
         const Actor* actor = settings.m_actorInstance->GetActor();

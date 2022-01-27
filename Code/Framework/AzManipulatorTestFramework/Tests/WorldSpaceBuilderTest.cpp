@@ -75,9 +75,11 @@ namespace UnitTest
         void SetUpEditorFixtureImpl() override
         {
             m_directState =
-                AZStd::make_unique<State>(AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>());
+                AZStd::make_unique<State>(AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>(
+                    AZStd::make_shared<NullDebugDisplayRequests>()));
             m_busState =
-                AZStd::make_unique<State>(AZStd::make_unique<AzManipulatorTestFramework::IndirectCallManipulatorViewportInteraction>());
+                AZStd::make_unique<State>(AZStd::make_unique<AzManipulatorTestFramework::IndirectCallManipulatorViewportInteraction>(
+                    AZStd::make_shared<NullDebugDisplayRequests>()));
             m_cameraState =
                 AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzManipulatorTestFramework::DefaultViewportSize);
         }

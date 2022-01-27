@@ -11,6 +11,11 @@
                     "Name": "Depth",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    },
                     "ShaderImageDimensionsConstant": "m_fullResDimensions"
                 },
                 {

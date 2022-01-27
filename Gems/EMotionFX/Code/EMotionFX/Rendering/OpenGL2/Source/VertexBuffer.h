@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_VERTEXBUFFER_H
-#define __RENDERGL_VERTEXBUFFER_H
+#pragma once
 
 #include "RenderGLConfig.h"
 #include <MCore/Source/StandardHeaders.h>
@@ -66,5 +65,3 @@ namespace RenderGL
         bool GetHasError();
     };
 } // namespace RenderGL
-
-#endif

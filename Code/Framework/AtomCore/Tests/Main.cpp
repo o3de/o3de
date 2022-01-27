@@ -37,7 +37,7 @@ namespace AZ
 using namespace AZ;
 
 // Handle asserts
-class TraceDrillerHook
+class TestEnvironmentHook
     : public AZ::Test::ITestEnvironment
     , public UnitTest::TraceBusRedirector
 {
@@ -57,5 +57,5 @@ public:
     }
 };
 
-AZ_UNIT_TEST_HOOK(new TraceDrillerHook());
+AZ_UNIT_TEST_HOOK(new TestEnvironmentHook());
 

@@ -76,8 +76,9 @@ namespace AzManipulatorTestFramework
         return manipulatorInteracting;
     }
 
-    IndirectCallManipulatorViewportInteraction::IndirectCallManipulatorViewportInteraction()
-        : m_viewportInteraction(AZStd::make_unique<ViewportInteraction>())
+    IndirectCallManipulatorViewportInteraction::IndirectCallManipulatorViewportInteraction(
+        AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests)
+        : m_viewportInteraction(AZStd::make_unique<ViewportInteraction>(AZStd::move(debugDisplayRequests)))
         , m_manipulatorManager(AZStd::make_unique<IndirectCallManipulatorManager>(*m_viewportInteraction))
     {
     }

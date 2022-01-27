@@ -33,6 +33,12 @@ namespace AZ
         class MaterialAsset;
         class MaterialAssetCreator;
 
+        enum class MaterialAssetProcessingMode
+        {
+            PreBake,      //!< all material asset processing is done in the Asset Processor, producing a finalized material asset
+            DeferredBake  //!< some material asset processing is deferred, and the material asset is finalized at runtime after loading
+        };
+
         //! This is a simple data structure for serializing in/out material source files.
         class MaterialSourceData final
         {
@@ -72,35 +78,28 @@ namespace AZ
                 UpdatesApplied
             };
 
-            //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
-            //! based on the MaterialTypeAsset's version update procedure.
-            //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for resolving file-relative paths.
-            ApplyVersionUpdatesResult ApplyVersionUpdates(AZStd::string_view materialSourceFilePath = "");
-
             //! Creates a MaterialAsset from the MaterialSourceData content.
             //! @param assetId ID for the MaterialAsset
             //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for
             //! resolving file-relative paths.
+            //! @param processingMode Indicates whether to finalize the material asset using data from the MaterialTypeAsset.
             //! @param elevateWarnings Indicates whether to treat warnings as errors
-            //! @param includeMaterialPropertyNames Indicates whether to save material property names into the material asset file
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAsset(
                 Data::AssetId assetId,
-                AZStd::string_view materialSourceFilePath = "",
-                bool elevateWarnings = true,
-                bool includeMaterialPropertyNames = true) const;
+                AZStd::string_view materialSourceFilePath,
+                MaterialAssetProcessingMode processingMode,
+                bool elevateWarnings = true) const;
 
             //! Creates a MaterialAsset from the MaterialSourceData content.
             //! @param assetId ID for the MaterialAsset
             //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for
             //! resolving file-relative paths.
             //! @param elevateWarnings Indicates whether to treat warnings as errors
-            //! @param includeMaterialPropertyNames Indicates whether to save material property names into the material asset file
             //! @param sourceDependencies if not null, will be populated with a set of all of the loaded material and material type paths
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAssetFromSourceData(
                 Data::AssetId assetId,
                 AZStd::string_view materialSourceFilePath = "",
                 bool elevateWarnings = true,
-                bool includeMaterialPropertyNames = true,
                 AZStd::unordered_set<AZStd::string>* sourceDependencies = nullptr) const;
 
         private:

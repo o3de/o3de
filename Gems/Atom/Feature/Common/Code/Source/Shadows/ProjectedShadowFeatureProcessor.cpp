@@ -8,7 +8,6 @@
 
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <Math/GaussianMathFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>

@@ -26,6 +26,7 @@ class QMouseEvent;
 namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
+    class ReadOnlyEntityPublicInterface;
 
     //! This class largely exists to emit events for the OutlinerWidget to listen in on.
     //! The logic for these events is best off not happening within the tree itself,
@@ -92,7 +93,8 @@ namespace AzToolsFramework
 
         QModelIndex m_currentHoveredIndex;
 
-        EditorEntityUiInterface* m_editorEntityFrameworkInterface;
+        EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

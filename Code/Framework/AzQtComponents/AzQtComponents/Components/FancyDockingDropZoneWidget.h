@@ -28,63 +28,58 @@ class QPainter;
 
 namespace AzQtComponents
 {
-    struct AZ_QT_COMPONENTS_API FancyDockingDropZoneConstants
+    namespace FancyDockingDropZoneConstants
     {
         // Constant for the opacity of the screen grab for the dock widget being dragged
-        qreal draggingDockWidgetOpacity;
+        static constexpr qreal draggingDockWidgetOpacity = 0.6;
 
         // Constant for the opacity of the normal drop zones
-        qreal dropZoneOpacity;
+        static constexpr qreal dropZoneOpacity  = 0.4;
 
         // Constant for the default drop zone size (in pixels)
-        int dropZoneSizeInPixels;
+        static constexpr int dropZoneSizeInPixels  = 40;
 
         // Constant for the dock width/height size (in pixels) before we need to start
         // scaling down the drop zone sizes, or else they will overlap with the center
         // tab icon or each other
-        int minDockSizeBeforeDropZoneScalingInPixels;
+        static constexpr int minDockSizeBeforeDropZoneScalingInPixels = dropZoneSizeInPixels * 3;
 
         // Constant for the factor by which we must scale down the drop zone sizes once
         // the dock width/height size is too small
-        qreal dropZoneScaleFactor;
+        static constexpr qreal dropZoneScaleFactor  = 0.25;
 
         // Constant for the percentage to scale down the inner drop zone rectangle for the center tab drop zone
-        qreal centerTabDropZoneScale;
+        static constexpr qreal centerTabDropZoneScale  = 0.5;
 
         // Constant for the percentage to scale down the center tab drop zone for the center tab icon
-        qreal centerTabIconScale;
+        static constexpr qreal centerTabIconScale  = 0.5;
 
         // Constant for the drop zone hotspot default color
-        QColor dropZoneColor;
+        static const QColor dropZoneColor = QColor(155, 155, 155);
 
         // Constant for the drop zone border color
-        QColor dropZoneBorderColor;
+        static const QColor dropZoneBorderColor = Qt::black;
 
         // Constant for the border width in pixels separating the drop zones
-        int dropZoneBorderInPixels;
+        static constexpr int dropZoneBorderInPixels  = 1;
 
         // Constant for the border width in pixels separating the drop zones
-        int absoluteDropZoneSizeInPixels;
+        static constexpr int absoluteDropZoneSizeInPixels  = 25;
 
         // Constant for the delay (in milliseconds) before a drop zone becomes active
         // once it is hovered over
-        int dockingTargetDelayMS;
+        static constexpr int dockingTargetDelayMS = 110;
 
         // Constant for the rate at which we will update (fade in) the drop zone opacity
         // when hovered over (in milliseconds)
-        int dropZoneHoverFadeUpdateIntervalMS;
+        static constexpr int dropZoneHoverFadeUpdateIntervalMS  = 20;
 
         // Constant for the incremental opacity increase for the hovered drop zone
         // that will fade in to the full drop zone opacity in the desired time
-        qreal dropZoneHoverFadeIncrement;
+        static constexpr qreal dropZoneHoverFadeIncrement = dropZoneOpacity / (dockingTargetDelayMS / dropZoneHoverFadeUpdateIntervalMS);
 
         // Constant for the path to the center drop zone tabs icon
-        QString centerDropZoneIconPath;
-
-        FancyDockingDropZoneConstants();
-
-        FancyDockingDropZoneConstants(const FancyDockingDropZoneConstants&) = delete;
-        FancyDockingDropZoneConstants& operator=(const FancyDockingDropZoneConstants&) = delete;
+        static const QString centerDropZoneIconPath = QStringLiteral(":/stylesheet/img/UI20/docking/tabs_icon.svg");
     };
 
     class FancyDockingDropZoneState

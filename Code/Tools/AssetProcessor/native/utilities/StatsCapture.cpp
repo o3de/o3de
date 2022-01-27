@@ -132,6 +132,12 @@ namespace AssetProcessor
             // calls PrintStat on each element in the vector.
             void PrintStatsArray(AZStd::vector<AZStd::string>& keys, int maxToPrint, const char* header)
             {
+                // don't print anything out at all, not even a header, if the keys are empty.
+                if (keys.empty())
+                {
+                    return;
+                }
+
                 if ((m_dumpHumanReadableStats)&&(header))
                 {
                     AZ_TracePrintf(AssetProcessor::ConsoleChannel,"Top %i %s\n", maxToPrint, header);

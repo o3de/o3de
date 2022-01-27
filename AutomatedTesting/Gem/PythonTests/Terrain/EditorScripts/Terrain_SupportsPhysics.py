@@ -72,7 +72,7 @@ def Terrain_SupportsPhysics():
 
     # 2) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
     entity1_components_to_add = ["Axis Aligned Box Shape", "Terrain Layer Spawner", "Terrain Height Gradient List", "Terrain Physics Heightfield Collider", "PhysX Heightfield Collider"]
-    entity2_components_to_add = ["Vegetation Reference Shape", "Gradient Transform Modifier", "FastNoise Gradient"]
+    entity2_components_to_add = ["Shape Reference", "Gradient Transform Modifier", "FastNoise Gradient"]
     ball_components_to_add = ["Sphere Shape", "PhysX Collider", "PhysX Rigid Body"]
     terrain_spawner_entity = hydra.Entity("TestEntity1")
     terrain_spawner_entity.create_entity(azmath.Vector3(512.0, 512.0, 50.0), entity1_components_to_add)

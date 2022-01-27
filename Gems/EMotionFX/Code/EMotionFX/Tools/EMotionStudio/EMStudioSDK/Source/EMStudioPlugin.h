@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_EMSTUDIOPLUGIN_H
-#define __EMSTUDIO_EMSTUDIOPLUGIN_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -43,7 +42,6 @@ namespace EMStudio
     class EMSTUDIO_API EMStudioPlugin
         : public QObject
     {
-        Q_OBJECT
         MCORE_MEMORYOBJECTCATEGORY(EMStudioPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
 
     public:
@@ -127,5 +125,3 @@ namespace EMStudio
         virtual void AddWindowMenuEntries([[maybe_unused]] QMenu* parent) { }
     };
 }   // namespace EMStudio
-
-#endif

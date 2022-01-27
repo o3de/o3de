@@ -8,11 +8,11 @@
 
 #include "GetVariable.h"
 
-#include <Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>
 #include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
+#include <AzCore/std/sort.h>
 
 namespace ScriptCanvas
 {

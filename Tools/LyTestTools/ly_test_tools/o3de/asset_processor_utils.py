@@ -8,11 +8,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import os
 import subprocess
+import psutil
 
 import ly_test_tools.environment.process_utils as process_utils
 
 logger = logging.getLogger(__name__)
-
+processList = ["AssetProcessor_tmp","AssetProcessor","AssetProcessorBatch","AssetBuilder","rc","Lua Editor"]
 
 def start_asset_processor(bin_dir):
     """
@@ -39,9 +40,16 @@ def kill_asset_processor():
 
     :return: None
     """
-    process_utils.kill_processes_named('AssetProcessor_tmp', ignore_extensions=True)
-    process_utils.kill_processes_named('AssetProcessor', ignore_extensions=True)
-    process_utils.kill_processes_named('AssetProcessorBatch', ignore_extensions=True)
-    process_utils.kill_processes_named('AssetBuilder', ignore_extensions=True)
-    process_utils.kill_processes_named('rc', ignore_extensions=True)
-    process_utils.kill_processes_named('Lua Editor', ignore_extensions=True)
+    for n in processList:
+        process_utils.kill_processes_named(n, ignore_extensions=True)
+
+
+# Uses psutil to check if a specified process is running.
+def check_ap_running(processName):
+    for proc in psutil.process_iter():
+        try:
+            if processName.lower() in proc.name().lower():
+                return True
+        except (psutil.AccessDenied, psutil.NoSuchProcess, psutil.ZombieProcess):
+            pass
+        return False

@@ -71,8 +71,7 @@ def DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
     general.set_current_view_position(512.0, 480.0, 38.0)
 
     # Grab the UUID that we need for creating an Dynamic Slice Instance Spawner

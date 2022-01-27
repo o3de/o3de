@@ -1424,7 +1424,8 @@ namespace AZ
     }
 }
 
-using namespace AZ;
+namespace AZ
+{
 
 #ifndef AZ_USE_CUSTOM_SCRIPT_BIND
 
@@ -1456,7 +1457,7 @@ using namespace AZ;
 static void* LuaMemoryHook(void* userData, void* ptr, size_t osize, size_t nsize)
 {
     (void)osize;
-    IAllocatorAllocate* allocator = reinterpret_cast<IAllocatorAllocate*>(userData);
+    IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
     if (nsize == 0)
     {
         if (ptr)
@@ -2254,6 +2255,7 @@ LUA_API const Node* lua_getDummyNode()
     }
 
 #endif // AZ_USE_CUSTOM_SCRIPT_BIND
+} // namespace AZ
 
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
@@ -4274,7 +4276,7 @@ LUA_API const Node* lua_getDummyNode()
             AZ_CLASS_ALLOCATOR(ScriptContextImpl, AZ::SystemAllocator, 0);
 
             //////////////////////////////////////////////////////////////////////////
-            ScriptContextImpl(ScriptContext* owner, IAllocatorAllocate* allocator, lua_State* nativeContext)
+            ScriptContextImpl(ScriptContext* owner, IAllocator* allocator, lua_State* nativeContext)
                 : m_owner(owner)
                 , m_context(nullptr)
                 , m_debug(nullptr)
@@ -5073,13 +5075,26 @@ LUA_API const Node* lua_getDummyNode()
                     // Check all constructors if they have use ScriptDataContext and if so choose this one 
                     if (!customConstructorMethod)
                     {
+                        int overrideIndex = -1;
+                        AZ::AttributeReader(nullptr, FindAttribute
+                            ( Script::Attributes::DefaultConstructorOverrideIndex, behaviorClass->m_attributes)).Read<int>(overrideIndex);
+
+                        int methodIndex = 0;
                         for (BehaviorMethod* method : behaviorClass->m_constructors)
                         {
+                            if (methodIndex == overrideIndex)
+                            {
+                                customConstructorMethod = method;
+                                break;
+                            }
+
                             if (method->GetNumArguments() && method->GetArgument(method->GetNumArguments() - 1)->m_typeId == AZ::AzTypeInfo<ScriptDataContext>::Uuid())
                             {
                                 customConstructorMethod = method;
                                 break;
                             }
+
+                            ++methodIndex;
                         }
                     }
 
@@ -5812,9 +5827,8 @@ LUA_API const Node* lua_getDummyNode()
             AllocatorWrapper<Internal::LuaSystemAllocator> m_luaAllocator;
             AZStd::thread::id m_ownerThreadId; // Check if Lua methods (including EBus handlers) are called from background threads.
         };
-    } // namespace AZ
 
-    ScriptContext::ScriptContext(ScriptContextId id, IAllocatorAllocate* allocator, lua_State* nativeContext)
+    ScriptContext::ScriptContext(ScriptContextId id, IAllocator* allocator, lua_State* nativeContext)
     {
         m_id = id;
         m_impl = aznew ScriptContextImpl(this, allocator, nativeContext);
@@ -6103,5 +6117,6 @@ LUA_API const Node* lua_getDummyNode()
     {
         return m_impl->ConstructScriptProperty(sdc, valueIndex, name, restrictToPropertyArrays);
     }
+} // namespace AZ
 
 #undef AZ_DBG_NAME_FIXER

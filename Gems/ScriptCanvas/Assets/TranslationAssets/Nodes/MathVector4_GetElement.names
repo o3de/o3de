@@ -7,35 +7,35 @@
             "details": {
                 "name": "Get Element",
                 "category": "Math/Vector4",
-                "tooltip": "Returns the element corresponding to the index (0 -> x) (1 -> y) (2 -> z) (3 -> w)"
+                "tooltip": "returns the element corresponding to the index (0 -> x) (1 -> y) (2 -> z) (3 -> w)"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataInput_Index",
+                    "base": "DataInput_Index_1",
                     "details": {
                         "name": "Index"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

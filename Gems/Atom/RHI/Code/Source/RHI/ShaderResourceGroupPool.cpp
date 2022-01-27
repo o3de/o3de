@@ -8,8 +8,6 @@
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/ImageView.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -204,8 +202,8 @@ namespace AZ
                 // Generate diffs for image views.
                 if (HasImageGroup())
                 {
-                    AZStd::array_view<ConstPtr<ImageView>> viewGroupOld = shaderResourceGroup.GetData().GetImageGroup();
-                    AZStd::array_view<ConstPtr<ImageView>> viewGroupNew = groupData.GetImageGroup();
+                    AZStd::span<const ConstPtr<ImageView>> viewGroupOld = shaderResourceGroup.GetData().GetImageGroup();
+                    AZStd::span<const ConstPtr<ImageView>> viewGroupNew = groupData.GetImageGroup();
                     AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "ShaderResourceGroupData layouts do not match.");
                     for (size_t i = 0; i < viewGroupOld.size(); ++i)
                     {
@@ -216,8 +214,8 @@ namespace AZ
                 // Generate diffs for buffer views.
                 if (HasBufferGroup())
                 {
-                    AZStd::array_view<ConstPtr<BufferView>> viewGroupOld = shaderResourceGroup.GetData().GetBufferGroup();
-                    AZStd::array_view<ConstPtr<BufferView>> viewGroupNew = groupData.GetBufferGroup();
+                    AZStd::span<const ConstPtr<BufferView>> viewGroupOld = shaderResourceGroup.GetData().GetBufferGroup();
+                    AZStd::span<const ConstPtr<BufferView>> viewGroupNew = groupData.GetBufferGroup();
                     AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "ShaderResourceGroupData layouts do not match.");
                     for (size_t i = 0; i < viewGroupOld.size(); ++i)
                     {
@@ -250,8 +248,6 @@ namespace AZ
 
         void ShaderResourceGroupPool::CompileGroupsForInterval(Interval interval)
         {
-            AZ_TRACE_METHOD_NAME("CompileGroupsForInterval");
-
             AZ_Assert(m_isCompiling, "You must call CompileGroupsBegin() first!");
             AZ_Assert(
                 interval.m_max >= interval.m_min &&
@@ -261,6 +257,8 @@ namespace AZ
             for (uint32_t i = interval.m_min; i < interval.m_max; ++i)
             {
                 ShaderResourceGroup* group = m_groupsToCompile[i];
+                AZ_PROFILE_SCOPE(RHI, "CompileGroupsForInterval %s", group->GetName().GetCStr());
+
                 CompileGroupInternal(*group, group->GetData());
                 group->m_isQueuedForCompile = false;
             }

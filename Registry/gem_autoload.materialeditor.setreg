@@ -1,0 +1,72 @@
+{
+    "Amazon": {
+        "Gems": {
+            "ImGui.Editor": {
+                "AutoLoad": false
+            },
+            "Gestures.Editor": {
+                "AutoLoad": false
+            },
+            "GraphCanvas.Editor": {
+                "AutoLoad": false
+            },
+            "GraphModel.Editor": {
+                "AutoLoad": false
+            },
+            "PhysX.Editor": {
+                "AutoLoad": false
+            },
+            "PhysXDebug.Editor": {
+                "AutoLoad": false
+            },
+            "Blast.Editor": {
+                "AutoLoad": false
+            },
+            "NVCloth.Editor": {
+                "AutoLoad": false
+            },
+            "ScriptCanvas.Editor": {
+                "AutoLoad": false
+            },
+            "ScriptCanvasDeveloper": {
+                "AutoLoad": false
+            },
+            "ScriptCanvasPhysics": {
+                "AutoLoad": false
+            },
+            "ScriptCanvasTesting.Editor": {
+                "AutoLoad": false
+            },
+            "LandscapeCanvas.Editor": {
+                "AutoLoad": false
+            },
+            "HttpRequestor.Editor": {
+                "AutoLoad": false
+            },
+            "WhiteBox.Editor": {
+                "AutoLoad": false
+            },
+            "PythonAssetBuilder.Editor": {
+                "AutoLoad": false
+            },
+            "AWSCore": {
+                "AutoLoad": false
+            },
+            "AWSCore.Editor": {
+                "AutoLoad": false
+            },
+            "AWSClientAuth": {
+                "AutoLoad": false
+            },
+            "AWSClientAuth.Editor": {
+                "AutoLoad": false
+            },
+            "AWSMetrics": {
+                "AutoLoad": false
+            },
+            "AWSMetrics.Editor": {
+                "AutoLoad": false
+            }
+        }
+    }
+}

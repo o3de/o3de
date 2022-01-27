@@ -146,15 +146,6 @@ class TestBaseLauncher:
 
         mock_stop_ap.assert_called_once()
 
-    @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.save_project_log_files')
-    def test_Teardown_TeardownCalled_CallsSaveProjectLogFiles(self, under_test):
-        mock_workspace = mock.MagicMock()
-        mock_args = ['foo']
-        mock_launcher = ly_test_tools.launchers.Launcher(mock_workspace, mock_args)
-
-        mock_launcher.teardown()
-        under_test.assert_called_once()
-
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     @mock.patch('ly_test_tools._internal.managers.artifact_manager.ArtifactManager.save_artifact')
     @mock.patch('os.listdir')

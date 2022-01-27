@@ -7,25 +7,24 @@
             "details": {
                 "name": "Math Expression",
                 "category": "Math",
-                "tooltip": "Will evaluate a series of math operations, allowing users to specify inputs using {}.",
-                "subtitle": "Math"
+                "tooltip": "Will evaluate a series of math operations, allowing users to specify inputs using {}."
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Output signal"

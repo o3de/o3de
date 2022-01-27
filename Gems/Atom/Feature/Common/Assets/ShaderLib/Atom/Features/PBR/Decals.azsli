@@ -54,6 +54,8 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
     localPos = mul(decalRot, localPos);
 
     float3 decalUVW = localPos * rcp(decal.m_halfSize);
+    
+    [branch]
     if(decalUVW.x >= -1.0f && decalUVW.x <= 1.0f &&
        decalUVW.y >= -1.0f && decalUVW.y <= 1.0f &&
        decalUVW.z >= -1.0f && decalUVW.z <= 1.0f)
@@ -72,27 +74,28 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         float2 normalMap = 0;
         // Each texture array handles a size permutation. 
         // e.g. it could be that tex array 0 handles 256x256 and tex array 1 handles 512x64, etc.
+        [branch]
         switch(textureArrayIndex)
         {
             case 0:
                 baseMap = ViewSrg::m_decalTextureArrayDiffuse0.Sample(PassSrg::LinearSampler, decalUV);
-                normalMap = ViewSrg::m_decalTextureArrayNormalMaps0.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps0.Sample(PassSrg::LinearSampler, decalUV).rg;
             break;
             case 1:
                 baseMap = ViewSrg::m_decalTextureArrayDiffuse1.Sample(PassSrg::LinearSampler, decalUV);
-                normalMap = ViewSrg::m_decalTextureArrayNormalMaps1.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps1.Sample(PassSrg::LinearSampler, decalUV).rg;
             break;
             case 2:
                 baseMap = ViewSrg::m_decalTextureArrayDiffuse2.Sample(PassSrg::LinearSampler, decalUV);
-                normalMap = ViewSrg::m_decalTextureArrayNormalMaps2.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps2.Sample(PassSrg::LinearSampler, decalUV).rg;
             break;
             case 3:
                 baseMap = ViewSrg::m_decalTextureArrayDiffuse3.Sample(PassSrg::LinearSampler, decalUV);
-                normalMap = ViewSrg::m_decalTextureArrayNormalMaps3.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps3.Sample(PassSrg::LinearSampler, decalUV).rg;
             break;
             case 4:
                 baseMap = ViewSrg::m_decalTextureArrayDiffuse4.Sample(PassSrg::LinearSampler, decalUV);
-                normalMap = ViewSrg::m_decalTextureArrayNormalMaps4.Sample(PassSrg::LinearSampler, decalUV);
+                normalMap = ViewSrg::m_decalTextureArrayNormalMaps4.Sample(PassSrg::LinearSampler, decalUV).rg;
             break;            
         }
         

@@ -28,7 +28,6 @@
 #include <QDesktopWidget>
 #include <QToolBar>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
-#include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/IDGenerator.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
@@ -1138,6 +1137,12 @@ namespace EMStudio
             for (size_t motionSetId = 0; motionSetId < numMotionSets; motionSetId++)
             {
                 EMotionFX::MotionSet* motionSet2 = EMotionFX::GetMotionManager().GetMotionSet(motionSetId);
+
+                if (motionSet2->GetIsOwnedByRuntime())
+                {
+                    continue;
+                }
+
                 if (motionSet2->FindMotionEntryById(motionEntry->GetId()))
                 {
                     numMotionSetContainsMotion++;
@@ -1146,12 +1151,6 @@ namespace EMStudio
                         break;
                     }
                 }
-            }
-
-            // If motion exists in multiple motion sets, then it should not be removed from motions window.
-            if (removeMotion && numMotionSetContainsMotion > 1)
-            {
-                continue;
             }
 
             // check the reference counter if only one reference registered
@@ -1169,6 +1168,12 @@ namespace EMStudio
                 motionIdsToRemoveString += ';';
             }
             motionIdsToRemoveString += motionEntry->GetId();
+
+            // If motion exists in multiple motion sets, then it should not be removed from motions window.
+            if (removeMotion && numMotionSetContainsMotion > 1)
+            {
+                continue;
+            }
 
             // Check if the motion is not valid, that means the motion is not loaded.
             if (removeMotion && motionEntry->GetMotion())

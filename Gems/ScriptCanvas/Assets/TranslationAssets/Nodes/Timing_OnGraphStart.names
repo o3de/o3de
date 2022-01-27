@@ -7,12 +7,11 @@
             "details": {
                 "name": "On Graph Start",
                 "category": "Timing",
-                "tooltip": "Starts executing the graph when the entity that owns the graph is fully activated.",
-                "subtitle": "Timing"
+                "tooltip": "Starts executing the graph when the entity that owns the graph is fully activated."
             },
             "slots": [
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled when the entity that owns this graph is fully activated."

@@ -15,6 +15,7 @@
 namespace Aftermath
 {
     void SetAftermathEventMarker(void* cntxHandle, const AZStd::string& markerData, bool isAftermathInitialized);
+    void SetAftermathEventMarker(void* cntxHandle, const char* markerData, bool isAftermathInitialized);
     bool InitializeAftermath(AZ::RHI::Ptr<ID3D12DeviceX> dx12Device);
     void* CreateAftermathContextHandle(ID3D12GraphicsCommandList* commandList, void* crashTracker);
     void OutputLastScopeExecutingOnGPU(void* crashTracker);

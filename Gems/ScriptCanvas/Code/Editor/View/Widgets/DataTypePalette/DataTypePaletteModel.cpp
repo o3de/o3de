@@ -243,7 +243,16 @@ namespace ScriptCanvasEditor
 
     AZStd::string DataTypePaletteModel::FindTypeNameForTypeId(const AZ::TypeId& typeId) const
     {
-        return TranslationHelper::GetSafeTypeName(ScriptCanvas::Data::FromAZType(typeId));
+        GraphCanvas::TranslationKey key;
+        key << "BehaviorType" << typeId.ToString<AZStd::string>() << "details";
+
+        GraphCanvas::TranslationRequests::Details details;
+
+        details.m_name = TranslationHelper::GetSafeTypeName(ScriptCanvas::Data::FromAZType(typeId));
+
+        GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+        return details.m_name;
     }
 
     void DataTypePaletteModel::TogglePendingPinChange(const AZ::Uuid& azVarType)

@@ -1288,7 +1288,7 @@ namespace AzToolsFramework
         return newCtrl;
     }
 
-    void AssetPropertyHandlerDefault::ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
+    void AssetPropertyHandlerDefault::ConsumeAttributeInternal(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
     {
         (void)debugName;
 
@@ -1487,6 +1487,11 @@ namespace AzToolsFramework
         }
     }
 
+    void AssetPropertyHandlerDefault::ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
+    {
+        ConsumeAttributeInternal(GUI, attrib, attrValue, debugName);
+    }
+
     void AssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
         (void)index;
@@ -1629,8 +1634,8 @@ namespace AzToolsFramework
 
     void RegisterAssetPropertyHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew AssetPropertyHandlerDefault());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew SimpleAssetPropertyHandlerDefault());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew AssetPropertyHandlerDefault());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew SimpleAssetPropertyHandlerDefault());
     }
 }
 

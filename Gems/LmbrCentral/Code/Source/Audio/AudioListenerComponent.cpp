@@ -96,7 +96,7 @@ namespace LmbrCentral
         }
         else
         {
-            m_positionEntity = entityId;
+            m_currentPositionEntity = entityId;
         }
     }
 
@@ -221,26 +221,26 @@ namespace LmbrCentral
 
         if (rotationEntityId.IsValid())
         {
-            AZ::EntityBus::MultiHandler::BusConnect(rotationEntityId);
             m_currentRotationEntity = rotationEntityId;
+            AZ::EntityBus::MultiHandler::BusConnect(rotationEntityId);
         }
         else
         {
-            AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
             m_currentRotationEntity = GetEntityId();
+            AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
         }
 
         // Lastly, connect to the Entity used for Position
 
         if (positionEntityId.IsValid())
         {
-            AZ::EntityBus::MultiHandler::BusConnect(positionEntityId);
             m_currentPositionEntity = positionEntityId;
+            AZ::EntityBus::MultiHandler::BusConnect(positionEntityId);
         }
         else
         {
-            AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
             m_currentPositionEntity = GetEntityId();
+            AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
         }
 
         // Do a fetch of the transforms to sync upon connecting.

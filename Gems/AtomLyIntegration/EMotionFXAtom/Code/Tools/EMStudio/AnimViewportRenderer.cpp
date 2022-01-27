@@ -128,6 +128,7 @@ namespace EMStudio
         m_groundEntity->CreateComponent(AZ::Render::MeshComponentTypeId);
         m_groundEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
         m_groundEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
+        m_groundEntity->Init();
         m_groundEntity->Activate();
 
         Reinit();
@@ -207,6 +208,20 @@ namespace EMStudio
     AZStd::shared_ptr<AzFramework::Scene> AnimViewportRenderer::GetFrameworkScene() const
     {
         return m_frameworkScene;
+    }
+
+    AZ::EntityId AnimViewportRenderer::GetEntityId() const
+    {
+        if (m_actorEntities.empty())
+        {
+            return AZ::EntityId();
+        }
+        return m_actorEntities[0]->GetId();
+    }
+
+    AzFramework::EntityContextId AnimViewportRenderer::GetEntityContextId() const
+    {
+        return m_entityContext->GetContextId();
     }
 
     void AnimViewportRenderer::ResetEnvironment()
@@ -325,6 +340,9 @@ namespace EMStudio
         Camera::Configuration cameraConfig;
         cameraConfig.m_fovRadians = AZ::DegToRad(m_renderOptions->GetFOV());
         cameraConfig.m_nearClipDistance = m_renderOptions->GetNearClipPlaneDistance();
+        cameraConfig.m_farClipDistance = m_renderOptions->GetFarClipPlaneDistance();
+        cameraConfig.m_frustumWidth = DefaultFrustumDimension;
+        cameraConfig.m_frustumHeight = DefaultFrustumDimension;
 
         preset->ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,

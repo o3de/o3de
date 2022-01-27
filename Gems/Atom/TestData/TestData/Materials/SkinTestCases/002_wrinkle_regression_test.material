@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/Skin.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "baseColor": {
             "color": [
@@ -29,14 +29,14 @@
         },
         "normal": {
             "flipY": true,
-            "textureMap": "Objects/Lucy/Lucy_Normal.png"
+            "textureMap": "Objects/Hermanubis/Hermanubis_Normal.png"
         },
         "subsurfaceScattering": {
             "enableSubsurfaceScattering": true,
             "influenceMap": "TestData/Textures/checker8x8_gray_512.png",
             "scatterDistance": 15.0,
             "subsurfaceScatterFactor": 0.4300000071525574,
-            "thicknessMap": "Objects/Lucy/Lucy_thickness.tif",
+            "thicknessMap": "Objects/Hermanubis/Hermanubis_thickness.tif",
             "transmissionAttenuation": 15.0,
             "transmissionDistortion": 0.3499999940395355,
             "transmissionMode": "ThickObject",

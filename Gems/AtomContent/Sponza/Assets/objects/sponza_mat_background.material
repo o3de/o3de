@@ -1,25 +1,16 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/background_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureMap": "Textures/background_1k_basecolor.png"
+            "textureMap": "../Textures/background_1k_basecolor.png"
         },
         "clearCoat": {
             "enable": true,
             "factor": 0.5,
-            "normalMap": "Textures/background_1k_normal.jpg",
+            "normalMap": "../Textures/background_1k_normal.jpg",
             "roughness": 0.4000000059604645
         },
         "general": {
@@ -27,31 +18,32 @@
         },
         "irradiance": {
             "color": [
-                1.0,
-                0.8911573886871338,
-                0.7894102334976196,
+                0.19806210696697235,
+                0.1746547669172287,
+                0.16513313353061676,
                 1.0
             ]
         },
         "metallic": {
-            "textureMap": "Textures/background_1k_metallic.png"
+            "textureMap": "../Textures/background_1k_metallic.png"
         },
         "normal": {
-            "textureMap": "Textures/background_1k_normal.jpg"
+            "textureMap": "../Textures/background_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/background_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
         },
         "parallax": {
-            "algorithm": "POM",
             "factor": 0.03099999949336052,
             "pdo": true,
             "quality": "High",
-            "textureMap": "Textures/background_1k_height.png",
             "useTexture": false
         },
         "roughness": {
-            "textureMap": "Textures/background_1k_roughness.png"
+            "textureMap": "../Textures/background_1k_roughness.png"
         }
     }
 }

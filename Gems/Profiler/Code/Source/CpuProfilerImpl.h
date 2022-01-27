@@ -150,7 +150,7 @@ namespace Profiler
 
         AZStd::mutex m_continuousCaptureEndingMutex;
 
-        AZStd::atomic_bool m_continuousCaptureInProgress;
+        AZStd::atomic_bool m_continuousCaptureInProgress = false;
 
         // Stores multiple frames of profiling data, size is controlled by MaxFramesToSave. Flushed when EndContinuousCapture is called.
         // Ring buffer so that we can have fast append of new data + removal of old profiling data with good cache locality.

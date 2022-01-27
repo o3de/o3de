@@ -9,7 +9,6 @@
 #include "FixedShapeProcessor.h"
 #include "AuxGeomDrawProcessorShared.h"
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/array.h>
 

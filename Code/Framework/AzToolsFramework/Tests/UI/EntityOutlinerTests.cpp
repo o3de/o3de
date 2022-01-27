@@ -37,16 +37,11 @@ namespace UnitTest
             m_model->Initialize();
             m_modelTester =
                 AZStd::make_unique<QAbstractItemModelTester>(m_model.get(), QAbstractItemModelTester::FailureReportingMode::Fatal);
-
-            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-                m_undoStack, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetUndoStack);
-            AZ_Assert(m_undoStack, "Failed to look up undo stack from tools application");
-
+            
             // Create a new root prefab - the synthetic "NewLevel.prefab" that comes in by default isn't suitable for outliner tests
             // because it's created before the EditorEntityModel that our EntityOutlinerListModel subscribes to, and we want to
             // recreate it as part of the fixture regardless.
-            auto entityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-            entityOwnershipService->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
+            CreateRootPrefab();
         }
 
         void TearDownEditorFixtureImpl() override
@@ -125,32 +120,17 @@ namespace UnitTest
         }
 
         // Kicks off any updates scheduled for the next tick
-        void ProcessDeferredUpdates()
+        void ProcessDeferredUpdates() override
         {
             // Force a prefab propagation for updates that are deferred to the next tick.
-            m_prefabSystemComponent->OnSystemTick();
+            PropagateAllTemplateChanges();
 
             // Ensure the model process its entity update queue
             m_model->ProcessEntityUpdates();
         }
-
-        // Performs an undo operation and ensures the tick-scheduled updates happen
-        void Undo()
-        {
-            m_undoStack->Undo();
-            ProcessDeferredUpdates();
-        }
-
-        // Performs a redo operation and ensures the tick-scheduled updates happen
-        void Redo()
-        {
-            m_undoStack->Redo();
-            ProcessDeferredUpdates();
-        }
-
+        
         AZStd::unique_ptr<AzToolsFramework::EntityOutlinerListModel> m_model;
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTester;
-        AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
     };
 
     TEST_F(EntityOutlinerTest, TestCreateFlatHierarchyUndoAndRedoWorks)

@@ -12,8 +12,6 @@
 #include <PostProcessing/SMAABlendingWeightCalculationPass.h>
 #include <PostProcessing/SMAANeighborhoodBlendingPass.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/Pass/PassFilter.h>
@@ -66,7 +64,7 @@ namespace AZ
 
         void SMAAFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_UNUSED(packet);
         }
 

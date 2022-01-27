@@ -19,8 +19,6 @@
 #include <AzCore/std/containers/unordered_set.h>
 #endif
 
-class ITexture;
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UI render interface
 //
@@ -137,6 +135,9 @@ public: // member functions
 
     //! Display debug texture data after rendering
     void DebugDisplayTextureData(int recordingOption);
+
+    //! Track textures being used in the current frame
+    void DebugUseTexture(AZ::Data::Instance<AZ::RPI::Image> image);
 #endif
 
 private: // member functions
@@ -179,6 +180,6 @@ protected: // attributes
 
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;
-    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame; // LYSHINE_ATOM_TODO - convert to RPI::Image
+    AZStd::unordered_set<AZ::Data::Instance<AZ::RPI::Image>> m_texturesUsedInFrame;
 #endif
 };

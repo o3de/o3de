@@ -12,6 +12,7 @@
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
@@ -34,15 +35,29 @@ namespace AzToolsFramework::Prefab
         PrefabPublicNotificationBus::Handler::BusConnect();
         AZ::Interface<PrefabFocusInterface>::Register(this);
         AZ::Interface<PrefabFocusPublicInterface>::Register(this);
+        PrefabFocusPublicRequestBus::Handler::BusConnect();
     }
 
     PrefabFocusHandler::~PrefabFocusHandler()
     {
+        PrefabFocusPublicRequestBus::Handler::BusDisconnect();
         AZ::Interface<PrefabFocusPublicInterface>::Unregister(this);
         AZ::Interface<PrefabFocusInterface>::Unregister(this);
         PrefabPublicNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
+    }
+
+    void PrefabFocusHandler::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
+        {
+            behaviorContext->EBus<PrefabFocusPublicRequestBus>("PrefabFocusPublicRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Prefab")
+                ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                ->Event("FocusOnOwningPrefab", &PrefabFocusPublicInterface::FocusOnOwningPrefab);
+        }
     }
 
     void PrefabFocusHandler::InitializeEditorInterfaces()
@@ -59,6 +74,13 @@ namespace AzToolsFramework::Prefab
             m_focusModeInterface,
             "Prefab - PrefabFocusHandler - "
             "Focus Mode Interface could not be found. "
+            "Check that it is being correctly initialized.");
+
+        m_readOnlyEntityQueryInterface = AZ::Interface<ReadOnlyEntityQueryInterface>::Get();
+        AZ_Assert(
+            m_readOnlyEntityQueryInterface,
+            "Prefab - PrefabFocusHandler - "
+            "ReadOnly Entity Query Interface could not be found. "
             "Check that it is being correctly initialized.");
     }
 
@@ -172,6 +194,8 @@ namespace AzToolsFramework::Prefab
         // Close all container entities in the old path.
         CloseInstanceContainers(m_instanceFocusHierarchy);
 
+        AZ::EntityId previousContainerEntityId = m_focusedInstanceContainerEntityId;
+
         // Do not store the container for the root instance, use an invalid EntityId instead.
         m_focusedInstanceContainerEntityId = focusedInstance->get().GetParentInstance().has_value() ? focusedInstance->get().GetContainerEntityId() : AZ::EntityId();
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
@@ -185,6 +209,12 @@ namespace AzToolsFramework::Prefab
                 : AZ::EntityId();
 
             m_focusModeInterface->SetFocusRoot(containerEntityId);
+        }
+
+        // Refresh the read-only cache, if the interface is initialized.
+        if (m_readOnlyEntityQueryInterface)
+        {
+            m_readOnlyEntityQueryInterface->RefreshReadOnlyState({ previousContainerEntityId, m_focusedInstanceContainerEntityId });
         }
 
         // Refresh path variables.

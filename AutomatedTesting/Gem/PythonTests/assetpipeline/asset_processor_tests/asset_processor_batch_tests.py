@@ -8,6 +8,8 @@ General Asset Processor Batch Tests
 """
 
 # Import builtin libraries
+from os import listdir
+
 import pytest
 import logging
 import os
@@ -724,3 +726,11 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
 
+    @pytest.mark.assetpipeline
+    def test_AssetProcessor_Log_On_Failure(self, asset_processor, ap_setup_fixture, workspace):
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_AP_Logs")
+        result, output = asset_processor.batch_process(expect_failure=True, capture_output=True)
+        assert result == False, f'AssetProcessorBatch should have failed because there is a bad asset, output was {output}'
+
+        jobLogs = listdir(workspace.paths.ap_job_logs() + "/test_AP_Logs")
+        assert not len(jobLogs) == 0, 'No job logs where output during failure.'
