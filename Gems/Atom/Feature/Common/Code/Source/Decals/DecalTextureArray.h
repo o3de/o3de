@@ -13,7 +13,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
 
@@ -81,7 +81,7 @@ namespace AZ
             RHI::Size GetImageDimensions(const DecalMapType mapType) const;
             RHI::Format GetFormat(const DecalMapType mapType) const;
             RHI::ImageSubresourceLayout GetLayout(const DecalMapType mapType, int mip) const;
-            AZStd::array_view<uint8_t> GetRawImageData(const AZ::Name& mapName, int arrayLevel, int mip) const;
+            AZStd::span<const uint8_t> GetRawImageData(const AZ::Name& mapName, int arrayLevel, int mip) const;
 
             bool AreAllAssetsReady() const;
             bool IsAssetReady(const MaterialData& materialData) const;
