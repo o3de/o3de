@@ -238,7 +238,7 @@ namespace SurfaceData
         {
             for (float x = inRegion.GetMin().GetX(); x < inRegion.GetMax().GetX(); x += stepSize.GetX())
             {
-                inPositions.emplace_back(AZ::Vector3(x, y, AZ::Constants::FloatMax));
+                inPositions.emplace_back(x, y, AZ::Constants::FloatMax);
             }
         }
 
