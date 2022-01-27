@@ -41,26 +41,30 @@ bl_info = {
 } # This is needed for Blender Plugin
 
 from typing import Any
-from . import auto_load
 import bpy
 from bpy.props import EnumProperty
 import sys
 from pathlib import Path
-
 # Needed to import custom scripts in Blender Python
 directory = Path.cwd()
 sys.path += [str(directory)]
 
-import o3de_utils
-import ui
-import constants
-
-auto_load.init()
+print(directory)
+print()
+from . import o3de_utils
+from . import ui
+from . import constants
 
 def register():
     """! This is the function that will register Classes and Global Vars for this plugin
     """
-    auto_load.register()
+    #auto_load.register()
+    bpy.utils.register_class(ui.O3deTools)
+    bpy.utils.register_class(ui.WikiButton)
+    bpy.utils.register_class(ui.ExportFiles)
+    bpy.utils.register_class(ui.ProjectsListDropDown)
+    bpy.utils.register_class(ui.SceneExporterFileMenu)
+    bpy.utils.register_class(ui.ExportOptionsListDropDown)
     bpy.types.TOPBAR_MT_file_export.append(ui.file_export_menu_add) # Blender Specific Class and Naming Convention. 
     bpy.types.Scene.selected_o3de_project_path = ''
     bpy.types.Scene.export_textures_folder = True
@@ -71,7 +75,13 @@ def register():
 def unregister():
     """! This is the function that will unregister Classes and Global Vars for this plugin
     """
-    auto_load.unregister()
+    #auto_load.unregister()
+    bpy.utils.unregister_class(ui.O3deTools)
+    bpy.utils.unregister_class(ui.WikiButton)
+    bpy.utils.unregister_class(ui.ExportFiles)
+    bpy.utils.unregister_class(ui.ProjectsListDropDown)
+    bpy.utils.unregister_class(ui.SceneExporterFileMenu)
+    bpy.utils.unregister_class(ui.ExportOptionsListDropDown)
     bpy.types.TOPBAR_MT_file_export.remove(ui.file_export_menu_add) # Blender Specific Class and Naming Convention. 
     del bpy.types.Scene.selected_o3de_project_path
     del bpy.types.Scene.o3de_projects_list

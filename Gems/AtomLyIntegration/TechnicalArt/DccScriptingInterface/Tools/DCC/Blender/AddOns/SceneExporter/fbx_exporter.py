@@ -9,10 +9,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 # -------------------------------------------------------------------------
 import bpy
 import re
-import ui
-import utils
-import o3de_utils
 from pathlib import Path
+from . import ui
+from . import utils
+from . import o3de_utils
 
 def fbx_file_exporter(fbx_file_path):
     """!

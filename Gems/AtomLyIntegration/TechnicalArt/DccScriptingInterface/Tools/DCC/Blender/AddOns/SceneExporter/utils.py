@@ -10,8 +10,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import bpy
 from bpy.props import EnumProperty
 import shutil
-import ui
 from pathlib import Path
+from . import ui
 
 def check_selected():
     """!

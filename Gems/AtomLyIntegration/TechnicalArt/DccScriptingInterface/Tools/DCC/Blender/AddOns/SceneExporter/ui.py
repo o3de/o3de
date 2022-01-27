@@ -13,11 +13,10 @@ import webbrowser
 from bpy_extras.io_utils import ExportHelper
 from bpy.types import Panel, Operator, PropertyGroup
 from bpy.props import EnumProperty, StringProperty, BoolProperty, PointerProperty
-import constants
-import fbx_exporter
-import o3de_utils
-import ui
-
+from . import constants
+from . import fbx_exporter
+from . import o3de_utils
+from . import ui
 
 def message_box(message = "", title = "Message Box", icon = 'LIGHT'):
     """!

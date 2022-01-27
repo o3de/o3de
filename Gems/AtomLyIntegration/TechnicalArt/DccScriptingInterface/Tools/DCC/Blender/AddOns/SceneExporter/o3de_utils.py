@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #import os
 import json
 from pathlib import Path
-import constants
+from . import constants
 
 
 def LookatEngineManifest():
