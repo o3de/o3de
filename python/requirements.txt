@@ -6,13 +6,13 @@ attrs==20.1.0 \
     --hash=sha256:0ef97238856430dcf9228e07f316aefc17e8939fc8507e18c6501b761ef1a42a \
     --hash=sha256:2867b7b9f8326499ab5b0e2d12801fa5c98842d2cbd22b35112ae04bf85b4dff
     # via -r .\requirements.txt
-boto3==1.12.21 \
-    --hash=sha256:50105a25e301e20b361b2b8fafee196a425a4758e51f400a0f381d42e4bd909e \
-    --hash=sha256:5fe70e656f92e4e649dc4cf05786f57d180e5d491bcb22c80411512ec2b27c15 \
+boto3==1.20.44 \
+    --hash=sha256:26f18ca7411615f33d8d1bf60cc8efe5b331a57b3013d5f8f3587cd5350c27cb \
+    --hash=sha256:4470f64e4af609ff678055338c96a6f7cbe601d1fb06a4ea7dc8d9223c2e527a \
     # via -r .\requirements.txt
-botocore==1.15.21 \
-    --hash=sha256:4aaf6c94bcaace260138d32eae144be1b5d2ddce9ef0f395da32c68e106ff20f \
-    --hash=sha256:86f7f1c489887f9e3c2ede598e2a30f8bd259c11e8ebe25e897e40231b3f4bc8 \
+botocore==1.23.44 \
+    --hash=sha256:11483a493de4a76ef218d8cd3980c63550d006a0d082c10d53c0954184ca542a \
+    --hash=sha256:8e5317f84fc1118bff58fa6fa79a9b62083e75a2a9c62feb3ea73694c550b99d \
     # via -r .\requirements.txt, boto3, s3transfer
 certifi==2019.11.28 \
     --hash=sha256:017c25db2a153ce562900032d5bc68e9f191e44e9a0f762f373977de9df1fbb3 \
@@ -22,6 +22,11 @@ chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
     --hash=sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691 \
     # via -r .\requirements.txt, requests
+charset-normalizer==2.0.10 \
+    --hash=sha256:876d180e9d7432c5d1dfd4c5d26b72f099d503e8fcc0feb7532c9289be60fcbd \
+    --hash=sha256:cb957888737fc0bbcd78e3df769addb41fd1ff8cf950dc9e7ad7793f1bf44455 \
+    # via
+    #   -r requirements.txt, requests
 colorama==0.4.3 \
     --hash=sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff \
     --hash=sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1 \
@@ -161,7 +166,7 @@ pillow==9.0.0 \
     --hash=sha256:d154ed971a4cc04b93a6d5b47f37948d1f621f25de3e8fa0c26b2d44f24e3e8f \
     --hash=sha256:d5dcea1387331c905405b09cdbfb34611050cc52c865d71f2362f354faee1e9f \
     --hash=sha256:ee6e2963e92762923956fe5d3479b1fdc3b76c83f290aad131a2f98c3df0593e \
-    --hash=sha256:fd0e5062f11cb3e730450a7d9f323f4051b532781026395c4323b8ad055523c4
+    --hash=sha256:fd0e5062f11cb3e730450a7d9f323f4051b532781026395c4323b8ad055523c4 \
     # via -r requirements.txt
 pluggy==0.13.1 \
     --hash=sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0 \
@@ -203,7 +208,7 @@ psutil==5.8.0 \
     # via requirements.txt
 py==1.11.0 \
     --hash=sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719 \
-    --hash=sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378
+    --hash=sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378 \
     # via -r requirements.txt
 pyparsing==2.4.7 \
     --hash=sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1 \
@@ -256,13 +261,13 @@ PyYAML==5.4.1 \
     --hash=sha256:e4fac90784481d221a8e4b1162afa7c47ed953be40d31ab4629ae917510051df \
     --hash=sha256:fa5ae20527d8e831e8230cbffd9f8fe952815b2b7dae6ffec25318803a7528fc \
     # via requirements.txt
-requests==2.23.0 \
-    --hash=sha256:43999036bfa82904b6af1d99e4882b560e5e2c68e5c4b0aa03b655f3d7d73fee \
-    --hash=sha256:b3f43d496c6daba4493e7c431722aeb7dbc6288f52a6e04e7b6023b0247817e6 \
-    # via -r .\requirements.txt
-s3transfer==0.3.3 \
-    --hash=sha256:2482b4259524933a022d59da830f51bd746db62f047d6eb213f2f8855dcb8a13 \
-    --hash=sha256:921a37e2aefc64145e7b73d50c71bb4f26f46e4c9f414dc648c6245ff92cf7db \
+requests==2.27.1 \
+    --hash=sha256:68d7c56fd5a8999887728ef304a6d12edc7be74f1cfa47714fc8b414525c9a61 \
+    --hash=sha256:f22fa1e554c9ddfd16e6e41ac79759e17be9e492b3587efa038054674760e72d \
+    # via -r requirements.txt
+s3transfer==0.5.0 \
+    --hash=sha256:50ed823e1dc5868ad40c8dc92072f757aa0e653a192845c94a3b676f4a62da4c \
+    --hash=sha256:9c1dc369814391a6bda20ebbf4b70a0f34630592c9aa520856bf384916af2803 \
     # boto3
 scipy==1.4.1 \
     --hash=sha256:00af72998a46c25bdb5824d2b729e7dabec0c765f9deb0b504f928591f5ff9d4 \
@@ -302,7 +307,7 @@ smmap==3.0.5 \
     # via smmap2
 urllib3==1.26.8 \
     --hash=sha256:000ca7f471a233c2251c6c7023ee85305721bfdf18621ebff4fd17a8653427ed \
-    --hash=sha256:0e7c33d9a63e7ddfcb86780aac87befc2fbddf46c58dbb487e0855f7ceec283c
+    --hash=sha256:0e7c33d9a63e7ddfcb86780aac87befc2fbddf46c58dbb487e0855f7ceec283c \
     # via -r requirements.txt
 wcwidth==0.2.5 \
     --hash=sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784 \
