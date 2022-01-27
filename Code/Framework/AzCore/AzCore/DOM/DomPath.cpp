@@ -54,19 +54,19 @@ namespace AZ::Dom
     bool PathEntry::operator==(size_t value) const
     {
         const size_t* internalValue = AZStd::get_if<size_t>(&m_value);
-        return internalValue == nullptr ? false : (*internalValue) == value;
+        return internalValue != nullptr && *internalValue == value;
     }
 
     bool PathEntry::operator==(const AZ::Name& key) const
     {
         const AZ::Name* internalValue = AZStd::get_if<AZ::Name>(&m_value);
-        return internalValue == nullptr ? false : (*internalValue) == key;
+        return internalValue != nullptr && *internalValue == key;
     }
 
     bool PathEntry::operator==(AZStd::string_view key) const
     {
         const AZ::Name* internalValue = AZStd::get_if<AZ::Name>(&m_value);
-        return internalValue == nullptr ? false : (*internalValue) == AZ::Name(key);
+        return internalValue != nullptr && *internalValue == AZ::Name(key);
     }
 
     bool PathEntry::operator!=(const PathEntry& other) const
@@ -323,13 +323,13 @@ namespace AZ::Dom
         return size;
     }
 
-    void Path::FormatString(char* stringBuffer, size_t bufferSize) const
+    size_t Path::FormatString(char* stringBuffer, size_t bufferSize) const
     {
         size_t bufferIndex = 0;
 
         auto putChar = [&](char c)
         {
-            if (bufferIndex == bufferSize)
+            if (bufferIndex >= bufferSize)
             {
                 return;
             }
@@ -360,6 +360,11 @@ namespace AZ::Dom
 
         for (const PathEntry& entry : m_entries)
         {
+            if (bufferIndex >= bufferSize)
+            {
+                return bufferIndex;
+            }
+
             putChar(PathSeparator);
             if (entry.IsEndOfArray())
             {
@@ -375,7 +380,10 @@ namespace AZ::Dom
             }
         }
 
+        size_t bytesWritten = bufferIndex;
         putChar('\0');
+
+        return bytesWritten;
     }
 
     AZStd::string Path::ToString() const

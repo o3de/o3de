@@ -8,8 +8,8 @@
 
 #include <AzCore/DOM/DomPatch.h>
 #include <AzCore/DOM/DomUtils.h>
-#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/queue.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ::Dom
 {
@@ -257,7 +257,8 @@ namespace AZ::Dom
                 return AZ::Failure(sourceLoad.TakeError());
             }
 
-            return AZ::Success(PatchOperation::CopyOperation(Path(destLoad.GetValue().GetString()), Path(sourceLoad.GetValue().GetString())));
+            return AZ::Success(
+                PatchOperation::CopyOperation(Path(destLoad.GetValue().GetString()), Path(sourceLoad.GetValue().GetString())));
         }
         else if (op == "move")
         {
@@ -272,7 +273,8 @@ namespace AZ::Dom
                 return AZ::Failure(sourceLoad.TakeError());
             }
 
-            return AZ::Success(PatchOperation::MoveOperation(Path(destLoad.GetValue().GetString()), Path(sourceLoad.GetValue().GetString())));
+            return AZ::Success(
+                PatchOperation::MoveOperation(Path(destLoad.GetValue().GetString()), Path(sourceLoad.GetValue().GetString())));
         }
         else if (op == "test")
         {
@@ -319,8 +321,9 @@ namespace AZ::Dom
                 const Value* existingValue = stateBeforeApplication.FindChild(m_domPath);
                 if (existingValue == nullptr)
                 {
-                    return AZ::Failure(
-                        AZStd::string::format("Unable to invert DOM remove patch, source path not found: %s", m_domPath.ToString().data()));
+                    AZStd::string errorMessage = "Unable to invert DOM remove patch, source path not found: ";
+                    m_domPath.AppendToString(errorMessage);
+                    return AZ::Failure(AZStd::move(errorMessage));
                 }
                 return AZ::Success(PatchOperation::AddOperation(m_domPath, *existingValue));
             }
@@ -330,8 +333,9 @@ namespace AZ::Dom
                 const Value* existingValue = stateBeforeApplication.FindChild(m_domPath);
                 if (existingValue == nullptr)
                 {
-                    return AZ::Failure(AZStd::string::format(
-                        "Unable to invert DOM replace patch, source path not found: %s", m_domPath.ToString().data()));
+                    AZStd::string errorMessage = "Unable to invert DOM replace patch, source path not found: ";
+                    m_domPath.AppendToString(errorMessage);
+                    return AZ::Failure(AZStd::move(errorMessage));
                 }
                 return AZ::Success(PatchOperation::ReplaceOperation(m_domPath, *existingValue));
             }
@@ -341,8 +345,9 @@ namespace AZ::Dom
                 const Value* existingValue = stateBeforeApplication.FindChild(m_domPath);
                 if (existingValue == nullptr)
                 {
-                    return AZ::Failure(
-                        AZStd::string::format("Unable to invert DOM copy patch, source path not found: %s", m_domPath.ToString().data()));
+                    AZStd::string errorMessage = "Unable to invert DOM copy patch, source path not found: ";
+                    m_domPath.AppendToString(errorMessage);
+                    return AZ::Failure(AZStd::move(errorMessage));
                 }
                 return AZ::Success(PatchOperation::ReplaceOperation(m_domPath, *existingValue));
             }
@@ -367,8 +372,9 @@ namespace AZ::Dom
                 const Value* existingValue = stateBeforeApplication.FindChild(commonAncestor);
                 if (existingValue == nullptr)
                 {
-                    return AZ::Failure(AZStd::string::format(
-                        "Unable to invert DOM move patch, common ancestor path not found: %s", commonAncestor.ToString().data()));
+                    AZStd::string errorMessage = "Unable to invert DOM copy patch, common ancestor path not found: ";
+                    commonAncestor.AppendToString(errorMessage);
+                    return AZ::Failure(AZStd::move(errorMessage));
                 }
                 return AZ::Success(PatchOperation::ReplaceOperation(commonAncestor, *existingValue));
             }
@@ -383,10 +389,10 @@ namespace AZ::Dom
     }
 
     AZ::Outcome<PatchOperation::PathContext, AZStd::string> PatchOperation::LookupPath(
-        Value& rootElement, const Path& path, AZ::u8 existenceCheckFlags)
+        Value& rootElement, const Path& path, ExistenceCheckFlags flags)
     {
-        const bool verifyFullPath = existenceCheckFlags & VerifyFullPath;
-        const bool allowEndOfArray = existenceCheckFlags & AllowEndOfArray;
+        const bool verifyFullPath = (flags & ExistenceCheckFlags::VerifyFullPath) != ExistenceCheckFlags::DefaultExistenceCheck;
+        const bool allowEndOfArray = (flags & ExistenceCheckFlags::AllowEndOfArray) != ExistenceCheckFlags::DefaultExistenceCheck;
 
         Path target = path;
         if (target.Size() == 0)
@@ -414,7 +420,9 @@ namespace AZ::Dom
         Value* targetValue = rootElement.FindMutableChild(target);
         if (targetValue == nullptr)
         {
-            return AZ::Failure(AZStd::string::format("Path not found (%s)", target.ToString().data()));
+            AZStd::string errorMessage = "Path not found: ";
+            target.AppendToString(errorMessage);
+            return AZ::Failure(AZStd::move(errorMessage));
         }
 
         if (destinationIndex.IsIndex() || destinationIndex.IsEndOfArray())
@@ -450,7 +458,7 @@ namespace AZ::Dom
 
     PatchOperation::PatchOutcome PatchOperation::ApplyAdd(Value& rootElement) const
     {
-        auto pathLookup = LookupPath(rootElement, m_domPath, AllowEndOfArray);
+        auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
         if (!pathLookup.IsSuccess())
         {
             return AZ::Failure(pathLookup.TakeError());
@@ -481,7 +489,7 @@ namespace AZ::Dom
 
     PatchOperation::PatchOutcome PatchOperation::ApplyRemove(Value& rootElement) const
     {
-        auto pathLookup = LookupPath(rootElement, m_domPath, VerifyFullPath | AllowEndOfArray);
+        auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::VerifyFullPath | ExistenceCheckFlags::AllowEndOfArray);
         if (!pathLookup.IsSuccess())
         {
             return AZ::Failure(pathLookup.TakeError());
@@ -505,7 +513,7 @@ namespace AZ::Dom
 
     PatchOperation::PatchOutcome PatchOperation::ApplyReplace(Value& rootElement) const
     {
-        auto pathLookup = LookupPath(rootElement, m_domPath, VerifyFullPath);
+        auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::VerifyFullPath);
         if (!pathLookup.IsSuccess())
         {
             return AZ::Failure(pathLookup.TakeError());
@@ -517,13 +525,13 @@ namespace AZ::Dom
 
     PatchOperation::PatchOutcome PatchOperation::ApplyCopy(Value& rootElement) const
     {
-        auto sourceLookup = LookupPath(rootElement, GetSourcePath(), VerifyFullPath);
+        auto sourceLookup = LookupPath(rootElement, GetSourcePath(), ExistenceCheckFlags::VerifyFullPath);
         if (!sourceLookup.IsSuccess())
         {
             return AZ::Failure(sourceLookup.TakeError());
         }
 
-        auto destLookup = LookupPath(rootElement, m_domPath, AllowEndOfArray);
+        auto destLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
         if (!destLookup.IsSuccess())
         {
             return AZ::Failure(destLookup.TakeError());
@@ -535,13 +543,13 @@ namespace AZ::Dom
 
     PatchOperation::PatchOutcome PatchOperation::ApplyMove(Value& rootElement) const
     {
-        auto sourceLookup = LookupPath(rootElement, GetSourcePath(), VerifyFullPath);
+        auto sourceLookup = LookupPath(rootElement, GetSourcePath(), ExistenceCheckFlags::VerifyFullPath);
         if (!sourceLookup.IsSuccess())
         {
             return AZ::Failure(sourceLookup.TakeError());
         }
 
-        auto destLookup = LookupPath(rootElement, m_domPath, AllowEndOfArray);
+        auto destLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
         if (!destLookup.IsSuccess())
         {
             return AZ::Failure(destLookup.TakeError());
@@ -568,7 +576,7 @@ namespace AZ::Dom
 
     PatchOperation::PatchOutcome PatchOperation::ApplyTest(Value& rootElement) const
     {
-        auto pathLookup = LookupPath(rootElement, m_domPath, VerifyFullPath);
+        auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::VerifyFullPath);
         if (!pathLookup.IsSuccess())
         {
             return AZ::Failure(pathLookup.TakeError());
@@ -670,32 +678,32 @@ namespace AZ::Dom
         return m_operations[index];
     }
 
-    Patch::OperationsContainer::iterator Patch::begin()
+    auto Patch::begin() -> OperationsContainer::iterator
     {
         return m_operations.begin();
     }
 
-    Patch::OperationsContainer::iterator Patch::end()
+    auto Patch::end() -> OperationsContainer::iterator
     {
         return m_operations.end();
     }
 
-    Patch::OperationsContainer::const_iterator Patch::begin() const
+    auto Patch::begin() const -> OperationsContainer::const_iterator
     {
         return m_operations.cbegin();
     }
 
-    Patch::OperationsContainer::const_iterator Patch::end() const
+    auto Patch::end() const -> OperationsContainer::const_iterator
     {
         return m_operations.cend();
     }
 
-    Patch::OperationsContainer::const_iterator Patch::cbegin() const
+    auto Patch::cbegin() const -> OperationsContainer::const_iterator
     {
         return m_operations.cbegin();
     }
 
-    Patch::OperationsContainer::const_iterator Patch::cend() const
+    auto Patch::cend() const -> OperationsContainer::const_iterator
     {
         return m_operations.cend();
     }
@@ -794,7 +802,8 @@ namespace AZ::Dom
         return PatchOperation(AZStd::move(testPath), PatchOperation::Type::Test, AZStd::move(value));
     }
 
-    PatchInfo GenerateHierarchicalDeltaPatch(const Value& beforeState, const Value& afterState)
+    PatchInfo GenerateHierarchicalDeltaPatch(
+        const Value& beforeState, const Value& afterState, const DeltaPatchGenerationParameters& params)
     {
         PatchInfo patches;
 
@@ -804,7 +813,7 @@ namespace AZ::Dom
             patches.m_inversePatches.PushFront(AZStd::move(inverse));
         };
 
-        AZStd::function<void(const Path&, const Value&, const Value&)> CompareValues;
+        AZStd::function<void(const Path&, const Value&, const Value&)> compareValues;
 
         struct PendingComparison
         {
@@ -822,7 +831,7 @@ namespace AZ::Dom
         AZStd::queue<PendingComparison> entriesToCompare;
 
         AZStd::unordered_set<AZ::Name::Hash> desiredKeys;
-        auto CompareObjects = [&](const Path& path, const Value& before, const Value& after)
+        auto compareObjects = [&](const Path& path, const Value& before, const Value& after)
         {
             desiredKeys.clear();
             Path subPath = path;
@@ -853,22 +862,22 @@ namespace AZ::Dom
             }
         };
 
-        auto CompareArrays = [&](const Path& path, const Value& before, const Value& after)
+        auto compareArrays = [&](const Path& path, const Value& before, const Value& after)
         {
             const size_t beforeSize = before.ArraySize();
             const size_t afterSize = after.ArraySize();
 
             // If more than replaceThreshold values differ, do a replace operation instead
-            constexpr size_t replaceThreshold = 3;
-            size_t changedValueCount = 0;
-            for (size_t i = 0; i < afterSize; ++i)
+            if (params.m_replaceThreshold != DeltaPatchGenerationParameters::NoReplace)
             {
-                if (i < beforeSize)
+                size_t changedValueCount = 0;
+                const size_t entriesToEnumerate = AZStd::min(beforeSize, afterSize);
+                for (size_t i = 0; i < entriesToEnumerate; ++i)
                 {
                     if (before[i] != after[i])
                     {
                         ++changedValueCount;
-                        if (changedValueCount >= replaceThreshold)
+                        if (changedValueCount >= params.m_replaceThreshold)
                         {
                             AddPatch(PatchOperation::ReplaceOperation(path, after), PatchOperation::ReplaceOperation(path, before));
                             return;
@@ -904,7 +913,7 @@ namespace AZ::Dom
             }
         };
 
-        auto CompareNodes = [&](const Path& path, const Value& before, const Value& after)
+        auto compareNodes = [&](const Path& path, const Value& before, const Value& after)
         {
             if (before.GetNodeName() != after.GetNodeName())
             {
@@ -912,12 +921,12 @@ namespace AZ::Dom
             }
             else
             {
-                CompareObjects(path, before, after);
-                CompareArrays(path, before, after);
+                compareObjects(path, before, after);
+                compareArrays(path, before, after);
             }
         };
 
-        CompareValues = [&](const Path& path, const Value& before, const Value& after)
+        compareValues = [&](const Path& path, const Value& before, const Value& after)
         {
             if (before.GetType() != after.GetType())
             {
@@ -931,15 +940,15 @@ namespace AZ::Dom
             }
             else if (before.IsObject())
             {
-                CompareObjects(path, before, after);
+                compareObjects(path, before, after);
             }
             else if (before.IsArray())
             {
-                CompareArrays(path, before, after);
+                compareArrays(path, before, after);
             }
             else if (before.IsNode())
             {
-                CompareNodes(path, before, after);
+                compareNodes(path, before, after);
             }
             else
             {
@@ -951,7 +960,7 @@ namespace AZ::Dom
         while (!entriesToCompare.empty())
         {
             PendingComparison& comparison = entriesToCompare.front();
-            CompareValues(comparison.m_path, comparison.m_before, comparison.m_after);
+            compareValues(comparison.m_path, comparison.m_before, comparison.m_after);
             entriesToCompare.pop();
         }
         return patches;

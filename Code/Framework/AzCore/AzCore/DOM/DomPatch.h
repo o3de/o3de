@@ -35,9 +35,9 @@ namespace AZ::Dom
         PatchOperation(const PatchOperation&) = default;
         PatchOperation(PatchOperation&&) = default;
 
-        explicit PatchOperation(Path destinationPath, Type type, Value value);
-        explicit PatchOperation(Path destionationPath, Type type, Path sourcePath);
-        explicit PatchOperation(Path path, Type type);
+        PatchOperation(Path destionationPath, Type type, Value value);
+        PatchOperation(Path destionationPath, Type type, Path sourcePath);
+        PatchOperation(Path path, Type type);
 
         static PatchOperation AddOperation(Path destinationPath, Value value);
         static PatchOperation RemoveOperation(Path pathToRemove);
@@ -72,6 +72,13 @@ namespace AZ::Dom
 
         AZ::Outcome<PatchOperation, AZStd::string> GetInverse(Value stateBeforeApplication) const;
 
+        enum class ExistenceCheckFlags : AZ::u8
+        {
+            DefaultExistenceCheck = 0x0,
+            VerifyFullPath = 0x1,
+            AllowEndOfArray = 0x2,
+        };
+
     private:
         struct PathContext
         {
@@ -79,12 +86,8 @@ namespace AZ::Dom
             PathEntry m_key;
         };
 
-        static constexpr AZ::u8 DefaultExistenceCheck = 0x0;
-        static constexpr AZ::u8 VerifyFullPath = 0x1;
-        static constexpr AZ::u8 AllowEndOfArray = 0x2;
-
         static AZ::Outcome<PathContext, AZStd::string> LookupPath(
-            Value& rootElement, const Path& path, AZ::u8 existenceCheckFlags = DefaultExistenceCheck);
+            Value& rootElement, const Path& path, ExistenceCheckFlags existenceCheckFlags = ExistenceCheckFlags::DefaultExistenceCheck);
 
         PatchOutcome ApplyAdd(Value& rootElement) const;
         PatchOutcome ApplyRemove(Value& rootElement) const;
@@ -93,10 +96,12 @@ namespace AZ::Dom
         PatchOutcome ApplyMove(Value& rootElement) const;
         PatchOutcome ApplyTest(Value& rootElement) const;
 
+        AZStd::variant<AZStd::monostate, Value, Path> m_value;
         Path m_domPath;
         Type m_type;
-        AZStd::variant<AZStd::monostate, Value, Path> m_value;
     };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(PatchOperation::ExistenceCheckFlags);
 
     class Patch;
 
@@ -184,8 +189,18 @@ namespace AZ::Dom
         Patch m_inversePatches;
     };
 
+    //! Parameters for GenerateHierarchicalDeltaPatch.
+    struct DeltaPatchGenerationParameters
+    {
+        static constexpr size_t NoReplace = AZStd::numeric_limits<size_t>::max();
+
+        //! The threshold of changed values in a node or array which, if exceeded, will cause the generation to create an
+        //! entire "replace" oepration instead. If set to NoReplace, no replacement will occur.
+        size_t m_replaceThreshold = 3;
+    };
+
     //! Generates a set of patches such that m_forwardPatches.Apply(beforeState) shall produce a document equivalent to afterState, and
     //! a subsequent m_inversePatches.Apply(beforeState) shall produce the original document. This patch generation strategy does a
     //! hierarchical comparison and is not guaranteed to create the minimal set of patches required to transform between the two states.
-    PatchInfo GenerateHierarchicalDeltaPatch(const Value& beforeState, const Value& afterState);
+    PatchInfo GenerateHierarchicalDeltaPatch(const Value& beforeState, const Value& afterState, const DeltaPatchGenerationParameters& params = {});
 } // namespace AZ::Dom
