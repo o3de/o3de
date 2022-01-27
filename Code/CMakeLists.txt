@@ -1,26 +1,17 @@
-
-# Currently we are in the Code folder: ${CMAKE_CURRENT_LIST_DIR}
-# Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
-# Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
-#       in which case it will see if that platform is present here or in the restricted folder.
-#       i.e. It could here in our gem : Gems/MotionMatching/Code/Platform/<platorm_name>  or
-#            <restricted_folder>/<platform_name>/Gems/MotionMatching/Code
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${o3de_gem_restricted_path} ${o3de_gem_path} ${o3de_gem_name})
-
-# Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
-# traits for this platform. Traits for a platform are defines for things like whether or not something in this gem
-# is supported by this platform.
-include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 
 # Add the MotionMatching.Static target
-# Note: We include the common files and the platform specific files which are set in motionmatching_common_files.cmake
-# and in ${pal_dir}/motionmatching_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
 ly_add_target(
     NAME MotionMatching.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         motionmatching_files.cmake
-        ${pal_dir}/motionmatching_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -40,7 +31,6 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         motionmatching_shared_files.cmake
-        ${pal_dir}/motionmatching_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
