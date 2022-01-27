@@ -13,7 +13,7 @@
 
 // Then include custom surface and lighting data types
 #include <Atom/Features/PBR/Lighting/LightingData.azsli>
-#include <Atom/Features/PBR/Surfaces/EnhancedSurface.azsli>
+#include <Atom/Features/PBR/Surfaces/EyeSurface.azsli>
 
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
@@ -45,16 +45,7 @@ float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lig
 
 float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
 {
-    float3 specular;
-    if (o_enableAnisotropy)
-    {
-        specular = AnisotropicGGX( lightingData.dirToCamera, dirToLight, surface.normal, surface.anisotropy.tangent, surface.anisotropy.bitangent, surface.anisotropy.anisotropyFactors,
-                       surface.specularF0, lightingData.NdotV, lightingData.multiScatterCompensation );
-    }
-    else
-    {
-        specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
-    }
+    float3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
 
     if(o_clearCoat_feature_enabled)
     {
@@ -93,17 +84,16 @@ struct PbrLightingOutput
 };
 
 
-PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingData, float alpha)
+PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingData)
 {
     PbrLightingOutput lightingOutput;
 
-    float3 test = lightingData.diffuseLighting;
-    lightingOutput.m_diffuseColor = float4(1.0, 1.0, 1.0, 1.0);
-    lightingOutput.m_specularColor = float4(1.0, 1.0, 1.0, 1.0);
+    lightingOutput.m_diffuseColor = float4(lightingData.diffuseLighting, 1.0f);
+    lightingOutput.m_specularColor = float4(lightingData.specularLighting, 1.0f);
 
     // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
     lightingOutput.m_specularF0 = float4(surface.specularF0, surface.roughnessLinear);
-    lightingOutput.m_albedo.rgb = test;//surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
+    lightingOutput.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
     lightingOutput.m_albedo.a = lightingData.specularOcclusion;
     lightingOutput.m_normal.rgb = EncodeNormalSignedOctahedron(surface.normal);
     lightingOutput.m_normal.a = o_specularF0_enableMultiScatterCompensation ? 1.0f : 0.0f;

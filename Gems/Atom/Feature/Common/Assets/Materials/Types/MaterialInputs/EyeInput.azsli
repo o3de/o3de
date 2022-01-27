@@ -1,0 +1,38 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// #include <Atom/Features/ColorManagement/TransformColor.azsli>
+// #include <Atom/Features/BlendUtility.azsli>
+
+// This file provides utilities for common handling of inputs for eye-specific parameters of Eye materials.
+
+// These macros can be used to declare common shader inputs for this feature. 
+// Use the COMMON_SRG_INPUTS_* macro in your material SRG definition, and use the COMMON_OPTIONS_* macro at the global scope in your shader. Then you can pass these variables to the Get*Input() function below.
+// You can optionally provide a prefix for the set of inputs which corresponds to a prefix string supplied by the .materialtype file. This is common for multi-layered material types.
+
+#define COMMON_SRG_INPUTS_EYE(prefix) \
+float3    prefix##m_irisBaseColor; \
+float     prefix##m_irisBaseColorFactor; \
+Texture2D prefix##m_irisColorMap; \
+float3    prefix##m_scleraBaseColor; \
+float     prefix##m_scleraBaseColorFactor; \
+Texture2D prefix##m_scleraColorMap; \
+Texture2D prefix##m_irisNormalMap; \
+float     prefix##m_irisNormalFactor; \
+Texture2D prefix##m_scleraNormalMap; \
+float     prefix##m_scleraNormalFactor; \
+
+#define COMMON_OPTIONS_EYE(prefix) \
+option bool prefix##o_irisBaseColor_useTexture; \
+option TextureBlendMode prefix##o_irisColorTextureBlendMode = TextureBlendMode::Multiply; \
+option bool prefix##o_scleraBaseColor_useTexture; \
+option TextureBlendMode prefix##o_scleraColorTextureBlendMode = TextureBlendMode::Multiply; \
+option bool prefix##o_irisNormal_useTexture; \
+option bool prefix##o_scleraNormal_useTexture; 

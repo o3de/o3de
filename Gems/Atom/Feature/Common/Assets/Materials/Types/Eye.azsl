@@ -1,0 +1,289 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include "Eye_Common.azsli"
+
+// SRGs
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+
+// Pass Output
+#include <Atom/Features/PBR/ForwardSubsurfacePassOutput.azsli>
+
+// Utility
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli> // TODO: Remove this after OpacityMode is removed from LightingModel
+
+// Custom Surface & Lighting
+#include <Atom/Features/PBR/Lighting/EyeLighting.azsli>
+
+// Decals
+#include <Atom/Features/PBR/Decals.azsli>
+
+// ---------- Material Parameters ----------
+
+COMMON_OPTIONS_ROUGHNESS()
+COMMON_OPTIONS_SPECULAR_F0()
+COMMON_OPTIONS_OCCLUSION()
+COMMON_OPTIONS_EYE()
+
+#include "MaterialInputs/SubsurfaceInput.azsli"
+#include "MaterialInputs/TransmissionInput.azsli"
+
+
+// ---------- Vertex Shader ----------
+
+struct VSInput
+{
+    // Base fields (required by the template azsli file)...
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+ 
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv0_tiled : UV0;
+    float2 m_uv1_unwrapped : UV1;
+};
+
+struct VSOutput
+{
+    // Base fields (required by the template azsli file)...
+    precise linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV4;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv[UvSetCount] : UV1;
+
+    // Used for eye refraction
+    float3 m_localPosition : UV3;
+};
+
+#include <Atom/Features/Vertex/VertexHelper.azsli>
+
+VSOutput EyeVS(VSInput IN)
+{
+    VSOutput OUT;
+ 
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+ 
+    // UV0 is for tiled UVs. This will almost always be used exclusively with the detail layer, but it is still available
+    // for the main layer to use if needed. Unlike StandardPBR etc, we don't provide a transform for this stream on the main layer, 
+    // because it will usually be used for the detail layer which has its own dedicated transform. If a use does case come up, we 
+    // could consider adding the main layer UV transform back in.
+    // Note, even though the "unwrapped" stream is considered the main stream from a material perspective (it is the default), we
+    // still use UV0 for "tiled" because UV0 has pre-generated tangent vectors which is important for detail maps, which usually
+    // use the "tiled" stream, and need better quality tangents because of the high frequency.
+    OUT.m_uv[0] = IN.m_uv0_tiled;
+
+    // UV1 is for unwrapped UVs. The main textures in a skin material will almost always use this UV set.
+    OUT.m_uv[1] = IN.m_uv1_unwrapped;
+
+    VertexHelper(IN, OUT, worldPosition, false);
+    OUT.m_localPosition = IN.m_position.xyz;
+
+    return OUT;
+}
+
+
+// ---------- Pixel Shader ----------
+
+PbrLightingOutput EyePS_Common(VSOutput IN)
+{
+    // [TODO] check front face
+    const bool isFrontFace = true;
+    float3x3 uvMatrix = CreateIdentity3x3();
+
+    // ------- Tangents & Bitangets -------
+    float3 tangent = IN.m_tangent.xyz;
+    float3 bitangent = IN.m_bitangent.xyz;
+    
+    Surface surface;
+    surface.position = IN.m_worldPosition;
+
+    // ------- Iris/Sclera Layer Setup -------
+    
+    // It is mandatory for all maps to have unwrapped UV mapping in the eye shader, so we can already assign the global uvs.
+    float2 unwrapped_uv = IN.m_uv[1];
+
+    // Use a sigmoid to determine the sclera/iris contribution for each point
+    float distFromCenter = length(IN.m_localPosition.xz);
+    float mask = 1.0/(1.0 + exp(-(distFromCenter - MaterialSrg::m_eyeIrisRadius) / (distFromCenter * MaterialSrg::m_limbusSize)));
+
+    // ------- Normal -------
+    
+    surface.vertexNormal = normalize(IN.m_normal);
+    
+    // Normal maps used for (1) the iris or (2) the sclera should be (1) symmetrical or (2) sinusoidal procedural.
+    // Therefore it is not worth exposing a flipX/flipY parameter, since it will have no influence on the outcome.
+    const bool flipX, flipY = false;
+    float3 irisNormal = GetNormalInputWS(MaterialSrg::m_irisNormalMap, MaterialSrg::m_sampler, unwrapped_uv, flipX, flipY, isFrontFace, IN.m_normal,
+                                    tangent, bitangent, uvMatrix, o_irisNormal_useTexture, MaterialSrg::m_irisNormalFactor);
+    float3 scleraNormal = GetNormalInputWS(MaterialSrg::m_scleraNormalMap, MaterialSrg::m_sampler, unwrapped_uv, flipX, flipY, isFrontFace, IN.m_normal,
+                                    tangent, bitangent, uvMatrix, o_scleraNormal_useTexture, MaterialSrg::m_scleraNormalFactor);
+    
+    surface.normal = normalize(lerp(irisNormal, scleraNormal, mask));
+
+    //--------------------- Eye refraction UV offset ----------------------
+
+    float3 viewDir = normalize(surface.position - ViewSrg::m_worldPosition.xyz);
+
+    // -- Physicaly based --
+    // Get refracted vector
+    const float airRefractiveIndex = 1.0;
+    float refractionFactor = airRefractiveIndex/MaterialSrg::m_innerEyeIOR;
+    float3 refractedDir = refract(viewDir, surface.normal, refractionFactor);
+
+    // Get UV offset due to refraction (based on http://www.iryoku.com/stare-into-the-future)
+    
+    float4x4 worldMatrix = ObjectSrg::GetWorldMatrix(); 
+    // Gaze direction corresponds to the front vector (in WS)
+    float3 gazeDir = normalize(mul(worldMatrix, float4(0,1,0,0)).xyz);
+
+    // Position direction corresponds to the vector from the object's position to the WS point
+    float3 positionDirWS = mul(worldMatrix, float4(IN.m_localPosition,0.0)).xyz;
+
+    // Object scale of the front vector (Y) 
+    float scaleY = length(float3(worldMatrix._12, worldMatrix._22, worldMatrix._32));
+    
+    // Compute distance from current point to the iris plane 
+    // m_irisDepth corresponds to the distance from the origin to the plane (XZ) where the iris lays.
+    // By multiplying this parameter by the scale we avoid having to re-tune it everytime we change the object's scale.
+    float height = max(dot(gazeDir, positionDirWS) - MaterialSrg::m_irisDepth*scaleY, 0.0); 
+
+    // Height encodes the length of the refracted ray projected in (local) Y, but we are interested in the (local) XZ coordinates 
+    // of the ray since these will be directly related to the offset to apply in texture space. Hence, we apply basic trigonometry 
+    // to get the actual length of the ray
+    float cosAlpha = dot(gazeDir, -refractedDir);
+    float refractedRayLength = height / cosAlpha;
+    float3 refractedRay = refractedRayLength * refractedDir;
+
+    // Convert ray to object local space and fetch XZ coordinates (which map to -XY in texture space)
+    float2 refractionUVOffset = -mul(refractedRay, ObjectSrg::GetWorldMatrixInverseTranspose()).xz;
+
+    // Apply offset to both unwrapped UVs
+    unwrapped_uv += refractionUVOffset;
+
+    //--------------------- Base Color ----------------------
+
+    // Sample iris color map and blend with the base iris color 
+    float3 irisSampledColor = GetBaseColorInput(MaterialSrg::m_irisColorMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_irisBaseColor, o_irisBaseColor_useTexture);    
+    float3 irisColor = BlendBaseColor(irisSampledColor, MaterialSrg::m_irisBaseColor, MaterialSrg::m_irisBaseColorFactor, o_irisColorTextureBlendMode, o_irisBaseColor_useTexture);
+    
+    // Sample sclera color map and blend with the base sclera color 
+    float3 scleraSampledColor = GetBaseColorInput(MaterialSrg::m_scleraColorMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_scleraBaseColor, o_scleraBaseColor_useTexture);    
+    float3 scleraColor = BlendBaseColor(scleraSampledColor, MaterialSrg::m_scleraBaseColor, MaterialSrg::m_scleraBaseColorFactor, o_scleraColorTextureBlendMode, o_scleraBaseColor_useTexture);
+    
+    // Blend iris and sclera output colors
+    float3 baseColor = lerp(irisColor, scleraColor, mask);
+
+    // ------- Specular -------
+
+    float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
+
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor);
+
+    // ------- Roughness -------
+
+    surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_roughnessFactor,
+                                        MaterialSrg::m_roughnessLowerBound, MaterialSrg::m_roughnessUpperBound, o_roughness_useTexture);
+    surface.CalculateRoughnessA();
+
+    // ------- Subsurface -------
+
+    float surfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_subsurfaceScatteringFactor);
+
+    // ------- Transmission -------
+
+    float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_transmissionTintThickness);
+    surface.transmission.tint = transmissionTintThickness.rgb;
+    surface.transmission.thickness = transmissionTintThickness.w;
+    surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
+    surface.transmission.scatterDistance = MaterialSrg::m_scatterDistance;
+
+    // ------- Lighting Data -------
+
+    LightingData lightingData;
+
+    // Light iterator
+    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    
+    // Directional light shadow coordinates
+    lightingData.shadowCoords = IN.m_shadowCoords;
+
+    // Diffuse and Specular response (used in IBL calculations)
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
+
+    // ------- Thin Object Light Transmission -------
+
+    // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
+    lightingData.shrinkFactor = surface.transmission.transmissionParams.x;
+
+    // Angle offset for subsurface scattering through thin objects
+    lightingData.transmissionNdLBias = surface.transmission.transmissionParams.y;
+
+    // Attenuation applied to hide artifacts due to low-res shadow maps 
+    lightingData.distanceAttenuation = surface.transmission.transmissionParams.z;
+
+    // ------- Occlusion -------
+    
+    lightingData.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
+    lightingData.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, unwrapped_uv, MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
+
+    // ------- Lighting Calculation -------
+
+    surface.clearCoat.factor = 0.0;
+    surface.clearCoat.roughness = 0.0;
+    surface.clearCoat.normal = float3(0.0, 0.0, 0.0);
+
+    // Apply Decals
+    ApplyDecals(lightingData.tileIterator, surface);
+
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIBL(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting(surface.transmission.tint);
+
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData);
+        
+    // ------- Preparing output -------
+
+    // Pack factor and quality, drawback: because of precision limit of float16 cannot represent exact 1, maximum representable value is 0.9961
+    uint factorAndQuality = dot(round(float2(saturate(surfaceScatteringFactor), MaterialSrg::m_subsurfaceScatteringQuality) * 255), float2(256, 1));
+    lightingOutput.m_diffuseColor.w = factorAndQuality * (o_enableSubsurfaceScattering ? 1.0 : -1.0);
+    lightingOutput.m_scatterDistance = MaterialSrg::m_scatterDistance;
+
+    return lightingOutput;
+}
+
+[earlydepthstencil]
+ForwardPassOutput EyePS(VSOutput IN)
+{
+    ForwardPassOutput OUT;
+
+    PbrLightingOutput lightingOutput = EyePS_Common(IN);
+
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+    OUT.m_scatterDistance = lightingOutput.m_scatterDistance;
+
+    return OUT;
+}
