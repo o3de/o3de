@@ -13,7 +13,8 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
- 
+#include <viewsrg.srgi>
+
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
@@ -40,11 +41,13 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
 PSOutput MainPS(VSOutput IN)
 {
+    const int lightIndex = 0;
     float3 coord = 0;
     float v = PassSrg::m_directionalLightShadowmap.Sample(PassSrg::LinearSampler, coord);
+    const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
                   
     PSOutput OUT;
-    OUT.m_color.rgb = PassSrg::m_constantData.m_screenSize.x + v *0.001; 
+    OUT.m_color.rgb = shadowBias;//PassSrg::m_constantData.m_screenSize.x + v *0.001; 
 
     return OUT; 
 }
