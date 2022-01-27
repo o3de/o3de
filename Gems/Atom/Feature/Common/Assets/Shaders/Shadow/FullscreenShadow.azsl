@@ -26,8 +26,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
-    // output texture that will be sampled in the forward+ pass
-   // RWTexture2D<float> m_fullscreenShadow;
     
     struct Constants
     {
@@ -35,18 +33,20 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };    
     
     Constants m_constantData;
-    //Texture2DArray<float> m_directionalLightShadowmap;    
+    Texture2DArray<float> m_directionalLightShadowmap;    
 }
 
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 PSOutput MainPS(VSOutput IN)
 {
+    float3 coord = 0;
+    float v = PassSrg::m_directionalLightShadowmap.Sample(PassSrg::LinearSampler, coord);
                   
     PSOutput OUT;
-    OUT.m_color.rgb = PassSrg::m_constantData.m_screenSize.x; 
+    OUT.m_color.rgb = PassSrg::m_constantData.m_screenSize.x + v *0.001; 
 
-    return OUT;
+    return OUT; 
 }
 
 

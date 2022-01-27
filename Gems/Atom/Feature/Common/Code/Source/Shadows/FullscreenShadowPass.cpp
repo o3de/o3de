@@ -86,29 +86,29 @@ namespace AZ
 
         AZ::RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
         {
-            for (unsigned int i = 0; i < GetInputCount() ; ++i)
-            {
-                auto b = GetInputBinding(i);
-                auto n = b.m_name;
-                const char* c = n.GetCStr();
-                AZ_Printf("MKR", "Input %s\n", c);
-            }
+            //for (unsigned int i = 0; i < GetInputCount() ; ++i)
+            //{
+            //    auto b = GetInputBinding(i);
+            //    auto n = b.m_name;
+            //    const char* c = n.GetCStr();
+            //    AZ_Printf("MKR", "Input %s\n", c);
+            //}
 
-            for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
-            {
-                auto b = GetInputOutputBinding(i);
-                auto n = b.m_name;
-                const char* c = n.GetCStr();
-                AZ_Printf("MKR", "InotuputOutp %s\n", c);
-            }
+            //for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
+            //{
+            //    auto b = GetInputOutputBinding(i);
+            //    auto n = b.m_name;
+            //    const char* c = n.GetCStr();
+            //    AZ_Printf("MKR", "InotuputOutp %s\n", c);
+            //}
 
-            for (unsigned int i = 0; i < GetOutputCount(); ++i)
-            {
-                auto b = GetOutputBinding(i);
-                auto n = b.m_name;
-                const char* c = n.GetCStr();
-                AZ_Printf("MKR", "output %s\n", c);
-            }
+            //for (unsigned int i = 0; i < GetOutputCount(); ++i)
+            //{
+            //    auto b = GetOutputBinding(i);
+            //    auto n = b.m_name;
+            //    const char* c = n.GetCStr();
+            //    AZ_Printf("MKR", "output %s\n", c);
+            //}
 
             auto outputBinding = GetPassAttachmentBinding(AZ::Name("Output"));
             auto outputDim = outputBinding.m_attachment->m_descriptor.m_image.m_size;
