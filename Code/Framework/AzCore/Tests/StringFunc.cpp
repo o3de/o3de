@@ -199,15 +199,15 @@ namespace AZ
     TEST_F(StringFuncTest, Tokenize_SingleDelimeter_Empty)
     {
         AZStd::string input = "";
-        AZStd::vector<AZStd::string_view> tokens;
+        AZStd::vector<AZStd::string> tokens;
         AZ::StringFunc::Tokenize(input.c_str(), tokens, ' ');
         ASSERT_EQ(tokens.size(), 0);
-    }
+    }   
 
     TEST_F(StringFuncTest, Tokenize_SingleDelimeter)
     {
         AZStd::string input = "a b,c";
-        AZStd::vector<AZStd::string_view> tokens;
+        AZStd::vector<AZStd::string> tokens;
         AZ::StringFunc::Tokenize(input.c_str(), tokens, ' ');
 
         ASSERT_EQ(tokens.size(), 2);
@@ -218,7 +218,7 @@ namespace AZ
     TEST_F(StringFuncTest, Tokenize_MultiDelimeter_Empty)
     {
         AZStd::string input = "";
-        AZStd::vector<AZStd::string_view> tokens;
+        AZStd::vector<AZStd::string> tokens;
         AZ::StringFunc::Tokenize(input.c_str(), tokens, " ,");
         ASSERT_EQ(tokens.size(), 0);
     }
@@ -226,7 +226,7 @@ namespace AZ
     TEST_F(StringFuncTest, Tokenize_MultiDelimeters)
     {
         AZStd::string input = " -a +b +c -d-e";
-        AZStd::vector<AZStd::string_view> tokens;
+        AZStd::vector<AZStd::string> tokens;
         AZ::StringFunc::Tokenize(input.c_str(), tokens, "-+");
 
         ASSERT_EQ(tokens.size(), 5);
@@ -240,7 +240,7 @@ namespace AZ
     TEST_F(StringFuncTest, Tokenize_SubstringDelimeters_Empty)
     {
         AZStd::string input = "";
-        AZStd::vector<AZStd::string_view> tokens;
+        AZStd::vector<AZStd::string> tokens;
         AZStd::vector<AZStd::string_view> delimeters = {" -", " +"};
         AZ::StringFunc::Tokenize(input.c_str(), tokens, delimeters);
         ASSERT_EQ(tokens.size(), 0);
@@ -249,7 +249,7 @@ namespace AZ
     TEST_F(StringFuncTest, Tokenize_SubstringDelimeters)
     {
         AZStd::string input = " -a +b +c -d-e";
-        AZStd::vector<AZStd::string_view> tokens;
+        AZStd::vector<AZStd::string> tokens;
         AZStd::vector<AZStd::string_view> delimeters = { " -", " +" };
         AZ::StringFunc::Tokenize(input.c_str(), tokens, delimeters);
 
@@ -260,25 +260,6 @@ namespace AZ
         ASSERT_TRUE(tokens[3] == "d-e"); // Test for something like a guid, which contain typical separator characters
     }
     
-    TEST_F(StringFuncTest, Tokenize_MultiDelimeters_String)
-    {
-        // Test with AZStd::string for backward compatibility. The functions
-        // use to only work with AZStd::string, and now they are templatized
-        // to support both AZStd::string and AZStd::string_view (the latter
-        // being perferred for performance).
-
-        AZStd::string input = " -a +b +c -d-e";
-        AZStd::vector<AZStd::string> tokens;
-        AZ::StringFunc::Tokenize(input.c_str(), tokens, "-+");
-
-        ASSERT_EQ(tokens.size(), 5);
-        ASSERT_TRUE(tokens[0] == "a ");
-        ASSERT_TRUE(tokens[1] == "b ");
-        ASSERT_TRUE(tokens[2] == "c ");
-        ASSERT_TRUE(tokens[3] == "d");
-        ASSERT_TRUE(tokens[4] == "e");
-    }
-
     TEST_F(StringFuncTest, TokenizeVisitor_EmptyString_DoesNotInvokeVisitor)
     {
         int visitedCount{};

@@ -327,7 +327,13 @@ namespace AZ
         AZStd::vector<AZStd::string_view> MaterialTypeSourceData::TokenizeId(AZStd::string_view id)
         {
             AZStd::vector<AZStd::string_view> tokens;
-            AzFramework::StringFunc::Tokenize(id, tokens, "./", true, true);
+
+            AzFramework::StringFunc::TokenizeVisitor(id, [&tokens](AZStd::string_view t)
+                {
+                    tokens.push_back(t);
+                },
+                "./", true, true);
+
             return tokens;
         }
         
