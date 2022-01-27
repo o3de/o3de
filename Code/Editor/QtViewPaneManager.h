@@ -269,14 +269,6 @@ bool RegisterQtViewPaneWithName([[maybe_unused]] IEditor* editor, const QString&
     return true;
 }
 
-template<class TWidget>
-void UnregisterQtViewPane()
-{
-    // always close any views that the pane is responsible for before you remove it!
-    GetIEditor()->CloseView(CQtViewClass<TWidget>::GetClassID());
-    GetIEditor()->GetClassFactory()->UnregisterClass(CQtViewClass<TWidget>::GetClassID());
-}
-
 template<typename TWidget>
 TWidget* FindViewPane(const QString& name)
 {

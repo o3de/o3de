@@ -62,9 +62,7 @@ namespace Terrain
     {
         static const char* const DetailMaterialIdImage("m_detailMaterialIdImage");
         static const char* const DetailMaterialData("m_detailMaterialData");
-        static const char* const DetailMaterialIdImageCenter("m_detailMaterialIdImageCenter");
-        static const char* const DetailHalfPixelUv("m_detailHalfPixelUv");
-        static const char* const DetailAabb("m_detailAabb");
+        static const char* const DetailMaterialScale("m_detailMaterialIdScale");
     }
     
     AZ_CVAR(bool,
@@ -98,6 +96,14 @@ namespace Terrain
         {
             return;
         }
+
+        ClipmapBoundsDescriptor desc;
+        desc.m_clipmapUpdateMultiple = 1;
+        desc.m_clipToWorldScale = DetailTextureScale;
+        desc.m_size = DetailTextureSize;
+        // Initialize world space to a value that won't match the initial camera position.
+        desc.m_worldSpaceCenter = AZ::Vector2(AZStd::numeric_limits<float>::max(), 0.0f);
+        m_detailMaterialIdBounds = ClipmapBounds(desc);
         
         if (UpdateSrgIndices(terrainSrg))
         {
@@ -144,14 +150,8 @@ namespace Terrain
         m_detailMaterialIdPropertyIndex = terrainSrgLayout->FindShaderInputImageIndex(AZ::Name(TerrainSrgInputs::DetailMaterialIdImage));
         AZ_Error(TerrainDetailMaterialManagerName, m_detailMaterialIdPropertyIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::DetailMaterialIdImage);
         
-        m_detailCenterPropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailMaterialIdImageCenter));
-        AZ_Error(TerrainDetailMaterialManagerName, m_detailCenterPropertyIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::DetailMaterialIdImageCenter);
-
-        m_detailHalfPixelUvPropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailHalfPixelUv));
-        AZ_Error(TerrainDetailMaterialManagerName, m_detailHalfPixelUvPropertyIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::DetailHalfPixelUv);
-        
-        m_detailAabbPropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailAabb));
-        AZ_Error(TerrainDetailMaterialManagerName, m_detailAabbPropertyIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::DetailAabb);
+        m_detailScalePropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailMaterialScale));
+        AZ_Error(TerrainDetailMaterialManagerName, m_detailScalePropertyIndex.IsValid(), "Failed to find terrain srg input constant %s.", TerrainSrgInputs::DetailMaterialScale);
 
         // Set up the gpu buffer for detail material data
         AZ::Render::GpuBufferHandler::Descriptor desc;
@@ -163,9 +163,7 @@ namespace Terrain
 
         bool IndicesValid =
             m_detailMaterialIdPropertyIndex.IsValid() &&
-            m_detailCenterPropertyIndex.IsValid() &&
-            m_detailHalfPixelUvPropertyIndex.IsValid() &&
-            m_detailAabbPropertyIndex.IsValid();
+            m_detailScalePropertyIndex.IsValid();
 
         m_detailImageNeedsUpdate = true;
         m_detailMaterialBufferNeedsUpdate = true;
@@ -214,9 +212,6 @@ namespace Terrain
         m_detailMaterialDataBuffer.Release();
 
         m_dirtyDetailRegion = AZ::Aabb::CreateNull();
-        m_previousCameraPosition = AZ::Vector3(AZStd::numeric_limits<float>::max(), 0.0, 0.0);
-        m_detailTextureBounds = {};
-        m_detailTextureCenter = {};
 
         m_detailMaterialBufferNeedsUpdate = false;
         m_detailImageNeedsUpdate = false;
@@ -234,54 +229,19 @@ namespace Terrain
             m_detailMaterialBufferNeedsUpdate = false;
             m_detailMaterialDataBuffer.UpdateBuffer(m_detailMaterialShaderData.GetRawData(), aznumeric_cast<uint32_t>(m_detailMaterialShaderData.GetSize()));
         }
+
+        CheckUpdateDetailTexture(cameraPosition);
         
-        if (m_dirtyDetailRegion.IsValid() || !cameraPosition.IsClose(m_previousCameraPosition) || m_detailImageNeedsUpdate)
+        if (m_detailImageNeedsUpdate)
         {
-            if (r_terrainDebugDetailImageUpdates)
-            {
-                AZ_Printf("TerrainDetailMaterialManager", "Previous Camera: (%f, %f, %f) New Cameara: (%f, %f, %f)",
-                    m_previousCameraPosition.GetX(), m_previousCameraPosition.GetY(), m_previousCameraPosition.GetZ(),
-                    cameraPosition.GetX(), cameraPosition.GetY(), cameraPosition.GetZ());
-            }
-            int32_t newDetailTexturePosX = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetX() / DetailTextureScale));
-            int32_t newDetailTexturePosY = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetY() / DetailTextureScale));
-            
-            Aabb2i newBounds;
-            newBounds.m_min.m_x = newDetailTexturePosX - DetailTextureSizeHalf;
-            newBounds.m_min.m_y = newDetailTexturePosY - DetailTextureSizeHalf;
-            newBounds.m_max.m_x = newDetailTexturePosX + DetailTextureSizeHalf;
-            newBounds.m_max.m_y = newDetailTexturePosY + DetailTextureSizeHalf;
-
-            // Use modulo to find the center point in texture space. Care must be taken so negative values are
-            // handled appropriately (ie, we want -1 % 1024 to equal 1023, not -1)
-            Vector2i newCenter;
-            newCenter.m_x = (DetailTextureSize + (newDetailTexturePosX % DetailTextureSize)) % DetailTextureSize;
-            newCenter.m_y = (DetailTextureSize + (newDetailTexturePosY % DetailTextureSize)) % DetailTextureSize;
-
-            CheckUpdateDetailTexture(newBounds, newCenter);
-                
-            m_detailTextureBounds = newBounds;
-            m_dirtyDetailRegion = AZ::Aabb::CreateNull();
-
-            m_previousCameraPosition = cameraPosition;
-
-            AZ::Vector4 detailAabb = AZ::Vector4(
-                m_detailTextureBounds.m_min.m_x * DetailTextureScale,
-                m_detailTextureBounds.m_min.m_y * DetailTextureScale,
-                m_detailTextureBounds.m_max.m_x * DetailTextureScale,
-                m_detailTextureBounds.m_max.m_y * DetailTextureScale
-            );
-            AZ::Vector2 detailUvOffset = AZ::Vector2(float(newCenter.m_x) / DetailTextureSize, float(newCenter.m_y) / DetailTextureSize);
-
-            terrainSrg->SetConstant(m_detailAabbPropertyIndex, detailAabb);
-            terrainSrg->SetConstant(m_detailHalfPixelUvPropertyIndex, 0.5f / DetailTextureSize);
-            terrainSrg->SetConstant(m_detailCenterPropertyIndex, detailUvOffset);
+            terrainSrg->SetConstant(m_detailScalePropertyIndex, 1.0f / DetailTextureScale);
             terrainSrg->SetImage(m_detailMaterialIdPropertyIndex, m_detailTextureImage);
 
             m_detailMaterialDataBuffer.UpdateSrg(terrainSrg.get());
+
+            m_detailImageNeedsUpdate = false;
         }
-        
-        m_detailImageNeedsUpdate = false;
+
     }
 
     void TerrainDetailMaterialManager::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
@@ -591,15 +551,13 @@ namespace Terrain
         m_detailMaterialBufferNeedsUpdate = true;
     }
     
-    void TerrainDetailMaterialManager::CheckUpdateDetailTexture(const Aabb2i& newBounds, const Vector2i& newCenter)
+    void TerrainDetailMaterialManager::CheckUpdateDetailTexture(const AZ::Vector3& cameraPosition)
     {
-        if (r_terrainDebugDetailImageUpdates)
-        {
-            AZ_Printf("TerrainDetailMaterialManager", "Old Bounds: m(%i, %i)M(%i, %i) New Bounds: m(%i, %i)M(%i, %i)",
-                m_detailTextureBounds.m_min.m_x, m_detailTextureBounds.m_min.m_y, m_detailTextureBounds.m_max.m_x, m_detailTextureBounds.m_max.m_y,
-                newBounds.m_min.m_x, newBounds.m_min.m_y, newBounds.m_max.m_x, newBounds.m_max.m_y
-            );
-        }
+        
+        AZ::Aabb untouchedRegion = AZ::Aabb::CreateNull();
+        ClipmapBounds::ClipmapBoundsRegionList edgeUpdatedRegions =
+            m_detailMaterialIdBounds.UpdateCenter(AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY()), &untouchedRegion);
+        
         if (!m_detailTextureImage)
         {
             // If the m_detailTextureImage doesn't exist, create it and populate the entire texture
@@ -611,111 +569,36 @@ namespace Terrain
             const AZ::Name TerrainDetailName = AZ::Name(TerrainDetailChars);
             m_detailTextureImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainDetailName, nullptr, nullptr);
             AZ_Error(TerrainDetailMaterialManagerName, m_detailTextureImage, "Failed to initialize the detail texture image.");
-            
-            UpdateDetailTexture(newBounds, newBounds, newCenter);
+
+            ClipmapBounds::ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_detailMaterialIdBounds.GetWorldBounds());
+            for (auto& region : updateRegions)
+            {
+                UpdateDetailTexture(region.m_worldAabb, region.m_localAabb);
+            }
         }
         else
         {
-            // If the new bounds of the detail texture are different than the old bounds, then the edges of the texture need to be updated.
-
-            int32_t offsetX = m_detailTextureBounds.m_min.m_x - newBounds.m_min.m_x;
-
-            // Horizontal edge update
-            if (newBounds.m_min.m_x != m_detailTextureBounds.m_min.m_x)
+            // Update the edge regions
+            for (auto& region : edgeUpdatedRegions)
             {
-                Aabb2i updateBounds;
-                if (newBounds.m_min.m_x < m_detailTextureBounds.m_min.m_x)
-                {
-                    updateBounds.m_min.m_x = newBounds.m_min.m_x;
-                    updateBounds.m_max.m_x = m_detailTextureBounds.m_min.m_x;
-                }
-                else
-                {
-                    updateBounds.m_min.m_x = m_detailTextureBounds.m_max.m_x;
-                    updateBounds.m_max.m_x = newBounds.m_max.m_x;
-                }
-                updateBounds.m_min.m_y = newBounds.m_min.m_y;
-                updateBounds.m_max.m_y = newBounds.m_max.m_y;
-                
-                if (r_terrainDebugDetailImageUpdates)
-                {
-                    AZ_Printf("TerrainDetailMaterialManager", "Updating horizontal edge: m(%i, %i)M(%i, %i)",
-                        updateBounds.m_min.m_x, updateBounds.m_min.m_y, updateBounds.m_max.m_x, updateBounds.m_max.m_y);
-                }
-                UpdateDetailTexture(updateBounds, newBounds, newCenter);
+                UpdateDetailTexture(region.m_worldAabb, region.m_localAabb);
             }
 
-            // Vertical edge update
-            if (newBounds.m_min.m_y != m_detailTextureBounds.m_min.m_y)
-            {
-                Aabb2i updateBounds;
-                // Don't update areas that have already been updated in the horizontal update.
-                updateBounds.m_min.m_x = newBounds.m_min.m_x + AZ::GetMax(0, offsetX);
-                updateBounds.m_max.m_x = newBounds.m_max.m_x + AZ::GetMin(0, offsetX);
-                if (newBounds.m_min.m_y < m_detailTextureBounds.m_min.m_y)
-                {
-                    updateBounds.m_min.m_y = newBounds.m_min.m_y;
-                    updateBounds.m_max.m_y = m_detailTextureBounds.m_min.m_y;
-                }
-                else
-                {
-                    updateBounds.m_min.m_y = m_detailTextureBounds.m_max.m_y;
-                    updateBounds.m_max.m_y = newBounds.m_max.m_y;
-                }
-                
-                if (r_terrainDebugDetailImageUpdates)
-                {
-                    AZ_Printf("TerrainDetailMaterialManager", "Updating vertical edge: m(%i, %i)M(%i, %i)",
-                        updateBounds.m_min.m_x, updateBounds.m_min.m_y, updateBounds.m_max.m_x, updateBounds.m_max.m_y);
-                }
-                UpdateDetailTexture(updateBounds, newBounds, newCenter);
-            }
+            m_dirtyDetailRegion = m_dirtyDetailRegion.GetClamped(untouchedRegion);
 
             if (m_dirtyDetailRegion.IsValid())
             {
-                if (r_terrainDebugDetailImageUpdates)
+                ClipmapBounds::ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_dirtyDetailRegion);
+                for (auto& region : updateRegions)
                 {
-                    AZ_Printf("TerrainDetailMaterialManager", "m_dirtyDetailRegion: m(%f, %f)M(%f, %f)",
-                        m_dirtyDetailRegion.GetMin().GetX(), m_dirtyDetailRegion.GetMin().GetY(), m_dirtyDetailRegion.GetMax().GetX(), m_dirtyDetailRegion.GetMax().GetY());
-                }
-                // If any regions are marked as dirty, then they should be updated.
-
-                AZ::Vector3 currentMin = AZ::Vector3(newBounds.m_min.m_x * DetailTextureScale, newBounds.m_min.m_y * DetailTextureScale, -0.5f);
-                AZ::Vector3 currentMax = AZ::Vector3(newBounds.m_max.m_x * DetailTextureScale, newBounds.m_max.m_y * DetailTextureScale, 0.5f);
-                AZ::Aabb detailTextureCoverage = AZ::Aabb::CreateFromMinMax(currentMin, currentMax);
-                AZ::Vector3 previousMin = AZ::Vector3(m_detailTextureBounds.m_min.m_x * DetailTextureScale, m_detailTextureBounds.m_min.m_y * DetailTextureScale, -0.5f);
-                AZ::Vector3 previousMax = AZ::Vector3(m_detailTextureBounds.m_max.m_x * DetailTextureScale, m_detailTextureBounds.m_max.m_y * DetailTextureScale, 0.5f);
-                AZ::Aabb previousCoverage = AZ::Aabb::CreateFromMinMax(previousMin, previousMax);
-
-                // Area of texture not already updated by camera movement above.
-                AZ::Aabb clampedCoverage = previousCoverage.GetClamped(detailTextureCoverage);
-
-                // Clamp the dirty region to the area of the detail texture that is visible and not already updated.
-                clampedCoverage.Clamp(m_dirtyDetailRegion);
-
-                if (clampedCoverage.IsValid())
-                {
-                    Aabb2i updateBounds;
-                    updateBounds.m_min.m_x = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMin().GetX() / DetailTextureScale));
-                    updateBounds.m_min.m_y = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMin().GetY() / DetailTextureScale));
-                    updateBounds.m_max.m_x = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMax().GetX() / DetailTextureScale));
-                    updateBounds.m_max.m_y = aznumeric_cast<int32_t>(AZStd::roundf(clampedCoverage.GetMax().GetY() / DetailTextureScale));
-                    if (updateBounds.m_min.m_x < updateBounds.m_max.m_x && updateBounds.m_min.m_y < updateBounds.m_max.m_y)
-                    {
-                        
-                        if (r_terrainDebugDetailImageUpdates)
-                        {
-                            AZ_Printf("TerrainDetailMaterialManager", "Updating dirty region: m(%i, %i)M(%i, %i)",
-                                updateBounds.m_min.m_x, updateBounds.m_min.m_y, updateBounds.m_max.m_x, updateBounds.m_max.m_y);
-                        }
-                        UpdateDetailTexture(updateBounds, newBounds, newCenter);
-                    }
+                    UpdateDetailTexture(region.m_worldAabb, region.m_localAabb);
                 }
             }
+            m_dirtyDetailRegion = AZ::Aabb::CreateNull();
         }
     }
     
-    void TerrainDetailMaterialManager::UpdateDetailTexture(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel)
+    void TerrainDetailMaterialManager::UpdateDetailTexture(const AZ::Aabb& worldUpdateAabb, const Aabb2i& textureUpdateAabb)
     {
         if (!m_detailTextureImage)
         {
@@ -729,129 +612,77 @@ namespace Terrain
             uint8_t m_blend{ 0 }; // 0 = full weight on material1, 255 = full weight on material2
             uint8_t m_padding{ 0 };
         };
+        
+        const int32_t width = textureUpdateAabb.m_max.m_x - textureUpdateAabb.m_min.m_x;
+        const int32_t height = textureUpdateAabb.m_max.m_y - textureUpdateAabb.m_min.m_y;
 
-        // Because the center of the detail texture may be offset, each update area may actually need to be split into
-        // up to 4 separate update areas in each sector of the quadrant.
-        AZStd::array<Aabb2i, 4> textureSpaceAreas;
-        AZStd::array<Aabb2i, 4> scaledWorldSpaceAreas;
-        uint8_t updateAreaCount = CalculateUpdateRegions(updateArea, textureBounds, centerPixel, textureSpaceAreas, scaledWorldSpaceAreas);
+        AZStd::vector<DetailMaterialPixel> pixels(width * height);
+        uint32_t index = 0;
 
-        if (updateAreaCount > 0)
+        auto perPositionCallback = [this, &pixels, &index](
+            [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+            const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+            [[maybe_unused]] bool terrainExists)
         {
-            m_detailImageNeedsUpdate = true;
-        }
-
-        // Pull the data for each area updated and use it to construct an update for the detail material id texture.
-        for (uint8_t i = 0; i < updateAreaCount; ++i)
-        {
-            const Aabb2i& quadrantTextureArea = textureSpaceAreas[i];
-            const Aabb2i& quadrantWorldArea = scaledWorldSpaceAreas[i];
-
-            AZStd::vector<DetailMaterialPixel> pixels;
-            pixels.resize((quadrantWorldArea.m_max.m_x - quadrantWorldArea.m_min.m_x) * (quadrantWorldArea.m_max.m_y - quadrantWorldArea.m_min.m_y));
-            uint32_t index = 0;
-
-            auto perPositionCallback = [this, &pixels, &index](
-                [[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
-                const AzFramework::SurfaceData::SurfacePoint& surfacePoint,
-                [[maybe_unused]] bool terrainExists)
+            // Store the top two surface weights in the texture with m_blend storing the relative weight.
+            bool isFirstMaterial = true;
+            float firstWeight = 0.0f;
+            AZ::Vector2 position(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY());
+            for (const auto& surfaceTagWeight : surfacePoint.m_surfaceTags)
             {
-                // Store the top two surface weights in the texture with m_blend storing the relative weight.
-                bool isFirstMaterial = true;
-                float firstWeight = 0.0f;
-                AZ::Vector2 position(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY());
-                for (const auto& surfaceTagWeight : surfacePoint.m_surfaceTags)
+                if (surfaceTagWeight.m_weight > 0.0f)
                 {
-                    if (surfaceTagWeight.m_weight > 0.0f)
+                    AZ::Crc32 surfaceType = surfaceTagWeight.m_surfaceType;
+                    uint16_t materialId = GetDetailMaterialForSurfaceTypeAndPosition(surfaceType, position);
+                    if (materialId != m_detailMaterials.NoFreeSlot && materialId < 255)
                     {
-                        AZ::Crc32 surfaceType = surfaceTagWeight.m_surfaceType;
-                        uint16_t materialId = GetDetailMaterialForSurfaceTypeAndPosition(surfaceType, position);
-                        if (materialId != m_detailMaterials.NoFreeSlot && materialId < 255)
+                        if (isFirstMaterial)
                         {
-                            if (isFirstMaterial)
-                            {
-                                pixels.at(index).m_material1 = aznumeric_cast<uint8_t>(materialId);
-                                firstWeight = surfaceTagWeight.m_weight;
-                                // m_blend only needs to be calculated is material 2 is found, otherwise the initial value of 0 is correct.
-                                isFirstMaterial = false;
-                            }
-                            else
-                            {
-                                pixels.at(index).m_material2 = aznumeric_cast<uint8_t>(materialId);
-                                float totalWeight = firstWeight + surfaceTagWeight.m_weight;
-                                float blendWeight = 1.0f - (firstWeight / totalWeight);
-                                pixels.at(index).m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
-                                break;
-                            }
+                            pixels.at(index).m_material1 = aznumeric_cast<uint8_t>(materialId);
+                            firstWeight = surfaceTagWeight.m_weight;
+                            // m_blend only needs to be calculated is material 2 is found, otherwise the initial value of 0 is correct.
+                            isFirstMaterial = false;
+                        }
+                        else
+                        {
+                            pixels.at(index).m_material2 = aznumeric_cast<uint8_t>(materialId);
+                            float totalWeight = firstWeight + surfaceTagWeight.m_weight;
+                            float blendWeight = 1.0f - (firstWeight / totalWeight);
+                            pixels.at(index).m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
+                            break;
                         }
                     }
-                    else
-                    {
-                        break; // since the list is ordered, no other materials are in the list with positive weights.
-                    }
                 }
-                ++index;
-            };
-            
-            AZ::Vector3 worldMin(quadrantWorldArea.m_min.m_x * DetailTextureScale, quadrantWorldArea.m_min.m_y * DetailTextureScale, 0.0f);
-            AZ::Vector3 worldMax(quadrantWorldArea.m_max.m_x * DetailTextureScale, quadrantWorldArea.m_max.m_y * DetailTextureScale, 0.0f);
-            AZ::Vector2 stepSize(DetailTextureScale);
-            AZ::Aabb region;
-            region.Set(worldMin, worldMax);
-
-            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion,
-                region, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
-
-            const int32_t left = quadrantTextureArea.m_min.m_x;
-            const int32_t top = quadrantTextureArea.m_min.m_y;
-            const int32_t width = quadrantTextureArea.m_max.m_x - quadrantTextureArea.m_min.m_x;
-            const int32_t height = quadrantTextureArea.m_max.m_y - quadrantTextureArea.m_min.m_y;
-
-            AZ::RHI::ImageUpdateRequest imageUpdateRequest;
-            imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = aznumeric_cast<uint32_t>(left);
-            imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = aznumeric_cast<uint32_t>(top);
-            imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = width * sizeof(DetailMaterialPixel);
-            imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = width * height * sizeof(DetailMaterialPixel);
-            imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = height;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_width = width;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = height;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_depth = 1;
-            imageUpdateRequest.m_sourceData = pixels.data();
-            imageUpdateRequest.m_image = m_detailTextureImage->GetRHIImage();
-
-            m_detailTextureImage->UpdateImageContents(imageUpdateRequest);
-        }
-    }
-    
-    uint8_t TerrainDetailMaterialManager::CalculateUpdateRegions(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel,
-        AZStd::array<Aabb2i, 4>& textureSpaceAreas, AZStd::array<Aabb2i, 4>& scaledWorldSpaceAreas)
-    {
-        Vector2i centerOffset = { centerPixel.m_x - DetailTextureSizeHalf, centerPixel.m_y - DetailTextureSizeHalf };
-
-        int32_t quadrantXOffset = centerPixel.m_x < DetailTextureSizeHalf ? DetailTextureSize : -DetailTextureSize;
-        int32_t quadrantYOffset = centerPixel.m_y < DetailTextureSizeHalf ? DetailTextureSize : -DetailTextureSize;
-
-        uint8_t numQuadrants = 0;
-
-        // For each of the 4 quadrants:
-        auto calculateQuadrant = [&](Vector2i quadrantOffset)
-        {
-            Aabb2i offsetUpdateArea = updateArea + centerOffset + quadrantOffset;
-            Aabb2i updateSectionBounds = textureBounds.GetClamped(offsetUpdateArea);
-            if (updateSectionBounds.IsValid())
-            {
-                textureSpaceAreas[numQuadrants] = updateSectionBounds - textureBounds.m_min;
-                scaledWorldSpaceAreas[numQuadrants] = updateSectionBounds - centerOffset - quadrantOffset;
-                ++numQuadrants;
+                else
+                {
+                    break; // since the list is ordered, no other materials are in the list with positive weights.
+                }
             }
+            ++index;
         };
+            
+        AZ::Vector2 stepSize(DetailTextureScale);
+        AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(DetailTextureScale * 0.5f)); // offset by half a pixel
 
-        calculateQuadrant({ 0, 0 });
-        calculateQuadrant({ quadrantXOffset, 0 });
-        calculateQuadrant({ 0, quadrantYOffset });
-        calculateQuadrant({ quadrantXOffset, quadrantYOffset });
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion,
+            offsetWorldAabb, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
 
-        return numQuadrants;
+        const int32_t left = textureUpdateAabb.m_min.m_x;
+        const int32_t top = textureUpdateAabb.m_min.m_y;
+
+        AZ::RHI::ImageUpdateRequest imageUpdateRequest;
+        imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = aznumeric_cast<uint32_t>(left);
+        imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = aznumeric_cast<uint32_t>(top);
+        imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = width * sizeof(DetailMaterialPixel);
+        imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = width * height * sizeof(DetailMaterialPixel);
+        imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = height;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_width = width;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = height;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_depth = 1;
+        imageUpdateRequest.m_sourceData = pixels.data();
+        imageUpdateRequest.m_image = m_detailTextureImage->GetRHIImage();
+
+        m_detailTextureImage->UpdateImageContents(imageUpdateRequest);
     }
 
     uint16_t TerrainDetailMaterialManager::GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position)

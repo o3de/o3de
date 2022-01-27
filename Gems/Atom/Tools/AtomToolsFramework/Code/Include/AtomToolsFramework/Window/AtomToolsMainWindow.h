@@ -16,6 +16,7 @@
 #include <AzQtComponents/Components/StyledDockWidget.h>
 
 #include <QLabel>
+#include <QTimer>
 
 namespace AtomToolsFramework
 {
@@ -45,9 +46,16 @@ namespace AtomToolsFramework
         virtual void OpenHelp();
         virtual void OpenAbout();
 
+        virtual void SetupMetrics();
+        virtual void UpdateMetrics();
+
         AzQtComponents::FancyDocking* m_advancedDockManager = {};
 
         QLabel* m_statusMessage = {};
+        QLabel* m_statusBarFps = {};
+        QLabel* m_statusBarCpuTime = {};
+        QLabel* m_statusBarGpuTime = {};
+        QTimer m_metricsTimer;
 
         QMenu* m_menuFile = {};
         QMenu* m_menuEdit = {};
