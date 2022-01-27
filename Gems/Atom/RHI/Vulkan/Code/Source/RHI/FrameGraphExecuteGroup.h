@@ -44,8 +44,8 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // FrameGraphExecuteGroupBase
-            AZStd::array_view<const Scope*> GetScopes() const override;
-            AZStd::array_view<RHI::Ptr<CommandList>> GetCommandLists() const override;
+            AZStd::span<const Scope* const> GetScopes() const override;
+            AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //! Set the render context and subpass that will be used by this execute group.

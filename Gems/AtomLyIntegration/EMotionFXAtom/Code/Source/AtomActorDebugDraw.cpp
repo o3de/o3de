@@ -301,7 +301,7 @@ namespace AZ::Render
 
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+        lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
         lineArgs.m_colors = m_auxColors.data();
         lineArgs.m_colorCount = lineArgs.m_vertCount;
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
@@ -393,9 +393,9 @@ namespace AZ::Render
 
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+        lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
         lineArgs.m_colors = m_auxColors.data();
-        lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
+        lineArgs.m_colorCount = aznumeric_cast<uint32_t>(m_auxColors.size());
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
         auxGeom->DrawLines(lineArgs);
     }
@@ -464,15 +464,15 @@ namespace AZ::Render
                     m_auxVertices.emplace_back(normalPos);
                     m_auxVertices.emplace_back(normalPos + (normalDir * faceNormalsScale * scaleMultiplier));
                 }
-            }
 
-            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
-            lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = &faceNormalsColor;
-            lineArgs.m_colorCount = 1;
-            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-            auxGeom->DrawLines(lineArgs);
+                RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+                lineArgs.m_verts = m_auxVertices.data();
+                lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
+                lineArgs.m_colors = &faceNormalsColor;
+                lineArgs.m_colorCount = 1;
+                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+                auxGeom->DrawLines(lineArgs);
+            }
         }
 
         // render vertex normals
@@ -501,7 +501,7 @@ namespace AZ::Render
 
                 RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
                 lineArgs.m_verts = m_auxVertices.data();
-                lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+                lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
                 lineArgs.m_colors = &vertexNormalsColor;
                 lineArgs.m_colorCount = 1;
                 lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
@@ -589,9 +589,9 @@ namespace AZ::Render
 
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+        lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
         lineArgs.m_colors = m_auxColors.data();
-        lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
+        lineArgs.m_colorCount = aznumeric_cast<uint32_t>(m_auxColors.size());
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
         auxGeom->DrawLines(lineArgs);
     }
@@ -649,7 +649,7 @@ namespace AZ::Render
 
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+            lineArgs.m_vertCount = aznumeric_cast<uint32_t>(m_auxVertices.size());
             lineArgs.m_colors = &wireframeColor;
             lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
@@ -688,7 +688,7 @@ namespace AZ::Render
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
         AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
-        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
+        m_drawParams.m_position = AZ::Vector3(aznumeric_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
             TopRightBorderPadding * viewportContext->GetDpiScalingFactor();
         m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
