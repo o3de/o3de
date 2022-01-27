@@ -247,7 +247,7 @@ namespace AZ
             return parentPropertySet->AddProperty(splitPropertyId[1]);
         }
         
-        const MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::array_view<AZStd::string_view> parsedPropertySetId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList) const
+        const MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::span<const AZStd::string_view> parsedPropertySetId, AZStd::span<const AZStd::unique_ptr<PropertySet>> inPropertySetList) const
         {
             for (const auto& propertySet : inPropertySetList)
             {
@@ -261,7 +261,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZStd::array_view<AZStd::string_view> subPath{parsedPropertySetId.begin() + 1, parsedPropertySetId.end()};
+                    AZStd::span<const AZStd::string_view> subPath{parsedPropertySetId.begin() + 1, parsedPropertySetId.end()};
 
                     if (!subPath.empty())
                     {
@@ -277,7 +277,7 @@ namespace AZ
             return nullptr;
         }
         
-        MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::array_view<AZStd::string_view> parsedPropertySetId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList)
+        MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::span<AZStd::string_view> parsedPropertySetId, AZStd::span<AZStd::unique_ptr<PropertySet>> inPropertySetList)
         {
             return const_cast<PropertySet*>(const_cast<const MaterialTypeSourceData*>(this)->FindPropertySet(parsedPropertySetId, inPropertySetList));
         }
@@ -295,14 +295,14 @@ namespace AZ
         }
         
         const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(
-            AZStd::array_view<AZStd::string_view> parsedPropertyId,
-            AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList) const
+            AZStd::span<const AZStd::string_view> parsedPropertyId,
+            AZStd::span<const AZStd::unique_ptr<PropertySet>> inPropertySetList) const
         {
             for (const auto& propertySet : inPropertySetList)
             {
                 if (propertySet->m_name == parsedPropertyId[0])
                 {
-                    AZStd::array_view<AZStd::string_view> subPath {parsedPropertyId.begin() + 1, parsedPropertyId.end()};
+                    AZStd::span<const AZStd::string_view> subPath {parsedPropertyId.begin() + 1, parsedPropertyId.end()};
 
                     if (subPath.size() == 1)
                     {
@@ -328,7 +328,7 @@ namespace AZ
             return nullptr;
         }
         
-        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::array_view<AZStd::string_view> parsedPropertyId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList)
+        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertySet>> inPropertySetList)
         {
             return const_cast<MaterialTypeSourceData::PropertyDefinition*>(const_cast<const MaterialTypeSourceData*>(this)->FindProperty(parsedPropertyId, inPropertySetList));
         }

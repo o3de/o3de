@@ -88,7 +88,7 @@ namespace AZ
         {
         }
         
-        MaterialPropertyId::MaterialPropertyId(const AZStd::array_view<AZStd::string> groupNames, AZStd::string_view propertyName)
+        MaterialPropertyId::MaterialPropertyId(const AZStd::span<AZStd::string> groupNames, AZStd::string_view propertyName)
         {
             for (const auto& name : groupNames)
             {
@@ -118,7 +118,7 @@ namespace AZ
             }
         }
 
-        MaterialPropertyId::MaterialPropertyId(const AZStd::array_view<AZStd::string> names)
+        MaterialPropertyId::MaterialPropertyId(const AZStd::span<AZStd::string> names)
         {
             for (const auto& name : names)
             {

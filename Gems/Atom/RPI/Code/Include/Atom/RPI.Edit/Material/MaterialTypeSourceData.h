@@ -308,11 +308,11 @@ namespace AZ
 
         private:
                 
-            const PropertySet* FindPropertySet(AZStd::array_view<AZStd::string_view> parsedPropertySetId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList) const;
-            PropertySet* FindPropertySet(AZStd::array_view<AZStd::string_view> parsedPropertySetId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList);
+            const PropertySet* FindPropertySet(AZStd::span<const AZStd::string_view> parsedPropertySetId, AZStd::span<const AZStd::unique_ptr<PropertySet>> inPropertySetList) const;
+            PropertySet* FindPropertySet(AZStd::span<AZStd::string_view> parsedPropertySetId, AZStd::span<AZStd::unique_ptr<PropertySet>> inPropertySetList);
             
-            const PropertyDefinition* FindProperty(AZStd::array_view<AZStd::string_view> parsedPropertyId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList) const;
-            PropertyDefinition* FindProperty(AZStd::array_view<AZStd::string_view> parsedPropertyId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList);
+            const PropertyDefinition* FindProperty(AZStd::span<const AZStd::string_view> parsedPropertyId, AZStd::span<const AZStd::unique_ptr<PropertySet>> inPropertySetList) const;
+            PropertyDefinition* FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertySet>> inPropertySetList);
             
             // Function overloads for recursion, returns false to indicate that recursion should end.
             bool EnumeratePropertySets(const EnumeratePropertySetsCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertySet>>& inPropertySetList) const;
