@@ -219,13 +219,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         //  2. Gets the exact asset to load to avoid issues with assets that don't reload.
         AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>*> blockingAssets;
 
+        AZ::SerializeContext* sc = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        AZ_Assert(sc, "Unable to locate Serialize Context while resolving asset references in the in-memory spawnable asset container.");
+
         for (AZ::Data::Asset<AZ::Data::AssetData>& asset : spawnable.m_assets)
         {
-            AZ::SerializeContext* sc = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            AZ_Assert(
-                sc, "Unable to locate Serialize Context while resolving asset references in the in-memory spawnable asset container.");
-
             auto callback = [&blockingAssets](
                                 void* object, const AZ::SerializeContext::ClassData* classData,
                                 [[maybe_unused]]const AZ::SerializeContext::ClassElement* elementData) -> bool
@@ -236,7 +235,10 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
                     if (!asset->GetId().IsValid())
                     {
-                        AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                        AZ_Error(
+                            "Prefab", false,
+                            "Invalid asset found referenced in scene while entering game mode. The asset was stored in an instance of %s.",
+                            classData->m_name);
                         return false;
                     }
 
