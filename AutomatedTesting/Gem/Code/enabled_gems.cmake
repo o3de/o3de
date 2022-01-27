@@ -58,4 +58,5 @@ set(ENABLED_GEMS
     Profiler
     Multiplayer
     O3DEMaterialEditor
+    AtomMaterialEditor
 )
