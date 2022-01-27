@@ -22,15 +22,16 @@ namespace AZ
     {
         //! A list of popular vendor Ids. 
         AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(VendorId, uint32_t,
-            (Unknown,  0),
-            (Intel,    0x8086),
-            (nVidia,   0x10de),
-            (AMD,      0x1002),
-            (Qualcomm, 0x5143),
-            (Samsung,  0x1099),
-            (ARM,      0x13B5),
-            (Warp,     0x1414),
-            (A13,      0x2c4)
+            (Unknown,       0),
+            (Intel,         0x8086),
+            (nVidia,        0x10de),
+            (AMD,           0x1002),
+            (Qualcomm,      0x5143),
+            (Samsung,       0x1099),
+            (ARM,           0x13B5),
+            (Warp,          0x1414),
+            (AppleA13GPU,   0x2c4),
+            (AppleM1Max,    0x983)
             //Add other GPUs. If a GPU is not added it will fallback to Unknown
         );
 
