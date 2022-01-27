@@ -16,7 +16,6 @@
     ],
     "icon_path": "preview.png",
     "requirements": "",
-    "restricted_name": "gems",
     "dependencies": [
         "EMotionFX"]
 }
