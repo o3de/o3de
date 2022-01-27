@@ -98,7 +98,7 @@ namespace Terrain
         }
 
         ClipmapBoundsDescriptor desc;
-        desc.m_clipmapUpdateMultiple = 4;
+        desc.m_clipmapUpdateMultiple = 1;
         desc.m_clipToWorldScale = DetailTextureScale;
         desc.m_size = DetailTextureSize;
         desc.m_worldSpaceCenter = AZ::Vector2(AZStd::numeric_limits<float>::max(), 0.0f);
