@@ -15,7 +15,7 @@ import os
 import pathlib
 import sys
 
-from o3de import cmake, manifest, utils
+from o3de import cmake, manifest, project_properties, utils
 
 logger = logging.getLogger('o3de.disable_gem')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -68,8 +68,8 @@ def disable_gem_in_project(gem_name: str = None,
                      f' {project_path / "project.json"}, engine.json')
         return 1
     gem_path = pathlib.Path(gem_path).resolve()
-    # make sure this gem already exists if we're adding.  We can always remove a gem.
-    if not gem_path.exists():
+    # make sure the gem path is a directory
+    if not gem_path.is_dir():
         logger.error(f'Gem Path {gem_path} does not exist.')
         return 1
 
@@ -79,9 +79,6 @@ def disable_gem_in_project(gem_name: str = None,
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1
 
-    # when removing we will try to do as much as possible even with failures so ret_val will be the last error code
-    ret_val = 0
-
     if not enabled_gem_file:
         enabled_gem_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
 
@@ -89,10 +86,14 @@ def disable_gem_in_project(gem_name: str = None,
     if not enabled_gem_file.is_file():
         logger.error(f'Enabled gem file {enabled_gem_file} is not present.')
         return 1
+
     # remove the gem
     error_code = cmake.remove_gem_dependency(enabled_gem_file, gem_json_data['gem_name'])
-    if error_code:
-        ret_val = error_code
+
+    # Remove the name of the gem from the project.json "gem_names" field if the gem is neither
+    # registered with the project.json nor engine.json
+    ret_val = project_properties.edit_project_props(project_path,
+                                                    delete_gem_names=gem_json_data['gem_name']) or error_code
 
     return ret_val
 

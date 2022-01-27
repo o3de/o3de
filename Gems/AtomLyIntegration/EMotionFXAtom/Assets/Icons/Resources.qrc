@@ -1,6 +1,14 @@
 <RCC>
     <qresource prefix="/EMotionFXAtom">
         <file>Camera_category.svg</file>
+        <file>Cloth.svg</file>
+        <file>HitDetection.svg</file>
+        <file>RagdollCollider.svg</file>
+        <file>RagdollJointLimit.svg</file>
+        <file>Rotate.svg</file>
+        <file>Scale.svg</file>
+        <file>SimulatedObjectCollider.svg</file>
+        <file>Translate.svg</file>
         <file>Visualization.svg</file>
     </qresource>
 </RCC>

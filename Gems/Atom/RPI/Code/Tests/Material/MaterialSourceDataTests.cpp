@@ -646,7 +646,7 @@ namespace UnitTest
         MaterialPropertyIndex myFloat2 = layout->FindPropertyIndex(Name("general.MyFloat2"));
         MaterialPropertyIndex myColor = layout->FindPropertyIndex(Name("general.MyColor"));
 
-        AZStd::array_view<MaterialPropertyValue> properties;
+        AZStd::span<const MaterialPropertyValue> properties;
 
         // Check level 1 properties
         properties = materialAssetLevel1.GetValue()->GetPropertyValues();
@@ -736,7 +736,7 @@ namespace UnitTest
 
         // The properties will finalize automatically when we call GetPropertyValues()...
 
-        AZStd::array_view<MaterialPropertyValue> properties;
+        AZStd::span<const MaterialPropertyValue> properties;
 
         // Check level 1 properties
         properties = materialAssetLevel1->GetPropertyValues();
@@ -905,7 +905,7 @@ namespace UnitTest
         JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
         auto materialAssetResult = material.CreateMaterialAsset(Uuid::CreateRandom(), "test.material", AZ::RPI::MaterialAssetProcessingMode::PreBake);
         EXPECT_TRUE(materialAssetResult);
-        MaterialPropertyIndex propertyIndex = materialAssetResult.GetValue()->GetMaterialPropertiesLayout()->FindPropertyIndex(MaterialPropertyId{groupName, propertyName}.GetFullName());
+        MaterialPropertyIndex propertyIndex = materialAssetResult.GetValue()->GetMaterialPropertiesLayout()->FindPropertyIndex(MaterialPropertyId{groupName, propertyName});
         CheckSimilar(expectedFinalValue, materialAssetResult.GetValue()->GetPropertyValues()[propertyIndex.GetIndex()].GetValue<PropertyTypeT>());
     }
 

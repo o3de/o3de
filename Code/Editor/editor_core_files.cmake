@@ -8,7 +8,6 @@
 
 set(FILES
     UsedResources.h
-    UIEnumsDatabase.h
     Include/EditorCoreAPI.cpp
     Include/IErrorReport.h
     Include/IFileUtil.h
@@ -31,7 +30,6 @@ set(FILES
     Controls/QToolTipWidget.h
     Controls/QToolTipWidget.cpp
     UsedResources.cpp
-    UIEnumsDatabase.cpp
     LyViewPaneNames.h
     QtViewPaneManager.cpp
     QtViewPaneManager.h
@@ -58,13 +56,11 @@ set(FILES
     Util/ImageHistogram.h
     Util/Image.h
     Util/ColorUtils.cpp
-    Util/ColorUtils.h
     Undo/Undo.cpp
     Undo/IUndoManagerListener.h
     Undo/IUndoObject.h
     Undo/Undo.h
     Undo/UndoVariableChange.h
-    WinWidgetId.h
     QtUI/ColorButton.cpp
     QtUI/ColorButton.h
     QtUtil.h
