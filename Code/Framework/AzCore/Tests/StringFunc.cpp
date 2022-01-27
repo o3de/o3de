@@ -202,7 +202,7 @@ namespace AZ
         AZStd::vector<AZStd::string> tokens;
         AZ::StringFunc::Tokenize(input.c_str(), tokens, ' ');
         ASSERT_EQ(tokens.size(), 0);
-    }   
+    }
 
     TEST_F(StringFuncTest, Tokenize_SingleDelimeter)
     {
@@ -259,7 +259,7 @@ namespace AZ
         ASSERT_TRUE(tokens[2] == "c");
         ASSERT_TRUE(tokens[3] == "d-e"); // Test for something like a guid, which contain typical separator characters
     }
-    
+
     TEST_F(StringFuncTest, TokenizeVisitor_EmptyString_DoesNotInvokeVisitor)
     {
         int visitedCount{};
