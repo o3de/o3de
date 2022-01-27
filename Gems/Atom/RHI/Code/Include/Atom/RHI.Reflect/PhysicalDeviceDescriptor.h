@@ -29,7 +29,9 @@ namespace AZ
             (Qualcomm, 0x5143),
             (Samsung,  0x1099),
             (ARM,      0x13B5),
-            (Warp,     0x1414)
+            (Warp,     0x1414),
+            (A13,      0x2c4)
+            //Add other GPUs. If a GPU is not added it will fallback to Unknown
         );
 
         void ReflectVendorIdEnums(ReflectContext* context);
