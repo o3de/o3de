@@ -143,13 +143,13 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     // ------- Base Color -------
 
     DetailSurface detailSurface = GetDefaultDetailSurface();
-    float2 detailRegionUv = surface.position.xy * TerrainSrg::m_detailMaterialScale;
+    float2 detailRegionCoord = surface.position.xy * TerrainSrg::m_detailMaterialIdScale;
     bool hasDetailSurface = false;
 
     // Only sample detail textures if inside where detail mateirals should be drawn.
     if (detailFactor < 1.0)
     {
-        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionUv, detailUv);
+        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv);
     }
 
     const float macroRoughness = 1.0;

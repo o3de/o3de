@@ -62,7 +62,7 @@ namespace Terrain
     {
         static const char* const DetailMaterialIdImage("m_detailMaterialIdImage");
         static const char* const DetailMaterialData("m_detailMaterialData");
-        static const char* const DetailMaterialScale("m_detailMaterialScale");
+        static const char* const DetailMaterialScale("m_detailMaterialIdScale");
     }
     
     AZ_CVAR(bool,
