@@ -8,7 +8,6 @@
 
 set(FILES
     UsedResources.h
-    UIEnumsDatabase.h
     Include/EditorCoreAPI.cpp
     Include/IErrorReport.h
     Include/IFileUtil.h
@@ -31,7 +30,6 @@ set(FILES
     Controls/QToolTipWidget.h
     Controls/QToolTipWidget.cpp
     UsedResources.cpp
-    UIEnumsDatabase.cpp
     LyViewPaneNames.h
     QtViewPaneManager.cpp
     QtViewPaneManager.h
