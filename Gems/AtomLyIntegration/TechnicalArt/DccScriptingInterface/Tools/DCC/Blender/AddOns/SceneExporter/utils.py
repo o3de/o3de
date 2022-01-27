@@ -40,14 +40,14 @@ def get_selected_materials(selected):
             pass
     return materials
 
-def loop_through_selected_materails(texture_file_path):
+def loop_through_selected_materials(texture_file_path):
     """!
     This function will loop the the selected materials and copy the files to the o3de project folder.
     @param texture_file_path This is the current o3de projects texture file path selected for texture export.
     """
     if not Path(texture_file_path).exists():
         Path(texture_file_path).mkdir(exist_ok=True)
-    # retrive the list of seleted mesh materals
+    # retrive the list of seleted mesh materials
     selected_materials = get_selected_materials(bpy.context.selected_objects)
     # Loop through Materials
     for mat in selected_materials:
@@ -98,11 +98,11 @@ def clone_repath_images(fileMenuExport, texture_file_path, projectSelectionList)
             texture_file_path = Path(dir_path.parent).joinpath('textures')
             if not Path(texture_file_path).exists():
                 Path(texture_file_path).mkdir(exist_ok=True)
-            loop_through_selected_materails(texture_file_path)
+            loop_through_selected_materials(texture_file_path)
         else:
             # We do not want the texture folder
             texture_file_path = Path(dir_path.parent)
-            loop_through_selected_materails(texture_file_path)
+            loop_through_selected_materials(texture_file_path)
 
         # Check to see if this project is listed in our projectSelectionList if not add it.
         if bpy.types.Scene.selected_o3de_project_path not in projectSelectionList:
@@ -114,22 +114,22 @@ def clone_repath_images(fileMenuExport, texture_file_path, projectSelectionList)
         # TOOL MENU EXPORT BUT WAS EXPORTED ONCE IN FILE MENU
         if bpy.types.Scene.export_textures_folder:
             texture_file_path = Path(bpy.types.Scene.selected_o3de_project_path).joinpath('textures')
-            loop_through_selected_materails(texture_file_path)
+            loop_through_selected_materials(texture_file_path)
         else:
             texture_file_path = bpy.types.Scene.selected_o3de_project_path
             if not Path(texture_file_path).exists():
                 Path(texture_file_path).mkdir(exist_ok=True)
-            loop_through_selected_materails(texture_file_path)
+            loop_through_selected_materials(texture_file_path)
     else:
         # TOOL MENU EXPORT
         if bpy.types.Scene.export_textures_folder:
             # We want the texture folder
             texture_file_path = Path(bpy.types.Scene.selected_o3de_project_path).joinpath('Assets', 'textures')
-            loop_through_selected_materails(texture_file_path)
+            loop_through_selected_materials(texture_file_path)
         else:
             # We do not the texture folder
             texture_file_path = Path(bpy.types.Scene.selected_o3de_project_path).joinpath('Assets')
-            loop_through_selected_materails(texture_file_path)
+            loop_through_selected_materials(texture_file_path)
 
 def check_file_paths_duplicate(source_path, destination_path):
     """!
