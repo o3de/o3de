@@ -34,7 +34,7 @@ namespace SurfaceData
     };
 
     using SurfacePointList = AZStd::vector<SurfacePoint>;
-    using SurfacePointListPerPosition = AZStd::vector<AZStd::pair<AZ::Vector3, SurfacePointList>>;
+    using SurfacePointLists = AZStd::vector<SurfacePointList>;
 
     struct SurfaceDataRegistryEntry
     {
