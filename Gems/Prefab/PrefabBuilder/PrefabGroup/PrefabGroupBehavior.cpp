@@ -376,7 +376,28 @@ namespace AZ::SceneAPI::Behaviors
         ManifestAction action,
         [[maybe_unused]] RequestingApplication requester)
     {
-        if (action != Events::AssetImportRequest::ConstructDefault)
+        if (action == Events::AssetImportRequest::Update)
+        {
+            // clear any constructed procedural prefabs
+            AZStd::vector<const SceneData::PrefabGroup*> emptyPrefabGroupCollection;
+            Containers::SceneManifest& manifest = scene.GetManifest();
+
+            for (size_t i = 0; i < manifest.GetEntryCount(); ++i)
+            {
+                const auto* prefabGroup = azrtti_cast<const SceneData::PrefabGroup*>(manifest.GetValue(i).get());
+                if (prefabGroup && !prefabGroup->GetPrefabDomRef())
+                {
+                    emptyPrefabGroupCollection.push_back(prefabGroup);
+                }
+            }
+
+            for (const auto* emptyPrefabGroup : emptyPrefabGroupCollection)
+            {
+                scene.GetManifest().RemoveEntry(emptyPrefabGroup);
+            }
+            return Events::ProcessingResult::Ignored;
+        }
+        else if (action != Events::AssetImportRequest::ConstructDefault)
         {
             return Events::ProcessingResult::Ignored;
         }
@@ -565,6 +586,14 @@ namespace AZ::SceneAPI::Behaviors
 
         for (const auto* prefabGroup : prefabGroupCollection)
         {
+            // an emtpy DOM means the JSON has been removed, so this will ignore the export request
+            auto prefabDomRef = prefabGroup->GetPrefabDomRef();
+            if (!prefabDomRef)
+            {
+                AZ_Warning("prefab", false, "PrefabGroup(%s) PrefabDom is empty; skipping", prefabGroup->GetName().c_str());
+                continue;
+            }
+
             auto result = CreateProductAssetData(prefabGroup, relativePath);
             if (!result)
             {
