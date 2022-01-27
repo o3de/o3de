@@ -13,12 +13,28 @@
                     "ScopeAttachmentUsage": "Shader"
                 }
             ],
-            "PassData": {
-                "$type": "ComputePassData",
-                "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/ChromaticAbberation.shader"
+          "PassData": {
+            "$type": "ComputePassData",
+            "ShaderAsset": {
+              "FilePath": "Shaders/PostProcessing/ChromaticAbberation.shader"
+            },
+            "ShaderDataMappings": {
+              "FloatMappings": [
+                {
+                  "Name": "m_size",
+                  "Value": 0.5
+                },
+                {
+                  "Name": "m_strength",
+                  "Value": 0.9
+                },
+                {
+                  "Name": "m_falloff",
+                  "Value": 0.1
                 }
+              ]
             }
+          }
         }
     }
 }
