@@ -159,11 +159,10 @@ namespace Terrain
         m_dirtyRegion.AddAabb(regionToUpdate);
         m_dirtyRegion.Clamp(worldBounds);
 
-        AZ::Vector2 queryResolution2D = AZ::Vector2(1.0f);
+        float queryResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            queryResolution2D, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
+            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
         // Currently query resolution is multidimensional but the rendering system only supports this changing in one dimension.
-        float queryResolution = queryResolution2D.GetX();
 
         m_terrainBounds = worldBounds;
         m_sampleSpacing = queryResolution;
@@ -210,7 +209,6 @@ namespace Terrain
         int32_t xStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetX() / m_sampleSpacing));
         int32_t yStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetY() / m_sampleSpacing));
 
-        AZ::Vector2 stepSize(m_sampleSpacing);
         AZ::Vector3 maxBound(
             m_dirtyRegion.GetMax().GetX() + m_sampleSpacing, m_dirtyRegion.GetMax().GetY() + m_sampleSpacing, 0.0f);
         AZ::Aabb region;
@@ -219,7 +217,7 @@ namespace Terrain
         AZStd::pair<size_t, size_t> numSamples;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             numSamples, &AzFramework::Terrain::TerrainDataRequests::GetNumSamplesFromRegion,
-            region, stepSize);
+            region, m_sampleSpacing);
 
         uint32_t updateWidth = static_cast<uint32_t>(numSamples.first);
         uint32_t updateHeight = static_cast<uint32_t>(numSamples.second);
@@ -249,7 +247,7 @@ namespace Terrain
 
             AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
                 &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion,
-                region, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+                region, m_sampleSpacing, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
         }
 
         if (m_heightmapImage)

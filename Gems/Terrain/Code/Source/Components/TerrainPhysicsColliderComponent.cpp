@@ -222,7 +222,7 @@ namespace Terrain
             return AZ::Vector2(ceil(in.GetX()), ceil(in.GetY()));
         };
 
-        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+        float gridResolution = GetHeightfieldGridSpacing();
         const AZ::Vector3 boundsMin = worldSize.GetMin();
         const AZ::Vector3 boundsMax = worldSize.GetMax();
 
@@ -274,7 +274,7 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+        float gridResolution = GetHeightfieldGridSpacing();
 
         AZ::Aabb worldSize = GetHeightfieldAabb();
 
@@ -329,7 +329,7 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+        float gridResolution = GetHeightfieldGridSpacing();
 
         AZ::Aabb worldSize = GetHeightfieldAabb();
 
@@ -378,9 +378,9 @@ namespace Terrain
             worldSize, gridResolution, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT);
     }
 
-    AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const
+    float TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const
     {
-        AZ::Vector2 gridResolution = AZ::Vector2(1.0f);
+        float gridResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             gridResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
@@ -389,11 +389,11 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const
     {
-        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+        float gridResolution = GetHeightfieldGridSpacing();
         const AZ::Aabb bounds = GetHeightfieldAabb();
 
-        numColumns = aznumeric_cast<int32_t>((bounds.GetMax().GetX() - bounds.GetMin().GetX()) / gridResolution.GetX());
-        numRows = aznumeric_cast<int32_t>((bounds.GetMax().GetY() - bounds.GetMin().GetY()) / gridResolution.GetY());
+        numColumns = aznumeric_cast<int32_t>((bounds.GetMax().GetX() - bounds.GetMin().GetX()) / gridResolution);
+        numRows = aznumeric_cast<int32_t>((bounds.GetMax().GetY() - bounds.GetMin().GetY()) / gridResolution);
     }
 
     int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridColumns() const

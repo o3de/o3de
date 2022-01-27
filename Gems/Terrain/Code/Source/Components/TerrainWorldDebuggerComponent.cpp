@@ -227,12 +227,12 @@ namespace Terrain
         float worldMinZ = worldBounds.GetMin().GetZ();
 
         // Get the terrain height data resolution
-        AZ::Vector2 heightDataResolution = AZ::Vector2(1.0f);
+        float heightDataResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             heightDataResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
         // Get the size of a wireframe sector in world space
-        const AZ::Vector2 sectorSize = heightDataResolution * SectorSizeInGridPoints;
+        const AZ::Vector2 sectorSize = AZ::Vector2(heightDataResolution * SectorSizeInGridPoints);
 
         // Try to get the current camera position, or default to (0,0) if we can't.
         AZ::Vector3 cameraPos = AZ::Vector3::CreateZero();
@@ -317,7 +317,7 @@ namespace Terrain
 
     }
 
-    void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution)
+    void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, float gridResolution)
     {
         if (!sector.m_isDirty)
         {
@@ -337,11 +337,11 @@ namespace Terrain
         // Since we're processing lines based on the grid points and going backwards, this will give us (*--*--*).
 
         AZ::Aabb region = sector.m_aabb;
-        region.SetMax(region.GetMax() + AZ::Vector3(gridResolution.GetX(), gridResolution.GetY(), 0.0f));
+        region.SetMax(region.GetMax() + AZ::Vector3(gridResolution, gridResolution, 0.0f));
 
         // We need 4 vertices for each grid point in our sector to hold the _| shape.
-        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(region.GetExtents().GetX() / gridResolution.GetX()));
-        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(region.GetExtents().GetY() / gridResolution.GetY()));
+        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(region.GetExtents().GetX() / gridResolution));
+        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(region.GetExtents().GetY() / gridResolution));
         sector.m_lineVertices.clear();
         sector.m_lineVertices.reserve(numSamplesX * numSamplesY * 4);
 
@@ -360,8 +360,8 @@ namespace Terrain
             // there is one.
             if ((xIndex > 0) && (yIndex > 0))
             {
-                float x = surfacePoint.m_position.GetX() - gridResolution.GetX();
-                float y = surfacePoint.m_position.GetY() - gridResolution.GetY();
+                float x = surfacePoint.m_position.GetX() - gridResolution;
+                float y = surfacePoint.m_position.GetY() - gridResolution;
 
                 sector.m_lineVertices.emplace_back(AZ::Vector3(x, surfacePoint.m_position.GetY(), previousHeight));
                 sector.m_lineVertices.emplace_back(surfacePoint.m_position);

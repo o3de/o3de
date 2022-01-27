@@ -690,8 +690,9 @@ namespace PhysX
             const int numColumns = heightfieldShapeConfig.GetNumColumns();
             const int numRows = heightfieldShapeConfig.GetNumRows();
 
-            const float minXBounds = -(numColumns * heightfieldShapeConfig.GetGridResolution().GetX()) / 2.0f;
-            const float minYBounds = -(numRows * heightfieldShapeConfig.GetGridResolution().GetY()) / 2.0f;
+            const float spacing = heightfieldShapeConfig.GetGridResolution();
+            const float minXBounds = -(numColumns * spacing) / 2.0f;
+            const float minYBounds = -(numRows * spacing) / 2.0f;
 
             auto heights = heightfieldShapeConfig.GetSamples();
             
@@ -704,10 +705,10 @@ namespace PhysX
                     const int index2 = (yIndex + 1) * numColumns + xIndex;
                     const int index3 = (yIndex + 1) * numColumns + xIndex + 1;
 
-                    const float x0 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * xIndex;
-                    const float x1 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * (xIndex + 1);
-                    const float y0 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * yIndex;
-                    const float y1 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * (yIndex + 1);
+                    const float x0 = minXBounds + spacing * xIndex;
+                    const float x1 = minXBounds + spacing * (xIndex + 1);
+                    const float y0 = minYBounds + spacing * yIndex;
+                    const float y1 = minYBounds + spacing * (yIndex + 1);
 
                     // Always draw top and left line of quad
                     debugDisplay.DrawLine(

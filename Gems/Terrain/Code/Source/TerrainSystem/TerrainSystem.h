@@ -54,8 +54,8 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainDataRequestBus::Handler Impl
-        AZ::Vector2 GetTerrainHeightQueryResolution() const override;
-        void SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution) override;
+        float GetTerrainHeightQueryResolution() const override;
+        void SetTerrainHeightQueryResolution(float queryResolution) override;
 
         AZ::Aabb GetTerrainAabb() const override;
         void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
@@ -167,24 +167,24 @@ namespace Terrain
         //! Returns the number of samples for a given region and step size. The first and second
         //! elements of the pair correspond to the X and Y sample counts respectively.
         virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize) const override;
+            float stepSize) const override;
 
         //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
         //! coordinates in the region.
         virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
+            float stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
+            float stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
+            float stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
         virtual void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
+            float stepSize,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT) const override;
 
@@ -213,7 +213,7 @@ namespace Terrain
         struct TerrainSystemSettings
         {
             AZ::Aabb m_worldBounds;
-            AZ::Vector2 m_heightQueryResolution{ 1.0f };
+            float m_heightQueryResolution{ 1.0f };
             bool m_systemActive{ false };
         };
 

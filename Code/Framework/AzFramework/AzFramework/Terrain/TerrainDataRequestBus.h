@@ -50,8 +50,8 @@ namespace AzFramework
             static AZ::Vector3 GetDefaultTerrainNormal() { return AZ::Vector3::CreateAxisZ(); }
 
             // System-level queries to understand world size and resolution
-            virtual AZ::Vector2 GetTerrainHeightQueryResolution() const = 0;
-            virtual void SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution) = 0;
+            virtual float GetTerrainHeightQueryResolution() const = 0;
+            virtual void SetTerrainHeightQueryResolution(float queryResolution) = 0;
 
             virtual AZ::Aabb GetTerrainAabb() const = 0;
             virtual void SetTerrainAabb(const AZ::Aabb& worldBounds) = 0;
@@ -166,24 +166,24 @@ namespace AzFramework
             //! Returns the number of samples for a given region and step size. The first and second
             //! elements of the pair correspond to the X and Y sample counts respectively.
             virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize) const = 0;
+                float stepSize) const = 0;
 
             //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
             //! coordinates in the region.
             virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
+                float stepSize,
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
             virtual void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
+                float stepSize,
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
             virtual void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
+                float stepSize,
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
             virtual void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
-                const AZ::Vector2& stepSize,
+                float stepSize,
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 

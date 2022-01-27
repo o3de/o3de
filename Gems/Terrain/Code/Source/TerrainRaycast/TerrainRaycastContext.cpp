@@ -210,7 +210,7 @@ namespace
     // |    |    |    |    |    |    |    |    |
     // |____|____|____|____|____|____|____|____|
     inline void FindNearestIntersectionIterative(const TerrainSystem& terrainSystem,
-                                                 const AZ::Vector2& terrainResolution,
+                                                 float terrainResolution,
                                                  const AZ::Aabb& terrainWorldBounds,
                                                  const AZ::Vector3& rayStart,
                                                  const AZ::Vector3& rayEnd,
@@ -243,8 +243,8 @@ namespace
         const float initialIntersectionX = initialIntersection.GetX();
         const float initialIntersectionY = initialIntersection.GetY();
         const float initialIntersectionZ = initialIntersection.GetZ();
-        const float gridResolutionX = terrainResolution.GetX();
-        const float gridResolutionY = terrainResolution.GetY();
+        const float gridResolutionX = terrainResolution;
+        const float gridResolutionY = terrainResolution;
         const float gridResolutionZ = terrainWorldBounds.GetMax().GetZ() - terrainWorldBounds.GetMin().GetZ();
         float initialVoxelMinX = ClampToGridRoundDown(initialIntersectionX, gridResolutionX);
         float initialVoxelMinY = ClampToGridRoundDown(initialIntersectionY, gridResolutionY);
@@ -377,7 +377,7 @@ AzFramework::RenderGeometry::RayResult TerrainRaycastContext::RayIntersect(
     const AzFramework::RenderGeometry::RayRequest& ray)
 {
     const AZ::Aabb terrainWorldBounds = m_terrainSystem.GetTerrainAabb();
-    const AZ::Vector2 terrainResolution = m_terrainSystem.GetTerrainHeightQueryResolution();
+    const float terrainResolution = m_terrainSystem.GetTerrainHeightQueryResolution();
     AzFramework::RenderGeometry::RayResult rayIntersectionResult;
     FindNearestIntersectionIterative(m_terrainSystem,
                                      terrainResolution,

@@ -54,8 +54,8 @@ namespace Physics
         static void Reflect(AZ::ReflectContext* context);
 
         //! Returns the distance between each height in the map.
-        //! @return Vector containing Column Spacing, Rows Spacing.
-        virtual AZ::Vector2 GetHeightfieldGridSpacing() const = 0;
+        //! @return Number containing grid spacing.
+        virtual float GetHeightfieldGridSpacing() const = 0;
 
         //! Returns the height field gridsize.
         //! @param numColumns contains the size of the grid in the x direction.

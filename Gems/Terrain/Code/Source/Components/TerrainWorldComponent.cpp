@@ -23,7 +23,7 @@ namespace Terrain
         if (serialize)
         {
             serialize->Class<TerrainWorldConfig, AZ::ComponentConfig>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("WorldMin", &TerrainWorldConfig::m_worldMin)
                 ->Field("WorldMax", &TerrainWorldConfig::m_worldMax)
                 ->Field("HeightQueryResolution", &TerrainWorldConfig::m_heightQueryResolution)
@@ -131,9 +131,9 @@ namespace Terrain
         return false;
     }
 
-    float TerrainWorldConfig::NumberOfSamples(AZ::Vector3* min, AZ::Vector3* max, AZ::Vector2* heightQuery)
+    float TerrainWorldConfig::NumberOfSamples(const AZ::Vector3& min, const AZ::Vector3& max, float heightQuery)
     {
-        float numberOfSamples = ((max->GetX() - min->GetX()) / heightQuery->GetX()) * ((max->GetY() - min->GetY()) / heightQuery->GetY());
+        float numberOfSamples = ((max.GetX() - min.GetX()) / heightQuery) * ((max.GetY() - min.GetY()) / heightQuery);
         return numberOfSamples;
     }
 
@@ -151,21 +151,21 @@ namespace Terrain
     {
         AZ::Vector3 minValue = *static_cast<AZ::Vector3*>(newValue);
 
-        return DetermineMessage(NumberOfSamples(&minValue, &m_worldMax, &m_heightQueryResolution));
+        return DetermineMessage(NumberOfSamples(minValue, m_worldMax, m_heightQueryResolution));
     }
 
     AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateWorldMax(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
     {
         AZ::Vector3 maxValue = *static_cast<AZ::Vector3*>(newValue);
 
-        return DetermineMessage(NumberOfSamples(&m_worldMin, &maxValue, &m_heightQueryResolution));
+        return DetermineMessage(NumberOfSamples(m_worldMin, maxValue, m_heightQueryResolution));
     }
 
     AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateWorldHeight(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
     {
-        AZ::Vector2 heightValue = *static_cast<AZ::Vector2*>(newValue);
+        float heightValue = *static_cast<float*>(newValue);
 
-        return DetermineMessage(NumberOfSamples(&m_worldMin, &m_worldMax, &heightValue));
+        return DetermineMessage(NumberOfSamples(m_worldMin, m_worldMax, heightValue));
     }
 
 } // namespace Terrain

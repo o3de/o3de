@@ -74,7 +74,7 @@ namespace Terrain
         ~TerrainPhysicsColliderComponent() = default;
 
         // HeightfieldProviderRequestsBus
-        AZ::Vector2 GetHeightfieldGridSpacing() const override;
+        float GetHeightfieldGridSpacing() const override;
         void GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const override;
         int32_t GetHeightfieldGridColumns() const override;
         int32_t GetHeightfieldGridRows() const override;
