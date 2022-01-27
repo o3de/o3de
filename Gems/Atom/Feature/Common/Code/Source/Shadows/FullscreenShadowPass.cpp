@@ -32,11 +32,11 @@ namespace AZ
         {
         }
 
-        //void FullscreenShadowPass::CompileResources(const RHI::FrameGraphCompileContext& context)
-        //{
-        //    SetConstantData();
-        //    FullscreenTrianglePass::CompileResources(context);
-        //}
+        void FullscreenShadowPass::CompileResources(const RHI::FrameGraphCompileContext& context)
+        {
+            SetConstantData();
+            FullscreenTrianglePass::CompileResources(context);
+        }
 
         //void FullscreenShadowPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         //{
@@ -52,78 +52,69 @@ namespace AZ
         //    //commandList->Submit(m_dispatchItem);
         //}
 
-        //RPI::PassAttachmentBinding FullscreenShadowPass::GetPassAttachmentBinding(AZ::Name name)
-        //{
-        //    for (unsigned int i = 0; i < GetInputCount(); ++i)
-        //    {
-        //        auto b = GetInputBinding(i);
-        //        if (b.m_name == name)
-        //            return b;
+        RPI::PassAttachmentBinding FullscreenShadowPass::GetPassAttachmentBinding(AZ::Name name)
+        {
+            for (unsigned int i = 0; i < GetInputCount(); ++i)
+            {
+                auto b = GetInputBinding(i);
+                if (b.m_name == name)
+                    return b;
 
-        //        //auto n = b.m_name;
-        //        //const char* c = n.GetCStr();
-        //        //AZ_Printf("MKR", "Input %s\n", c);
-        //    }
+                //auto n = b.m_name;
+                //const char* c = n.GetCStr();
+                //AZ_Printf("MKR", "Input %s\n", c);
+            }
 
-        //    for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
-        //    {
-        //        auto b = GetInputOutputBinding(i);
-        //        if (b.m_name == name)
-        //            return b;
+            for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
+            {
+                auto b = GetInputOutputBinding(i);
+                if (b.m_name == name)
+                    return b;
 
-        //        //const char* c = n.GetCStr();
-        //        //AZ_Printf("MKR", "InotuputOutp %s\n", c);
-        //    }
+                //const char* c = n.GetCStr();
+                //AZ_Printf("MKR", "InotuputOutp %s\n", c);
+            }
 
-        //    for (unsigned int i = 0; i < GetOutputCount(); ++i)
-        //    {
-        //        auto b = GetOutputBinding(i);
-        //        if (b.m_name == name)
-        //            return b;
-        //    }
-        //    return {};
-        //}
+            for (unsigned int i = 0; i < GetOutputCount(); ++i)
+            {
+                auto b = GetOutputBinding(i);
+                if (b.m_name == name)
+                    return b;
+            }
+            return {};
+        }
 
-        //AZ::RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
-        //{
-        //    for (unsigned int i = 0; i < GetInputCount() ; ++i)
-        //    {
-        //        auto b = GetInputBinding(i);
-        //        auto n = b.m_name;
-        //        const char* c = n.GetCStr();
-        //        AZ_Printf("MKR", "Input %s\n", c);
-        //    }
+        AZ::RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
+        {
+            for (unsigned int i = 0; i < GetInputCount() ; ++i)
+            {
+                auto b = GetInputBinding(i);
+                auto n = b.m_name;
+                const char* c = n.GetCStr();
+                AZ_Printf("MKR", "Input %s\n", c);
+            }
 
-        //    for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
-        //    {
-        //        auto b = GetInputOutputBinding(i);
-        //        auto n = b.m_name;
-        //        const char* c = n.GetCStr();
-        //        AZ_Printf("MKR", "InotuputOutp %s\n", c);
-        //    }
+            for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
+            {
+                auto b = GetInputOutputBinding(i);
+                auto n = b.m_name;
+                const char* c = n.GetCStr();
+                AZ_Printf("MKR", "InotuputOutp %s\n", c);
+            }
 
-        //    for (unsigned int i = 0; i < GetOutputCount(); ++i)
-        //    {
-        //        auto b = GetOutputBinding(i);
-        //        auto n = b.m_name;
-        //        const char* c = n.GetCStr();
-        //        AZ_Printf("MKR", "output %s\n", c);
-        //    }
-        //    AZ_Assert(GetInputCount() == 1, "Unexpected GetInputOutputCount(). Expecting 1, got %d", GetInputCount());
+            for (unsigned int i = 0; i < GetOutputCount(); ++i)
+            {
+                auto b = GetOutputBinding(i);
+                auto n = b.m_name;
+                const char* c = n.GetCStr();
+                AZ_Printf("MKR", "output %s\n", c);
+            }
 
-        //    AZ_Assert(
-        //        GetInputBinding(0).m_name == AZ::Name("SwapChainOutput"),
-        //        "FullscreenShadowPass: Expecting slot 0 to be the SwapChainOutput");
-
-        //    auto outputBinding = GetPassAttachmentBinding(AZ::Name("Output"));
-        //    auto outputDim = outputBinding.m_attachment->m_descriptor.m_image.m_size;
-        //    AZ_Printf("MKR", "Output dim %d %d %s\n", outputDim.m_width, outputDim.m_height, outputBinding.m_attachment->m_name.GetCStr());
-
-
-        //    auto passBinding = GetPassAttachmentBinding(AZ::Name("Input"));
-        //    auto depthBufferDimensions = passBinding.m_attachment->m_descriptor.m_image.m_size;
-        //    return depthBufferDimensions;
-        //}
+            auto outputBinding = GetPassAttachmentBinding(AZ::Name("Output"));
+            auto outputDim = outputBinding.m_attachment->m_descriptor.m_image.m_size;
+            AZ_Assert(outputDim.m_width > 0 && outputDim.m_height > 0, "Height and width are not valid\n");
+            return outputDim;
+        }
 
         //void FullscreenShadowPass::ChooseShaderVariant()
         //{
@@ -159,19 +150,19 @@ namespace AZ
         //    return shaderVariant;
         //}
 
-        //void FullscreenShadowPass::SetConstantData()
-        //{
-        //    struct ConstantData
-        //    {
-        //        AZStd::array<float, 2> m_screenSize;
-        //    } constantData;
+        void FullscreenShadowPass::SetConstantData()
+        {
+            struct ConstantData
+            {
+                AZStd::array<float, 2> m_screenSize;
+            } constantData;
 
-        //   // const RHI::Size resolution = GetDepthBufferDimensions();
-        //    //constantData.m_screenSize = { static_cast<float>(resolution.m_width), static_cast<float>(resolution.m_height) };
+            const RHI::Size resolution = GetDepthBufferDimensions();
+            constantData.m_screenSize = { static_cast<float>(resolution.m_width), static_cast<float>(resolution.m_height) };
 
-        //    [[maybe_unused]] bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
-        //    AZ_Assert(setOk, "FullscreenShadowPass::SetConstantData() - could not set constant data");
-        //}
+            [[maybe_unused]] bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
+            AZ_Assert(setOk, "FullscreenShadowPass::SetConstantData() - could not set constant data");
+        }
 
         //void FullscreenShadowPass::BuildInternal()
         //{
