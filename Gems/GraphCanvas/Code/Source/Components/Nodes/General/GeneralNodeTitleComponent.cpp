@@ -91,17 +91,19 @@ namespace GraphCanvas
 
     }
 
-    void GeneralNodeTitleComponent::SetTitle(const AZStd::string& title)
+    void GeneralNodeTitleComponent::SetDetails(const AZStd::string& title, const AZStd::string& subtitle)
     {
-        m_title.SetFallback(title);
+        m_title = title;
+        m_subTitle = subtitle;
 
         if (m_generalNodeTitleWidget)
         {
-            m_generalNodeTitleWidget->SetTitle(title);
+            m_generalNodeTitleWidget->SetDetails(title, subtitle);
         }
+
     }
 
-    void GeneralNodeTitleComponent::SetTranslationKeyedTitle(const TranslationKeyedString& title)
+    void GeneralNodeTitleComponent::SetTitle(const AZStd::string& title)
     {
         m_title = title;
 
@@ -113,20 +115,10 @@ namespace GraphCanvas
 
     AZStd::string GeneralNodeTitleComponent::GetTitle() const
     {
-        return m_title.GetDisplayString();
+        return m_title;
     }
 
     void GeneralNodeTitleComponent::SetSubTitle(const AZStd::string& subtitle)
-    {
-        m_subTitle.SetFallback(subtitle);
-
-        if (m_generalNodeTitleWidget)
-        {
-            m_generalNodeTitleWidget->SetSubTitle(subtitle);
-        }
-    }
-
-    void GeneralNodeTitleComponent::SetTranslationKeyedSubTitle(const TranslationKeyedString& subtitle)
     {
         m_subTitle = subtitle;
 
@@ -138,7 +130,7 @@ namespace GraphCanvas
 
     AZStd::string GeneralNodeTitleComponent::GetSubTitle() const
     {
-        return m_subTitle.GetDisplayString();
+        return m_subTitle;
     }
 
     QGraphicsWidget* GeneralNodeTitleComponent::GetGraphicsWidget()
@@ -270,7 +262,23 @@ namespace GraphCanvas
         SceneNotificationBus::Handler::BusDisconnect();
     }
 
-    void GeneralNodeTitleGraphicsWidget::SetTitle(const TranslationKeyedString& title)
+    void GeneralNodeTitleGraphicsWidget::SetDetails(const AZStd::string& title, const AZStd::string& subtitle)
+    {
+        bool updateLayout = false;
+        if (m_titleWidget)
+        {
+            m_titleWidget->SetLabel(title);
+            updateLayout = true;
+        }
+
+        if (m_subTitleWidget)
+        {
+            m_subTitleWidget->SetLabel(subtitle);
+            updateLayout = true;
+        }
+    }
+
+    void GeneralNodeTitleGraphicsWidget::SetTitle(const AZStd::string& title)
     {
         if (m_titleWidget)
         {
@@ -279,7 +287,7 @@ namespace GraphCanvas
         }
     }
 
-    void GeneralNodeTitleGraphicsWidget::SetSubTitle(const TranslationKeyedString& subtitle)
+    void GeneralNodeTitleGraphicsWidget::SetSubTitle(const AZStd::string& subtitle)
     {
         if (m_subTitleWidget)
         {

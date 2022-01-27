@@ -6,15 +6,18 @@
  *
  */
 
+
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
 
-#include "Core.h"
 #include "Attributes.h"
+#include "Core.h"
+#include <Core/Graph.h>
 
 namespace ScriptCanvas
 {
@@ -182,5 +185,156 @@ namespace ScriptCanvas
 
         serializeContext->RegisterType(typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
     }
+}
 
+namespace ScriptCanvasEditor
+{
+    SourceHandle::SourceHandle()
+        : m_id(AZ::Uuid::CreateNull())
+    {}
+
+    SourceHandle::SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path)
+        : m_data(data.m_data)
+        , m_id(id)
+        , m_path(path)
+    {
+        m_path.MakePreferred();
+        m_id = id;
+    }
+
+    SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path)
+        : m_data(graph)
+        , m_id(id)
+        , m_path(path)
+    {
+        m_path.MakePreferred();
+        m_id = id;
+    }
+
+    SourceHandle::SourceHandle(const SourceHandle& data, const AZ::IO::Path& path)
+        : m_data(data.m_data)
+        , m_id(AZ::Uuid::CreateNull())
+        , m_path(path)
+    {
+        m_path.MakePreferred();
+    }
+
+    SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path)
+        : m_data(graph)
+        , m_id(AZ::Uuid::CreateNull())
+        , m_path(path)
+    {
+        m_path.MakePreferred();
+    }
+
+    bool SourceHandle::AnyEquals(const SourceHandle& other) const
+    {
+        return m_data && m_data == other.m_data
+            || !m_id.IsNull() && m_id == other.m_id
+            || !m_path.empty() &&  m_path == other.m_path;
+    }
+
+    void SourceHandle::Clear()
+    {
+        m_data = nullptr;
+        m_id = AZ::Uuid::CreateNull();
+        m_path.clear();
+    }
+
+    // return a SourceHandle with only the Id and Path, but without a pointer to the data
+    SourceHandle SourceHandle::Describe() const
+    {
+        return SourceHandle(nullptr, m_id, m_path);
+    }
+
+    GraphPtrConst SourceHandle::Get() const
+    {
+        return m_data ? m_data->GetEditorGraph() : nullptr;
+    }
+
+    const AZ::Uuid& SourceHandle::Id() const
+    {
+        return m_id;
+    }
+
+    bool SourceHandle::IsDescriptionValid() const
+    {
+        return !m_id.IsNull() && !m_path.empty();
+    }
+
+    bool SourceHandle::IsGraphValid() const
+    {
+        return m_data != nullptr;
+    }
+
+    GraphPtr SourceHandle::Mod() const
+    {
+        return m_data ? m_data->ModEditorGraph() : nullptr;
+    }
+
+    bool SourceHandle::operator==(const SourceHandle& other) const
+    {
+        return m_data.get() == other.m_data.get()
+            && m_id == other.m_id
+            && m_path == other.m_path;
+    }
+
+    bool SourceHandle::operator!=(const SourceHandle& other) const
+    {
+        return !(*this == other);
+    }
+
+    const AZ::IO::Path& SourceHandle::Path() const
+    {
+        return m_path;
+    }
+
+    bool SourceHandle::PathEquals(const SourceHandle& other) const
+    {
+        return m_path == other.m_path;
+    }
+
+    void SourceHandle::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<SourceHandle>()
+                ->Version(0)
+                ->Field("id", &SourceHandle::m_id)
+                ->Field("path", &SourceHandle::m_path)
+                ;
+        }
+    }
+
+    AZStd::string SourceHandle::ToString() const
+    {
+        return AZStd::string::format
+            ( "%s, %s, %s"
+            , IsGraphValid() ? "O" : "X"
+            , m_path.empty() ? m_path.c_str() : "<no name>"
+            , m_id.IsNull() ? "<null id>" : m_id.ToString<AZStd::string>().c_str());
+    }
+}
+
+namespace ScriptCanvas
+{
+    const Graph* ScriptCanvasData::GetGraph() const
+    {
+        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
+    }
+
+    const ScriptCanvasEditor::Graph* ScriptCanvasData::GetEditorGraph() const
+    {
+        return reinterpret_cast<const ScriptCanvasEditor::Graph*>(GetGraph());
+    }
+
+    Graph* ScriptCanvasData::ModGraph()
+    {
+        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
+    }
+
+    ScriptCanvasEditor::Graph* ScriptCanvasData::ModEditorGraph()
+    {
+        return reinterpret_cast<ScriptCanvasEditor::Graph*>(ModGraph());
+    }
 }

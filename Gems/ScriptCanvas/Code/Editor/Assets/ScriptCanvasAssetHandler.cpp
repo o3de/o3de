@@ -23,6 +23,7 @@
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -93,49 +94,6 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AZ::Outcome<void, AZStd::string> LoadScriptCanvasDataFromJson
-        ( ScriptCanvas::ScriptCanvasData& dataTarget
-        , AZStd::string_view source
-        , AZ::SerializeContext& serializeContext)
-    {
-        namespace JSRU = AZ::JsonSerializationUtils;
-        using namespace ScriptCanvas;
-
-        AZ::JsonDeserializerSettings settings;
-        settings.m_serializeContext = &serializeContext;
-        settings.m_metadata.Create<SerializationListeners>();
-
-        auto loadResult = JSRU::LoadObjectFromStringByType
-            ( &dataTarget
-            , azrtti_typeid<ScriptCanvasData>()
-            , source
-            , &settings);
-
-        if (!loadResult.IsSuccess())
-        {
-            return loadResult;
-        }
-                    
-        if (auto graphData = dataTarget.ModGraph())
-        {
-            auto listeners = settings.m_metadata.Find<SerializationListeners>();
-            AZ_Assert(listeners, "Failed to find SerializationListeners");
-
-            ScriptCanvasAssetHandlerCpp::CollectNodes(graphData->GetGraphData()->m_nodes, *listeners);
-
-            for (auto listener : *listeners)
-            {
-                listener->OnDeserialize();
-            }
-        }
-        else
-        {
-            return AZ::Failure(AZStd::string("Failed to find graph data after loading source"));
-        }
-
-        return AZ::Success();
-    }
-
     AZ::Data::AssetHandler::LoadResult ScriptCanvasAssetHandler::LoadAssetData
         ( const AZ::Data::Asset<AZ::Data::AssetData>& assetTarget
         , AZStd::shared_ptr<AZ::Data::AssetDataStream> streamSource
@@ -167,7 +125,7 @@ namespace ScriptCanvasEditor
                 settings.m_serializeContext = m_serializeContext;
                 settings.m_metadata.Create<SerializationListeners>();
                 // attempt JSON deserialization...
-                auto jsonResult = LoadScriptCanvasDataFromJson
+                auto jsonResult = LoadDataFromJson
                     ( scriptCanvasDataTarget
                     , AZStd::string_view{ byteBuffer.begin(), byteBuffer.size() }
                     , *m_serializeContext);
@@ -228,6 +186,7 @@ namespace ScriptCanvasEditor
         , AZ::IO::GenericStream* stream
         , [[maybe_unused]] AZ::DataStream::StreamType streamType)
     {
+        // #sc_editor_asset delete usage of this, and route to ScriptCanvasEditor::SaveToStream
         namespace JSRU = AZ::JsonSerializationUtils;
         using namespace ScriptCanvas;
 

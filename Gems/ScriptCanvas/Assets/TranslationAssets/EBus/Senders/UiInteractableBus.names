@@ -1,0 +1,156 @@
+{
+    "entries": [
+        {
+            "base": "UiInteractableBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UI Interactable",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "SetIsAutoActivationEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Auto Activation Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Auto Activation Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Auto Activation Enabled",
+                        "tooltip": "Sets whether the interactive element should automatically become active when navigated to via gamepad/keyboard"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Auto Activate",
+                                "tooltip": "Indicates whether the interactive element should automatically become active when navigated to via gamepad/keyboard"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetIsAutoActivationEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Auto Activation Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Auto Activation Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Is Auto Activation Enabled",
+                        "tooltip": "Returns whether the interactive element automatically becomes active when navigated to via gamepad/keyboard"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIsHandlingMultiTouchEvents",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Handling Multi-touch Events"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Handling Multi-touch Events is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Handling Multi-touch Events",
+                        "tooltip": "Sets whether multi-touch event handling is enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Multi-touch",
+                                "tooltip": "Indicates whether multi-touch event handling is enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsHandlingMultiTouchEvents",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Handling Multi-touch Events"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Handling Multi-touch Events is invoked"
+                    },
+                    "details": {
+                        "name": "Is Handling Multi-touch Events",
+                        "tooltip": "Returns whether multi-touch event handling is enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsHandlingEvents",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Handling Events"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Handling Events is invoked"
+                    },
+                    "details": {
+                        "name": "Is Handling Events",
+                        "tooltip": "Returns whether event handling is enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIsHandlingEvents",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Handling Events"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Handling Events is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Handling Events",
+                        "tooltip": "Sets whether event handling is enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Handling Events",
+                                "tooltip": "Indicates whether event handling is enabled"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

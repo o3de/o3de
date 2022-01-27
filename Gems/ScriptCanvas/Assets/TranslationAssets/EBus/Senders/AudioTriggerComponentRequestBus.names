@@ -1,0 +1,155 @@
+{
+    "entries": [
+        {
+            "base": "AudioTriggerComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Audio Trigger",
+                "category": "Audio"
+            },
+            "methods": [
+                {
+                    "base": "SetObstructionType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Obstruction Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Obstruction Type is invoked"
+                    },
+                    "details": {
+                        "name": "Set Obstruction Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Obstruction Type",
+                                "tooltip": "0: Ignore, 1: Single Ray, 2: Multi Ray"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "KillAllTriggers",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Kill All Triggers"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Kill All Triggers is invoked"
+                    },
+                    "details": {
+                        "name": "Kill All Triggers",
+                        "tooltip": "Cancels all audio triggers that are active on an entity"
+                    }
+                },
+                {
+                    "base": "ExecuteTrigger",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Execute Trigger"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Execute Trigger is invoked"
+                    },
+                    "details": {
+                        "name": "Execute Trigger",
+                        "tooltip": "Runs the specified audio trigger"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Trigger Name",
+                                "tooltip": "Name of the audio trigger to run"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetMovesWithEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Moves With Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Moves With Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Moves With Entity",
+                        "tooltip": "Specifies whether triggers should update position as the entity moves"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Track Entity",
+                                "tooltip": "Set whether triggers should track the entity's position (1 is Track, 0 is Don't Track)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Stop",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Stop"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Stop is invoked"
+                    },
+                    "details": {
+                        "name": "Stop",
+                        "tooltip": "Runs the default 'stop' trigger, if set. If no 'stop' trigger is set, kills the default 'play' trigger."
+                    }
+                },
+                {
+                    "base": "Play",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Play"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Play is invoked"
+                    },
+                    "details": {
+                        "name": "Play",
+                        "tooltip": "Runs the default 'play' trigger, if set."
+                    }
+                },
+                {
+                    "base": "KillTrigger",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Kill Trigger"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Kill Trigger is invoked"
+                    },
+                    "details": {
+                        "name": "Kill Trigger",
+                        "tooltip": "Cancels the specified audio trigger"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Trigger Name",
+                                "tooltip": "Name of the audio trigger to cancel"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

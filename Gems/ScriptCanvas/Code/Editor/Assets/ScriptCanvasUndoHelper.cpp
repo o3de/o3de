@@ -9,13 +9,19 @@
 #include "ScriptCanvasUndoHelper.h"
 #include "ScriptCanvasMemoryAsset.h"
 #include <Undo/ScriptCanvasGraphCommand.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
 
 namespace ScriptCanvasEditor
 {
-    UndoHelper::UndoHelper(ScriptCanvasMemoryAsset& memoryAsset)
-        : m_memoryAsset(memoryAsset)
+    UndoHelper::UndoHelper()
+        : m_undoState(this)
     {
-        UndoRequestBus::Handler::BusConnect(memoryAsset.GetScriptCanvasId());
+    }
+
+    UndoHelper::UndoHelper(Graph* graph)
+        : m_undoState(this)
+    {
+        SetSource(graph);
     }
 
     UndoHelper::~UndoHelper()
@@ -23,15 +29,21 @@ namespace ScriptCanvasEditor
         UndoRequestBus::Handler::BusDisconnect();
     }
 
+    void UndoHelper::SetSource(Graph* graph)
+    {
+        m_graph = graph;
+        UndoRequestBus::Handler::BusConnect(graph->GetScriptCanvasId());
+    }
+
     ScriptCanvasEditor::UndoCache* UndoHelper::GetSceneUndoCache()
     {
-        return m_memoryAsset.GetUndoState()->m_undoCache.get();
+        return m_undoState.m_undoCache.get();
     }
 
     ScriptCanvasEditor::UndoData UndoHelper::CreateUndoData()
     {
-        AZ::EntityId graphCanvasGraphId = m_memoryAsset.GetGraphId();
-        ScriptCanvas::ScriptCanvasId scriptCanvasId = m_memoryAsset.GetScriptCanvasId();
+        AZ::EntityId graphCanvasGraphId = m_graph->GetGraphCanvasGraphId();
+        ScriptCanvas::ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
 
         GraphCanvas::GraphModelRequestBus::Event(graphCanvasGraphId, &GraphCanvas::GraphModelRequests::OnSaveDataDirtied, graphCanvasGraphId);
 
@@ -56,17 +68,17 @@ namespace ScriptCanvasEditor
 
     void UndoHelper::BeginUndoBatch(AZStd::string_view label)
     {
-        m_memoryAsset.GetUndoState()->BeginUndoBatch(label);
+        m_undoState.BeginUndoBatch(label);
     }
 
     void UndoHelper::EndUndoBatch()
     {
-        m_memoryAsset.GetUndoState()->EndUndoBatch();
+        m_undoState.EndUndoBatch();
     }
 
     void UndoHelper::AddUndo(AzToolsFramework::UndoSystem::URSequencePoint* sequencePoint)
     {
-        if (SceneUndoState* sceneUndoState = m_memoryAsset.GetUndoState())
+        if (SceneUndoState* sceneUndoState = &m_undoState)
         {
             if (!sceneUndoState->m_currentUndoBatch)
             {
@@ -82,22 +94,22 @@ namespace ScriptCanvasEditor
     void UndoHelper::AddGraphItemChangeUndo(AZStd::string_view undoLabel)
     {
         GraphItemChangeCommand* command = aznew GraphItemChangeCommand(undoLabel);
-        command->Capture(m_memoryAsset, true);
-        command->Capture(m_memoryAsset, false);
+        command->Capture(m_graph, true);
+        command->Capture(m_graph, false);
         AddUndo(command);
     }
 
     void UndoHelper::AddGraphItemAdditionUndo(AZStd::string_view undoLabel)
     {
         GraphItemAddCommand* command = aznew GraphItemAddCommand(undoLabel);
-        command->Capture(m_memoryAsset, false);
+        command->Capture(m_graph, false);
         AddUndo(command);
     }
 
     void UndoHelper::AddGraphItemRemovalUndo(AZStd::string_view undoLabel)
     {
         GraphItemRemovalCommand* command = aznew GraphItemRemovalCommand(undoLabel);
-        command->Capture(m_memoryAsset, true);
+        command->Capture(m_graph, true);
         AddUndo(command);
     }
 
@@ -105,7 +117,7 @@ namespace ScriptCanvasEditor
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
 
-        SceneUndoState* sceneUndoState = m_memoryAsset.GetUndoState();
+        SceneUndoState* sceneUndoState = &m_undoState;
         if (sceneUndoState)
         {
             AZ_Warning("Script Canvas", !sceneUndoState->m_currentUndoBatch, "Script Canvas Editor has an open undo batch when performing a redo operation");
@@ -125,7 +137,7 @@ namespace ScriptCanvasEditor
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
 
-        SceneUndoState* sceneUndoState = m_memoryAsset.GetUndoState();
+        SceneUndoState* sceneUndoState = &m_undoState;
         if (sceneUndoState)
         {
             AZ_Warning("Script Canvas", !sceneUndoState->m_currentUndoBatch, "Script Canvas Editor has an open undo batch when performing a redo operation");
@@ -143,7 +155,7 @@ namespace ScriptCanvasEditor
 
     void UndoHelper::Reset()
     {
-        if (SceneUndoState* sceneUndoState = m_memoryAsset.GetUndoState())
+        if (SceneUndoState* sceneUndoState = &m_undoState)
         {
             AZ_Warning("Script Canvas", !sceneUndoState->m_currentUndoBatch, "Script Canvas Editor has an open undo batch when resetting the undo stack");
             sceneUndoState->m_undoStack->Reset();
@@ -162,17 +174,23 @@ namespace ScriptCanvasEditor
 
     bool UndoHelper::CanUndo() const
     {
-        return m_memoryAsset.GetUndoState()->m_undoStack->CanUndo();
+        return m_undoState.m_undoStack->CanUndo();
     }
 
     bool UndoHelper::CanRedo() const
     {
-        return m_memoryAsset.GetUndoState()->m_undoStack->CanRedo();
+        return m_undoState.m_undoStack->CanRedo();
+    }
+
+    void UndoHelper::OnUndoStackChanged()
+    {
+        UndoNotificationBus::Broadcast(&UndoNotifications::OnCanUndoChanged, m_undoState.m_undoStack->CanUndo());
+        UndoNotificationBus::Broadcast(&UndoNotifications::OnCanRedoChanged, m_undoState.m_undoStack->CanRedo());
     }
 
     void UndoHelper::UpdateCache()
     {
-        ScriptCanvas::ScriptCanvasId scriptCanvasId = m_memoryAsset.GetScriptCanvasId();
+        ScriptCanvas::ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
 
         UndoCache* undoCache = nullptr;
         UndoRequestBus::EventResult(undoCache, scriptCanvasId, &UndoRequests::GetSceneUndoCache);

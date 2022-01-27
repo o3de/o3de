@@ -659,5 +659,24 @@ namespace O3DE::ProjectManager
             return AZ::Success(QString(projectBuildPath.c_str()));
         }
 
+        void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent)
+        {
+            const AZStd::string& generalError = outcome.GetError().first;
+            const AZStd::string& detailedError = outcome.GetError().second;
+
+            if (!detailedError.empty())
+            {
+                QMessageBox errorDialog(parent);
+                errorDialog.setIcon(QMessageBox::Critical);
+                errorDialog.setWindowTitle(title);
+                errorDialog.setText(generalError.c_str());
+                errorDialog.setDetailedText(detailedError.c_str());
+                errorDialog.exec();
+            }
+            else
+            {
+                QMessageBox::critical(parent, title, generalError.c_str());
+            }
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

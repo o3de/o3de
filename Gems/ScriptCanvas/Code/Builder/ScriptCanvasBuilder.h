@@ -16,6 +16,7 @@
 namespace ScriptCanvasEditor
 {
     class ScriptCanvasAsset;
+    class EditorAssetTree;
 }
 
 namespace ScriptCanvasBuilder
@@ -39,8 +40,8 @@ namespace ScriptCanvasBuilder
         void PopulateFromParsedResults(ScriptCanvas::Grammar::AbstractCodeModelConstPtr abstractCodeModel, const ScriptCanvas::VariableData& variables);
 
         // #functions2 provide an identifier for the node/variable in the source that caused the dependency. the root will not have one.
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> m_source;
-
+        ScriptCanvasEditor::SourceHandle m_source;
+        
         // all of the variables here are overrides
         AZStd::vector<ScriptCanvas::GraphVariable> m_variables;
         // the values here may or may not be overrides
@@ -48,30 +49,11 @@ namespace ScriptCanvasBuilder
         // these two variable lists are all that gets exposed to the edit context
         AZStd::vector<ScriptCanvas::GraphVariable> m_overrides;
         AZStd::vector<ScriptCanvas::GraphVariable> m_overridesUnused;
-        // AZStd::vector<size_t> m_entityIdRuntimeInputIndices; since all of the entity ids need to go in, they may not need indices
         AZStd::vector<BuildVariableOverrides> m_dependencies;
-    };
-
-    class EditorAssetTree
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(EditorAssetTree, AZ::SystemAllocator, 0);
-
-        EditorAssetTree* m_parent = nullptr;
-        AZStd::vector<EditorAssetTree> m_dependencies;
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> m_asset;
-
-        EditorAssetTree* ModRoot();
-
-        void SetParent(EditorAssetTree& parent);
-
-        AZStd::string ToString(size_t depth = 0) const;
     };
 
     // copy the variables overridden during editor / prefab build time back to runtime data
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& overrides);
 
-    AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(AZ::Data::AssetId editorAssetId, AZStd::string_view assetHint, EditorAssetTree* parent = nullptr);
-
-    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const EditorAssetTree& editorAssetTree);
+    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree);
 }

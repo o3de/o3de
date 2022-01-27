@@ -15,6 +15,7 @@
 
 #include <GraphCanvas/Widgets/GraphCanvasTreeItem.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
+#include <AzCore/IO/Path/Path.h>
 
 namespace GraphCanvas
 {
@@ -81,6 +82,9 @@ namespace GraphCanvas
         bool HasError() const;
 
         void SetError(const AZStd::string& errorString);
+
+        virtual AZ::IO::Path GetTranslationDataPath() const { return AZ::IO::Path(); }
+        virtual void GenerateTranslationData() {}
 
     protected:
 

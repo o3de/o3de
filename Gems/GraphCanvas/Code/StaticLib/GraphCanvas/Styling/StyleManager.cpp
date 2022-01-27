@@ -6,6 +6,7 @@
  *
  */
 #include <AzCore/PlatformDef.h>
+#include <AzCore/Debug/Profiler.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QBitmap>
@@ -141,6 +142,8 @@ namespace
 
 namespace GraphCanvas
 {
+    AZ_DEFINE_BUDGET(StyleManager);
+
     ////////////////////////
     // StyleSheetComponent
     ////////////////////////
@@ -271,6 +274,8 @@ namespace GraphCanvas
         : m_editorId(editorId)
         , m_assetPath(assetPath)
     {
+        GRAPH_CANVAS_PROFILE_SCOPE(StyleManager, "StyleManager::StyleManager");
+
         StyleManagerRequestBus::Handler::BusConnect(m_editorId);
 
         AZ::Data::AssetInfo assetInfo;
@@ -315,8 +320,11 @@ namespace GraphCanvas
         }
     }
 
+
     void StyleManager::LoadStyleSheet()
     {
+        GRAPH_CANVAS_PROFILE_SCOPE(StyleManager, "LoadStyleSheet");
+
         AZStd::string file = AZStd::string::format("@products@/%s", m_assetPath.c_str());
 
         AZ::IO::FileIOBase* fileBase = AZ::IO::FileIOBase::GetInstance();
@@ -393,7 +401,7 @@ namespace GraphCanvas
 
     AZ::EntityId StyleManager::ResolveStyles(const AZ::EntityId& object) const
     {
-        GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
+        GRAPH_CANVAS_PROFILE_SCOPE(StyleManager, "ResolveStyles");
 
         Styling::SelectorVector selectors;
         StyledEntityRequestBus::EventResult(selectors, object, &StyledEntityRequests::GetStyleSelectors);
@@ -401,7 +409,7 @@ namespace GraphCanvas
         QVector<StyleMatch> matches;
         for (const auto& style : m_styles)
         {
-            GRAPH_CANVAS_DETAILED_PROFILE_SCOPE("StyleManager::ResolveStyles::StyleMatching");
+            GRAPH_CANVAS_PROFILE_SCOPE(StyleManager, "StyleManager::ResolveStyles::StyleMatching");
             int complexity = style->Matches(object);
             if (complexity != 0)
             {
@@ -410,7 +418,7 @@ namespace GraphCanvas
         }
 
         {
-            GRAPH_CANVAS_DETAILED_PROFILE_SCOPE("StyleManager::ResolveStyles::Sorting");
+            GRAPH_CANVAS_PROFILE_SCOPE(StyleManager, "StyleManager::ResolveStyles::Sorting");
             std::stable_sort(matches.begin(), matches.end());
         }
         Styling::StyleVector result;
@@ -418,7 +426,7 @@ namespace GraphCanvas
         const auto& constMatches = matches;
         for (auto& match : constMatches)
         {
-            GRAPH_CANVAS_DETAILED_PROFILE_SCOPE("StyleManager::ResolveStyles::ResultConstruction");
+            GRAPH_CANVAS_PROFILE_SCOPE(StyleManager, "StyleManager::ResolveStyles::ResultConstruction");
             result.push_back(match.style);
         }
 

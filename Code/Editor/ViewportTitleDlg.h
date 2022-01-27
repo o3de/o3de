@@ -171,6 +171,7 @@ protected:
     QAction* m_enableVRAction = nullptr;
     QAction* m_enableGridSnappingAction = nullptr;
     QAction* m_enableAngleSnappingAction = nullptr;
+    QAction* m_enableGridVisualizationAction = nullptr;
     QComboBox* m_cameraSpeed = nullptr;
     AzQtComponents::DoubleSpinBox* m_gridSpinBox = nullptr;
     AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
@@ -184,7 +185,7 @@ protected:
 
 namespace AzToolsFramework
 {
-    //! A component to reflect scriptable commands for the Editor
+    //! A component to reflect scriptable commands for the Editor.
     class ViewportTitleDlgPythonFuncsHandler
         : public AZ::Component
     {

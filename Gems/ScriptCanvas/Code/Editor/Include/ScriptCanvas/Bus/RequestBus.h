@@ -8,18 +8,16 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/Component/EntityId.h>
-#include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector2.h>
-
+#include <AzCore/Outcome/Outcome.h>
 #include <GraphCanvas/Types/Types.h>
-
-#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/NodeIdPair.h>
-
+#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Data/Data.h>
 
 class QLineEdit;
@@ -49,6 +47,17 @@ namespace ScriptCanvasEditor
     struct CategoryInformation;
     struct NodePaletteModelInformation;
 
+    namespace Tracker
+    {
+        enum class ScriptCanvasFileState : AZ::s32
+        {
+            NEW,
+            MODIFIED,
+            UNMODIFIED,
+            SOURCE_REMOVED,
+            INVALID = -1
+        };
+    }
 
     namespace Widget
     {
@@ -70,16 +79,16 @@ namespace ScriptCanvasEditor
         //! Opens an existing graph and returns the tab index in which it was open in.
         //! \param File AssetId
         //! \return index of open tab if the asset was able to be open successfully or error message of why the open failed
-        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(AZ::Data::AssetId scriptCanvasAssetId, int tabIndex = -1) = 0;
-        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const AZ::Data::AssetId& scriptCanvasAsset) = 0;        
+        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(SourceHandle scriptCanvasAssetId, Tracker::ScriptCanvasFileState fileState, int tabIndex = -1) = 0;
+        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const SourceHandle& scriptCanvasAsset, Tracker::ScriptCanvasFileState fileState) = 0;
         
-        virtual int CloseScriptCanvasAsset(const AZ::Data::AssetId&) = 0;
+        virtual int CloseScriptCanvasAsset(const SourceHandle&) = 0;
 
         virtual bool CreateScriptCanvasAssetFor(const TypeDefs::EntityComponentId& requestingComponent) = 0;
 
-        virtual bool IsScriptCanvasAssetOpen(const AZ::Data::AssetId& assetId) const = 0;
+        virtual bool IsScriptCanvasAssetOpen(const SourceHandle& assetId) const = 0;
 
-        virtual void OnChangeActiveGraphTab(AZ::Data::AssetId) {}
+        virtual void OnChangeActiveGraphTab(SourceHandle) {}
 
         virtual void CreateNewRuntimeAsset() = 0;
 
@@ -103,12 +112,12 @@ namespace ScriptCanvasEditor
             return ScriptCanvas::ScriptCanvasId();
         }
 
-        virtual GraphCanvas::GraphId FindGraphCanvasGraphIdByAssetId([[maybe_unused]] const AZ::Data::AssetId& assetId) const
+        virtual GraphCanvas::GraphId FindGraphCanvasGraphIdByAssetId([[maybe_unused]] const SourceHandle& assetId) const
         {
             return GraphCanvas::GraphId();
         }
 
-        virtual ScriptCanvas::ScriptCanvasId FindScriptCanvasIdByAssetId([[maybe_unused]] const AZ::Data::AssetId& assetId) const
+        virtual ScriptCanvas::ScriptCanvasId FindScriptCanvasIdByAssetId([[maybe_unused]] const SourceHandle& assetId) const
         {
             return ScriptCanvas::ScriptCanvasId();
         }
@@ -126,7 +135,7 @@ namespace ScriptCanvasEditor
         virtual void DisconnectEndpoints(const AZ::EntityId& /*sceneId*/, const AZStd::vector<GraphCanvas::Endpoint>& /*endpoints*/) {}
 
         virtual void PostUndoPoint(ScriptCanvas::ScriptCanvasId) = 0;
-        virtual void SignalSceneDirty(AZ::Data::AssetId) = 0;
+        virtual void SignalSceneDirty(SourceHandle) = 0;
 
         // Increment the value of the ignore undo point tracker
         virtual void PushPreventUndoStateUpdate() = 0;
@@ -165,7 +174,7 @@ namespace ScriptCanvasEditor
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::Data::AssetId;
+        using BusIdType = SourceHandle;
 
         virtual void OnAssetVisualized() {};
         virtual void OnAssetUnloaded() {};

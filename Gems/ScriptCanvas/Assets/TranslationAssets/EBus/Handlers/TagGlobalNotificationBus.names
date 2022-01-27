@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "TagGlobalNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Tag",
+                "category": "Gameplay"
+            },
+            "methods": [
+                {
+                    "base": "OnEntityTagAdded",
+                    "details": {
+                        "name": "On Entity Tag Added",
+                        "tooltip": "Executes when the specified source tag is added to any entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity",
+                                "tooltip": "The ID of the entity that the tag was added to"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEntityTagRemoved",
+                    "details": {
+                        "name": "On Entity Tag Removed",
+                        "tooltip": "Executes when the specified source tag is removed from any entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity",
+                                "tooltip": "The ID of the entity that the tag was removed from"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

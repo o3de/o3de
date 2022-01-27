@@ -27,6 +27,7 @@
 #include <ScriptCanvas/Libraries/Logic/Logic.h>
 #include <ScriptCanvas/Libraries/Math/Math.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
 namespace AZ
 {
@@ -45,11 +46,10 @@ namespace ScriptCanvasEditor
 
     struct LoadTestGraphResult
     {
-        AZStd::string_view m_graphPath;
         AZStd::unique_ptr<AZ::Entity> m_entity;
         ScriptCanvas::RuntimeComponent* m_runtimeComponent = nullptr;
         bool m_nativeFunctionFound = false;
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> m_editorAsset;
+        SourceHandle m_editorAsset;
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> m_runtimeAsset;
         AZ::Data::Asset<AZ::ScriptAsset> m_scriptAsset;
     };
@@ -161,7 +161,7 @@ namespace ScriptCanvasEditor
 
     struct ScopedOutputSuppression
     {
-        ScopedOutputSuppression(bool suppressState = true)
+        ScopedOutputSuppression([[maybe_unused]] bool suppressState = true)
         {
             AZ::Debug::TraceMessageBus::BroadcastResult(m_oldSuppression, &AZ::Debug::TraceMessageEvents::OnOutput, "", "");
             TraceSuppressionBus::Broadcast(&TraceSuppressionRequests::SuppressAllOutput, suppressState);

@@ -11,17 +11,6 @@
 
 namespace GraphCanvas
 {
-    namespace Schema
-    {
-        namespace Field
-        {
-            static constexpr char key[]     = "key";
-            static constexpr char context[] = "context";
-            static constexpr char variant[] = "variant";
-            static constexpr char entries[] = "entries";
-        }
-    }
-
     AZ_CLASS_ALLOCATOR_IMPL(TranslationFormatSerializer, AZ::SystemAllocator, 0);
 
     void AddEntryToDatabase(const AZStd::string& baseKey, const AZStd::string& name, const rapidjson::Value& it, TranslationFormat* translationFormat)
@@ -35,8 +24,10 @@ namespace GraphCanvas
             }
             else
             {
+                AZStd::string existingValue = translationFormat->m_database[finalKey.c_str()];
+
                 // There is a name collision
-                AZStd::string error = AZStd::string::format("Unable to store key: %s with value: %s because that key already exists", finalKey.c_str(), it.GetString());
+                AZStd::string error = AZStd::string::format("Unable to store key: %s with value: %s because that key already exists with value: %s (proposed: %s)", finalKey.c_str(), it.GetString(), existingValue.c_str(), it.GetString());
                 AZ_Error("TranslationSerializer", false, error.c_str());
             }
         }
@@ -74,8 +65,7 @@ namespace GraphCanvas
             const rapidjson::Value& array = it;
             for (rapidjson::SizeType i = 0; i < array.Size(); ++i)
             {
-                // so, here, I need to go in and if there is a "key" member within the object, then I need to use that,
-                // if there isn't, I can use the %d
+                // if there is a "base" member within the object, then use it, otherwise use the index
                 if (array[i].IsObject())
                 {
                     if (array[i].HasMember(Schema::Field::key))
@@ -156,7 +146,7 @@ namespace GraphCanvas
                 AZStd::string baseKey = contextStr;
                 if (keyStr.empty())
                 {
-                    AZ_Error("TranslationDatabase", false, "Every entry in the Translation data must have a key: %s", baseKey.c_str());
+                    AZ_Warning("TranslationDatabase", false, "Every entry in the Translation data must have a key: %s", baseKey.c_str());
                     return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Every entry in the Translation data must have a key");
                 }
 

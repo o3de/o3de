@@ -32,6 +32,7 @@ namespace AzToolsFramework
         QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
         void SetFilter(AZ::Data::AssetType filterType);
+        void SetFilter(FilterConstType filter);
         void RefreshAssetList();
         void SearchStringHighlight(QString searchString);
 
@@ -39,6 +40,9 @@ namespace AzToolsFramework
 
         const AZStd::string_view GetNameFromIndex(const QModelIndex& index);
         const AZ::Data::AssetId GetAssetIdFromIndex(const QModelIndex& index);
+        const AZStd::string_view GetPathFromIndex(const QModelIndex& index);
+
+        void SetFetchEntryType(AssetBrowserEntry::AssetEntryType entryType);
 
     private:
         struct AssetItem 
@@ -57,6 +61,8 @@ namespace AzToolsFramework
         AZStd::vector<AssetItem> m_assets;
         //! String that will be highlighted in the suggestions
         QString m_highlightString;
+
+        AssetBrowserEntry::AssetEntryType m_entryType = AssetBrowserEntry::AssetEntryType::Product;
     };
 
 }

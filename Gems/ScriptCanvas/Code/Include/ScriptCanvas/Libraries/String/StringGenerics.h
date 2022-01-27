@@ -14,7 +14,7 @@ namespace ScriptCanvas
 {
     namespace StringNodes
     {
-        static const char* k_categoryName = "String";
+        static constexpr const char* k_categoryName = "String";
 
         AZ_INLINE Data::StringType ToLower(Data::StringType sourceString)
         {

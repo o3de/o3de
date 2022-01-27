@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "ProviderNameEnum_Google",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Google",
+                "category": "Constants/Provider Name"
+            },
+            "methods": [
+                {
+                    "base": "GetProviderNameEnum_Google",
+                    "details": {
+                        "name": "Google"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

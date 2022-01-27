@@ -29,6 +29,8 @@
 
 #include <Editor/View/Widgets/CanvasWidget.h>
 #include <Editor/Undo/ScriptCanvasUndoManager.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
+
 
 namespace ScriptCanvasEditor
 {
@@ -172,7 +174,6 @@ namespace ScriptCanvasEditor
 
         bool IsSourceInError() const;
 
-        void OnSourceAssetFinalized(const AZStd::string& fullPath, AZ::Uuid sourceAssetId);
         void SavingComplete(const AZStd::string& fullPath, AZ::Uuid sourceAssetId);
 
         AZ::Data::AssetId GetSourceUuid() const { return m_sourceUuid; }
@@ -320,7 +321,6 @@ namespace ScriptCanvasEditor
         //! The undo helper is an object that implements the Undo behaviors
         AZStd::unique_ptr<UndoHelper> m_undoHelper;
 
-        bool m_isSaving;
         bool m_sourceInError;
 
         AZ::Data::AssetId m_sourceUuid;

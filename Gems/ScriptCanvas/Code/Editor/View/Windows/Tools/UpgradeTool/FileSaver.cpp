@@ -15,6 +15,7 @@
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
 namespace FileSaverCpp
 {
@@ -58,6 +59,11 @@ namespace ScriptCanvasEditor
             , m_onComplete(onComplete)
         {}
 
+        const SourceHandle& FileSaver::GetSource() const
+        {
+            return m_source;
+        }
+
         void FileSaver::PerformMove
             ( AZStd::string tmpFileName
             , AZStd::string target
@@ -70,7 +76,7 @@ namespace ScriptCanvasEditor
                 AZ::SystemTickBus::QueueFunction([this, tmpFileName]()
                     {
                         FileSaveResult result;
-                        result.fileSaveError = "Failed to move updated file from temporary location to tmpFileName destination";
+                        result.fileSaveError = "Failed to move updated file from temporary location to original destination.";
                         result.tempFileRemovalError = RemoveTempFile(tmpFileName);
                         m_onComplete(result);
                     });
@@ -98,7 +104,9 @@ namespace ScriptCanvasEditor
                     auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                     AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
                     // Bump the slice asset up in the asset processor's queue.
-                    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, target.c_str());
+                    AzFramework::AssetSystemRequestBus::Broadcast
+                        (&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, target.c_str());
+                    
                     AZ::SystemTickBus::QueueFunction([this, tmpFileName]()
                         {
                             FileSaveResult result;
@@ -108,28 +116,29 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
-                    AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false, "moving converted file to tmpFileName destination failed: %s, trying again", target.c_str());
+                    AZ_Warning(ScriptCanvas::k_VersionExplorerWindow.data(), false
+                        , "moving converted file to tmpFileName destination failed: %s, trying again", target.c_str());
                     auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                     AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(target.c_str());
-                    streamer->SetRequestCompleteCallback(flushRequest, [this, tmpFileName, target, remainingAttempts]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+                    streamer->SetRequestCompleteCallback(flushRequest
+                    , [this, tmpFileName, target, remainingAttempts]([[maybe_unused]] AZ::IO::FileRequestHandle request)
                     {
                         // Continue saving.
-                        AZ::SystemTickBus::QueueFunction([this, tmpFileName, target, remainingAttempts]() { PerformMove(tmpFileName, target, remainingAttempts - 1); });
+                        AZ::SystemTickBus::QueueFunction(
+                            [this, tmpFileName, target, remainingAttempts]() { PerformMove(tmpFileName, target, remainingAttempts - 1); });
                     });
                     streamer->QueueRequest(flushRequest);
                 }
             }
         }
 
-        void FileSaver::OnSourceFileReleased(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        void FileSaver::OnSourceFileReleased(const SourceHandle& source)
         {
-            AZStd::string relativePath, fullPath;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(relativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, asset.GetId());
-            bool fullPathFound = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(fullPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, relativePath, fullPath);
+            AZStd::string fullPath = source.Path().c_str();
             AZStd::string tmpFileName;
             // here we are saving the graph to a temp file instead of the original file and then copying the temp file to the original file.
-            // This ensures that AP will not a get a file change notification on an incomplete graph file causing it to fail processing. Temp files are ignored by AP.
+            // This ensures that AP will not a get a file change notification on an incomplete graph file causing it to fail processing.
+            // Temp files are ignored by AP.
             if (!AZ::IO::CreateTempFileName(fullPath.c_str(), tmpFileName))
             {
                 FileSaveResult result;
@@ -138,23 +147,24 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            bool tempSavedSucceeded = false;
+            AZStd::string saveError;
+
             AZ::IO::FileIOStream fileStream(tmpFileName.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
             if (fileStream.IsOpen())
             {
-                if (asset.GetType() == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>())
+                auto saveOutcome = ScriptCanvasEditor::SaveToStream(source, fileStream);
+                if (!saveOutcome.IsSuccess())
                 {
-                    ScriptCanvasEditor::ScriptCanvasAssetHandler handler;
-                    tempSavedSucceeded = handler.SaveAssetData(asset, &fileStream);
+                    saveError = saveOutcome.TakeError();
                 }
 
                 fileStream.Close();
             }
 
-            if (!tempSavedSucceeded)
+            if (!saveError.empty())
             {
                 FileSaveResult result;
-                result.fileSaveError = "Save asset data to temporary file failed";
+                result.fileSaveError = AZStd::string::format("Save asset data to temporary file failed: %s", saveError.c_str());
                 m_onComplete(result);
                 return;
             }
@@ -164,26 +174,26 @@ namespace ScriptCanvasEditor
                 , fullPath.c_str()
                 , true
                 , [this, fullPath, tmpFileName]([[maybe_unused]] bool success, const AzToolsFramework::SourceControlFileInfo& info)
-                {
-                    constexpr const size_t k_maxAttemps = 10;
+            {
+                constexpr const size_t k_maxAttemps = 10;
 
-                    if (!info.IsReadOnly())
-                    {
-                        PerformMove(tmpFileName, fullPath, k_maxAttemps);
-                    }
-                    else if (m_onReadOnlyFile && m_onReadOnlyFile())
-                    {
-                        AZ::IO::SystemFile::SetWritable(info.m_filePath.c_str(), true);
-                        PerformMove(tmpFileName, fullPath, k_maxAttemps);
-                    }
-                    else
-                    {
-                        FileSaveResult result;
-                        result.fileSaveError = "Source file was and remained read-only";
-                        result.tempFileRemovalError = RemoveTempFile(tmpFileName);
-                        m_onComplete(result);
-                    }
-                });
+                if (!info.IsReadOnly())
+                {
+                    PerformMove(tmpFileName, fullPath, k_maxAttemps);
+                }
+                else if (m_onReadOnlyFile && m_onReadOnlyFile())
+                {
+                    AZ::IO::SystemFile::SetWritable(info.m_filePath.c_str(), true);
+                    PerformMove(tmpFileName, fullPath, k_maxAttemps);
+                }
+                else
+                {
+                    FileSaveResult result;
+                    result.fileSaveError = "Source file was and remained read-only";
+                    result.tempFileRemovalError = RemoveTempFile(tmpFileName);
+                    m_onComplete(result);
+                }
+            });
         }
 
         AZStd::string FileSaver::RemoveTempFile(AZStd::string_view tempFile)
@@ -191,7 +201,7 @@ namespace ScriptCanvasEditor
             AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
             if (!fileIO)
             {
-                return "GraphUpgradeComplete: No FileIO instance";
+                return "No FileIO instance";
             }
 
             if (fileIO->Exists(tempFile.data()) && !fileIO->Remove(tempFile.data()))
@@ -202,30 +212,30 @@ namespace ScriptCanvasEditor
             return "";
         }
 
-        void FileSaver::Save(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        void FileSaver::Save(const SourceHandle& source)
         {
-            AZStd::string relativePath, fullPath;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(relativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, asset.GetId());
-            bool fullPathFound = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-            (fullPathFound
-                , &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath
-                , relativePath, fullPath);
+            m_source = source;
 
-            if (!fullPathFound)
+            if (source.Path().empty())
             {
                 FileSaveResult result;
-                result.fileSaveError = "Full source path not found";
+                result.fileSaveError = "No save location specified";
                 m_onComplete(result);
             }
             else
             {
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
-                AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(fullPath);
-                streamer->SetRequestCompleteCallback(flushRequest, [this, asset]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+                AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(source.Path().c_str());
+                streamer->SetRequestCompleteCallback(flushRequest, [this]([[maybe_unused]] AZ::IO::FileRequestHandle request)
                 {
-                    this->OnSourceFileReleased(asset);
+                    AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+                    if (!m_sourceFileReleased)
+                    {
+                        m_sourceFileReleased = true;
+                        AZ::SystemTickBus::QueueFunction([this]() { this->OnSourceFileReleased(m_source); });
+                    }
                 });
+
                 streamer->QueueRequest(flushRequest);
             }
         }

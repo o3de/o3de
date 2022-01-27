@@ -26,6 +26,8 @@
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <AzCore/Interface/Interface.h>
 
+#include <ScriptCanvas/Core/Core.h>
+
 namespace GraphCanvas
 {
     class GraphCanvasTreeItem;
@@ -70,7 +72,7 @@ namespace ScriptCanvasEditor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        virtual void SetAssetId(const AZ::Data::AssetId& assetId) = 0;
+        virtual void SetAssetId(const SourceHandle& assetId) = 0;
         virtual bool HasAssetId() const = 0;
     };
 
@@ -89,39 +91,12 @@ namespace ScriptCanvasEditor
     };
 
     using EditorContextMenuRequestBus = AZ::EBus<EditorContextMenuRequests>;
-
-    class EditorScriptCanvasAssetNotifications : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::Data::AssetId;
-
-        //! Notification which fires after an EditorGraph has received it's on AssetReady callback
-        //! \param scriptCanvasAsset Script Canvas asset which is now ready for use in the Editor
-        virtual void OnScriptCanvasAssetReady(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& /*scriptCanvasAsset*/) {};
-
-        //! Notification which fires after an EditorGraph has received it's on AssetReloaded callback
-        //! \param scriptCanvasAsset Script Canvas asset which is now ready for use in the Editor
-        virtual void OnScriptCanvasAssetReloaded(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& /*scriptCanvaAsset */) {};
-
-        //! Notification which fires after an EditorGraph has received it's on AssetReady callback
-        //! \param AssetId AssetId of unloaded ScriptCanvas
-        virtual void OnScriptCanvasAssetUnloaded(const AZ::Data::AssetId& /*assetId*/) {};
-
-        //! Notification which fires after an EditorGraph has received an onAssetSaved callback
-        //! \param scriptCanvasAsset Script Canvas asset which was attempted to be saved
-        //! \param isSuccessful specified where the Script Canvas asset was successfully saved
-        virtual void OnScriptCanvasAssetSaved(const AZ::Data::AssetId) {};
-    };
-    using EditorScriptCanvasAssetNotificationBus = AZ::EBus<EditorScriptCanvasAssetNotifications>;
-    
+        
     class EditorGraphRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = ScriptCanvas::ScriptCanvasId;
-
-        virtual void SetAssetId(const AZ::Data::AssetId& assetId) = 0;
 
         virtual void CreateGraphCanvasScene() = 0;
         virtual void ClearGraphCanvasScene() = 0;
@@ -225,7 +200,7 @@ namespace ScriptCanvasEditor
         virtual void OnUpgradeStart() {}
         virtual void OnUpgradeCancelled() {}
 
-        virtual void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) { (void)skipped; }
+        virtual void OnGraphUpgradeComplete(SourceHandle&, bool skipped = false) { (void)skipped; }
     };
 
     using UpgradeNotificationsBus = AZ::EBus<UpgradeNotifications>;

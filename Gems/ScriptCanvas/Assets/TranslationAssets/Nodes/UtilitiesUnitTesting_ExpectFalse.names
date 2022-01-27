@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "base": "{3838E12C-CEAB-4CED-9958-B6C0399FCD92}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Expect False",
+                "category": "Utilities/Unit Testing",
+                "tooltip": "Expects a value to be false"
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Candidate_0",
+                    "details": {
+                        "name": "Candidate"
+                    }
+                },
+                {
+                    "base": "DataInput_Report_1",
+                    "details": {
+                        "name": "Report"
+                    }
+                },
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                }
+            ]
+        }
+    ]
+}

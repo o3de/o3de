@@ -102,9 +102,6 @@ namespace ScriptCanvasEditor
         void Log(const char* format, ...);
 
     private:
-
-        bool m_verbose = true;
-
         StateMachine* m_stateMachine;
     };
 
@@ -184,9 +181,9 @@ namespace ScriptCanvasEditor
         bool m_graphNeedsDirtying = false;
 
         Graph* m_graph = nullptr;
-        AZ::Data::Asset<AZ::Data::AssetData> m_asset;
+        SourceHandle m_asset;
 
-        void SetAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
+        void SetAsset(SourceHandle& assetasset);
 
         void OnComplete(IState::ExitStatus exitStatus) override;
 
@@ -363,7 +360,7 @@ namespace ScriptCanvasEditor
     template <typename Traits>
     void ScriptCanvasEditor::State<Traits>::Log(const char* format, ...)
     {
-        if (m_verbose)
+        if (m_stateMachine->GetVerbose())
         {
             char sBuffer[2048];
             va_list ArgList;

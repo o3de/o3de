@@ -102,8 +102,7 @@ set(FILES
     StaticLib/GraphCanvas/Types/GraphCanvasGraphData.h
     StaticLib/GraphCanvas/Types/GraphCanvasGraphSerialization.cpp
     StaticLib/GraphCanvas/Types/GraphCanvasGraphSerialization.h
-    StaticLib/GraphCanvas/Types/SceneMemberComponentSaveData.h
-    StaticLib/GraphCanvas/Types/TranslationTypes.h
+    StaticLib/GraphCanvas/Types/SceneMemberComponentSaveData.h    
     StaticLib/GraphCanvas/Types/Types.h
     StaticLib/GraphCanvas/Types/QtMetaTypes.h
     StaticLib/GraphCanvas/Widgets/Resources/default_style.json

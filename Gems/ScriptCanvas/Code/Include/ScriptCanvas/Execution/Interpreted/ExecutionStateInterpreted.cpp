@@ -49,7 +49,10 @@ namespace ScriptCanvas
             , config.asset.GetId().ToString<AZStd::string>().data());
 #endif
 
-        Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
+        if (!runtimeAsset->GetData().m_areStaticsInitialized)
+        {
+            Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
+        }
     }
 
     void ExecutionStateInterpreted::ClearLuaRegistryIndex()
@@ -143,6 +146,8 @@ namespace ScriptCanvas
         AZ_Assert(m_luaRegistryIndex == LUA_NOREF, "ExecutionStateInterpreted already in the Lua registry and risks double deletion");
         // Lua: instance
         m_luaRegistryIndex = luaL_ref(m_luaState, LUA_REGISTRYINDEX);
+        AZ_Assert(m_luaRegistryIndex != LUA_REFNIL, "ExecutionStateInterpreted was nil when trying to gain a reference");
+        AZ_Assert(m_luaRegistryIndex != LUA_NOREF, "ExecutionStateInterpreted failed to gain a reference");
     }
 
     void ExecutionStateInterpreted::Reflect(AZ::ReflectContext* reflectContext)

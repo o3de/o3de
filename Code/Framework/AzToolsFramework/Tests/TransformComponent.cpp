@@ -18,7 +18,10 @@
 #include <AzFramework/Components/TransformComponent.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <Prefab/PrefabTestFixture.h>
 
 #include <AZTestShared/Math/MathTestHelpers.h>
 
@@ -1062,5 +1065,68 @@ R"DELIMITER(<ObjectStream version="1">
                 }
             }
         }
+    }
+
+    // Fixture provides a root prefab with Transform component and listens for TransformNotificationBus.
+    class TransformComponentActivationTest
+        : public PrefabTestFixture
+        , public TransformNotificationBus::Handler
+    {
+    protected:
+        void SetUpEditorFixtureImpl() override
+        {
+            PrefabTestFixture::SetUpEditorFixtureImpl();
+
+            CreateRootPrefab();
+        }
+
+        void TearDownEditorFixtureImpl() override
+        {
+            BusDisconnect();
+            
+            PrefabTestFixture::TearDownEditorFixtureImpl();
+        }
+        
+        void OnTransformChanged(const Transform& /*local*/, const Transform& /*world*/) override
+        {
+            m_transformUpdated = true;
+        }
+
+        void MoveEntity(AZ::EntityId entityId)
+        {
+            AzToolsFramework::ScopedUndoBatch undoBatch("Move Entity");
+            TransformBus::Event(entityId, &TransformInterface::SetWorldTranslation, Vector3(1.f, 0.f, 0.f));
+        }
+        
+        bool m_transformUpdated = false;
+    };
+    
+    TEST_F(TransformComponentActivationTest, TransformChangedEventIsSentWhenEntityIsActivatedViaUndoRedo)
+    {
+        AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
+        MoveEntity(entityId);
+        BusConnect(entityId);
+
+        // verify that undoing/redoing move operations fires TransformChanged event
+        Undo();
+        EXPECT_TRUE(m_transformUpdated);
+        m_transformUpdated = false;
+
+        Redo();
+        EXPECT_TRUE(m_transformUpdated);
+        m_transformUpdated = false;
+    }
+
+    TEST_F(TransformComponentActivationTest, TransformChangedEventIsNotSentWhenEntityIsDeactivatedAndActivated)
+    {
+        AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
+        BusConnect(entityId);
+
+        // verify that simply activating/deactivating an entity does not fire TransformChanged event
+        Entity* entity = nullptr;
+        ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+        entity->Deactivate();
+        entity->Activate();
+        EXPECT_FALSE(m_transformUpdated);
     }
 } // namespace UnitTest

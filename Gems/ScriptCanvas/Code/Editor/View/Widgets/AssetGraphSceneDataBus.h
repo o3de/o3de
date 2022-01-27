@@ -11,14 +11,16 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/EBus/EBus.h>
+#include <Core/Core.h>
 
 namespace ScriptCanvasEditor
 {
+    // #sc-editor-asset remove this
     class AssetGraphScene : public AZ::EBusTraits
     {
     public:
-        virtual AZ::EntityId FindEditorNodeIdByAssetNodeId(const AZ::Data::AssetId& assetId, AZ::EntityId assetNodeId) const = 0;
-        virtual AZ::EntityId FindAssetNodeIdByEditorNodeId(const AZ::Data::AssetId& assetId, AZ::EntityId editorNodeId) const = 0;
+        virtual AZ::EntityId FindEditorNodeIdByAssetNodeId(const SourceHandle& assetId, AZ::EntityId assetNodeId) const = 0;
+        virtual AZ::EntityId FindAssetNodeIdByEditorNodeId(const SourceHandle& assetId, AZ::EntityId editorNodeId) const = 0;
     };
 
     using AssetGraphSceneBus = AZ::EBus<AssetGraphScene>;

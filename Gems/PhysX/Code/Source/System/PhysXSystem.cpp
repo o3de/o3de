@@ -7,6 +7,8 @@
  */
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <AzCore/Asset/AssetManager.h>
 
 #include <Scene/PhysXScene.h>
 #include <System/PhysXSystem.h>
@@ -97,7 +99,20 @@ namespace PhysX
             m_systemConfig = *physXConfig;
         }
 
-        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+        // If the settings registry isn't available, something earlier in startup will report that failure.
+        if (auto* settingsRegistry = AZ::SettingsRegistry::Get();
+            settingsRegistry != nullptr)
+        {
+            // Automatically register the event if it's not registered, because
+            // this system is initialized before the settings registry has loaded the event list.
+            AZ::ComponentApplicationLifecycle::RegisterHandler(
+                *settingsRegistry, m_componentApplicationLifecycleHandler,
+                [this]([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type)
+                {
+                    InitializeMaterialLibrary();
+                },
+                "LegacySystemInterfaceCreated"); // LegacySystemInterfaceCreated is signaled after critical assets have been processed
+        }
 
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
@@ -118,7 +133,7 @@ namespace PhysX
 
         RemoveAllScenes();
 
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        m_componentApplicationLifecycleHandler.Disconnect();
         m_materialLibraryAssetHelper.Disconnect();
         // Clear the asset reference in deactivate. The asset system is shut down before destructors are called
         // for system components, causing any hanging asset references to become crashes on shutdown in release builds.
@@ -362,10 +377,8 @@ namespace PhysX
         return &m_systemConfig;
     }
 
-    void PhysXSystem::OnCatalogLoaded([[maybe_unused]]const char* catalogFile)
+    void PhysXSystem::InitializeMaterialLibrary()
     {
-        // now that assets can be resolved, lets load the default material library.
-        
         if (!m_systemConfig.m_materialLibraryAsset.GetId().IsValid())
         {
             m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::InvalidId);

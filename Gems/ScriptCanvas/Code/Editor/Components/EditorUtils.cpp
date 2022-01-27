@@ -17,6 +17,7 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
@@ -30,6 +31,62 @@ AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {
+    AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
+    {
+        if (source.IsDescriptionValid())
+        {
+            return source;
+        }
+
+        AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
+        if (assetSystem)
+        {
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
+
+            if (!source.Id().IsNull())
+            {
+                if (assetSystem->GetSourceInfoBySourceUUID(source.Id(), assetInfo, watchFolder))
+                {
+                    AZ::IO::Path watchPath(watchFolder);
+                    AZ::IO::Path assetInfoPath(assetInfo.m_relativePath);
+                    SourceHandle fullPathHandle(nullptr, assetInfo.m_assetId.m_guid, watchPath / assetInfoPath);
+
+                    if (assetSystem->GetSourceInfoBySourcePath(fullPathHandle.Path().c_str(), assetInfo, watchFolder) && assetInfo.m_assetId.IsValid())
+                    {
+                        AZ_Warning("ScriptCanvas", assetInfo.m_assetId.m_guid == source.Id(), "SourceHandle completion produced conflicting AssetId.");
+                        auto path = fullPathHandle.Path();
+                        return SourceHandle(source, assetInfo.m_assetId.m_guid, path.MakePreferred());
+                    }
+                }
+            }
+
+            if (!source.Path().empty())
+            {
+                if (assetSystem->GetSourceInfoBySourcePath(source.Path().c_str(), assetInfo, watchFolder) && assetInfo.m_assetId.IsValid())
+                {
+                    return SourceHandle(source, assetInfo.m_assetId.m_guid, source.Path());
+                }
+            }
+        }
+
+
+        return AZStd::nullopt;
+    }
+
+    bool CompleteDescriptionInPlace(SourceHandle& source)
+    {
+        if (auto completed = CompleteDescription(source))
+        {
+            source = *completed;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     //////////////////////////
     // NodeIdentifierFactory
     //////////////////////////

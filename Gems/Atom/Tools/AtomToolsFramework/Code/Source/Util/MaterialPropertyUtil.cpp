@@ -33,11 +33,13 @@ namespace AtomToolsFramework
     {
         if (value.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
         {
-            const AZ::Data::Asset<AZ::RPI::ImageAsset>& imageAsset = value.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
-            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(
-                imageAsset.GetId(),
-                azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
-                imageAsset.GetHint()));
+            const auto& imageAsset = value.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
+            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(imageAsset.GetId(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), imageAsset.GetHint()));
+        }
+        else if (value.Is<AZ::Data::Instance<AZ::RPI::Image>>())
+        {
+            const auto& image = value.GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
+            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(image->GetAssetId(), azrtti_typeid<AZ::RPI::StreamingImageAsset>()));
         }
 
         return AZ::RPI::MaterialPropertyValue::ToAny(value);

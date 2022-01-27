@@ -12,6 +12,8 @@
 #include <QMimeData>
 #include <QInputDialog>
 
+#include <AzCore/UserSettings/UserSettings.h>
+
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <Editor/Nodes/NodeUtils.h>
@@ -41,6 +43,8 @@
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 
 #include "ScriptCanvasContextMenus.h"
+#include "Settings.h"
+
 #include <ScriptCanvas/Core/NodeBus.h>
 #include <ScriptCanvas/Core/Slot.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
@@ -52,6 +56,7 @@
 #include <ScriptCanvas/GraphCanvas/MappingBus.h>
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 #include <GraphCanvas/Components/NodeDescriptors/FunctionDefinitionNodeDescriptorComponent.h>
+
 
 namespace ScriptCanvasEditor
 {
@@ -805,6 +810,13 @@ namespace ScriptCanvasEditor
     SceneContextMenu::SceneContextMenu(const NodePaletteModel& paletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel)
         : GraphCanvas::SceneContextMenu(ScriptCanvasEditor::AssetEditorId)
     {
+
+        auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        if (userSettings)
+        {
+            m_userNodePaletteWidth = userSettings->m_sceneContextMenuNodePaletteWidth;
+        }
+
         const bool inContextMenu = true;
         Widget::ScriptCanvasNodePaletteConfig paletteConfig(paletteModel, assetModel, inContextMenu);
         AddNodePaletteMenuAction(paletteConfig);
