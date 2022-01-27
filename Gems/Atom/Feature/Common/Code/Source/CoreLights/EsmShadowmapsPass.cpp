@@ -112,7 +112,7 @@ namespace AZ
             m_shadowmapImageSize = inputBinding.m_attachment->m_descriptor.m_image.m_size;
             m_shadowmapArraySize = inputBinding.m_attachment->m_descriptor.m_image.m_arraySize;
 
-            const AZStd::array_view<RPI::Ptr<RPI::Pass>>& children = GetChildren();
+            const AZStd::span<const RPI::Ptr<RPI::Pass>>& children = GetChildren();
             AZ_Assert(children.size() == EsmChildPassKindCount, "[EsmShadowmapsPass '%s'] The count of children is wrong.", GetPathName().GetCStr());
 
             for (uint32_t childPassIndex = 0; childPassIndex < EsmChildPassKindCount; ++childPassIndex)

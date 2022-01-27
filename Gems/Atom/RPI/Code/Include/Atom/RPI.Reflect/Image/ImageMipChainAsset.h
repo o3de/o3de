@@ -14,7 +14,7 @@
 
 #include <Atom/RHI/StreamingImagePool.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -64,10 +64,10 @@ namespace AZ
             size_t GetSubImageCount() const;
 
             //! Returns the sub-image data blob for a given mip slice and array slice (local to the group).
-            AZStd::array_view<uint8_t> GetSubImageData(uint32_t mipSlice, uint32_t arraySlice) const;
+            AZStd::span<const uint8_t> GetSubImageData(uint32_t mipSlice, uint32_t arraySlice) const;
 
             //! Returns the sub-image data blob for a linear index (local to the group).
-            AZStd::array_view<uint8_t> GetSubImageData(uint32_t subImageIndex) const;
+            AZStd::span<const uint8_t> GetSubImageData(uint32_t subImageIndex) const;
             
             //! Returns the sub-image layout for a single sub-image by index.
             const RHI::ImageSubresourceLayout& GetSubImageLayout(uint32_t subImageIndex) const;

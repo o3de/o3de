@@ -14,7 +14,7 @@ namespace AZ
         StreamingImageInitRequest::StreamingImageInitRequest(
             Image& image,
             const ImageDescriptor& descriptor,
-            AZStd::array_view<StreamingImageMipSlice> tailMipSlices)
+            AZStd::span<const StreamingImageMipSlice> tailMipSlices)
             : m_image{&image}
             , m_descriptor{descriptor}
             , m_tailMipSlices{tailMipSlices}
