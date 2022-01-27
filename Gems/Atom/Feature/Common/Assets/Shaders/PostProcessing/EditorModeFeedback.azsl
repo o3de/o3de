@@ -96,7 +96,7 @@ PSOutput MainPS(VSOutput IN)
     float3 unmasked = lerp(color, float3(sat, sat, sat), PassSrg::m_desaturationAmount);
     
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
-    OUT.m_color.rgb = lerp(unmasked.rgb, mask.rgb, mask.a);
+    OUT.m_color.rgb = lerp(unmasked.rgb, color.rgb, mask.a);
     OUT.m_color.a = 1.0;
 
     float outline = selectedEntityOutliner(unnormalizedUV);
