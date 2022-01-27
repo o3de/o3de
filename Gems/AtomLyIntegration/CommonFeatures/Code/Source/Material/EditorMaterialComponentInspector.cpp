@@ -307,7 +307,7 @@ namespace AZ
                         AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
                         // Assign id before conversion so it can be used in dynamic description
-                        propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, propertyDefinition->m_name);
+                        propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, propertyDefinition->GetName());
 
                         AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition.get());
 
@@ -323,7 +323,6 @@ namespace AZ
                         // assigned material asset. Its values should be treated as parent, for comparison, in this case.
                         propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(
                             m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
-                            
                         propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(
                             m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                         group.m_properties.emplace_back(propertyConfig);

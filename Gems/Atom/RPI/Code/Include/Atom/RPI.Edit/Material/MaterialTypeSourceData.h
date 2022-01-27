@@ -140,7 +140,14 @@ namespace AZ
                 void SetDisplayName(AZStd::string_view displayName) { m_displayName = displayName; }
                 void SetDescription(AZStd::string_view description) { m_description = description; }
 
+                //! Add a new property to this PropertySet.
+                //! @param name a unique for the property. Must be a C-style identifier.
+                //! @return the new PropertyDefinition, or null if the name was not valid.
                 PropertyDefinition* AddProperty(AZStd::string_view name);
+                
+                //! Add a new nested PropertySet to this PropertySet.
+                //! @param name a unique for the property set. Must be a C-style identifier.
+                //! @return the new PropertySet, or null if the name was not valid.
                 PropertySet* AddPropertySet(AZStd::string_view name);
                 
             private:
@@ -213,9 +220,9 @@ namespace AZ
                 AZStd::vector<GroupDefinition> m_groupsOld;
 
                 //! [Deprecated] Use m_propertySets instead
-                //! Collection of all available user-facing properties
                 AZStd::map<AZStd::string /*group name*/, AZStd::vector<PropertyDefinition>> m_propertiesOld;
-
+                
+                //! Collection of all available user-facing properties
                 AZStd::vector<AZStd::unique_ptr<PropertySet>> m_propertySets;
             };
             
@@ -257,11 +264,13 @@ namespace AZ
             //! @param propertySetId The full ID of a property set to find, like "levelA.levelB.levelC".
             //! @return the found PropertySet or null if it doesn't exist.
             const PropertySet* FindPropertySet(AZStd::string_view propertySetId) const;
+            PropertySet* FindPropertySet(AZStd::string_view propertySetId);
             
             //! Find the definition for a property with the given ID.
             //! @param propertyId The full ID of a property to find, like "baseColor.texture".
             //! @return the found PropertyDefinition or null if it doesn't exist.
             const PropertyDefinition* FindProperty(AZStd::string_view propertyId) const;
+            PropertyDefinition* FindProperty(AZStd::string_view propertyId);
 
             //! Tokenizes an ID string like "itemA.itemB.itemC" into a vector like ["itemA", "itemB", "itemC"].
             static AZStd::vector<AZStd::string_view> TokenizeId(AZStd::string_view id);
@@ -300,7 +309,10 @@ namespace AZ
         private:
                 
             const PropertySet* FindPropertySet(AZStd::array_view<AZStd::string_view> parsedPropertySetId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList) const;
+            PropertySet* FindPropertySet(AZStd::array_view<AZStd::string_view> parsedPropertySetId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList);
+            
             const PropertyDefinition* FindProperty(AZStd::array_view<AZStd::string_view> parsedPropertyId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList) const;
+            PropertyDefinition* FindProperty(AZStd::array_view<AZStd::string_view> parsedPropertyId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList);
             
             // Function overloads for recursion, returns false to indicate that recursion should end.
             bool EnumeratePropertySets(const EnumeratePropertySetsCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertySet>>& inPropertySetList) const;

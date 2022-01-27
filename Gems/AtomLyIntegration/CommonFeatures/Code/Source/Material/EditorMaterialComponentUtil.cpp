@@ -115,7 +115,7 @@ namespace AZ
                 bool result = true;
                 editData.m_materialTypeSourceData.EnumerateProperties([&](const AZStd::string& propertyIdContext, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition* propertyDefinition)
                     {
-                        AZ::Name propertyId(propertyIdContext + propertyDefinition->m_name);
+                        AZ::Name propertyId(propertyIdContext + propertyDefinition->GetName());
                         const AZ::RPI::MaterialPropertyIndex propertyIndex =
                             editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
 
@@ -148,10 +148,9 @@ namespace AZ
                             return true;
                         }
 
-
                         // TODO: Support populating the Material Editor with nested property sets, not just the top level.
-                        const AZStd::string groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->m_name.size() - 1);
-                        exportData.m_properties[groupName][propertyDefinition->m_name].m_value = propertyValue;
+                        const AZStd::string groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->GetName().size() - 1);
+                        exportData.m_properties[groupName][propertyDefinition->GetName()].m_value = propertyValue;
                         return true;
                     });
 

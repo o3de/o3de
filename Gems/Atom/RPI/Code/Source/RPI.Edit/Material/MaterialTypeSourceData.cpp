@@ -215,7 +215,7 @@ namespace AZ
                 return PropertySet::AddPropertySet(propertySetId, m_propertyLayout.m_propertySets);
             }
 
-            PropertySet* parentPropertySet = const_cast<PropertySet*>(const_cast<MaterialTypeSourceData*>(this)->FindPropertySet(splitPropertySetId[0]));
+            PropertySet* parentPropertySet = FindPropertySet(splitPropertySetId[0]);
             
             if (!parentPropertySet)
             {
@@ -235,8 +235,8 @@ namespace AZ
                 AZ_Error("Material source data", false, "Property id '%.*s' is invalid. Properties must be added to a PropertySet (i.e. \"general.%.*s\").", AZ_STRING_ARG(propertyId), AZ_STRING_ARG(propertyId));
                 return nullptr;
             }
-            
-            PropertySet* parentPropertySet = const_cast<PropertySet*>(const_cast<MaterialTypeSourceData*>(this)->FindPropertySet(splitPropertyId[0]));
+
+            PropertySet* parentPropertySet = FindPropertySet(splitPropertyId[0]);
             
             if (!parentPropertySet)
             {
@@ -276,8 +276,19 @@ namespace AZ
 
             return nullptr;
         }
+        
+        MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::array_view<AZStd::string_view> parsedPropertySetId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList)
+        {
+            return const_cast<PropertySet*>(const_cast<const MaterialTypeSourceData*>(this)->FindPropertySet(parsedPropertySetId, inPropertySetList));
+        }
 
         const MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::string_view propertySetId) const
+        {
+            AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertySetId);
+            return FindPropertySet(tokens, m_propertyLayout.m_propertySets);
+        }
+
+        MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::string_view propertySetId)
         {
             AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertySetId);
             return FindPropertySet(tokens, m_propertyLayout.m_propertySets);
@@ -316,8 +327,19 @@ namespace AZ
 
             return nullptr;
         }
+        
+        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::array_view<AZStd::string_view> parsedPropertyId, AZStd::array_view<AZStd::unique_ptr<PropertySet>> inPropertySetList)
+        {
+            return const_cast<MaterialTypeSourceData::PropertyDefinition*>(const_cast<const MaterialTypeSourceData*>(this)->FindProperty(parsedPropertyId, inPropertySetList));
+        }
 
         const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view propertyId) const
+        {
+            AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertyId);
+            return FindProperty(tokens, m_propertyLayout.m_propertySets);
+        }
+        
+        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view propertyId)
         {
             AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertyId);
             return FindProperty(tokens, m_propertyLayout.m_propertySets);
@@ -428,7 +450,7 @@ namespace AZ
                     const auto& propertyList = propertyListItr->second;
                     for (auto& propertyDefinition : propertyList)
                     {
-                        PropertySet* propertySet = const_cast<PropertySet*>(const_cast<MaterialTypeSourceData*>(this)->FindPropertySet(group.m_name));
+                        PropertySet* propertySet = FindPropertySet(group.m_name);
 
                         if (!propertySet)
                         {

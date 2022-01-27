@@ -185,7 +185,7 @@ namespace MaterialEditor
                 AtomToolsFramework::DynamicProperty property;
                 AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
                     property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty,
-                    AZ::RPI::MaterialPropertyId(groupName, propertyDefinition->m_name));
+                    AZ::RPI::MaterialPropertyId(groupName, propertyDefinition->GetName()));
                 group.m_properties.push_back(property);
             }
 

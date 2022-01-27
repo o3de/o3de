@@ -84,7 +84,7 @@ namespace UnitTest
             }
         }
 
-        m_checked = true;   
+        m_checked = true;
     }
 
     void ErrorMessageFinder::ReportFailure(const AZStd::string& failureMessage)

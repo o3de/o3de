@@ -587,7 +587,7 @@ namespace MaterialEditor
         // populate sourceData with properties that meet the filter
         m_materialTypeSourceData.EnumerateProperties([&](const AZStd::string& propertyIdContext, const auto& propertyDefinition) {
 
-            Name propertyId{propertyIdContext + propertyDefinition->m_name};
+            Name propertyId{propertyIdContext + propertyDefinition->GetName()};
 
             const auto it = m_properties.find(propertyId);
             if (it != m_properties.end() && propertyFilter(it->second))
@@ -603,8 +603,8 @@ namespace MaterialEditor
                     }
                     
                     // TODO: Support populating the Material Editor with nested property sets, not just the top level.
-                    const AZStd::string groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->m_name.size() - 1);
-                    sourceData.m_properties[groupName][propertyDefinition->m_name].m_value = propertyValue;
+                    const AZStd::string groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->GetName().size() - 1);
+                    sourceData.m_properties[groupName][propertyDefinition->GetName()].m_value = propertyValue;
                 }
             }
             return true;
@@ -788,7 +788,7 @@ namespace MaterialEditor
                 for (const auto& propertyDefinition : propertySet->GetProperties())
                 {
                     // Assign id before conversion so it can be used in dynamic description
-                    propertyConfig.m_id = propertyIdContext + propertySet->GetName() + "." + propertyDefinition->m_name;
+                    propertyConfig.m_id = propertyIdContext + propertySet->GetName() + "." + propertyDefinition->GetName();
 
                     const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                     const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
@@ -877,6 +877,7 @@ namespace MaterialEditor
             m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
         }
 
+        // Add material functors that are in the top-level functors list.
         const MaterialFunctorSourceData::EditorContext editorContext =
             MaterialFunctorSourceData::EditorContext(m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout());
         for (Ptr<MaterialFunctorSourceDataHolder> functorData : m_materialTypeSourceData.m_materialFunctorSourceData)
@@ -897,7 +898,8 @@ namespace MaterialEditor
                 return false;
             }
         }
-
+        
+        // Add any material functors that are located inside each property set.
         bool enumerateResult = m_materialTypeSourceData.EnumeratePropertySets(
             [this](const AZStd::string&, const MaterialTypeSourceData::PropertySet* propertySet)
             {
