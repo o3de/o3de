@@ -101,6 +101,7 @@ namespace Terrain
         desc.m_clipmapUpdateMultiple = 1;
         desc.m_clipToWorldScale = DetailTextureScale;
         desc.m_size = DetailTextureSize;
+        // Initialize world space to a value that won't match the initial camera position.
         desc.m_worldSpaceCenter = AZ::Vector2(AZStd::numeric_limits<float>::max(), 0.0f);
         m_detailMaterialIdBounds = ClipmapBounds(desc);
         
@@ -615,8 +616,7 @@ namespace Terrain
         const int32_t width = textureUpdateAabb.m_max.m_x - textureUpdateAabb.m_min.m_x;
         const int32_t height = textureUpdateAabb.m_max.m_y - textureUpdateAabb.m_min.m_y;
 
-        AZStd::vector<DetailMaterialPixel> pixels;
-        pixels.resize(width * height);
+        AZStd::vector<DetailMaterialPixel> pixels(width * height);
         uint32_t index = 0;
 
         auto perPositionCallback = [this, &pixels, &index](
