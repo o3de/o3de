@@ -207,12 +207,11 @@ namespace AZ
             template<typename T>
             T GetSubImagePixelValueInternal(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, uint32_t x, uint32_t y, uint32_t componentIndex, uint32_t mip, uint32_t slice)
             {
-                AZStd::array<T, 1> values = { aznumeric_cast<T>(0) };
+                AZStd::array values{ aznumeric_cast<T>(0) };
 
                 auto topLeft = AZStd::make_pair(x, y);
                 auto bottomRight = AZStd::make_pair(x + 1, y + 1);
-                AZStd::span<T> valueSpan(values.begin(), values.size());
-                GetSubImagePixelValues(imageAsset, topLeft, bottomRight, valueSpan, componentIndex, mip, slice);
+                GetSubImagePixelValues(imageAsset, topLeft, bottomRight, AZStd::span<T>(values), componentIndex, mip, slice);
 
                 return values[0];
             }
