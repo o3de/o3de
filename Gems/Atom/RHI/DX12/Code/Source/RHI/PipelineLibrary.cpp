@@ -40,7 +40,7 @@ namespace AZ
             return aznew PipelineLibrary;
         }
 
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::PipelineLibraryData* serializedData)
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::PipelineLibraryDescriptor& descriptor)
         {
             Device& device = static_cast<Device&>(deviceBase);
             ID3D12DeviceX* dx12Device = device.GetDevice();
@@ -57,9 +57,9 @@ namespace AZ
             }
 
 
-            if (serializedData && shouldCreateLibFromSerializedData)
+            if (descriptor.m_serializedData && shouldCreateLibFromSerializedData)
             {
-                bytes = serializedData->GetData();
+                bytes = descriptor.m_serializedData->GetData();
             }
 
             Microsoft::WRL::ComPtr<ID3D12PipelineLibraryX> libraryComPtr;
@@ -70,7 +70,7 @@ namespace AZ
 
                 if (SUCCEEDED(hr))
                 {
-                    m_serializedData = serializedData;
+                    m_serializedData = descriptor.m_serializedData;
                 }
                 else
                 {
@@ -269,6 +269,12 @@ namespace AZ
 #else
             return false;
 #endif
+        }
+
+        bool PipelineLibrary::SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const
+        {
+            // DX12 drivers cannot save serialized data
+            return false;
         }
     }
 }

@@ -32,7 +32,7 @@ namespace AZ
             void ShutdownInternal() override {}
             RHI::ResultCode MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> libraries) override { return RHI::ResultCode::Success;}
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr;}
-            bool SaveSerializedDataInternal(const AZStd::string& filePath) const { return true;}
+            bool SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const override { return true;}
             //////////////////////////////////////////////////////////////////////////
         };
     }
