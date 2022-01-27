@@ -322,10 +322,10 @@ namespace UnitTest
         using namespace AZ::SceneAPI;
         using namespace AZ::SceneAPI::Events;
 
-        #if defined(AZ_PLATFORM_WINDOWS)
-        auto scene = CreateMockScene("Manifest", "C:/o3de/watchfolder/manifest_src_file.xml", "C:/o3de/watchfolder");
+        #if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+        auto scene = CreateMockScene("Manifest", "C:/o3de/watch.folder/manifest_src_file.xml", "C:/o3de/watch.folder");
         #else
-        auto scene = CreateMockScene("Manifest", "//o3de/watchfolder/manifest_src_file.xml", "//o3de/watchfolder");
+        auto scene = CreateMockScene("Manifest", "//o3de/watch.folder/manifest_src_file.xml", "//o3de/watch.folder");
         #endif
         AssetImportRequest::ManifestAction action = AssetImportRequest::ManifestAction::ConstructDefault;
         AssetImportRequest::RequestingApplication requester = {};
