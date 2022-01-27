@@ -143,15 +143,12 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     // ------- Base Color -------
 
     DetailSurface detailSurface = GetDefaultDetailSurface();
-    float2 detailRegionMin = TerrainSrg::m_detailAabb.xy;
-    float2 detailRegionMax = TerrainSrg::m_detailAabb.zw;
-    float2 detailRegionUv = (surface.position.xy - detailRegionMin) / (detailRegionMax - detailRegionMin);
+    float2 detailRegionUv = surface.position.xy * TerrainSrg::m_detailMaterialScale;
     bool hasDetailSurface = false;
 
-    // Check to make sure we're inside the detail texture's bounds and within where detail textures should be drawn.
-    if (detailFactor < 1.0 && all(detailRegionUv > TerrainSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - TerrainSrg::m_detailHalfPixelUv))
+    // Only sample detail textures if inside where detail mateirals should be drawn.
+    if (detailFactor < 1.0)
     {
-        detailRegionUv += TerrainSrg::m_detailMaterialIdImageCenter - 0.5;
         hasDetailSurface = GetDetailSurface(detailSurface, detailRegionUv, detailUv);
     }
 
