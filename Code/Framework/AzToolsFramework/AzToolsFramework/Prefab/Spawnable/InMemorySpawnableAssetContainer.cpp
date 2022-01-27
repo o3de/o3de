@@ -254,9 +254,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                         return false;
                     }
 
-                    AZ::Data::AssetId assetId = asset->GetId();
-                    AZ::Data::AssetType assetType = asset->GetType();
-
                     if (loadBehavior == AZ::Data::AssetLoadBehavior::PreLoad)
                     {
                         // Only assets that are preloaded need to be waited on.
