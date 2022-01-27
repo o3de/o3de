@@ -259,9 +259,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                     {
                         // Only assets that are preloaded need to be waited on.
                         blockingAssets.push_back(asset);
-                        // Queue any pending request in parallel. Assets that were set to PreLoad will be waited for resulting
-                        // in the same overall load guarantees.
-                        asset->SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::QueueLoad);
                     }
                     if (!asset->QueueLoad())
                     {
@@ -297,10 +294,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
                 continue;
             }
-
-            // Reset the load behavior back to preload because the async load will have caused the behavior to be set to queued. Some assets
-            // will complain if they're not set to the correct loading behavior.
-            asset->SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         }
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
