@@ -30,6 +30,9 @@ VSOutput MainVS(VSInput IN)
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
 
+    // Offset the depth by a teeny bit to avoid z fighting with the underlying rendered data
+    OUT.m_position.z += 0.001;
+
     return OUT;
 }
 
