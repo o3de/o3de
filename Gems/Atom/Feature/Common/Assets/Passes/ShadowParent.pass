@@ -152,19 +152,22 @@
                     "TemplateName": "FullscreenShadowTemplate",
                     "Connections": [
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "Input",
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
                             }
-                        },
+                        }
+                        /*,
+                        
                         {
                             "LocalSlot": "DepthShadowmaps",
                             "AttachmentRef": {
                                 "Pass": "CascadedShadowmapsPass",
                                 "Attachment": "Shadowmap"
                             }
-                        }                                               
+                        }   
+                        */                                             
                     ]                    
                 }                
             ]

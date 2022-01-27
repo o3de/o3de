@@ -16,12 +16,16 @@
 
     "ProgramSettings":
     {
-        "EntryPoints":
-        [
-            {
-                "name": "MainCS",
-                "type": "Compute"
-            }
-        ]
+      "EntryPoints": 
+      [
+        {
+          "name": "MainVS",
+          "type": "Vertex"
+        },
+        {
+          "name": "MainPS",
+          "type": "Fragment"
+        }
+      ]
     }
 }

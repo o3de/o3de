@@ -5,51 +5,37 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "FullscreenShadowTemplate",
-            "PassClass": "FullscreenShadowPass",
+            "PassClass": "FullscreenShadowPass", //       FullScreenTriangle        FullscreenShadowPass
             "Slots": [
-                {
-                    "Name": "Output",
-                    "SlotType": "Output",
-                    "ShaderInputName": "m_fullscreenShadow",
-                    "ScopeAttachmentUsage": "Shader",
-                    "LoadStoreAction": {
-                        "LoadAction": "DontCare",
-                        "StoreAction": "Store"
-                    }             
-                },
-                {
+              /*  {
                     "Name": "DepthShadowmaps",
                     "SlotType": "Input",
                     "ShaderInputName": "m_directionalLightShadowmap",
                     "ScopeAttachmentUsage": "Shader"      
-                },                
-                // SwapChain here is only used to reference the frame height and format
+                },   */                         
                 {
-                    "Name": "SwapChainOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"                    
-                }                
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare",
+                        "StoreAction": "Store"
+                    }             
+                }
             ],
             "ImageAttachments": [
                 {
                     "Name": "Result",
                     "SizeSource": {
                         "Source": {
-                            "Pass": "This",
+                            "Pass": "Parent",
                             "Attachment": "SwapChainOutput"
-                        }
+                        } 
                     },
                     "ImageDescriptor": {
-                        "Format": "R16_FLOAT",
-                        "SharedQueueMask": "Graphics",                    
-                        "BindFlags": [
-                            "CopyRead",
-                            "Color",
-                            "ShaderReadWrite",
-                            "ShaderWrite",
-                            "ShaderRead"
-                        ]
-                    }                
+                        "Format": "R16_FLOAT", 
+                        "SharedQueueMask": "Graphics"
+                    }             
                 }
             ],
             "Connections": [
@@ -62,10 +48,10 @@
                 }
             ],
             "PassData": {
-                "$type": "ComputePassData",
+                "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
-                }
+                } 
             }            
         }
     }

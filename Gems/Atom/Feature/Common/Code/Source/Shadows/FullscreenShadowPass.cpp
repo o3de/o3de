@@ -28,146 +28,180 @@ namespace AZ
         }
 
         FullscreenShadowPass::FullscreenShadowPass(const RPI::PassDescriptor& descriptor)
-            : RPI::ComputePass(descriptor)
+            : RPI::FullscreenTrianglePass(descriptor)
         {
         }
 
-        void FullscreenShadowPass::CompileResources(const RHI::FrameGraphCompileContext& context)
-        {
-            SetConstantData();
-            ComputePass::CompileResources(context);
-        }
+        //void FullscreenShadowPass::CompileResources(const RHI::FrameGraphCompileContext& context)
+        //{
+        //    SetConstantData();
+        //    FullscreenTrianglePass::CompileResources(context);
+        //}
 
-        void FullscreenShadowPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
-        {
-            // Dispatch one compute shader thread per depth buffer pixel. These threads are divided into thread-groups that analyze one tile. (Typically 16x16 pixel tiles)
-            RHI::CommandList* commandList = context.GetCommandList();
-            SetSrgsForDispatch(commandList);
+        //void FullscreenShadowPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+        //{
+        //    // Dispatch one compute shader thread per depth buffer pixel. These threads are divided into thread-groups that analyze one tile. (Typically 16x16 pixel tiles)
+        //    RHI::CommandList* commandList = context.GetCommandList();
+        //    SetSrgsForDispatch(commandList);
 
-            RHI::Size resolution = GetDepthBufferDimensions();
+        ////    RHI::Size resolution = GetDepthBufferDimensions();
 
-            const auto test = GetOutputBinding(0);
-            AZ_UNUSED(test);
+        //    //m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = resolution.m_width;
+        //    //m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = resolution.m_height;
+        //    //m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+        //    //commandList->Submit(m_dispatchItem);
+        //}
 
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = resolution.m_width;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = resolution.m_height;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
-            commandList->Submit(m_dispatchItem);
-        }
+        //RPI::PassAttachmentBinding FullscreenShadowPass::GetPassAttachmentBinding(AZ::Name name)
+        //{
+        //    for (unsigned int i = 0; i < GetInputCount(); ++i)
+        //    {
+        //        auto b = GetInputBinding(i);
+        //        if (b.m_name == name)
+        //            return b;
 
-        AZ::RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
-        {
-            //for (unsigned int i = 0; i < GetInputCount() ; ++i)
-            //{
-            //    auto b = GetInputBinding(i);
-            //    auto n = b.m_name;
-            //    const char* c = n.GetCStr();
-            //    AZ_Printf("EXCUSE ME", "Input %s\n", c);
-            //}
+        //        //auto n = b.m_name;
+        //        //const char* c = n.GetCStr();
+        //        //AZ_Printf("MKR", "Input %s\n", c);
+        //    }
 
-            //for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
-            //{
-            //    auto b = GetInputOutputBinding(i);
-            //    auto n = b.m_name;
-            //    const char* c = n.GetCStr();
-            //    AZ_Printf("EXCUSE ME", "InotuputOutp %s\n", c);
-            //}
+        //    for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
+        //    {
+        //        auto b = GetInputOutputBinding(i);
+        //        if (b.m_name == name)
+        //            return b;
 
-            //for (unsigned int i = 0; i < GetOutputCount(); ++i)
-            //{
-            //    auto b = GetOutputBinding(i);
-            //    auto n = b.m_name;
-            //    const char* c = n.GetCStr();
-            //    AZ_Printf("EXCUSE ME", "output %s\n", c);
-            //}
-            AZ_Assert(GetInputOutputCount() == 1, "Unexpected GetInputOutputCount(). Expecting 1, got %d", GetInputOutputCount());
+        //        //const char* c = n.GetCStr();
+        //        //AZ_Printf("MKR", "InotuputOutp %s\n", c);
+        //    }
 
-            AZ_Assert(
-                GetInputOutputBinding(0).m_name == AZ::Name("SwapChainOutput"),
-                "FullscreenShadowPass: Expecting slot 0 to be the SwapChainOutput");
+        //    for (unsigned int i = 0; i < GetOutputCount(); ++i)
+        //    {
+        //        auto b = GetOutputBinding(i);
+        //        if (b.m_name == name)
+        //            return b;
+        //    }
+        //    return {};
+        //}
+
+        //AZ::RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
+        //{
+        //    for (unsigned int i = 0; i < GetInputCount() ; ++i)
+        //    {
+        //        auto b = GetInputBinding(i);
+        //        auto n = b.m_name;
+        //        const char* c = n.GetCStr();
+        //        AZ_Printf("MKR", "Input %s\n", c);
+        //    }
+
+        //    for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
+        //    {
+        //        auto b = GetInputOutputBinding(i);
+        //        auto n = b.m_name;
+        //        const char* c = n.GetCStr();
+        //        AZ_Printf("MKR", "InotuputOutp %s\n", c);
+        //    }
+
+        //    for (unsigned int i = 0; i < GetOutputCount(); ++i)
+        //    {
+        //        auto b = GetOutputBinding(i);
+        //        auto n = b.m_name;
+        //        const char* c = n.GetCStr();
+        //        AZ_Printf("MKR", "output %s\n", c);
+        //    }
+        //    AZ_Assert(GetInputCount() == 1, "Unexpected GetInputOutputCount(). Expecting 1, got %d", GetInputCount());
+
+        //    AZ_Assert(
+        //        GetInputBinding(0).m_name == AZ::Name("SwapChainOutput"),
+        //        "FullscreenShadowPass: Expecting slot 0 to be the SwapChainOutput");
+
+        //    auto outputBinding = GetPassAttachmentBinding(AZ::Name("Output"));
+        //    auto outputDim = outputBinding.m_attachment->m_descriptor.m_image.m_size;
+        //    AZ_Printf("MKR", "Output dim %d %d %s\n", outputDim.m_width, outputDim.m_height, outputBinding.m_attachment->m_name.GetCStr());
 
 
-            const auto swapChain = GetInputOutputBinding(0);
-            const RPI::PassAttachment* attachment = swapChain.m_attachment.get();
-            return attachment->m_descriptor.m_image.m_size;
-        }
+        //    auto passBinding = GetPassAttachmentBinding(AZ::Name("Input"));
+        //    auto depthBufferDimensions = passBinding.m_attachment->m_descriptor.m_image.m_size;
+        //    return depthBufferDimensions;
+        //}
 
-        void FullscreenShadowPass::ChooseShaderVariant()
-        {
-            const AZ::RPI::ShaderVariant& shaderVariant = CreateShaderVariant();
-            CreatePipelineStateFromShaderVariant(shaderVariant);
-        }
+        //void FullscreenShadowPass::ChooseShaderVariant()
+        //{
+        //    const AZ::RPI::ShaderVariant& shaderVariant = CreateShaderVariant();
+        //    CreatePipelineStateFromShaderVariant(shaderVariant);
+        //}
 
-        AZ::RPI::ShaderOptionGroup FullscreenShadowPass::CreateShaderOptionGroup()
-        {
-            RPI::ShaderOptionGroup shaderOptionGroup = m_shader->CreateShaderOptionGroup();
-            shaderOptionGroup.SetUnspecifiedToDefaultValues();
-            return shaderOptionGroup;
-        }
+        //AZ::RPI::ShaderOptionGroup FullscreenShadowPass::CreateShaderOptionGroup()
+        //{
+        //    RPI::ShaderOptionGroup shaderOptionGroup = m_shader->CreateShaderOptionGroup();
+        //    shaderOptionGroup.SetUnspecifiedToDefaultValues();
+        //    return shaderOptionGroup;
+        //}
 
-        void FullscreenShadowPass::CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant)
-        {
-            AZ::RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-            m_msaaPipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-            AZ_Error("LightCulling", m_msaaPipelineState, "Failed to acquire pipeline state for shader");
-        }
+        //void FullscreenShadowPass::CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant)
+        //{
+        //    AZ::RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
+        //    shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+        //    m_msaaPipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+        //    AZ_Error("FullscreenShadowPass", m_msaaPipelineState, "Failed to acquire pipeline state for shader");
+        //}
 
-        const AZ::RPI::ShaderVariant& FullscreenShadowPass::CreateShaderVariant()
-        {
-            RPI::ShaderOptionGroup shaderOptionGroup = CreateShaderOptionGroup();
-            const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(shaderOptionGroup.GetShaderVariantId());
+        //const AZ::RPI::ShaderVariant& FullscreenShadowPass::CreateShaderVariant()
+        //{
+        //    RPI::ShaderOptionGroup shaderOptionGroup = CreateShaderOptionGroup();
+        //    const RPI::ShaderVariant& shaderVariant = m_shader->GetVariant(shaderOptionGroup.GetShaderVariantId());
 
-            //Set the fallbackkey
-            if (m_drawSrg)
-            {
-                m_drawSrg->SetShaderVariantKeyFallbackValue(shaderOptionGroup.GetShaderVariantKeyFallbackValue());
-            }
-            return shaderVariant;
-        }
+        //    //Set the fallbackkey
+        //    //if (m_drawSrg)
+        //    //{
+        //    //    m_drawSrg->SetShaderVariantKeyFallbackValue(shaderOptionGroup.GetShaderVariantKeyFallbackValue());
+        //    //}
+        //    return shaderVariant;
+        //}
 
-        void FullscreenShadowPass::SetConstantData()
-        {
-            struct ConstantData
-            {
-                AZStd::array<float, 2> m_screenSize;
-            } constantData;
+        //void FullscreenShadowPass::SetConstantData()
+        //{
+        //    struct ConstantData
+        //    {
+        //        AZStd::array<float, 2> m_screenSize;
+        //    } constantData;
 
-            const RHI::Size resolution = GetDepthBufferDimensions();
-            constantData.m_screenSize = { static_cast<float>(resolution.m_width), static_cast<float>(resolution.m_height) };
+        //   // const RHI::Size resolution = GetDepthBufferDimensions();
+        //    //constantData.m_screenSize = { static_cast<float>(resolution.m_width), static_cast<float>(resolution.m_height) };
 
-            [[maybe_unused]] bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
-            AZ_Assert(setOk, "FullscreenShadowPass::SetConstantData() - could not set constant data");
-        }
+        //    [[maybe_unused]] bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
+        //    AZ_Assert(setOk, "FullscreenShadowPass::SetConstantData() - could not set constant data");
+        //}
 
-        void FullscreenShadowPass::BuildInternal()
-        {
-            m_shader;
-        }
+        //void FullscreenShadowPass::BuildInternal()
+        //{
+        //    FullscreenTrianglePass::BuildInternal();
+        //    m_shader;
+        //}
 
-        void FullscreenShadowPass::OnShaderReloaded()
-        {
-            LoadShader();
-            AZ_Assert(GetPassState() != RPI::PassState::Rendering, "FullscreenShadowPass: Trying to reload shader during rendering");
-            if (GetPassState() == RPI::PassState::Idle)
-            {
-            }
-        }
+        //void FullscreenShadowPass::OnShaderReloaded()
+        //{
+        //    //LoadShader();
+        //    //AZ_Assert(GetPassState() != RPI::PassState::Rendering, "FullscreenShadowPass: Trying to reload shader during rendering");
+        //    //if (GetPassState() == RPI::PassState::Idle)
+        //    //{
+        //    //}
+        //}
 
-        void FullscreenShadowPass::OnShaderReinitialized(const AZ::RPI::Shader&)
-        {
-            OnShaderReloaded();
-        }
+        //void FullscreenShadowPass::OnShaderReinitialized(const AZ::RPI::Shader&)
+        //{
+        //    OnShaderReloaded();
+        //}
 
-        void FullscreenShadowPass::OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>&)
-        {
-            OnShaderReloaded();
-        }
+        //void FullscreenShadowPass::OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>&)
+        //{
+        //    OnShaderReloaded();
+        //}
 
-        void FullscreenShadowPass::OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant&)
-        {
-            OnShaderReloaded();
-        }
+        //void FullscreenShadowPass::OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant&)
+        //{
+        //    OnShaderReloaded();
+        //}
 
     }   // namespace Render
 }   // namespace AZ

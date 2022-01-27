@@ -15,6 +15,7 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
+#include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -22,57 +23,51 @@ namespace AZ
 {
     namespace Render
     {
-        //! LightCullingTilePrepare
-        //! This pass analyzes the depth buffer and builds min/max depth bounds per each tile.
-        class FullscreenShadowPass final
-            : public RPI::ComputePass
+        class FullscreenShadowPass final : public RPI::FullscreenTrianglePass
         {
             AZ_RPI_PASS(FullscreenShadow);
 
         public:
-            AZ_RTTI(AZ::Render::FullscreenShadowPass, "{A7D3076A-DD01-4B79-AF34-4BB72DAD35E2}", RPI::ComputePass);
+            AZ_RTTI(AZ::Render::FullscreenShadowPass, "{A7D3076A-DD01-4B79-AF34-4BB72DAD35E2}", RPI::FullscreenTrianglePass);
             AZ_CLASS_ALLOCATOR(FullscreenShadowPass, SystemAllocator, 0);
             virtual ~FullscreenShadowPass() = default;
 
             static RPI::Ptr<FullscreenShadowPass> Create(const RPI::PassDescriptor& descriptor);
 
-            static Name GetFullscreenShadowPassTemplateName()
-            {
-                return AZ::Name("FullscreenShadowPass");
-            }
 
         private:
 
             FullscreenShadowPass(const RPI::PassDescriptor& descriptor);
+//            AZ::RPI::PassAttachmentBinding GetPassAttachmentBinding(AZ::Name name);
 
             // Pass behavior overrides...
-            void BuildInternal() override;
+        //    void BuildInternal() override;
 
             ///////////////////////////////////////////////////////////////////
             // ShaderReloadNotificationBus overrides...
-            void OnShaderReinitialized(const AZ::RPI::Shader& shader) override;
-            void OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset) override;
-            void OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant& shaderVariant) override;
+            //void OnShaderReinitialized(const AZ::RPI::Shader& shader) override;
+            //void OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset) override;
+            //void OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant& shaderVariant) override;
 
             // Scope producer functions...
-            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-            void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
+       //     void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+     //       void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
-            AZ::RPI::ShaderOptionGroup CreateShaderOptionGroup();
+         //   AZ::RPI::ShaderOptionGroup CreateShaderOptionGroup();
 
-            AZ::RHI::Size GetDepthBufferDimensions();
-            void ChooseShaderVariant();
-            const AZ::RPI::ShaderVariant& CreateShaderVariant();
-            void CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant);
-            void SetConstantData();
-            void OnShaderReloaded();
+         //   AZ::RHI::Size GetDepthBufferDimensions();
+         //   void ChooseShaderVariant();
+         //   const AZ::RPI::ShaderVariant& CreateShaderVariant();
+         //   void CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant);
+         //   void SetConstantData();
+         ////   void OnShaderReloaded();
 
-            AZ::RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
+         //   AZ::RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
-            // The shader variant (for choosing the different MSAA version) is sent to the RHI via the PipelineState
-            AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_msaaPipelineState;
+         //   // The shader variant (for choosing the different MSAA version) is sent to the RHI via the PipelineState
+         //   AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_msaaPipelineState;
 
-            AZ::Name m_constantDataName;
+         //   AZ::Name m_constantDataName;
         };
     }   // namespace Render
 }   // namespace AZ

@@ -8,11 +8,12 @@
 
 
 
-#include <scenesrg.srgi>
+#include <Atom/Features/SrgSemantics.azsli>
 
-#include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
-#include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+ 
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
@@ -26,7 +27,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
     // output texture that will be sampled in the forward+ pass
-    RWTexture2D<float> m_fullscreenShadow;
+   // RWTexture2D<float> m_fullscreenShadow;
     
     struct Constants
     {
@@ -34,27 +35,18 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };    
     
     Constants m_constantData;
-    Texture2DArray<float> m_directionalLightShadowmap;    
+    //Texture2DArray<float> m_directionalLightShadowmap;    
 }
 
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
-#define ThreadGroupSize 16
-[numthreads(ThreadGroupSize, ThreadGroupSize, 1)]
-void MainCS(uint3 groupID : SV_GroupID, uint3 groupThreadID : SV_GroupThreadID)
+PSOutput MainPS(VSOutput IN)
 {
+                  
+    PSOutput OUT;
+    OUT.m_color.rgb = PassSrg::m_constantData.m_screenSize.x; 
 
-    uint2 samplePos = groupID.xy * ThreadGroupSize + groupThreadID.xy;
-    float2 uv = (float2) samplePos / PassSrg::m_constantData.m_screenSize;
-
-    //float3 coord = float3(1,0,0);
-    //float val = PassSrg::m_directionalLightShadowmap.Sample(PassSrg::LinearSampler, coord);
-        
-    
-    if (uv.y < 0.5)
-    PassSrg::m_fullscreenShadow[samplePos] = 1;
-        else
-    PassSrg::m_fullscreenShadow[samplePos] = 0
-    ;
-        
+    return OUT;
 }
+
+
