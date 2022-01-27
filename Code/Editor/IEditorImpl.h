@@ -268,14 +268,9 @@ public:
     bool IsSourceControlConnected() override;
     //! Setup Material Editor mode
     void SetMatEditMode(bool bIsMatEditMode);
-    CUIEnumsDatabase* GetUIEnumsDatabase() override { return m_pUIEnumsDatabase; };
-    void AddUIEnums() override;
     void ReduceMemory() override;
     // Get Export manager
     IExportManager* GetExportManager() override;
-    // Set current configuration spec of the editor.
-    void SetEditorConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform) override;
-    ESystemConfigSpec GetEditorConfigSpec() const override;
     ESystemConfigPlatform GetEditorConfigPlatform() const override;
     void ReloadTemplates() override;
     void AddErrorMessage(const QString& text, const QString& caption);
@@ -347,7 +342,6 @@ protected:
 
     CSelectionTreeManager* m_pSelectionTreeManager;
 
-    CUIEnumsDatabase* m_pUIEnumsDatabase;
     //! CConsole Synchronization
     CConsoleSynchronization* m_pConsoleSync;
     //! Editor Settings Manager

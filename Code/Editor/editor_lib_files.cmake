@@ -441,7 +441,6 @@ set(FILES
     IPostRenderer.h
     ToolBox.h
     TrackViewNewSequenceDialog.h
-    UndoConfigSpec.h
     Util/GeometryUtil.h
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
@@ -528,7 +527,6 @@ set(FILES
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
-    UndoConfigSpec.cpp
     Dialogs/ErrorsDlg.cpp
     Dialogs/ErrorsDlg.h
     Dialogs/ErrorsDlg.ui
