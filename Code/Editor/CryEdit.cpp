@@ -36,14 +36,6 @@ AZ_POP_DISABLE_WARNING
 #include <QMessageBox>
 #include <QDialogButtonBox>
 
-// Aws Native SDK
-#include <aws/sts/STSClient.h>
-#include <aws/core/auth/AWSCredentialsProvider.h>
-#include <aws/sts/model/GetFederationTokenRequest.h>
-#include <aws/core/http/HttpClient.h>
-#include <aws/core/http/HttpResponse.h>
-#include <aws/core/utils/json/JsonSerializer.h>
-
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
@@ -144,9 +136,7 @@ AZ_POP_DISABLE_WARNING
 
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
-// AWSNativeSDK
 #include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 
 
 #if defined(AZ_PLATFORM_WINDOWS)
@@ -1719,7 +1709,6 @@ bool CCryEditApp::InitInstance()
     mainWindow->Initialize();
 
     GetIEditor()->GetCommandManager()->RegisterAutoCommands();
-    GetIEditor()->AddUIEnums();
 
     mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "O3DE", "mainWindowGeometry");
     m_pDocManager->OnFileNew();
@@ -1830,10 +1819,7 @@ bool CCryEditApp::InitInstance()
     if (GetIEditor()->GetCommandManager()->IsRegistered("editor.open_lnm_editor"))
     {
         CCommand0::SUIInfo uiInfo;
-#if !defined(NDEBUG)
-        bool ok =
-#endif
-            GetIEditor()->GetCommandManager()->GetUIInfo("editor.open_lnm_editor", uiInfo);
+        [[maybe_unused]] bool ok = GetIEditor()->GetCommandManager()->GetUIInfo("editor.open_lnm_editor", uiInfo);
         assert(ok);
     }
 
@@ -2125,8 +2111,6 @@ bool CCryEditApp::FixDanglingSharedMemory(const QString& sharedMemName) const
 
 int CCryEditApp::ExitInstance(int exitCode)
 {
-    AZ_TracePrintf("Exit", "Called ExitInstance() with exit code: 0x%x", exitCode);
-
     if (m_pEditor)
     {
         m_pEditor->OnBeginShutdownSequence();

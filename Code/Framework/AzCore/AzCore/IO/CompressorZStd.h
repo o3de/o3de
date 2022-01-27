@@ -48,7 +48,7 @@ namespace AZ
         public:
             AZ_CLASS_ALLOCATOR(CompressorZStdData, AZ::SystemAllocator, 0);
 
-            CompressorZStdData(IAllocatorAllocate* zstdMemAllocator = 0)
+            CompressorZStdData(IAllocator* zstdMemAllocator = 0)
             {
                 m_zstd = zstdMemAllocator;
             }

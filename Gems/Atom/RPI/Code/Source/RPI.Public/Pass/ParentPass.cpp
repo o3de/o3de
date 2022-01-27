@@ -398,7 +398,7 @@ namespace AZ
 
         // --- Debug functions ---
 
-        AZStd::array_view<Ptr<Pass>> ParentPass::GetChildren() const
+        AZStd::span<const Ptr<Pass>> ParentPass::GetChildren() const
         {
             return m_children;
         }

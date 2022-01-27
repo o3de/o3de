@@ -49,19 +49,19 @@ namespace AZ
             return m_subImageDatas.size();
         }
 
-        AZStd::array_view<uint8_t> ImageMipChainAsset::GetSubImageData(uint32_t mipSlice, uint32_t arraySlice) const
+        AZStd::span<const uint8_t> ImageMipChainAsset::GetSubImageData(uint32_t mipSlice, uint32_t arraySlice) const
         {
             return GetSubImageData(mipSlice * m_arraySize + arraySlice);
         }
 
-        AZStd::array_view<uint8_t> ImageMipChainAsset::GetSubImageData(uint32_t subImageIndex) const
+        AZStd::span<const uint8_t> ImageMipChainAsset::GetSubImageData(uint32_t subImageIndex) const
         {
             AZ_Assert(subImageIndex < m_subImageDataOffsets.size() && subImageIndex < m_subImageDatas.size(), "subImageIndex is out of range");
 
             // The offset vector contains an extra sentinel value.
             const size_t dataSize = m_subImageDataOffsets[subImageIndex + 1] - m_subImageDataOffsets[subImageIndex];
 
-            return AZStd::array_view<uint8_t>(reinterpret_cast<const uint8_t*>(m_subImageDatas[subImageIndex].m_data), dataSize);
+            return AZStd::span<const uint8_t>(reinterpret_cast<const uint8_t*>(m_subImageDatas[subImageIndex].m_data), dataSize);
         }
 
         const RHI::ImageSubresourceLayout& ImageMipChainAsset::GetSubImageLayout(uint32_t mipSlice) const
@@ -111,7 +111,7 @@ namespace AZ
             for (uint16_t mipSliceIndex = 0; mipSliceIndex < m_mipLevels; ++mipSliceIndex)
             {
                 RHI::StreamingImageMipSlice mipSlice;
-                mipSlice.m_subresources = AZStd::array_view<RHI::StreamingImageSubresourceData>(&m_subImageDatas[m_arraySize * mipSliceIndex], m_arraySize);
+                mipSlice.m_subresources = AZStd::span<const RHI::StreamingImageSubresourceData>(&m_subImageDatas[m_arraySize * mipSliceIndex], m_arraySize);
                 mipSlice.m_subresourceLayout = m_subImageLayouts[mipSliceIndex];
                 m_mipSlices.push_back(mipSlice);
             }

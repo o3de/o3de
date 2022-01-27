@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
@@ -65,8 +66,16 @@ namespace Terrain
 
         virtual ~TerrainAreaHeightRequests() = default;
 
-        // Synchronous single input location.  The Vector3 input position versions are defined to ignore the input Z value.
+        /// Synchronous single input location.
+        /// @inPosition is the input position to query.
+        /// @outPosition will have the same XY as inPosition, but with the Z adjusted to the proper height.
+        /// @terrainExists is true if the output position is valid terrain.
         virtual void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists) = 0;
+
+        /// Synchronous multiple input locations.
+        /// @inOutPositionList takes a list of Vector3s as input and returns the Vector3s with Z filled out.
+        /// @terrainExistsList outputs flags for whether or not each output position is valid terrain.
+        virtual void GetHeights(AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList) = 0;
     };
 
     using TerrainAreaHeightRequestBus = AZ::EBus<TerrainAreaHeightRequests>;

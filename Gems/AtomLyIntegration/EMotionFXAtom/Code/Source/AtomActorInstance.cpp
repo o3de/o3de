@@ -38,6 +38,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/base.h>
 
+#include <numeric>
+
 namespace AZ::Render
 {
     static constexpr uint32_t s_maxActiveWrinkleMasks = 16;
@@ -808,7 +810,7 @@ namespace AZ::Render
 
                     if (m_wrinkleMasks.size())
                     {
-                        wrinkleMaskObjectSrg->SetImageArray(wrinkleMasksIndex, AZStd::array_view<Data::Instance<RPI::Image>>(m_wrinkleMasks.data(), m_wrinkleMasks.size()));
+                        wrinkleMaskObjectSrg->SetImageArray(wrinkleMasksIndex, AZStd::span<const Data::Instance<RPI::Image>>(m_wrinkleMasks.data(), m_wrinkleMasks.size()));
 
                         // Set the weights for any active masks
                         for (size_t i = 0; i < m_wrinkleMaskWeights.size(); ++i)

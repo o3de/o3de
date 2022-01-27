@@ -25,7 +25,7 @@ namespace UnitTest
     private:
         AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineLibraryData*) override { return AZ::RHI::ResultCode::Success; }
         void ShutdownInternal() override;
-        AZ::RHI::ResultCode MergeIntoInternal(AZStd::array_view<const AZ::RHI::PipelineLibrary*>) override;
+        AZ::RHI::ResultCode MergeIntoInternal(AZStd::span<const AZ::RHI::PipelineLibrary* const>) override;
         AZ::RHI::ConstPtr<AZ::RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr; }
     };
 

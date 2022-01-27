@@ -15,45 +15,6 @@
 #include "Util/GuidUtil.h"
 #include <map>
 
-//! Derive from this class to decrease the amount of work for creating a new class description
-//! Provides standard reference counter implementation for IUnknown
-class CRefCountClassDesc
-    : public IClassDesc
-{
-public:
-    virtual ~CRefCountClassDesc() { }
-    HRESULT STDMETHODCALLTYPE QueryInterface([[maybe_unused]] const IID& riid, [[maybe_unused]] void** ppvObj)
-    {
-        return E_NOINTERFACE;
-    }
-
-    ULONG STDMETHODCALLTYPE AddRef()
-    {
-        ++m_nRefCount;
-        return m_nRefCount;
-    }
-
-    ULONG STDMETHODCALLTYPE Release()
-    {
-        int refs = m_nRefCount;
-
-        if (--m_nRefCount <= 0)
-        {
-            delete this;
-        }
-
-        return refs;
-    }
-
-private:
-    int m_nRefCount;
-};
-
-
-// Use this for debugging unregistration problems.
-//#define DEBUG_CLASS_NAME_REGISTRATION
-
-
 //! Class factory is a common repository of all registered plugin classes,
 //! Classes here can found by their class ID or all classes of given system class retrieved
 class CRYEDIT_API CClassFactory

@@ -12,15 +12,10 @@
 #include "EditorDefs.h"
 
 #include "IEditorImpl.h"
+#include <EditorCommonAPI.h>
 
 // Qt
 #include <QByteArray>
-
-// AWS Native SDK
-AZ_PUSH_DISABLE_WARNING(4251 4355 4996, "-Wunknown-warning-option")
-#include <aws/core/utils/memory/stl/AWSString.h>
-#include <aws/core/platform/FileSystem.h>
-AZ_POP_DISABLE_WARNING
 
 // AzCore
 #include <AzCore/IO/Path/Path.h>
@@ -56,7 +51,6 @@ AZ_POP_DISABLE_WARNING
 #include "GameEngine.h"
 #include "ToolBox.h"
 #include "MainWindow.h"
-#include "UIEnumsDatabase.h"
 #include "RenderHelpers/AxisHelper.h"
 #include "Settings.h"
 #include "Include/IObjectManager.h"
@@ -74,12 +68,6 @@ AZ_POP_DISABLE_WARNING
 #include "Editor/AssetDatabase/AssetDatabaseLocationListener.h"
 #include "Editor/AzAssetBrowser/AzAssetBrowserRequestHandler.h"
 #include "Editor/AssetEditor/AssetEditorRequestsHandler.h"
-
-// EditorCommon
-#include <WinWidget/WinWidgetManager.h>
-
-// AWSNativeSDK
-#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
 
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
@@ -127,12 +115,10 @@ CEditorImpl::CEditorImpl()
     , m_pErrorsDlg(nullptr)
     , m_pSourceControl(nullptr)
     , m_pSelectionTreeManager(nullptr)
-    , m_pUIEnumsDatabase(nullptr)
     , m_pConsoleSync(nullptr)
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
     , m_pExportManager(nullptr)
-    , m_awsResourceManager(nullptr)
     , m_bMatEditMode(false)
     , m_bShowStatusText(true)
     , m_bInitialized(false)
@@ -158,7 +144,6 @@ CEditorImpl::CEditorImpl()
     regCtx.pCommandManager = m_pCommandManager;
     regCtx.pClassFactory = m_pClassFactory;
     m_pEditorFileMonitor.reset(new CEditorFileMonitor());
-    m_pUIEnumsDatabase = new CUIEnumsDatabase;
     m_pDisplaySettings = new CDisplaySettings;
     m_pDisplaySettings->LoadRegistry();
     m_pPluginManager = new CPluginManager;
@@ -176,8 +161,6 @@ CEditorImpl::CEditorImpl()
     m_selectedRegion.max = Vec3(0, 0, 0);
     DetectVersion();
     RegisterTools();
-
-    m_winWidgetManager.reset(new WinWidget::WinWidgetManager);
 
     m_pAssetDatabaseLocationListener = nullptr;
     m_pAssetBrowserRequestHandler = nullptr;
@@ -312,7 +295,6 @@ CEditorImpl::~CEditorImpl()
     SAFE_DELETE(m_pCommandManager)
     SAFE_DELETE(m_pClassFactory)
     SAFE_DELETE(m_pLasLoadedLevelErrorReport)
-    SAFE_DELETE(m_pUIEnumsDatabase)
 
     SAFE_DELETE(m_pSettingsManager);
 
@@ -845,20 +827,6 @@ const QtViewPane* CEditorImpl::OpenView(QString sViewClassName, bool reuseOpened
 {
     auto openMode = reuseOpened ? QtViewPane::OpenMode::None : QtViewPane::OpenMode::MultiplePanes;
     return QtViewPaneManager::instance()->OpenPane(sViewClassName, openMode);
-}
-
-QWidget* CEditorImpl::OpenWinWidget(WinWidgetId openId)
-{
-    if (m_winWidgetManager)
-    {
-        return m_winWidgetManager->OpenWinWidget(openId);
-    }
-    return nullptr;
-}
-
-WinWidget::WinWidgetManager* CEditorImpl::GetWinWidgetManager() const
-{
-    return m_winWidgetManager.get();
 }
 
 QWidget* CEditorImpl::FindView(QString viewClassName)
@@ -1499,48 +1467,6 @@ IExportManager* CEditorImpl::GetExportManager()
     }
 
     return m_pExportManager;
-}
-
-void CEditorImpl::AddUIEnums()
-{
-    // Spec settings for shadow casting lights
-    AZStd::string SpecString[4];
-    QStringList types;
-    types.push_back("Never=0");
-    SpecString[0] = AZStd::string::format("VeryHigh Spec=%d", CONFIG_VERYHIGH_SPEC);
-    types.push_back(SpecString[0].c_str());
-    SpecString[1] = AZStd::string::format("High Spec=%d", CONFIG_HIGH_SPEC);
-    types.push_back(SpecString[1].c_str());
-    SpecString[2] = AZStd::string::format("Medium Spec=%d", CONFIG_MEDIUM_SPEC);
-    types.push_back(SpecString[2].c_str());
-    SpecString[3] = AZStd::string::format("Low Spec=%d", CONFIG_LOW_SPEC);
-    types.push_back(SpecString[3].c_str());
-    m_pUIEnumsDatabase->SetEnumStrings("CastShadows", types);
-
-    // Power-of-two percentages
-    AZStd::string percentStringPOT[5];
-    types.clear();
-    percentStringPOT[0] = AZStd::string::format("Default=%d", 0);
-    types.push_back(percentStringPOT[0].c_str());
-    percentStringPOT[1] = AZStd::string::format("12.5=%d", 1);
-    types.push_back(percentStringPOT[1].c_str());
-    percentStringPOT[2] = AZStd::string::format("25=%d", 2);
-    types.push_back(percentStringPOT[2].c_str());
-    percentStringPOT[3] = AZStd::string::format("50=%d", 3);
-    types.push_back(percentStringPOT[3].c_str());
-    percentStringPOT[4] = AZStd::string::format("100=%d", 4);
-    types.push_back(percentStringPOT[4].c_str());
-    m_pUIEnumsDatabase->SetEnumStrings("ShadowMinResPercent", types);
-}
-
-void CEditorImpl::SetEditorConfigSpec(ESystemConfigSpec spec, [[maybe_unused]]ESystemConfigPlatform platform)
-{
-    gSettings.editorConfigSpec = spec;
-}
-
-ESystemConfigSpec CEditorImpl::GetEditorConfigSpec() const
-{
-    return (ESystemConfigSpec)gSettings.editorConfigSpec;
 }
 
 ESystemConfigPlatform CEditorImpl::GetEditorConfigPlatform() const

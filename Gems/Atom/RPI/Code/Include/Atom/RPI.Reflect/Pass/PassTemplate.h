@@ -11,7 +11,7 @@
 
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>

@@ -432,7 +432,7 @@ namespace AZ
             m_bindingSlot = Handle<uint32_t>(bindingSlot);
         }
 
-        AZStd::array_view<ShaderInputStaticSamplerDescriptor> ShaderResourceGroupLayout::GetStaticSamplers() const
+        AZStd::span<const ShaderInputStaticSamplerDescriptor> ShaderResourceGroupLayout::GetStaticSamplers() const
         {
             return m_staticSamplers;
         }
@@ -497,32 +497,32 @@ namespace AZ
             return m_constantsDataLayout->GetShaderInput(index);
         }
 
-        AZStd::array_view<ShaderInputBufferDescriptor> ShaderResourceGroupLayout::GetShaderInputListForBuffers() const
+        AZStd::span<const ShaderInputBufferDescriptor> ShaderResourceGroupLayout::GetShaderInputListForBuffers() const
         {
             return m_inputsForBuffers;
         }
 
-        AZStd::array_view<ShaderInputImageDescriptor> ShaderResourceGroupLayout::GetShaderInputListForImages() const
+        AZStd::span<const ShaderInputImageDescriptor> ShaderResourceGroupLayout::GetShaderInputListForImages() const
         {
             return m_inputsForImages;
         }
 
-        AZStd::array_view<ShaderInputSamplerDescriptor> ShaderResourceGroupLayout::GetShaderInputListForSamplers() const
+        AZStd::span<const ShaderInputSamplerDescriptor> ShaderResourceGroupLayout::GetShaderInputListForSamplers() const
         {
             return m_inputsForSamplers;
         }
 
-        AZStd::array_view<ShaderInputConstantDescriptor> ShaderResourceGroupLayout::GetShaderInputListForConstants() const
+        AZStd::span<const ShaderInputConstantDescriptor> ShaderResourceGroupLayout::GetShaderInputListForConstants() const
         {
             return m_constantsDataLayout->GetShaderInputList();
         }
 
-        AZStd::array_view<ShaderInputBufferUnboundedArrayDescriptor> ShaderResourceGroupLayout::GetShaderInputListForBufferUnboundedArrays() const
+        AZStd::span<const ShaderInputBufferUnboundedArrayDescriptor> ShaderResourceGroupLayout::GetShaderInputListForBufferUnboundedArrays() const
         {
             return m_inputsForBufferUnboundedArrays;
         }
 
-        AZStd::array_view<ShaderInputImageUnboundedArrayDescriptor> ShaderResourceGroupLayout::GetShaderInputListForImageUnboundedArrays() const
+        AZStd::span<const ShaderInputImageUnboundedArrayDescriptor> ShaderResourceGroupLayout::GetShaderInputListForImageUnboundedArrays() const
         {
             return m_inputsForImageUnboundedArrays;
         }
