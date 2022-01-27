@@ -14,6 +14,14 @@
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
+
+
+
+
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/Utils/Utils.h>
+
 namespace AZ
 {
     namespace Render
@@ -195,6 +203,38 @@ namespace AZ
 
             AZ::Transform worldTM;
             AZ::TransformBus::EventResult(worldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+
+            const Data::Asset<RPI::ModelAsset>& modelAsset = m_controller.GetConfiguration().m_modelAsset;
+            const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[0];
+            RPI::ModelLod& modelLod = *RPI::ModelLod::FindOrCreate(modelLodAsset, modelAsset).get();
+            //const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[0]; // lopp for each mesh
+            //const Data::Instance<RPI::Material>& material = mesh.m_material; // grab my shader
+            //auto& objectSrgLayout = material->GetAsset()->GetObjectSrgLayout();
+            //auto shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+            //AZ::Data::Instance<RPI::ShaderResourceGroup> meshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
+
+            AZStd::string path = "shaders/postprocessing/editormodemask.azmaterial";
+            auto materialAsset = GetAssetFromPath<RPI::MaterialAsset>(path, Data::AssetLoadBehavior::PreLoad, true);
+            const Data::Instance<RPI::Material>& material = RPI::Material::FindOrCreate(materialAsset);
+            auto& objectSrgLayout = material->GetAsset()->GetObjectSrgLayout();
+            auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+            auto meshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
+
+            
+            // for each mesh, do this
+            if (!m_meshDrawPacket.has_value())
+            {
+                m_meshDrawPacket.emplace(modelLod, 0 /*mesh index from loop*/, material, meshObjectSrg);
+                
+                
+            }
+
+            auto scene = RPI::Scene::GetSceneForEntityId(this->GetEntityId());
+
+            m_meshDrawPacket->Update(*scene);
+
+            AZ::RPI::DynamicDrawInterface* dynamicDraw = AZ::RPI::GetDynamicDraw();
+            dynamicDraw->AddDrawPacket(scene, m_meshDrawPacket->GetRHIDrawPacket());
 
             debugDisplay.PushMatrix(worldTM);
 

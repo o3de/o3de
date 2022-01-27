@@ -16,6 +16,10 @@
 #include <Mesh/MeshComponent.h>
 #include <Mesh/EditorMeshStats.h>
 
+
+
+#include <Atom/RPI.Public/MeshDrawPacket.h>
+
 namespace AZ
 {
     namespace Render
@@ -77,6 +81,8 @@ namespace AZ
 
             // Stats for current mesh asset
             EditorMeshStats m_stats;
+
+            AZStd::optional<RPI::MeshDrawPacket> m_meshDrawPacket;
         };
     } // namespace Render
 } // namespace AZ
