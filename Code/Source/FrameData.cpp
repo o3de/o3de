@@ -1,0 +1,179 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <EMotionFX/Source/ActorInstance.h>
+#include <Allocators.h>
+#include <EMotionFX/Source/AnimGraphPose.h>
+#include <EMotionFX/Source/AnimGraphPosePool.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/MotionInstance.h>
+#include <FrameData.h>
+#include <EMotionFX/Source/Pose.h>
+#include <EMotionFX/Source/TransformData.h>
+
+#include <MCore/Source/AzCoreConversions.h>
+#include <MCore/Source/Color.h>
+
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+namespace EMotionFX
+{
+    namespace MotionMatching
+    {
+        AZ_CLASS_ALLOCATOR_IMPL(FrameData, MotionMatchAllocator, 0)
+
+        FrameData::FrameData()
+            : m_id(AZ::TypeId::CreateNull())
+            , m_data(nullptr)
+            , m_relativeToNodeIndex(0)
+            , m_debugColor(AZ::Colors::Gray)
+            , m_debugDrawEnabled(true)
+        {
+        }
+
+        void FrameData::SetId(const AZ::TypeId& id)
+        {
+            m_id = id;
+        }
+
+        void FrameData::SetDebugDrawColor(const AZ::Color& color)
+        {
+            m_debugColor = color;
+        }
+
+        const AZ::Color& FrameData::GetDebugDrawColor() const
+        {
+            return m_debugColor;
+        }
+
+        void FrameData::SetDebugDrawEnabled(bool enabled)
+        {
+            m_debugDrawEnabled = enabled;
+        }
+
+        bool FrameData::GetDebugDrawEnabled() const
+        {
+            return m_debugDrawEnabled;
+        }
+
+        void FrameData::SetData(FrameDatabase* data)
+        {
+            m_data = data;
+        }
+
+        FrameDatabase* FrameData::GetData() const
+        {
+            return m_data;
+        }
+
+        void FrameData::SetRelativeToNodeIndex(size_t nodeIndex)
+        {
+            m_relativeToNodeIndex = nodeIndex;
+        }
+
+        void FrameData::SamplePose(float sampleTime, const Pose* bindPose, Motion* sourceMotion, MotionInstance* motionInstance, Pose* samplePose)
+        {
+            motionInstance->SetMotion(sourceMotion);
+            motionInstance->SetCurrentTime(sampleTime, true);
+            /*if (!motionInstance->GetIsReadyForSampling())
+            {
+                motionInstance->InitForSampling();
+            }*/
+            sourceMotion->Update(bindPose, samplePose, motionInstance);
+        }
+
+        void FrameData::CalculateVelocity(size_t jointIndex, const Pose* curPose, const Pose* nextPose, float timeDelta, AZ::Vector3& outDirection, float& outSpeed)
+        {
+            const AZ::Vector3 currentPosition = curPose->GetWorldSpaceTransform(jointIndex).m_position;
+            const AZ::Vector3 nextPosition = nextPose->GetWorldSpaceTransform(jointIndex).m_position;
+            const AZ::Vector3 velocity = (timeDelta > AZ::Constants::FloatEpsilon) ? (nextPosition - currentPosition) / timeDelta : AZ::Vector3::CreateZero();
+            float speed = velocity.GetLength();
+            if (speed > AZ::Constants::FloatEpsilon)
+            {
+                outSpeed = speed;
+                outDirection = velocity / speed;
+            }
+            else
+            {
+                outSpeed = 0.0f;
+                outDirection = AZ::Vector3::CreateZero();
+            }
+        }
+
+        void FrameData::CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outDirection, float& outSpeed)
+        {
+            // Prepare for sampling.
+            ActorInstance* actorInstance = motionInstance->GetActorInstance();
+            AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
+            AnimGraphPose* curPose = posePool.RequestPose(actorInstance);
+            AnimGraphPose* nextPose = posePool.RequestPose(actorInstance);
+            /*if (!motionInstance->GetIsReadyForSampling())
+            {
+                motionInstance->InitForSampling();
+            }*/
+
+            // Sample the two poses.
+            const float originalTime = motionInstance->GetCurrentTime();
+            const float timeDelta = 1.0f / 30.0f;
+            Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
+            motionInstance->GetMotion()->Update(bindPose, &curPose->GetPose(), motionInstance);
+            motionInstance->SetCurrentTime(originalTime + timeDelta);
+            motionInstance->GetMotion()->Update(bindPose, &nextPose->GetPose(), motionInstance);
+            motionInstance->SetCurrentTime(originalTime, false);
+
+            const Transform inverseJointWorldTransform = curPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();
+
+            // Calculate the velocity.
+            CalculateVelocity(jointIndex, &curPose->GetPose(), &nextPose->GetPose(), timeDelta, outDirection, outSpeed);
+            outDirection = inverseJointWorldTransform.TransformVector(outDirection);
+            outDirection.NormalizeSafe();
+
+            posePool.FreePose(curPose);
+            posePool.FreePose(nextPose);
+        }
+
+        void FrameData::SetIncludeInKdTree(bool include)
+        {
+            m_includeInKdTree = include;
+        }
+
+        bool FrameData::GetIncludeInKdTree() const
+        {
+            return m_includeInKdTree;
+        }
+
+        void FrameData::Reflect(AZ::ReflectContext* context)
+        {
+            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+            if (!serializeContext)
+            {
+                return;
+            }
+
+            serializeContext->Class<FrameData>()
+                ->Version(1)
+                ->Field("id", &FrameData::m_id);
+
+            AZ::EditContext* editContext = serializeContext->GetEditContext();
+            if (!editContext)
+            {
+                return;
+            }
+
+            editContext->Class<FrameData>("MotionMatchFrameData", "Base class for the frame data")
+                ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+        }
+    } // namespace MotionMatching
+} // namespace EMotionFX

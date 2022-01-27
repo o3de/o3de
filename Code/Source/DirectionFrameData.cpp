@@ -1,0 +1,157 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <EMotionFX/Source/ActorInstance.h>
+#include <Allocators.h>
+#include <EMotionFX/Source/DebugDraw.h>
+#include <EMotionFX/Source/EMotionFXManager.h>
+#include <EMotionFX/Source/EventManager.h>
+#include <DirectionFrameData.h>
+#include <FrameDatabase.h>
+#include <EMotionFX/Source/Pose.h>
+
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+#include <MCore/Source/AzCoreConversions.h>
+
+namespace EMotionFX
+{
+    namespace MotionMatching
+    {
+        AZ_CLASS_ALLOCATOR_IMPL(DirectionFrameData, MotionMatchAllocator, 0)
+
+        DirectionFrameData::DirectionFrameData()
+            : FrameData()
+            , m_nodeIndex(MCORE_INVALIDINDEX32)
+            , m_axis(AXIS_X)
+            , m_flipAxis(false)
+        {
+        }
+
+        size_t DirectionFrameData::CalcMemoryUsageInBytes() const
+        {
+            size_t total = 0;
+            total += m_directions.capacity() * sizeof(AZ::Vector3);
+            total += sizeof(*this);
+            return total;
+        }
+
+        bool DirectionFrameData::Init(const InitSettings& settings)
+        {
+            AZ_UNUSED(settings);
+
+            if (m_nodeIndex == MCORE_INVALIDINDEX32)
+            {
+                return false;
+            }
+
+            m_directions.resize(m_data->GetNumFrames());
+            return true;
+        }
+
+        void DirectionFrameData::SetNodeIndex(size_t nodeIndex)
+        {
+            m_nodeIndex = nodeIndex;
+        }
+
+        size_t DirectionFrameData::GetNumDimensionsForKdTree() const
+        {
+            return 3;
+        }
+        
+        void DirectionFrameData::FillFrameFloats(size_t frameIndex, size_t startIndex, AZStd::vector<float>& frameFloats) const
+        {
+            const AZ::Vector3& value = m_directions[frameIndex];
+            frameFloats[startIndex] = value.GetX();
+            frameFloats[startIndex + 1] = value.GetY();
+            frameFloats[startIndex + 2] = value.GetZ();
+        }
+
+        void DirectionFrameData::CalcMedians(AZStd::vector<float>& medians, size_t startIndex) const
+        {
+            float sums[3] = { 0.0f, 0.0f, 0.0f };
+            const size_t numFrames = m_directions.size();
+            for (size_t i = 0; i < numFrames; ++i)
+            {
+                sums[0] += m_directions[i].GetX();
+                sums[1] += m_directions[i].GetY();
+                sums[2] += m_directions[i].GetZ();
+            }
+
+            const float fNumFrames = static_cast<float>(numFrames);
+            for (size_t i = 0; i < 3; ++i)
+            {
+                medians[startIndex + i] = sums[i] / fNumFrames;
+            }
+        }
+
+        AZ::Vector3 DirectionFrameData::ExtractDirection(const AZ::Quaternion& quaternion) const
+        {
+            AZ::Vector3 axis = AZ::Vector3::CreateZero();
+            axis.SetElement(static_cast<int>(m_axis), 1.0f);
+            if (m_flipAxis)
+            {
+                axis *= -1.0f;
+            }
+
+            return quaternion.TransformVector(axis);
+        }
+
+        void DirectionFrameData::ExtractFrameData(const ExtractFrameContext& context)
+        {
+            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            const AZ::Vector3 nodeWorldDirection = ExtractDirection(context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_rotation);
+            m_directions[context.m_frameIndex] = invRootTransform.TransformVector(nodeWorldDirection);
+        }
+
+        void DirectionFrameData::DebugDrawDirection(EMotionFX::DebugDraw::ActorInstanceData& draw, size_t frameIndex, const AZ::Vector3 startPoint, const AZ::Transform& transform, const AZ::Color& color)
+        {
+            draw.DrawLine(startPoint, startPoint + transform.TransformVector(m_directions[frameIndex]), color);
+        }
+
+        float DirectionFrameData::CalculateFrameCost([[maybe_unused]] size_t frameIndex, [[maybe_unused]] const FrameCostContext& context) const
+        {
+/*
+            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            const AZ::Vector3 globalInputPosition = context.m_pose->GetWorldSpaceTransform(m_nodeIndex).mPosition;
+            const AZ::Vector3 relativeInputPosition = invRootTransform.TransformPoint(globalInputPosition);    // Make the position relative to the root. TODO: optimize this by precalculating each frame
+            const AZ::Vector3& framePosition = directions[frameIndex]; // This is already relative to the root node
+            return (framePosition - relativeInputPosition).GetLength();
+            */
+            return 0.0f;
+        }
+
+        void DirectionFrameData::Reflect(AZ::ReflectContext* context)
+        {
+            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+            if (!serializeContext)
+            {
+                return;
+            }
+
+            serializeContext->Class<DirectionFrameData, FrameData>()
+                ->Version(1);
+
+            AZ::EditContext* editContext = serializeContext->GetEditContext();
+            if (!editContext)
+            {
+                return;
+            }
+
+            editContext->Class<DirectionFrameData>("DirectionFrameData", "Joint direction data.")
+                ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+                ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+        }
+    } // namespace MotionMatching
+} // namespace EMotionFX

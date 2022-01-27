@@ -1,0 +1,68 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <Allocators.h>
+#include <Frame.h>
+
+namespace EMotionFX
+{
+    namespace MotionMatching
+    {
+        AZ_CLASS_ALLOCATOR_IMPL(Frame, MotionMatchAllocator, 0)
+
+        Frame::Frame()
+            : m_frameIndex(~0)
+            , m_sampleTime(0.0f)
+            , m_sourceMotion(nullptr)
+            , m_mirrored(false)
+        {
+        }
+
+        Frame::Frame(size_t frameIndex, Motion* sourceMotion, float sampleTime, bool mirrored)
+            : m_frameIndex(frameIndex)
+            , m_sourceMotion(sourceMotion)
+            , m_sampleTime(sampleTime)
+            , m_mirrored(mirrored)
+        {
+        }
+
+        void Frame::SetFrameIndex(size_t frameIndex)
+        {
+            m_frameIndex = frameIndex;
+        }
+
+        Motion* Frame::GetSourceMotion() const
+        {
+            return m_sourceMotion;
+        }
+
+        float Frame::GetSampleTime() const
+        {
+            return m_sampleTime;
+        }
+
+        void Frame::SetSourceMotion(Motion* sourceMotion)
+        {
+            m_sourceMotion = sourceMotion;
+        }
+
+        void Frame::SetMirrored(bool enabled)
+        {
+            m_mirrored = enabled;
+        }
+
+        void Frame::SetSampleTime(float sampleTime)
+        {
+            m_sampleTime = sampleTime;
+        }
+    } // namespace MotionMatching
+} // namespace EMotionFX
