@@ -9,6 +9,8 @@
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+#include <AdjustableHeaderWidget.h>
+
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <QEvent>
@@ -22,12 +24,14 @@
 #include <QAbstractTextDocumentLayout>
 #include <QDesktopServices>
 #include <QMovie>
+#include <QHeaderView>
 
 namespace O3DE::ProjectManager
 {
-    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, QObject* parent)
+    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent)
         : QStyledItemDelegate(parent)
         , m_model(model)
+        , m_headerWidget(header)
     {
         AddPlatformIcon(GemInfo::Android, ":/Android.svg");
         AddPlatformIcon(GemInfo::iOS, ":/iOS.svg");
@@ -116,12 +120,15 @@ namespace O3DE::ProjectManager
         // Gem name
         QString gemName = GemModel::GetDisplayName(modelIndex);
         QFont gemNameFont(options.font);
-        const int firstColumnMaxTextWidth = s_summaryStartX - 30;
+        QPair<int, int> nameXBounds = CalcColumnXBounds(HeaderOrder::Name);
+        const int nameStartX = nameXBounds.first;
+        const int firstColumnTextStartX = s_itemMargins.left() + nameStartX + AdjustableHeaderWidget::s_headerTextIndent;
+        const int firstColumnMaxTextWidth = nameXBounds.second - nameStartX - AdjustableHeaderWidget::s_headerTextIndent;
         gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
         gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
-        gemNameRect.moveTo(contentRect.left(), contentRect.top());
+        gemNameRect.moveTo(firstColumnTextStartX, contentRect.top());
         painter->setFont(gemNameFont);
         painter->setPen(m_textColor);
         gemNameRect = painter->boundingRect(gemNameRect, Qt::TextSingleLine, gemName);
@@ -131,7 +138,7 @@ namespace O3DE::ProjectManager
         QString gemCreator = GemModel::GetCreator(modelIndex);
         gemCreator = standardFontMetrics.elidedText(gemCreator, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         QRect gemCreatorRect = GetTextRect(standardFont, gemCreator, s_fontSize);
-        gemCreatorRect.moveTo(contentRect.left(), contentRect.top() + gemNameRect.height());
+        gemCreatorRect.moveTo(firstColumnTextStartX, contentRect.top() + gemNameRect.height());
 
         painter->setFont(standardFont);
         gemCreatorRect = painter->boundingRect(gemCreatorRect, Qt::TextSingleLine, gemCreator);
@@ -157,10 +164,13 @@ namespace O3DE::ProjectManager
         const int featureTagAreaHeight = 30;
         const int summaryHeight = contentRect.height() - (hasTags * featureTagAreaHeight);
 
-        const int additionalSummarySpacing = s_itemMargins.right() * 3;
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
+        const auto [summaryStartX, summaryEndX] = CalcColumnXBounds(HeaderOrder::Summary);
+
+        const QSize summarySize =
+            QSize(summaryEndX - summaryStartX - AdjustableHeaderWidget::s_headerTextIndent - s_extraSummarySpacing,
             summaryHeight);
-        return QRect(QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
+        return QRect(
+            QPoint(s_itemMargins.left() + summaryStartX + AdjustableHeaderWidget::s_headerTextIndent, contentRect.top()), summarySize);
     }
 
     QSize GemItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -169,7 +179,7 @@ namespace O3DE::ProjectManager
         initStyleOption(&options, modelIndex);
 
         int marginsHorizontal = s_itemMargins.left() + s_itemMargins.right() + s_contentMargins.left() + s_contentMargins.right();
-        return QSize(marginsHorizontal + s_buttonWidth + s_summaryStartX, s_height);
+        return QSize(marginsHorizontal + s_buttonWidth + s_defaultSummaryStartX, s_height);
     }
 
     bool GemItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& modelIndex)
@@ -299,9 +309,17 @@ namespace O3DE::ProjectManager
         return QFontMetrics(font).boundingRect(text);
     }
 
+    QPair<int, int> GemItemDelegate::CalcColumnXBounds(HeaderOrder header) const
+    {
+        return m_headerWidget->CalcColumnXBounds(static_cast<int>(header));
+    }
+
     QRect GemItemDelegate::CalcButtonRect(const QRect& contentRect) const
     {
-        const QPoint topLeft = QPoint(contentRect.right() - s_buttonWidth, contentRect.center().y() - s_buttonHeight / 2);
+        const QPoint topLeft = QPoint( 
+            s_itemMargins.left() + CalcColumnXBounds(HeaderOrder::Status).first + AdjustableHeaderWidget::s_headerTextIndent + s_statusIconSize +
+                s_statusButtonSpacing,
+            contentRect.center().y() - s_buttonHeight / 2);
         const QSize size = QSize(s_buttonWidth, s_buttonHeight);
         return QRect(topLeft, size);
     }
@@ -331,18 +349,23 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemItemDelegate::DrawFeatureTags(QPainter* painter, const QRect& contentRect, const QStringList& featureTags, const QFont& standardFont, const QRect& summaryRect) const
+    void GemItemDelegate::DrawFeatureTags(
+        QPainter* painter,
+        const QRect& contentRect,
+        const QStringList& featureTags,
+        const QFont& standardFont,
+        const QRect& summaryRect) const
     {
         QFont gemFeatureTagFont(standardFont);
         gemFeatureTagFont.setPixelSize(s_featureTagFontSize);
         gemFeatureTagFont.setBold(false);
         painter->setFont(gemFeatureTagFont);
 
-        int x = s_summaryStartX;
+        int x = CalcColumnXBounds(HeaderOrder::Summary).first + AdjustableHeaderWidget::s_headerTextIndent;
         for (const QString& featureTag : featureTags)
         {
             QRect featureTagRect = GetTextRect(gemFeatureTagFont, featureTag, s_featureTagFontSize);
-            featureTagRect.moveTo(contentRect.left() + x + s_featureTagBorderMarginX,
+            featureTagRect.moveTo(s_itemMargins.left() + x + s_featureTagBorderMarginX,
                 contentRect.top() + 47);
             featureTagRect = painter->boundingRect(featureTagRect, Qt::TextSingleLine, featureTag);
 

@@ -57,13 +57,27 @@ namespace AzToolsFramework
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreFlags);
 
             /**
-            * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates
-            * @param instance The instance to store
-            * @param prefabDom The prefabDom that will be used to store the Instance data
-            * @param flags Controls behavior such as whether to store default values
-            * @return bool on whether the operation succeeded
+            * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates.
+            * @param instance The instance to store.
+            * @param prefabDom The prefabDom that will be used to store the Instance data.
+            * @param flags Controls behavior such as whether to store default values.
+            * @return bool on whether the operation succeeded.
             */
             bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreFlags flags = StoreFlags::None);
+
+            /**
+             * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates.
+             * @param instance The instance to store.
+             * @param prefabDom The prefabDom that will be used to store the Instance data.
+             * @param referencedAssets Collect a list of the assets that are referenced during storing.
+             * @param flags Controls behavior such as whether to store default values.
+             * @return bool on whether the operation succeeded.
+             */
+            bool StoreInstanceInPrefabDom(
+                const Instance& instance,
+                PrefabDom& prefabDom,
+                AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets,
+                StoreFlags flags = StoreFlags::None);
 
             /**
             * Stores a valid entity in Prefab Dom format.
