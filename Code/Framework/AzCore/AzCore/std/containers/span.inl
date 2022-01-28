@@ -197,18 +197,18 @@ namespace AZStd
 
     template <class ElementType, size_t Extent>
     inline auto as_bytes(span<ElementType, Extent> s) noexcept
-        -> span<const byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>
+        -> span<const AZStd::byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>
     {
-        return span<const byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>(
-            reinterpret_cast<const byte*>(s.data()), s.size_bytes());
+        return span<const AZStd::byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>(
+            reinterpret_cast<const AZStd::byte*>(s.data()), s.size_bytes());
     }
 
 
     template <class ElementType, size_t Extent>
     inline auto as_writable_bytes(span<ElementType, Extent> s) noexcept
-        -> enable_if_t<!is_const_v<ElementType>, span<byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>>
+        -> enable_if_t<!is_const_v<ElementType>, span<AZStd::byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>>
     {
-        return span<byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>(
-            reinterpret_cast<byte*>(s.data()), s.size_bytes());
+        return span<AZStd::byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>(
+            reinterpret_cast<AZStd::byte*>(s.data()), s.size_bytes());
     }
 } // namespace AZStd

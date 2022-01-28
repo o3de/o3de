@@ -34,7 +34,6 @@
 
 #include "AZTestShared/Utils/Utils.h"
 
-using namespace AZStd;
 using namespace AZ::Data;
 
 namespace UnitTest

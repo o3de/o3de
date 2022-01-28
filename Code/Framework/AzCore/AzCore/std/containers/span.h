@@ -189,11 +189,11 @@ namespace AZStd
     // [span.objectrep], views of object representation
     template <class ElementType, size_t Extent>
     auto as_bytes(span<ElementType, Extent> s) noexcept
-        -> span<const byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>;
+        -> span<const AZStd::byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>;
 
     template <class ElementType, size_t Extent>
     auto as_writable_bytes(span<ElementType, Extent> s) noexcept
-        -> enable_if_t<!is_const_v<ElementType>, span<byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>>;
+        -> enable_if_t<!is_const_v<ElementType>, span<AZStd::byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>>;
 
 } // namespace AZStd
 
