@@ -17,7 +17,7 @@ namespace AZ
     class ReflectContext;
 }
 
-namespace AzFramework
+namespace Multiplayer
 {
     struct SessionConfig;
 
@@ -104,4 +104,4 @@ namespace AzFramework
         //! Developer-defined information related to a player.
         AZStd::string m_playerData;
     };
-} // namespace AzFramework
+} // namespace Multiplayer
