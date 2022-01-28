@@ -280,7 +280,7 @@ class AndroidLauncher(Launcher):
             return True
         return False
 
-    def kill(self):
+    def _kill(self):
         """
         Attempts to force quit any running processes with the stored package name on the device
         that is set to self._device_id via the self._adb_prefix_command
