@@ -153,7 +153,7 @@ namespace ScriptCanvasBuilder
             return AZ::Failure(AZStd::string("Cannot compile graph data from a nullptr Script Canvas Entity"));
         }
 
-        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(scriptCanvasEntity);
+        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::EditorGraph>(scriptCanvasEntity);
         if (!sourceGraph)
         {
             return AZ::Failure(AZStd::string("Failed to find Script Canvas Graph Component"));
@@ -385,9 +385,9 @@ namespace ScriptCanvasBuilder
             ;
     }
 
-    ScriptCanvasEditor::Graph* PrepareSourceGraph(AZ::Entity* const buildEntity)
+    ScriptCanvasEditor::EditorGraph* PrepareSourceGraph(AZ::Entity* const buildEntity)
     {
-        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(buildEntity);
+        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::EditorGraph>(buildEntity);
         if (!sourceGraph)
         {
             return nullptr;

@@ -14,6 +14,7 @@
 
 #include <QHBoxLayout>
 #include <QSignalBlocker>
+#include <QTimer>
 
 namespace AzQtComponents
 {
@@ -254,11 +255,12 @@ SliderDoubleCombo::~SliderDoubleCombo()
 {
 }
 
+bool m_fromSlider{ false };
+
 void SliderDoubleCombo::setValueSlider(double value)
 {
     const bool doEmit = m_value != value;
     m_value = value;
-
     updateSpinBox();
     updateSlider();
 
@@ -267,6 +269,8 @@ void SliderDoubleCombo::setValueSlider(double value)
         // We don't want to update the slider from setValue as this
         // causes rounding errors in the tooltip hint.
         m_fromSlider = true;
+        QTimer::singleShot( 10, []() { m_fromSlider = false; });
+
         Q_EMIT valueChanged();
     }
 }
@@ -285,10 +289,6 @@ void SliderDoubleCombo::setValue(double value)
         {
             Q_EMIT valueChanged();
         }
-    }
-    else
-    {
-        m_fromSlider = false;
     }
 }
 

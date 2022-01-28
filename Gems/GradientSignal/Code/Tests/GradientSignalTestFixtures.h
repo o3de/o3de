@@ -9,9 +9,39 @@
 
 #include <Tests/GradientSignalTestMocks.h>
 #include <LmbrCentral/Shape/MockShapes.h>
+#include <AzTest/GemTestEnvironment.h>
 
 namespace UnitTest
 {
+    // The GradientSignal unit tests need to use the GemTestEnvironment to load the LmbrCentral Gem so that Shape components can be used
+    // in the unit tests and benchmarks.
+    class GradientSignalTestEnvironment
+        : public AZ::Test::GemTestEnvironment
+    {
+    public:
+        void AddGemsAndComponents() override;
+    };
+
+#ifdef HAVE_BENCHMARK
+    //! The Benchmark environment is used for one time setup and tear down of shared resources
+    class GradientSignalBenchmarkEnvironment
+        : public AZ::Test::BenchmarkEnvironmentBase
+        , public GradientSignalTestEnvironment
+
+    {
+    protected:
+        void SetUpBenchmark() override
+        {
+            SetupEnvironment();
+        }
+
+        void TearDownBenchmark() override
+        {
+            TeardownEnvironment();
+        }
+    };
+#endif
+
     // Base test fixture used for GradientSignal unit tests and benchmark tests
     class GradientSignalBaseFixture
     {
@@ -29,24 +59,6 @@ namespace UnitTest
             entity->Init();
             entity->Activate();
         }
-
-        template<typename Component, typename Configuration>
-        Component* CreateComponent(AZ::Entity* entity, const Configuration& config)
-        {
-            m_app->RegisterComponentDescriptor(Component::CreateDescriptor());
-            return entity->CreateComponent<Component>(config);
-        }
-
-        template<typename Component>
-        Component* CreateComponent(AZ::Entity* entity)
-        {
-            m_app->RegisterComponentDescriptor(Component::CreateDescriptor());
-            return entity->CreateComponent<Component>();
-        }
-
-        // Create a mock shape that will respond to the shape bus with proper responses for the given input box.
-        AZStd::unique_ptr<testing::NiceMock<UnitTest::MockShapeComponentRequests>> CreateMockShape(
-            const AZ::Aabb& spawnerBox, const AZ::EntityId& shapeEntityId);
 
         // Create a mock SurfaceDataSystem that will respond to requests for surface points with mock responses for points inside
         // the given input box.
@@ -77,27 +89,22 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceMaskGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceSlopeGradient(float shapeHalfBounds);
 
-        AZStd::unique_ptr<AZ::ComponentApplication> m_app;
-        AZ::Entity* m_systemEntity = nullptr;
-        ImageAssetMockAssetHandler* m_mockHandler = nullptr;
-        AZStd::vector<AZStd::unique_ptr<testing::NiceMock<UnitTest::MockShapeComponentRequests>>>* m_mockShapeHandlers = nullptr;
+        UnitTest::ImageAssetMockAssetHandler* m_mockHandler = nullptr;
     };
 
     struct GradientSignalTest
         : public GradientSignalBaseFixture
-        , public UnitTest::AllocatorsTestFixture
+        , public ::testing::Test
     {
     protected:
         void SetUp() override
         {
-            UnitTest::AllocatorsTestFixture::SetUp();
             SetupCoreSystems();
         }
 
         void TearDown() override
         {
             TearDownCoreSystems();
-            UnitTest::AllocatorsTestFixture::TearDown();
         }
 
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId);
@@ -106,41 +113,36 @@ namespace UnitTest
 #ifdef HAVE_BENCHMARK
     class GradientSignalBenchmarkFixture
         : public GradientSignalBaseFixture
-        , public UnitTest::AllocatorsBenchmarkFixture
-        , public UnitTest::TraceBusRedirector
+        , public ::benchmark::Fixture
     {
     public:
-        void internalSetUp(const benchmark::State& state)
+        void internalSetUp()
         {
-            AZ::Debug::TraceMessageBus::Handler::BusConnect();
-            UnitTest::AllocatorsBenchmarkFixture::SetUp(state);
             SetupCoreSystems();
         }
 
-        void internalTearDown(const benchmark::State& state)
+        void internalTearDown()
         {
             TearDownCoreSystems();
-            UnitTest::AllocatorsBenchmarkFixture::TearDown(state);
-            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         }
 
     protected:
-        void SetUp(const benchmark::State& state) override
+        void SetUp([[maybe_unused]] const benchmark::State& state) override
         {
-            internalSetUp(state);
+            internalSetUp();
         }
-        void SetUp(benchmark::State& state) override
+        void SetUp([[maybe_unused]] benchmark::State& state) override
         {
-            internalSetUp(state);
+            internalSetUp();
         }
 
-        void TearDown(const benchmark::State& state) override
+        void TearDown([[maybe_unused]] const benchmark::State& state) override
         {
-            internalTearDown(state);
+            internalTearDown();
         }
-        void TearDown(benchmark::State& state) override
+        void TearDown([[maybe_unused]] benchmark::State& state) override
         {
-            internalTearDown(state);
+            internalTearDown();
         }
     };
 #endif

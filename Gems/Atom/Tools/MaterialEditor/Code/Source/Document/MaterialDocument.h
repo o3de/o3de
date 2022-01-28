@@ -7,18 +7,17 @@
  */
 #pragma once
 
-#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
-#include <Atom/Document/MaterialDocumentRequestBus.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
+#include <Document/MaterialDocumentRequestBus.h>
 
 namespace MaterialEditor
 {

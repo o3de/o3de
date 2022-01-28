@@ -435,6 +435,19 @@ namespace AZ
             }
         }
 
+        bool MeshFeatureProcessor::GetRayTracingEnabled(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_descriptor.m_isRayTracingEnabled;
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return false;
+            }
+        }
+
         void MeshFeatureProcessor::SetVisible(const MeshHandle& meshHandle, bool visible)
         {
             if (meshHandle.IsValid())
@@ -759,7 +772,7 @@ namespace AZ
                 return;
             }
 
-            const AZStd::array_view<Data::Instance<RPI::ModelLod>>& modelLods = m_model->GetLods();
+            const AZStd::span<const Data::Instance<RPI::ModelLod>>& modelLods = m_model->GetLods();
             if (modelLods.empty())
             {
                 return;

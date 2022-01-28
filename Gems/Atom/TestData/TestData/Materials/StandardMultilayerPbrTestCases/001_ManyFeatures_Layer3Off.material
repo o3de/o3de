@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
     "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/001_ManyFeatures.material",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "blend": {
             "enableLayer3": false

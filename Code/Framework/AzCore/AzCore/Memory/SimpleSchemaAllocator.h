@@ -22,17 +22,15 @@ namespace AZ
     template <class Schema, class DescriptorType=typename Schema::Descriptor, bool ProfileAllocations=true, bool ReportOutOfMemory=true>
     class SimpleSchemaAllocator
         : public AllocatorBase
-        , public IAllocatorAllocate
     {
     public:
         using Descriptor = DescriptorType;
-        using pointer_type = typename IAllocatorAllocate::pointer_type;
-        using size_type = typename IAllocatorAllocate::size_type;
-        using difference_type = typename IAllocatorAllocate::difference_type;
+        using pointer_type = typename Schema::pointer_type;
+        using size_type = typename Schema::size_type;
+        using difference_type = typename Schema::difference_type;
 
         SimpleSchemaAllocator(const char* name, const char* desc)
-            : AllocatorBase(this, name, desc)
-            , m_schema(nullptr)
+            : AllocatorBase(nullptr, name, desc)
         {
         }
 
@@ -65,13 +63,8 @@ namespace AZ
             return AllocatorDebugConfig();
         }
 
-        IAllocatorAllocate* GetSchema() override
-        {
-            return m_schema;
-        }
-
         //---------------------------------------------------------------------
-        // IAllocatorAllocate
+        // IAllocatorSchema
         //---------------------------------------------------------------------
         pointer_type Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = nullptr, const char* fileName = nullptr, int lineNum = 0, unsigned int suppressStackRecord = 0) override
         {
@@ -188,14 +181,6 @@ namespace AZ
         { 
             return m_schema->GetUnAllocatedMemory(isPrint);
         }
-        
-        IAllocatorAllocate* GetSubAllocator() override
-        {
-            return m_schema->GetSubAllocator();
-        }
-
-    protected:
-        IAllocatorAllocate* m_schema;
 
     private:
         typename AZStd::aligned_storage<sizeof(Schema), AZStd::alignment_of<Schema>::value>::type m_schemaStorage;

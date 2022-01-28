@@ -13,6 +13,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <WhiteBox/WhiteBoxToolApi.h>
 

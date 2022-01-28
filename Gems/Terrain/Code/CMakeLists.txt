@@ -98,7 +98,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME Terrain.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
-            terrain_files.cmake
             terrain_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE

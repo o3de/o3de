@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
     "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "baseColor": {
             "textureMap": "TestData/Objects/cube/cube_diff.tif"

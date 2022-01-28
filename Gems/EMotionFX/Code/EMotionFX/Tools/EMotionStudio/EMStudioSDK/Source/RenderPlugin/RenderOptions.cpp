@@ -177,6 +177,10 @@ namespace EMStudio
         SetNearClipPlaneDistance(other.GetNearClipPlaneDistance());
         SetFarClipPlaneDistance(other.GetFarClipPlaneDistance());
         SetFOV(other.GetFOV());
+        SetRenderFlags(other.GetRenderFlags());
+        SetManipulatorMode(other.GetManipulatorMode());
+        SetCameraViewMode(other.GetCameraViewMode());
+        SetCameraFollowUp(other.GetCameraFollowUp());
         return *this;
     }
 
@@ -247,6 +251,16 @@ namespace EMStudio
         settings->setValue(s_renderSelectionBoxOptionName, m_renderSelectionBox);
 
         settings->setValue("manipulatorMode", static_cast<int>(m_manipulatorMode));
+        settings->setValue("cameraViewMode", static_cast<int>(m_cameraViewMode));
+        settings->setValue("cameraFollowUp", m_cameraFollowUp);
+
+        // Save render flags
+        settings->beginGroup("renderFlags");
+        for (uint32 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
+        {
+            settings->setValue(QString(i), (bool)m_renderFlags[i]);
+        }
+        settings->endGroup();
     }
 
     RenderOptions RenderOptions::Load(QSettings* settings)
@@ -315,6 +329,18 @@ namespace EMStudio
         options.m_renderSelectionBox = settings->value(s_renderSelectionBoxOptionName, options.m_renderSelectionBox).toBool();
 
         options.m_manipulatorMode = static_cast<ManipulatorMode>(settings->value("manipulatorMode", options.m_manipulatorMode).toInt());
+        options.m_cameraViewMode = static_cast<CameraViewMode>(settings->value("cameraViewMode", options.m_cameraViewMode).toInt());
+        options.m_cameraFollowUp = settings->value("CameraFollowUp", options.m_cameraFollowUp).toBool();
+
+        // Read render flags
+        settings->beginGroup("renderFlags");
+        for (uint32 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
+        {
+            const bool defaultValue = (i == EMotionFX::ActorRenderFlag::RENDER_SOLID);
+            const bool isEnabled = settings->value(QString(i), defaultValue).toBool();
+            options.m_renderFlags[i] = isEnabled;
+        }
+        settings->endGroup();
 
         options.CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
 
@@ -1056,6 +1082,41 @@ namespace EMStudio
     RenderOptions::ManipulatorMode RenderOptions::GetManipulatorMode() const
     {
         return m_manipulatorMode;
+    }
+
+    void RenderOptions::SetCameraViewMode(CameraViewMode mode)
+    {
+        m_cameraViewMode = mode;
+    }
+
+    RenderOptions::CameraViewMode RenderOptions::GetCameraViewMode() const
+    {
+        return m_cameraViewMode;
+    }
+
+    void RenderOptions::SetCameraFollowUp(bool followUp)
+    {
+        m_cameraFollowUp = followUp;
+    }
+
+    bool RenderOptions::GetCameraFollowUp() const
+    {
+        return m_cameraFollowUp;
+    }
+
+    void RenderOptions::ToggerRenderFlag(int index)
+    {
+        m_renderFlags[index] = !m_renderFlags[index];
+    }
+
+    void RenderOptions::SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags)
+    {
+        m_renderFlags = renderFlags;
+    }
+
+    EMotionFX::ActorRenderFlagBitset RenderOptions::GetRenderFlags() const
+    {
+        return m_renderFlags;
     }
 
     void RenderOptions::CopyToRenderActorSettings(AZ::Render::RenderActorSettings& settings) const

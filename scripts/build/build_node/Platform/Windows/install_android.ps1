@@ -10,16 +10,16 @@ choco install -y android-sdk
 $Env:ANDROID_HOME = "C:\Android\android-sdk"
 setx ANDROID_HOME "C:\Android\android-sdk"
 
-$apis_packages = '"add-ons;addon-google_apis-google-19" "add-ons;addon-google_apis-google-21" "add-ons;addon-google_apis-google-22" "add-ons;addon-google_apis-google-23" "add-ons;addon-google_apis-google-24"'
-$android_packages = '"platforms;android-19" "platforms;android-21" "platforms;android-22" "platforms;android-23" "platforms;android-24" "platforms;android-25" "platforms;android-26" "platforms;android-27" "platforms;android-28" "platforms;android-29" "platforms;android-30"'
+$android_packages = '"platforms;android-28" "platforms;android-29" "platforms;android-30"'
 $googleplay_packages = '"extras;google;market_apk_expansion" "extras;google;market_licensing"'
 $build_tools = '"build-tools;30.0.2" "tools"'
+$ndk = '"ndk;21.4.7075529"'
 
 $sdkmanager = "C:\Android\android-sdk\tools\bin\sdkmanager.bat"
-Start-Process -FilePath $sdkmanager -ArgumentList $apis_packages -NoNewWindow -Wait
 Start-Process -FilePath $sdkmanager -ArgumentList $android_packages -NoNewWindow -Wait
 Start-Process -FilePath $sdkmanager -ArgumentList $googleplay_packages -NoNewWindow -Wait
 Start-Process -FilePath $sdkmanager -ArgumentList $build_tools -NoNewWindow -Wait
+Start-Process -FilePath $sdkmanager -ArgumentList $ndk -NoNewWindow -Wait
 
 Write-Host "Installing Gradle and Ninja"
 Import-Module C:\ProgramData\chocolatey\helpers\chocolateyInstaller.psm1 #Grade needs a custom installer due to being hardcoded to C:\Programdata in Chocolatey

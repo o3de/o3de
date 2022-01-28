@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 try:
     import azlmbr.asset
-    import azlmbr.asset.entity
+    import azlmbr.entity
     import azlmbr.asset.builder
     import blast_asset_builder
 except:

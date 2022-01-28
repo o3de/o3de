@@ -72,6 +72,22 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QToolButton" name="m_collapseAllButton">
+           <property name="focusPolicy">
+            <enum>Qt::ClickFocus</enum>
+           </property>
+           <property name="toolTip">
+            <string extracomment="Collapse All"/>
+           </property>
+           <property name="toolTipDuration">
+            <number>3</number>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -143,15 +159,6 @@
              <property name="sortingEnabled">
               <bool>true</bool>
              </property>
-             <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-              <bool>false</bool>
-             </attribute>
-             <attribute name="horizontalHeaderStretchLastSection">
-              <bool>true</bool>
-             </attribute>
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
             </widget>
            </item>
            <item>

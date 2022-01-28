@@ -100,12 +100,18 @@ namespace ScriptCanvas
     {
         RuntimeAsset* runtimeAsset = asset.GetAs<RuntimeAsset>();
         AZ_Assert(runtimeAsset, "This should be a Script Canvas runtime asset, as this is the only type we process!");
+
         if (runtimeAsset && m_serializeContext)
         {
             stream->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-            bool loadSuccess = AZ::Utils::LoadObjectFromStreamInPlace(*stream, runtimeAsset->m_runtimeData, m_serializeContext, AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB));
+            const bool loadSuccess = AZ::Utils::LoadObjectFromStreamInPlace(*stream, runtimeAsset->m_runtimeData
+                , m_serializeContext, AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB));
+            AZ_Error("ScriptCanvas", loadSuccess, "ScriptCanvas failed to load runtime asset: %s - %s"
+                , asset.GetHint().c_str(), asset.GetId().ToString<AZStd::string>().c_str());
+
             return loadSuccess ? AZ::Data::AssetHandler::LoadResult::LoadComplete : AZ::Data::AssetHandler::LoadResult::Error;
         }
+
         return AZ::Data::AssetHandler::LoadResult::Error;
     }
 

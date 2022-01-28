@@ -44,11 +44,9 @@ namespace UnitTest
             // This lets our component register with surfaceData successfully.
             MockSurfaceDataSystem mockSurfaceDataSystem;
 
-            // Create a mock shape entity in case we want to use it.
+            // Create a mock shape entity in case our gradient test uses shape constraints.
             // The mock shape is a cube that goes from -0.5 to 0.5 in space.
-            auto mockShapeEntity = CreateEntity();
-            CreateComponent<MockShapeComponent>(mockShapeEntity.get());
-            MockShapeComponentHandler mockShapeHandler(mockShapeEntity->GetId());
+            auto mockShapeEntity = CreateTestEntity(0.5f);
             ActivateEntity(mockShapeEntity.get());
 
             // For ease of testing, use a constant gradient as our input gradient.
@@ -76,8 +74,8 @@ namespace UnitTest
 
             // Create the test entity with the GradientSurfaceData component and the required gradient dependency
             auto entity = CreateEntity();
-            CreateComponent<GradientSignal::ConstantGradientComponent>(entity.get(), constantGradientConfig);
-            CreateComponent<GradientSignal::GradientSurfaceDataComponent>(entity.get(), config);
+            entity->CreateComponent<GradientSignal::ConstantGradientComponent>(constantGradientConfig);
+            entity->CreateComponent<GradientSignal::GradientSurfaceDataComponent>(config);
             ActivateEntity(entity.get());
 
             // Get our registered modifier handle (and verify that it's valid)

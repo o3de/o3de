@@ -12,7 +12,6 @@
 #include <AzCore/Asset/AssetContainer.h>
 #include <AzCore/Asset/AssetDataStream.h>
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h> // used as allocator for most components
 #include <AzCore/std/parallel/mutex.h>

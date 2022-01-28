@@ -192,7 +192,7 @@ namespace AZ
         };
 
         using PassAttachmentBindingList = AZStd::vector<PassAttachmentBinding>;
-        using PassAttachmentBindingListView = AZStd::array_view<PassAttachmentBinding>;
+        using PassAttachmentBindingListView = AZStd::span<const PassAttachmentBinding>;
 
     }   // namespace RPI
 

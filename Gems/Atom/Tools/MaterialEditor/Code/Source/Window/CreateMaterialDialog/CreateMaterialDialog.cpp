@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/Document/MaterialDocumentSettings.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
@@ -15,6 +14,7 @@
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <Document/MaterialDocumentSettings.h>
 #include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 
 namespace MaterialEditor

@@ -16,7 +16,6 @@
 
 #include <QScopedPointer>
 
-struct CUIEnumsDatabase_SEnum;
 class ReflectedPropertyItem;
 
 // Class to wrap the CReflectedVars and sync them with corresponding IVariable.
@@ -143,22 +142,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     IVarEnumListPtr m_enumList;
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     bool m_updatingEnums;
-};
-
-class EDITOR_CORE_API ReflectedVarDBEnumAdapter
-    : public ReflectedVarAdapter
-{
-public:
-    void SetVariable(IVariable* pVariable) override;
-    void SyncReflectedVarToIVar(IVariable* pVariable) override;
-    void SyncIVarToReflectedVar(IVariable* pVariable) override;
-    CReflectedVar* GetReflectedVar() override { return m_reflectedVar.data(); }
-private:
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    QScopedPointer<CReflectedVarEnum<AZStd::string>  > m_reflectedVar;
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
-    CUIEnumsDatabase_SEnum* m_pEnumDBItem;
 };
 
 class EDITOR_CORE_API ReflectedVarVector2Adapter

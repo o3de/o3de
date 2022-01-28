@@ -793,9 +793,9 @@ namespace UnitTests
 
     TEST_F(SourceFileRelocatorTest, TestInterface)
     {
-        auto* interface = AZ::Interface<ISourceFileRelocation>::Get();
+        auto* sourceFileRelocator = AZ::Interface<ISourceFileRelocation>::Get();
 
-        ASSERT_NE(interface, nullptr);
+        ASSERT_NE(sourceFileRelocator, nullptr);
     }
 
     TEST_F(SourceFileRelocatorTest, Move_Real_Succeeds)

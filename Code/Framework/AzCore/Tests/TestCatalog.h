@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/std/parallel/condition_variable.h>
 
 namespace UnitTest
 {

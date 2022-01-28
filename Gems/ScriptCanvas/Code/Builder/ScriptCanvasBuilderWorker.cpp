@@ -44,7 +44,7 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, false);
         AzFramework::StringFunc::Path::Normalize(fullPath);
 
-        const ScriptCanvasEditor::Graph* sourceGraph = nullptr;
+        const ScriptCanvasEditor::EditorGraph* sourceGraph = nullptr;
         const ScriptCanvas::GraphData* graphData = nullptr;
         ScriptCanvasEditor::SourceHandle sourceHandle;
 
