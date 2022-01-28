@@ -11,7 +11,6 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -138,11 +137,6 @@ namespace AZ
 
             JsonReportingHelper reportingHelper;
             reportingHelper.Attach(settings);
-
-            // This is required by some custom material serializers to support relative path references.
-            JsonFileLoadContext fileLoadContext;
-            fileLoadContext.PushFilePath(filePath);
-            settings.m_metadata.Add(fileLoadContext);
 
             JsonSerialization::Load(material, value, settings);
 

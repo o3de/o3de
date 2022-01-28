@@ -16,11 +16,13 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Material/Material.h>
 
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -35,6 +37,7 @@ namespace UnitTest
     {
     protected:
 
+        AZ::IO::FixedMaxPath m_tempFolder;
         RHI::Ptr<RHI::ShaderResourceGroupLayout> m_testMaterialSrgLayout;
         Data::Asset<ShaderAsset> m_testShaderAsset;
         Data::Asset<ShaderAsset> m_testShaderAsset2;
@@ -329,6 +332,9 @@ namespace UnitTest
             AZStd::string testImageFilepathAbsolute(TestImageFilepathAbsolute);
             AzFramework::StringFunc::Path::Normalize(testImageFilepathAbsolute);
             m_assetSystemStub.RegisterSourceInfo(testImageFilepathAbsolute.c_str(), testImageAssetInfo2, "");
+
+            m_tempFolder = AZ::Utils::GetExecutableDirectory();
+            m_tempFolder = m_tempFolder/"temp"/"MaterialTypeSourceDataTest";
         }
 
         void TearDown() override
@@ -1473,6 +1479,8 @@ namespace UnitTest
     {
         // Note that serialization of individual fields within material properties is thoroughly tested in
         // MaterialPropertySerializerTests, so the sample property data used here is cursory.
+        // We also don't cover fields related to providing name contexts for nested property groups, like
+        // "shaderInputPrefix" and "shaderOptionPrefix" as those are covered in CreateMaterialTypeAsset_NestedGroups*.
 
         const AZStd::string inputJson = R"(
             {
@@ -1701,7 +1709,7 @@ namespace UnitTest
         JsonTestResult storeResult = StoreTestDataToJson(material, outputJson);
         ExpectSimilarJson(inputJson, outputJson);
     }
-    
+
     TEST_F(MaterialTypeSourceDataTests, LoadAllFieldsUsingOldFormat)
     {
         // The content of this test was copied from LoadAndStoreJson_AllFields to prove backward compatibility.
@@ -1963,4 +1971,58 @@ namespace UnitTest
 
         errorMessageFinder.CheckExpectedErrorsFound();
     }
+    
+    TEST_F(MaterialTypeSourceDataTests, LoadWithImportedJson)
+    {
+        const AZStd::string propertyGroupJson = R"(
+            {
+                "name": "myGroup",
+                "displayName": "My Group",
+                "description": "This group is defined in a separate JSON file",
+                "properties": [
+                    {
+                        "name": "foo",
+                        "type": "Bool"
+                    },
+                    {
+                        "name": "bar",
+                        "type": "Float"
+                    }
+                ]
+            }
+        )";
+
+        IO::FixedMaxPath propertyGroupJsonFilePath = m_tempFolder/"MyPropertyGroup.json";
+        AZ::Utils::WriteFile(propertyGroupJson, propertyGroupJsonFilePath.c_str());
+
+        const AZStd::string materialTypeJson = R"(
+            {
+                "propertyLayout": {
+                    "propertyGroups": [
+                        { "$import": "MyPropertyGroup.json" }
+                    ]
+                }
+            }
+        )";
+        
+        IO::FixedMaxPath materialTypeJsonFilePath = m_tempFolder/"TestImport.materialtype";
+        AZ::Utils::WriteFile(materialTypeJson, materialTypeJsonFilePath.c_str());
+
+        auto loadMaterialTypeResult = MaterialUtils::LoadMaterialTypeSourceData(materialTypeJsonFilePath.c_str());
+        EXPECT_TRUE(loadMaterialTypeResult);
+        MaterialTypeSourceData materialType = loadMaterialTypeResult.TakeValue();
+
+        EXPECT_EQ(materialType.GetPropertyLayout().m_propertyGroups.size(), 1);
+        EXPECT_TRUE(materialType.FindPropertyGroup("myGroup") != nullptr);
+        EXPECT_EQ(materialType.FindPropertyGroup("myGroup")->GetDisplayName(), "My Group");
+        EXPECT_EQ(materialType.FindPropertyGroup("myGroup")->GetDescription(), "This group is defined in a separate JSON file");
+        EXPECT_EQ(materialType.FindPropertyGroup("myGroup")->GetProperties().size(), 2);
+        EXPECT_NE(materialType.FindProperty("myGroup.foo"), nullptr);
+        EXPECT_NE(materialType.FindProperty("myGroup.bar"), nullptr);
+        EXPECT_EQ(materialType.FindProperty("myGroup.foo")->GetName(), "foo");
+        EXPECT_EQ(materialType.FindProperty("myGroup.bar")->GetName(), "bar");
+        EXPECT_EQ(materialType.FindProperty("myGroup.foo")->m_dataType, MaterialPropertyDataType::Bool);
+        EXPECT_EQ(materialType.FindProperty("myGroup.bar")->m_dataType, MaterialPropertyDataType::Float);
+    }
+
 }

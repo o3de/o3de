@@ -48,11 +48,11 @@ namespace AZ
             //! @return if resolving is successful. An error will be reported if it fails.
             bool ResolveMaterialPropertyEnumValue(const MaterialPropertyDescriptor* propertyDescriptor, const AZ::Name& enumName, MaterialPropertyValue& outResolvedValue);
 
-            //! Load material type from a json file. If the file path is relative, the loaded json document must be provided.
+            //! Load material type from a json file or document.
             //! Otherwise, it will use the passed in document first if not null, or load the json document from the path.
-            //! @param filePath a relative path if document is provided, an absolute path if document is not provided.
-            //! @param document the loaded json document.
-            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, const rapidjson::Value* document = nullptr);
+            //! @param filePath path to the JSON file to load, unless the @document is already provided. In either case, this path will be used to resolve any relative file references.
+            //! @param document an optional already loaded json document.
+            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, rapidjson::Document* document = nullptr);
 
             //! Utility function for custom JSON serializers to report results as "Skipped" when encountering keys that aren't recognized
             //! as part of the custom format.

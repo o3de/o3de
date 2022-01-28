@@ -14,11 +14,11 @@
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
-#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Serialization/Json/JsonImporter.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
 #include <AzCore/std/string/string.h>
@@ -73,21 +73,29 @@ namespace AZ
                 outResolvedValue = enumValue;
                 return true;
             }
-
-            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, const rapidjson::Value* document)
+            
+            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, rapidjson::Document* document)
             {
-                AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome;
+                rapidjson::Document localDocument;
+
                 if (document == nullptr)
                 {
-                    loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
+                    AZ::Outcome<rapidjson::Document, AZStd::string> loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(filePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!loadOutcome.IsSuccess())
                     {
                         AZ_Error("AZ::RPI::JsonUtils", false, "%s", loadOutcome.GetError().c_str());
                         return AZ::Failure();
                     }
 
-                    document = &loadOutcome.GetValue();
+                    localDocument = loadOutcome.TakeValue();
+                    document = &localDocument;
                 }
+                
+                AZ::BaseJsonImporter jsonImporter;
+                AZ::JsonImportSettings importSettings;
+                importSettings.m_importer = &jsonImporter;
+                importSettings.m_loadedJsonPath = filePath;
+                AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ResolveImports(document->GetObject(), document->GetAllocator(), importSettings);
 
                 MaterialTypeSourceData materialType;
 
@@ -95,11 +103,6 @@ namespace AZ
 
                 JsonReportingHelper reportingHelper;
                 reportingHelper.Attach(settings);
-
-                // This is required by some custom material serializers to support relative path references.
-                JsonFileLoadContext fileLoadContext;
-                fileLoadContext.PushFilePath(filePath);
-                settings.m_metadata.Add(fileLoadContext);
 
                 JsonSerialization::Load(materialType, *document, settings);
                 materialType.ConvertToNewDataFormat();
