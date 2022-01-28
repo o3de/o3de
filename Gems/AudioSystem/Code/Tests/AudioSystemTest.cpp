@@ -213,13 +213,13 @@ TEST_F(ATLAudioObjectTest, SetRaycastCalcType_SetAllTypes_AffectsCanRunRaycasts)
     RaycastProcessor::s_raycastsEnabled = true;
     CATLAudioObject audioObject(testAudioObjectId, nullptr);
 
-    audioObject.SetRaycastCalcType(eAOOCT_SINGLE_RAY);
+    audioObject.SetRaycastCalcType(Audio::ObstructionType::SingleRay);
     EXPECT_TRUE(audioObject.CanRunRaycasts());
 
-    audioObject.SetRaycastCalcType(eAOOCT_IGNORE);
+    audioObject.SetRaycastCalcType(Audio::ObstructionType::Ignore);
     EXPECT_FALSE(audioObject.CanRunRaycasts());
 
-    audioObject.SetRaycastCalcType(eAOOCT_MULTI_RAY);
+    audioObject.SetRaycastCalcType(Audio::ObstructionType::MultiRay);
     EXPECT_TRUE(audioObject.CanRunRaycasts());
 }
 
@@ -230,7 +230,7 @@ TEST_F(ATLAudioObjectTest, OnAudioRaycastResults_MultiRaycastZeroDistanceHits_Ze
     CATLAudioObject audioObject(testAudioObjectId, nullptr);
     RaycastProcessor& raycastProcessor = GetRaycastProcessor(audioObject);
 
-    audioObject.SetRaycastCalcType(eAOOCT_MULTI_RAY);
+    audioObject.SetRaycastCalcType(Audio::ObstructionType::MultiRay);
     for (AZStd::decay_t<decltype(Audio::s_maxRaysPerObject)> i = 0; i < Audio::s_maxRaysPerObject; ++i)
     {
         raycastProcessor.SetupTestRay(i);
@@ -260,7 +260,7 @@ TEST_F(ATLAudioObjectTest, OnAudioRaycastResults_SingleRaycastHit_NonZeroObstruc
     CATLAudioObject audioObject(testAudioObjectId, nullptr);
     RaycastProcessor& raycastProcessor = GetRaycastProcessor(audioObject);
 
-    audioObject.SetRaycastCalcType(eAOOCT_SINGLE_RAY);
+    audioObject.SetRaycastCalcType(Audio::ObstructionType::SingleRay);
     raycastProcessor.SetupTestRay(0);
 
     AZStd::vector<AzPhysics::SceneQueryHit> hits(3);     // three hits
@@ -290,7 +290,7 @@ TEST_F(ATLAudioObjectTest, OnAudioRaycastResults_MultiRaycastHit_NonZeroOcclusio
     CATLAudioObject audioObject(testAudioObjectId, nullptr);
     RaycastProcessor& raycastProcessor = GetRaycastProcessor(audioObject);
 
-    audioObject.SetRaycastCalcType(eAOOCT_MULTI_RAY);
+    audioObject.SetRaycastCalcType(Audio::ObstructionType::MultiRay);
     for (AZStd::decay_t<decltype(Audio::s_maxRaysPerObject)> i = 1; i < Audio::s_maxRaysPerObject; ++i)
     {
         raycastProcessor.SetupTestRay(i);
@@ -440,134 +440,6 @@ TEST_F(ATLUtilsTestFixture, FindPlaceConst_ContainerDoesntContainItem_FindsNone)
 
 
 
-//---------------------------------//
-// Test CAudioEventListenerManager //
-//---------------------------------//
-
-class AudioEventListenerManagerTestFixture
-    : public ::testing::Test
-{
-public:
-    AudioEventListenerManagerTestFixture()
-        : m_callbackReceiver()
-    {
-        m_eventListener.m_callbackOwner = &m_callbackReceiver;
-        m_eventListener.m_fnOnEvent = &EventListenerCallbackReceiver::AudioRequestCallback;
-        m_eventListener.m_requestType = eART_AUDIO_ALL_REQUESTS;
-        m_eventListener.m_specificRequestMask = eACMRT_REPORT_STARTED_EVENT;
-    }
-
-    void SetUp() override
-    {
-        m_callbackReceiver.Reset();
-    }
-
-    void TearDown() override
-    {
-    }
-
-    // Eventually the callback will actually get called and we can check that.
-    // For now, this is mostly here to act as a callback object placeholder.
-    class EventListenerCallbackReceiver
-    {
-    public:
-        static void AudioRequestCallback([[maybe_unused]] const SAudioRequestInfo* const requestInfo)
-        {
-            ++s_numCallbacksReceived;
-        }
-
-        static int GetNumCallbacksReceived()
-        {
-            return s_numCallbacksReceived;
-        }
-
-        static void Reset()
-        {
-            s_numCallbacksReceived = 0;
-        }
-
-    protected:
-        static int s_numCallbacksReceived;
-    };
-
-protected:
-    EventListenerCallbackReceiver m_callbackReceiver;
-    CAudioEventListenerManager m_eventListenerManager;
-
-    SAudioEventListener m_eventListener;
-};
-
-int AudioEventListenerManagerTestFixture::EventListenerCallbackReceiver::s_numCallbacksReceived = 0;
-
-#if !defined(AUDIO_RELEASE)
-TEST_F(AudioEventListenerManagerTestFixture, AudioEventListenerManager_AddListener_Succeeds)
-{
-    // add request listener...
-    m_eventListenerManager.AddRequestListener(m_eventListener);
-
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 1);
-}
-
-TEST_F(AudioEventListenerManagerTestFixture, AudioEventListenerManager_RemoveListener_Fails)
-{
-    // attempt removal when no request listeners have been added yet...
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 0);
-
-    m_eventListenerManager.RemoveRequestListener(m_eventListener);
-
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 0);
-}
-
-TEST_F(AudioEventListenerManagerTestFixture, AudioEventListenerManager_AddListenerAndRemoveListener_Succeeds)
-{
-    // add a request listener, then remove it...
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 0);
-
-    m_eventListenerManager.AddRequestListener(m_eventListener);
-
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 1);
-
-    m_eventListenerManager.RemoveRequestListener(m_eventListener);
-
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 0);
-}
-
-TEST_F(AudioEventListenerManagerTestFixture, AudioEventListenerManager_AddListenerAndTwiceRemoveListener_Succeeds)
-{
-    // add a request listener, then try to remove it twice...
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 0);
-
-    m_eventListenerManager.AddRequestListener(m_eventListener);
-
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 1);
-
-    m_eventListenerManager.RemoveRequestListener(m_eventListener);
-
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 0);
-
-    m_eventListenerManager.RemoveRequestListener(m_eventListener);
-
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 0);
-}
-
-TEST_F(AudioEventListenerManagerTestFixture, AudioEventListenerManager_AddListenerAndRemoveWithNullCallbackFunc_Succeeds)
-{
-    // adds a request listener with a real callback function, then removes it with nullptr callback specified...
-    // this should be a success...
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 0);
-
-    m_eventListenerManager.AddRequestListener(m_eventListener);
-
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 1);
-
-    SAudioEventListener nullCallbackListener;
-    nullCallbackListener.m_callbackOwner = &m_callbackReceiver;
-    nullCallbackListener.m_fnOnEvent = nullptr;
-    m_eventListenerManager.RemoveRequestListener(nullCallbackListener);
-
-    EXPECT_EQ(m_eventListenerManager.GetNumEventListeners(), 0);
-}
-#endif
 
 //-------------------//
 // Test Audio::Flags //
