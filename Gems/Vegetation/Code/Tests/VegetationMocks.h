@@ -341,7 +341,7 @@ namespace UnitTest
         }
 
         void GetSurfacePointsFromRegion([[maybe_unused]] const AZ::Aabb& inRegion, [[maybe_unused]] const AZ::Vector2 stepSize, [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
-            [[maybe_unused]] SurfaceData::SurfacePointListPerPosition& surfacePointListPerPosition) const override
+            [[maybe_unused]] SurfaceData::SurfacePointLists& surfacePointListPerPosition) const override
         {
         }
 
