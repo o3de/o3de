@@ -7,44 +7,43 @@
             "details": {
                 "name": "Is Empty",
                 "category": "Containers",
-                "tooltip": "Returns whether the container is empty",
-                "subtitle": "Containers"
+                "tooltip": "Returns whether the container is empty"
             },
             "slots": [
                 {
-                    "base": "DataOutput_Is Empty",
+                    "base": "DataOutput_Is Empty_0",
                     "details": {
                         "name": "Is Empty"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "Output_True",
+                    "base": "Output_True_1",
                     "details": {
                         "name": "True",
                         "tooltip": "The container is empty"
                     }
                 },
                 {
-                    "base": "Output_False",
+                    "base": "Output_False_2",
                     "details": {
                         "name": "False",
                         "tooltip": "The container is not empty"
                     }
                 },
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }

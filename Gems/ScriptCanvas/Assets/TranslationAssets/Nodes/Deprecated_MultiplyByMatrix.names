@@ -1,44 +1,43 @@
 {
     "entries": [
         {
-            "base": "{FDB0FF00-F185-5CCF-851A-BBD5116C43EC}",
+            "base": "{29187DB1-2573-5243-86EB-190B64E00C54}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByMatrix",
+                "name": "Multiply By Matrix",
                 "category": "Deprecated",
-                "tooltip": "This node is deprecated, use Multiply (*), it provides contextual type and slots",
-                "subtitle": "Deprecated"
+                "tooltip": "This node is deprecated, use Multiply (*), it provides contextual type and slots"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Matrix3x3: A",
+                    "base": "DataInput_A_0",
                     "details": {
-                        "name": "Matrix3x3: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "base": "DataInput_Matrix3x3: B",
+                    "base": "DataInput_B_1",
                     "details": {
-                        "name": "Matrix3x3: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "base": "DataOutput_Result: Matrix3x3",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]

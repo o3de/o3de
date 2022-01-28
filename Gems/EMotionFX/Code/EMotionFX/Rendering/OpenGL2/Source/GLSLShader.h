@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_GLSLSHADER_H
-#define __RENDERGL_GLSLSHADER_H
+#pragma once
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/IO/Path/Path.h>
@@ -96,7 +95,4 @@ namespace RenderGL
 
         uint32                          m_textureUnit;
     };
-}
-
-
-#endif
+} // namespace RenderGL

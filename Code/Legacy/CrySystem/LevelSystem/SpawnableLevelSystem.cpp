@@ -12,14 +12,12 @@
 
 #include <LoadScreenBus.h>
 
-#include <AzCore/Debug/AssetTracking.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Input/Buses/Requests/InputChannelRequestBus.h>
 
 #include "MainThreadRenderRequestBus.h"
-#include <LyShine/ILyShine.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
@@ -259,7 +257,6 @@ namespace LegacyLevelSystem
     bool SpawnableLevelSystem::LoadLevelInternal(const char* levelName)
     {
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START);
-        AZ_ASSET_NAMED_SCOPE("Level: %s", levelName);
 
         INDENT_LOG_DURING_SCOPE();
 
@@ -557,12 +554,6 @@ namespace LegacyLevelSystem
         // Force Lua garbage collection (may no longer be needed now the legacy renderer has been removed).
         // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
         EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);
-
-        // Perform level unload procedures for the LyShine UI system
-        if (gEnv && gEnv->pLyShine)
-        {
-            gEnv->pLyShine->OnLevelUnload();
-        }
 
         m_bLevelLoaded = false;
 

@@ -11,34 +11,34 @@
             },
             "slots": [
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Signaled upon node entry"
                     }
                 },
                 {
-                    "base": "Input_Break",
+                    "base": "Input_Break_1",
                     "details": {
                         "name": "Break",
                         "tooltip": "Stops the iteration when signaled"
                     }
                 },
                 {
-                    "base": "Output_Each",
+                    "base": "Output_Each_0",
                     "details": {
                         "name": "Each",
                         "tooltip": "Signalled after each element of the container"
                     }
                 },
                 {
-                    "base": "Output_Finished",
+                    "base": "Output_Finished_1",
                     "details": {
                         "name": "Finished",
                         "tooltip": "The container has been fully iterated over"

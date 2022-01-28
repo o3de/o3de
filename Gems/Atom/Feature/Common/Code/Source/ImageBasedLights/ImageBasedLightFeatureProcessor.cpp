@@ -11,8 +11,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Render

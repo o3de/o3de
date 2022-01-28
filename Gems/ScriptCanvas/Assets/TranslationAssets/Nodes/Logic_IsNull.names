@@ -11,33 +11,33 @@
             },
             "slots": [
                 {
-                    "base": "DataInput_Reference",
+                    "base": "DataInput_Reference_0",
                     "details": {
                         "name": "Reference"
                     }
                 },
                 {
-                    "base": "DataOutput_Is Null",
+                    "base": "DataOutput_Is Null_0",
                     "details": {
                         "name": "Is Null"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "Output_True",
+                    "base": "Output_True_0",
                     "details": {
                         "name": "True",
                         "tooltip": "Signaled if the reference provided is null."
                     }
                 },
                 {
-                    "base": "Output_False",
+                    "base": "Output_False_1",
                     "details": {
                         "name": "False",
                         "tooltip": "Signaled if the reference provided is not null."

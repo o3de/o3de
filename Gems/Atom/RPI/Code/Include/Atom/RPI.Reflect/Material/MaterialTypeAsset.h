@@ -54,7 +54,6 @@ namespace AZ
         {
             friend class MaterialTypeAssetCreator;
             friend class MaterialTypeAssetHandler;
-            friend class MaterialAssetCreatorCommon;
 
         public:
             AZ_RTTI(MaterialTypeAsset, "{CD7803AB-9C4C-4A33-9A14-7412F1665464}", AZ::Data::AssetData);

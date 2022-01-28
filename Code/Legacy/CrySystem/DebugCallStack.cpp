@@ -17,7 +17,6 @@
 #include "System.h"
 
 #include <AzCore/Debug/StackTracer.h>
-#include <AzCore/Debug/EventTraceDrillerBus.h>
 #include <AzCore/std/parallel/spin_mutex.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -158,8 +157,6 @@ AZStd::spin_mutex g_lockThreadDumpList;
 
 void MarkThisThreadForDebugging(const char* name)
 {
-    EBUS_EVENT(AZ::Debug::EventTraceDrillerSetupBus, SetThreadName, AZStd::this_thread::get_id(), name);
-
     AZStd::scoped_lock lock(g_lockThreadDumpList);
     DWORD id = GetCurrentThreadId();
     if (g_nDebugThreads == sizeof(g_idDebugThreads) / sizeof(g_idDebugThreads[0]))

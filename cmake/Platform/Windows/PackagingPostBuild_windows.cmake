@@ -102,6 +102,8 @@ file(GLOB _artifacts
     "${_cpack_wix_out_dir}/*.msi" 
     "${_cpack_wix_out_dir}/*.cab"
     "${_cpack_wix_out_dir}/*.exe"
+    "${CPACK_3P_LICENSE_FILE}"
+    "${CPACK_3P_MANIFEST_FILE}"
 )
 file(COPY ${_artifacts}
     DESTINATION ${CPACK_UPLOAD_DIRECTORY}
@@ -109,11 +111,10 @@ file(COPY ${_artifacts}
 message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
 
 if(CPACK_UPLOAD_URL)
-    file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
     ly_upload_to_url(
         ${CPACK_UPLOAD_URL}
-        ${_cpack_wix_out_dir}
-        ".*(cab|exe|msi)$"
+        ${CPACK_UPLOAD_DIRECTORY}
+        ".*(.cab|.exe|.msi|.txt|.json)$"
     )
 
     # for auto tagged builds, we will also upload a second copy of just the boostrapper

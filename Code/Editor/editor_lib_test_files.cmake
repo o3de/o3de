@@ -8,7 +8,6 @@
 
 set(FILES
     Lib/Tests/IEditorMock.h
-    Lib/Tests/test_ClickableLabel.cpp
     Lib/Tests/test_CryEditPythonBindings.cpp
     Lib/Tests/test_CryEditDocPythonBindings.cpp
     Lib/Tests/test_EditorPythonBindings.cpp

@@ -175,7 +175,6 @@ namespace UnitTest
         ComponentApplication componentApp;
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        desc.m_enableDrilling = false; // we already created a memory driller for the test (AllocatorsFixture)
         ComponentApplication::StartupParameters startupParams;
         startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
         Entity* systemEntity = componentApp.Create(desc, startupParams);
@@ -631,7 +630,6 @@ namespace UnitTest
 
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
-            desc.m_enableDrilling = false; // we already created a memory driller for the test (AllocatorsFixture in Components)
 
             ComponentApplication::StartupParameters startupParams;
             startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();

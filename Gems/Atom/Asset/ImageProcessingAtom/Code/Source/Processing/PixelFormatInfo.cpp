@@ -52,6 +52,24 @@ namespace ImageProcessingAtom
         return false;
     }
 
+    bool IsHDRFormat(EPixelFormat fmt)
+    {
+        switch (fmt)
+        {
+        case ePixelFormat_BC6UH:
+        case ePixelFormat_R9G9B9E5:
+        case ePixelFormat_R32G32B32A32F:
+        case ePixelFormat_R32G32F:
+        case ePixelFormat_R32F:
+        case ePixelFormat_R16G16B16A16F:
+        case ePixelFormat_R16G16F:
+        case ePixelFormat_R16F:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     PixelFormatInfo::PixelFormatInfo(
         uint32_t    a_bitsPerPixel,
         uint32_t    a_Channels,

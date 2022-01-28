@@ -7,25 +7,24 @@
             "details": {
                 "name": "Print",
                 "category": "Utilities/Debug",
-                "tooltip": "Formats and prints the provided text in the debug console.\nAny word within {} will create a data pin on this node.",
-                "subtitle": "Debug"
+                "tooltip": "Formats and prints the provided text in the debug console.\nAny word within {} will create a data pin on this node."
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "DataInput_Value",
+                    "base": "DataInput_Value_0",
                     "details": {
                         "name": "Value"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }

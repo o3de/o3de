@@ -108,7 +108,7 @@ namespace UnitTest
         Vegetation::SurfaceMaskDepthFilterConfig config;
         config.m_lowerDistance = -1000.0f;
         config.m_upperDistance = -0.5f;
-        config.m_depthComparisonTags.push_back(SurfaceData::Constants::s_terrainTagCrc);
+        config.m_depthComparisonTags.push_back(SurfaceData::Constants::s_unassignedTagCrc);
 
         Vegetation::SurfaceMaskDepthFilterComponent* component = nullptr;
         auto entity = CreateEntity(config, &component, [](AZ::Entity* e)
@@ -120,7 +120,7 @@ namespace UnitTest
         mockSurfaceHandler.m_outPosition = AZ::Vector3::CreateZero();
         mockSurfaceHandler.m_outNormal = AZ::Vector3::CreateAxisZ();
         mockSurfaceHandler.m_outMasks.clear();
-        mockSurfaceHandler.m_outMasks[SurfaceData::Constants::s_terrainTagCrc] = 1.0f;
+        mockSurfaceHandler.m_outMasks[SurfaceData::Constants::s_unassignedTagCrc] = 1.0f;
 
         // passes
         {

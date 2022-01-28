@@ -88,8 +88,7 @@ class TestHelper:
         general.idle_wait_frames(200)
 
     @staticmethod
-    def enter_game_mode(msgtuple_success_fail : Tuple[str, str]):
-        # type: (tuple) -> None
+    def enter_game_mode(msgtuple_success_fail: Tuple[str, str]) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
 
@@ -102,31 +101,56 @@ class TestHelper:
         Report.critical_result(msgtuple_success_fail, general.is_in_game_mode())
 
     @staticmethod
-    def multiplayer_enter_game_mode(msgtuple_success_fail : Tuple[str, str], sv_default_player_spawn_asset : str):
-        # type: (tuple) -> None
+    def find_line(window, line, print_infos):
+        """
+        Looks for an expected line in a list of tracer log lines
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param line: The log message to search for. 
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+
+        :return: True if the line is found, otherwise false.
+        """
+        for printInfo in print_infos:
+            if printInfo.window == window.strip() and printInfo.message.strip() == line:
+                return True
+        return False
+
+    @staticmethod
+    def succeed_if_log_line_found(window, line, print_infos, time_out):
+        """
+        Looks for a line in a list of tracer log lines and reports success if found.
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param line: The log message we're hoping to find.
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+        :param time_out: The total amount of time to wait before giving up looking for the expected line.
+
+        :return: No return value, but if the message is found, a successful critical result is reported; otherwise failure.
+        """
+        TestHelper.wait_for_condition(lambda : TestHelper.find_line(window, line, print_infos), time_out)
+        Report.critical_result(("Found expected line: " + line, "Failed to find expected line: " + line), TestHelper.find_line(window, line, print_infos))
+
+    @staticmethod
+    def fail_if_log_line_found(window, line, print_infos, time_out):
+        """
+        Reports a failure if a log line in a list of tracer log lines is found.
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param line: The log message we're hoping to not find.
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+        :param time_out: The total amount of time to wait before giving up looking for the unexpected line. If time runs out and we don't see the unexpected line then report a success.
+
+        :return: No return value, but if the line is found, a failed critical result is reported; otherwise success.
+        """
+        TestHelper.wait_for_condition(lambda : TestHelper.find_line(window, line, print_infos), time_out)
+        Report.critical_result(("Unexpected line not found: " + line, "Unexpected line found: " + line), not TestHelper.find_line(window, line, print_infos))
+
+    @staticmethod
+    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str], sv_default_player_spawn_asset: str) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
         :param sv_default_player_spawn_asset: The path to the network player prefab that will be automatically spawned upon entering gamemode.  The engine default is "prefabs/player.network.spawnable" 
 
         :return: None
         """
-
-        # looks for an expected line in a list of tracers lines
-        # lines: the tracer list of lines to search. options are section_tracer.warnings, section_tracer.errors, section_tracer.asserts, section_tracer.prints
-        # return: true if the line is found, otherwise false
-        def find_expected_line(expected_line, lines):
-            found_lines = [printInfo.message.strip() for printInfo in lines]
-            return expected_line in found_lines
-
-        def wait_for_critical_expected_line(expected_line, lines, time_out):
-            TestHelper.wait_for_condition(lambda : find_expected_line(expected_line, lines), time_out)
-            Report.critical_result(("Found expected line: " + expected_line, "Failed to find expected line: " + expected_line), find_expected_line(expected_line, lines))
-
-        def wait_for_critical_unexpected_line(unexpected_line, lines, time_out):
-            TestHelper.wait_for_condition(lambda : find_expected_line(unexpected_line, lines), time_out)
-            Report.critical_result(("Unexpected line not found: " + unexpected_line, "Unexpected line found: " + unexpected_line), not find_expected_line(unexpected_line, lines))
-
-
         Report.info("Entering game mode")
         if sv_default_player_spawn_asset :
             general.set_cvar("sv_defaultPlayerSpawnAsset", sv_default_player_spawn_asset)
@@ -137,16 +161,20 @@ class TestHelper:
             multiplayer.PythonEditorFuncs_enter_game_mode()
 
             # make sure the server launcher binary exists
-            wait_for_critical_unexpected_line("LaunchEditorServer failed! The ServerLauncher binary is missing!", section_tracer.errors, 0.5)
+            TestHelper.fail_if_log_line_found("MultiplayerEditor", "LaunchEditorServer failed! The ServerLauncher binary is missing!", section_tracer.errors, 0.5)
 
             # make sure the server launcher is running
             waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher has NOT launched!"), interval=1.0)
 
-            # make sure the editor connects to the editor-server and sends the level data packet
-            wait_for_critical_expected_line("Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
+            TestHelper.succeed_if_log_line_found("EditorServer", "MultiplayerEditorConnection: Editor-server activation has found and connected to the editor.", section_tracer.prints, 15.0)
 
-            # make sure the editor finally connects to the editor-server network simulation
-            wait_for_critical_expected_line("Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
+            TestHelper.succeed_if_log_line_found("MultiplayerEditor", "Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
+
+            TestHelper.succeed_if_log_line_found("EditorServer", "Logger: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
+
+            TestHelper.succeed_if_log_line_found("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
+
+            TestHelper.fail_if_log_line_found("EditorServer", f"MultiplayerSystemComponent: SpawnDefaultPlayerPrefab failed. Missing sv_defaultPlayerSpawnAsset at path '{sv_default_player_spawn_asset.lower()}'.", section_tracer.prints, 0.5)
 
         TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())

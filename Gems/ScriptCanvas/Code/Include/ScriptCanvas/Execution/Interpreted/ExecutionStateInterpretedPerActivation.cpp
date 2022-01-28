@@ -117,7 +117,7 @@ namespace ScriptCanvas
         lua_pushvalue(lua, -2);
         // Lua: instance, graph_VM.k_OnGraphStartFunctionName, instance
         const int result = Execution::InterpretedSafeCall(lua, 1, 0);
-        // Lua: instance ?
+        // Lua: instance, ?
         if (result == LUA_OK)
         {
             // Lua: instance

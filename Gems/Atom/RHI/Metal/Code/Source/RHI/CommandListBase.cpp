@@ -7,7 +7,6 @@
  */
 
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/CommandListBase.h>
 #include <Source/RHI/Device.h>
 

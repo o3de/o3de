@@ -5,52 +5,51 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromColumns",
+                "name": "From Columns",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a rotation matrix based on angle around Z axis",
-                "subtitle": "Matrix4x4"
+                "tooltip": "returns a rotation matrix based on angle around Z axis"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Vector4: Column1",
+                    "base": "DataInput_Column1_0",
                     "details": {
-                        "name": "Vector4: Column1"
+                        "name": "Column1"
                     }
                 },
                 {
-                    "base": "DataInput_Vector4: Column2",
+                    "base": "DataInput_Column2_1",
                     "details": {
-                        "name": "Vector4: Column2"
+                        "name": "Column2"
                     }
                 },
                 {
-                    "base": "DataInput_Vector4: Column3",
+                    "base": "DataInput_Column3_2",
                     "details": {
-                        "name": "Vector4: Column3"
+                        "name": "Column3"
                     }
                 },
                 {
-                    "base": "DataInput_Vector4: Column4",
+                    "base": "DataInput_Column4_3",
                     "details": {
-                        "name": "Vector4: Column4"
+                        "name": "Column4"
                     }
                 },
                 {
-                    "base": "DataOutput_Result: Matrix4x4",
+                    "base": "DataOutput_Result_0",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Result"
                     }
                 }
             ]

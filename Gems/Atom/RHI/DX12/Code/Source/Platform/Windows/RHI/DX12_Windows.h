@@ -56,6 +56,9 @@ AZ_POP_DISABLE_WARNING
 // This define controls whether DXR ray tracing support is available on the platform.
 #define AZ_DX12_DXR_SUPPORT
 
+// This define is used to initialize the D3D12_ROOT_SIGNATURE_DESC::Flags property.
+#define AZ_DX12_ROOT_SIGNATURE_FLAGS D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
+
 using ID3D12CommandAllocatorX = ID3D12CommandAllocator;
 using ID3D12CommandQueueX = ID3D12CommandQueue;
 using ID3D12DeviceX = ID3D12Device5;

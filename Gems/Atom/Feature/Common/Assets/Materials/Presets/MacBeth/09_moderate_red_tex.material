@@ -11,6 +11,8 @@
                 1.0,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
+            "textureMap": "09_moderate_red_sRGB.tif",
             "useTexture": true
         }
     }

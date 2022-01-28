@@ -15,7 +15,7 @@ manifest that writes out asset chunk data for .blast files
 import os, traceback, binascii, sys, json, pathlib
 import azlmbr.math
 import azlmbr.asset
-import azlmbr.asset.entity
+import azlmbr.entity
 import azlmbr.asset.builder
 import azlmbr.bus
 

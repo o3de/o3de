@@ -10,7 +10,7 @@
 
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
 
-#include <AzCore/PlatformDef.h>
+#include <AzCore/PlatformIncl.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4996, "-Wunknown-warning-option")
 #include <aws/core/utils/logging/LogSystemInterface.h>

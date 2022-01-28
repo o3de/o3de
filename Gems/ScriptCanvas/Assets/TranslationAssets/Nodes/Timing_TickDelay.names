@@ -11,26 +11,26 @@
             },
             "slots": [
                 {
-                    "base": "DataInput_Ticks",
+                    "base": "DataInput_Ticks_0",
                     "details": {
                         "name": "Ticks"
                     }
                 },
                 {
-                    "base": "DataInput_Tick Order",
+                    "base": "DataInput_Tick Order_1",
                     "details": {
                         "name": "Tick Order"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "When signaled, execution is delayed at this node for the specified amount of frames."
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Signaled after waiting for the specified amount of frames."

@@ -12,7 +12,6 @@
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
 #include <RHI/ShaderResourceGroup.h>
@@ -44,7 +43,7 @@ namespace AZ
             AZ::RHI::BufferInitRequest shaderTableBufferRequest;
             shaderTableBufferRequest.m_buffer = shaderTableBuffer.get();
             shaderTableBufferRequest.m_descriptor = shaderTableBufferDescriptor;
-            RHI::ResultCode resultCode = bufferPools.GetShaderTableBufferPool()->InitBuffer(shaderTableBufferRequest);
+            [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetShaderTableBufferPool()->InitBuffer(shaderTableBufferRequest);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create shader table buffer");
 
             BufferMemoryView* shaderTableMemoryView = static_cast<Buffer*>(shaderTableBuffer.get())->GetBufferMemoryView();

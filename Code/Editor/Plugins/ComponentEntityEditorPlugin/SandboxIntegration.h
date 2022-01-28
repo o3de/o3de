@@ -76,6 +76,7 @@ namespace AzToolsFramework
 {
     class EditorEntityAPI;
     class EditorEntityUiInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace AssetBrowser
     {
@@ -164,7 +165,6 @@ private:
     void InstantiateSliceFromAssetId(const AZ::Data::AssetId& assetId) override;
     void ClearRedoStack() override;
     int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override;
-    bool DisplayHelpersVisible() override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -295,6 +295,7 @@ private:
     AzToolsFramework::EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
     AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
     AzToolsFramework::EditorEntityAPI* m_editorEntityAPI = nullptr;
+    AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 
     // Overrides UI styling and behavior for Layer Entities
     AzToolsFramework::LayerUiHandler m_layerUiOverrideHandler;

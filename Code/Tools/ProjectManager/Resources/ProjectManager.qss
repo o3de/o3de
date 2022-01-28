@@ -250,10 +250,6 @@ QTabBar::tab:focus {
     margin-top:30px;
 }
 
-#projectPreviewLabel {
-    margin: 10px 0 5px 0;
-}
-
 #projectTemplate {
     margin: 25px 0 0 50px;
 }
@@ -327,6 +323,16 @@ QTabBar::tab:focus {
 #projectTemplate QPushButton:focus {
     outline: none;
     border:none;
+}
+
+#projectSettingsSectionTitle
+{
+    font-size:18px;
+}
+
+#projectSmallInfoLabel
+{
+    font-size:10px;
 }
 
 #projectSettingsTab::tab-bar {

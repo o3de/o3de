@@ -10,8 +10,6 @@
 #include <Atom/RHI/ImagePoolBase.h>
 #include <Atom/RHI/BufferPoolBase.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -90,7 +88,7 @@ namespace AZ
 
         void Scope::QueueResourcePoolResolves(ResourcePoolDatabase& resourcePoolDatabase)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             const auto queuePoolResolverFunction = [this](ResourcePoolResolver* poolResolver)
             {

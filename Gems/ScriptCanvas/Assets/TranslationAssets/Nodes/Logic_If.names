@@ -11,27 +11,27 @@
             },
             "slots": [
                 {
-                    "base": "DataInput_Condition",
+                    "base": "DataInput_Condition_0",
                     "details": {
                         "name": "Condition"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "Output_True",
+                    "base": "Output_True_0",
                     "details": {
                         "name": "True",
                         "tooltip": "Signaled if the condition provided evaluates to true."
                     }
                 },
                 {
-                    "base": "Output_False",
+                    "base": "Output_False_1",
                     "details": {
                         "name": "False",
                         "tooltip": "Signaled if the condition provided evaluates to false."

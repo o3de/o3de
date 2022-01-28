@@ -74,7 +74,7 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 26;   // [ATOM-15086]
+        builderDescriptor.m_version = 27;   // [ATOM-16958]
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
@@ -221,18 +221,19 @@ namespace ImageProcessingAtom
         m_isShuttingDown = true;
     }
 
-    PresetName GetImagePreset(const AZStd::string& filepath)
+    PresetName GetImagePreset(const AZStd::string& imageFileFullPath)
     {
         // first let preset from asset info
         TextureSettings textureSettings;
-        StringOutcome output = TextureSettings::LoadTextureSetting(filepath, textureSettings);
+        AZStd::string settingFilePath = imageFileFullPath + TextureSettings::ExtensionName;
+        TextureSettings::LoadTextureSetting(settingFilePath, textureSettings);
 
         if (!textureSettings.m_preset.IsEmpty())
         {
             return textureSettings.m_preset;
         }
 
-        return BuilderSettingManager::Instance()->GetSuggestedPreset(filepath);
+        return BuilderSettingManager::Instance()->GetSuggestedPreset(imageFileFullPath);
     }
 
     void HandlePresetDependency(PresetName presetName, AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencyList)
@@ -240,8 +241,7 @@ namespace ImageProcessingAtom
         // Reload preset if it was changed
         ImageProcessingAtom::BuilderSettingManager::Instance()->ReloadPreset(presetName);
         
-        AZStd::string_view filePath;
-        auto presetSettings = BuilderSettingManager::Instance()->GetPreset(presetName, /*default platform*/"", &filePath);
+        auto presetSettings = BuilderSettingManager::Instance()->GetPreset(presetName, /*default platform*/"");
 
         AssetBuilderSDK::SourceFileDependency sourceFileDependency;
         sourceFileDependency.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
@@ -273,6 +273,32 @@ namespace ImageProcessingAtom
         }
     }
 
+    void ReloadPresetIfNeeded(PresetName presetName)
+    {
+        // Reload preset if it was changed
+        ImageProcessingAtom::BuilderSettingManager::Instance()->ReloadPreset(presetName);
+        
+        auto presetSettings = BuilderSettingManager::Instance()->GetPreset(presetName, /*default platform*/"");
+
+        if (presetSettings)
+        {
+            // handle special case here
+            // Cubemap setting may reference some other presets
+            if (presetSettings->m_cubemapSetting)
+            {
+                if (presetSettings->m_cubemapSetting->m_generateIBLDiffuse && !presetSettings->m_cubemapSetting->m_iblDiffusePreset.IsEmpty())
+                {
+                    ImageProcessingAtom::BuilderSettingManager::Instance()->ReloadPreset(presetSettings->m_cubemapSetting->m_iblDiffusePreset);
+                }
+            
+                if (presetSettings->m_cubemapSetting->m_generateIBLSpecular && !presetSettings->m_cubemapSetting->m_iblSpecularPreset.IsEmpty())
+                {
+                    ImageProcessingAtom::BuilderSettingManager::Instance()->ReloadPreset(presetSettings->m_cubemapSetting->m_iblSpecularPreset);
+                }
+            }
+        }
+    }
+
     // this happens early on in the file scanning pass
     // this function should consistently always create the same jobs, and should do no checking whether the job is up to date or not - just be consistent.
     void ImageBuilderWorker::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
@@ -282,6 +308,10 @@ namespace ImageProcessingAtom
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::ShuttingDown;
             return;
         }
+
+        // Full path of the image file        
+        AZStd::string fullPath;
+        AzFramework::StringFunc::Path::Join(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, true, true);
 
         // Get the extension of the file
         AZStd::string ext;
@@ -305,13 +335,12 @@ namespace ImageProcessingAtom
         // add source dependency for .assetinfo file
         AssetBuilderSDK::SourceFileDependency sourceFileDependency;
         sourceFileDependency.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
-        sourceFileDependency.m_sourceFileDependencyPath = request.m_sourceFile;
-        AZ::StringFunc::Path::ReplaceExtension(sourceFileDependency.m_sourceFileDependencyPath, TextureSettings::ExtensionName);
+        sourceFileDependency.m_sourceFileDependencyPath = fullPath + TextureSettings::ExtensionName;
         response.m_sourceFileDependencyList.push_back(sourceFileDependency);
 
         // add source dependencies for .preset files
-        // Get the preset for this file 
-        auto presetName = GetImagePreset(request.m_sourceFile);
+        // Get the preset for this file    
+        auto presetName = GetImagePreset(fullPath.c_str());
         HandlePresetDependency(presetName, response.m_sourceFileDependencyList);
 
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
@@ -332,6 +361,11 @@ namespace ImageProcessingAtom
         // Do conversion and get exported file's path
         if (needConversion)
         {
+
+            // Handles preset changes
+            auto presetName = GetImagePreset(request.m_fullPath);
+            ReloadPresetIfNeeded(presetName);
+
             AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Performing image conversion: %s\n", request.m_fullPath.c_str());
             ImageConvertProcess* process = CreateImageConvertProcess(request.m_fullPath, request.m_tempDirPath,
                 request.m_jobDescription.GetPlatformIdentifier(), response.m_outputProducts);

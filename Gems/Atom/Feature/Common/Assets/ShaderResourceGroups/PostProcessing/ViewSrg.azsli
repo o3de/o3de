@@ -26,6 +26,7 @@ partial ShaderResourceGroup ViewSrg
 
         // circle of confusion to screen ratio;
         float m_cocToScreenRatio;
+
         [[pad_to(16)]]
     };
      

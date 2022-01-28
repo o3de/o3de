@@ -10,22 +10,19 @@
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
 
 namespace AzManipulatorTestFramework
 {
-    // Null debug display for dummy draw calls
-    class NullDebugDisplayRequests : public AzFramework::DebugDisplayRequests
-    {
-    public:
-        virtual ~NullDebugDisplayRequests() = default;
-    };
-
-    ViewportInteraction::ViewportInteraction()
-        : m_nullDebugDisplayRequests(AZStd::make_unique<NullDebugDisplayRequests>())
+    ViewportInteraction::ViewportInteraction(AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests)
+        : m_debugDisplayRequests(AZStd::move(debugDisplayRequests))
     {
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
         AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(m_viewportId);
         AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(m_viewportId);
+
+        m_cameraState =
+            AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzManipulatorTestFramework::DefaultViewportSize);
     }
 
     ViewportInteraction::~ViewportInteraction()
@@ -102,7 +99,7 @@ namespace AzManipulatorTestFramework
 
     AzFramework::DebugDisplayRequests& ViewportInteraction::GetDebugDisplay()
     {
-        return *m_nullDebugDisplayRequests;
+        return *m_debugDisplayRequests;
     }
 
     void ViewportInteraction::SetGridSnapping(const bool enabled)
@@ -118,6 +115,16 @@ namespace AzManipulatorTestFramework
     void ViewportInteraction::SetStickySelect(const bool enabled)
     {
         m_stickySelect = enabled;
+    }
+
+    void ViewportInteraction::SetIconsVisible(const bool visible)
+    {
+        m_iconsVisible = visible;
+    }
+
+    void ViewportInteraction::SetHelpersVisible(const bool visible)
+    {
+        m_helpersVisible = visible;
     }
 
     AZ::Vector3 ViewportInteraction::DefaultEditorCameraPosition() const
@@ -154,5 +161,15 @@ namespace AzManipulatorTestFramework
     float ViewportInteraction::DeviceScalingFactor()
     {
         return 1.0f;
+    }
+
+    bool ViewportInteraction::IconsVisible() const
+    {
+        return m_iconsVisible;
+    }
+
+    bool ViewportInteraction::HelpersVisible() const
+    {
+        return m_helpersVisible;
     }
 } // namespace AzManipulatorTestFramework

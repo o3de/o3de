@@ -12,9 +12,6 @@
 #include <AzCore/Memory/PoolSchema.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
-#include <AzCore/Memory/MemoryDrillerBus.h>
-
-
 namespace AZ
 {
     template<class Allocator>

@@ -26,11 +26,17 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 
-namespace AzToolsFramework
+namespace UnitTest
 {
-    class EditorFocusModeSelectionFixture : public UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>
+    class EditorFocusModeSelectionFixture : public IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>
     {
     public:
+        void SetUpEditorFixtureImpl() override
+        {
+            IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>::SetUpEditorFixtureImpl();
+            m_viewportManipulatorInteraction->GetViewportInteraction().SetIconsVisible(false);
+        }
+
         void ClickAtWorldPositionOnViewport(const AZ::Vector3& worldPosition)
         {
             // Calculate the world position in screen space
@@ -40,4 +46,4 @@ namespace AzToolsFramework
             m_actionDispatcher->CameraState(m_cameraState)->MousePosition(carScreenPosition)->MouseLButtonDown()->MouseLButtonUp();
         }
     };
-} // namespace AzToolsFramework
+} // namespace UnitTest

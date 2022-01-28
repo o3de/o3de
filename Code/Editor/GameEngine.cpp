@@ -18,6 +18,7 @@
 // AzCore
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Console/IConsole.h>
 
@@ -35,7 +36,6 @@
 
 // CryCommon
 #include <CryCommon/INavigationSystem.h>
-#include <CryCommon/LyShine/ILyShine.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
 // Editor
@@ -43,8 +43,6 @@
 
 #include "ViewManager.h"
 #include "AnimationContext.h"
-#include "UndoViewPosition.h"
-#include "UndoViewRotation.h"
 #include "MainWindow.h"
 #include "Include/IObjectManager.h"
 #include "ActionManager.h"
@@ -443,7 +441,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     REGISTER_COMMAND("quit", CGameEngine::HandleQuitRequest, VF_RESTRICTEDMODE, "Quit/Shutdown the engine");
 
     EBUS_EVENT(CrySystemEventBus, OnCryEditorInitialized);
-    
+
     return AZ::Success();
 }
 
@@ -466,7 +464,7 @@ void CGameEngine::SetLevelPath(const QString& path)
     const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
     const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
 
-    // Store off if 
+    // Store off if
     if (QFileInfo(path + oldExtension).exists())
     {
         m_levelExtension = oldExtension;
@@ -594,13 +592,6 @@ void CGameEngine::SwitchToInEditor()
 
     // Enable accelerators.
     GetIEditor()->EnableAcceleratos(true);
-
-
-    // reset UI system
-    if (gEnv->pLyShine)
-    {
-        gEnv->pLyShine->Reset();
-    }
 
     // [Anton] - order changed, see comments for CGameEngine::SetSimulationMode
     //! Send event to switch out of game.

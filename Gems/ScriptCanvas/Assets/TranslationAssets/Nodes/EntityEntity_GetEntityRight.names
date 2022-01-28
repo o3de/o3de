@@ -7,35 +7,35 @@
             "details": {
                 "name": "Get Entity Right",
                 "category": "Entity/Entity",
-                "tooltip": "Returns the right direction vector from the specified entity's world transform, scaled by a given value (O3DE uses Z up, right handed)"
+                "tooltip": "returns the right direction vector from the specified entity's world transform, scaled by a given value (O3DE uses Z up, right handed)"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_EntityId",
+                    "base": "DataInput_EntityId_0",
                     "details": {
                         "name": "EntityId"
                     }
                 },
                 {
-                    "base": "DataInput_Scale",
+                    "base": "DataInput_Scale_1",
                     "details": {
                         "name": "Scale"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

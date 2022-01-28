@@ -264,9 +264,9 @@ namespace AZ
             }
             {
                 AZStd::string contextKey = toolNameForLog + AZStd::string(" Command Line");
-                AZ_TraceContext(contextKey, processLaunchInfo.m_commandlineParameters);
+                AZ_TraceContext(contextKey, processLaunchInfo.GetCommandLineParametersAsString());
             }
-            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.m_commandlineParameters.c_str());
+            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.GetCommandLineParametersAsString().c_str());
 
             AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
             if (!watcher)

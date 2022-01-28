@@ -9,8 +9,6 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/MemoryPageAllocator.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Metal
@@ -29,7 +27,7 @@ namespace AZ
                 return nullptr;
             }
 
-            AZ_TRACE_METHOD_NAME("Create Buffer Page");
+            AZ_PROFILE_SCOPE(RHI, "Create Buffer Page");
 
             RHI::BufferDescriptor bufferDescriptor;
             bufferDescriptor.m_byteCount = m_descriptor.m_pageSizeInBytes;

@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/std/containers/span.h>
 #include <GradientSignal/GradientSampler.h>
 #include <GradientSignal/Util.h>
 
@@ -26,29 +27,46 @@ namespace GradientSignal
         static void Reflect(AZ::ReflectContext* context);
 
         inline float GetSmoothedValue(float inputValue) const;
+        inline void GetSmoothedValues(AZStd::span<float> inOutValues) const;
 
         float m_falloffMidpoint = 0.5f;
         float m_falloffRange = 0.5f;
         float m_falloffStrength = 0.25f;
+
+    private:
+        inline float CalculateSmoothedValue(float min, float max, float valueFalloffStrength, float inputValue) const;
     };
 
-    inline float SmoothStep::GetSmoothedValue(float inputValue) const
+    inline float SmoothStep::CalculateSmoothedValue(float min, float max, float valueFalloffStrength, float inputValue) const
     {
-        float output = 0.0f;
-
         const float value = AZ::GetClamp(inputValue, 0.0f, 1.0f);
-        const float valueFalloffStrength = AZ::GetClamp(m_falloffStrength, 0.0f, 1.0f);
-
-        float min = m_falloffMidpoint - m_falloffRange / 2.0f;
-        float max = m_falloffMidpoint + m_falloffRange / 2.0f;
 
         float result1 = GetRatio(min, min + valueFalloffStrength, value);
         result1 = GetSmoothStep(result1);
         float result2 = GetRatio(max - valueFalloffStrength, max, value);
         result2 = GetSmoothStep(result2);
 
-        output = result1 * (1.0f - result2);
-
-        return output;
+        return result1 * (1.0f - result2);
     }
-}
+
+    inline float SmoothStep::GetSmoothedValue(float inputValue) const
+    {
+        const float min = m_falloffMidpoint - m_falloffRange / 2.0f;
+        const float max = m_falloffMidpoint + m_falloffRange / 2.0f;
+        const float valueFalloffStrength = AZ::GetClamp(m_falloffStrength, 0.0f, 1.0f);
+
+        return CalculateSmoothedValue(min, max, valueFalloffStrength, inputValue);
+    }
+
+    inline void SmoothStep::GetSmoothedValues(AZStd::span<float> inOutValues) const
+    {
+        const float min = m_falloffMidpoint - m_falloffRange / 2.0f;
+        const float max = m_falloffMidpoint + m_falloffRange / 2.0f;
+        const float valueFalloffStrength = AZ::GetClamp(m_falloffStrength, 0.0f, 1.0f);
+
+        for (auto& inOutValue : inOutValues)
+        {
+            inOutValue = CalculateSmoothedValue(min, max, valueFalloffStrength, inOutValue);
+        }
+    }
+} // namespace GradientSignal

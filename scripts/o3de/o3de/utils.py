@@ -8,6 +8,7 @@
 """
 This file contains utility functions
 """
+import argparse
 import sys
 import uuid
 import os
@@ -17,10 +18,53 @@ import urllib.request
 import logging
 import zipfile
 
-logger = logging.getLogger()
-logging.basicConfig()
+LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
+
+logger = logging.getLogger('o3de.utils')
+logging.basicConfig(format=LOG_FORMAT)
 
 COPY_BUFSIZE = 64 * 1024
+
+
+class VerbosityAction(argparse.Action):
+    def __init__(self,
+                 option_strings,
+                 dest,
+                 default=None,
+                 required=False,
+                 help=None):
+        super().__init__(
+            option_strings=option_strings,
+            dest=dest,
+            nargs=0,
+            default=default,
+            required=required,
+            help=help,
+        )
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        count = getattr(namespace, self.dest, None)
+        if count is None:
+            count = self.default
+        count += 1
+        setattr(namespace, self.dest, count)
+        # get the parent logger instance
+        log = logging.getLogger('o3de')
+        if count >= 2:
+            log.setLevel(logging.DEBUG)
+        elif count == 1:
+            log.setLevel(logging.INFO)
+
+
+def add_verbosity_arg(parser: argparse.ArgumentParser) -> None:
+    """
+    Add a consistent/common verbosity option to an arg parser
+    :param parser: The ArgumentParser to modify
+    :return: None
+    """
+    parser.add_argument('-v', dest='verbosity', action=VerbosityAction, default=0,
+                        help='Additional logging verbosity, can be -v or -vv')
+
 
 def copyfileobj(fsrc, fdst, callback, length=0):
     # This is functionally the same as the python shutil copyfileobj but
@@ -43,10 +87,11 @@ def copyfileobj(fsrc, fdst, callback, length=0):
             return 1
     return 0
 
+
 def validate_identifier(identifier: str) -> bool:
     """
-    Determine if the identifier supplied is valid.
-    :param identifier: the name which needs to to checked
+    Determine if the identifier supplied is valid
+    :param identifier: the name which needs to be checked
     :return: bool: if the identifier is valid or not
     """
     if not identifier:
@@ -65,7 +110,7 @@ def validate_identifier(identifier: str) -> bool:
 def sanitize_identifier_for_cpp(identifier: str) -> str:
     """
     Convert the provided identifier to a valid C++ identifier
-    :param identifier: the name which needs to to sanitized
+    :param identifier: the name which needs to be sanitized
     :return: str: sanitized identifier
     """
     if not identifier:
@@ -81,8 +126,8 @@ def sanitize_identifier_for_cpp(identifier: str) -> str:
 
 def validate_uuid4(uuid_string: str) -> bool:
     """
-    Determine if the uuid supplied is valid.
-    :param uuid_string: the uuid which needs to to checked
+    Determine if the uuid supplied is valid
+    :param uuid_string: the uuid which needs to be checked
     :return: bool: if the uuid is valid or not
     """
     try:
@@ -117,11 +162,13 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
+
 def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, download_progress_callback = None) -> int:
     """
+    Download file
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_path: location path on disk to download file
-    :download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
+    :param download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
     if download_path.is_file():
         if not force_overwrite:
@@ -142,10 +189,12 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                     download_file_size = s.headers['content-length']
                 except KeyError:
                     pass
+
                 def download_progress(downloaded_bytes):
                     if download_progress_callback:
                         return download_progress_callback(int(downloaded_bytes), int(download_file_size))
                     return False
+
                 with download_path.open('wb') as f:
                     download_cancelled = copyfileobj(s, f, download_progress)
                     if download_cancelled:
@@ -183,13 +232,12 @@ def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwri
 def find_ancestor_file(target_file_name: pathlib.PurePath, start_path: pathlib.Path,
                        max_scan_up_range: int=0) -> pathlib.Path or None:
     """
-    Find a file with the given name in the ancestor directories by walking up the starting path until the file is found.
-
-    :param target_file_name: Name of the file to find.
-    :param start_path: path to start looking for the file.
+    Find a file with the given name in the ancestor directories by walking up the starting path until the file is found
+    :param target_file_name: Name of the file to find
+    :param start_path: path to start looking for the file
     :param max_scan_up_range: maximum number of directories to scan upwards when searching for target file
            if the value is 0, then there is no max
-    :return: Path to the file or None if not found.
+    :return: Path to the file or None if not found
     """
     current_path = pathlib.Path(start_path)
     candidate_path = current_path / target_file_name
@@ -211,17 +259,17 @@ def find_ancestor_file(target_file_name: pathlib.PurePath, start_path: pathlib.P
 
     return candidate_path if candidate_path.exists() else None
 
+
 def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_path: pathlib.Path,
                                       max_scan_up_range: int=0) -> pathlib.Path or None:
     """
-    Find nearest ancestor directory that contains the file with the given name by walking up
-    from the starting path.
-
-    :param target_file_name: Name of the file to find.
-    :param start_path: path to start looking for the file.
+    Find the nearest ancestor directory that contains the file with the given name by walking up
+    from the starting path
+    :param target_file_name: Name of the file to find
+    :param start_path: path to start looking for the file
     :param max_scan_up_range: maximum number of directories to scan upwards when searching for target file
            if the value is 0, then there is no max
-    :return: Path to the directory containing file or None if not found.
+    :return: Path to the directory containing file or None if not found
     """
     ancestor_file = find_ancestor_file(target_file_name, start_path, max_scan_up_range)
     return ancestor_file.parent if ancestor_file else None

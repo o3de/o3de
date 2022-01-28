@@ -7,29 +7,29 @@
             "details": {
                 "name": "Random Point In Circle",
                 "category": "Math/Random",
-                "tooltip": "Returns a random point inside the area of a circle"
+                "tooltip": "returns a random point inside the area of a circle"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Radius",
+                    "base": "DataInput_Radius_0",
                     "details": {
                         "name": "Radius"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

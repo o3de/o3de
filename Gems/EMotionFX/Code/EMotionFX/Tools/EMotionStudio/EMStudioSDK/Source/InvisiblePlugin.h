@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_INVISIBLEPLUGIN_H
-#define __EMSTUDIO_INVISIBLEPLUGIN_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -41,5 +40,3 @@ namespace EMStudio
         void CreateBaseInterface(const char* objectName) override       { MCORE_UNUSED(objectName); }
     };
 }   // namespace EMStudio
-
-#endif

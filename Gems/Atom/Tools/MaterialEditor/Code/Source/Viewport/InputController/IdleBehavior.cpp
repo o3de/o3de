@@ -6,7 +6,7 @@
  *
  */
 
-#include <Source/Viewport/InputController/IdleBehavior.h>
+#include <Viewport/InputController/IdleBehavior.h>
 
 namespace MaterialEditor
 {

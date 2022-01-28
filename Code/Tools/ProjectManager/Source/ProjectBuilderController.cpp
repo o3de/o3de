@@ -9,9 +9,7 @@
 #include <ProjectBuilderController.h>
 #include <ProjectBuilderWorker.h>
 #include <ProjectButtonWidget.h>
-#include <ProjectManagerSettings.h>
-
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <SettingsInterface.h>
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -29,14 +27,8 @@ namespace O3DE::ProjectManager
         m_worker = new ProjectBuilderWorker(m_projectInfo);
         m_worker->moveToThread(&m_workerThread);
 
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        if (settingsRegistry)
-        {
-            // Remove key here in case Project Manager crashing while building that causes HandleResults to not be called
-            QString settingsKey = GetProjectBuiltSuccessfullyKey(m_projectInfo.m_projectName);
-            settingsRegistry->Remove(settingsKey.toStdString().c_str());
-            SaveProjectManagerSettings();
-        }
+        // Remove key here in case Project Manager crashed while building because that causes HandleResults to not be called
+        SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, false);
 
         connect(&m_workerThread, &QThread::finished, m_worker, &ProjectBuilderWorker::deleteLater);
         connect(&m_workerThread, &QThread::started, m_worker, &ProjectBuilderWorker::BuildProject);
@@ -91,8 +83,6 @@ namespace O3DE::ProjectManager
 
     void ProjectBuilderController::HandleResults(const QString& result)
     {
-        QString settingsKey = GetProjectBuiltSuccessfullyKey(m_projectInfo.m_projectName);
-
         if (!result.isEmpty())
         {
             if (result.contains(tr("log")))
@@ -122,12 +112,7 @@ namespace O3DE::ProjectManager
                 emit NotifyBuildProject(m_projectInfo);
             }
 
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            if (settingsRegistry)
-            {
-                settingsRegistry->Remove(settingsKey.toStdString().c_str());
-                SaveProjectManagerSettings();
-            }
+            SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, false);
 
             emit Done(false);
             return;
@@ -136,12 +121,7 @@ namespace O3DE::ProjectManager
         {
             m_projectInfo.m_buildFailed = false;
 
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            if (settingsRegistry)
-            {
-                settingsRegistry->Set(settingsKey.toStdString().c_str(), true);
-                SaveProjectManagerSettings();
-            }
+            SettingsInterface::Get()->SetProjectBuiltSuccessfully(m_projectInfo, true);
         }
 
         emit Done(true);

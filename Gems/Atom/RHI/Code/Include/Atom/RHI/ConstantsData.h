@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
+#include <AzCore/Math/Color.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix4x4.h>
@@ -148,6 +149,9 @@ namespace AZ
         bool ConstantsData::SetConstant<Vector4>(ShaderInputConstantIndex inputIndex, const Vector4& value);
 
         template <>
+        bool ConstantsData::SetConstant<Color>(ShaderInputConstantIndex inputIndex, const Color& value);
+
+        template <>
         bool ConstantsData::SetConstantArray<bool>(ShaderInputConstantIndex inputIndex, AZStd::array_view<bool> values);
 
         template <>
@@ -170,6 +174,9 @@ namespace AZ
 
         template <>
         Vector4 ConstantsData::GetConstant<Vector4>(ShaderInputConstantIndex inputIndex) const;
+
+        template <>
+        Color ConstantsData::GetConstant<Color>(ShaderInputConstantIndex inputIndex) const;
 
         template <typename T, uint32_t matrixSize>
         bool ConstantsData::SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount)

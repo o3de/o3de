@@ -1,18 +1,15 @@
 {
     "ENV": {
         "GRADLE_HOME": "C:/Gradle/gradle-7.0",
-        "NODE_LABEL": "windows-b3c8994f1",
+        "NODE_LABEL": "windows-a4a28adb2",
         "LY_3RDPARTY_PATH": "D:/workspace/3rdParty",
-        "LY_NDK_DIR": "C:/ly/3rdParty/android-ndk/r21d",
+        "LY_NDK_DIR": "C:/Android/android-sdk/ndk/21.4.7075529",
         "TIMEOUT": 30,
         "WORKSPACE": "D:/workspace",
         "MOUNT_VOLUME": true
     },
     "PIPELINE_ENV_OVERRIDE": {
         "daily-pipeline-metrics": {
-            "CLEAN_WORKSPACE": true
-        },
-        "packaging": {
             "CLEAN_WORKSPACE": true
         },
         "nightly-clean": {

@@ -69,12 +69,12 @@ namespace UnitTest
 
             QString GetArchiveFolderName()
             {
-                return "Archive";
+                return "archive";
             }
 
             QString GetExtractFolderName()
             {
-                return "Extracted";
+                return "extracted";
             }
 
             void CreateArchiveFolder(QString archiveFolderName, QStringList fileList)
@@ -90,7 +90,7 @@ namespace UnitTest
 
             QString CreateArchiveListTextFile()
             {
-                QString listFilePath = QDir(m_tempDir.GetDirectory()).absoluteFilePath("FileList.txt");
+                QString listFilePath = QDir(m_tempDir.GetDirectory()).absoluteFilePath("filelist.txt");
                 QString textContent = CreateArchiveFileList().join("\n");
                 EXPECT_TRUE(CreateDummyFile(listFilePath, textContent));
                 return listFilePath;
@@ -151,11 +151,7 @@ namespace UnitTest
             UnitTest::ScopedTemporaryDirectory m_tempDir;
         };
 
-#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveComponentTest, DISABLED_CreateArchive_FilesAtThreeDepths_ArchiveCreated)
-#else
         TEST_F(ArchiveComponentTest, CreateArchive_FilesAtThreeDepths_ArchiveCreated)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
@@ -167,11 +163,7 @@ namespace UnitTest
             EXPECT_TRUE(createResult);
         }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveComponentTest, DISABLED_ListFilesInArchive_FilesAtThreeDepths_FilesFound)
-#else
         TEST_F(ArchiveComponentTest, ListFilesInArchive_FilesAtThreeDepths_FilesFound)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             EXPECT_TRUE(m_tempDir.IsValid());
             CreateArchiveFolder();
@@ -190,11 +182,7 @@ namespace UnitTest
             EXPECT_EQ(fileList.size(), 6);
         }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveComponentTest, DISABLED_CreateDeltaCatalog_AssetsNotRegistered_Failure)
-#else
         TEST_F(ArchiveComponentTest, CreateDeltaCatalog_AssetsNotRegistered_Failure)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             QStringList fileList = CreateArchiveFileList();
 
@@ -213,11 +201,7 @@ namespace UnitTest
             EXPECT_EQ(catalogCreated, false);
         }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveComponentTest, DISABLED_AddFilesToArchive_FromListFile_Success)
-#else
         TEST_F(ArchiveComponentTest, AddFilesToArchive_FromListFile_Success)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             QString listFile = CreateArchiveListTextFile();
             CreateArchiveFolder(GetArchiveFolderName(), CreateArchiveFileList());
@@ -233,11 +217,7 @@ namespace UnitTest
             EXPECT_TRUE(result);
         }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveComponentTest, DISABLED_ExtractArchive_AllFiles_Success)
-#else
         TEST_F(ArchiveComponentTest, ExtractArchive_AllFiles_Success)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             CreateArchiveFolder();
             AZ_TEST_START_TRACE_SUPPRESSION;
@@ -264,11 +244,7 @@ namespace UnitTest
             }
         }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
-        TEST_F(ArchiveComponentTest, DISABLED_CreateDeltaCatalog_ArchiveWithoutCatalogAssetsRegistered_Success)
-#else
         TEST_F(ArchiveComponentTest, CreateDeltaCatalog_ArchiveWithoutCatalogAssetsRegistered_Success)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARCHIVE_TESTS
         {
             QStringList fileList = CreateArchiveFileList();
 

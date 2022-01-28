@@ -7,97 +7,96 @@
             "details": {
                 "name": "Delay",
                 "category": "Timing",
-                "tooltip": "While active, will signal the output at the given interval.",
-                "subtitle": "Timing"
+                "tooltip": "While active, will signal the output at the given interval."
             },
             "slots": [
                 {
-                    "base": "Input_Start",
+                    "base": "Input_Start_0",
                     "details": {
                         "name": "Start",
                         "tooltip": "When signaled, execution is delayed at this node according to the specified properties."
                     }
                 },
                 {
-                    "base": "DataInput_Start: Time",
+                    "base": "DataInput_Start: Time_0",
                     "details": {
                         "name": "Start: Time"
                     }
                 },
                 {
-                    "base": "DataInput_Start: Loop",
+                    "base": "DataInput_Start: Loop_1",
                     "details": {
                         "name": "Start: Loop"
                     }
                 },
                 {
-                    "base": "DataInput_Start: Hold",
+                    "base": "DataInput_Start: Hold_2",
                     "details": {
                         "name": "Start: Hold"
                     }
                 },
                 {
-                    "base": "Output_On Start",
+                    "base": "Output_On Start_0",
                     "details": {
                         "name": "On Start",
                         "tooltip": "When signaled, execution is delayed at this node according to the specified properties."
                     }
                 },
                 {
-                    "base": "Input_Reset",
+                    "base": "Input_Reset_1",
                     "details": {
                         "name": "Reset",
                         "tooltip": "When signaled, execution is delayed at this node according to the specified properties."
                     }
                 },
                 {
-                    "base": "DataInput_Reset: Time",
+                    "base": "DataInput_Reset: Time_3",
                     "details": {
                         "name": "Reset: Time"
                     }
                 },
                 {
-                    "base": "DataInput_Reset: Loop",
+                    "base": "DataInput_Reset: Loop_4",
                     "details": {
                         "name": "Reset: Loop"
                     }
                 },
                 {
-                    "base": "DataInput_Reset: Hold",
+                    "base": "DataInput_Reset: Hold_5",
                     "details": {
                         "name": "Reset: Hold"
                     }
                 },
                 {
-                    "base": "Output_On Reset",
+                    "base": "Output_On Reset_1",
                     "details": {
                         "name": "On Reset",
                         "tooltip": "When signaled, execution is delayed at this node according to the specified properties."
                     }
                 },
                 {
-                    "base": "Input_Cancel",
+                    "base": "Input_Cancel_2",
                     "details": {
                         "name": "Cancel",
                         "tooltip": "Cancels the current delay."
                     }
                 },
                 {
-                    "base": "Output_On Cancel",
+                    "base": "Output_On Cancel_2",
                     "details": {
                         "name": "On Cancel",
                         "tooltip": "Cancels the current delay."
                     }
                 },
                 {
-                    "base": "Output_Done",
+                    "base": "Output_Done_3",
                     "details": {
                         "name": "Done",
                         "tooltip": "Signaled when the delay reaches zero."
                     }
                 },
                 {
-                    "base": "DataOutput_Elapsed",
+                    "base": "DataOutput_Elapsed_0",
                     "details": {
                         "name": "Elapsed"
                     }

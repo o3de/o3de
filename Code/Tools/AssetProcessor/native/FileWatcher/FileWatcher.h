@@ -5,61 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef FILEWATCHER_COMPONENT_H
-#define FILEWATCHER_COMPONENT_H
-//////////////////////////////////////////////////////////////////////////
+
+#pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "FileWatcherAPI.h"
-
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/atomic.h>
+#include <AzCore/std/parallel/thread.h>
 #include <QMap>
 #include <QVector>
 #include <QString>
+#include <QObject>
 
-#include <thread>
 #endif
-
-class FileWatcher;
-
-//////////////////////////////////////////////////////////////////////////
-//! FolderRootWatch
-/*! Class used for holding a point in the files system from which file changes are tracked.
- * */
-class FolderRootWatch
-    : public QObject
-{
-    Q_OBJECT
-
-    friend class FileWatcher;
-public:
-    FolderRootWatch(const QString rootFolder);
-    virtual ~FolderRootWatch();
-
-    void ProcessNewFileEvent(const QString& file);
-    void ProcessDeleteFileEvent(const QString& file);
-    void ProcessModifyFileEvent(const QString& file);
-    void ProcessRenameFileEvent(const QString& fileOld, const QString& fileNew);
-
-public Q_SLOTS:
-    bool Start();
-    void Stop();
-
-private:
-    void WatchFolderLoop();
-
-private:
-    std::thread m_thread;
-    QString m_root;
-    QMap<int, FolderWatchBase*> m_subFolderWatchesMap;
-    volatile bool m_shutdownThreadSignal;
-    FileWatcher* m_fileWatcher;
-
-    // Can't use unique_ptr because this is a QObject and Qt's magic sauce is
-    // unable to determine the size of the unique_ptr and so fails to compile
-    struct PlatformImplementation;
-    PlatformImplementation* m_platformImpl;
-};
 
 //////////////////////////////////////////////////////////////////////////
 //! FileWatcher
@@ -73,23 +32,47 @@ class FileWatcher
 
 public:
     FileWatcher();
-    virtual ~FileWatcher();
+    ~FileWatcher() override;
 
     //////////////////////////////////////////////////////////////////////////
-    virtual int AddFolderWatch(FolderWatchBase* pFolderWatch);
-    virtual void RemoveFolderWatch(int handle);
+    void AddFolderWatch(QString directory, bool recursive = true);
+    void ClearFolderWatches();
     //////////////////////////////////////////////////////////////////////////
-    
+
     void StartWatching();
     void StopWatching();
 
 Q_SIGNALS:
-    void AnyFileChange(FileChangeInfo info);
+    // These signals are emitted when a file under a watched path changes
+    void fileAdded(QString filePath);
+    void fileRemoved(QString filePath);
+    void fileModified(QString filePath);
+
+    // These signals are emitted by the platform implementations when files
+    // change. Some platforms' file watch APIs do not support non-recursive
+    // watches, so the signals are filtered before being forwarded to the
+    // non-"raw" fileAdded/Removed/Modified signals above.
+    void rawFileAdded(QString filePath, QPrivateSignal);
+    void rawFileRemoved(QString filePath, QPrivateSignal);
+    void rawFileModified(QString filePath, QPrivateSignal);
 
 private:
-    int m_nextHandle;
-    AZStd::vector<FolderRootWatch*> m_folderWatchRoots;
-    bool m_startedWatching = false;
-};
+    bool PlatformStart();
+    void PlatformStop();
+    void WatchFolderLoop();
 
-#endif//FILEWATCHER_COMPONENT_H
+    class PlatformImplementation;
+    friend class PlatformImplementation;
+    struct WatchRoot
+    {
+        QString m_directory;
+        bool m_recursive;
+    };
+    static bool Filter(QString path, const WatchRoot& watchRoot);
+
+    AZStd::unique_ptr<PlatformImplementation> m_platformImpl;
+    AZStd::vector<WatchRoot> m_folderWatchRoots;
+    AZStd::thread m_thread;
+    bool m_startedWatching = false;
+    AZStd::atomic_bool m_shutdownThreadSignal = false;
+};

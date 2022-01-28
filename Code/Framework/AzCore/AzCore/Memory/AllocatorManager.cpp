@@ -14,7 +14,6 @@
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Memory/AllocatorOverrideShim.h>
 #include <AzCore/Memory/MallocSchema.h>
-#include <AzCore/Memory/MemoryDrillerBus.h>
 
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -215,8 +214,6 @@ AllocatorManager::RegisterAllocator(class IAllocator* alloc)
 #ifdef AZCORE_MEMORY_ENABLE_OVERRIDES
     ConfigureAllocatorOverrides(alloc);
 #endif
-
-    EBUS_EVENT(Debug::MemoryDrillerBus, RegisterAllocator, alloc);
 }
 
 //=========================================================================
@@ -318,11 +315,6 @@ void
 AllocatorManager::UnRegisterAllocator(class IAllocator* alloc)
 {
     AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
-
-    if (alloc->GetRecords())
-    {
-        EBUS_EVENT(Debug::MemoryDrillerBus, UnregisterAllocator, alloc);
-    }
 
     for (int i = 0; i < m_numAllocators; ++i)
     {

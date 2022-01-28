@@ -152,6 +152,8 @@ namespace AZ
             float GetQualityDecayRate() const override;
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
+            void SetRayTracingEnabled(bool enabled) override;
+            bool GetRayTracingEnabled() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

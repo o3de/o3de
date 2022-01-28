@@ -11,6 +11,8 @@
                 1.0,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
+            "textureMap": "18_cyan_sRGB.tif",
             "useTexture": true
         }
     }

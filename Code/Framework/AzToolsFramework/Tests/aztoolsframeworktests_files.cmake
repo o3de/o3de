@@ -12,6 +12,7 @@ set(FILES
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp
     AssetSystemMocks.h
+    AzToolsFrameworkTestHelpersTest.cpp
     BoundsTestComponent.cpp
     BoundsTestComponent.h
     ComponentAdapterTests.cpp
@@ -48,6 +49,7 @@ set(FILES
     FocusMode/EditorFocusModeSelectionTests.cpp
     FocusMode/EditorFocusModeTests.cpp
     GenericComponentWrapperTest.cpp
+    Input/QtEventToAzInputMapperTests.cpp
     InstanceDataHierarchy.cpp
     IntegerPrimtitiveTestConfig.h
     LogLines.cpp
@@ -74,7 +76,7 @@ set(FILES
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
     Prefab/PrefabInstantiateTests.cpp
-    Prefab/PrefabInstantiateTests.cpp
+    Prefab/PrefabAssetFixupTests.cpp
     Prefab/PrefabLoadTemplateTests.cpp
     Prefab/PrefabTestComponent.cpp
     Prefab/PrefabTestComponent.h
@@ -104,6 +106,7 @@ set(FILES
     Prefab/SpawnableSortEntitiesTests.cpp
     Prefab/PrefabScriptingTests.cpp
     Prefab/ProceduralPrefabAssetTests.cpp
+    Prefab/ProceduralPrefabSystemComponentTests.cpp
     PropertyIntCtrlCommonTests.cpp
     PropertyIntCtrlCommonTests.h
     PropertyIntSliderCtrlTests.cpp

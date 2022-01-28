@@ -7,35 +7,35 @@
             "details": {
                 "name": "Shortest Arc",
                 "category": "Math/Quaternion",
-                "tooltip": "Creates a rotation representing the shortest arc between From and To"
+                "tooltip": "creates a rotation representing the shortest arc between From and To"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_From",
+                    "base": "DataInput_From_0",
                     "details": {
                         "name": "From"
                     }
                 },
                 {
-                    "base": "DataInput_To",
+                    "base": "DataInput_To_1",
                     "details": {
                         "name": "To"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

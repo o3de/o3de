@@ -33,6 +33,13 @@ if(aftermath_header)
     set(PAL_TRAIT_AFTERMATH_AVAILABLE TRUE)
 endif()
 
+ly_add_source_properties(
+    SOURCES
+        Source/RHI.Builders/ShaderPlatformInterfaceSystemComponent.cpp
+    PROPERTY COMPILE_DEFINITIONS 
+    VALUES ${LY_PAL_TOOLS_DEFINES}
+)
+
 # Disable windows OS version check until infra can upgrade all our jenkins nodes
 # if(NOT CMAKE_SYSTEM_VERSION VERSION_GREATER_EQUAL "10.0.17763")
 #   message(FATAL_ERROR "Windows DX12 RHI implementation requires an OS version and SDK matching windows 10 build 1809 or greater")

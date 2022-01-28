@@ -8,8 +8,6 @@
 
 #include <Atom/RHI/ResourceView.h>
 #include <Atom/RHI/Resource.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -57,7 +55,7 @@ namespace AZ
 
         ResultCode ResourceView::OnResourceInvalidate()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             ResultCode resultCode = InvalidateInternal();
             if (resultCode == ResultCode::Success)
             {

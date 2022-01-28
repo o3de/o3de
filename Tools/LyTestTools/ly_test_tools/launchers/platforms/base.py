@@ -75,6 +75,8 @@ class Launcher(object):
             ~/ly_test_tools/devices.ini (a.k.a. %USERPROFILE%/ly_test_tools/devices.ini)
 
         :param backupFiles: Bool to backup setup files
+        :param launch_ap: Bool to launch the asset processor
+        :param configure_settings: Bool to update settings caches
         :return: None
         """
         # Remove existing logs and dmp files before launching for self.save_project_log_files()
@@ -153,7 +155,6 @@ class Launcher(object):
         :return: None
         """
         self.workspace.asset_processor.stop()
-        self.save_project_log_files()
 
     def save_project_log_files(self):
         # type: () -> None

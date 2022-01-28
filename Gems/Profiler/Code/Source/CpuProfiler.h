@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/ring_buffer.h>

@@ -10,7 +10,6 @@
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 namespace AZ
@@ -75,8 +74,6 @@ namespace AZ
 
         RHI::ResultCode ShaderResourceGroup::Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
-            AZ_TRACE_METHOD();
-
             const auto& lay = shaderAsset.FindShaderResourceGroupLayout(srgName, supervariantIndex);
             m_layout = lay.get();
             

@@ -1424,7 +1424,8 @@ namespace AZ
     }
 }
 
-using namespace AZ;
+namespace AZ
+{
 
 #ifndef AZ_USE_CUSTOM_SCRIPT_BIND
 
@@ -2254,6 +2255,7 @@ LUA_API const Node* lua_getDummyNode()
     }
 
 #endif // AZ_USE_CUSTOM_SCRIPT_BIND
+} // namespace AZ
 
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
@@ -5073,13 +5075,26 @@ LUA_API const Node* lua_getDummyNode()
                     // Check all constructors if they have use ScriptDataContext and if so choose this one 
                     if (!customConstructorMethod)
                     {
+                        int overrideIndex = -1;
+                        AZ::AttributeReader(nullptr, FindAttribute
+                            ( Script::Attributes::DefaultConstructorOverrideIndex, behaviorClass->m_attributes)).Read<int>(overrideIndex);
+
+                        int methodIndex = 0;
                         for (BehaviorMethod* method : behaviorClass->m_constructors)
                         {
+                            if (methodIndex == overrideIndex)
+                            {
+                                customConstructorMethod = method;
+                                break;
+                            }
+
                             if (method->GetNumArguments() && method->GetArgument(method->GetNumArguments() - 1)->m_typeId == AZ::AzTypeInfo<ScriptDataContext>::Uuid())
                             {
                                 customConstructorMethod = method;
                                 break;
                             }
+
+                            ++methodIndex;
                         }
                     }
 
@@ -5812,7 +5827,6 @@ LUA_API const Node* lua_getDummyNode()
             AllocatorWrapper<Internal::LuaSystemAllocator> m_luaAllocator;
             AZStd::thread::id m_ownerThreadId; // Check if Lua methods (including EBus handlers) are called from background threads.
         };
-    } // namespace AZ
 
     ScriptContext::ScriptContext(ScriptContextId id, IAllocatorAllocate* allocator, lua_State* nativeContext)
     {
@@ -6103,5 +6117,6 @@ LUA_API const Node* lua_getDummyNode()
     {
         return m_impl->ConstructScriptProperty(sdc, valueIndex, name, restrictToPropertyArrays);
     }
+} // namespace AZ
 
 #undef AZ_DBG_NAME_FIXER

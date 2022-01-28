@@ -49,12 +49,14 @@ namespace UnitTest
         inline static const char* CarPrefabMockFilePath = "SomePathToCar";
 
         void SetUpEditorFixtureImpl() override;
+        void TearDownEditorFixtureImpl() override;
 
         AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
+        void CreateRootPrefab();
+        AZ::Entity* CreateEntity(AZStd::string entityName, const bool shouldActivate = true);
+        AZ::EntityId CreateEntityUnderRootPrefab(AZStd::string name, AZ::EntityId parentId = AZ::EntityId());
         void PropagateAllTemplateChanges();
-
-        AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
             bool shouldCompareContainerEntities = true);
@@ -64,6 +66,15 @@ namespace UnitTest
         //! Validates that all entities within a prefab instance are in 'Active' state.
         void ValidateInstanceEntitiesActive(Instance& instance);
 
+        // Kicks off any updates scheduled for the next tick
+        virtual void ProcessDeferredUpdates();
+
+        // Performs an undo operation and ensures the tick-scheduled updates happen
+        void Undo();
+
+        // Performs a redo operation and ensures the tick-scheduled updates happen
+        void Redo();
+
         void AddRequiredEditorComponents(AZ::Entity* entity);
 
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
@@ -71,5 +82,6 @@ namespace UnitTest
         PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+        AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
     };
 }

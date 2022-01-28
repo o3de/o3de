@@ -106,7 +106,8 @@ namespace UnitTest
         AzToolsFramework::Prefab::PrefabDom prefabDom;
         prefabDom.CopyFrom(prefabSystemComponentInterface->FindTemplateDom(parentInstance->GetTemplateId()), prefabDom.GetAllocator(), false);
 
-        ASSERT_TRUE(prefabBuilderComponent.ProcessPrefab({AZ::Crc32("pc")}, "parent.prefab", "unused", AZ::Uuid(), prefabDom, jobProducts));
+        ASSERT_TRUE(prefabBuilderComponent.ProcessPrefab(
+            { AZ::Crc32("pc") }, "parent.prefab", "unused", AZ::Uuid(), AZStd::move(prefabDom), jobProducts));
 
         ASSERT_EQ(jobProducts.size(), 1);
         ASSERT_EQ(jobProducts[0].m_dependencies.size(), 1);

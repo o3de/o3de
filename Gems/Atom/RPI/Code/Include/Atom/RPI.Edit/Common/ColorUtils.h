@@ -19,6 +19,8 @@ namespace AZ
             //[GFX TODO][ATOM-4462] Replace this to use data driven color management system
             //! Return a ColorEditorConfiguration for editing a Linear sRGB color in sRGB space.
             AzToolsFramework::ColorEditorConfiguration GetLinearRgbEditorConfig();
+            //! Return a ColorEditorConfiguration for editing a sRGB color in sRGB space.
+            AzToolsFramework::ColorEditorConfiguration GetRgbEditorConfig();
 
         } // namespace PropertyColorConfigs
     } // namespace RPI

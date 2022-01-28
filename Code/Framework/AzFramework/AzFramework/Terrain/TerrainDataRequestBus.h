@@ -11,12 +11,17 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/std/containers/span.h>
+#include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
 
 namespace AzFramework
 {
     namespace Terrain
     {
+        typedef AZStd::function<void(size_t xIndex, size_t yIndex, const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointRegionFillCallback;
+        typedef AZStd::function<void(const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointListFillCallback;
 
         //! Shared interface for terrain system implementations
         class TerrainDataRequests
@@ -131,6 +136,63 @@ namespace AzFramework
                 Sampler sampleFilter = Sampler::DEFAULT,
                 bool* terrainExistsPtr = nullptr) const = 0;
 
+            //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
+            //! XY coordinate in the list.
+            virtual void ProcessHeightsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void ProcessNormalsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void ProcessSurfaceWeightsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void ProcessSurfacePointsFromList(const AZStd::span<AZ::Vector3>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void ProcessHeightsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void ProcessNormalsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void ProcessSurfacePointsFromListOfVector2(const AZStd::span<AZ::Vector2>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+
+            //! Returns the number of samples for a given region and step size. The first and second
+            //! elements of the pair correspond to the X and Y sample counts respectively.
+            virtual AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize) const = 0;
+
+            //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
+            //! coordinates in the region.
+            virtual void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize,
+                SurfacePointRegionFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize,
+                SurfacePointRegionFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize,
+                SurfacePointRegionFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+            virtual void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize,
+                SurfacePointRegionFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT) const = 0;
+
+            //! Get the terrain raycast entity context id.
+            virtual EntityContextId GetTerrainRaycastEntityContextId() const = 0;
+
+            //! Given a ray, return the closest intersection with terrain.
+            virtual RenderGeometry::RayResult GetClosestIntersection(const RenderGeometry::RayRequest& ray) const = 0;
+
         private:
             // Private variations of the GetSurfacePoint API exposed to BehaviorContext that returns a value instead of
             // using an "out" parameter. The "out" parameter is useful for reusing memory allocated in SurfacePoint when
@@ -144,12 +206,55 @@ namespace AzFramework
                 return result;
             }
             SurfaceData::SurfacePoint BehaviorContextGetSurfacePointFromVector2(
-                const AZ::Vector2& inPosition,
-                Sampler sampleFilter = Sampler::DEFAULT) const
+                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT) const
             {
                 SurfaceData::SurfacePoint result;
                 GetSurfacePointFromVector2(inPosition, result, sampleFilter);
                 return result;
+            }
+            // Private variations of the GetHeight.., GetNormal..., GetMaxSurfaceWeight..., GetSurfaceWeights... APIs
+            // exposed to BehaviorContext that does not use the terrainExists "out" parameter.
+            float BehaviorContextGetHeight(const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR)
+            {
+                return GetHeight(position, sampler, nullptr);
+            }
+            float BehaviorContextGetHeightFromVector2(const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR)
+            {
+                return GetHeightFromVector2(position, sampler, nullptr);
+            }
+            float BehaviorContextGetHeightFromFloats(float x, float y, Sampler sampler = Sampler::BILINEAR)
+            {
+                return GetHeightFromFloats(x, y, sampler, nullptr);
+            }
+            AZ::Vector3 BehaviorContextGetNormal(const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR)
+            {
+                return GetNormal(position, sampleFilter, nullptr);
+            }
+            SurfaceData::SurfaceTagWeight BehaviorContextGetMaxSurfaceWeight(
+                const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR)
+            {
+                return GetMaxSurfaceWeight(position, sampleFilter, nullptr);
+            }
+            SurfaceData::SurfaceTagWeight BehaviorContextGetMaxSurfaceWeightFromVector2(
+                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT)
+            {
+                return GetMaxSurfaceWeightFromVector2(inPosition, sampleFilter, nullptr);
+            }
+            SurfaceData::SurfaceTagWeightList BehaviorContextGetSurfaceWeights(
+                const AZ::Vector3& inPosition,
+                Sampler sampleFilter = Sampler::DEFAULT)
+            {
+                SurfaceData::SurfaceTagWeightList list;
+                GetSurfaceWeights(inPosition, list, sampleFilter, nullptr);
+                return list;
+            }
+            SurfaceData::SurfaceTagWeightList BehaviorContextGetSurfaceWeightsFromVector2(
+                const AZ::Vector2& inPosition,
+                Sampler sampleFilter = Sampler::DEFAULT)
+            {
+                SurfaceData::SurfaceTagWeightList list;
+                GetSurfaceWeightsFromVector2(inPosition, list, sampleFilter, nullptr);
+                return list;
             }
         };
         using TerrainDataRequestBus = AZ::EBus<TerrainDataRequests>;

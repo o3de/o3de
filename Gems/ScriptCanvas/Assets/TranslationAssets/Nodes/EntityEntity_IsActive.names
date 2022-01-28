@@ -7,29 +7,29 @@
             "details": {
                 "name": "Is Active",
                 "category": "Entity/Entity",
-                "tooltip": "Returns true if entity with the provided Id is valid and active."
+                "tooltip": "returns true if entity with the provided Id is valid and active."
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Entity Id",
+                    "base": "DataInput_Entity Id_0",
                     "details": {
                         "name": "Entity Id"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

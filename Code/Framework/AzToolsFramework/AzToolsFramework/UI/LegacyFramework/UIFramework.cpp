@@ -540,7 +540,6 @@ namespace AzToolsFramework
         //"Application"
         //  + Open Lua Editor
         //  + Open World Editor
-        //  + Open Driller
         //  + Open Model Viewer
         //  + Preferences...
         //  ------------------------

@@ -1392,7 +1392,7 @@ namespace UnitTest
         EXPECT_TRUE(done);
     }
 
-    // Fixture for thread-driller-bus related calls
+    // Fixture for thread-event-bus related calls
     // exists only to categorize the tests.
     class ThreadEventsBus :
         public AllocatorsFixture
@@ -1438,44 +1438,33 @@ namespace UnitTest
     TEST_F(ThreadEventsBus, Broadcasts_BothBusses)
     {
         ThreadEventCounter<AZStd::ThreadEventBus::Handler> eventBusCounter;
-        ThreadEventCounter<AZStd::ThreadDrillerEventBus::Handler> drillerBusCounter;
         auto thread_function = [&]()
         {
                ; // intentionally left blank
         };
 
         eventBusCounter.Connect();
-        drillerBusCounter.Connect();
 
         AZStd::thread starter =  AZStd::thread(thread_function);
         starter.join();
-        EXPECT_EQ(drillerBusCounter.m_enterCount, 1);
-        EXPECT_EQ(drillerBusCounter.m_exitCount, 1);
         EXPECT_EQ(eventBusCounter.m_enterCount, 1);
         EXPECT_EQ(eventBusCounter.m_exitCount, 1);
         eventBusCounter.Disconnect();
-        drillerBusCounter.Disconnect();
     }
 
-    // this class tests for deadlocks caused by interactions between the thread
-    // driller bus and the other driller busses.
-    // Client code (ie, not part of the driller system) can connec to the
-    // ThreadEventBus and be told when threads are started and stopped
-    // However, if they instead listen to the ThreadDrillerEventBus, a deadlock condition
-    // could be caused if they lock a mutex that another thread needs in order to proceed.
-    // This test makes sure that using the ThreadEventBus (ie, the one meant for client code)
-    // instead of the ThreadDrillerEventBus (the one meant only for profilers) does NOT cause
-    // a deadlock.
+    // This class tests for deadlocks caused by multiple threads interacting with the ThreadEventBus.
+    // Client code can connect to the ThreadEventBus and be told when threads are started and stopped.
+    // A deadlock condition could be caused if they lock a mutex that another thread needs in order to proceed.
+    // This test makes sure that using the ThreadEventBus does NOT cause  a deadlock.
 
     // We will simulate this series of events by doing the following
     // 1.  Main thread listens on the ThreadEventBus
     // 2.  OnThreadExit will lock a mutex, perform an allocation, unlock a mutex
     // 3.  The thread itself will lock the mutex, perform an allocation, unlock the mutex.
-    // As long as there is no cross talk between the client and the driller busses, the
-    // above operation should not deadlock.
-    // but if there is, then a deadlock can occur where one thread will be unable to perform
-    // its allocation because the other is in OnThreadExit()
-    // and the other will not be able to perform OnThreadExit() because it cannot lock the mutex.
+    // As long as there is no cross talk between threads, the above operation should not deadlock.
+    // If there is, then a deadlock can occur where one thread will be unable to perform
+    // its allocation because the other is in OnThreadExit() and the other will not be able to perform
+    // OnThreadExit() because it cannot lock the mutex.
 
     class ThreadEventsDeathTest :
         public AllocatorsFixture

@@ -82,7 +82,7 @@ def AtomEditorComponents_Grid_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a Grid entity with no components.
@@ -139,10 +139,12 @@ def AtomEditorComponents_Grid_AddedToEntity():
 
         # 9. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, grid_entity.exists())
 
         # 10. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not grid_entity.exists())
 
         # 11. Look for errors or asserts.

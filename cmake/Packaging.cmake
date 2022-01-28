@@ -73,7 +73,7 @@ set(CPACK_PROJECT_CONFIG_FILE ${CPACK_SOURCE_DIR}/PackagingConfig.cmake)
 set(CPACK_AUTO_GEN_TAG ${LY_INSTALLER_AUTO_GEN_TAG})
 
 # attempt to apply platform specific settings
-ly_get_absolute_pal_filename(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
@@ -93,6 +93,23 @@ endif()
 # We download it to a different location because CPACK_PACKAGING_INSTALL_PREFIX will be removed during
 # cpack generation. CPACK_BINARY_DIR persists across cpack invocations
 set(LY_CMAKE_PACKAGE_DOWNLOAD_PATH ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
+
+# Scan the source and 3p packages for licenses, then add the generated license results to the binary output folder.
+# These results will be installed to the root of the install folder and copied to the S3 bucket specific to each platform
+set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
+set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
+
+configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/LicenseScan.cmake.in
+    ${CPACK_BINARY_DIR}/LicenseScan.cmake
+    @ONLY
+)
+ly_install(SCRIPT ${CPACK_BINARY_DIR}/LicenseScan.cmake
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
+ly_install(FILES ${CPACK_3P_LICENSE_FILE} ${CPACK_3P_MANIFEST_FILE}
+    DESTINATION .
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
 
 configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/CMakeDownload.cmake.in
     ${CPACK_BINARY_DIR}/CMakeDownload.cmake

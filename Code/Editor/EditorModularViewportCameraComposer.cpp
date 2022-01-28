@@ -356,7 +356,8 @@ namespace SandboxEditor
             AZ::TransformBus::EventResult(worldFromLocal, viewEntityId, &AZ::TransformBus::Events::GetWorldTM);
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StartTrackingTransform, worldFromLocal);
+                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StartTrackingTransform,
+                worldFromLocal);
         }
         else
         {
@@ -367,8 +368,10 @@ namespace SandboxEditor
 
     void EditorModularViewportCameraComposer::OnTick(const float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        const float delta = [duration = &ed_cameraDefaultOrbitFadeDuration, deltaTime] {
-            if (*duration == 0.0f) {
+        const float delta = [duration = &ed_cameraDefaultOrbitFadeDuration, deltaTime]
+        {
+            if (*duration == 0.0f)
+            {
                 return 1.0f;
             }
             return deltaTime / *duration;

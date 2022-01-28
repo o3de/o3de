@@ -7,35 +7,35 @@
             "details": {
                 "name": "Multiply By Number",
                 "category": "Math/Quaternion",
-                "tooltip": "Returns the Source with each element multiplied by Multiplier"
+                "tooltip": "returns the Source with each element multiplied by Multiplier"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataInput_Multiplier",
+                    "base": "DataInput_Multiplier_1",
                     "details": {
                         "name": "Multiplier"
                     }
                 },
                 {
-                    "base": "DataOutput_Result",
+                    "base": "DataOutput_Result_0",
                     "details": {
                         "name": "Result"
                     }

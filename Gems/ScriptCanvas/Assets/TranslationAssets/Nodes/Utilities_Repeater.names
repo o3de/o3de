@@ -7,39 +7,38 @@
             "details": {
                 "name": "Repeater",
                 "category": "Utilities",
-                "tooltip": "Repeats the output signal the given number of times using the specified delay to space the signals out",
-                "subtitle": "Utilities"
+                "tooltip": "Repeats the output signal the given number of times using the specified delay to space the signals out"
             },
             "slots": [
                 {
-                    "base": "DataInput_Repetitions",
+                    "base": "DataInput_Repetitions_0",
                     "details": {
                         "name": "Repetitions"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "Output_Complete",
+                    "base": "Output_Complete_0",
                     "details": {
                         "name": "Complete",
                         "tooltip": "Signaled upon node exit"
                     }
                 },
                 {
-                    "base": "Output_Action",
+                    "base": "Output_Action_1",
                     "details": {
                         "name": "Action",
                         "tooltip": "The signal that will be repeated"
                     }
                 },
                 {
-                    "base": "DataInput_Interval",
+                    "base": "DataInput_Interval_1",
                     "details": {
                         "name": "Interval"
                     }

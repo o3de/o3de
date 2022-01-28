@@ -348,14 +348,7 @@ namespace AZ::AtomBridge
     void AtomDebugDisplayViewportInterface::SetAlpha(float a)
     {
         m_rendState.m_color.SetA(a);
-        if (a < 1.0f)
-        {
-            m_rendState.m_opacityType = AZ::RPI::AuxGeomDraw::OpacityType::Opaque;
-        }
-        else
-        {
-            m_rendState.m_opacityType = AZ::RPI::AuxGeomDraw::OpacityType::Translucent;
-        }
+        m_rendState.m_opacityType = a < 1.0f ? AZ::RPI::AuxGeomDraw::OpacityType::Translucent : AZ::RPI::AuxGeomDraw::OpacityType::Opaque;
     }
 
     void AtomDebugDisplayViewportInterface::DrawQuad(
@@ -1362,8 +1355,9 @@ namespace AZ::AtomBridge
         // if 2d draw need to project pos to screen first
         AzFramework::TextDrawParameters params;
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        const auto dpiScaleFactor = viewportContext->GetDpiScalingFactor();
         params.m_drawViewportId = viewportContext->GetId(); // get the viewport ID so default viewport works
-        params.m_position = AZ::Vector3(x, y, 1.0f);
+        params.m_position = AZ::Vector3(x * dpiScaleFactor, y * dpiScaleFactor, 1.0f);
         params.m_color = m_rendState.m_color;
         params.m_scale = AZ::Vector2(size);
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment

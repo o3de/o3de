@@ -398,9 +398,6 @@ public:
     // Interface to be implemented in plugins.
     //////////////////////////////////////////////////////////////////////////
 
-    //! Draw object to specified viewport.
-    virtual void Display([[maybe_unused]] DisplayContext& disp) {}
-
     //! Perform intersection testing of this object.
     //! Return true if was hit.
     virtual bool HitTest([[maybe_unused]] HitContext& hc) { return false; };
@@ -529,8 +526,6 @@ protected:
     void ResolveParent(CBaseObject* object);
     void SetColor(const QColor& color);
 
-    //! Draw default object items.
-    virtual void DrawDefault(DisplayContext& dc, const QColor& labelColor = QColor(255, 255, 255));
     //! Draw object label.
     void    DrawLabel(DisplayContext& dc, const Vec3& pos, const QColor& labelColor = QColor(255, 255, 255), float alpha = 1.0f, float size = 1.f);
     //! Draw 3D Axis at object position.
@@ -539,10 +534,6 @@ protected:
     void    DrawArea(DisplayContext& dc);
     //! Draw selection helper.
     void    DrawSelectionHelper(DisplayContext& dc, const Vec3& pos, const QColor& labelColor = QColor(255, 255, 255), float alpha = 1.0f);
-    //! Draw helper icon.
-    virtual void DrawTextureIcon(DisplayContext& dc, const Vec3& pos, float alpha = 1.0f);
-    //! Draw warning icons
-    virtual void DrawWarningIcons(DisplayContext& dc, const Vec3& pos);
     //! Check if dimension's figures can be displayed before draw them.
     virtual void DrawDimensions(DisplayContext& dc, AABB* pMergedBoundBox = nullptr);
 
@@ -575,7 +566,6 @@ protected:
     //! Only used by ObjectManager.
     bool IsPotentiallyVisible() const;
 
-    void SetDrawTextureIconProperties(DisplayContext& dc, const Vec3& pos, float alpha = 1.0f, int texIconFlags = 0);
     const Vec3& GetTextureIconDrawPos(){ return m_vDrawIconPos; };
     int GetTextureIconFlags(){ return m_nIconFlags; };
 

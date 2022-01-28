@@ -10,7 +10,6 @@
 #include <RHI/Device.h>
 
 #include <AzCore/Casting/lossy_cast.h>
-#include <AzCore/Debug/EventTrace.h> 
 
 namespace AZ
 {
@@ -82,7 +81,7 @@ namespace AZ
 
         BufferMemoryView BufferMemoryAllocator::Allocate(size_t sizeInBytes, size_t overrideSubAllocAlignment)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             
             BufferMemoryView bufferMemoryView;
 
@@ -141,7 +140,7 @@ namespace AZ
 
         BufferMemoryView BufferMemoryAllocator::AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             const size_t alignedSize = RHI::AlignUp(bufferDescriptor.m_byteCount, Alignment::CommittedBuffer);
 

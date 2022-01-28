@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_EMSTUDIOCORE_H
-#define __EMSTUDIO_EMSTUDIOCORE_H
+#pragma once
 
 // include all headers
 #include "EMStudioConfig.h"
@@ -16,5 +15,3 @@
 #include "PluginManager.h"
 #include "EMStudioPlugin.h"
 #include "LayoutManager.h"
-
-#endif

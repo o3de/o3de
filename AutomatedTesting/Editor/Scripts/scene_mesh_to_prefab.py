@@ -8,6 +8,7 @@
 import azlmbr.bus
 import azlmbr.math
 
+from scene_api.scene_data import PrimitiveShape, DecompositionMode, ColorChannel, TangentSpaceSource, TangentSpaceMethod
 from scene_helpers import *
 
 
@@ -41,6 +42,36 @@ def add_material_component(entity_id):
         raise RuntimeError("UpdateComponentForEntity for editor_material_component failed")
 
 
+def add_physx_meshes(scene_manifest: sceneData.SceneManifest, source_file_name: str, mesh_name_list: List, all_node_paths: List[str]):
+    first_mesh = mesh_name_list[0].get_path()
+
+    # Add a Box Primitive PhysX mesh with a comment
+    physx_box = scene_manifest.add_physx_primitive_mesh_group(source_file_name + "_box", PrimitiveShape.BOX, 0.0, None)
+    scene_manifest.physx_mesh_group_add_comment(physx_box, "This is a box primitive")
+    # Select the first mesh, unselect every other node
+    scene_manifest.physx_mesh_group_add_selected_node(physx_box, first_mesh)
+
+    for node in all_node_paths:
+        if node != first_mesh:
+            scene_manifest.physx_mesh_group_add_unselected_node(physx_box, node)
+
+    # Add a Convex Mesh PhysX mesh with a comment
+    convex_mesh = scene_manifest.add_physx_convex_mesh_group(source_file_name + "_convex", 0.08, .0004,
+                                                             True, True, True, True, True, 24, True, "Glass")
+    scene_manifest.physx_mesh_group_add_comment(convex_mesh, "This is a convex mesh")
+    # Select/Unselect nodes using lists
+    all_except_first_mesh = [x for x in all_node_paths if x != first_mesh]
+    scene_manifest.physx_mesh_group_add_selected_unselected_nodes(convex_mesh, [first_mesh], all_except_first_mesh)
+
+    # Configure mesh decomposition for this mesh
+    scene_manifest.physx_mesh_group_decompose_meshes(convex_mesh, 512, 32, .002, 100100, DecompositionMode.TETRAHEDRON,
+                                                     0.06, 0.055, 0.00015, 3, 3, True, False)
+
+    # Add a Triangle mesh
+    triangle = scene_manifest.add_physx_triangle_mesh_group(source_file_name + "_triangle", False, True, True, True, True, True)
+    scene_manifest.physx_mesh_group_add_selected_unselected_nodes(triangle, [first_mesh], all_except_first_mesh)
+
+
 def update_manifest(scene):
     import uuid, os
     import azlmbr.scene.graph
@@ -62,6 +93,8 @@ def update_manifest(scene):
     previous_entity_id = azlmbr.entity.InvalidEntityId
     first_mesh = True
 
+    add_physx_meshes(scene_manifest, source_filename_only, mesh_name_list, all_node_paths)
+
     # Loop every mesh node in the scene
     for activeMeshIndex in range(len(mesh_name_list)):
         mesh_name = mesh_name_list[activeMeshIndex]
@@ -82,10 +115,11 @@ def update_manifest(scene):
             if node != mesh_path:
                 scene_manifest.mesh_group_unselect_node(mesh_group, node)
 
-        scene_manifest.mesh_group_add_cloth_rule(mesh_group, mesh_path, "Col0", 1, "Col0", 2, "Col0", 2, 3)
+        scene_manifest.mesh_group_add_cloth_rule(mesh_group, mesh_path, "Col0", ColorChannel.GREEN, "Col0",
+                                                 ColorChannel.BLUE, "Col0", ColorChannel.BLUE, ColorChannel.ALPHA)
         scene_manifest.mesh_group_add_advanced_mesh_rule(mesh_group, True, False, True, "Col0")
         scene_manifest.mesh_group_add_skin_rule(mesh_group, 3, 0.002)
-        scene_manifest.mesh_group_add_tangent_rule(mesh_group, 1, 0)
+        scene_manifest.mesh_group_add_tangent_rule(mesh_group, TangentSpaceSource.MIKKT_GENERATION, TangentSpaceMethod.TSPACE_BASIC)
 
         # Create an editor entity
         entity_id = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "CreateEditorReadyEntity", mesh_group_name)
@@ -105,6 +139,26 @@ def update_manifest(scene):
 
         if not result:
             raise RuntimeError("UpdateComponentForEntity failed for Mesh component")
+
+        # Add a physics component referencing the triangle mesh we made for the first node
+        if previous_entity_id is None:
+            physx_mesh_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName",
+                                      entity_id, "{FD429282-A075-4966-857F-D0BBF186CFE6} EditorColliderComponent")
+
+            json_update = json.dumps({
+                "ShapeConfiguration": {
+                    "PhysicsAsset": {
+                        "Asset": {
+                            "assetHint": os.path.join(source_relative_path, source_filename_only + "_triangle.pxmesh")
+                        }
+                    }
+                }
+            })
+
+            result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id, physx_mesh_component, json_update)
+
+            if not result:
+                raise RuntimeError("UpdateComponentForEntity failed for PhysX mesh component")
 
         # an example of adding a material component to override the default material
         if previous_entity_id is not None and first_mesh:

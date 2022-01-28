@@ -11,7 +11,7 @@
 #include "EditorCommon.h"
 
 #include "Animation/UiEditorAnimationBus.h"
-#include "UiEditorDLLBus.h"
+#include <LyShine/UiEditorDLLBus.h>
 #include "UiEditorInternalBus.h"
 #include "UiEditorEntityContext.h"
 #include "UiSliceManager.h"

@@ -90,8 +90,8 @@ namespace AzToolsFramework
         {
             view->Draw(
                 GetManipulatorManagerId(), managerState, GetManipulatorId(),
-                { TransformUniformScale(GetSpace()), GetNonUniformScale(), GetLocalPosition(), MouseOver() }, debugDisplay, cameraState,
-                mouseInteraction);
+                ManipulatorState{ TransformUniformScale(GetSpace()), GetNonUniformScale(), GetLocalPosition(), MouseOver() }, debugDisplay,
+                cameraState, mouseInteraction);
         }
     }
 

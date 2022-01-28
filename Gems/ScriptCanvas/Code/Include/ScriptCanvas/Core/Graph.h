@@ -14,14 +14,12 @@
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/mutex.h>
-
 #include <ScriptCanvas/Core/GraphBus.h>
 #include <ScriptCanvas/Core/GraphData.h>
 #include <ScriptCanvas/Debugger/Bus.h>
 #include <ScriptCanvas/Execution/ErrorBus.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Debugger/StatusBus.h>
-
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
 
 namespace ScriptCanvas
@@ -189,8 +187,6 @@ namespace ScriptCanvas
 
         bool IsGraphObserved() const override;
         void SetIsGraphObserved(bool isObserved) override;
-
-        AZ::Data::AssetType GetAssetType() const override;
         ////
 
         const AZStd::unordered_map<AZ::EntityId, Node* >& GetNodeMapping() const { return m_nodeMapping; }
@@ -200,7 +196,7 @@ namespace ScriptCanvas
 
         GraphData m_graphData;
         AZ::Data::AssetType m_assetType;
-
+        
     private:
         ScriptCanvasId m_scriptCanvasId;
         ExecutionMode m_executionMode = ExecutionMode::Interpreted;
@@ -209,7 +205,7 @@ namespace ScriptCanvas
         GraphVariableManagerRequests* m_variableRequests = nullptr;
 
         // Keeps a mapping of the Node EntityId -> NodeComponent.
-        // Saves looking up the NodeComponent everytime we need the Node.
+        // Saves looking up the NodeComponent every time we need the Node.
         AZStd::unordered_map<AZ::EntityId, Node* > m_nodeMapping;
         
         bool m_isObserved;

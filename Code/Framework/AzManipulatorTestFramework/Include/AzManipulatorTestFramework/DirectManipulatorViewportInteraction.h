@@ -17,11 +17,10 @@ namespace AzManipulatorTestFramework
     class ViewportInteraction;
 
     //! Implementation of manipulator viewport interaction that manipulates the manager directly.
-    class DirectCallManipulatorViewportInteraction
-        : public ManipulatorViewportInteraction
+    class DirectCallManipulatorViewportInteraction : public ManipulatorViewportInteraction
     {
     public:
-        DirectCallManipulatorViewportInteraction();
+        explicit DirectCallManipulatorViewportInteraction(AZStd::shared_ptr<AzFramework::DebugDisplayRequests> debugDisplayRequests);
         ~DirectCallManipulatorViewportInteraction();
 
         // ManipulatorViewportInteractionInterface ...

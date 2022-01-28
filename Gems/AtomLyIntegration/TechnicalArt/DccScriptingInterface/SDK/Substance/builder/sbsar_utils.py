@@ -189,16 +189,16 @@ if __name__ == "__main__":
     from azpy import synthetic_env
     _SYNTH_ENV_DICT = synthetic_env.stash_env()
 
-    from azpy.constants import ENVAR_DCCSIG_PATH
-    from azpy.constants import ENVAR_O3DE_PROJECT_PATH
+    from azpy.constants import ENVAR_PATH_DCCSIG
+    from azpy.constants import ENVAR_PATH_O3DE_PROJECT
     
     # grab a specific path from the base_env
-    _PATH_DCCSI = _SYNTH_ENV_DICT[ENVAR_DCCSIG_PATH]
+    _PATH_DCCSI = _SYNTH_ENV_DICT[ENVAR_PATH_DCCSIG]
 
     # use DCCsi as the project path for this test
-    _O3DE_PROJECT_PATH = _PATH_DCCSI
+    _PATH_O3DE_PROJECT = _PATH_DCCSI
     
-    _PROJECT_ASSETS_PATH = Path(_O3DE_PROJECT_PATH, 'Assets').resolve()
+    _PROJECT_ASSETS_PATH = Path(_PATH_O3DE_PROJECT, 'Assets').resolve()
     _PROJECT_MATERIALS_PATH = Path(_PROJECT_ASSETS_PATH, 'Materials').resolve()
     
     # this will combine two parts into a single path (object)

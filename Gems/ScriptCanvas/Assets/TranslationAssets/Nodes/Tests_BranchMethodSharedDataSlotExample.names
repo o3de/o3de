@@ -5,68 +5,67 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "BranchMethodSharedDataSlotExample",
+                "name": "Branch Method Shared Data Slot Example",
                 "category": "Tests",
-                "tooltip": "Branch Test",
-                "subtitle": "Tests"
+                "tooltip": "Branch Test"
             },
             "slots": [
                 {
-                    "base": "Output_One String",
+                    "base": "Output_One String_0",
                     "details": {
                         "name": "One String"
                     }
                 },
                 {
-                    "base": "DataOutput_string",
+                    "base": "DataOutput_string_0",
                     "details": {
                         "name": "string"
                     }
                 },
                 {
-                    "base": "Output_Two Strings",
+                    "base": "Output_Two Strings_1",
                     "details": {
                         "name": "Two Strings"
                     }
                 },
                 {
-                    "base": "DataOutput_string1",
+                    "base": "DataOutput_string1_1",
                     "details": {
                         "name": "string1"
                     }
                 },
                 {
-                    "base": "DataOutput_string2",
+                    "base": "DataOutput_string2_2",
                     "details": {
                         "name": "string2"
                     }
                 },
                 {
-                    "base": "Output_Three Strings",
+                    "base": "Output_Three Strings_2",
                     "details": {
                         "name": "Three Strings"
                     }
                 },
                 {
-                    "base": "DataOutput_string3",
+                    "base": "DataOutput_string3_3",
                     "details": {
                         "name": "string3"
                     }
                 },
                 {
-                    "base": "Output_Square",
+                    "base": "Output_Square_3",
                     "details": {
                         "name": "Square"
                     }
                 },
                 {
-                    "base": "Output_Pants",
+                    "base": "Output_Pants_4",
                     "details": {
                         "name": "Pants"
                     }
                 },
                 {
-                    "base": "Output_Hello",
+                    "base": "Output_Hello_5",
                     "details": {
                         "name": "Hello"
                     }

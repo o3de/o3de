@@ -6,6 +6,4 @@
 #
 #
 
-add_subdirectory(AtomToolsFramework)
-add_subdirectory(MaterialEditor)
 add_subdirectory(ShaderManagementConsole)

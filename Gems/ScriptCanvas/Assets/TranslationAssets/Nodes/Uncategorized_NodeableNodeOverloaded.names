@@ -5,7 +5,7 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "NodeableNodeOverloaded",
+                "name": "Nodeable Node Overloaded",
                 "tooltip": "NodeableNode"
             }
         }

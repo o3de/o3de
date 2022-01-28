@@ -25,10 +25,8 @@ extern "C" {
 
 namespace AZ
 {
+    
     void LuaHook(lua_State* l, lua_Debug* ar);
-}
-
-using namespace AZ;
 
 /**
  * A temp class that will override the current script context error handler and store the error (without any messages)
@@ -105,6 +103,8 @@ void ScriptContextDebug::ConnectHook()
 void ScriptContextDebug::DisconnectHook()
 {
     lua_sethook(m_context.NativeContext(), nullptr, 0, 0);
+    m_currentStackLevel = -1;
+    m_stepStackLevel = -1;
 }
 
 //=========================================================================
@@ -597,7 +597,7 @@ static ScriptContextDebug::BreakpointId MakeBreakpointId(const char* sourceName,
 // LuaHook
 // [6/28/2012]
 //=========================================================================
-void AZ::LuaHook(lua_State* l, lua_Debug* ar)
+void LuaHook(lua_State* l, lua_Debug* ar)
 {
     // Read contexts
     lua_rawgeti(l, LUA_REGISTRYINDEX, AZ_LUA_SCRIPT_CONTEXT_REF);
@@ -651,6 +651,11 @@ void AZ::LuaHook(lua_State* l, lua_Debug* ar)
             context->PopCallstack();
         }
         context->m_currentStackLevel--;
+
+        if (context->m_currentStackLevel == -1)
+        {
+            context->m_stepStackLevel = -1;
+        }
     }
     else if (ar->event == LUA_HOOKLINE)
     {
@@ -731,7 +736,7 @@ void AZ::LuaHook(lua_State* l, lua_Debug* ar)
         //}
     }
 
-    if (doBreak)
+    if (doBreak && bp->m_lineNumber > 0)
     {
         context->m_luaDebug = ar;
         context->m_breakCallback(context, bp);
@@ -1535,5 +1540,7 @@ ScriptContextDebug::SetValue(const DebugValue& sourceValue)
 
     return true;
 }
+
+} // namespace AZ
 
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)

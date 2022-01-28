@@ -153,6 +153,7 @@ namespace AZ
             {
                 bool isValidAll = true;
                 uint32_t offset = 0;
+
                 for (size_t i = 0; i < values.size(); i++)
                 {
                     const uint32_t fourByteValue = values[i] ? 1 : 0;
@@ -263,6 +264,21 @@ namespace AZ
         {
             constexpr size_t sizeOfVector4 = 16;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(sizeOfVector4)))
+            {
+                const Interval interval = GetLayout()->GetInterval(inputIndex);
+                float* vectorValue = reinterpret_cast<float*>(&m_constantData[interval.m_min]);
+                value.StoreToFloat4(vectorValue);
+
+                return true;
+            }
+            return false;
+        }
+
+        template <>
+        bool ConstantsData::SetConstant<Color>(ShaderInputConstantIndex inputIndex, const Color& value)
+        {
+            constexpr size_t sizeOfColor = sizeof(Color);
+            if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(sizeOfColor)))
             {
                 const Interval interval = GetLayout()->GetInterval(inputIndex);
                 float* vectorValue = reinterpret_cast<float*>(&m_constantData[interval.m_min]);
@@ -387,6 +403,18 @@ namespace AZ
                 return Vector4::CreateFromFloat4(reinterpret_cast<const float*>(constantBytes.data()));
             }
             return Vector4();
+        }
+
+        template <>
+        Color ConstantsData::GetConstant<Color>(ShaderInputConstantIndex inputIndex) const
+        {
+            constexpr size_t colorSize = sizeof(Color);
+            if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, aznumeric_caster(colorSize)))
+            {
+                AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+                return Color::CreateFromFloat4(reinterpret_cast<const float*>(constantBytes.data()));
+            }
+            return Color();
         }
 
         AZStd::array_view<uint8_t> ConstantsData::GetConstantRaw(ShaderInputConstantIndex inputIndex) const

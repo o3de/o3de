@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_EMSTUDIOPLUGIN_H
-#define __EMSTUDIO_EMSTUDIOPLUGIN_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -127,5 +126,3 @@ namespace EMStudio
         virtual void AddWindowMenuEntries([[maybe_unused]] QMenu* parent) { }
     };
 }   // namespace EMStudio
-
-#endif

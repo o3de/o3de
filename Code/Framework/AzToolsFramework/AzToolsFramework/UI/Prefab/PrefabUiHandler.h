@@ -46,7 +46,7 @@ namespace AzToolsFramework
         void OnOutlinerItemCollapse(const QModelIndex& index) const override;
         bool OnEntityDoubleClick(AZ::EntityId entityId) const override;
 
-    private:
+    protected:
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
@@ -56,17 +56,17 @@ namespace AzToolsFramework
 
         static AzFramework::EntityContextId s_editorEntityContextId;
 
-        static constexpr int m_prefabCapsuleRadius = 6;
-        static constexpr int m_prefabBorderThickness = 2;
-        static const QColor m_backgroundColor;
-        static const QColor m_backgroundHoverColor;
-        static const QColor m_backgroundSelectedColor;
-        static const QColor m_prefabCapsuleColor;
-        static const QColor m_prefabCapsuleDisabledColor;
-        static const QColor m_prefabCapsuleEditColor;
-        static const QString m_prefabIconPath;
-        static const QString m_prefabEditIconPath;
-        static const QString m_prefabEditOpenIconPath;
-        static const QString m_prefabEditCloseIconPath;
+        int m_prefabCapsuleRadius = 6;
+        int m_prefabBorderThickness = 2;
+        QColor m_backgroundColor = QColor("#444444");
+        QColor m_backgroundHoverColor = QColor("#5A5A5A");
+        QColor m_backgroundSelectedColor = QColor("#656565");
+        QColor m_prefabCapsuleColor = QColor("#1E252F");
+        QColor m_prefabCapsuleDisabledColor = QColor("#35383C");
+        QColor m_prefabCapsuleEditColor = QColor("#4A90E2");
+        QString m_prefabIconPath = QString(":/Entity/prefab.svg");
+        QString m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
+        QString m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open.svg");
+        QString m_prefabEditCloseIconPath = QString(":/Entity/prefab_edit_close.svg");
     };
 } // namespace AzToolsFramework

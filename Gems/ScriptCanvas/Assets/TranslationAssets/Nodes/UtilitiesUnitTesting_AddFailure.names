@@ -11,20 +11,20 @@
             },
             "slots": [
                 {
-                    "base": "DataInput_Report",
+                    "base": "DataInput_Report_0",
                     "details": {
                         "name": "Report"
                     }
                 },
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }

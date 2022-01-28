@@ -7,43 +7,43 @@
             "details": {
                 "name": "Get Rows",
                 "category": "Math/Matrix3x3",
-                "tooltip": "Returns all rows from matrix"
+                "tooltip": "returns all rows from matrix"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out"
                     }
                 },
                 {
-                    "base": "DataInput_Source",
+                    "base": "DataInput_Source_0",
                     "details": {
                         "name": "Source"
                     }
                 },
                 {
-                    "base": "DataOutput_Row1",
+                    "base": "DataOutput_Row1_0",
                     "details": {
-                        "name": "Row 1"
+                        "name": "Row1"
                     }
                 },
                 {
-                    "base": "DataOutput_Row2",
+                    "base": "DataOutput_Row2_1",
                     "details": {
-                        "name": "Row 2"
+                        "name": "Row2"
                     }
                 },
                 {
-                    "base": "DataOutput_Row3",
+                    "base": "DataOutput_Row3_2",
                     "details": {
-                        "name": "Row 3"
+                        "name": "Row3"
                     }
                 }
             ]

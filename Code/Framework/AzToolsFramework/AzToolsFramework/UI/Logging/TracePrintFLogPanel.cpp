@@ -145,7 +145,7 @@ namespace AzToolsFramework
 
         void AZTracePrintFLogTab::LogTraceMessage(Logging::LogLine::LogType type, const char* window, const char* message, void* userData)
         {
-            // note:  This is responding to a trace driller bus message
+            // note:  This is responding to a TraceMessageBus message
             // as such, the mutex is already locked but we could be called from any thread at all, so we buffer the lines.
 
             // is it for this window?

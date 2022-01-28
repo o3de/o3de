@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_SCRIPT_SYSTEM_COMPONENT_H
-#define AZCORE_SCRIPT_SYSTEM_COMPONENT_H
+#pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -182,6 +181,3 @@ namespace AZ
         void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
     };
 }
-
-#endif // AZCORE_SCRIPT_SYSTEM_COMPONENT_H
-#pragma once

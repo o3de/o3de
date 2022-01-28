@@ -39,6 +39,9 @@ namespace AZ
         template<typename T> constexpr friend void AZStd::destroy_at(T*);
 
     public:
+
+        AllocatorManager();
+
         typedef AZStd::function<void (IAllocator* allocator, size_t /*byteSize*/, size_t /*alignment*/, int/* flags*/, const char* /*name*/, const char* /*fileName*/, int lineNum /*=0*/)>    OutOfMemoryCBType;
 
         static void PreRegisterAllocator(IAllocator* allocator);  // Only call if the environment is not yet attached
@@ -185,7 +188,6 @@ namespace AZ
         AZ::Debug::AllocationRecords::Mode m_defaultTrackingRecordMode;
         AZStd::unique_ptr<AZ::MallocSchema, void(*)(AZ::MallocSchema*)> m_mallocSchema;
 
-        AllocatorManager();
         ~AllocatorManager();
 
         static AllocatorManager g_allocMgr;    ///< The single instance of the allocator manager

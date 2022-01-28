@@ -7,7 +7,6 @@
  */
 
 #include <ReflectionProbe/ReflectionProbe.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/Pass.h>

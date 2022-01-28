@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/IO/GenericStreams.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -53,6 +54,9 @@ namespace AZ
             //! @return the loaded PngFile or an invalid PngFile if there was an error.
             static PngFile Load(const char* path, LoadSettings loadSettings = {});
 
+            //! @return the loaded PngFile or an invalid PngFile if there was an error.
+            static PngFile LoadFromBuffer(AZStd::array_view<uint8_t> data, LoadSettings loadSettings = {});
+
             //! Create a PngFile from an RHI data buffer.
             //! @param size the dimensions of the image (m_depth is not used, assumed to be 1)
             //! @param format indicates the pixel format represented by @data. Only a limited set of formats are supported, see implementation.
@@ -83,10 +87,12 @@ namespace AZ
         private:
             AZ_DEFAULT_COPY(PngFile)
 
-                static const int HeaderSize = 8;
+            static const int HeaderSize = 8;
 
             static void DefaultErrorHandler(const char* message);
 
+            static PngFile LoadInternal(AZ::IO::GenericStream& dataStream, LoadSettings loadSettings);
+                
             uint32_t m_width = 0;
             uint32_t m_height = 0;
             int32_t m_bitDepth = 0;

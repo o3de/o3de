@@ -7,18 +7,17 @@
             "details": {
                 "name": "Ordered Sequencer",
                 "category": "Logic",
-                "tooltip": "Triggers the execution outputs in the specified ordered. The next line will trigger once the first line reaches a break in execution(either through latent node, or a terminal endpoint)",
-                "subtitle": "Logic"
+                "tooltip": "Triggers the execution outputs in the specified ordered. The next line will trigger once the first line reaches a break in execution(either through latent node, or a terminal endpoint)"
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In"
                     }
                 },
                 {
-                    "base": "Output_Out 0",
+                    "base": "Output_Out 0_0",
                     "details": {
                         "name": "Out 0",
                         "tooltip": "Output 0"

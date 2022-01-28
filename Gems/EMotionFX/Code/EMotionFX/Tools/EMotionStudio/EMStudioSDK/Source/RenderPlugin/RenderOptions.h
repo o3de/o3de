@@ -15,6 +15,7 @@
 #include "../EMStudioConfig.h"
 #include "../PluginOptions.h"
 #include "../PluginOptionsBus.h"
+#include <Integration/Rendering/RenderFlag.h>
 
 QT_FORWARD_DECLARE_CLASS(QSettings);
 
@@ -82,6 +83,26 @@ namespace EMStudio
         static const char* s_selectedClothColliderColorOptionName;
         static const char* s_lastUsedLayoutOptionName;
         static const char* s_renderSelectionBoxOptionName;
+
+        enum ManipulatorMode
+        {
+            SELECT = 0,
+            TRANSLATE = 1,
+            ROTATE = 2,
+            SCALE = 3,
+            NUM_MODES = 4
+        };
+
+        enum CameraViewMode
+        {
+            FRONT,
+            BACK,
+            TOP,
+            BOTTOM,
+            LEFT,
+            RIGHT,
+            DEFAULT
+        };
 
         RenderOptions();
         ~RenderOptions();
@@ -254,17 +275,18 @@ namespace EMStudio
         bool GetRenderSelectionBox() const { return m_renderSelectionBox; }
         void SetRenderSelectionBox(bool renderSelectionBox);
 
-        enum ManipulatorMode
-        {
-            SELECT = 0,
-            TRANSLATE = 1,
-            ROTATE = 2,
-            SCALE = 3,
-            NUM_MODES = 4
-        };
-
         void SetManipulatorMode(ManipulatorMode mode);
         ManipulatorMode GetManipulatorMode() const;
+
+        void SetCameraViewMode(CameraViewMode mode);
+        CameraViewMode GetCameraViewMode() const;
+
+        void SetCameraFollowUp(bool followUp);
+        bool GetCameraFollowUp() const;
+
+        void ToggerRenderFlag(int index);
+        void SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags);
+        EMotionFX::ActorRenderFlagBitset GetRenderFlags() const;
 
     private:
         void OnGridUnitSizeChangedCallback() const;
@@ -378,10 +400,13 @@ namespace EMStudio
         AZ::Color        m_simulatedObjectColliderColor;
         AZ::Color        m_selectedSimulatedObjectColliderColor;
 
-        // The following are not in the  UI
+        // The following are not in the UI
         AZStd::string    m_lastUsedLayout;
         bool             m_renderSelectionBox;
-        ManipulatorMode  m_manipulatorMode = SELECT;
+        ManipulatorMode  m_manipulatorMode = ManipulatorMode::SELECT;
+        CameraViewMode   m_cameraViewMode = CameraViewMode::DEFAULT;
+        bool             m_cameraFollowUp = false;
+        EMotionFX::ActorRenderFlagBitset m_renderFlags;
     };
 
 } // namespace EMStudio

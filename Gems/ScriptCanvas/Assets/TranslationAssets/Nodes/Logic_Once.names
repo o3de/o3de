@@ -11,28 +11,28 @@
             },
             "slots": [
                 {
-                    "base": "Input_In",
+                    "base": "Input_In_0",
                     "details": {
                         "name": "In",
                         "tooltip": "Input signal"
                     }
                 },
                 {
-                    "base": "Input_Reset",
+                    "base": "Input_Reset_1",
                     "details": {
                         "name": "Reset",
                         "tooltip": "Reset signal"
                     }
                 },
                 {
-                    "base": "Output_Out",
+                    "base": "Output_Out_0",
                     "details": {
                         "name": "Out",
                         "tooltip": "Output signal"
                     }
                 },
                 {
-                    "base": "Output_On Reset",
+                    "base": "Output_On Reset_1",
                     "details": {
                         "name": "On Reset",
                         "tooltip": "Triggered when Reset"

@@ -11,6 +11,8 @@
                 1.0,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
+            "textureMap": "08_purplish_blue_sRGB.tif",
             "useTexture": true
         }
     }
