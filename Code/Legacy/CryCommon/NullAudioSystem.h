@@ -21,15 +21,15 @@ namespace Audio
         NullAudioProxy() = default;
         ~NullAudioProxy() override = default;
 
-        void Initialize(const char*, const bool = true) override {}
+        void Initialize(const char*, void*, const bool = true) override {}
         void Release() override {}
-        void ExecuteSourceTrigger(TAudioControlID, const SAudioSourceInfo&, const SAudioCallBackInfos& = SAudioCallBackInfos::GetEmptyObject()) override {}
-        void ExecuteTrigger(TAudioControlID, const SAudioCallBackInfos& = SAudioCallBackInfos::GetEmptyObject()) override {}
+        void ExecuteTrigger(TAudioControlID) override {}
+        void ExecuteSourceTrigger(TAudioControlID, const SAudioSourceInfo&) override {}
         void StopAllTriggers() override {}
         void StopTrigger(TAudioControlID) override {}
         void SetSwitchState(TAudioControlID, TAudioSwitchStateID) override {}
         void SetRtpcValue(TAudioControlID, float) override {}
-        void SetObstructionCalcType(EAudioObjectObstructionCalcType) override {}
+        void SetObstructionCalcType(ObstructionType) override {}
         void SetPosition(const SATLWorldPosition&) override {}
         void SetPosition(const AZ::Vector3&) override {}
         void SetMultiplePositions(const MultiPositionParams&) override {}
@@ -60,14 +60,9 @@ namespace Audio
         void Release() override {}
         void ExternalUpdate() override {}
 
-        //! NEW AUDIO REQUESTS
-        void PushRequestNew(AudioRequestVariant&&) override {}
-        void PushRequestBlockingNew(AudioRequestVariant&&) override {}
-        void PushCallbackNew(AudioRequestVariant&&) override {}
-        //~ NEW AUDIO REQUESTS
-
-        void AddRequestListener(AudioRequestCallbackType, void*, EAudioRequestType, TATLEnumFlagsType) override {}
-        void RemoveRequestListener(AudioRequestCallbackType, void*) override {}
+        void PushRequest(AudioRequestVariant&&) override {}
+        void PushRequestBlocking(AudioRequestVariant&&) override {}
+        void PushCallback(AudioRequestVariant&&) override {}
 
         TAudioControlID GetAudioTriggerID(const char*) const override { return INVALID_AUDIO_CONTROL_ID; }
         TAudioControlID GetAudioRtpcID(const char*) const override { return INVALID_AUDIO_CONTROL_ID; }

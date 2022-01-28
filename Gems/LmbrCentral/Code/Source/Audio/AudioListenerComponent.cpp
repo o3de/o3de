@@ -203,7 +203,7 @@ namespace LmbrCentral
             setListenerTransform.m_audioObjectId = m_listenerObjectId;
             // TODO:
             // request.pOwner = this;
-            audioSystem->PushRequestNew(AZStd::move(setListenerTransform));
+            audioSystem->PushRequest(AZStd::move(setListenerTransform));
         }
     }
 

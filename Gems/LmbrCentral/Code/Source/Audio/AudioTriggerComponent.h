@@ -27,6 +27,7 @@ namespace LmbrCentral
     class AudioTriggerComponent
         : public AZ::Component
         , public AudioTriggerComponentRequestBus::Handler
+        , public Audio::AudioTriggerNotificationBus::Handler
     {
     public:
         /*!
@@ -54,8 +55,10 @@ namespace LmbrCentral
 
         void SetObstructionType(Audio::ObstructionType obstructionType) override;
 
-        //! Used as a callback when a trigger instance is finished.
-        static void OnAudioEvent(const Audio::SAudioRequestInfo* const);
+        /*!
+         * AudioTriggerNotificationBus::Handler Interface
+         */
+        void ReportTriggerFinished() override;
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
@@ -89,7 +92,6 @@ namespace LmbrCentral
         //! Transient data
         Audio::TAudioControlID m_defaultPlayTriggerID = INVALID_AUDIO_CONTROL_ID;
         Audio::TAudioControlID m_defaultStopTriggerID = INVALID_AUDIO_CONTROL_ID;
-        AZStd::unique_ptr<Audio::SAudioCallBackInfos> m_callbackInfo;
 
         //! Serialized data
         AZStd::string m_defaultPlayTriggerName;

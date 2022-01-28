@@ -213,7 +213,7 @@ namespace AudioSystemGem
         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
         {
             Audio::SystemRequest::LoseFocus loseFocus;
-            audioSystem->PushRequestNew(AZStd::move(loseFocus));
+            audioSystem->PushRequest(AZStd::move(loseFocus));
         }
     }
 
@@ -222,7 +222,7 @@ namespace AudioSystemGem
         if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
         {
             Audio::SystemRequest::GetFocus getFocus;
-            audioSystem->PushRequestNew(AZStd::move(getFocus));
+            audioSystem->PushRequest(AZStd::move(getFocus));
         }
     }
 
@@ -279,12 +279,12 @@ namespace AudioSystemGem
             Audio::SystemRequest::LoadControls loadControls;
             loadControls.m_controlsPath = (controlsPath ? controlsPath : "");
             loadControls.m_scope = eADS_GLOBAL;
-            audioSystem->PushRequestBlockingNew(AZStd::move(loadControls));
+            audioSystem->PushRequestBlocking(AZStd::move(loadControls));
 
             Audio::SystemRequest::LoadBank loadBank;
             loadBank.m_asyncLoad = false;
             loadBank.m_preloadRequestId = ATLInternalControlIDs::GlobalPreloadRequestID;
-            audioSystem->PushRequestBlockingNew(AZStd::move(loadBank));
+            audioSystem->PushRequestBlocking(AZStd::move(loadBank));
         }
     }
 

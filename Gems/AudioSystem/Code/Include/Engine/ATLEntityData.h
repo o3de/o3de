@@ -76,7 +76,8 @@ namespace Audio
     {
         virtual ~IATLEventData() = default;
 
-        TAudioControlID m_triggerId = INVALID_AUDIO_CONTROL_ID;
+        TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
+        void* m_owner{ nullptr };
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

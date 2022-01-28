@@ -16,46 +16,6 @@
 namespace Audio
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct SAudioEventListener
-    {
-        SAudioEventListener()
-            : m_callbackOwner(nullptr)
-            , m_fnOnEvent(nullptr)
-            , m_requestType(eART_AUDIO_ALL_REQUESTS)
-            , m_specificRequestMask(ALL_AUDIO_REQUEST_SPECIFIC_TYPE_FLAGS)
-        {}
-
-        SAudioEventListener(const SAudioEventListener& other)
-            : m_callbackOwner(other.m_callbackOwner)
-            , m_fnOnEvent(other.m_fnOnEvent)
-            , m_requestType(other.m_requestType)
-            , m_specificRequestMask(other.m_specificRequestMask)
-        {}
-
-        SAudioEventListener& operator=(const SAudioEventListener& other)
-        {
-            m_callbackOwner = other.m_callbackOwner;
-            m_fnOnEvent = other.m_fnOnEvent;
-            m_requestType = other.m_requestType;
-            m_specificRequestMask = other.m_specificRequestMask;
-            return *this;
-        }
-
-        bool operator==(const SAudioEventListener& rhs) const
-        {
-            return (m_callbackOwner == rhs.m_callbackOwner
-                && m_fnOnEvent == rhs.m_fnOnEvent
-                && m_requestType == rhs.m_requestType
-                && m_specificRequestMask == rhs.m_specificRequestMask);
-        }
-
-        const void* m_callbackOwner;
-        AudioRequestCallbackType m_fnOnEvent;
-        EAudioRequestType m_requestType;
-        TATLEnumFlagsType m_specificRequestMask;
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(AUDIO_RELEASE)
     // Filter for drawing debug info to the screen
     namespace DebugDraw

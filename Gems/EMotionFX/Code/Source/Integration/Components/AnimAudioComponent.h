@@ -72,12 +72,10 @@ namespace EMotionFX
             void RemoveTriggerEvent(const AZStd::string& eventName) override;
             bool ExecuteSourceTrigger(
                 const Audio::TAudioControlID triggerID,
-                const Audio::SAudioCallBackInfos& callbackInfo,
                 const Audio::TAudioControlID& sourceId,
                 const AZStd::string& jointName) override;
             bool ExecuteTrigger(
                 const Audio::TAudioControlID triggerID,
-                const Audio::SAudioCallBackInfos& callbackInfo,
                 const AZStd::string& jointName) override;
             void KillTrigger(const Audio::TAudioControlID triggerID, const AZStd::string* jointName) override;
             void KillAllTriggers(const AZStd::string* jointName) override;
@@ -127,7 +125,8 @@ namespace EMotionFX
             void ActivateJointProxies();
             void DeactivateJointProxies();
 
-            static void OnAudioEvent(const Audio::SAudioRequestInfo* const requestInfo);
+            // TODO: Hook up trigger finished callback
+            //static void OnAudioEvent(const Audio::SAudioRequestInfo* const requestInfo);
 
             AZ::u32 m_activeVoices = 0;
 
@@ -136,7 +135,6 @@ namespace EMotionFX
 
             AZStd::unordered_map<AZ::Crc32, TriggerEventData> m_eventTriggerMap;
             AZStd::unordered_map<AZ::s32, Audio::IAudioProxy*> m_jointProxies;
-            AZStd::unique_ptr<Audio::SAudioCallBackInfos> m_callbackInfo;
 
             AZ::Transform m_transform;
         };

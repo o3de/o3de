@@ -53,6 +53,8 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
+        //! Notification when a trigger instance has started.
+        virtual void OnTriggerStarted([[maybe_unused]] const Audio::TAudioControlID triggerID) {}
         //! Notification when a trigger instance has finished.
         virtual void OnTriggerFinished(const Audio::TAudioControlID triggerID) = 0;
     };

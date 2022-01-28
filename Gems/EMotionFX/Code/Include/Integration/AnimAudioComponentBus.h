@@ -40,14 +40,12 @@ namespace EMotionFX
             /// Execute a single ATL source trigger on a joint proxy.
             virtual bool ExecuteSourceTrigger(
                 const Audio::TAudioControlID triggerID,
-                const Audio::SAudioCallBackInfos& callbackInfo,
                 const Audio::TAudioControlID& sourceId,
                 const AZStd::string& jointName) = 0;
 
             /// Execute a single ATL trigger on a joint proxy.
             virtual bool ExecuteTrigger(
                 const Audio::TAudioControlID triggerID,
-                const Audio::SAudioCallBackInfos& callbackInfo,
                 const AZStd::string& jointName) = 0;
 
             /// Kill a single or all ATL triggers on a joint proxy. If a joint name is provided, only kill on provided joint.  Otherwise, kill all joints' audio triggers.

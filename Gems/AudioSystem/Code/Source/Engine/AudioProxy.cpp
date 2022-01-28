@@ -22,26 +22,27 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CAudioProxy::~CAudioProxy()
     {
-        //if ((m_nFlags & eAPF_WAITING_FOR_ID) != 0)
-        //{
-        //    AZ::Interface<IAudioSystem>::Get()->RemoveRequestListener(&CAudioProxy::OnAudioEvent, this);
-        //}
-
-        AZ_Assert(m_nAudioObjectID == INVALID_AUDIO_OBJECT_ID, "Expected AudioObjectID [%d] to be invalid when the audio proxy is destructed.", m_nAudioObjectID);
+        Release();  // this should be okay to do if we no longer queue Release requests.
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioProxy::Initialize(const char* const sObjectName, const bool bInitAsync /* = true */)
+    void CAudioProxy::Initialize(const char* sObjectName, void* ownerOverride, bool bInitAsync /* = true */)
     {
-        auto audioProxiesInitType = static_cast<AZ::u32>(Audio::CVars::s_AudioProxiesInitType);
+        if (HasId())
+        {
+            // Already has an ID assigned, nothing needed
+            return;
+        }
+
+        m_ownerOverride = ownerOverride;
 
         Audio::SystemRequest::ReserveObject reserveObject;
         reserveObject.m_objectName = (sObjectName ? sObjectName : "");
         reserveObject.m_callback = [this](const Audio::SystemRequest::ReserveObject& request)
         {
-            // Assign the new audio object ID and clear the 'waiting on id' flag...
+            // Assign the new audio object ID...
             m_nAudioObjectID = request.m_objectId;
-            // Now execute any requests queued while this was waiting
+            // Now execute any requests queued while this was waiting for an ID assignment
             ExecuteQueuedRequests();
         };
 
@@ -50,34 +51,24 @@ namespace Audio
         // 0: instance-specific initialization (default).  So the bAsync flag is used to determine init type.
         // 1: All initialize sync
         // 2: All initialize async
+
+        auto audioProxiesInitType = static_cast<AZ::u32>(Audio::CVars::s_AudioProxiesInitType);
         if ((bInitAsync && audioProxiesInitType == 0) || audioProxiesInitType == 2)
         {
-            if (!HasId())
-            {
-                // Add the request listener to receive callback when the audio object ID has been registered with middleware...
-                //AZ::Interface<IAudioSystem>::Get()->AddRequestListener(
-                //    &CAudioProxy::OnAudioEvent, this, eART_AUDIO_MANAGER_REQUEST, eAMRT_RESERVE_AUDIO_OBJECT_ID);
-
-                // TODO:
-                // This request used flags eARF_PRIORITY_HIGH and eARF_SYNC_CALLBACK and request.pOwner = this !!
-                AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(reserveObject));
-            }
-            // Don't support this...
-            //else
-            //{
-            //    SQueuedAudioCommand oQueuedCommand = SQueuedAudioCommand(eQACT_INITIALIZE);
-            //    oQueuedCommand.sValue = sObjectName;
-            //    TryAddQueuedCommand(oQueuedCommand);
-            //}
+            // TODO:
+            // This request used flags eARF_PRIORITY_HIGH and eARF_SYNC_CALLBACK and request.pOwner = this !!
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(reserveObject));
         }
         else
         {
             // TODO:
             // This request used flags eARF_PRIORITY_HIGH and eARF_EXECUTE_BLOCKING !!
-            AZ::Interface<IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(reserveObject));
+            AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(reserveObject));
 
+            // TODO:
             // Problem is that even with the blocking request, the callback is still async, so this assert will hit.
-            // Either remove this or get sync callbacks working again.
+            // Either remove this check/assert or get true sync callbacks working again.
+
     #if !defined(AUDIO_RELEASE)
             if (m_nAudioObjectID == INVALID_AUDIO_OBJECT_ID)
             {
@@ -88,54 +79,16 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioProxy::ExecuteSourceTrigger(
-        TAudioControlID nTriggerID,
-        const SAudioSourceInfo& rSourceInfo,
-        [[maybe_unused]] const SAudioCallBackInfos& rCallbackInfos /* = SAudioCallBackInfos::GetEmptyObject() */)
-    {
-        Audio::ObjectRequest::ExecuteSourceTrigger execSourceTrigger;
-        execSourceTrigger.m_triggerId = nTriggerID;
-        execSourceTrigger.m_sourceInfo = rSourceInfo;
-
-        if (HasId())
-        {
-            AZ_Assert(m_nAudioObjectID != INVALID_AUDIO_OBJECT_ID, "Invalid AudioObjectID found when an audio proxy is executing a source trigger!");
-
-            execSourceTrigger.m_audioObjectId = m_nAudioObjectID;
-            // TODO:
-            // This request copied flags: request.nFlags = rCallbackInfos.nRequestFlags;
-            // Also:
-            // request.pOwner = (rCallbackInfos.pObjectToNotify != nullptr) ? rCallbackInfos.pObjectToNotify : this;
-            // request.pUserData = rCallbackInfos.pUserData;
-            // request.pUserDataOwner = rCallbackInfos.pUserDataOwner;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(execSourceTrigger));
-        }
-        else
-        {
-            TryEnqueueRequest(AZStd::move(execSourceTrigger));
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioProxy::ExecuteTrigger(
-        const TAudioControlID nTriggerID,
-        [[maybe_unused]] const SAudioCallBackInfos& rCallbackInfos /* = SAudioCallBackInfos::GetEmptyObject() */)
+    void CAudioProxy::ExecuteTrigger(TAudioControlID nTriggerID)
     {
         Audio::ObjectRequest::ExecuteTrigger execTrigger;
         execTrigger.m_triggerId = nTriggerID;
+        execTrigger.m_owner = (m_ownerOverride ? m_ownerOverride : this);
 
         if (HasId())
         {
-            AZ_Assert(m_nAudioObjectID != INVALID_AUDIO_OBJECT_ID, "Invalid AudioObjectID found when an audio proxy is executing a trigger!");
-
             execTrigger.m_audioObjectId = m_nAudioObjectID;
-            // TODO:
-            // This request copied flags: request.nFlags = rCallbackInfos.nRequestFlags;
-            // Also:
-            // request.pOwner = (rCallbackInfos.pObjectToNotify != nullptr) ? rCallbackInfos.pObjectToNotify : this;
-            // request.pUserData = rCallbackInfos.pUserData;
-            // request.pUserDataOwner = rCallbackInfos.pUserDataOwner;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(execTrigger));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(execTrigger));
         }
         else
         {
@@ -144,17 +97,34 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CAudioProxy::ExecuteSourceTrigger(TAudioControlID nTriggerID, const SAudioSourceInfo& rSourceInfo)
+    {
+        Audio::ObjectRequest::ExecuteSourceTrigger execSourceTrigger;
+        execSourceTrigger.m_triggerId = nTriggerID;
+        execSourceTrigger.m_sourceInfo = rSourceInfo;
+        execSourceTrigger.m_owner = (m_ownerOverride ? m_ownerOverride : this);
+
+        if (HasId())
+        {
+            execSourceTrigger.m_audioObjectId = m_nAudioObjectID;
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(execSourceTrigger));
+        }
+        else
+        {
+            TryEnqueueRequest(AZStd::move(execSourceTrigger));
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioProxy::StopAllTriggers()
     {
         Audio::ObjectRequest::StopAllTriggers stopAll;
+        stopAll.m_owner = (m_ownerOverride ? m_ownerOverride : this);
 
         if (HasId())
         {
             stopAll.m_audioObjectId = m_nAudioObjectID;
-            // TODO:
-            // request.pOwner = this;
-            // How does this work with m_filterByOwner ??
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(stopAll));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(stopAll));
         }
         else
         {
@@ -163,17 +133,16 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioProxy::StopTrigger(const TAudioControlID nTriggerID)
+    void CAudioProxy::StopTrigger(TAudioControlID nTriggerID)
     {
         Audio::ObjectRequest::StopTrigger stopTrigger;
         stopTrigger.m_triggerId = nTriggerID;
+        stopTrigger.m_owner = (m_ownerOverride ? m_ownerOverride : this);
 
         if (HasId())
         {
             stopTrigger.m_audioObjectId = m_nAudioObjectID;
-            // TODO:
-            //oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(stopTrigger));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(stopTrigger));
         }
         else
         {
@@ -182,7 +151,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioProxy::SetSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID)
+    void CAudioProxy::SetSwitchState(TAudioControlID nSwitchID, TAudioSwitchStateID nStateID)
     {
         Audio::ObjectRequest::SetSwitchValue setSwitch;
         setSwitch.m_switchId = nSwitchID;
@@ -193,7 +162,7 @@ namespace Audio
             setSwitch.m_audioObjectId = m_nAudioObjectID;
             // TODO:
             //oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(setSwitch));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setSwitch));
         }
         else
         {
@@ -202,7 +171,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioProxy::SetRtpcValue(const TAudioControlID nRtpcID, const float fValue)
+    void CAudioProxy::SetRtpcValue(TAudioControlID nRtpcID, float fValue)
     {
         Audio::ObjectRequest::SetParameterValue setParameter;
         setParameter.m_parameterId = nRtpcID;
@@ -213,7 +182,7 @@ namespace Audio
             setParameter.m_audioObjectId = m_nAudioObjectID;
             // TODO:
             //oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(setParameter));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setParameter));
         }
         else
         {
@@ -222,7 +191,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioProxy::SetObstructionCalcType(const EAudioObjectObstructionCalcType eObstructionType)
+    void CAudioProxy::SetObstructionCalcType(ObstructionType eObstructionType)
     {
         const size_t nObstructionCalcIndex = static_cast<size_t>(eObstructionType);
 
@@ -253,12 +222,18 @@ namespace Audio
                 setPosition.m_position = m_oPosition;
                 // TODO:
                 //oRequest.pOwner = this;
-                AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(setPosition));
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setPosition));
             }
         }
         else
         {
             // If a SetPosition is queued during init, we don't worry about the position update threshold gating.
+            m_oPosition = refPosition;
+
+            // Make sure the forward/up directions are normalized
+            m_oPosition.NormalizeForwardVec();
+            m_oPosition.NormalizeUpVec();
+
             setPosition.m_position = refPosition;
             TryEnqueueRequest(AZStd::move(setPosition));
         }
@@ -281,7 +256,7 @@ namespace Audio
             setMultiPosition.m_audioObjectId = m_nAudioObjectID;
             // TODO:
             //request.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(setMultiPosition));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setMultiPosition));
         }
         else
         {
@@ -290,7 +265,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioProxy::SetEnvironmentAmount(const TAudioEnvironmentID nEnvironmentID, const float fValue)
+    void CAudioProxy::SetEnvironmentAmount(TAudioEnvironmentID nEnvironmentID, float fValue)
     {
         Audio::ObjectRequest::SetEnvironmentValue setEnvironment;
         setEnvironment.m_environmentId = nEnvironmentID;
@@ -301,7 +276,7 @@ namespace Audio
             setEnvironment.m_audioObjectId = m_nAudioObjectID;
             // TODO:
             //oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(setEnvironment));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setEnvironment));
         }
         else
         {
@@ -319,7 +294,7 @@ namespace Audio
             resetEnvironments.m_audioObjectId = m_nAudioObjectID;
             // TODO:
             //oRequest.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(resetEnvironments));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(resetEnvironments));
         }
         else
         {
@@ -337,7 +312,7 @@ namespace Audio
             resetParameters.m_audioObjectId = m_nAudioObjectID;
             // TODO:
             //request.pOwner = this;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(resetParameters));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(resetParameters));
         }
         else
         {
@@ -350,23 +325,17 @@ namespace Audio
     {
         // Should just have a Release function, no reset.
         // If it has ID, push a Release request and reset info
-        // Should we send a StopAll?
         // No Queueing of this type of call/request, it should be considered an immediate reset/recycle
         if (HasId())
         {
-            //Reset();
             Audio::ObjectRequest::Release releaseObject;
             releaseObject.m_audioObjectId = m_nAudioObjectID;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(releaseObject));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(releaseObject));
 
             m_nAudioObjectID = INVALID_AUDIO_OBJECT_ID;
             m_oPosition = {};
+            m_ownerOverride = nullptr;
             m_queuedAudioRequests.clear();
-        }
-        else
-        {
-            // TODO
-            //TryAddQueuedCommand(SQueuedAudioCommand(eQACT_RELEASE));
         }
 
         AZ::Interface<IAudioSystem>::Get()->RecycleAudioProxy(this);
@@ -384,7 +353,7 @@ namespace Audio
                     request.m_audioObjectId = m_nAudioObjectID;
                 },
                 requestVariant);
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(requestVariant));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(requestVariant));
         }
         m_queuedAudioRequests.clear();
     }
@@ -399,9 +368,9 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct FindSetSwitchValue
     {
-        FindSetSwitchValue(TAudioControlID audioSwitchId, TAudioSwitchStateID audioStateId)
-            : m_audioSwitchId(audioSwitchId)
-            , m_audioStateId(audioStateId)
+        explicit FindSetSwitchValue(const ObjectRequest::SetSwitchValue& request)
+            : m_audioSwitchId(request.m_switchId)
+            , m_audioStateId(request.m_stateId)
         {
         }
 
@@ -429,9 +398,9 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct FindSetParameterValue
     {
-        FindSetParameterValue(TAudioControlID audioParameterId, float audioParameterValue)
-            : m_audioParameterId(audioParameterId)
-            , m_audioParameterValue(audioParameterValue)
+        explicit FindSetParameterValue(const Audio::ObjectRequest::SetParameterValue& request)
+            : m_audioParameterId(request.m_parameterId)
+            , m_audioParameterValue(request.m_value)
         {
         }
 
@@ -459,8 +428,8 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct FindSetPosition
     {
-        FindSetPosition(SATLWorldPosition& refPosition)
-            : m_position(refPosition)
+        explicit FindSetPosition(const Audio::ObjectRequest::SetPosition& request)
+            : m_position(request.m_position)
         {
         }
 
@@ -478,14 +447,14 @@ namespace Audio
         }
 
     private:
-        SATLWorldPosition& m_position;
+        const SATLWorldPosition& m_position;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct FindSetMultiplePositions
     {
-        FindSetMultiplePositions(MultiPositionParams& refParams)
-            : m_params(refParams)
+        explicit FindSetMultiplePositions(const Audio::ObjectRequest::SetMultiplePositions& request)
+            : m_params(request.m_params)
         {
         }
 
@@ -512,15 +481,15 @@ namespace Audio
         }
 
     private:
-        MultiPositionParams& m_params;
+        const MultiPositionParams& m_params;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct FindSetEnvironmentValue
     {
-        FindSetEnvironmentValue(TAudioEnvironmentID audioEnvironmentId, float audioEnvironmentValue)
-            : m_audioEnvironmentId(audioEnvironmentId)
-            , m_audioEnvironmentValue(audioEnvironmentValue)
+        explicit FindSetEnvironmentValue(const Audio::ObjectRequest::SetEnvironmentValue& request)
+            : m_audioEnvironmentId(request.m_environmentId)
+            , m_audioEnvironmentValue(request.m_value)
         {
         }
 
@@ -563,72 +532,64 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioProxy::TryEnqueueRequest(AudioRequestVariant&& requestVariant)
     {
-        bool shouldAdd = true;
         bool addFront = false;
-        AZStd::visit(
-            [this, &shouldAdd, &addFront](auto&& request)
+        bool shouldAdd = AZStd::visit(
+            [this, &addFront](auto&& request) -> bool
             {
-                using T = AZStd::decay_t<decltype(request)>;
-                if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::ExecuteTrigger>
-                    || AZStd::is_same_v<T, Audio::ObjectRequest::StopTrigger>
-                    || AZStd::is_same_v<T, Audio::ObjectRequest::ExecuteSourceTrigger>)
+                using RequestType = AZStd::decay_t<decltype(request)>;
+                if constexpr (AZStd::is_same_v<RequestType, Audio::ObjectRequest::ExecuteTrigger>
+                    || AZStd::is_same_v<RequestType, Audio::ObjectRequest::StopTrigger>
+                    || AZStd::is_same_v<RequestType, Audio::ObjectRequest::ExecuteSourceTrigger>)
                 {
-                    // always push these types of requests!
+                    // Always add these types of requests!
+                    return true;
                 }
-                // else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::PrepareTrigger>
-                //     || AZStd::is_same_v<T, Audio::ObjectRequest::UnprepareTrigger>)
-                //{
-                //     // Not implemented yet!
-                //}
-                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetPosition>)
+                else if constexpr (AZStd::is_same_v<RequestType, Audio::ObjectRequest::SetPosition>)
                 {
                     // Position should be set in front of queue, before other things happen.
                     addFront = true;
+                    auto findIter = AZStd::find_if(m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(), FindSetPosition(request));
+                    return (findIter == m_queuedAudioRequests.end());
+                }
+                else if constexpr (AZStd::is_same_v<RequestType, Audio::ObjectRequest::SetParameterValue>)
+                {
                     auto findIter =
-                        AZStd::find_if(m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(), FindSetPosition(request.m_position));
-                    shouldAdd = (findIter == m_queuedAudioRequests.end());
+                        AZStd::find_if(m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(), FindSetParameterValue(request));
+                    return (findIter == m_queuedAudioRequests.end());
                 }
-                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetParameterValue>)
+                else if constexpr (AZStd::is_same_v<RequestType, Audio::ObjectRequest::SetSwitchValue>)
                 {
-                    auto findIter = AZStd::find_if(
-                        m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(),
-                        FindSetParameterValue(request.m_parameterId, request.m_value));
-                    shouldAdd = (findIter == m_queuedAudioRequests.end());
+                    auto findIter = AZStd::find_if(m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(), FindSetSwitchValue(request));
+                    return (findIter == m_queuedAudioRequests.end());
                 }
-                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetSwitchValue>)
+                else if constexpr (AZStd::is_same_v<RequestType, Audio::ObjectRequest::SetEnvironmentValue>)
                 {
-                    auto findIter = AZStd::find_if(
-                        m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(),
-                        FindSetSwitchValue(request.m_switchId, request.m_stateId));
-                    shouldAdd = (findIter == m_queuedAudioRequests.end());
+                    auto findIter =
+                        AZStd::find_if(m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(), FindSetEnvironmentValue(request));
+                    return (findIter == m_queuedAudioRequests.end());
                 }
-                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetEnvironmentValue>)
-                {
-                    auto findIter = AZStd::find_if(
-                        m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(),
-                        FindSetEnvironmentValue(request.m_environmentId, request.m_value));
-                    shouldAdd = (findIter == m_queuedAudioRequests.end());
-                }
-                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::StopAllTriggers>
-                    || AZStd::is_same_v<T, Audio::ObjectRequest::ResetParameters>
-                    || AZStd::is_same_v<T, Audio::ObjectRequest::ResetEnvironments>
-                    || AZStd::is_same_v<T, Audio::ObjectRequest::Release>)
+                else if constexpr (AZStd::is_same_v<RequestType, Audio::ObjectRequest::StopAllTriggers>
+                    || AZStd::is_same_v<RequestType, Audio::ObjectRequest::ResetParameters>
+                    || AZStd::is_same_v<RequestType, Audio::ObjectRequest::ResetEnvironments>
+                    || AZStd::is_same_v<RequestType, Audio::ObjectRequest::Release>)
                 {
                     // Generic find
-                    auto findIter = AZStd::find_if(
-                        m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(), FindRequestType<T>());
-                    shouldAdd = (findIter == m_queuedAudioRequests.end());
+                    auto findIter = AZStd::find_if(m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(), FindRequestType<RequestType>());
+                    return (findIter == m_queuedAudioRequests.end());
                 }
-                else if constexpr (AZStd::is_same_v<T, Audio::ObjectRequest::SetMultiplePositions>)
+                else if constexpr (AZStd::is_same_v<RequestType, Audio::ObjectRequest::SetMultiplePositions>)
                 {
+                    // Position should be set in front of queue, before other things happen.
                     addFront = true;
                     auto findIter = AZStd::find_if(
-                        m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(), FindSetMultiplePositions(request.m_params));
-                    shouldAdd = (findIter == m_queuedAudioRequests.end());
+                        m_queuedAudioRequests.begin(), m_queuedAudioRequests.end(), FindSetMultiplePositions(request));
+                    return (findIter == m_queuedAudioRequests.end());
                 }
                 else
                 {
-                    shouldAdd = false;
+                    // Not implemented yet!
+                    // e.g. Audio::ObjectRequest::PrepareTrigger, Audio::ObjectRequest::UnprepareTrigger
+                    return false;
                 }
             },
             requestVariant);

@@ -71,7 +71,7 @@ namespace Audio
             , m_eDataScope(eDataScope)
         {}
 
-        virtual ~CATLEntity() {}
+        virtual ~CATLEntity() = default;
 
         virtual IDType GetID() const
         {
@@ -328,7 +328,7 @@ namespace Audio
             , m_pImplData(pImplData)
         {}
 
-        ~CATLEvent() override {}
+        ~CATLEvent() override = default;
 
         CATLEvent(const CATLEvent&) = delete;               // copy protection!
         CATLEvent& operator=(const CATLEvent&) = delete;    // copy protection!
@@ -340,7 +340,7 @@ namespace Audio
 
         bool IsPlaying() const
         {
-            return m_audioEventState == eAES_PLAYING || m_audioEventState == eAES_PLAYING_DELAYED;
+            return m_audioEventState == eAES_PLAYING;
         }
 
         void Clear()

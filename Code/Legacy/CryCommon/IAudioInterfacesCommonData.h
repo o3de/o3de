@@ -10,6 +10,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/TypeInfo.h>
@@ -408,70 +409,51 @@ namespace Audio
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct SAudioCallBackInfos
+    struct TriggerNotificationIdType
     {
-        explicit SAudioCallBackInfos(
-            void* const pPassedObjectToNotify = nullptr,
-            void* const pPassedUserData = nullptr,
-            const TATLEnumFlagsType nPassedRequestFlags = eARF_PRIORITY_NORMAL)
-            : pObjectToNotify(pPassedObjectToNotify)
-            , pUserData(pPassedUserData)
-            , nRequestFlags(nPassedRequestFlags)
+        TAudioControlID m_triggerId{ INVALID_AUDIO_CONTROL_ID };
+        uintptr_t m_owner{ 0 };
+
+        TriggerNotificationIdType(TAudioControlID triggerId, void* owner)
+            : m_triggerId(triggerId)
+            , m_owner(reinterpret_cast<uintptr_t>(owner))
         {
         }
 
-        SAudioCallBackInfos(const SAudioCallBackInfos& other)
-            : pObjectToNotify(other.pObjectToNotify)
-            , pUserData(other.pUserData)
-            , nRequestFlags(other.nRequestFlags)
+        TriggerNotificationIdType(TAudioControlID triggerId, AZ::EntityId owner)
+            : m_triggerId(triggerId)
+            , m_owner(static_cast<uintptr_t>(owner))
         {
         }
 
-        static const SAudioCallBackInfos& GetEmptyObject()
+        inline bool operator==(const TriggerNotificationIdType& rhs) const
         {
-            static SAudioCallBackInfos emptyInstance;
-            return emptyInstance;
+            return (m_triggerId == rhs.m_triggerId) && (m_owner == rhs.m_owner);
         }
 
-        void* const pObjectToNotify;
-        void* const pUserData;
-        const TATLEnumFlagsType nRequestFlags;
+        inline bool operator!=(const TriggerNotificationIdType& rhs) const
+        {
+            return !(*this == rhs);
+        }
     };
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct SAudioRequestInfo
-    {
-        explicit SAudioRequestInfo(
-            const EAudioRequestResult ePassedResult,
-            void* const pPassedOwner,
-            void* const pPassedUserData,
-            const EAudioRequestType ePassedAudioRequestType,
-            const TATLEnumFlagsType nPassedSpecificAudioRequest,
-            const TAudioControlID nPassedAudioControlID,
-            const TAudioObjectID nPassedAudioObjectID,
-            const TAudioEventID passedAudioEventID)
-            : eResult(ePassedResult)
-            , pOwner(pPassedOwner)
-            , pUserData(pPassedUserData)
-            , eAudioRequestType(ePassedAudioRequestType)
-            , nSpecificAudioRequest(nPassedSpecificAudioRequest)
-            , nAudioControlID(nPassedAudioControlID)
-            , nAudioObjectID(nPassedAudioObjectID)
-            , audioEventID(passedAudioEventID)
-        {}
-
-        const EAudioRequestResult eResult;
-        void* const pOwner;
-        void* const pUserData;
-        const EAudioRequestType eAudioRequestType;
-        const TATLEnumFlagsType nSpecificAudioRequest;
-        const TAudioControlID nAudioControlID;
-        const TAudioObjectID nAudioObjectID;
-        const TAudioEventID audioEventID;
-    };
 
 } // namespace Audio
 
+namespace AZStd
+{
+    template<>
+    struct hash<Audio::TriggerNotificationIdType>
+    {
+        inline size_t operator()(const Audio::TriggerNotificationIdType& id) const
+        {
+            size_t hashValue = 0;
+            hash_combine(hashValue, id.m_triggerId);
+            hash_combine(hashValue, id.m_owner);
+            return hashValue;
+        }
+    };
+} // namespace AZStd
 
 namespace AZ
 {

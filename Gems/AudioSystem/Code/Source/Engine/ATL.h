@@ -37,11 +37,7 @@ namespace Audio
         bool ShutDown();
         void Update();
 
-
-        //! NEW AUDIO REQUESTS
-        void ProcessRequestNew(AudioRequestVariant&& request);
-        //~ NEW AUDIO REQUESTS
-
+        void ProcessRequest(AudioRequestVariant&& request);
 
         TAudioControlID GetAudioTriggerID(const char* const sAudioTriggerName) const;
         TAudioControlID GetAudioRtpcID(const char* const sAudioRtpcName) const;
@@ -50,15 +46,12 @@ namespace Audio
         TAudioPreloadRequestID GetAudioPreloadRequestID(const char* const sAudioPreloadRequestName) const;
         TAudioEnvironmentID GetAudioEnvironmentID(const char* const sAudioEnvironmentName) const;
 
-        bool ReserveAudioObjectID(TAudioObjectID& rAudioObjectID);
+        bool ReserveAudioObjectID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName);
         bool ReleaseAudioObjectID(const TAudioObjectID nAudioObjectID);
 
         bool ReserveAudioListenerID(TAudioObjectID& rAudioObjectID);
         bool ReleaseAudioListenerID(const TAudioObjectID nAudioObjectID);
         bool SetAudioListenerOverrideID(const TAudioObjectID nAudioObjectID);
-
-        void AddRequestListener(const SAudioEventListener& listener);
-        void RemoveRequestListener(const SAudioEventListener& listener);
 
         bool CanProcessRequests() const { return (m_nFlags & eAIS_AUDIO_MIDDLEWARE_SHUTTING_DOWN) == 0; }
 
@@ -69,8 +62,6 @@ namespace Audio
 
         TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig);
         void DestroyAudioSource(TAudioSourceId sourceId);
-
-        //void NotifyListener(const CAudioRequestInternal& rRequest);
 
     private:
         EAudioRequestStatus InitializeImplComponent();
@@ -84,8 +75,6 @@ namespace Audio
             CATLAudioObjectBase* const pAudioObject,
             const CATLTrigger* const pTrigger,
             void* const pOwner = nullptr,
-            void* const pUserData = nullptr,
-            const TATLEnumFlagsType nFlags = INVALID_AUDIO_ENUM_FLAG_TYPE,
             const SATLSourceData* pSourceData = nullptr);
         EAudioRequestStatus StopTrigger(
             CATLAudioObjectBase* const pAudioObject,
@@ -165,7 +154,6 @@ namespace Audio
         CAudioObjectManager m_oAudioObjectMgr;
         CAudioListenerManager m_oAudioListenerMgr;
         CFileCacheManager m_oFileCacheMgr;
-        CAudioEventListenerManager m_oAudioEventListenerMgr;
         CATLXmlProcessor m_oXmlProcessor;
 
         // Utility members
@@ -179,7 +167,6 @@ namespace Audio
 
 #if !defined(AUDIO_RELEASE)
     public:
-        bool ReserveAudioObjectID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName);
         void DrawAudioSystemDebugInfo();
         const CATLDebugNameStore& GetDebugStore() const { return m_oDebugNameStore; }
 

@@ -188,7 +188,7 @@ namespace LmbrCentral
             Audio::SystemRequest::LoadBank loadBank;
             loadBank.m_preloadRequestId = preloadId;
             loadBank.m_asyncLoad = true;
-            audioSystem->PushRequestNew(AZStd::move(loadBank));
+            audioSystem->PushRequest(AZStd::move(loadBank));
         }
     }
 
@@ -199,7 +199,7 @@ namespace LmbrCentral
         {
             Audio::SystemRequest::UnloadBank unloadBank;
             unloadBank.m_preloadRequestId = preloadId;
-            audioSystem->PushRequestNew(AZStd::move(unloadBank));
+            audioSystem->PushRequest(AZStd::move(unloadBank));
         }
     }
 

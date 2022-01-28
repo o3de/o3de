@@ -286,7 +286,7 @@ namespace AudioControls
         // clear the AudioSystem controls data
         Audio::SystemRequest::UnloadControls unloadControls;
         unloadControls.m_scope = Audio::eADS_ALL;
-        audioSystem->PushRequestNew(AZStd::move(unloadControls));
+        audioSystem->PushRequest(AZStd::move(unloadControls));
 
         // parse the AudioSystem global config data
         // this is technically incorrect, we should just use GetControlsPath() unmodified when loading controls.
@@ -299,7 +299,7 @@ namespace AudioControls
         // load the controls again
         Audio::SystemRequest::LoadControls loadGlobalControls;
         loadGlobalControls.m_scope = Audio::eADS_GLOBAL;
-        audioSystem->PushRequestNew(AZStd::move(loadGlobalControls));
+        audioSystem->PushRequest(AZStd::move(loadGlobalControls));
 
         // parse the AudioSystem level-specific config data
         AZStd::string levelName;
@@ -311,7 +311,7 @@ namespace AudioControls
 
             Audio::SystemRequest::LoadControls loadLevelControls;
             loadLevelControls.m_scope = Audio::eADS_LEVEL_SPECIFIC;
-            audioSystem->PushRequestNew(AZStd::move(loadLevelControls));
+            audioSystem->PushRequest(AZStd::move(loadLevelControls));
         }
 
         // inform the middleware specific plugin that the data has been saved

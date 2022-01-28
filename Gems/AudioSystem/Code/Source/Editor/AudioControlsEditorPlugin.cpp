@@ -44,7 +44,7 @@ CAudioControlsEditorPlugin::CAudioControlsEditorPlugin(IEditor* editor)
     if (ms_pIAudioProxy)
     {
         ms_pIAudioProxy->Initialize("AudioControlsEditor-Preview");
-        ms_pIAudioProxy->SetObstructionCalcType(Audio::eAOOCT_IGNORE);
+        ms_pIAudioProxy->SetObstructionCalcType(Audio::ObstructionType::Ignore);
     }
 
     ms_implementationManager.LoadImplementation();
@@ -162,7 +162,7 @@ void CAudioControlsEditorPlugin::ExecuteTrigger(const AZStd::string_view sTrigge
             setListenerTransform.m_transform = cameraMatrix;
             setListenerTransform.m_transform.NormalizeForwardVec();
             setListenerTransform.m_transform.NormalizeUpVec();
-            audioSystem->PushRequestNew(AZStd::move(setListenerTransform));
+            audioSystem->PushRequest(AZStd::move(setListenerTransform));
 
             ms_pIAudioProxy->SetPosition(cameraMatrix);
             ms_pIAudioProxy->ExecuteTrigger(ms_nAudioTriggerID);

@@ -135,21 +135,21 @@ namespace LmbrCentral
     void AudioSystemComponent::GlobalStopAllSounds()
     {
         Audio::SystemRequest::StopAllAudio stopAll;
-        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(stopAll));
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(stopAll));
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::GlobalMuteAudio()
     {
         Audio::SystemRequest::MuteAll muteAll;
-        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(muteAll));
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(muteAll));
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::GlobalUnmuteAudio()
     {
         Audio::SystemRequest::UnmuteAll unmuteAll;
-        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(unmuteAll));
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(unmuteAll));
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -168,17 +168,9 @@ namespace LmbrCentral
             {
                 Audio::ObjectRequest::ExecuteTrigger execTrigger;
                 execTrigger.m_triggerId = triggerId;
+                execTrigger.m_owner = this;
 
-                // TODO:
-                //if (callbackOwnerEntityId.IsValid())
-                //{
-                //    request.nFlags = (eARF_PRIORITY_NORMAL | eARF_SYNC_FINISHED_CALLBACK);
-                //    request.pOwner = this;
-                //    request.pUserData = reinterpret_cast<void*>(static_cast<uintptr_t>(callbackOwnerEntityId));
-                //    request.pUserDataOwner = nullptr;
-                //}
-
-                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(execTrigger));
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(execTrigger));
             }
         }
     }
@@ -195,15 +187,8 @@ namespace LmbrCentral
                 stopTrigger.m_triggerId = triggerId;
 
                 // TODO:
-                //if (callbackOwnerEntityId.IsValid())
-                //{
-                //    request.nFlags = (eARF_PRIORITY_NORMAL | eARF_SYNC_FINISHED_CALLBACK);
-                //    request.pOwner = this;
-                //    request.pUserData = reinterpret_cast<void*>(static_cast<uintptr_t>(callbackOwnerEntityId));
-                //    request.pUserDataOwner = nullptr;
-                //}
-
-                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(stopTrigger));
+                // Hookup trigger finished callback
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(stopTrigger));
             }
         }
     }
@@ -219,7 +204,7 @@ namespace LmbrCentral
                 Audio::ObjectRequest::SetParameterValue setParameter;
                 setParameter.m_parameterId = rtpcId;
                 setParameter.m_value = value;
-                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(setParameter));
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(setParameter));
             }
         }
     }
@@ -228,7 +213,7 @@ namespace LmbrCentral
     void AudioSystemComponent::GlobalResetAudioRtpcs()
     {
         Audio::ObjectRequest::ResetParameters resetParameters;
-        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(resetParameters));
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(resetParameters));
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -248,7 +233,7 @@ namespace LmbrCentral
                 Audio::ObjectRequest::SetSwitchValue setSwitch;
                 setSwitch.m_switchId = switchId;
                 setSwitch.m_stateId = stateId;
-                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestNew(AZStd::move(setSwitch));
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(AZStd::move(setSwitch));
             }
         }
     }
@@ -270,9 +255,7 @@ namespace LmbrCentral
         Audio::SystemRequest::LoadControls loadControls;
         loadControls.m_controlsPath = levelControlsPath.c_str();
         loadControls.m_scope = eADS_LEVEL_SPECIFIC;
-        // TODO:
-        //request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
-        audioSystem->PushRequestBlockingNew(AZStd::move(loadControls));
+        audioSystem->PushRequestBlocking(AZStd::move(loadControls));
 
         TAudioPreloadRequestID preloadRequestId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
         audioSystem->GetAudioPreloadRequestID(levelName.data());
@@ -281,7 +264,7 @@ namespace LmbrCentral
             Audio::SystemRequest::LoadBank loadBank;
             loadBank.m_preloadRequestId = preloadRequestId;
             loadBank.m_asyncLoad = false;
-            audioSystem->PushRequestBlockingNew(AZStd::move(loadBank));
+            audioSystem->PushRequestBlocking(AZStd::move(loadBank));
         }
     }
 
@@ -293,38 +276,24 @@ namespace LmbrCentral
         // Unload level-specific banks...
         Audio::SystemRequest::UnloadBanksByScope unloadBanks;
         unloadBanks.m_scope = eADS_LEVEL_SPECIFIC;
-        // TODO:
-        //request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
-        audioSystem->PushRequestBlockingNew(AZStd::move(unloadBanks));
+        audioSystem->PushRequestBlocking(AZStd::move(unloadBanks));
 
         // Now unload level-specific audio config data (controls then preloads)...
         Audio::SystemRequest::UnloadControls unloadControls;
         unloadControls.m_scope = eADS_LEVEL_SPECIFIC;
         // same flags as above
-        audioSystem->PushRequestBlockingNew(AZStd::move(unloadControls));
+        audioSystem->PushRequestBlocking(AZStd::move(unloadControls));
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
     {
-        AZ::Interface<Audio::IAudioSystem>::Get()->AddRequestListener(
-            &AudioSystemComponent::OnAudioEvent,
-            this,
-            eART_AUDIO_CALLBACK_MANAGER_REQUEST,
-            eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE
-        );
-
         system.GetILevelSystem()->AddListener(this);
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::OnCrySystemShutdown(ISystem& system)
     {
-        AZ::Interface<Audio::IAudioSystem>::Get()->RemoveRequestListener(
-            &AudioSystemComponent::OnAudioEvent,
-            this
-        );
-
         system.GetILevelSystem()->RemoveListener(this);
     }
 
@@ -340,19 +309,20 @@ namespace LmbrCentral
         LevelUnloadAudio();
     }
 
+    // TODO: hookup trigger finished callback
     ////////////////////////////////////////////////////////////////////////
     // static
-    void AudioSystemComponent::OnAudioEvent(const SAudioRequestInfo* const requestInfo)
-    {
-        if (requestInfo->eAudioRequestType == eART_AUDIO_CALLBACK_MANAGER_REQUEST)
-        {
-            const auto notificationType = static_cast<EAudioCallbackManagerRequestType>(requestInfo->nSpecificAudioRequest);
-            if (notificationType == eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE && requestInfo->eResult == EAudioRequestResult::Success)
-            {
-                AZ::EntityId callbackOwnerEntityId(reinterpret_cast<AZ::u64>(requestInfo->pUserData));
-                AudioTriggerComponentNotificationBus::Event(callbackOwnerEntityId, &AudioTriggerComponentNotificationBus::Events::OnTriggerFinished, requestInfo->nAudioControlID);
-            }
-        }
-    }
+    //void AudioSystemComponent::OnAudioEvent(const SAudioRequestInfo* const requestInfo)
+    //{
+    //    if (requestInfo->eAudioRequestType == eART_AUDIO_CALLBACK_MANAGER_REQUEST)
+    //    {
+    //        const auto notificationType = static_cast<EAudioCallbackManagerRequestType>(requestInfo->nSpecificAudioRequest);
+    //        if (notificationType == eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE && requestInfo->eResult == EAudioRequestResult::Success)
+    //        {
+    //            AZ::EntityId callbackOwnerEntityId(reinterpret_cast<AZ::u64>(requestInfo->pUserData));
+    //            AudioTriggerComponentNotificationBus::Event(callbackOwnerEntityId, &AudioTriggerComponentNotificationBus::Events::OnTriggerFinished, requestInfo->nAudioControlID);
+    //        }
+    //    }
+    //}
 
 } // namespace LmbrCentral

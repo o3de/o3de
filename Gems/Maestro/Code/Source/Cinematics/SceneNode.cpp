@@ -672,10 +672,8 @@ void CAnimSceneNode::ReleaseSounds()
     {
         Audio::ObjectRequest::StopAllTriggers stopAll;
         stopAll.m_filterByOwner = true;
-        // TODO:
-        // request.nFlags = Audio::eARF_PRIORITY_HIGH;
-        // request.pOwner = this;
-        audioSystem->PushRequestNew(AZStd::move(stopAll));
+        stopAll.m_owner = this;
+        audioSystem->PushRequest(AZStd::move(stopAll));
     }
 }
 
@@ -905,7 +903,7 @@ void CAnimSceneNode::ApplyEventKey(IEventKey& key, [[maybe_unused]] SAnimContext
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimSceneNode::ApplyAudioKey(char const* const sTriggerName, [[maybe_unused]] bool const bPlay /* = true */)
+void CAnimSceneNode::ApplyAudioKey(char const* const sTriggerName, bool const bPlay /* = true */)
 {
     Audio::TAudioControlID nAudioTriggerID = INVALID_AUDIO_CONTROL_ID;
     if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
@@ -914,21 +912,18 @@ void CAnimSceneNode::ApplyAudioKey(char const* const sTriggerName, [[maybe_unuse
 
         if (nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
         {
-            // TODO:
-            //oRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-            //oRequest.pOwner = this;
-
             if (bPlay)
             {
                 Audio::ObjectRequest::ExecuteTrigger execTrigger;
                 execTrigger.m_triggerId = nAudioTriggerID;
-                audioSystem->PushRequestNew(AZStd::move(execTrigger));
+                execTrigger.m_owner = this;
+                audioSystem->PushRequest(AZStd::move(execTrigger));
             }
             else
             {
                 Audio::ObjectRequest::StopTrigger stopTrigger;
                 stopTrigger.m_triggerId = nAudioTriggerID;
-                audioSystem->PushRequestNew(AZStd::move(stopTrigger));
+                audioSystem->PushRequest(AZStd::move(stopTrigger));
             }
         }
     }

@@ -29,202 +29,76 @@ namespace Audio
 {
     extern CAudioLogger g_audioLogger;
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportStartingTriggerInstance(const TAudioTriggerInstanceID audioTriggerInstanceID, const TAudioControlID audioControlID)
+    void CATLAudioObjectBase::TriggerInstanceStarting(TAudioTriggerInstanceID triggerInstanceId, TAudioControlID audioControlId)
     {
-        SATLTriggerInstanceState& rTriggerInstState = m_cTriggers.emplace(audioTriggerInstanceID, SATLTriggerInstanceState()).first->second;
-        rTriggerInstState.nTriggerID = audioControlID;
-        rTriggerInstState.nFlags |= eATS_STARTING;
+        SATLTriggerInstanceState& triggerInstState = m_cTriggers.emplace(triggerInstanceId, SATLTriggerInstanceState()).first->second;
+        triggerInstState.nTriggerID = audioControlId;
+        triggerInstState.nFlags |= eATS_STARTING;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportStartedTriggerInstance(
-        const TAudioTriggerInstanceID audioTriggerInstanceID,
-        void* const pOwnerOverride,
-        void* const pUserData,
-        const TATLEnumFlagsType nFlags)
+    void CATLAudioObjectBase::TriggerInstanceStarted(TAudioTriggerInstanceID triggerInstanceId, void* owner)
     {
-        TObjectTriggerStates::iterator Iter(m_cTriggers.find(audioTriggerInstanceID));
-
-        if (Iter != m_cTriggers.end())
+        auto iter = m_cTriggers.find(triggerInstanceId);
+        if (iter != m_cTriggers.end())
         {
-            SATLTriggerInstanceState& rTriggerInstState = Iter->second;
-            if (rTriggerInstState.numPlayingEvents > 0 || rTriggerInstState.numLoadingEvents > 0)
+            SATLTriggerInstanceState& instState = iter->second;
+            if (instState.numPlayingEvents > 0)
             {
-                rTriggerInstState.pOwnerOverride = pOwnerOverride;
-                rTriggerInstState.pUserData = pUserData;
-                rTriggerInstState.nFlags &= ~eATS_STARTING;
+                instState.nFlags &= ~eATS_STARTING;
+                instState.pOwner = owner;
 
-                if ((nFlags & eARF_SYNC_FINISHED_CALLBACK) == 0)
-                {
-                    rTriggerInstState.nFlags |= eATS_CALLBACK_ON_AUDIO_THREAD;
-                }
+                // TODO: ???
+                // if (flags & eARF_SYNC_FINISHED_CALLBACK) { instState.nFlags |= eATS_CALLBACK_ON_AUDIO_THREAD; }
             }
             else
             {
-                // All of the events have either finished before we got here or never started.
-                // So we report this trigger as finished immediately.
-                ReportFinishedTriggerInstance(Iter);
+                TriggerInstanceFinished(iter);
             }
-        }
-        else
-        {
-            g_audioLogger.Log(LogType::Warning, "Reported a started instance %u that couldn't be found on an object %u",
-                audioTriggerInstanceID, GetID());
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportFinishedTriggerInstance(TObjectTriggerStates::iterator& iTriggerEntry)
+    void CATLAudioObjectBase::TriggerInstanceFinished(TObjectTriggerStates::iterator& iter)
     {
-        SATLTriggerInstanceState& rTriggerInstState = iTriggerEntry->second;
-        // TODO:
-        // SAudioRequest oRequest;
-        // SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE> oRequestData(rTriggerInstState.nTriggerID);
-        // oRequest.nFlags = (eARF_PRIORITY_HIGH | eARF_THREAD_SAFE_PUSH | eARF_SYNC_CALLBACK);
-        // oRequest.nAudioObjectID = GetID();
-        // oRequest.pData = &oRequestData;
-        // oRequest.pOwner = rTriggerInstState.pOwnerOverride;
-        // oRequest.pUserData = rTriggerInstState.pUserData;
-
-        // if ((rTriggerInstState.nFlags & eATS_CALLBACK_ON_AUDIO_THREAD) != 0)
-        //{
-        //    oRequest.nFlags &= ~eARF_SYNC_CALLBACK;
-        //}
-
-        // AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, oRequest);
-
-        if ((rTriggerInstState.nFlags & eATS_PREPARED) != 0)
-        {
-            // if the trigger instance was manually prepared -- keep it
-            rTriggerInstState.nFlags &= ~eATS_PLAYING;
-        }
-        else
-        {
-            // if the trigger instance wasn't prepared -- kill it
-            m_cTriggers.erase(iTriggerEntry);
-        }
+        AudioTriggerNotificationBus::QueueEvent(
+            TriggerNotificationIdType{ iter->second.nTriggerID, iter->second.pOwner },
+            &AudioTriggerNotificationBus::Events::ReportTriggerFinished);
+        m_cTriggers.erase(iter);
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportStartedEvent(const CATLEvent* const pEvent)
+    void CATLAudioObjectBase::EventStarted(const CATLEvent* const atlEvent)
     {
-        m_cActiveEvents.insert(pEvent->GetID());
-        m_cTriggerImpls.emplace(pEvent->m_nTriggerImplID, SATLTriggerImplState());
+        m_cActiveEvents.insert(atlEvent->GetID());
+        m_cTriggerImpls.emplace(atlEvent->m_nTriggerImplID, SATLTriggerImplState());
 
-        const TObjectTriggerStates::iterator Iter(m_cTriggers.find(pEvent->m_nTriggerInstanceID));
-
-        if (Iter != m_cTriggers.end())
+        auto iter = m_cTriggers.find(atlEvent->m_nTriggerInstanceID);
+        if (iter != m_cTriggers.end())
         {
-            SATLTriggerInstanceState& rTriggerInstState = Iter->second;
-
-            switch (pEvent->m_audioEventState)
+            if (atlEvent->m_audioEventState == eAES_PLAYING)
             {
-                case eAES_PLAYING:
-                {
-                    ++(rTriggerInstState.numPlayingEvents);
-                    break;
-                }
-                case eAES_PLAYING_DELAYED:
-                {
-                    AZ_Assert(rTriggerInstState.numLoadingEvents > 0, "Event state is PLAYING_DELAYED but there are no loading events!");
-                    --(rTriggerInstState.numLoadingEvents);
-                    ++(rTriggerInstState.numPlayingEvents);
-                    break;
-                }
-                case eAES_LOADING:
-                {
-                    ++(rTriggerInstState.numLoadingEvents);
-                    break;
-                }
-                case eAES_UNLOADING:
-                {
-                    // not handled currently
-                    break;
-                }
-                default:
-                {
-                    AZ_Assert(false, "Unknown event state in ReportStartedEvent (%d)", pEvent->m_audioEventState);
-                    break;
-                }
+                ++(iter->second.numPlayingEvents);
             }
-        }
-        else
-        {
-            AZ_Assert(false, "ATL Event must exist and was not found in ReportStartedEvent!");
+
+            IncrementRefCount();
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportFinishedEvent(const CATLEvent* const pEvent, const bool bSuccess)
+    void CATLAudioObjectBase::EventFinished(const CATLEvent* const atlEvent)
     {
-        m_cActiveEvents.erase(pEvent->GetID());
-
-        TObjectTriggerStates::iterator Iter(m_cTriggers.begin());
-
-        if (FindPlace(m_cTriggers, pEvent->m_nTriggerInstanceID, Iter))
+        m_cActiveEvents.erase(atlEvent->GetID());
+        auto iter = m_cTriggers.find(atlEvent->m_nTriggerInstanceID);
+        if (iter != m_cTriggers.end())
         {
-            switch (pEvent->m_audioEventState)
+            SATLTriggerInstanceState& instState = iter->second;
+            AZ_Assert(instState.numPlayingEvents > 0, "EventFinished - Trigger instances being decremented too many times!");
+
+            if (--instState.numPlayingEvents == 0
+                && (instState.nFlags & eATS_STARTING) == 0)
             {
-                case eAES_PLAYING:
-                case eAES_PLAYING_DELAYED: // intentional fall-through
-                {
-                    SATLTriggerInstanceState& rTriggerInstState = Iter->second;
-                    AZ_Assert(rTriggerInstState.numPlayingEvents > 0, "ReportFinishedEvent - Trigger instances being decremented too many times!");
-
-                    if (--(rTriggerInstState.numPlayingEvents) == 0 &&
-                        rTriggerInstState.numLoadingEvents == 0 &&
-                        (rTriggerInstState.nFlags & eATS_STARTING) == 0)
-                    {
-                        ReportFinishedTriggerInstance(Iter);
-                    }
-
-                    DecrementRefCount();
-                    break;
-                }
-                case eAES_LOADING:
-                {
-                    if (bSuccess)
-                    {
-                        ReportPrepUnprepTriggerImpl(pEvent->m_nTriggerImplID, true);
-                    }
-
-                    DecrementRefCount();
-                    break;
-                }
-                case eAES_UNLOADING:
-                {
-                    if (bSuccess)
-                    {
-                        ReportPrepUnprepTriggerImpl(pEvent->m_nTriggerImplID, false);
-                    }
-
-                    DecrementRefCount();
-                    break;
-                }
-                default:
-                {
-                    AZ_Assert(false, "Unknown event state in ReportFinishedEvent (%d)", pEvent->m_audioEventState);
-                    break;
-                }
+                TriggerInstanceFinished(iter);
             }
-        }
-        else
-        {
-            g_audioLogger.Log(LogType::Warning, "Reported finished event %u on an inactive trigger %u", pEvent->GetID(), pEvent->m_nTriggerID);
-        }
-    }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObjectBase::ReportPrepUnprepTriggerImpl(const TAudioTriggerImplID nTriggerImplID, const bool bPrepared)
-    {
-        if (bPrepared)
-        {
-            m_cTriggerImpls[nTriggerImplID].nFlags |= eATS_PREPARED;
-        }
-        else
-        {
-            m_cTriggerImpls[nTriggerImplID].nFlags &= ~eATS_PREPARED;
+            DecrementRefCount();
         }
     }
 
@@ -305,7 +179,7 @@ namespace Audio
 
         for (auto& triggerInstanceState : m_cTriggers)
         {
-            if (triggerInstanceState.second.pOwnerOverride == owner)
+            if (triggerInstanceState.second.pOwner == owner)
             {
                 filteredTriggers.insert(triggerInstanceState.first);
             }
@@ -388,26 +262,24 @@ namespace Audio
             setParameter.m_audioObjectId = GetID();
             setParameter.m_parameterId = ATLInternalControlIDs::ObjectSpeedRtpcID;
             setParameter.m_value = fCurrentVelocity;
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(setParameter));
-            // TODO:
-            // (Verify): this request used flag eARF_THREAD_SAFE_PUSH on the AudioSystemThreadSafeRequestBus !!
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setParameter));
         }
 
         m_oPreviousPosition = m_oPosition;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLAudioObject::SetRaycastCalcType(const EAudioObjectObstructionCalcType calcType)
+    void CATLAudioObject::SetRaycastCalcType(const ObstructionType calcType)
     {
         m_raycastProcessor.SetType(calcType);
         switch (calcType)
         {
-        case eAOOCT_IGNORE:
+        case ObstructionType::Ignore:
             AudioRaycastNotificationBus::Handler::BusDisconnect();
             break;
-        case eAOOCT_SINGLE_RAY:
+        case ObstructionType::SingleRay:
             [[fallthrough]];
-        case eAOOCT_MULTI_RAY:
+        case ObstructionType::MultiRay:
             AudioRaycastNotificationBus::Handler::BusConnect(GetID());
             break;
         default:
@@ -523,19 +395,19 @@ namespace Audio
         , m_obstructionValue(Audio::CVars::s_RaycastSmoothFactor, s_epsilon)
         , m_occlusionValue(Audio::CVars::s_RaycastSmoothFactor, s_epsilon)
         , m_audioObjectId(objectId)
-        , m_obstOccType(eAOOCT_IGNORE)
+        , m_obstOccType(ObstructionType::Ignore)
     {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void RaycastProcessor::Update(float elapsedMs)
     {
-        if (m_obstOccType == eAOOCT_SINGLE_RAY || m_obstOccType == eAOOCT_MULTI_RAY)
+        if (m_obstOccType == ObstructionType::SingleRay || m_obstOccType == ObstructionType::MultiRay)
         {
             // First ray is direct-path obstruction value...
             m_obstructionValue.SetNewTarget(m_rayInfos[0].GetDistanceScaledContribution());
 
-            if (m_obstOccType == eAOOCT_MULTI_RAY)
+            if (m_obstOccType == ObstructionType::MultiRay)
             {
                 float occlusion = 0.f;
                 for (size_t i = 1; i < s_maxRaysPerObject; ++i)
@@ -577,7 +449,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void RaycastProcessor::SetType(EAudioObjectObstructionCalcType calcType)
+    void RaycastProcessor::SetType(ObstructionType calcType)
     {
         if (calcType == m_obstOccType)
         {
@@ -585,7 +457,7 @@ namespace Audio
             return;
         }
 
-        if (calcType == eAOOCT_IGNORE)
+        if (calcType == ObstructionType::Ignore)
         {
             // Reset the target values when turning off raycasts (set to IGNORE).
             m_obstructionValue.Reset();
@@ -607,7 +479,7 @@ namespace Audio
     bool RaycastProcessor::CanRun() const
     {
         return s_raycastsEnabled    // This enable/disable is set via ISystem events.
-            && m_obstOccType != eAOOCT_IGNORE;
+            && m_obstOccType != ObstructionType::Ignore;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -643,7 +515,7 @@ namespace Audio
         // Cast ray 0, the direct obstruction ray.
         CastRay(listener, source, 0);
 
-        if (m_obstOccType == eAOOCT_MULTI_RAY)
+        if (m_obstOccType == ObstructionType::MultiRay)
         {
             // Cast ray 1, an indirect occlusion ray.
             CastRay(listener, source + up, 1);
@@ -1042,7 +914,7 @@ namespace Audio
         // ToDo: Update to work with Atom? LYN-3677
         //const bool drawLabels = CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::RayLabels);
 
-        size_t numRays = m_obstOccType == eAOOCT_SINGLE_RAY ? 1 : s_maxRaysPerObject;
+        size_t numRays = m_obstOccType == ObstructionType::SingleRay ? 1 : s_maxRaysPerObject;
         for (size_t rayIndex = 0; rayIndex < numRays; ++rayIndex)
         {
             const RaycastInfo& rayInfo = m_rayInfos[rayIndex];

@@ -78,7 +78,6 @@ namespace EMotionFX
 
         bool AnimAudioComponent::ExecuteSourceTrigger(
             const Audio::TAudioControlID triggerID,
-            const Audio::SAudioCallBackInfos& callbackInfo,
             const Audio::TAudioControlID& sourceID,
             const AZStd::string& jointName)
         {
@@ -97,7 +96,7 @@ namespace EMotionFX
                 if (jointName.empty())
                 {
                     AZ_Warning("Editor", false, "'ExecuteSourceTrigger' called on default entity proxy.  If this was the intent, a more explicit practice would be requesting this via the AudioProxyComponentBus.");
-                    AudioProxyComponentRequestBus::EventResult(success, GetEntityId(), &AudioProxyComponentRequests::ExecuteSourceTrigger, triggerID, callbackInfo, sourceID);
+                    AudioProxyComponentRequestBus::EventResult(success, GetEntityId(), &AudioProxyComponentRequests::ExecuteSourceTrigger, triggerID, sourceID);
                 }
                 else
                 {
@@ -113,7 +112,7 @@ namespace EMotionFX
                 {
                     if (Audio::IAudioProxy* proxy = iter.second)
                     {
-                        proxy->ExecuteSourceTrigger(triggerID, sourceID, callbackInfo);
+                        proxy->ExecuteSourceTrigger(triggerID, sourceID);
                         success = true;
                     }
                 }
@@ -124,7 +123,6 @@ namespace EMotionFX
 
         bool AnimAudioComponent::ExecuteTrigger(
             const Audio::TAudioControlID triggerID,
-            const Audio::SAudioCallBackInfos& callbackInfo,
             const AZStd::string& jointName)
         {
             if (triggerID == INVALID_AUDIO_CONTROL_ID)
@@ -142,7 +140,7 @@ namespace EMotionFX
                 if (jointName.empty())
                 {
                     AZ_Warning("Editor", false, "'ExecuteTrigger' called on default entity proxy.  If this was the intent, a more explicit practice would be requesting this via the AudioProxyComponentBus.");
-                    AudioProxyComponentRequestBus::EventResult(success, GetEntityId(), &AudioProxyComponentRequests::ExecuteTrigger, triggerID, callbackInfo);
+                    AudioProxyComponentRequestBus::EventResult(success, GetEntityId(), &AudioProxyComponentRequests::ExecuteTrigger, triggerID);
                 }
                 else
                 {
@@ -158,7 +156,7 @@ namespace EMotionFX
                 {
                     if (Audio::IAudioProxy* proxy = iter.second)
                     {
-                        proxy->ExecuteTrigger(triggerID, callbackInfo);
+                        proxy->ExecuteTrigger(triggerID);
                         success = true;
                     }
                 }
@@ -390,21 +388,21 @@ namespace EMotionFX
 
             ActivateJointProxies();
 
-            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
-                audioSystem != nullptr)
-            {
-                audioSystem->AddRequestListener(
-                    &AnimAudioComponent::OnAudioEvent,
-                    this,
-                    Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST,
-                    Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE);
+            //if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+            //    audioSystem != nullptr)
+            //{
+            //    audioSystem->AddRequestListener(
+            //        &AnimAudioComponent::OnAudioEvent,
+            //        this,
+            //        Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST,
+            //        Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE);
 
-                m_callbackInfo.reset(new Audio::SAudioCallBackInfos(
-                    this,
-                    reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId())),
-                    (Audio::eARF_PRIORITY_NORMAL | Audio::eARF_SYNC_FINISHED_CALLBACK)
-                ));
-            }
+            //    m_callbackInfo.reset(new Audio::SAudioCallBackInfos(
+            //        this,
+            //        reinterpret_cast<void*>(static_cast<uintptr_t>(GetEntityId())),
+            //        (Audio::eARF_PRIORITY_NORMAL | Audio::eARF_SYNC_FINISHED_CALLBACK)
+            //    ));
+            //}
 
             ActorNotificationBus::Handler::BusConnect(GetEntityId());
             AnimAudioComponentNotificationBus::Handler::BusConnect(GetEntityId());
@@ -420,11 +418,11 @@ namespace EMotionFX
 
             DeactivateJointProxies();
 
-            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
-                audioSystem != nullptr)
-            {
-                audioSystem->RemoveRequestListener(&AnimAudioComponent::OnAudioEvent, this);
-            }
+            //if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+            //    audioSystem != nullptr)
+            //{
+            //    audioSystem->RemoveRequestListener(&AnimAudioComponent::OnAudioEvent, this);
+            //}
 
             ActorNotificationBus::Handler::BusDisconnect(GetEntityId());
             AnimAudioComponentNotificationBus::Handler::BusDisconnect(GetEntityId());
@@ -469,7 +467,7 @@ namespace EMotionFX
             if (jointId < 0)
             {
                 AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequests::ExecuteTrigger,
-                    eventIter->second.GetTriggerId(), Audio::SAudioCallBackInfos::GetEmptyObject());
+                    eventIter->second.GetTriggerId());
                 return;
             }
 
@@ -493,7 +491,7 @@ namespace EMotionFX
 
                 const Audio::SATLWorldPosition atlTransform(m_transform * jointTransform);
                 proxy->SetPosition(atlTransform);
-                proxy->ExecuteTrigger(triggerId, *m_callbackInfo);
+                proxy->ExecuteTrigger(triggerId);
                 AnimAudioComponentNotificationBus::Event(GetEntityId(), &AnimAudioComponentNotificationBus::Events::OnTriggerStarted, triggerId);
             }
         }
@@ -589,8 +587,8 @@ namespace EMotionFX
                             AZ_Assert(proxy, "Failed to get free audio proxy");
 
                             AZStd::string proxyName = AZStd::string::format("%s:%d", name.c_str(), jointId);
-                            proxy->Initialize(proxyName.c_str());
-                            proxy->SetObstructionCalcType(Audio::eAOOCT_IGNORE);
+                            proxy->Initialize(proxyName.c_str(), this);
+                            proxy->SetObstructionCalcType(Audio::ObstructionType::Ignore);
                             m_jointProxies.emplace(jointId, proxy);
                         }
                     }
@@ -611,21 +609,22 @@ namespace EMotionFX
             m_jointProxies.clear();
         }
 
-        void AnimAudioComponent::OnAudioEvent(const Audio::SAudioRequestInfo* const requestInfo)
-        {
-            if (requestInfo->eAudioRequestType == Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST)
-            {
-                const auto notificationType = static_cast<Audio::EAudioCallbackManagerRequestType>(requestInfo->nSpecificAudioRequest);
-                if (notificationType == Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE)
-                {
-                    if (requestInfo->eResult == Audio::EAudioRequestResult::Success)
-                    {
-                        AZ::EntityId entityId(reinterpret_cast<AZ::u64>(requestInfo->pUserData));
-                        AnimAudioComponentNotificationBus::Event(entityId, &AnimAudioComponentNotificationBus::Events::OnTriggerFinished, requestInfo->nAudioControlID);
-                    }
-                }
-            }
-        }
+        // TODO:  Hook up trigger finished callback
+        //void AnimAudioComponent::OnAudioEvent(const Audio::SAudioRequestInfo* const requestInfo)
+        //{
+        //    if (requestInfo->eAudioRequestType == Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST)
+        //    {
+        //        const auto notificationType = static_cast<Audio::EAudioCallbackManagerRequestType>(requestInfo->nSpecificAudioRequest);
+        //        if (notificationType == Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE)
+        //        {
+        //            if (requestInfo->eResult == Audio::EAudioRequestResult::Success)
+        //            {
+        //                AZ::EntityId entityId(reinterpret_cast<AZ::u64>(requestInfo->pUserData));
+        //                AnimAudioComponentNotificationBus::Event(entityId, &AnimAudioComponentNotificationBus::Events::OnTriggerFinished, requestInfo->nAudioControlID);
+        //            }
+        //        }
+        //    }
+        //}
 
         AnimAudioComponent::TriggerEventData::TriggerEventData(const AZ::Entity& entity, Audio::TAudioControlID triggerId, AZ::s32 jointId)
             : m_jointId(jointId)

@@ -158,7 +158,7 @@ namespace Audio::CVars
             Audio::SystemRequest::ChangeLanguage changeLanguage;
             // TODO:
             // request.nFlags = Audio::eARF_PRIORITY_HIGH;
-            audioSystem->PushRequestNew(AZStd::move(changeLanguage));
+            audioSystem->PushRequest(AZStd::move(changeLanguage));
         }
     };
 
@@ -384,7 +384,7 @@ namespace Audio::CVars
                 Audio::ObjectRequest::ExecuteTrigger execTrigger;
                 execTrigger.m_audioObjectId = objectId;
                 execTrigger.m_triggerId = triggerId;
-                AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(execTrigger));
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(execTrigger));
             }
             else
             {
@@ -420,7 +420,7 @@ namespace Audio::CVars
                 Audio::ObjectRequest::StopTrigger stopTrigger;
                 stopTrigger.m_audioObjectId = objectId;
                 stopTrigger.m_triggerId = triggerId;
-                AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(stopTrigger));
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(stopTrigger));
             }
             else
             {
@@ -464,7 +464,7 @@ namespace Audio::CVars
                 setParameter.m_audioObjectId = objectId;
                 setParameter.m_parameterId = rtpcId;
                 setParameter.m_value = value;
-                AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(setParameter));
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setParameter));
             }
             else
             {
@@ -506,7 +506,7 @@ namespace Audio::CVars
                     setSwitch.m_audioObjectId = objectId;
                     setSwitch.m_switchId = switchId;
                     setSwitch.m_stateId = stateId;
-                    AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(setSwitch));
+                    AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setSwitch));
                 }
                 else
                 {
@@ -536,7 +536,7 @@ namespace Audio::CVars
                 Audio::SystemRequest::LoadBank loadBank;
                 loadBank.m_preloadRequestId = preloadId;
                 loadBank.m_asyncLoad = true;
-                AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(loadBank));
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(loadBank));
             }
             else
             {
@@ -560,7 +560,7 @@ namespace Audio::CVars
             {
                 Audio::SystemRequest::UnloadBank unloadBank;
                 unloadBank.m_preloadRequestId = preloadId;
-                AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(unloadBank));
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(unloadBank));
             }
             else
             {
@@ -637,7 +637,7 @@ namespace Audio::CVars
                         Audio::ObjectRequest::ExecuteSourceTrigger execSourceTrigger;
                         execSourceTrigger.m_triggerId = triggerId;
                         execSourceTrigger.m_sourceInfo.m_sourceId = sourceId;
-                        AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(execSourceTrigger));
+                        AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(execSourceTrigger));
                     }
                     else
                     {
@@ -708,7 +708,7 @@ namespace Audio::CVars
                             Audio::ObjectRequest::ExecuteSourceTrigger execSourceTrigger;
                             execSourceTrigger.m_triggerId = triggerId;
                             execSourceTrigger.m_sourceInfo.m_sourceId = micSourceId;
-                            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(execSourceTrigger));
+                            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(execSourceTrigger));
                         }
                         else
                         {
@@ -761,7 +761,7 @@ namespace Audio::CVars
                 // Stop the trigger (may not be necessary)
                 Audio::ObjectRequest::StopTrigger stopTrigger;
                 stopTrigger.m_triggerId = triggerId;
-                AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(stopTrigger));
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(stopTrigger));
 
                 // Destroy the audio source, end the mic session, and reset state...
                 AZ::Interface<IAudioSystem>::Get()->DestroyAudioSource(micSourceId);
@@ -825,7 +825,7 @@ namespace Audio::CVars
             Audio::ObjectRequest::ExecuteSourceTrigger execSourceTrigger;
             execSourceTrigger.m_triggerId = triggerId;
             execSourceTrigger.m_sourceInfo = SAudioSourceInfo(externalSourceCookieValue, file, language, collection, eACT_PCM);
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(execSourceTrigger));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(execSourceTrigger));
         }
         else
         {
@@ -859,7 +859,7 @@ namespace Audio::CVars
                 return;
             }
 
-            AZ::Interface<IAudioSystem>::Get()->PushRequestNew(AZStd::move(setPanningMode));
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(setPanningMode));
         }
         else
         {

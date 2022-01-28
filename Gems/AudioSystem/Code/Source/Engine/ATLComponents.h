@@ -123,18 +123,17 @@ namespace Audio
         void Release();
         void Update(const float fUpdateIntervalMS, const SATLWorldPosition& rListenerPosition);
 
-        bool ReserveID(TAudioObjectID& rAudioObjectID);
+        bool ReserveID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName);
         bool ReleaseID(const TAudioObjectID nAudioObjectID);
         CATLAudioObject* LookupID(const TAudioObjectID nAudioObjectID) const;
 
-        void ReportStartedEvent(const CATLEvent* const pEvent);
-        void ReportFinishedEvent(const CATLEvent* const pEvent, const bool bSuccess);
+        //void ReportEventStarted(const CATLEvent* atlEvent);  // needed?
+        void ReportEventFinished(const CATLEvent* atlEvent);
 
 
         using TActiveObjectMap = ATLMapLookupType<TAudioObjectID, CATLAudioObject*>;
 
     #if !defined(AUDIO_RELEASE)
-        bool ReserveID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName);
         void SetDebugNameStore(CATLDebugNameStore* const pDebugNameStore);
         size_t GetNumAudioObjects() const;
         size_t GetNumActiveAudioObjects() const;
@@ -211,32 +210,6 @@ namespace Audio
         // No longer have a maximum, but we can create a number of additional listeners at startup.
         // TODO: Control this by a cvar
         const size_t m_numReservedListeners = 8;
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    class CAudioEventListenerManager
-    {
-    public:
-        CAudioEventListenerManager();
-        ~CAudioEventListenerManager();
-
-        CAudioEventListenerManager(const CAudioEventListenerManager& other) = delete;               // Copy protection
-        CAudioEventListenerManager& operator=(const CAudioEventListenerManager& other) = delete;    // Copy protection
-
-        void AddRequestListener(const SAudioEventListener& listener);
-        void RemoveRequestListener(const SAudioEventListener& listener);
-        void NotifyListener(const SAudioRequestInfo* const pRequestInfo);
-
-#if !defined(AUDIO_RELEASE)
-        size_t GetNumEventListeners() const
-        {
-            return m_cListeners.size();
-        }
-#endif // !AUDIO_RELEASE
-
-    private:
-        using TListenerArray = AZStd::vector<SAudioEventListener, Audio::AudioSystemStdAllocator>;
-        TListenerArray m_cListeners;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

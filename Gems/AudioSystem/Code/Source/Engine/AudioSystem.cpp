@@ -93,16 +93,15 @@ namespace Audio
     {
     }
 
-
-
-    //! NEW AUDIO REQUESTS
-    void CAudioSystem::PushRequestNew(AudioRequestVariant&& request)
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CAudioSystem::PushRequest(AudioRequestVariant&& request)
     {
         AZStd::scoped_lock lock(m_pendingRequestsMutex);
         m_pendingRequestsQueue.push_back(AZStd::move(request));
     }
 
-    void CAudioSystem::PushRequestBlockingNew([[maybe_unused]] AudioRequestVariant&& request)
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    void CAudioSystem::PushRequestBlocking([[maybe_unused]] AudioRequestVariant&& request)
     {
         // Add this request to be processed immediately.
         // Release the m_processingEvent so that when the request is finished the audio thread doesn't
@@ -119,44 +118,10 @@ namespace Audio
         m_mainEvent.acquire();
     }
 
-    void CAudioSystem::PushCallbackNew(AudioRequestVariant&& callback)
+    void CAudioSystem::PushCallback(AudioRequestVariant&& callback)
     {
         AZStd::scoped_lock lock(m_pendingCallbacksMutex);
         m_pendingCallbacksQueue.push_back(AZStd::move(callback));
-    }
-    //~ NEW AUDIO REQUESTS
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::AddRequestListener(
-        AudioRequestCallbackType func,
-        void* const callbackOwner,
-        const EAudioRequestType requestType,
-        const TATLEnumFlagsType specificRequestMask)
-    {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::AddRequestListener - called from a non-Main thread!");
-
-        if (func)
-        {
-            SAudioEventListener listener;
-            listener.m_callbackOwner = callbackOwner;
-            listener.m_fnOnEvent = func;
-            listener.m_requestType = requestType;
-            listener.m_specificRequestMask = specificRequestMask;
-            m_oATL.AddRequestListener(listener);
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioSystem::RemoveRequestListener(AudioRequestCallbackType func, void* const callbackOwner)
-    {
-        AZ_Assert(g_mainThreadId == AZStd::this_thread::get_id(), "AudioSystem::RemoveRequestListener - called from a non-Main thread!");
-
-        SAudioEventListener listener;
-        listener.m_callbackOwner = callbackOwner;
-        listener.m_fnOnEvent = func;
-        m_oATL.RemoveRequestListener(listener);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -224,7 +189,7 @@ namespace Audio
             {
                 // Blocking request...
                 AudioRequestVariant& request(m_blockingRequestsQueue.front());
-                m_oATL.ProcessRequestNew(AZStd::move(request));
+                m_oATL.ProcessRequest(AZStd::move(request));
                 m_blockingRequestsQueue.pop_front();
 
                 handledBlockingRequests = true;
@@ -247,7 +212,7 @@ namespace Audio
             {
                 // Normal request...
                 AudioRequestVariant& request(requestsToProcess.front());
-                m_oATL.ProcessRequestNew(AZStd::move(request));
+                m_oATL.ProcessRequest(AZStd::move(request));
                 requestsToProcess.pop_front();
             }
         }
@@ -319,7 +284,7 @@ namespace Audio
 
         // Release the audio implementation...
         Audio::SystemRequest::Shutdown shutdownRequest;
-        AZ::Interface<IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(shutdownRequest));
+        AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(shutdownRequest));
 
         m_audioSystemThread.Deactivate();
         m_oATL.ShutDown();
@@ -431,7 +396,7 @@ namespace Audio
         reloadRequest.m_controlsPath = audioControlsPath;
         reloadRequest.m_levelName = levelName;
         reloadRequest.m_levelPreloadId = levelPreloadId;
-        AZ::Interface<IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(reloadRequest));
+        AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(reloadRequest));
     #endif // !AUDIO_RELEASE
     }
 
@@ -578,9 +543,7 @@ namespace Audio
         if (CVars::s_debugDrawOptions.GetRawFlags() != 0)
         {
             Audio::SystemRequest::DrawDebug drawDebug;
-            // TODO:
-            // request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
-            AZ::Interface<IAudioSystem>::Get()->PushRequestBlockingNew(AZStd::move(drawDebug));
+            AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(drawDebug));
         }
     }
 #endif // !AUDIO_RELEASE

@@ -123,13 +123,9 @@ namespace Audio
 
             if (eventData)
             {
-                // TODO:
-                //SAudioRequest request;
-                //SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_EVENT> requestData(eventData->nATLID, true);
-                //request.nFlags = eARF_THREAD_SAFE_PUSH;
-                //request.pData = &requestData;
-
-                //AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, request);
+                Audio::CallbackRequest::ReportFinishedEvent reportFinishedEvent;
+                reportFinishedEvent.m_eventId = eventData->nATLID;
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(AZStd::move(reportFinishedEvent));
 
                 if (eventData->nSourceId != INVALID_AUDIO_SOURCE_ID)
                 {
@@ -142,10 +138,12 @@ namespace Audio
         {
             auto durationInfo = static_cast<AkDurationCallbackInfo*>(callbackInfo);
             auto const eventData = static_cast<SATLEventData_wwise*>(callbackInfo->pCookie);
-            if (durationInfo && eventData)
+            if (durationInfo && eventData && eventData->m_owner)
             {
-                AudioTriggerNotificationBus::QueueEvent(eventData->m_triggerId, &AudioTriggerNotificationBus::Events::ReportDurationInfo,
-                    eventData->nATLID, durationInfo->fDuration, durationInfo->fEstimatedDuration);
+                AudioTriggerNotificationBus::QueueEvent(
+                    TriggerNotificationIdType{ eventData->m_triggerId, eventData->m_owner },
+                    &AudioTriggerNotificationBus::Events::ReportDurationInfo, eventData->nATLID, durationInfo->fDuration,
+                    durationInfo->fEstimatedDuration);
             }
         }
     }
@@ -179,13 +177,8 @@ namespace Audio
         {
             eventData->nAKID = akEventId;
 
-            // TODO:
-            //SAudioRequest request;
-            //SAudioCallbackManagerRequestData<eACMRT_REPORT_FINISHED_EVENT> requestData(eventData->nATLID, loadResult ==  AK_Success);
-            //request.nFlags = eARF_THREAD_SAFE_PUSH;
-            //request.pData = &requestData;
-
-            //AudioSystemThreadSafeRequestBus::Broadcast(&AudioSystemThreadSafeRequestBus::Events::PushRequestThreadSafe, request);
+            // TODO (PrepareTrigger/PrepareEvent functionality):
+            // Audio::CallbackRequest::ReportFinishedEvent (eventData->nATLID, loadResult == AK_Success)
         }
     }
 
@@ -836,7 +829,7 @@ namespace Audio
                     akPlayingId = AK::SoundEngine::PostEvent(
                         implTriggerData->nAKID,
                         akObjectId,
-                        AK_EndOfEvent | AK_Duration,
+                        AK_EndOfEvent,
                         &WwiseEventCallback,
                         implEventData,
                         1,

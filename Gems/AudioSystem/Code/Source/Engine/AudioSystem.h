@@ -69,18 +69,11 @@ namespace Audio
         bool Initialize() override;
         void Release() override;
 
-        //! NEW AUDIO REQUESTS
-        void PushRequestNew(AudioRequestVariant&& request) override;
-        void PushRequestBlockingNew(AudioRequestVariant&& request) override;
-        void PushCallbackNew(AudioRequestVariant&& callback) override;
-        //~ NEW AUDIO REQUESTS
+        void PushRequest(AudioRequestVariant&& request) override;
+        void PushRequestBlocking(AudioRequestVariant&& request) override;
+        void PushCallback(AudioRequestVariant&& callback) override;
 
         void ExternalUpdate() override;
-
-        void AddRequestListener(AudioRequestCallbackType func, void* const callbackOwner,
-            EAudioRequestType const requestType = eART_AUDIO_ALL_REQUESTS,
-            TATLEnumFlagsType const specificRequestMask = ALL_AUDIO_REQUEST_SPECIFIC_TYPE_FLAGS) override;
-        void RemoveRequestListener(AudioRequestCallbackType func, void* const callbackOwner) override;
 
         TAudioControlID GetAudioTriggerID(const char* const sAudioTriggerName) const override;
         TAudioControlID GetAudioRtpcID(const char* const sAudioRtpcName) const override;
@@ -120,8 +113,6 @@ namespace Audio
         CAudioTranslationLayer m_oATL;
         CAudioThread m_audioSystemThread;
 
-
-        //! NEW AUDIO REQUESTS
         using TAudioRequestQueue = AZStd::deque<AudioRequestVariant, Audio::AudioSystemStdAllocator>;
         TAudioRequestQueue m_pendingRequestsQueue;
         TAudioRequestQueue m_blockingRequestsQueue;
@@ -129,7 +120,6 @@ namespace Audio
         AZStd::mutex m_pendingRequestsMutex;
         AZStd::mutex m_blockingRequestsMutex;
         AZStd::mutex m_pendingCallbacksMutex;
-        //~ NEW AUDIO REQUESTS
 
         // Synchronization objects
         AZStd::binary_semaphore m_mainEvent;

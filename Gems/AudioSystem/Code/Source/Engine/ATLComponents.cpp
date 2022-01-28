@@ -348,7 +348,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    bool CAudioObjectManager::ReserveID(TAudioObjectID& rAudioObjectID)
+    bool CAudioObjectManager::ReserveID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName)
     {
         CATLAudioObject* const pNewObject = GetInstance();
 
@@ -358,7 +358,9 @@ namespace Audio
         if (pNewObject)
         {
             EAudioRequestStatus eImplResult = EAudioRequestStatus::Failure;
-            AudioSystemImplementationRequestBus::BroadcastResult(eImplResult, &AudioSystemImplementationRequestBus::Events::RegisterAudioObject, pNewObject->GetImplDataPtr(), nullptr);
+            AudioSystemImplementationRequestBus::BroadcastResult(
+                eImplResult, &AudioSystemImplementationRequestBus::Events::RegisterAudioObject, pNewObject->GetImplDataPtr(),
+                sAudioObjectName);
 
             if (eImplResult == EAudioRequestStatus::Success)
             {
@@ -386,7 +388,11 @@ namespace Audio
 
         if (pOldObject)
         {
-            if (pOldObject->GetRefCount() < 2)
+            // If the refcount is one, that means it's the "self" reference and there are no
+            // active events, so we can release/recycle the object back to the pool.
+            // Otherwise we can decrement the "self" reference and let outstanding events
+            // naturally finish and auto-release the object.
+            if (pOldObject->GetRefCount() == 1)
             {
                 bSuccess = ReleaseInstance(pOldObject);
             }
@@ -413,66 +419,32 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioObjectManager::ReportStartedEvent(CATLEvent const* const pEvent)
+    void CAudioObjectManager::ReportEventFinished(const CATLEvent* atlEvent)
     {
-        if (pEvent)
+        if (atlEvent)
         {
-            CATLAudioObject* const pObject = LookupID(pEvent->m_nObjectID);
-
-            if (pObject)
+            if (CATLAudioObject* audioObject = LookupID(atlEvent->GetID());
+                audioObject != nullptr)
             {
-                pObject->ReportStartedEvent(pEvent);
-            }
-        #if !defined(AUDIO_RELEASE)
-            else
-            {
-                g_audioLogger.Log(
-                    LogType::Warning,
-                    "Failed to report starting event %u on object %s as it does not exist!",
-                    pEvent->GetID(),
-                    m_pDebugNameStore->LookupAudioObjectName(pEvent->m_nObjectID));
-            }
-        #endif // !AUDIO_RELEASE
-        }
-        else
-        {
-            g_audioLogger.Log(LogType::Warning, "NULL pEvent in CAudioObjectManager::ReportStartedEvent");
-        }
-    }
+                audioObject->EventFinished(atlEvent);
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioObjectManager::ReportFinishedEvent(const CATLEvent* const pEvent, const bool bSuccess)
-    {
-        if (pEvent)
-        {
-            CATLAudioObject* const pObject = LookupID(pEvent->m_nObjectID);
-
-            if (pObject)
-            {
-                pObject->ReportFinishedEvent(pEvent, bSuccess);
-
-                if (pObject->GetRefCount() == 0)
+                // EventFinished will decr ref count (assuming the event was valid).
+                // This handles a case where ReleaseID was called for the object, but there were
+                // active events.  The object's "self" reference has already been decremented.
+                // So if the event finishing naturally causes refcount to zero, we can recycle the object.
+                if (audioObject->GetRefCount() == 0)
                 {
-                    ReleaseInstance(pObject);
+                    ReleaseInstance(audioObject);
                 }
             }
-        #if !defined(AUDIO_RELEASE)
             else
             {
                 g_audioLogger.Log(
-                    LogType::Warning,
-                    "Removing Event %u from Object %s: Object no longer exists!",
-                    pEvent->GetID(),
-                    m_pDebugNameStore->LookupAudioObjectName(pEvent->m_nObjectID));
+                    LogType::Warning, "Removing Event %llu from object '%s': Object no longer exists!", atlEvent->GetID(),
+                    m_pDebugNameStore->LookupAudioObjectName(atlEvent->m_nObjectID));
             }
-        #endif // !AUDIO_RELEASE
-        }
-        else
-        {
-            g_audioLogger.Log(LogType::Warning, "nullptr pEvent in CAudioObjectManager::ReportFinishedEvent");
         }
     }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CATLAudioObject* CAudioObjectManager::GetInstance()
@@ -878,82 +850,6 @@ namespace Audio
         }
 
         return false;
-    }
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    //  CAudioEventListenerManager
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CAudioEventListenerManager::CAudioEventListenerManager()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CAudioEventListenerManager::~CAudioEventListenerManager()
-    {
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioEventListenerManager::AddRequestListener(const SAudioEventListener& listener)
-    {
-        for (const auto& currentListener : m_cListeners)
-        {
-            if (currentListener == listener)
-            {
-            #if !defined(AUDIO_RELEASE)
-                g_audioLogger.Log(LogType::Warning, "AudioEventListenerManager::AddRequestListener - Request listener being added already exists!");
-            #endif // !AUDIO_RELEASE
-                return;
-            }
-        }
-
-        m_cListeners.push_back(listener);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioEventListenerManager::RemoveRequestListener(const SAudioEventListener& listener)
-    {
-        for (auto iter = m_cListeners.begin(); iter != m_cListeners.end(); ++iter)
-        {
-            if ((iter->m_fnOnEvent == listener.m_fnOnEvent || listener.m_fnOnEvent == nullptr) && iter->m_callbackOwner == listener.m_callbackOwner)
-            {
-                // Copy the back element into this iter position and pop the back element...
-                (*iter) = m_cListeners.back();
-                m_cListeners.pop_back();
-                return;
-            }
-        }
-
-    #if !defined(AUDIO_RELEASE)
-        g_audioLogger.Log(LogType::Warning, "AudioEventListenerManager::RemoveRequestListener - Failed to remove a request listener (not found)!");
-    #endif // !AUDIO_RELEASE
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioEventListenerManager::NotifyListener(const SAudioRequestInfo* const pResultInfo)
-    {
-        // This should always be on the main thread!
-        AZ_PROFILE_FUNCTION(Audio);
-
-        auto found = AZStd::find_if(m_cListeners.begin(), m_cListeners.end(),
-            [pResultInfo](const SAudioEventListener& currentListener)
-            {
-                // 1) Is the listener interested in this request type?
-                // 2) Is the listener interested in this request sub-type?
-                // 3) Is the listener interested in this owner (or any owner)?
-                return ((currentListener.m_requestType == eART_AUDIO_ALL_REQUESTS || currentListener.m_requestType == pResultInfo->eAudioRequestType)
-                    && ((currentListener.m_specificRequestMask & pResultInfo->nSpecificAudioRequest) != 0)
-                    && (currentListener.m_callbackOwner == nullptr || currentListener.m_callbackOwner == pResultInfo->pOwner));
-            }
-        );
-
-        if (found != m_cListeners.end())
-        {
-            found->m_fnOnEvent(pResultInfo);
-        }
     }
 
 
@@ -1822,36 +1718,6 @@ namespace Audio
     void CAudioEventManager::SetDebugNameStore(const CATLDebugNameStore* const pDebugNameStore)
     {
         m_pDebugNameStore = pDebugNameStore;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    bool CAudioObjectManager::ReserveID(TAudioObjectID& rAudioObjectID, const char* const sAudioObjectName)
-    {
-        CATLAudioObject* const pNewObject  = GetInstance();
-
-        bool bSuccess = false;
-        rAudioObjectID = INVALID_AUDIO_OBJECT_ID;
-
-        if (pNewObject)
-        {
-            EAudioRequestStatus eImplResult = EAudioRequestStatus::Failure;
-            AudioSystemImplementationRequestBus::BroadcastResult(eImplResult, &AudioSystemImplementationRequestBus::Events::RegisterAudioObject, pNewObject->GetImplDataPtr(), sAudioObjectName);
-
-            if (eImplResult == EAudioRequestStatus::Success)
-            {
-                pNewObject->IncrementRefCount();
-                rAudioObjectID = pNewObject->GetID();
-                m_cAudioObjects.emplace(rAudioObjectID, pNewObject);
-                bSuccess = true;
-            }
-            else
-            {
-                ReleaseInstance(pNewObject);
-                bSuccess = false;
-            }
-        }
-
-        return bSuccess;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
