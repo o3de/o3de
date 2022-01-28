@@ -439,7 +439,7 @@ namespace UnitTest
         int_list20.set_allocator(allocator1);
         AZ_TEST_VALIDATE_LIST(int_list20, 20);
         EXPECT_GE(myMemoryManager1.get_allocated_size(), 20 * sizeof(stack_myclass_list_type::node_type));
-        EXPECT_GE(myMemoryManager2.get_allocated_size(), 20 * sizeof(stack_myclass_list_type::node_type));
+        EXPECT_LE(myMemoryManager2.get_allocated_size(), 20 * sizeof(stack_myclass_list_type::node_type));
         int_list20.leak_and_reset();
         int_list20.set_allocator(allocator2);
         myMemoryManager1.reset();
@@ -452,7 +452,7 @@ namespace UnitTest
         AZ_TEST_VALIDATE_EMPTY_LIST(int_list20);
         AZ_TEST_VALIDATE_LIST(int_list10, 10);
         EXPECT_GE(myMemoryManager1.get_allocated_size(), 10 * sizeof(stack_myclass_list_type::node_type));
-        EXPECT_GE(myMemoryManager2.get_allocated_size(), 10 * sizeof(stack_myclass_list_type::node_type));
+        EXPECT_LE(myMemoryManager2.get_allocated_size(), 10 * sizeof(stack_myclass_list_type::node_type));
 
         int_list10.swap(int_list20);
         AZ_TEST_VALIDATE_EMPTY_LIST(int_list10);
@@ -815,7 +815,7 @@ namespace UnitTest
         // swap
         int_slist10.swap(int_slist20);
         EXPECT_GE(int_slist10.get_allocator().get_allocated_size(), 10 * sizeof(stack_myclass_slist_type::value_type));
-        EXPECT_GE(int_slist20.get_allocator().get_allocated_size(), 10 * sizeof(stack_myclass_slist_type::value_type));
+        EXPECT_LE(int_slist20.get_allocator().get_allocated_size(), 10 * sizeof(stack_myclass_slist_type::value_type));
 
         int_slist10.swap(int_slist20);
 
