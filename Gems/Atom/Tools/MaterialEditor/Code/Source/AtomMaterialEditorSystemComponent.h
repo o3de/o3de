@@ -2,6 +2,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <O3DEMaterialEditor/O3DEMaterialEditorBus.h>
 
 namespace AtomMaterialEditor
 {
@@ -25,5 +26,9 @@ namespace AtomMaterialEditor
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
+
+        void RegisterAtomWindow();
+
+        O3DEMaterialEditor::O3DEMaterialEditorRequests::NotifyRegisterViewsEvent::Handler m_notifyRegisterViewsEventHandler;
     };
 } // namespace MaterialEditor

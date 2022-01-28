@@ -110,6 +110,8 @@ ly_add_target(
             Gem::Atom_Component_DebugCamera.Static
             Gem::AtomLyIntegration_CommonFeatures.Static
             Gem::O3DEMaterialEditor
+    RUNTIME_DEPENDENCIES
+        Gem::O3DEMaterialEditor
 )
 
 ly_add_target(

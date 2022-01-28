@@ -2,7 +2,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AtomMaterialEditorSystemComponent.h>
-#include <O3DEMaterialEditor/O3DEMaterialEditorBus.h>
+
+#include <Window/MaterialEditorWindow.h>
 
 namespace AtomMaterialEditor
 {
@@ -15,7 +16,10 @@ namespace AtomMaterialEditor
         }
     }
 
-    AtomMaterialEditorSystemComponent::AtomMaterialEditorSystemComponent() = default;
+    AtomMaterialEditorSystemComponent::AtomMaterialEditorSystemComponent()
+        : m_notifyRegisterViewsEventHandler([this]() { RegisterAtomWindow(); })
+    {
+    }
 
     AtomMaterialEditorSystemComponent::~AtomMaterialEditorSystemComponent() = default;
 
@@ -40,14 +44,20 @@ namespace AtomMaterialEditor
 
     void AtomMaterialEditorSystemComponent::Activate()
     {
-        if (O3DEMaterialEditor::O3DEMaterialEditorInterface::Get())
+        if (auto* o3deMaterialEditor = O3DEMaterialEditor::O3DEMaterialEditorInterface::Get())
         {
-            
+            o3deMaterialEditor->ConnectNotifyRegisterViewsEventHandler(m_notifyRegisterViewsEventHandler);
         }
     }
 
     void AtomMaterialEditorSystemComponent::Deactivate()
     {
+        m_notifyRegisterViewsEventHandler.Disconnect();
+    }
+
+    void AtomMaterialEditorSystemComponent::RegisterAtomWindow()
+    {
+        O3DEMaterialEditor::RegisterViewPane<MaterialEditor::MaterialEditorWindow>("Atom");
     }
 
 } // namespace MaterialEditor

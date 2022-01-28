@@ -21,6 +21,11 @@ namespace O3DEMaterialEditor
 
     O3DEMaterialEditorSystemComponent::~O3DEMaterialEditorSystemComponent() = default;
 
+    const AZStd::vector<TabsInfo>& O3DEMaterialEditorSystemComponent::GetRegisteredTabs() const
+    {
+        return m_registeredTabs;
+    }
+
     void O3DEMaterialEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("O3DEMaterialEditorService"));
@@ -49,8 +54,16 @@ namespace O3DEMaterialEditor
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
     }
 
+    void O3DEMaterialEditorSystemComponent::RegisterViewPane(const AZStd::string& name, const WidgetCreationFunc& widgetCreationFunc)
+    {
+        m_registeredTabs.emplace_back(name, widgetCreationFunc);
+    }
+
     void O3DEMaterialEditorSystemComponent::NotifyRegisterViews()
     {
+        // Notify all systems that want to register material editor views
+        m_notifyRegisterViewsEvent.Signal();
+
         AzToolsFramework::ViewPaneOptions options;
         options.isPreview = true; // indicates it's a pre-release tool
         options.showInMenu = true;
@@ -61,4 +74,8 @@ namespace O3DEMaterialEditor
         AzToolsFramework::RegisterViewPane<O3DEMaterialEditorWidget>("O3DE Material Editor", "Tools", options);
     }
 
+    O3DEMaterialEditorSystemComponent* GetO3DEMaterialEditorSystem()
+    {
+        return azdynamic_cast<O3DEMaterialEditorSystemComponent*>(O3DEMaterialEditorInterface::Get());
+    }
 } // namespace O3DEMaterialEditor
