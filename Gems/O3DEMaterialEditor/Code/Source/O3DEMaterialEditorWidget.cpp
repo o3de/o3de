@@ -6,9 +6,9 @@
 
 #include <AzQtComponents/Components/StyledDockWidget.h>
 
-#include <MaterialEditorWidget.h>
+#include <O3DEMaterialEditorWidget.h>
 
-namespace MaterialEditor
+namespace O3DEMaterialEditor
 {
     QDockWidget* CreateDockTab(const AZStd::string& name)
     {
@@ -69,14 +69,20 @@ namespace MaterialEditor
         return tab;
     }
 
-    MaterialEditorWidget::MaterialEditorWidget(QWidget* parent)
+    O3DEMaterialEditorWidget::O3DEMaterialEditorWidget(QWidget* parent)
         : AzQtComponents::TabWidget(parent)
     {
         setMovable(true);
 
-        addTab(CreateTab("Atom"), "Atom");
-        addTab(CreateTab("PhysX"), "PhysX");
+        m_notifyRegisterViewsEvent.Signal();
+    }
+
+    void O3DEMaterialEditorWidget::RegisterViewPane(
+        [[maybe_unused]] const AZStd::string& name,
+        [[maybe_unused]] const WidgetCreationFunc& widgetCreationFunc)
+    {
+
     }
 }
 
-#include <moc_MaterialEditorWidget.cpp>
+#include <moc_O3DEMaterialEditorWidget.cpp>

@@ -6,7 +6,7 @@
     "O3DECopyrightYear": 2021,
     "O3DEBuildNumber": 0,
     "external_subdirectories": [
-        "Gems/MaterialEditor",
+        "Gems/O3DEMaterialEditor",
         "Gems/Achievements",
         "Gems/AssetValidation",
         "Gems/Atom",

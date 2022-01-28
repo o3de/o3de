@@ -2,6 +2,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AtomMaterialEditorSystemComponent.h>
+#include <O3DEMaterialEditor/O3DEMaterialEditorBus.h>
 
 namespace AtomMaterialEditor
 {
@@ -30,6 +31,7 @@ namespace AtomMaterialEditor
 
     void AtomMaterialEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
+        required.push_back(AZ_CRC_CE("O3DEMaterialEditorService"));
     }
 
     void AtomMaterialEditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -38,6 +40,10 @@ namespace AtomMaterialEditor
 
     void AtomMaterialEditorSystemComponent::Activate()
     {
+        if (O3DEMaterialEditor::O3DEMaterialEditorInterface::Get())
+        {
+            
+        }
     }
 
     void AtomMaterialEditorSystemComponent::Deactivate()

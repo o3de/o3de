@@ -83,51 +83,51 @@ else()
         " Perhaps it has been renamed")
 endif()
 
-# ------------------------------------------------------
-# Atom Material Editor for O3DE
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_add_target(
-        NAME AtomMaterialEditor.Editor.Static STATIC
-        NAMESPACE Gem
-        AUTOMOC
-        AUTOUIC
-        AUTORCC
-        FILES_CMAKE
-            atommaterialeditor_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Source
-        BUILD_DEPENDENCIES
-            PUBLIC
-                Gem::AtomToolsFramework.Static
-                Gem::AtomToolsFramework.Editor
-                Gem::Atom_RHI.Public
-                Gem::Atom_RHI.Reflect
-                Gem::Atom_RPI.Edit
-                Gem::Atom_RPI.Public
-                Gem::Atom_Feature_Common.Public
-                Gem::Atom_Component_DebugCamera.Static
-                Gem::AtomLyIntegration_CommonFeatures.Static
-    )
+# ---------------------------------------------
+# Atom Material Editor as module for O3DE
+# ---------------------------------------------
 
-    ly_add_target(
-        NAME AtomMaterialEditor.Editor GEM_MODULE
-        NAMESPACE Gem
-        AUTOMOC
-        FILES_CMAKE
-            atommaterialeditor_shared_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Source
-        BUILD_DEPENDENCIES
-            PUBLIC
-                Gem::AtomMaterialEditor.Editor.Static
-    )
+ly_add_target(
+    NAME AtomMaterialEditor.Static STATIC
+    NAMESPACE Gem
+    AUTOMOC
+    AUTOUIC
+    AUTORCC
+    FILES_CMAKE
+        atommaterialeditor_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+    BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::AtomToolsFramework.Static
+            Gem::AtomToolsFramework.Editor
+            Gem::Atom_RHI.Public
+            Gem::Atom_RHI.Reflect
+            Gem::Atom_RPI.Edit
+            Gem::Atom_RPI.Public
+            Gem::Atom_Feature_Common.Public
+            Gem::Atom_Component_DebugCamera.Static
+            Gem::AtomLyIntegration_CommonFeatures.Static
+            Gem::O3DEMaterialEditor
+)
 
-    # By default, we will specify that the above target O3DEMaterialEditor would be used by
-    # Tool and Builder type targets when this gem is enabled.  If you don't want it
-    # active in Tools or Builders by default, delete one of both of the following lines:
-    ly_create_alias(NAME AtomMaterialEditor.Tools    NAMESPACE Gem TARGETS Gem::AtomMaterialEditor.Editor)
-    ly_create_alias(NAME AtomMaterialEditor.Builders NAMESPACE Gem TARGETS Gem::AtomMaterialEditor.Editor)
+ly_add_target(
+    NAME AtomMaterialEditor GEM_MODULE
+    NAMESPACE Gem
+    AUTOMOC
+    FILES_CMAKE
+        atommaterialeditor_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+    BUILD_DEPENDENCIES
+        PUBLIC
+            Gem::AtomMaterialEditor.Static
+)
 
-endif()
+# By default, we will specify that the above target O3DEMaterialEditor would be used by
+# Tool and Builder type targets when this gem is enabled.  If you don't want it
+# active in Tools or Builders by default, delete one of both of the following lines:
+ly_create_alias(NAME AtomMaterialEditor.Tools    NAMESPACE Gem TARGETS Gem::AtomMaterialEditor)
+ly_create_alias(NAME AtomMaterialEditor.Builders NAMESPACE Gem TARGETS Gem::AtomMaterialEditor)
