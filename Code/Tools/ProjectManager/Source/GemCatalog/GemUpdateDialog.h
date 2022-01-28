@@ -17,7 +17,7 @@ namespace O3DE::ProjectManager
     class GemUpdateDialog
         : public QDialog
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
     public :
         explicit GemUpdateDialog(const QString& gemName, bool updateAvaliable = true, QWidget* parent = nullptr);
         ~GemUpdateDialog() = default;
