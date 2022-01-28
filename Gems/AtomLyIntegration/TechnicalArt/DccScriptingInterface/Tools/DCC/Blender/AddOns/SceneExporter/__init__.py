@@ -24,6 +24,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 # You have options to export textures with the mesh,
 # or with the mesh within a sub folder ‘textures’.
 # This will work for Blender Scenes with or without packed textures.
+# Hardware and Software Requirements:
+#
+# Support for Blender 3.+ Windows 10/11 64-bit version
+# O3DE Stable 21.11 Release Windows 10/11 64-bit version
 #
 # @section Launcher Notes
 # - Comments are Doxygen compatible
