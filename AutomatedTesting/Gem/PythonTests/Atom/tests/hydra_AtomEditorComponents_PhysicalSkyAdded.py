@@ -132,7 +132,7 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
 
         # 5. Set Sky Intensity to a value of 2 (default value is 4)
         physical_sky_component.set_component_property_value(
-            AtomComponentProperties.physical_sky('Sky Intensity'), 2)
+            AtomComponentProperties.physical_sky('Sky Intensity'), value=2)
         current_sky_intensity = physical_sky_component.get_component_property_value(
             AtomComponentProperties.physical_sky('Sky Intensity'))
         Report.result(Tests.sky_intensity, current_sky_intensity == 2)

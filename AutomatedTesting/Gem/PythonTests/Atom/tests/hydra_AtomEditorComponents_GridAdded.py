@@ -125,7 +125,7 @@ def AtomEditorComponents_Grid_AddedToEntity():
 
         # 5. Grid Size changed (default is 32, changed to 64)
         grid_component.set_component_property_value(
-            AtomComponentProperties.grid('Grid Size'), 64)
+            AtomComponentProperties.grid('Grid Size'), value=64)
         current_grid_size = grid_component.get_component_property_value(
             AtomComponentProperties.grid('Grid Size'))
         Report.result(Tests.grid_size, current_grid_size == 64)
