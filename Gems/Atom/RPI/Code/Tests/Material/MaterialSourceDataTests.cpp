@@ -93,7 +93,7 @@ namespace UnitTest
                     {
                         "version": 10,
                         "propertyLayout": {
-                            "propertySets": [
+                            "propertyGroups": [
                                 {
                                     "name": "general",
                                     "properties": [
@@ -471,7 +471,7 @@ namespace UnitTest
         const AZStd::string simpleMaterialTypeJson = R"(
             {
                 "propertyLayout": {
-                    "propertySets":
+                    "propertyGroups":
                     [
                         {
                             "name": "general",

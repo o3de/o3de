@@ -360,18 +360,18 @@ namespace UnitTest
     {
         MaterialTypeSourceData sourceData;
 
-        // Here we are building up multiple layers of property sets and properties, using a variety of different Add functions,
-        // going through the MaterialTypeSourceData or going to the PropertySet directly.
+        // Here we are building up multiple layers of property groups and properties, using a variety of different Add functions,
+        // going through the MaterialTypeSourceData or going to the PropertyGroup directly.
 
-        MaterialTypeSourceData::PropertySet* layer1 = sourceData.AddPropertySet("layer1");
-        MaterialTypeSourceData::PropertySet* layer2 = sourceData.AddPropertySet("layer2");
-        MaterialTypeSourceData::PropertySet* blend = sourceData.AddPropertySet("blend");
+        MaterialTypeSourceData::PropertyGroup* layer1 = sourceData.AddPropertyGroup("layer1");
+        MaterialTypeSourceData::PropertyGroup* layer2 = sourceData.AddPropertyGroup("layer2");
+        MaterialTypeSourceData::PropertyGroup* blend = sourceData.AddPropertyGroup("blend");
         
-        MaterialTypeSourceData::PropertySet* layer1_baseColor = layer1->AddPropertySet("baseColor");
-        MaterialTypeSourceData::PropertySet* layer2_baseColor = layer2->AddPropertySet("baseColor");
+        MaterialTypeSourceData::PropertyGroup* layer1_baseColor = layer1->AddPropertyGroup("baseColor");
+        MaterialTypeSourceData::PropertyGroup* layer2_baseColor = layer2->AddPropertyGroup("baseColor");
         
-        MaterialTypeSourceData::PropertySet* layer1_roughness = sourceData.AddPropertySet("layer1.roughness");
-        MaterialTypeSourceData::PropertySet* layer2_roughness = sourceData.AddPropertySet("layer2.roughness");
+        MaterialTypeSourceData::PropertyGroup* layer1_roughness = sourceData.AddPropertyGroup("layer1.roughness");
+        MaterialTypeSourceData::PropertyGroup* layer2_roughness = sourceData.AddPropertyGroup("layer2.roughness");
 
         MaterialTypeSourceData::PropertyDefinition* layer1_baseColor_texture = layer1_baseColor->AddProperty("texture");
         MaterialTypeSourceData::PropertyDefinition* layer2_baseColor_texture = layer2_baseColor->AddProperty("texture");
@@ -380,9 +380,9 @@ namespace UnitTest
         MaterialTypeSourceData::PropertyDefinition* layer2_roughness_texture = sourceData.AddProperty("layer2.roughness.texture");
         
         // We're doing clear coat only on layer2, for brevity
-        MaterialTypeSourceData::PropertySet* layer2_clearCoat = layer2->AddPropertySet("clearCoat");
-        MaterialTypeSourceData::PropertySet* layer2_clearCoat_roughness = layer2_clearCoat->AddPropertySet("roughness");
-        MaterialTypeSourceData::PropertySet* layer2_clearCoat_normal = layer2_clearCoat->AddPropertySet("normal");
+        MaterialTypeSourceData::PropertyGroup* layer2_clearCoat = layer2->AddPropertyGroup("clearCoat");
+        MaterialTypeSourceData::PropertyGroup* layer2_clearCoat_roughness = layer2_clearCoat->AddPropertyGroup("roughness");
+        MaterialTypeSourceData::PropertyGroup* layer2_clearCoat_normal = layer2_clearCoat->AddPropertyGroup("normal");
         MaterialTypeSourceData::PropertyDefinition* layer2_clearCoat_enabled = layer2_clearCoat->AddProperty("enabled");
         MaterialTypeSourceData::PropertyDefinition* layer2_clearCoat_roughness_texture = layer2_clearCoat_roughness->AddProperty("texture");
         MaterialTypeSourceData::PropertyDefinition* layer2_clearCoat_normal_texture = layer2_clearCoat_normal->AddProperty("texture");
@@ -396,27 +396,27 @@ namespace UnitTest
         EXPECT_EQ(nullptr, sourceData.FindProperty("layer1.DoesNotExist"));
         EXPECT_EQ(nullptr, sourceData.FindProperty("layer1.baseColor.DoesNotExist"));
         EXPECT_EQ(nullptr, sourceData.FindProperty("baseColor.texture"));
-        EXPECT_EQ(nullptr, sourceData.FindProperty("baseColor")); // This is a property set, not a property
-        EXPECT_EQ(nullptr, sourceData.FindPropertySet("baseColor.texture")); // This is a property, not a property set
+        EXPECT_EQ(nullptr, sourceData.FindProperty("baseColor")); // This is a property group, not a property
+        EXPECT_EQ(nullptr, sourceData.FindPropertyGroup("baseColor.texture")); // This is a property, not a property group
         
-        EXPECT_EQ(layer1, sourceData.FindPropertySet("layer1"));
-        EXPECT_EQ(layer2, sourceData.FindPropertySet("layer2"));
-        EXPECT_EQ(blend, sourceData.FindPropertySet("blend"));
+        EXPECT_EQ(layer1, sourceData.FindPropertyGroup("layer1"));
+        EXPECT_EQ(layer2, sourceData.FindPropertyGroup("layer2"));
+        EXPECT_EQ(blend, sourceData.FindPropertyGroup("blend"));
         
-        EXPECT_EQ(layer1_baseColor, sourceData.FindPropertySet("layer1.baseColor"));
-        EXPECT_EQ(layer2_baseColor, sourceData.FindPropertySet("layer2.baseColor"));
+        EXPECT_EQ(layer1_baseColor, sourceData.FindPropertyGroup("layer1.baseColor"));
+        EXPECT_EQ(layer2_baseColor, sourceData.FindPropertyGroup("layer2.baseColor"));
 
-        EXPECT_EQ(layer1_roughness, sourceData.FindPropertySet("layer1.roughness"));
-        EXPECT_EQ(layer2_roughness, sourceData.FindPropertySet("layer2.roughness"));
+        EXPECT_EQ(layer1_roughness, sourceData.FindPropertyGroup("layer1.roughness"));
+        EXPECT_EQ(layer2_roughness, sourceData.FindPropertyGroup("layer2.roughness"));
         
         EXPECT_EQ(layer1_baseColor_texture, sourceData.FindProperty("layer1.baseColor.texture"));
         EXPECT_EQ(layer2_baseColor_texture, sourceData.FindProperty("layer2.baseColor.texture"));
         EXPECT_EQ(layer1_roughness_texture, sourceData.FindProperty("layer1.roughness.texture"));
         EXPECT_EQ(layer2_roughness_texture, sourceData.FindProperty("layer2.roughness.texture"));
         
-        EXPECT_EQ(layer2_clearCoat, sourceData.FindPropertySet("layer2.clearCoat"));
-        EXPECT_EQ(layer2_clearCoat_roughness, sourceData.FindPropertySet("layer2.clearCoat.roughness"));
-        EXPECT_EQ(layer2_clearCoat_normal, sourceData.FindPropertySet("layer2.clearCoat.normal"));
+        EXPECT_EQ(layer2_clearCoat, sourceData.FindPropertyGroup("layer2.clearCoat"));
+        EXPECT_EQ(layer2_clearCoat_roughness, sourceData.FindPropertyGroup("layer2.clearCoat.roughness"));
+        EXPECT_EQ(layer2_clearCoat_normal, sourceData.FindPropertyGroup("layer2.clearCoat.normal"));
         
         EXPECT_EQ(layer2_clearCoat_enabled, sourceData.FindProperty("layer2.clearCoat.enabled"));
         EXPECT_EQ(layer2_clearCoat_roughness_texture, sourceData.FindProperty("layer2.clearCoat.roughness.texture"));
@@ -425,39 +425,39 @@ namespace UnitTest
 
         EXPECT_EQ(blend_factor, sourceData.FindProperty("blend.factor"));
         
-        // Check EnumeratePropertySets
+        // Check EnumeratePropertyGroups
 
-        struct EnumeratePropertySetsResult
+        struct EnumeratePropertyGroupsResult
         {
             AZStd::string m_propertyIdContext;
-            const MaterialTypeSourceData::PropertySet* m_propertySet;
+            const MaterialTypeSourceData::PropertyGroup* m_propertyGroup;
 
-            void Check(AZStd::string expectedIdContext, const MaterialTypeSourceData::PropertySet* expectedPropertySet)
+            void Check(AZStd::string expectedIdContext, const MaterialTypeSourceData::PropertyGroup* expectedPropertyGroup)
             {
                 EXPECT_EQ(expectedIdContext, m_propertyIdContext);
-                EXPECT_EQ(expectedPropertySet, m_propertySet);
+                EXPECT_EQ(expectedPropertyGroup, m_propertyGroup);
             }
         };
-        AZStd::vector<EnumeratePropertySetsResult> enumeratePropertySetsResults;
+        AZStd::vector<EnumeratePropertyGroupsResult> enumeratePropertyGroupsResults;
 
-        sourceData.EnumeratePropertySets([&enumeratePropertySetsResults](const AZStd::string& propertyIdContext, const MaterialTypeSourceData::PropertySet* propertySet)
+        sourceData.EnumeratePropertyGroups([&enumeratePropertyGroupsResults](const AZStd::string& propertyIdContext, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
             {
-                enumeratePropertySetsResults.push_back(EnumeratePropertySetsResult{propertyIdContext, propertySet});
+                enumeratePropertyGroupsResults.push_back(EnumeratePropertyGroupsResult{propertyIdContext, propertyGroup});
                 return true;
             });
 
         int resultIndex = 0;
-        enumeratePropertySetsResults[resultIndex++].Check("", layer1);
-        enumeratePropertySetsResults[resultIndex++].Check("layer1.", layer1_baseColor);
-        enumeratePropertySetsResults[resultIndex++].Check("layer1.", layer1_roughness);
-        enumeratePropertySetsResults[resultIndex++].Check("", layer2);
-        enumeratePropertySetsResults[resultIndex++].Check("layer2.", layer2_baseColor);
-        enumeratePropertySetsResults[resultIndex++].Check("layer2.", layer2_roughness);
-        enumeratePropertySetsResults[resultIndex++].Check("layer2.", layer2_clearCoat);
-        enumeratePropertySetsResults[resultIndex++].Check("layer2.clearCoat.", layer2_clearCoat_roughness);
-        enumeratePropertySetsResults[resultIndex++].Check("layer2.clearCoat.", layer2_clearCoat_normal);
-        enumeratePropertySetsResults[resultIndex++].Check("", blend);
-        EXPECT_EQ(resultIndex, enumeratePropertySetsResults.size());
+        enumeratePropertyGroupsResults[resultIndex++].Check("", layer1);
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer1.", layer1_baseColor);
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer1.", layer1_roughness);
+        enumeratePropertyGroupsResults[resultIndex++].Check("", layer2);
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.", layer2_baseColor);
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.", layer2_roughness);
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.", layer2_clearCoat);
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.clearCoat.", layer2_clearCoat_roughness);
+        enumeratePropertyGroupsResults[resultIndex++].Check("layer2.clearCoat.", layer2_clearCoat_normal);
+        enumeratePropertyGroupsResults[resultIndex++].Check("", blend);
+        EXPECT_EQ(resultIndex, enumeratePropertyGroupsResults.size());
 
         // Check EnumerateProperties
         
@@ -497,39 +497,39 @@ namespace UnitTest
     {
         MaterialTypeSourceData sourceData;
 
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("main");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("main");
 
         ErrorMessageFinder errorMessageFinder;
         errorMessageFinder.AddExpectedErrorMessage("'' is not a valid identifier");
         errorMessageFinder.AddExpectedErrorMessage("'main.' is not a valid identifier");
         errorMessageFinder.AddExpectedErrorMessage("'base-color' is not a valid identifier");
         
-        EXPECT_FALSE(propertySet->AddProperty(""));
-        EXPECT_FALSE(propertySet->AddProperty("main."));
+        EXPECT_FALSE(propertyGroup->AddProperty(""));
+        EXPECT_FALSE(propertyGroup->AddProperty("main."));
         EXPECT_FALSE(sourceData.AddProperty("main.base-color"));
         
-        EXPECT_TRUE(propertySet->GetProperties().empty());
+        EXPECT_TRUE(propertyGroup->GetProperties().empty());
 
         errorMessageFinder.CheckExpectedErrorsFound();
     }
     
-    TEST_F(MaterialTypeSourceDataTests, AddPropertySet_Error_InvalidName)
+    TEST_F(MaterialTypeSourceDataTests, AddPropertyGroup_Error_InvalidName)
     {
         MaterialTypeSourceData sourceData;
 
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
 
         ErrorMessageFinder errorMessageFinder;
         errorMessageFinder.AddExpectedErrorMessage("'' is not a valid identifier", 2);
         errorMessageFinder.AddExpectedErrorMessage("'base-color' is not a valid identifier");
         errorMessageFinder.AddExpectedErrorMessage("'look@it' is not a valid identifier");
 
-        EXPECT_FALSE(propertySet->AddPropertySet(""));
-        EXPECT_FALSE(sourceData.AddPropertySet(""));
-        EXPECT_FALSE(sourceData.AddPropertySet("base-color"));
-        EXPECT_FALSE(sourceData.AddPropertySet("general.look@it"));
+        EXPECT_FALSE(propertyGroup->AddPropertyGroup(""));
+        EXPECT_FALSE(sourceData.AddPropertyGroup(""));
+        EXPECT_FALSE(sourceData.AddPropertyGroup("base-color"));
+        EXPECT_FALSE(sourceData.AddPropertyGroup("general.look@it"));
         
-        EXPECT_TRUE(propertySet->GetProperties().empty());
+        EXPECT_TRUE(propertyGroup->GetProperties().empty());
 
         errorMessageFinder.CheckExpectedErrorsFound();
     }
@@ -538,16 +538,16 @@ namespace UnitTest
     {
         MaterialTypeSourceData sourceData;
 
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("main");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("main");
 
         ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage("PropertySet 'main' already contains a property named 'foo'", 2);
+        errorMessageFinder.AddExpectedErrorMessage("PropertyGroup 'main' already contains a property named 'foo'", 2);
 
-        EXPECT_TRUE(propertySet->AddProperty("foo"));
-        EXPECT_FALSE(propertySet->AddProperty("foo"));
+        EXPECT_TRUE(propertyGroup->AddProperty("foo"));
+        EXPECT_FALSE(propertyGroup->AddProperty("foo"));
         EXPECT_FALSE(sourceData.AddProperty("main.foo"));
         
-        EXPECT_EQ(propertySet->GetProperties().size(), 1);
+        EXPECT_EQ(propertyGroup->GetProperties().size(), 1);
 
         errorMessageFinder.CheckExpectedErrorsFound();
     }
@@ -555,66 +555,66 @@ namespace UnitTest
     TEST_F(MaterialTypeSourceDataTests, AddProperty_Error_AddLooseProperty)
     {
         MaterialTypeSourceData sourceData;
-        ErrorMessageFinder errorMessageFinder("Property id 'foo' is invalid. Properties must be added to a PropertySet");
+        ErrorMessageFinder errorMessageFinder("Property id 'foo' is invalid. Properties must be added to a PropertyGroup");
         EXPECT_FALSE(sourceData.AddProperty("foo"));
         errorMessageFinder.CheckExpectedErrorsFound();
     }
     
-    TEST_F(MaterialTypeSourceDataTests, AddProperty_Error_PropertySetDoesNotExist   )
+    TEST_F(MaterialTypeSourceDataTests, AddProperty_Error_PropertyGroupDoesNotExist   )
     {
         MaterialTypeSourceData sourceData;
-        ErrorMessageFinder errorMessageFinder("PropertySet 'DNE' does not exists");
+        ErrorMessageFinder errorMessageFinder("PropertyGroup 'DNE' does not exists");
         EXPECT_FALSE(sourceData.AddProperty("DNE.foo"));
         errorMessageFinder.CheckExpectedErrorsFound();
     }
     
-    TEST_F(MaterialTypeSourceDataTests, AddPropertySet_Error_PropertySetDoesNotExist   )
+    TEST_F(MaterialTypeSourceDataTests, AddPropertyGroup_Error_PropertyGroupDoesNotExist   )
     {
         MaterialTypeSourceData sourceData;
-        ErrorMessageFinder errorMessageFinder("PropertySet 'DNE' does not exists");
-        EXPECT_FALSE(sourceData.AddPropertySet("DNE.foo"));
+        ErrorMessageFinder errorMessageFinder("PropertyGroup 'DNE' does not exists");
+        EXPECT_FALSE(sourceData.AddPropertyGroup("DNE.foo"));
         errorMessageFinder.CheckExpectedErrorsFound();
     }
 
-    TEST_F(MaterialTypeSourceDataTests, AddPropertySet_Error_AddDuplicatePropertySet)
+    TEST_F(MaterialTypeSourceDataTests, AddPropertyGroup_Error_AddDuplicatePropertyGroup)
     {
         MaterialTypeSourceData sourceData;
         
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("main");
-        sourceData.AddPropertySet("main.level2");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("main");
+        sourceData.AddPropertyGroup("main.level2");
 
         ErrorMessageFinder errorMessageFinder;
-        errorMessageFinder.AddExpectedErrorMessage("PropertySet named 'main' already exists", 1);
-        errorMessageFinder.AddExpectedErrorMessage("PropertySet named 'level2' already exists", 2);
+        errorMessageFinder.AddExpectedErrorMessage("PropertyGroup named 'main' already exists", 1);
+        errorMessageFinder.AddExpectedErrorMessage("PropertyGroup named 'level2' already exists", 2);
         
-        EXPECT_FALSE(sourceData.AddPropertySet("main"));
-        EXPECT_FALSE(sourceData.AddPropertySet("main.level2"));
-        EXPECT_FALSE(propertySet->AddPropertySet("level2"));
+        EXPECT_FALSE(sourceData.AddPropertyGroup("main"));
+        EXPECT_FALSE(sourceData.AddPropertyGroup("main.level2"));
+        EXPECT_FALSE(propertyGroup->AddPropertyGroup("level2"));
         
         errorMessageFinder.CheckExpectedErrorsFound();
 
-        EXPECT_EQ(sourceData.GetPropertyLayout().m_propertySets.size(), 1);
-        EXPECT_EQ(propertySet->GetPropertySets().size(), 1);
+        EXPECT_EQ(sourceData.GetPropertyLayout().m_propertyGroups.size(), 1);
+        EXPECT_EQ(propertyGroup->GetPropertyGroups().size(), 1);
     }
     
-    TEST_F(MaterialTypeSourceDataTests, AddPropertySet_Error_NameCollidesWithProperty   )
+    TEST_F(MaterialTypeSourceDataTests, AddPropertyGroup_Error_NameCollidesWithProperty   )
     {
         MaterialTypeSourceData sourceData;
-        sourceData.AddPropertySet("main");
+        sourceData.AddPropertyGroup("main");
         sourceData.AddProperty("main.foo");
 
-        ErrorMessageFinder errorMessageFinder("PropertySet name 'foo' collides with a Property of the same name");
-        EXPECT_FALSE(sourceData.AddPropertySet("main.foo"));
+        ErrorMessageFinder errorMessageFinder("PropertyGroup name 'foo' collides with a Property of the same name");
+        EXPECT_FALSE(sourceData.AddPropertyGroup("main.foo"));
         errorMessageFinder.CheckExpectedErrorsFound();
     }
     
-    TEST_F(MaterialTypeSourceDataTests, AddProperty_Error_NameCollidesWithPropertySet   )
+    TEST_F(MaterialTypeSourceDataTests, AddProperty_Error_NameCollidesWithPropertyGroup   )
     {
         MaterialTypeSourceData sourceData;
-        sourceData.AddPropertySet("main");
-        sourceData.AddPropertySet("main.foo");
+        sourceData.AddPropertyGroup("main");
+        sourceData.AddPropertyGroup("main.foo");
 
-        ErrorMessageFinder errorMessageFinder("Property name 'foo' collides with a PropertySet of the same name");
+        ErrorMessageFinder errorMessageFinder("Property name 'foo' collides with a PropertyGroup of the same name");
         EXPECT_FALSE(sourceData.AddProperty("main.foo"));
         errorMessageFinder.CheckExpectedErrorsFound();
     }
@@ -627,11 +627,11 @@ namespace UnitTest
         sourceData.m_uvNameMap["UV1"] = "Unwrapped";
         sourceData.m_uvNameMap["UV2"] = "Other";
 
-        sourceData.AddPropertySet("a");
-        sourceData.AddPropertySet("a.b");
-        sourceData.AddPropertySet("c");
-        sourceData.AddPropertySet("c.d");
-        sourceData.AddPropertySet("c.d.e");
+        sourceData.AddPropertyGroup("a");
+        sourceData.AddPropertyGroup("a.b");
+        sourceData.AddPropertyGroup("c");
+        sourceData.AddPropertyGroup("c.d");
+        sourceData.AddPropertyGroup("c.d.e");
 
         MaterialTypeSourceData::PropertyDefinition* enum1 = sourceData.AddProperty("a.enum1");
         MaterialTypeSourceData::PropertyDefinition* enum2 = sourceData.AddProperty("a.b.enum2");
@@ -820,8 +820,8 @@ namespace UnitTest
 
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{ TestShaderFilename });
 
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
-        MaterialTypeSourceData::PropertyDefinition* property = propertySet->AddProperty("MyBool");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+        MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("MyBool");
         property->m_displayName = "My Bool";
         property->m_description = "This is a bool";
         property->m_dataType = MaterialPropertyDataType::Bool;
@@ -845,8 +845,8 @@ namespace UnitTest
 
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{ TestShaderFilename });
         
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
-        MaterialTypeSourceData::PropertyDefinition* property = propertySet->AddProperty("MyFloat");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+        MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("MyFloat");
         property->m_displayName = "My Float";
         property->m_description = "This is a float";
         property->m_min = 0.0f;
@@ -874,8 +874,8 @@ namespace UnitTest
 
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{ TestShaderFilename });
         
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
-        MaterialTypeSourceData::PropertyDefinition* property = propertySet->AddProperty("MyImage");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+        MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("MyImage");
         property->m_displayName = "My Image";
         property->m_description = "This is an image";
         property->m_dataType = MaterialPropertyDataType::Image;
@@ -898,8 +898,8 @@ namespace UnitTest
 
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
         
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
-        MaterialTypeSourceData::PropertyDefinition* property = propertySet->AddProperty("MyInt");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+        MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("MyInt");
         property->m_displayName = "My Integer";
         property->m_dataType = MaterialPropertyDataType::Int;
         property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{MaterialPropertyOutputType::ShaderOption, AZStd::string("o_foo"), 0});
@@ -920,8 +920,8 @@ namespace UnitTest
 
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
         
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
-        MaterialTypeSourceData::PropertyDefinition* property = propertySet->AddProperty("MyInt");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+        MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("MyInt");
         property->m_dataType = MaterialPropertyDataType::Int;
         property->m_outputConnections.push_back(MaterialTypeSourceData::PropertyConnection{MaterialPropertyOutputType::ShaderOption, AZStd::string("DoesNotExist"), 0});
         
@@ -937,7 +937,7 @@ namespace UnitTest
         const AZStd::string inputJson = R"(
             {
                 "propertyLayout": {
-                    "propertySets": [
+                    "propertyGroups": [
                         {
                             "name": "not a valid name because it has spaces",
                             "properties": [
@@ -967,7 +967,7 @@ namespace UnitTest
         const AZStd::string inputJson = R"(
             {
                 "propertyLayout": {
-                    "propertySets": [
+                    "propertyGroups": [
                         {
                             "name": "general",
                             "properties": [
@@ -997,7 +997,7 @@ namespace UnitTest
             const AZStd::string inputJson = R"(
             {
                 "propertyLayout": {
-                    "propertySets": [
+                    "propertyGroups": [
                         {
                             "name": "general",
                             "properties": [
@@ -1027,12 +1027,12 @@ namespace UnitTest
         errorMessageFinder.CheckExpectedErrorsFound();
     }
     
-    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_PropertyAndPropertySetNameCollision)
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_PropertyAndPropertyGroupNameCollision)
     {
             const AZStd::string inputJson = R"(
             {
                 "propertyLayout": {
-                    "propertySets": [
+                    "propertyGroups": [
                         {
                             "name": "general",
                             "properties": [
@@ -1041,7 +1041,7 @@ namespace UnitTest
                                     "type": "Bool"
                                 }
                             ],
-                            "propertySets": [
+                            "propertyGroups": [
                                 {
                                     "name": "foo",
                                     "properties": [
@@ -1062,7 +1062,7 @@ namespace UnitTest
         JsonTestResult loadResult = LoadTestDataFromJson(sourceData, inputJson);
         EXPECT_EQ(loadResult.m_jsonResultCode.GetProcessing(), JsonSerializationResult::Processing::Completed);
         
-        ErrorMessageFinder errorMessageFinder("Material property 'general.foo' collides with a PropertySet with the same ID");
+        ErrorMessageFinder errorMessageFinder("Material property 'general.foo' collides with a PropertyGroup with the same ID");
         auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
         EXPECT_FALSE(materialTypeOutcome.IsSuccess());
         errorMessageFinder.CheckExpectedErrorsFound();
@@ -1117,8 +1117,8 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{ "shaderB.shader" });
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{ "shaderC.shader" });
         
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
-        MaterialTypeSourceData::PropertyDefinition* property = propertySet->AddProperty("MyInt");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+        MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("MyInt");
 
         property->m_displayName = "Integer";
         property->m_description = "Integer property that is connected to multiple shader settings";
@@ -1176,8 +1176,8 @@ namespace UnitTest
     {
         MaterialTypeSourceData sourceData;
         
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
-        MaterialTypeSourceData::PropertyDefinition* property = propertySet->AddProperty("floatForFunctor");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+        MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("floatForFunctor");
 
         property->m_displayName = "Float for Functor";
         property->m_description = "This float is processed by a functor, not with a direct connection";
@@ -1221,9 +1221,9 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
         
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
-        MaterialTypeSourceData::PropertyDefinition* property1 = propertySet->AddProperty("EnableSpecialPassA");
-        MaterialTypeSourceData::PropertyDefinition* property2 = propertySet->AddProperty("EnableSpecialPassB");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+        MaterialTypeSourceData::PropertyDefinition* property1 = propertyGroup->AddProperty("EnableSpecialPassA");
+        MaterialTypeSourceData::PropertyDefinition* property2 = propertyGroup->AddProperty("EnableSpecialPassB");
 
         property1->m_displayName = property2->m_displayName = "Enable Special Pass";
         property1->m_description = property2->m_description = "This is a bool to enable an extra shader/pass";
@@ -1279,8 +1279,8 @@ namespace UnitTest
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
         sourceData.m_shaderCollection.push_back(MaterialTypeSourceData::ShaderVariantReferenceData{TestShaderFilename});
         
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
-        MaterialTypeSourceData::PropertyDefinition* property = propertySet->AddProperty("MyProperty");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+        MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("MyProperty");
 
         property->m_dataType = MaterialPropertyDataType::Bool;
         // Note that we don't fill property->m_outputConnections because this is not a direct-connected property
@@ -1307,12 +1307,12 @@ namespace UnitTest
         EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_bar"}));
     }
     
-    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_FunctorIsInsidePropertySet)
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_FunctorIsInsidePropertyGroup)
     {
         MaterialTypeSourceData sourceData;
         
-        MaterialTypeSourceData::PropertySet* propertySet = sourceData.AddPropertySet("general");
-        MaterialTypeSourceData::PropertyDefinition* property = propertySet->AddProperty("floatForFunctor");
+        MaterialTypeSourceData::PropertyGroup* propertyGroup = sourceData.AddPropertyGroup("general");
+        MaterialTypeSourceData::PropertyDefinition* property = propertyGroup->AddProperty("floatForFunctor");
 
         property->m_dataType = MaterialPropertyDataType::Float;
 
@@ -1360,7 +1360,7 @@ namespace UnitTest
             property->m_value = value;
         };
         
-        sourceData.AddPropertySet("general");
+        sourceData.AddPropertyGroup("general");
 
         addProperty(MaterialPropertyDataType::Bool,    "general.MyBool",   "m_bool",    true);
         addProperty(MaterialPropertyDataType::Float,   "general.MyFloat",  "m_float",   1.2f);
@@ -1387,7 +1387,7 @@ namespace UnitTest
         CheckPropertyValue<Data::Asset<ImageAsset>>(materialTypeAsset, Name{"general.MyImage"}, m_testImageAsset);
     }
     
-    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_NestedPropertySets)
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_NestedPropertyGroups)
     {
         RHI::Ptr<RHI::ShaderResourceGroupLayout> layeredMaterialSrgLayout = RHI::ShaderResourceGroupLayout::Create();
         layeredMaterialSrgLayout->SetName(Name{"MaterialSrg"});
@@ -1428,16 +1428,16 @@ namespace UnitTest
             property->m_value = value;
         };
         
-        sourceData.AddPropertySet("layer1");
-        sourceData.AddPropertySet("layer2");
-        sourceData.AddPropertySet("blend");
-        sourceData.AddPropertySet("layer1.baseColor");
-        sourceData.AddPropertySet("layer2.baseColor");
-        sourceData.AddPropertySet("layer1.roughness");
-        sourceData.AddPropertySet("layer2.roughness");
-        sourceData.AddPropertySet("layer2.clearCoat");
-        sourceData.AddPropertySet("layer2.clearCoat.roughness");
-        sourceData.AddPropertySet("layer2.clearCoat.normal");
+        sourceData.AddPropertyGroup("layer1");
+        sourceData.AddPropertyGroup("layer2");
+        sourceData.AddPropertyGroup("blend");
+        sourceData.AddPropertyGroup("layer1.baseColor");
+        sourceData.AddPropertyGroup("layer2.baseColor");
+        sourceData.AddPropertyGroup("layer1.roughness");
+        sourceData.AddPropertyGroup("layer2.roughness");
+        sourceData.AddPropertyGroup("layer2.clearCoat");
+        sourceData.AddPropertyGroup("layer2.clearCoat.roughness");
+        sourceData.AddPropertyGroup("layer2.clearCoat.normal");
         
         addSrgProperty(MaterialPropertyDataType::Image, MaterialPropertyOutputType::ShaderInput,  "layer1.baseColor.texture", "m_layer1_baseColor_texture", AZStd::string{TestImageFilename});
         addSrgProperty(MaterialPropertyDataType::Image, MaterialPropertyOutputType::ShaderInput,  "layer1.roughness.texture", "m_layer1_roughness_texture", AZStd::string{TestImageFilename});
@@ -1487,7 +1487,7 @@ namespace UnitTest
                     }
                 ],
                 "propertyLayout": {
-                    "propertySets": [
+                    "propertyGroups": [
                         {
                             "name": "groupA",
                             "displayName": "Property Group A",
@@ -1545,8 +1545,8 @@ namespace UnitTest
                         {
                             "name": "groupC",
                             "displayName": "Property Group C",
-                            "description": "Property group C has a nested property set",
-                            "propertySets": [
+                            "description": "Property group C has a nested property group",
+                            "propertyGroups": [
                                 {
                                     "name": "groupD",
                                     "displayName": "Property Group D",
@@ -1616,27 +1616,27 @@ namespace UnitTest
         EXPECT_EQ(material.m_versionUpdates[0].m_actions[0].m_renameTo, "groupA.foo");
 
 
-        EXPECT_EQ(material.GetPropertyLayout().m_propertySets.size(), 3);
-        EXPECT_TRUE(material.FindPropertySet("groupA") != nullptr);
-        EXPECT_TRUE(material.FindPropertySet("groupB") != nullptr);
-        EXPECT_TRUE(material.FindPropertySet("groupC") != nullptr);
-        EXPECT_TRUE(material.FindPropertySet("groupC.groupD") != nullptr);
-        EXPECT_TRUE(material.FindPropertySet("groupC.groupE") != nullptr);
-        EXPECT_EQ(material.FindPropertySet("groupA")->GetDisplayName(), "Property Group A");
-        EXPECT_EQ(material.FindPropertySet("groupB")->GetDisplayName(), "Property Group B");
-        EXPECT_EQ(material.FindPropertySet("groupC")->GetDisplayName(), "Property Group C");
-        EXPECT_EQ(material.FindPropertySet("groupC.groupD")->GetDisplayName(), "Property Group D");
-        EXPECT_EQ(material.FindPropertySet("groupC.groupE")->GetDisplayName(), "Property Group E");
-        EXPECT_EQ(material.FindPropertySet("groupA")->GetDescription(), "Description of property group A");
-        EXPECT_EQ(material.FindPropertySet("groupB")->GetDescription(), "Description of property group B");
-        EXPECT_EQ(material.FindPropertySet("groupC")->GetDescription(), "Property group C has a nested property set");
-        EXPECT_EQ(material.FindPropertySet("groupC.groupD")->GetDescription(), "Description of property group D");
-        EXPECT_EQ(material.FindPropertySet("groupC.groupE")->GetDescription(), "Description of property group E");
-        EXPECT_EQ(material.FindPropertySet("groupA")->GetProperties().size(), 2);
-        EXPECT_EQ(material.FindPropertySet("groupB")->GetProperties().size(), 2);
-        EXPECT_EQ(material.FindPropertySet("groupC")->GetProperties().size(), 0);
-        EXPECT_EQ(material.FindPropertySet("groupC.groupD")->GetProperties().size(), 1);
-        EXPECT_EQ(material.FindPropertySet("groupC.groupE")->GetProperties().size(), 1);
+        EXPECT_EQ(material.GetPropertyLayout().m_propertyGroups.size(), 3);
+        EXPECT_TRUE(material.FindPropertyGroup("groupA") != nullptr);
+        EXPECT_TRUE(material.FindPropertyGroup("groupB") != nullptr);
+        EXPECT_TRUE(material.FindPropertyGroup("groupC") != nullptr);
+        EXPECT_TRUE(material.FindPropertyGroup("groupC.groupD") != nullptr);
+        EXPECT_TRUE(material.FindPropertyGroup("groupC.groupE") != nullptr);
+        EXPECT_EQ(material.FindPropertyGroup("groupA")->GetDisplayName(), "Property Group A");
+        EXPECT_EQ(material.FindPropertyGroup("groupB")->GetDisplayName(), "Property Group B");
+        EXPECT_EQ(material.FindPropertyGroup("groupC")->GetDisplayName(), "Property Group C");
+        EXPECT_EQ(material.FindPropertyGroup("groupC.groupD")->GetDisplayName(), "Property Group D");
+        EXPECT_EQ(material.FindPropertyGroup("groupC.groupE")->GetDisplayName(), "Property Group E");
+        EXPECT_EQ(material.FindPropertyGroup("groupA")->GetDescription(), "Description of property group A");
+        EXPECT_EQ(material.FindPropertyGroup("groupB")->GetDescription(), "Description of property group B");
+        EXPECT_EQ(material.FindPropertyGroup("groupC")->GetDescription(), "Property group C has a nested property group");
+        EXPECT_EQ(material.FindPropertyGroup("groupC.groupD")->GetDescription(), "Description of property group D");
+        EXPECT_EQ(material.FindPropertyGroup("groupC.groupE")->GetDescription(), "Description of property group E");
+        EXPECT_EQ(material.FindPropertyGroup("groupA")->GetProperties().size(), 2);
+        EXPECT_EQ(material.FindPropertyGroup("groupB")->GetProperties().size(), 2);
+        EXPECT_EQ(material.FindPropertyGroup("groupC")->GetProperties().size(), 0);
+        EXPECT_EQ(material.FindPropertyGroup("groupC.groupD")->GetProperties().size(), 1);
+        EXPECT_EQ(material.FindPropertyGroup("groupC.groupE")->GetProperties().size(), 1);
         
         EXPECT_NE(material.FindProperty("groupA.foo"), nullptr);
         EXPECT_NE(material.FindProperty("groupA.bar"), nullptr);
@@ -1670,10 +1670,10 @@ namespace UnitTest
         EXPECT_EQ(material.FindProperty("groupC.groupD.foo")->m_value, -1);
         EXPECT_EQ(material.FindProperty("groupC.groupE.bar")->m_value, 0u);
         
-        EXPECT_EQ(material.FindPropertySet("groupA")->GetFunctors().size(), 1);
-        EXPECT_EQ(material.FindPropertySet("groupB")->GetFunctors().size(), 1);
-        Ptr<MaterialFunctorSourceData> functorA = material.FindPropertySet("groupA")->GetFunctors()[0]->GetActualSourceData();
-        Ptr<MaterialFunctorSourceData> functorB = material.FindPropertySet("groupB")->GetFunctors()[0]->GetActualSourceData();
+        EXPECT_EQ(material.FindPropertyGroup("groupA")->GetFunctors().size(), 1);
+        EXPECT_EQ(material.FindPropertyGroup("groupB")->GetFunctors().size(), 1);
+        Ptr<MaterialFunctorSourceData> functorA = material.FindPropertyGroup("groupA")->GetFunctors()[0]->GetActualSourceData();
+        Ptr<MaterialFunctorSourceData> functorB = material.FindPropertyGroup("groupB")->GetFunctors()[0]->GetActualSourceData();
         EXPECT_TRUE(azrtti_cast<const EnableShaderFunctorSourceData*>(functorA.get()));
         EXPECT_EQ(azrtti_cast<const EnableShaderFunctorSourceData*>(functorA.get())->m_enablePassPropertyId, "foo");
         EXPECT_EQ(azrtti_cast<const EnableShaderFunctorSourceData*>(functorA.get())->m_shaderIndex, 1);
@@ -1708,7 +1708,7 @@ namespace UnitTest
         // (The "store" part of the test was not included because the saved data will be the new format).
         // Notable differences include:
         // 1) the key "id" is used instead of "name"
-        // 2) the group metadata, property definitions, and functors are all defined in different sections rather than in a property set
+        // 2) the group metadata, property definitions, and functors are all defined in different sections rather than in a unified property group definition
 
         const AZStd::string inputJson = R"(
             {
@@ -1798,25 +1798,25 @@ namespace UnitTest
         // Before conversion to the new format, the data is in the old place
         EXPECT_EQ(material.GetPropertyLayout().m_groupsOld.size(), 2);
         EXPECT_EQ(material.GetPropertyLayout().m_propertiesOld.size(), 2);
-        EXPECT_EQ(material.GetPropertyLayout().m_propertySets.size(), 0);
+        EXPECT_EQ(material.GetPropertyLayout().m_propertyGroups.size(), 0);
 
         material.ConvertToNewDataFormat();
         
         // After conversion to the new format, the data is in the new place
         EXPECT_EQ(material.GetPropertyLayout().m_groupsOld.size(), 0);
         EXPECT_EQ(material.GetPropertyLayout().m_propertiesOld.size(), 0);
-        EXPECT_EQ(material.GetPropertyLayout().m_propertySets.size(), 2);
+        EXPECT_EQ(material.GetPropertyLayout().m_propertyGroups.size(), 2);
 
         EXPECT_EQ(material.m_description, "This is a general description about the material");
 
-        EXPECT_TRUE(material.FindPropertySet("groupA") != nullptr);
-        EXPECT_TRUE(material.FindPropertySet("groupB") != nullptr);
-        EXPECT_EQ(material.FindPropertySet("groupA")->GetDisplayName(), "Property Group A");
-        EXPECT_EQ(material.FindPropertySet("groupB")->GetDisplayName(), "Property Group B");
-        EXPECT_EQ(material.FindPropertySet("groupA")->GetDescription(), "Description of property group A");
-        EXPECT_EQ(material.FindPropertySet("groupB")->GetDescription(), "Description of property group B");
-        EXPECT_EQ(material.FindPropertySet("groupA")->GetProperties().size(), 2);
-        EXPECT_EQ(material.FindPropertySet("groupB")->GetProperties().size(), 2);
+        EXPECT_TRUE(material.FindPropertyGroup("groupA") != nullptr);
+        EXPECT_TRUE(material.FindPropertyGroup("groupB") != nullptr);
+        EXPECT_EQ(material.FindPropertyGroup("groupA")->GetDisplayName(), "Property Group A");
+        EXPECT_EQ(material.FindPropertyGroup("groupB")->GetDisplayName(), "Property Group B");
+        EXPECT_EQ(material.FindPropertyGroup("groupA")->GetDescription(), "Description of property group A");
+        EXPECT_EQ(material.FindPropertyGroup("groupB")->GetDescription(), "Description of property group B");
+        EXPECT_EQ(material.FindPropertyGroup("groupA")->GetProperties().size(), 2);
+        EXPECT_EQ(material.FindPropertyGroup("groupB")->GetProperties().size(), 2);
         
         EXPECT_TRUE(material.FindProperty("groupA.foo") != nullptr);
         EXPECT_TRUE(material.FindProperty("groupA.bar") != nullptr);
@@ -1840,10 +1840,10 @@ namespace UnitTest
         EXPECT_EQ(material.FindProperty("groupB.foo")->m_value, 0.5f);
         EXPECT_EQ(material.FindProperty("groupB.bar")->m_value, AZ::Color(0.5f, 0.5f, 0.5f, 1.0f));
 
-        // The functors can appear either at the top level or within each property set. The format conversion
+        // The functors can appear either at the top level or within each property group. The format conversion
         // function doesn't know how to move the functors, and they will be left at the top level.
-        EXPECT_EQ(material.FindPropertySet("groupA")->GetFunctors().size(), 0);
-        EXPECT_EQ(material.FindPropertySet("groupB")->GetFunctors().size(), 0);
+        EXPECT_EQ(material.FindPropertyGroup("groupA")->GetFunctors().size(), 0);
+        EXPECT_EQ(material.FindPropertyGroup("groupB")->GetFunctors().size(), 0);
 
         EXPECT_EQ(material.m_shaderCollection.size(), 2);
         EXPECT_EQ(material.m_shaderCollection[0].m_shaderFilePath, "ForwardPass.shader");
@@ -1873,7 +1873,7 @@ namespace UnitTest
                 {
                     "description": "",
                     "propertyLayout": {
-                        "propertySets": [
+                        "propertyGroups": [
                             {
                                 "name": "general",
                                 "displayName": "General",
@@ -1915,7 +1915,7 @@ namespace UnitTest
     {
         MaterialTypeSourceData sourceData;
 
-        MaterialTypeSourceData::PropertyDefinition* propertySource = sourceData.AddPropertySet("general")->AddProperty("a");
+        MaterialTypeSourceData::PropertyDefinition* propertySource = sourceData.AddPropertyGroup("general")->AddProperty("a");
         propertySource->m_dataType = MaterialPropertyDataType::Int;
         propertySource->m_value = 0;
 

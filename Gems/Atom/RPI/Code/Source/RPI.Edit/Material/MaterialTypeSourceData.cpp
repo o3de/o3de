@@ -58,9 +58,9 @@ namespace AZ
                 serializeContext->Class<GroupDefinition>()->Version(4);
                 serializeContext->Class<PropertyDefinition>()->Version(1);
                 
-                serializeContext->RegisterGenericType<AZStd::unique_ptr<PropertySet>>();
+                serializeContext->RegisterGenericType<AZStd::unique_ptr<PropertyGroup>>();
                 serializeContext->RegisterGenericType<AZStd::unique_ptr<PropertyDefinition>>();
-                serializeContext->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<PropertySet>>>();
+                serializeContext->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<PropertyGroup>>>();
                 serializeContext->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<PropertyDefinition>>>();
                 serializeContext->RegisterGenericType<PropertyConnectionList>();
 
@@ -88,22 +88,22 @@ namespace AZ
                     ->Field("options", &ShaderVariantReferenceData::m_shaderOptionValues)
                     ;
 
-                serializeContext->Class<PropertySet>()
+                serializeContext->Class<PropertyGroup>()
                     ->Version(1)
-                    ->Field("name", &PropertySet::m_name)
-                    ->Field("displayName", &PropertySet::m_displayName)
-                    ->Field("description", &PropertySet::m_description)
-                    ->Field("properties", &PropertySet::m_properties)
-                    ->Field("propertySets", &PropertySet::m_propertySets)
-                    ->Field("functors", &PropertySet::m_materialFunctorSourceData)
+                    ->Field("name", &PropertyGroup::m_name)
+                    ->Field("displayName", &PropertyGroup::m_displayName)
+                    ->Field("description", &PropertyGroup::m_description)
+                    ->Field("properties", &PropertyGroup::m_properties)
+                    ->Field("propertyGroups", &PropertyGroup::m_propertyGroups)
+                    ->Field("functors", &PropertyGroup::m_materialFunctorSourceData)
                     ;
 
                 serializeContext->Class<PropertyLayout>()
-                    ->Version(3) // Added propertySets
+                    ->Version(3) // Added propertyGroups
                     ->Field("version", &PropertyLayout::m_versionOld)       //< Deprecated, preserved for backward compatibility, replaced by MaterialTypeSourceData::version
-                    ->Field("groups", &PropertyLayout::m_groupsOld)         //< Deprecated, preserved for backward compatibility, replaced by propertySets
-                    ->Field("properties", &PropertyLayout::m_propertiesOld) //< Deprecated, preserved for backward compatibility, replaced by propertySets
-                    ->Field("propertySets", &PropertyLayout::m_propertySets)
+                    ->Field("groups", &PropertyLayout::m_groupsOld)         //< Deprecated, preserved for backward compatibility, replaced by propertyGroups
+                    ->Field("properties", &PropertyLayout::m_propertiesOld) //< Deprecated, preserved for backward compatibility, replaced by propertyGroups
+                    ->Field("propertyGroups", &PropertyLayout::m_propertyGroups)
                     ;
 
                 serializeContext->RegisterGenericType<UvNameMap>();
@@ -132,16 +132,16 @@ namespace AZ
         const float MaterialTypeSourceData::PropertyDefinition::DefaultMax = std::numeric_limits<float>::max();
         const float MaterialTypeSourceData::PropertyDefinition::DefaultStep = 0.1f;
         
-        /*static*/ MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::PropertySet::AddPropertySet(AZStd::string_view name, AZStd::vector<AZStd::unique_ptr<PropertySet>>& toPropertySetList)
+        /*static*/ MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::PropertyGroup::AddPropertyGroup(AZStd::string_view name, AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& toPropertyGroupList)
         {
-            auto iter = AZStd::find_if(toPropertySetList.begin(), toPropertySetList.end(), [name](const AZStd::unique_ptr<PropertySet>& existingPropertySet)
+            auto iter = AZStd::find_if(toPropertyGroupList.begin(), toPropertyGroupList.end(), [name](const AZStd::unique_ptr<PropertyGroup>& existingPropertyGroup)
                 {
-                    return existingPropertySet->m_name == name;
+                    return existingPropertyGroup->m_name == name;
                 });
 
-            if (iter != toPropertySetList.end())
+            if (iter != toPropertyGroupList.end())
             {
-                AZ_Error("Material source data", false, "PropertySet named '%.*s' already exists", AZ_STRING_ARG(name));
+                AZ_Error("Material source data", false, "PropertyGroup named '%.*s' already exists", AZ_STRING_ARG(name));
                 return nullptr;
             }
             
@@ -151,12 +151,12 @@ namespace AZ
                 return nullptr;
             }
 
-            toPropertySetList.push_back(AZStd::make_unique<PropertySet>());
-            toPropertySetList.back()->m_name = name;
-            return toPropertySetList.back().get();
+            toPropertyGroupList.push_back(AZStd::make_unique<PropertyGroup>());
+            toPropertyGroupList.back()->m_name = name;
+            return toPropertyGroupList.back().get();
         }
 
-        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::PropertySet::AddProperty(AZStd::string_view name)
+        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::PropertyGroup::AddProperty(AZStd::string_view name)
         {
             auto propertyIter = AZStd::find_if(m_properties.begin(), m_properties.end(), [name](const AZStd::unique_ptr<PropertyDefinition>& existingProperty)
                 {
@@ -165,18 +165,18 @@ namespace AZ
 
             if (propertyIter != m_properties.end())
             {
-                AZ_Error("Material source data", false, "PropertySet '%s' already contains a property named '%.*s'", m_name.c_str(), AZ_STRING_ARG(name));
+                AZ_Error("Material source data", false, "PropertyGroup '%s' already contains a property named '%.*s'", m_name.c_str(), AZ_STRING_ARG(name));
                 return nullptr;
             }
             
-            auto propertySetIter = AZStd::find_if(m_propertySets.begin(), m_propertySets.end(), [name](const AZStd::unique_ptr<PropertySet>& existingPropertySet)
+            auto propertyGroupIter = AZStd::find_if(m_propertyGroups.begin(), m_propertyGroups.end(), [name](const AZStd::unique_ptr<PropertyGroup>& existingPropertyGroup)
                 {
-                    return existingPropertySet->m_name == name;
+                    return existingPropertyGroup->m_name == name;
                 });
 
-            if (propertySetIter != m_propertySets.end())
+            if (propertyGroupIter != m_propertyGroups.end())
             {
-                AZ_Error("Material source data", false, "Property name '%.*s' collides with a PropertySet of the same name", AZ_STRING_ARG(name));
+                AZ_Error("Material source data", false, "Property name '%.*s' collides with a PropertyGroup of the same name", AZ_STRING_ARG(name));
                 return nullptr;
             }
 
@@ -190,7 +190,7 @@ namespace AZ
             return m_properties.back().get();
         }
 
-        MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::PropertySet::AddPropertySet(AZStd::string_view name)
+        MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::PropertyGroup::AddPropertyGroup(AZStd::string_view name)
         {
             auto iter = AZStd::find_if(m_properties.begin(), m_properties.end(), [name](const AZStd::unique_ptr<PropertyDefinition>& existingProperty)
                 {
@@ -199,31 +199,31 @@ namespace AZ
 
             if (iter != m_properties.end())
             {
-                AZ_Error("Material source data", false, "PropertySet name '%.*s' collides with a Property of the same name", AZ_STRING_ARG(name));
+                AZ_Error("Material source data", false, "PropertyGroup name '%.*s' collides with a Property of the same name", AZ_STRING_ARG(name));
                 return nullptr;
             }
 
-            return AddPropertySet(name, m_propertySets);
+            return AddPropertyGroup(name, m_propertyGroups);
         }
         
-        MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::AddPropertySet(AZStd::string_view propertySetId)
+        MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::AddPropertyGroup(AZStd::string_view propertyGroupId)
         {
-            AZStd::vector<AZStd::string_view> splitPropertySetId = SplitId(propertySetId);
+            AZStd::vector<AZStd::string_view> splitPropertyGroupId = SplitId(propertyGroupId);
 
-            if (splitPropertySetId.size() == 1)
+            if (splitPropertyGroupId.size() == 1)
             {
-                return PropertySet::AddPropertySet(propertySetId, m_propertyLayout.m_propertySets);
+                return PropertyGroup::AddPropertyGroup(propertyGroupId, m_propertyLayout.m_propertyGroups);
             }
 
-            PropertySet* parentPropertySet = FindPropertySet(splitPropertySetId[0]);
+            PropertyGroup* parentPropertyGroup = FindPropertyGroup(splitPropertyGroupId[0]);
             
-            if (!parentPropertySet)
+            if (!parentPropertyGroup)
             {
-                AZ_Error("Material source data", false, "PropertySet '%.*s' does not exists", AZ_STRING_ARG(splitPropertySetId[0]));
+                AZ_Error("Material source data", false, "PropertyGroup '%.*s' does not exists", AZ_STRING_ARG(splitPropertyGroupId[0]));
                 return nullptr;
             }
 
-            return parentPropertySet->AddPropertySet(splitPropertySetId[1]);
+            return parentPropertyGroup->AddPropertyGroup(splitPropertyGroupId[1]);
         }
         
         MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::AddProperty(AZStd::string_view propertyId)
@@ -232,40 +232,40 @@ namespace AZ
 
             if (splitPropertyId.size() == 1)
             {
-                AZ_Error("Material source data", false, "Property id '%.*s' is invalid. Properties must be added to a PropertySet (i.e. \"general.%.*s\").", AZ_STRING_ARG(propertyId), AZ_STRING_ARG(propertyId));
+                AZ_Error("Material source data", false, "Property id '%.*s' is invalid. Properties must be added to a PropertyGroup (i.e. \"general.%.*s\").", AZ_STRING_ARG(propertyId), AZ_STRING_ARG(propertyId));
                 return nullptr;
             }
 
-            PropertySet* parentPropertySet = FindPropertySet(splitPropertyId[0]);
+            PropertyGroup* parentPropertyGroup = FindPropertyGroup(splitPropertyId[0]);
             
-            if (!parentPropertySet)
+            if (!parentPropertyGroup)
             {
-                AZ_Error("Material source data", false, "PropertySet '%.*s' does not exists", AZ_STRING_ARG(splitPropertyId[0]));
+                AZ_Error("Material source data", false, "PropertyGroup '%.*s' does not exists", AZ_STRING_ARG(splitPropertyId[0]));
                 return nullptr;
             }
 
-            return parentPropertySet->AddProperty(splitPropertyId[1]);
+            return parentPropertyGroup->AddProperty(splitPropertyId[1]);
         }
         
-        const MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::span<const AZStd::string_view> parsedPropertySetId, AZStd::span<const AZStd::unique_ptr<PropertySet>> inPropertySetList) const
+        const MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::FindPropertyGroup(AZStd::span<const AZStd::string_view> parsedPropertyGroupId, AZStd::span<const AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList) const
         {
-            for (const auto& propertySet : inPropertySetList)
+            for (const auto& propertyGroup : inPropertyGroupList)
             {
-                if (propertySet->m_name != parsedPropertySetId[0])
+                if (propertyGroup->m_name != parsedPropertyGroupId[0])
                 {
                     continue;
                 }
-                else if (parsedPropertySetId.size() == 1)
+                else if (parsedPropertyGroupId.size() == 1)
                 {
-                    return propertySet.get();
+                    return propertyGroup.get();
                 }
                 else
                 {
-                    AZStd::span<const AZStd::string_view> subPath{parsedPropertySetId.begin() + 1, parsedPropertySetId.end()};
+                    AZStd::span<const AZStd::string_view> subPath{parsedPropertyGroupId.begin() + 1, parsedPropertyGroupId.end()};
 
                     if (!subPath.empty())
                     {
-                        const MaterialTypeSourceData::PropertySet* propertySubset = FindPropertySet(subPath, propertySet->m_propertySets);
+                        const MaterialTypeSourceData::PropertyGroup* propertySubset = FindPropertyGroup(subPath, propertyGroup->m_propertyGroups);
                         if (propertySubset)
                         {
                             return propertySubset;
@@ -277,36 +277,36 @@ namespace AZ
             return nullptr;
         }
         
-        MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::span<AZStd::string_view> parsedPropertySetId, AZStd::span<AZStd::unique_ptr<PropertySet>> inPropertySetList)
+        MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::FindPropertyGroup(AZStd::span<AZStd::string_view> parsedPropertyGroupId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList)
         {
-            return const_cast<PropertySet*>(const_cast<const MaterialTypeSourceData*>(this)->FindPropertySet(parsedPropertySetId, inPropertySetList));
+            return const_cast<PropertyGroup*>(const_cast<const MaterialTypeSourceData*>(this)->FindPropertyGroup(parsedPropertyGroupId, inPropertyGroupList));
         }
 
-        const MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::string_view propertySetId) const
+        const MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::FindPropertyGroup(AZStd::string_view propertyGroupId) const
         {
-            AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertySetId);
-            return FindPropertySet(tokens, m_propertyLayout.m_propertySets);
+            AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertyGroupId);
+            return FindPropertyGroup(tokens, m_propertyLayout.m_propertyGroups);
         }
 
-        MaterialTypeSourceData::PropertySet* MaterialTypeSourceData::FindPropertySet(AZStd::string_view propertySetId)
+        MaterialTypeSourceData::PropertyGroup* MaterialTypeSourceData::FindPropertyGroup(AZStd::string_view propertyGroupId)
         {
-            AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertySetId);
-            return FindPropertySet(tokens, m_propertyLayout.m_propertySets);
+            AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertyGroupId);
+            return FindPropertyGroup(tokens, m_propertyLayout.m_propertyGroups);
         }
         
         const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(
             AZStd::span<const AZStd::string_view> parsedPropertyId,
-            AZStd::span<const AZStd::unique_ptr<PropertySet>> inPropertySetList) const
+            AZStd::span<const AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList) const
         {
-            for (const auto& propertySet : inPropertySetList)
+            for (const auto& propertyGroup : inPropertyGroupList)
             {
-                if (propertySet->m_name == parsedPropertyId[0])
+                if (propertyGroup->m_name == parsedPropertyId[0])
                 {
                     AZStd::span<const AZStd::string_view> subPath {parsedPropertyId.begin() + 1, parsedPropertyId.end()};
 
                     if (subPath.size() == 1)
                     {
-                        for (AZStd::unique_ptr<PropertyDefinition>& property : propertySet->m_properties)
+                        for (AZStd::unique_ptr<PropertyDefinition>& property : propertyGroup->m_properties)
                         {
                             if (property->GetName() == subPath[0])
                             {
@@ -316,7 +316,7 @@ namespace AZ
                     }
                     else if(subPath.size() > 1)
                     {
-                        const MaterialTypeSourceData::PropertyDefinition* property = FindProperty(subPath, propertySet->m_propertySets);
+                        const MaterialTypeSourceData::PropertyDefinition* property = FindProperty(subPath, propertyGroup->m_propertyGroups);
                         if (property)
                         {
                             return property;
@@ -328,21 +328,21 @@ namespace AZ
             return nullptr;
         }
         
-        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertySet>> inPropertySetList)
+        MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList)
         {
-            return const_cast<MaterialTypeSourceData::PropertyDefinition*>(const_cast<const MaterialTypeSourceData*>(this)->FindProperty(parsedPropertyId, inPropertySetList));
+            return const_cast<MaterialTypeSourceData::PropertyDefinition*>(const_cast<const MaterialTypeSourceData*>(this)->FindProperty(parsedPropertyId, inPropertyGroupList));
         }
 
         const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view propertyId) const
         {
             AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertyId);
-            return FindProperty(tokens, m_propertyLayout.m_propertySets);
+            return FindProperty(tokens, m_propertyLayout.m_propertyGroups);
         }
         
         MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view propertyId)
         {
             AZStd::vector<AZStd::string_view> tokens = TokenizeId(propertyId);
-            return FindProperty(tokens, m_propertyLayout.m_propertySets);
+            return FindProperty(tokens, m_propertyLayout.m_propertyGroups);
         }
 
         AZStd::vector<AZStd::string_view> MaterialTypeSourceData::TokenizeId(AZStd::string_view id)
@@ -376,18 +376,18 @@ namespace AZ
             return parts;
         }
 
-        bool MaterialTypeSourceData::EnumeratePropertySets(const EnumeratePropertySetsCallback& callback, AZStd::string propertyNameContext, const AZStd::vector<AZStd::unique_ptr<PropertySet>>& inPropertySetList) const
+        bool MaterialTypeSourceData::EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, AZStd::string propertyNameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
         {
-            for (auto& propertySet : inPropertySetList)
+            for (auto& propertyGroup : inPropertyGroupList)
             {
-                if (!callback(propertyNameContext, propertySet.get()))
+                if (!callback(propertyNameContext, propertyGroup.get()))
                 {
                     return false; // Stop processing
                 }
 
-                const AZStd::string propertyNameContext2 = propertyNameContext + propertySet->m_name + ".";
+                const AZStd::string propertyNameContext2 = propertyNameContext + propertyGroup->m_name + ".";
 
-                if (!EnumeratePropertySets(callback, propertyNameContext2, propertySet->m_propertySets))
+                if (!EnumeratePropertyGroups(callback, propertyNameContext2, propertyGroup->m_propertyGroups))
                 {
                     return false; // Stop processing
                 }
@@ -396,24 +396,24 @@ namespace AZ
             return true;
         }
 
-        bool MaterialTypeSourceData::EnumeratePropertySets(const EnumeratePropertySetsCallback& callback) const
+        bool MaterialTypeSourceData::EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback) const
         {
             if (!callback)
             {
                 return false;
             }
 
-            return EnumeratePropertySets(callback, {}, m_propertyLayout.m_propertySets);
+            return EnumeratePropertyGroups(callback, {}, m_propertyLayout.m_propertyGroups);
         }
 
-        bool MaterialTypeSourceData::EnumerateProperties(const EnumeratePropertiesCallback& callback, AZStd::string propertyNameContext, const AZStd::vector<AZStd::unique_ptr<PropertySet>>& inPropertySetList) const
+        bool MaterialTypeSourceData::EnumerateProperties(const EnumeratePropertiesCallback& callback, AZStd::string propertyNameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
         {
 
-            for (auto& propertySet : inPropertySetList)
+            for (auto& propertyGroup : inPropertyGroupList)
             {
-                const AZStd::string propertyNameContext2 = propertyNameContext + propertySet->m_name + ".";
+                const AZStd::string propertyNameContext2 = propertyNameContext + propertyGroup->m_name + ".";
 
-                for (auto& property : propertySet->m_properties)
+                for (auto& property : propertyGroup->m_properties)
                 {
                     if (!callback(propertyNameContext2, property.get()))
                     {
@@ -421,7 +421,7 @@ namespace AZ
                     }
                 }
 
-                if (!EnumerateProperties(callback, propertyNameContext2, propertySet->m_propertySets))
+                if (!EnumerateProperties(callback, propertyNameContext2, propertyGroup->m_propertyGroups))
                 {
                     return false; // Stop processing
                 }
@@ -437,7 +437,7 @@ namespace AZ
                 return false;
             }
 
-            return EnumerateProperties(callback, {}, m_propertyLayout.m_propertySets);
+            return EnumerateProperties(callback, {}, m_propertyLayout.m_propertyGroups);
         }
 
         bool MaterialTypeSourceData::ConvertToNewDataFormat()
@@ -450,18 +450,18 @@ namespace AZ
                     const auto& propertyList = propertyListItr->second;
                     for (auto& propertyDefinition : propertyList)
                     {
-                        PropertySet* propertySet = FindPropertySet(group.m_name);
+                        PropertyGroup* propertyGroup = FindPropertyGroup(group.m_name);
 
-                        if (!propertySet)
+                        if (!propertyGroup)
                         {
-                            m_propertyLayout.m_propertySets.emplace_back(AZStd::make_unique<PropertySet>());
-                            m_propertyLayout.m_propertySets.back()->m_name = group.m_name;
-                            m_propertyLayout.m_propertySets.back()->m_displayName = group.m_displayName;
-                            m_propertyLayout.m_propertySets.back()->m_description = group.m_description;
-                            propertySet = m_propertyLayout.m_propertySets.back().get();
+                            m_propertyLayout.m_propertyGroups.emplace_back(AZStd::make_unique<PropertyGroup>());
+                            m_propertyLayout.m_propertyGroups.back()->m_name = group.m_name;
+                            m_propertyLayout.m_propertyGroups.back()->m_displayName = group.m_displayName;
+                            m_propertyLayout.m_propertyGroups.back()->m_description = group.m_description;
+                            propertyGroup = m_propertyLayout.m_propertyGroups.back().get();
                         }
 
-                        PropertyDefinition* newProperty = propertySet->AddProperty(propertyDefinition.GetName());
+                        PropertyDefinition* newProperty = propertyGroup->AddProperty(propertyDefinition.GetName());
                         
                         *newProperty = propertyDefinition; 
                     }
@@ -533,9 +533,9 @@ namespace AZ
             const AZStd::string& materialTypeSourceFilePath,
             MaterialTypeAssetCreator& materialTypeAssetCreator,
             AZStd::vector<AZStd::string>& propertyNameContext,
-            const MaterialTypeSourceData::PropertySet* propertySet) const
+            const MaterialTypeSourceData::PropertyGroup* propertyGroup) const
         {            
-            for (const AZStd::unique_ptr<PropertyDefinition>& property : propertySet->m_properties)
+            for (const AZStd::unique_ptr<PropertyDefinition>& property : propertyGroup->m_properties)
             {
                 // Register the property...
 
@@ -547,15 +547,15 @@ namespace AZ
                     return false;
                 }
 
-                auto propertySetIter = AZStd::find_if(propertySet->GetPropertySets().begin(), propertySet->GetPropertySets().end(),
-                    [&property](const AZStd::unique_ptr<PropertySet>& existingPropertySet)
+                auto propertyGroupIter = AZStd::find_if(propertyGroup->GetPropertyGroups().begin(), propertyGroup->GetPropertyGroups().end(),
+                    [&property](const AZStd::unique_ptr<PropertyGroup>& existingPropertyGroup)
                     {
-                        return existingPropertySet->GetName() == property->GetName();
+                        return existingPropertyGroup->GetName() == property->GetName();
                     });
 
-                if (propertySetIter != propertySet->GetPropertySets().end())
+                if (propertyGroupIter != propertyGroup->GetPropertyGroups().end())
                 {
-                    AZ_Error("Material source data", false, "Material property '%s' collides with a PropertySet with the same ID.", propertyId.GetCStr());
+                    AZ_Error("Material source data", false, "Material property '%s' collides with a PropertyGroup with the same ID.", propertyId.GetCStr());
                     return false;
                 }
 
@@ -650,7 +650,7 @@ namespace AZ
                 }
             }
             
-            for (const AZStd::unique_ptr<PropertySet>& propertySubset : propertySet->m_propertySets)
+            for (const AZStd::unique_ptr<PropertyGroup>& propertySubset : propertyGroup->m_propertyGroups)
             {
                 propertyNameContext.push_back(propertySubset->m_name);
 
@@ -670,7 +670,7 @@ namespace AZ
 
             // We cannot create the MaterialFunctor until after all the properties are added because 
             // CreateFunctor() may need to look up properties in the MaterialPropertiesLayout
-            for (auto& functorData : propertySet->m_materialFunctorSourceData)
+            for (auto& functorData : propertyGroup->m_materialFunctorSourceData)
             {
                 MaterialFunctorSourceData::FunctorResult result = functorData->CreateFunctor(
                     MaterialFunctorSourceData::RuntimeContext(
@@ -795,11 +795,11 @@ namespace AZ
                 }
             }
             
-            for (const AZStd::unique_ptr<PropertySet>& propertySet : m_propertyLayout.m_propertySets)
+            for (const AZStd::unique_ptr<PropertyGroup>& propertyGroup : m_propertyLayout.m_propertyGroups)
             {
                 AZStd::vector<AZStd::string> propertyNameContext;
-                propertyNameContext.push_back(propertySet->m_name);
-                bool success = BuildPropertyList(materialTypeSourceFilePath, materialTypeAssetCreator, propertyNameContext, propertySet.get());
+                propertyNameContext.push_back(propertyGroup->m_name);
+                bool success = BuildPropertyList(materialTypeSourceFilePath, materialTypeAssetCreator, propertyNameContext, propertyGroup.get());
 
                 if (!success)
                 {

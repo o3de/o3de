@@ -171,16 +171,16 @@ namespace MaterialEditor
         MaterialDocumentRequestBus::EventResult(
             materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
         
-        // TODO: Support populating the Material Editor with nested property sets, not just the top level.
-        for (const AZStd::unique_ptr<AZ::RPI::MaterialTypeSourceData::PropertySet>& propertySet : materialTypeSourceData->GetPropertyLayout().m_propertySets)
+        // TODO: Support populating the Material Editor with nested property groups, not just the top level.
+        for (const AZStd::unique_ptr<AZ::RPI::MaterialTypeSourceData::PropertyGroup>& propertyGroup : materialTypeSourceData->GetPropertyLayout().m_propertyGroups)
         {
-            const AZStd::string& groupName = propertySet->GetName();
-            const AZStd::string& groupDisplayName = !propertySet->GetDisplayName().empty() ? propertySet->GetDisplayName() : groupName;
-            const AZStd::string& groupDescription = !propertySet->GetDescription().empty() ? propertySet->GetDescription() : groupDisplayName;
+            const AZStd::string& groupName = propertyGroup->GetName();
+            const AZStd::string& groupDisplayName = !propertyGroup->GetDisplayName().empty() ? propertyGroup->GetDisplayName() : groupName;
+            const AZStd::string& groupDescription = !propertyGroup->GetDescription().empty() ? propertyGroup->GetDescription() : groupDisplayName;
             auto& group = m_groups[groupName];
 
-            group.m_properties.reserve(propertySet->GetProperties().size());
-            for (const auto& propertyDefinition : propertySet->GetProperties())
+            group.m_properties.reserve(propertyGroup->GetProperties().size());
+            for (const auto& propertyDefinition : propertyGroup->GetProperties())
             {
                 AtomToolsFramework::DynamicProperty property;
                 AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(

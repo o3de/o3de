@@ -118,47 +118,47 @@ namespace AZ
             
             using PropertyList = AZStd::vector<AZStd::unique_ptr<PropertyDefinition>>;
 
-            struct PropertySet
+            struct PropertyGroup
             {
                 friend class MaterialTypeSourceData;
                 
-                AZ_CLASS_ALLOCATOR(PropertySet, SystemAllocator, 0);
-                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertySet, "{BA3AA0E4-C74D-4FD0-ADB2-00B060F06314}");
+                AZ_CLASS_ALLOCATOR(PropertyGroup, SystemAllocator, 0);
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyGroup, "{BA3AA0E4-C74D-4FD0-ADB2-00B060F06314}");
 
             public:
 
-                PropertySet() = default;
-                AZ_DISABLE_COPY(PropertySet)
+                PropertyGroup() = default;
+                AZ_DISABLE_COPY(PropertyGroup)
 
                 const AZStd::string& GetName() const { return m_name; }
                 const AZStd::string& GetDisplayName() const { return m_displayName; }
                 const AZStd::string& GetDescription() const { return m_description; }
                 const PropertyList& GetProperties() const { return m_properties; }
-                const AZStd::vector<AZStd::unique_ptr<PropertySet>>& GetPropertySets() const { return m_propertySets; }
+                const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& GetPropertyGroups() const { return m_propertyGroups; }
                 const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& GetFunctors() const { return m_materialFunctorSourceData; }
                 
                 void SetDisplayName(AZStd::string_view displayName) { m_displayName = displayName; }
                 void SetDescription(AZStd::string_view description) { m_description = description; }
 
-                //! Add a new property to this PropertySet.
+                //! Add a new property to this PropertyGroup.
                 //! @param name a unique for the property. Must be a C-style identifier.
                 //! @return the new PropertyDefinition, or null if the name was not valid.
                 PropertyDefinition* AddProperty(AZStd::string_view name);
                 
-                //! Add a new nested PropertySet to this PropertySet.
-                //! @param name a unique for the property set. Must be a C-style identifier.
-                //! @return the new PropertySet, or null if the name was not valid.
-                PropertySet* AddPropertySet(AZStd::string_view name);
+                //! Add a new nested PropertyGroup to this PropertyGroup.
+                //! @param name a unique for the property group. Must be a C-style identifier.
+                //! @return the new PropertyGroup, or null if the name was not valid.
+                PropertyGroup* AddPropertyGroup(AZStd::string_view name);
                 
             private:
 
-                static PropertySet* AddPropertySet(AZStd::string_view name, AZStd::vector<AZStd::unique_ptr<PropertySet>>& toPropertySetList);
+                static PropertyGroup* AddPropertyGroup(AZStd::string_view name, AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& toPropertyGroupList);
 
                 AZStd::string m_name;
                 AZStd::string m_displayName;
                 AZStd::string m_description;
                 PropertyList m_properties;
-                AZStd::vector<AZStd::unique_ptr<PropertySet>> m_propertySets;
+                AZStd::vector<AZStd::unique_ptr<PropertyGroup>> m_propertyGroups;
                 AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;
             };
 
@@ -215,15 +215,15 @@ namespace AZ
                 //! This field is unused, and has been replaced by MaterialTypeSourceData::m_version below. It is kept for legacy file compatibility to suppress warnings and errors.
                 uint32_t m_versionOld = 0;
 
-                //! [Deprecated] Use m_propertySets instead
+                //! [Deprecated] Use m_propertyGroups instead
                 //! List of groups that will contain the available properties
                 AZStd::vector<GroupDefinition> m_groupsOld;
 
-                //! [Deprecated] Use m_propertySets instead
+                //! [Deprecated] Use m_propertyGroups instead
                 AZStd::map<AZStd::string /*group name*/, AZStd::vector<PropertyDefinition>> m_propertiesOld;
                 
                 //! Collection of all available user-facing properties
-                AZStd::vector<AZStd::unique_ptr<PropertySet>> m_propertySets;
+                AZStd::vector<AZStd::unique_ptr<PropertyGroup>> m_propertyGroups;
             };
             
             AZStd::string m_description;
@@ -247,24 +247,24 @@ namespace AZ
             //! Copy over UV custom names to the properties enum values.
             void ResolveUvEnums();
 
-            //! Add a new PropertySet for containing properties or other PropertySets.
-            //! @param propertySetId The ID of the new property set. To add as a nested PropertySet, use a full path ID like "levelA.levelB.levelC"; in this case a property set "levelA.levelB" must already exist.
-            //! @return a pointer to the new PropertySet or null if there was a problem (an AZ_Error will be reported).
-            PropertySet* AddPropertySet(AZStd::string_view propertySetId);
+            //! Add a new PropertyGroup for containing properties or other PropertyGroups.
+            //! @param propertyGroupId The ID of the new property group. To add as a nested PropertyGroup, use a full path ID like "levelA.levelB.levelC"; in this case a property group "levelA.levelB" must already exist.
+            //! @return a pointer to the new PropertyGroup or null if there was a problem (an AZ_Error will be reported).
+            PropertyGroup* AddPropertyGroup(AZStd::string_view propertyGroupId);
 
-            //! Add a new property to a PropertySet.
-            //! @param propertyId The ID of the new property, like "layerBlend.factor" or "layer2.roughness.texture". The indicated property set must already exist.
+            //! Add a new property to a PropertyGroup.
+            //! @param propertyId The ID of the new property, like "layerBlend.factor" or "layer2.roughness.texture". The indicated property group must already exist.
             //! @return a pointer to the new PropertyDefinition or null if there was a problem (an AZ_Error will be reported).
             PropertyDefinition* AddProperty(AZStd::string_view propertyId);
 
-            //! Return the PropertyLayout containing the tree of property sets and property definitions.
+            //! Return the PropertyLayout containing the tree of property groups and property definitions.
             const PropertyLayout& GetPropertyLayout() const { return m_propertyLayout; }
 
-            //! Find the PropertySet with the given ID.
-            //! @param propertySetId The full ID of a property set to find, like "levelA.levelB.levelC".
-            //! @return the found PropertySet or null if it doesn't exist.
-            const PropertySet* FindPropertySet(AZStd::string_view propertySetId) const;
-            PropertySet* FindPropertySet(AZStd::string_view propertySetId);
+            //! Find the PropertyGroup with the given ID.
+            //! @param propertyGroupId The full ID of a property group to find, like "levelA.levelB.levelC".
+            //! @return the found PropertyGroup or null if it doesn't exist.
+            const PropertyGroup* FindPropertyGroup(AZStd::string_view propertyGroupId) const;
+            PropertyGroup* FindPropertyGroup(AZStd::string_view propertyGroupId);
             
             //! Find the definition for a property with the given ID.
             //! @param propertyId The full ID of a property to find, like "baseColor.texture".
@@ -280,14 +280,14 @@ namespace AZ
 
             //! Call back function type used with the enumeration functions.
             //! Return false to terminate the traversal.
-            using EnumeratePropertySetsCallback = AZStd::function<bool(
+            using EnumeratePropertyGroupsCallback = AZStd::function<bool(
                 const AZStd::string&, // The property ID context (i.e. "levelA.levelB.")
-                const PropertySet* // the next property set in the tree
+                const PropertyGroup* // the next property group in the tree
                 )>;
 
-            //! Recursively traverses all of the property sets contained in the material type, executing a callback function for each.
+            //! Recursively traverses all of the property groups contained in the material type, executing a callback function for each.
             //! @return false if the enumeration was terminated early by the callback returning false.
-            bool EnumeratePropertySets(const EnumeratePropertySetsCallback& callback) const;
+            bool EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback) const;
 
             //! Call back function type used with the numeration functions.
             //! Return false to terminate the traversal.
@@ -303,31 +303,31 @@ namespace AZ
             Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
 
             //! If the data was loaded from an old format file (i.e. where "groups" and "properties" were separate sections),
-            //! this converts to the new format where properties are listed inside property sets.
+            //! this converts to the new format where properties are listed inside property groups.
             bool ConvertToNewDataFormat();
 
         private:
                 
-            const PropertySet* FindPropertySet(AZStd::span<const AZStd::string_view> parsedPropertySetId, AZStd::span<const AZStd::unique_ptr<PropertySet>> inPropertySetList) const;
-            PropertySet* FindPropertySet(AZStd::span<AZStd::string_view> parsedPropertySetId, AZStd::span<AZStd::unique_ptr<PropertySet>> inPropertySetList);
+            const PropertyGroup* FindPropertyGroup(AZStd::span<const AZStd::string_view> parsedPropertyGroupId, AZStd::span<const AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList) const;
+            PropertyGroup* FindPropertyGroup(AZStd::span<AZStd::string_view> parsedPropertyGroupId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList);
             
-            const PropertyDefinition* FindProperty(AZStd::span<const AZStd::string_view> parsedPropertyId, AZStd::span<const AZStd::unique_ptr<PropertySet>> inPropertySetList) const;
-            PropertyDefinition* FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertySet>> inPropertySetList);
+            const PropertyDefinition* FindProperty(AZStd::span<const AZStd::string_view> parsedPropertyId, AZStd::span<const AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList) const;
+            PropertyDefinition* FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList);
             
             // Function overloads for recursion, returns false to indicate that recursion should end.
-            bool EnumeratePropertySets(const EnumeratePropertySetsCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertySet>>& inPropertySetList) const;
-            bool EnumerateProperties(const EnumeratePropertiesCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertySet>>& inPropertySetList) const;
+            bool EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
+            bool EnumerateProperties(const EnumeratePropertiesCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
 
-            //! Recursively populates a material asset with properties from the tree of material property sets.
+            //! Recursively populates a material asset with properties from the tree of material property groups.
             //! @param materialTypeSourceFilePath path to the material type file that is being processed, used to look up relative paths
-            //! @param propertyNameContext the accumulated prefix that should be applied to any property names encountered in the current @propertySet
-            //! @param propertySet the current PropertySet that is being processed
+            //! @param propertyNameContext the accumulated prefix that should be applied to any property names encountered in the current @propertyGroup
+            //! @param propertyGroup the current PropertyGroup that is being processed
             //! @return false if errors are detected and processing should abort
             bool BuildPropertyList(
                 const AZStd::string& materialTypeSourceFilePath,
                 MaterialTypeAssetCreator& materialTypeAssetCreator,
                 AZStd::vector<AZStd::string>& propertyNameContext,
-                const MaterialTypeSourceData::PropertySet* propertySet) const;
+                const MaterialTypeSourceData::PropertyGroup* propertyGroup) const;
                             
             //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data.
             //! Groups with the same name will be consolidated into a single entry.

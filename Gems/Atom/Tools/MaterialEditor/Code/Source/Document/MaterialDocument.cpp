@@ -602,7 +602,7 @@ namespace MaterialEditor
                         return false;
                     }
                     
-                    // TODO: Support populating the Material Editor with nested property sets, not just the top level.
+                    // TODO: Support populating the Material Editor with nested property groups, not just the top level.
                     const AZStd::string groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->GetName().size() - 1);
                     sourceData.m_properties[groupName][propertyDefinition->GetName()].m_value = propertyValue;
                 }
@@ -781,14 +781,14 @@ namespace MaterialEditor
         // Populate the property map from a combination of source data and assets
         // Assets must still be used for now because they contain the final accumulated value after all other materials
         // in the hierarchy are applied
-        m_materialTypeSourceData.EnumeratePropertySets([this, &parentPropertyValues](const AZStd::string& propertyIdContext, const MaterialTypeSourceData::PropertySet* propertySet)
+        m_materialTypeSourceData.EnumeratePropertyGroups([this, &parentPropertyValues](const AZStd::string& propertyIdContext, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
             {
                 AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
-                for (const auto& propertyDefinition : propertySet->GetProperties())
+                for (const auto& propertyDefinition : propertyGroup->GetProperties())
                 {
                     // Assign id before conversion so it can be used in dynamic description
-                    propertyConfig.m_id = propertyIdContext + propertySet->GetName() + "." + propertyDefinition->GetName();
+                    propertyConfig.m_id = propertyIdContext + propertyGroup->GetName() + "." + propertyDefinition->GetName();
 
                     const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                     const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
@@ -801,9 +801,9 @@ namespace MaterialEditor
                         propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                         propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
                         
-                        // TODO: Support populating the Material Editor with nested property sets, not just the top level.
+                        // TODO: Support populating the Material Editor with nested property groups, not just the top level.
                         // (Does DynamicPropertyConfig really even need  m_groupName?)
-                        propertyConfig.m_groupName = propertySet->GetDisplayName();
+                        propertyConfig.m_groupName = propertyGroup->GetDisplayName();
                         m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
                     }
                 }
@@ -812,10 +812,10 @@ namespace MaterialEditor
             });
 
         // Populate the property group visibility map
-        // TODO: Support populating the Material Editor with nested property sets, not just the top level.
-        for (const AZStd::unique_ptr<MaterialTypeSourceData::PropertySet>& propertySet : m_materialTypeSourceData.GetPropertyLayout().m_propertySets)
+        // TODO: Support populating the Material Editor with nested property groups, not just the top level.
+        for (const AZStd::unique_ptr<MaterialTypeSourceData::PropertyGroup>& propertyGroup : m_materialTypeSourceData.GetPropertyLayout().m_propertyGroups)
         {
-            m_propertyGroupVisibility[AZ::Name{propertySet->GetName()}] = true;
+            m_propertyGroupVisibility[AZ::Name{propertyGroup->GetName()}] = true;
         }
 
         // Adding properties for material type and parent as part of making dynamic
@@ -899,14 +899,14 @@ namespace MaterialEditor
             }
         }
         
-        // Add any material functors that are located inside each property set.
-        bool enumerateResult = m_materialTypeSourceData.EnumeratePropertySets(
-            [this](const AZStd::string&, const MaterialTypeSourceData::PropertySet* propertySet)
+        // Add any material functors that are located inside each property group.
+        bool enumerateResult = m_materialTypeSourceData.EnumeratePropertyGroups(
+            [this](const AZStd::string&, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
             {
                 const MaterialFunctorSourceData::EditorContext editorContext = MaterialFunctorSourceData::EditorContext(
                     m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout());
 
-                for (Ptr<MaterialFunctorSourceDataHolder> functorData : propertySet->GetFunctors())
+                for (Ptr<MaterialFunctorSourceDataHolder> functorData : propertyGroup->GetFunctors())
                 {
                     MaterialFunctorSourceData::FunctorResult result = functorData->CreateFunctor(editorContext);
 
