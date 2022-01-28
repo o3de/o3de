@@ -107,7 +107,7 @@ namespace ProjectSettingsTool
         }
 
         // Returns true if valid iOS file or directory name
-        RetType FileNameWithPeriod(const QString& name)
+        RetType IOSFileName(const QString& name)
         {
             return RegularExpressionValidator("[\\w,-.]+", name);
         }
