@@ -33,6 +33,15 @@ VSOutput MainVS(VSInput IN)
     // Offset the depth by a teeny bit to avoid z fighting with the underlying rendered data
     OUT.m_position.z += 0.001;
 
+    // NDCs
+    //float3 ndc = float3(OUT.m_position.x / OUT.m_position.w, OUT.m_position. y/ OUT.m_position.w, OUT.m_position.z / OUT.m_position.w);
+
+    // Normalized screenspace UVs
+    //float2 uv = float2((ndc.x + 1.0) * 0.5, (ndc.y + 1.0) * 0.5);
+
+    // Fragment depth
+    //float depth = ndc.z;
+
     return OUT;
 }
 
