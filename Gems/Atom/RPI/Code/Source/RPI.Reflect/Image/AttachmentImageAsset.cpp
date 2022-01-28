@@ -21,7 +21,10 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<AttachmentImageAsset, ImageAsset>()
-                    ->Version(1)
+                    ->Version(2)
+                    ->Field("Name", &AttachmentImageAsset::m_name)
+                    ->Field("IsUniqueName", &AttachmentImageAsset::m_isUniqueName)
+                    ->Field("OptimizedClearValue", &AttachmentImageAsset::m_optimizedClearValue)
                     ;
             }
         }
@@ -33,7 +36,29 @@ namespace AZ
 
         const RHI::ClearValue* AttachmentImageAsset::GetOptimizedClearValue() const
         {
-            return m_isClearValueValid ? &m_optimizedClearValue : nullptr;
+            return m_optimizedClearValue.get();
+        }
+
+        const AZ::Name& AttachmentImageAsset::GetName() const
+        {
+            return m_name;
+        }
+
+        RHI::AttachmentId AttachmentImageAsset::GeAttachmentId() const
+        {
+            if (m_isUniqueName)
+            {
+                if (!m_name.IsEmpty())
+                {
+                    return m_name;
+                }
+            }
+            return Name(m_assetId.ToString<AZStd::string>());
+        }
+
+         bool AttachmentImageAsset::HasUniqueName() const
+        {
+            return m_isUniqueName;
         }
     }
 }

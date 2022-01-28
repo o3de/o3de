@@ -58,6 +58,9 @@ namespace AZ
             const Data::Instance<StreamingImagePool>& GetSystemStreamingPool() const override;
             const Data::Instance<AttachmentImagePool>& GetSystemAttachmentPool() const override;
             const Data::Instance<StreamingImagePool>& GetStreamingPool() const override;
+            bool RegisterAttachmentImage(const AttachmentImage& attachmentImage) override;
+            void UnregisterAttachmentImage(const AttachmentImage& attachmentImage) override;
+            Data::Instance<AttachmentImage> FindRegisteredAttachmentImage(const RHI::AttachmentId& attachmentId) const override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
@@ -78,6 +81,8 @@ namespace AZ
             AZStd::fixed_vector<Data::Instance<Image>, static_cast<uint32_t>(SystemImage::Count)> m_systemImages;
 
             bool m_initialized = false;
+                        
+            AZStd::unordered_map<RHI::AttachmentId, const AttachmentImage*> m_registeredAttachmentImages;
         };
     }
 }
