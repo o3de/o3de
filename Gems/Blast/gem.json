@@ -23,6 +23,7 @@
         "CommonFeaturesAtom",
         "PhysX",
         "Atom_RPI",
-        "PythonAssetBuilder"
+        "PythonAssetBuilder",
+        "O3DEMaterialEditor"
     ]
 }

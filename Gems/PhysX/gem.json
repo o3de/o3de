@@ -19,6 +19,7 @@
     "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/physics/nvidia/physx/",
     "dependencies": [
         "LmbrCentral",
-        "CommonFeaturesAtom"
+        "CommonFeaturesAtom",
+        "O3DEMaterialEditor"
     ]
 }
