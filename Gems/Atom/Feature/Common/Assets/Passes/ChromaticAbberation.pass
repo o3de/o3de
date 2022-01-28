@@ -7,11 +7,12 @@
             "Name": "ChromaticAbberationTemplate",
             "PassClass": "ChromaticAbberationPass",
             "Slots": [
-                {
-                    "Name": "InputOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "Shader"
-                }
+              {
+                "Name": "InputOutput",
+                "ShaderInputName": "m_outputColor",
+                "SlotType": "InputOutput",
+                "ScopeAttachmentUsage": "Shader"
+              }
             ],
           "PassData": {
             "$type": "ComputePassData",
