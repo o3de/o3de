@@ -166,7 +166,7 @@ namespace AZ::SceneAPI::Behaviors
                 meshNodeFullName.append(meshNodeName.GetName());
 
                 auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
-                meshGroup->SetName(meshNodeFullName.c_str());
+                meshGroup->SetName(meshNodeFullName);
                 meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
                 for (const auto& meshGoupNamePair : meshTransformMap)
                 {
@@ -374,31 +374,18 @@ namespace AZ::SceneAPI::Behaviors
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateManifest(
         Containers::Scene& scene,
         ManifestAction action,
-        [[maybe_unused]] RequestingApplication requester)
+        RequestingApplication requester)
     {
         if (action == Events::AssetImportRequest::Update)
         {
-            // clear any constructed procedural prefabs
-            AZStd::vector<const SceneData::PrefabGroup*> emptyPrefabGroupCollection;
-            Containers::SceneManifest& manifest = scene.GetManifest();
-
-            for (size_t i = 0; i < manifest.GetEntryCount(); ++i)
-            {
-                const auto* prefabGroup = azrtti_cast<const SceneData::PrefabGroup*>(manifest.GetValue(i).get());
-                if (prefabGroup && !prefabGroup->GetPrefabDomRef())
-                {
-                    emptyPrefabGroupCollection.push_back(prefabGroup);
-                }
-            }
-
-            for (const auto* emptyPrefabGroup : emptyPrefabGroupCollection)
-            {
-                scene.GetManifest().RemoveEntry(emptyPrefabGroup);
-            }
+            // ignore constructing a default procedural prefab if some tool or script is attempting
+            // to update the scene manifest
             return Events::ProcessingResult::Ignored;
         }
-        else if (action != Events::AssetImportRequest::ConstructDefault)
+        else if (action == Events::AssetImportRequest::ConstructDefault && requester == RequestingApplication::Editor)
         {
+            // ignore constructing a default procedurla prefab if the Editor's "Edit Settings..." is being used
+            // the user is trying to assign the source scene asset their own mesh groups
             return Events::ProcessingResult::Ignored;
         }
 
@@ -586,14 +573,6 @@ namespace AZ::SceneAPI::Behaviors
 
         for (const auto* prefabGroup : prefabGroupCollection)
         {
-            // an emtpy DOM means the JSON has been removed, so this will ignore the export request
-            auto prefabDomRef = prefabGroup->GetPrefabDomRef();
-            if (!prefabDomRef)
-            {
-                AZ_Warning("prefab", false, "PrefabGroup(%s) PrefabDom is empty; skipping", prefabGroup->GetName().c_str());
-                continue;
-            }
-
             auto result = CreateProductAssetData(prefabGroup, relativePath);
             if (!result)
             {
