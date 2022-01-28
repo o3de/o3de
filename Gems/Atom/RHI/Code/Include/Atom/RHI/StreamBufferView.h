@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Format.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ
@@ -65,6 +65,6 @@ namespace AZ
         };
 
         /// Utility function for checking that the set of StreamBufferViews aligns with the InputStreamLayout
-        bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, AZStd::array_view<StreamBufferView> streamBufferViews);
+        bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, AZStd::span<const StreamBufferView> streamBufferViews);
     }
 }

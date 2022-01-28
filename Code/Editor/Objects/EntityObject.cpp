@@ -200,7 +200,6 @@ CEntityObject::CEntityObject()
 
     // Init Variables.
     mv_castShadow = true;
-    mv_castShadowMinSpec = CONFIG_LOW_SPEC;
     mv_outdoor          =   false;
     mv_recvWind = false;
     mv_renderNearest = false;
@@ -249,18 +248,10 @@ CEntityObject::~CEntityObject()
 //////////////////////////////////////////////////////////////////////////
 void CEntityObject::InitVariables()
 {
-    mv_castShadowMinSpec.AddEnumItem("Never",          END_CONFIG_SPEC_ENUM);
-    mv_castShadowMinSpec.AddEnumItem("Low",                CONFIG_LOW_SPEC);
-    mv_castShadowMinSpec.AddEnumItem("Medium",     CONFIG_MEDIUM_SPEC);
-    mv_castShadowMinSpec.AddEnumItem("High",               CONFIG_HIGH_SPEC);
-    mv_castShadowMinSpec.AddEnumItem("VeryHigh",       CONFIG_VERYHIGH_SPEC);
-
     mv_castShadow.SetFlags(mv_castShadow.GetFlags() | IVariable::UI_INVISIBLE);
-    mv_castShadowMinSpec->SetFlags(mv_castShadowMinSpec->GetFlags() | IVariable::UI_UNSORTED);
 
     AddVariable(mv_outdoor, "OutdoorOnly", tr("Outdoor Only"));
     AddVariable(mv_castShadow, "CastShadow", tr("Cast Shadow"));
-    AddVariable(mv_castShadowMinSpec, "CastShadowMinspec", tr("Cast Shadow MinSpec"));
 
     AddVariable(mv_ratioLOD, "LodRatio");
     AddVariable(mv_viewDistanceMultiplier, "ViewDistanceMultiplier");
@@ -361,7 +352,6 @@ bool CEntityObject::ConvertFromObject(CBaseObject* object)
         CEntityObject* pObject = ( CEntityObject* )object;
 
         mv_outdoor = pObject->mv_outdoor;
-        mv_castShadowMinSpec = pObject->mv_castShadowMinSpec;
         mv_ratioLOD = pObject->mv_ratioLOD;
         mv_viewDistanceMultiplier = pObject->mv_viewDistanceMultiplier;
         mv_hiddenInGame = pObject->mv_hiddenInGame;
@@ -519,22 +509,6 @@ void CEntityObject::AdjustLightProperties(CVarBlockPtr& properties, const char* 
             bCastShadowLegacy = true;
             pCastShadowVarLegacy->SetDisplayValue(zeroPrefix);
         }
-    }
-
-    if (IVariable* pCastShadowVar = FindVariableInSubBlock(properties, pSubBlockVar, "nCastShadows"))
-    {
-        if (bCastShadowLegacy)
-        {
-            pCastShadowVar->SetDisplayValue("1");
-        }
-        pCastShadowVar->SetDataType(IVariable::DT_UIENUM);
-        pCastShadowVar->SetFlags(pCastShadowVar->GetFlags() | IVariable::UI_UNSORTED);
-    }
-
-    if (IVariable* pShadowMinRes = FindVariableInSubBlock(properties, pSubBlockVar, "nShadowMinResPercent"))
-    {
-        pShadowMinRes->SetDataType(IVariable::DT_UIENUM);
-        pShadowMinRes->SetFlags(pShadowMinRes->GetFlags() | IVariable::UI_UNSORTED);
     }
 
     if (IVariable* pFade = FindVariableInSubBlock(properties, pSubBlockVar, "vFadeDimensionsLeft"))
@@ -873,12 +847,6 @@ void CEntityObject::Serialize(CObjectArchive& ar)
             RemoveAllEntityLinks();
             PostLoad(ar);
         }
-
-        if ((mv_castShadowMinSpec == CONFIG_LOW_SPEC) && !mv_castShadow) // backwards compatibility check
-        {
-            mv_castShadowMinSpec = END_CONFIG_SPEC_ENUM;
-            mv_castShadow = true;
-        }
     }
     else
     {
@@ -1033,8 +1001,6 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
         objNode->setAttr("ViewDistanceMultiplier", mv_viewDistanceMultiplier);
     }
 
-    objNode->setAttr("CastShadowMinSpec", mv_castShadowMinSpec);
-
     if (mv_recvWind)
     {
         objNode->setAttr("RecvWind", true);
@@ -1048,11 +1014,6 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
     if (mv_outdoor)
     {
         objNode->setAttr("OutdoorOnly", true);
-    }
-
-    if (GetMinSpec() != 0)
-    {
-        objNode->setAttr("MinSpec", ( uint32 )GetMinSpec());
     }
 
     if (mv_hiddenInGame)
@@ -1163,7 +1124,7 @@ void CEntityObject::UpdateVisibility(bool bVisible)
 {
     CBaseObject::UpdateVisibility(bVisible);
 
-    bool bVisibleWithSpec = bVisible && !IsHiddenBySpec();
+    bool bVisibleWithSpec = bVisible;
     if (bVisibleWithSpec != static_cast<bool>(m_bVisible))
     {
         m_bVisible = bVisibleWithSpec;
