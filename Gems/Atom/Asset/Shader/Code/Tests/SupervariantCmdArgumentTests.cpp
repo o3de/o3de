@@ -71,7 +71,7 @@ namespace UnitTest
 
         //! Helper function.
         //! Given an input list of {Key, Value} pairs returns a list of strings where each string is of the form: "Key=Value". 
-        AZStd::vector<AZStd::string> CreateListOfStringsFromListOfKeyValues(AZStd::array_view<KeyValueView> listOfKeyValues) const
+        AZStd::vector<AZStd::string> CreateListOfStringsFromListOfKeyValues(AZStd::span<const KeyValueView> listOfKeyValues) const
         {
             AZStd::vector<AZStd::string> listOfStrings;
             for (const auto& keyValue : listOfKeyValues)
@@ -90,7 +90,7 @@ namespace UnitTest
 
         //! Helper function.
         //! Given an input list of {Key, Value} pairs returns a list of strings where each string is of the form: "Key1", "Value1", "Key2", "Value2". 
-        AZStd::vector<AZStd::string> CreateListOfSingleStringsFromListOfKeyValues(AZStd::array_view<KeyValueView> listOfKeyValues) const
+        AZStd::vector<AZStd::string> CreateListOfSingleStringsFromListOfKeyValues(AZStd::span<const KeyValueView> listOfKeyValues) const
         {
             AZStd::vector<AZStd::string> listOfStrings;
             for (const auto& keyValue : listOfKeyValues)
@@ -134,7 +134,7 @@ namespace UnitTest
         //! Returns a command line string that results of concatenating the input list of {Key, Value} pairs (with '=').
         //! Example of a returned string:
         //! "key1=value1 key2 key3 key4=value" 
-        AZStd::string CreateCmdLineStringFromListOfKeyValues(AZStd::array_view<KeyValueView> listOfKeyValues) const
+        AZStd::string CreateCmdLineStringFromListOfKeyValues(AZStd::span<const KeyValueView> listOfKeyValues) const
         {
             AZStd::string cmdLineString;
             for (const auto& keyValueView : listOfKeyValues)
@@ -148,7 +148,7 @@ namespace UnitTest
         //! Returns a command line string of macro definitions that results of concatenating the input list of {Key, Value} pairs.
         //! Example of a returned string:
         //! "-Dkey1=value1 -Dkey2 -Dkey3 -Dkey4=value"
-        AZStd::string CreateMacroDefinitionCmdLineStringFromListOfKeyValues(AZStd::array_view<KeyValueView> listOfKeyValues) const
+        AZStd::string CreateMacroDefinitionCmdLineStringFromListOfKeyValues(AZStd::span<const KeyValueView> listOfKeyValues) const
         {
             AZStd::string cmdLineString;
             for (const auto& keyValueView : listOfKeyValues)
@@ -161,7 +161,7 @@ namespace UnitTest
         //! @param includePaths A List of folder paths
         //! @param predefinedMacros A List of strings with format: "name[=value]"
         ShaderBuilder::PreprocessorOptions CreatePreprocessorOptions(
-            AZStd::array_view<AZStd::string> includePaths, AZStd::array_view<AZStd::string> predefinedMacros) const
+            AZStd::span<const AZStd::string> includePaths, AZStd::span<const AZStd::string> predefinedMacros) const
         {
             ShaderBuilder::PreprocessorOptions preprocessorOptions;
 
@@ -200,8 +200,8 @@ namespace UnitTest
         //! @param azslcAdditionalFreeArguments A string representing series of command line arguments for AZSLc.
         //! @param dxcAdditionalFreeArguments: A string representing series of command line arguments for DXC.
         ShaderBuilder::GlobalBuildOptions CreateGlobalBuildOptions(
-            AZStd::array_view<AZStd::string> includePaths,
-            AZStd::array_view<AZStd::string> predefinedMacros,
+            AZStd::span<const AZStd::string> includePaths,
+            AZStd::span<const AZStd::string> predefinedMacros,
             AZStd::string_view azslcAdditionalFreeArguments,
             AZStd::string_view dxcAdditionalFreeArguments) const
         {
@@ -227,7 +227,7 @@ namespace UnitTest
             return supervariantInfo;
         }
 
-        bool StringContainsAllSubstrings(AZStd::string_view haystack, AZStd::array_view<AZStd::string> substrings)
+        bool StringContainsAllSubstrings(AZStd::string_view haystack, AZStd::span<const AZStd::string> substrings)
         {
             return AZStd::all_of(AZ_BEGIN_END(substrings),
                 [&](AZStd::string_view needle) -> bool
@@ -237,7 +237,7 @@ namespace UnitTest
             );
         }
 
-        bool StringDoesNotContainAnyOneOfTheSubstrings(AZStd::string_view haystack, AZStd::array_view<AZStd::string> substrings)
+        bool StringDoesNotContainAnyOneOfTheSubstrings(AZStd::string_view haystack, AZStd::span<const AZStd::string> substrings)
         {
             return AZStd::all_of(AZ_BEGIN_END(substrings), [&](AZStd::string_view needle) -> bool {
                 return (haystack.find(needle) == AZStd::string::npos);
@@ -247,7 +247,7 @@ namespace UnitTest
         //! @returns: True if all strings in @substring appear in @vectorOfString.
         //! @remark: Keep in mind that this is not the same as saying that all strings in @vectorOfStrings appear in @substrings.
         bool VectorContainsAllSubstrings(
-            AZStd::array_view<AZStd::string> vectorOfStrings, AZStd::array_view<AZStd::string> substrings)
+            AZStd::span<const AZStd::string> vectorOfStrings, AZStd::span<const AZStd::string> substrings)
         {
             return AZStd::all_of(
                 AZ_BEGIN_END(substrings),
@@ -264,7 +264,7 @@ namespace UnitTest
         }
 
         //! @returns: True only if None of the strings in @vectorOfStrings contains any of the strings in @substrings.
-        bool VectorDoesNotContainAnyOneOfTheSubstrings(AZStd::array_view<AZStd::string> vectorOfStrings, AZStd::array_view<AZStd::string> substrings)
+        bool VectorDoesNotContainAnyOneOfTheSubstrings(AZStd::span<const AZStd::string> vectorOfStrings, AZStd::span<const AZStd::string> substrings)
         {
             return AZStd::all_of(AZ_BEGIN_END(vectorOfStrings), [&](AZStd::string_view haystack) -> bool {
                 return StringDoesNotContainAnyOneOfTheSubstrings(haystack, substrings);

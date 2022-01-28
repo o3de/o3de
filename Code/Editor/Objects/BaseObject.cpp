@@ -62,7 +62,7 @@ protected:
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-//! Undo object for CBaseObject that only stores its transform, color, area and minSpec
+//! Undo object for CBaseObject that only stores its transform, color, area
 class CUndoBaseObjectMinimal
     : public IUndoObject
 {
@@ -84,7 +84,6 @@ private:
         Vec3 scale;
         QColor color;
         float area;
-        int minSpec;
     };
 
     void SetTransformsFromState(CBaseObject* pObject, const StateStruct& state, bool bUndo);
@@ -253,7 +252,6 @@ CUndoBaseObjectMinimal::CUndoBaseObjectMinimal(CBaseObject* pObj, [[maybe_unused
     m_undoState.scale = pObj->GetScale();
     m_undoState.color = pObj->GetColor();
     m_undoState.area = pObj->GetArea();
-    m_undoState.minSpec = pObj->GetMinSpec();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -284,14 +282,12 @@ void CUndoBaseObjectMinimal::Undo(bool bUndo)
         m_redoState.rotate = pObject->GetRotation();
         m_redoState.color = pObject->GetColor();
         m_redoState.area = pObject->GetArea();
-        m_redoState.minSpec = pObject->GetMinSpec();
     }
 
     SetTransformsFromState(pObject, m_undoState, bUndo);
 
     pObject->ChangeColor(m_undoState.color);
     pObject->SetArea(m_undoState.area);
-    pObject->SetMinSpec(m_undoState.minSpec, false);
 
     using namespace AzToolsFramework;
     ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
@@ -310,7 +306,6 @@ void CUndoBaseObjectMinimal::Redo()
 
     pObject->ChangeColor(m_redoState.color);
     pObject->SetArea(m_redoState.area);
-    pObject->SetMinSpec(m_redoState.minSpec, false);
 
     using namespace AzToolsFramework;
     ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
@@ -382,7 +377,6 @@ CBaseObject::CBaseObject()
     , m_bMatrixInWorldSpace(false)
     , m_bMatrixValid(false)
     , m_bWorldBoxValid(false)
-    , m_nMinSpec(0)
     , m_vDrawIconPos(0, 0, 0)
     , m_nIconFlags(0)
 {
@@ -413,7 +407,6 @@ bool CBaseObject::Init([[maybe_unused]] IEditor* ie, CBaseObject* prev, [[maybe_
         SetLocalTM(prev->GetPos(), prev->GetRotation(), prev->GetScale());
         SetArea(prev->GetArea());
         SetColor(prev->GetColor());
-        SetMinSpec(prev->GetMinSpec(), false);
 
         // Copy all basic variables.
         EnableUpdateCallbacks(false);
@@ -1054,17 +1047,6 @@ void CBaseObject::SetSelected(bool bSelect)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsHiddenBySpec() const
-{
-    if (!gSettings.bApplyConfigSpecInEditor)
-    {
-        return false;
-    }
-
-    return (m_nMinSpec != 0 && gSettings.editorConfigSpec != 0 && m_nMinSpec > static_cast<uint32>(gSettings.editorConfigSpec));
-}
-
-//////////////////////////////////////////////////////////////////////////
 //! Returns true if object hidden.
 bool CBaseObject::IsHidden() const
 {
@@ -1107,7 +1089,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         Vec3 scale = m_scale;
         Quat quat = m_rotate;
         Ang3 angles(0, 0, 0);
-        uint32 nMinSpec = m_nMinSpec;
 
         QColor color = m_color;
         float flattenArea = m_flattenArea;
@@ -1135,12 +1116,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         xmlNode->getAttr("Parent", parentId);
         xmlNode->getAttr("LookAt", lookatId);
         xmlNode->getAttr("Material", mtlName);
-        xmlNode->getAttr("MinSpec", nMinSpec);
-
-        if (nMinSpec <= CONFIG_VERYHIGH_SPEC) // Ignore invalid values.
-        {
-            m_nMinSpec = nMinSpec;
-        }
 
         bool bHidden = flags & OBJFLAG_HIDDEN;
         bool bFrozen = flags & OBJFLAG_FROZEN;
@@ -1245,11 +1220,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         {
             xmlNode->setAttr("Flags", flags);
         }
-
-        if (m_nMinSpec != 0)
-        {
-            xmlNode->setAttr("MinSpec", (uint32)m_nMinSpec);
-        }
     }
 
     // Serialize variables after default entity parameters.
@@ -1298,11 +1268,6 @@ XmlNodeRef CBaseObject::Export([[maybe_unused]] const QString& levelPath, XmlNod
     if (!IsEquivalent(scale, Vec3(0, 0, 0), 0))
     {
         objNode->setAttr("Scale", scale);
-    }
-
-    if (m_nMinSpec != 0)
-    {
-        objNode->setAttr("MinSpec", (uint32)m_nMinSpec);
     }
 
     // Save variables.
@@ -2132,22 +2097,6 @@ bool CBaseObject::IsSimilarObject(CBaseObject* pObject)
         return true;
     }
     return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetMinSpec(uint32 nSpec, bool bSetChildren)
-{
-    m_nMinSpec = nSpec;
-    UpdateVisibility(!IsHidden());
-
-    // Set min spec for all childs.
-    if (bSetChildren)
-    {
-        for (int i = static_cast<int>(m_childs.size()) - 1; i >= 0; --i)
-        {
-            m_childs[i]->SetMinSpec(nSpec, true);
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

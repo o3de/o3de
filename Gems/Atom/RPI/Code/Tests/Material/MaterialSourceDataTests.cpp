@@ -646,7 +646,7 @@ namespace UnitTest
         MaterialPropertyIndex myFloat2 = layout->FindPropertyIndex(Name("general.MyFloat2"));
         MaterialPropertyIndex myColor = layout->FindPropertyIndex(Name("general.MyColor"));
 
-        AZStd::array_view<MaterialPropertyValue> properties;
+        AZStd::span<const MaterialPropertyValue> properties;
 
         // Check level 1 properties
         properties = materialAssetLevel1.GetValue()->GetPropertyValues();
@@ -736,7 +736,7 @@ namespace UnitTest
 
         // The properties will finalize automatically when we call GetPropertyValues()...
 
-        AZStd::array_view<MaterialPropertyValue> properties;
+        AZStd::span<const MaterialPropertyValue> properties;
 
         // Check level 1 properties
         properties = materialAssetLevel1->GetPropertyValues();
