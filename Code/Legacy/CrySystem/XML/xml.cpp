@@ -1132,7 +1132,7 @@ bool CXmlNode::saveToFile(const char* fileName)
 
 bool CXmlNode::saveToFile([[maybe_unused]] const char* fileName, size_t chunkSize, AZ::IO::HandleType fileHandle)
 {
-    if (AZ::IO::SystemFile::Exists(fileName) && AZ::IO::SystemFile::IsWritable(fileName))
+    if (AZ::IO::SystemFile::Exists(fileName) && !AZ::IO::SystemFile::IsWritable(fileName))
     {
         AZ::IO::SystemFile::SetWritable(fileName, true);
     }
