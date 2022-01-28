@@ -18,6 +18,7 @@
 #include <Source/EditorComponentDescriptors.h>
 #include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Editor/Source/Configuration/PhysXEditorSettingsRegistryManager.h>
+#include <Editor/Source/MaterialEditor/PhysXMaterialEditorSystemComponent.h>
 #endif // defined(PHYSX_EDITOR)
 
 #include <PhysX_Traits_Platform.h>
@@ -64,6 +65,7 @@ namespace PhysX
                 azrtti_typeid<SystemComponent>()
 #if defined(PHYSX_EDITOR)
                 , azrtti_typeid<EditorSystemComponent>()
+                , azrtti_typeid<PhysXMaterialEditorSystemComponent>()
 #endif
             };
         }

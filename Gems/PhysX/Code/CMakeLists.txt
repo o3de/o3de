@@ -116,8 +116,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::PhysX.NumericalMethods
                 Gem::PhysX.Static
                 Gem::AtomLyIntegration_CommonFeatures.Static
+                Gem::O3DEMaterialEditor
         RUNTIME_DEPENDENCIES
             AZ::SceneCore
+            Gem::O3DEMaterialEditor
     )
 
     ly_add_target(

@@ -88,6 +88,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::Editor.Headers
                 Gem::Atom_RPI.Edit
                 Gem::Blast.Static
+                Gem::O3DEMaterialEditor
+        RUNTIME_DEPENDENCIES
+            Gem::O3DEMaterialEditor
     )
 
     ly_add_target(
