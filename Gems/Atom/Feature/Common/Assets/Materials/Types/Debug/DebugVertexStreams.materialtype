@@ -1,0 +1,46 @@
+{
+    "description": "A simple default base material for Atom testing.",
+    "version": 1,
+    "propertyLayout": {
+        "groups": [
+            {
+                "name": "general",
+                "displayName": "General Settings",
+                "description": "General settings."
+            }
+        ],
+        "properties": {
+            "general": [
+                {
+                    "name": "debugVertexStream",
+                    "displayName": "Display Vertex Stream",
+                    "description": "Display vertex stream interpolated over the triangle.",
+                    "type": "Enum",
+                    "defaultValue": "Normals",
+                    "enumValues": [ "Normals", "Tangents", "Bitangents", "UVs", "TangentW" ],
+                    "connection": {
+                        "type": "ShaderOption",
+                        "name": "o_debugVertexStream"
+                    }
+                },
+                {
+                    "name": "reconstructionMethod",
+                    "displayName": "ReconstructionMethod",
+                    "description": "Use the data from the vertices for all streams, use the Surface Gradient technique for calculating both tangents and bitangents, or use the cross product to reconstruct the bitangents.",
+                    "type": "Enum",
+                    "defaultValue": "UseVertexData",
+                    "enumValues": [ "UseVertexData", "UseSurfaceGradient", "ReconstructBitangent" ],
+                    "connection": {
+                        "type": "ShaderOption",
+                        "name": "o_reconstructionMethod"
+                    }
+                }
+            ]
+        }
+    },
+    "shaders": [
+        {
+            "file": "Materials/Types/Debug/DebugVertexStreams.shader"
+        }
+    ]
+}
