@@ -17,7 +17,7 @@ namespace O3DE::ProjectManager
     class ExternalLinkDialog
         : public QDialog
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
     public:
         explicit ExternalLinkDialog(const QUrl& url, QWidget* parent = nullptr);
         ~ExternalLinkDialog() = default;
