@@ -92,7 +92,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         SpawnableEntityAliasStore m_entityAliases;
         ProcessedObjectStoreContainer m_products;
         ProductAssetDependencyContainer m_registeredProductAssetDependencies;
-        CachedPrefabInstanceAliases m_cachedPrefabInstanceAliases;
 
         AZ::PlatformTagSet m_platformTags;
         AZ::Uuid m_sourceUuid;

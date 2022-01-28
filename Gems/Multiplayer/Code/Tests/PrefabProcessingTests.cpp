@@ -14,6 +14,7 @@
 #include <Prefab/Spawnable/PrefabProcessorContext.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/MultiplayerConstants.h>
+#include <Source/NetworkEntity/NetworkEntityManager.h>
 #include <Source/Pipeline/NetworkPrefabProcessor.h>
 
 namespace UnitTest
@@ -102,8 +103,8 @@ namespace UnitTest
     {
         // Add the prefab into the Prefab Processor Context
         const AZStd::string prefabName = "testPrefab";
-        PrefabProcessorContext prefabProcessorContext{AZ::Uuid::CreateRandom()};
-        PrefabDocument document(prefabName);
+        TestPrefabProcessorContext prefabProcessorContext{AZ::Uuid::CreateRandom()};
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument document(prefabName);
         ASSERT_TRUE(document.SetPrefabDom(AZStd::move(m_prefabDom)));
         prefabProcessorContext.AddPrefab(AZStd::move(document));
 
@@ -141,10 +142,14 @@ namespace UnitTest
     TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabTwoEntities_AliasesInsertedIntoContext)
     {
         using AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasStore;
+        using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument;
 
         // Add the prefab into the Prefab Processor Context
         TestPrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
-        prefabProcessorContext.AddPrefab("testPrefab", AZStd::move(m_prefabDom));
+        PrefabDocument prefabDocument("testPrefab");
+        prefabDocument.SetPrefabDom(AZStd::move(m_prefabDom));
+
+        prefabProcessorContext.AddPrefab(AZStd::move(prefabDocument));
 
         // Request NetworkPrefabProcessor to process the prefab
         Multiplayer::NetworkPrefabProcessor processor;

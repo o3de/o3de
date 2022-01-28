@@ -63,8 +63,6 @@ namespace Multiplayer
                 ->Field("SerializationFormat", &NetworkPrefabProcessor::m_serializationFormat)
             ;
         }
-    static AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> LoadInstanceFromPrefab(const PrefabDom& prefab)
-        if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*sourceInstance, prefab, PrefabDomUtils::LoadFlags::AssignRandomEntityId))
     }
 
     static void GatherNetEntities(
@@ -97,9 +95,6 @@ namespace Multiplayer
         using AzToolsFramework::Prefab::PrefabConversionUtils::ProcessedObjectStore;
         using namespace AzToolsFramework::Prefab;
 
-        AZStd::unique_ptr<Instance> sourceInstance = LoadInstanceFromPrefab(prefab);
-
-            return;
         AZStd::string uniqueName = prefab.GetName();
         uniqueName += NetworkSpawnableFileExtension;
 
@@ -130,9 +125,13 @@ namespace Multiplayer
         uint32_t prefabEntityOffset = 0;
         for (auto* prefabEntity : prefabNetEntities)
         {
-            AZ::Entity* netEntity = SpawnableUtils::CreateEntityAlias(
-                prefabName, sourceInstance, *networkSpawnable, prefabEntity->GetId(), PrefabConversionUtils::EntityAliasType::Replace,
-                PrefabConversionUtils::EntityAliasSpawnableLoadBehavior::DependentLoad, NetworkEntityManager::NetworkEntityTag, context);
+            AZ::Entity* netEntity = nullptr;
+
+            // TODO: Create a new PrefabDocument for the network spawnable and use it for creating the aliases
+            // 
+            //AZ::Entity* netEntity = SpawnableUtils::CreateEntityAlias(
+            //    prefab.GetName(), sourceInstance, *networkSpawnable, prefabEntity->GetId(), PrefabConversionUtils::EntityAliasType::Replace,
+            //    PrefabConversionUtils::EntityAliasSpawnableLoadBehavior::DependentLoad, NetworkEntityManager::NetworkEntityTag, context);
 
             AZ_Assert(
                 netEntity, "Unable to create alias for entity %s [%zu] from the source prefab instance", prefabEntity->GetName().c_str(),
@@ -146,7 +145,6 @@ namespace Multiplayer
             prefabNetId.m_entityOffset = prefabEntityOffset;
             netEntity->FindComponent<NetBindComponent>()->SetPrefabAssetId(networkSpawnable->GetId());
             ++prefabEntityOffset;
-                sourceInstance->AddEntity(*networkSpawnableHolderEntity);
         }
 
         context.GetProcessedObjects().push_back(AZStd::move(object));
