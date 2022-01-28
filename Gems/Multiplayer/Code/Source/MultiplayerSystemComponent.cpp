@@ -1188,6 +1188,10 @@ namespace Multiplayer
         {
             controlledEntity = entityList[0];
         }
+
+        // Immediate creation is not guaranteed to set transform, do so once activated
+        controlledEntity.GetEntity()->GetTransform()->SetWorldTM(transform);
+
         return controlledEntity;
     }
 
