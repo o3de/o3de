@@ -46,4 +46,4 @@ ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-linux                
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-linux                        TARGETS lz4                         PACKAGE_HASH 5de3dbd3e2a3537c6555d759b3c5bb98e5456cf85c74ff6d046f809b7087290d)
 ly_associate_package(PACKAGE_NAME pyside2-5.15.2-rev2-linux                         TARGETS pyside2                     PACKAGE_HASH 7589c397c8224d0c3ad691ff02e1afd55d9a1f9de1967c14eb8105dd2b0c4dd1)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-linux                          TARGETS SQLite                      PACKAGE_HASH bee80d6c6db3e312c1f4f089c90894436ea9c9b74d67256d8c1fb00d4d81fe46)
-ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-linux             TARGETS vulkan-validationlayers     PACKAGE_HASH 5bfd887eb95624867a980468eaebb9374173385a232fd60fc0e8e8d3cbed5856)
+ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-linux             TARGETS vulkan-validationlayers     PACKAGE_HASH 18772167d7b017b7da3cdcf7eded310c428a519a07c35569c7d2c71699f1e262)
