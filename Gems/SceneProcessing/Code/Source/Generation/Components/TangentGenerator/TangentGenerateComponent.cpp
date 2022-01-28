@@ -27,8 +27,6 @@
 #include <SceneAPI/SceneData/GraphData/MeshVertexBitangentData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexTangentData.h>
 
-#include <AzToolsFramework/Debug/TraceContext.h>
-
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 

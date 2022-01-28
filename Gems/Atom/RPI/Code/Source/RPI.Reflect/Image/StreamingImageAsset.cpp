@@ -94,11 +94,11 @@ namespace AZ
             return m_totalImageDataSize;
         }
         
-        AZStd::array_view<uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)
+        AZStd::span<const uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)
         {
             if (mip >= m_mipLevelToChainIndex.size())
             {
-                return AZStd::array_view<uint8_t>();
+                return AZStd::span<const uint8_t>();
             }
 
             size_t mipChainIndex = m_mipLevelToChainIndex[mip];
@@ -119,7 +119,7 @@ namespace AZ
             if (mipChainAsset == nullptr)
             {
                 AZ_Warning("Streaming Image", false, "MipChain asset wasn't loaded");
-                return AZStd::array_view<uint8_t>();
+                return AZStd::span<const uint8_t>();
             }
 
             return mipChainAsset->GetSubImageData(mip - mipChain.m_mipOffset, slice);

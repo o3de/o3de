@@ -36,9 +36,17 @@ endif()
 if(NOT ANDROID_ABI MATCHES "^arm64-")
     message(FATAL_ERROR "Only the 64-bit ANDROID_ABI's are supported. arm64-v8a can be used if not set")
 endif()
+
+set(MIN_NATIVE_API_LEVEL 24)
+
 if(NOT ANDROID_NATIVE_API_LEVEL)
-    set(ANDROID_NATIVE_API_LEVEL 24)
+    set(ANDROID_NATIVE_API_LEVEL ${MIN_NATIVE_API_LEVEL})
 endif()
+
+if(${ANDROID_NATIVE_API_LEVEL} VERSION_LESS ${MIN_NATIVE_API_LEVEL})
+    message(FATAL_ERROR "Unsupported Android native API version ${ANDROID_NATIVE_API_LEVEL}. Must be ${MIN_NATIVE_API_LEVEL} or above")
+endif()
+
 set(ANDROID_PLATFORM android-${ANDROID_NATIVE_API_LEVEL})
 
 # Make a backup of the CMAKE_FIND_ROOT_PATH since it will be altered by the NDK toolchain file and needs to be restored after the input

@@ -9,30 +9,30 @@
 #include <QApplication>
 #include <QWidget>
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-#include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
-#include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
-#include <Source/Viewport/InputController/MaterialEditorViewportInputController.h>
-#include <Source/Viewport/InputController/IdleBehavior.h>
-#include <Source/Viewport/InputController/PanCameraBehavior.h>
-#include <Source/Viewport/InputController/OrbitCameraBehavior.h>
-#include <Source/Viewport/InputController/MoveCameraBehavior.h>
-#include <Source/Viewport/InputController/DollyCameraBehavior.h>
-#include <Source/Viewport/InputController/RotateModelBehavior.h>
-#include <Source/Viewport/InputController/RotateEnvironmentBehavior.h>
+#include <Viewport/InputController/DollyCameraBehavior.h>
+#include <Viewport/InputController/IdleBehavior.h>
+#include <Viewport/InputController/MaterialEditorViewportInputController.h>
+#include <Viewport/InputController/MoveCameraBehavior.h>
+#include <Viewport/InputController/OrbitCameraBehavior.h>
+#include <Viewport/InputController/PanCameraBehavior.h>
+#include <Viewport/InputController/RotateEnvironmentBehavior.h>
+#include <Viewport/InputController/RotateModelBehavior.h>
 
 namespace MaterialEditor
 {

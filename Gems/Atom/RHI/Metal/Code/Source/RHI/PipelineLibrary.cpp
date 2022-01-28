@@ -27,7 +27,7 @@ namespace AZ
         {
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::array_view<const RHI::PipelineLibrary*> pipelineLibraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary* const> pipelineLibraries)
         {
             return RHI::ResultCode::Success;
         }

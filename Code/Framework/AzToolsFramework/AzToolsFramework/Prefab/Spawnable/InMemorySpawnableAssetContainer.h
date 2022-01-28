@@ -21,7 +21,6 @@ namespace AzToolsFramework::Prefab
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-
     class InMemorySpawnableAssetContainer
     {
     public:
@@ -58,8 +57,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         const SpawnableAssets& GetAllInMemorySpawnableAssets() const;
 
     private:
-        void LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets);
-
+        void LoadReferencedAssets(SpawnableAssetData& spawnable);
+        
         SpawnableAssets m_spawnableAssets;
         PrefabConversionUtils::PrefabConversionPipeline m_converter;
         AZStd::string_view m_stockProfile;

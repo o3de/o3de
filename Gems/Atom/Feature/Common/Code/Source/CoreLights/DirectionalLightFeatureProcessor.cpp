@@ -1018,7 +1018,7 @@ namespace AZ
             for (const auto& passIt : m_cascadedShadowmapsPasses)
             {
                 CascadedShadowmapsPass* shadowPass = passIt.second.front();
-                const AZStd::array_view<RPI::PipelineViewTag>& viewTags = shadowPass->GetPipelineViewTags();
+                const AZStd::span<const RPI::PipelineViewTag>& viewTags = shadowPass->GetPipelineViewTags();
                 AZ_Assert(viewTags.size() >= cascadeCount, "DirectionalLightFeatureProcessor: There is not enough pipeline view tags.");
 
                 RPI::RenderPipeline* pipeline = shadowPass->GetRenderPipeline();

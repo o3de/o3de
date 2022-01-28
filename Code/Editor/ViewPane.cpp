@@ -87,29 +87,15 @@ public:
                                 }
 
                                 // Handle labels with submenus
-                                if (auto toolLabel = qobject_cast<QLabel*>(toolWidget))
+                                if (auto toolLabel = qobject_cast<QToolButton*>(toolWidget))
                                 {
                                     if (!toolLabel->isVisible())
                                     {
                                         // Manually turn the custom context menus into submenus
-                                        if (toolLabel->objectName() == "m_fovStaticCtrl")
+                                        if (toolLabel->menu())
                                         {
-                                            QAction* newAction = menu->addMenu(m_viewportDlg->GetFovMenu());
-                                            newAction->setText(QString("FOV: %1").arg(toolLabel->text()));
-                                        }
-                                        else if (toolLabel->objectName() == "m_ratioStaticCtrl")
-                                        {
-                                            QAction* newAction = menu->addMenu(m_viewportDlg->GetAspectMenu());
-                                            newAction->setText(QString("Ratio: %1").arg(toolLabel->text()));
-                                        }
-                                        else if (toolLabel->objectName() == "m_sizeStaticCtrl")
-                                        {
-                                            QAction* newAction = menu->addMenu(m_viewportDlg->GetResolutionMenu());
-                                            newAction->setText(QString("%1").arg(toolLabel->text()));
-                                        }
-                                        else
-                                        {
-                                            // Don't add actions for other Labels
+                                            QAction* action = menu->addMenu(toolLabel->menu());
+                                            action->setText(toolLabel->text());
                                             continue;
                                         }
                                     }
@@ -179,12 +165,23 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     toolbar->installEventFilter(&m_viewportTitleDlg);
     toolbar->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(toolbar, &QWidget::customContextMenuRequested, &m_viewportTitleDlg, &QWidget::customContextMenuRequested);
-
     setContextMenuPolicy(Qt::NoContextMenu);
-
+    
     if (QToolButton* expansion = AzQtComponents::ToolBar::getToolBarExpansionButton(toolbar))
     {
         expansion->installEventFilter(m_expanderWatcher);
+    }
+
+    AzQtComponents::BreadCrumbs* prefabsBreadcrumbs =
+        qobject_cast<AzQtComponents::BreadCrumbs*>(toolbar->findChild<QWidget*>("m_prefabFocusPath"));
+    QToolButton* backButton = qobject_cast<QToolButton*>(toolbar->findChild<QWidget*>("m_prefabFocusBackButton"));
+
+    AZ_Assert(prefabsBreadcrumbs, "Could not find Prefabs Breadcrumbs widget on CLayoutViewPane initialization!");
+    AZ_Assert(backButton, "Could not find Prefabs Breadcrumbs back button on CLayoutViewPane initialization!");
+
+    if (prefabsBreadcrumbs && backButton)
+    {
+        m_viewportTitleDlg.InitializePrefabViewportFocusPathHandler(prefabsBreadcrumbs, backButton);
     }
 
     m_id = -1;
@@ -745,7 +742,7 @@ namespace
 
     void PySetActiveViewport(unsigned int viewportIndex)
     {
-        bool success = false;
+        [[maybe_unused]] bool success = false;
         CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
         if (layout)
         {

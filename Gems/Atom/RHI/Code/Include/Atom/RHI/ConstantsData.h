@@ -20,11 +20,11 @@ namespace AZ
 {
     namespace RHI
     {
-        //! The intent of this class is to provide fast and thin access to the underlying constant 
-        //! data (inline or from an SRG), with basic validation to protect the user. As a secondary objective, it provides type-specific convenience 
-        //! operations as long as they don't violate the primary "fast" and "thin" objectives. To clarify, thin means 
-        //! we don't make assumptions about the data or how the user wants to operate on the data, and the convenience 
-        //! operations boil down to thin wrappers for single calls to SetConstantRaw and GetConstantRaw. So these 
+        //! The intent of this class is to provide fast and thin access to the underlying constant
+        //! data (inline or from an SRG), with basic validation to protect the user. As a secondary objective, it provides type-specific convenience
+        //! operations as long as they don't violate the primary "fast" and "thin" objectives. To clarify, thin means
+        //! we don't make assumptions about the data or how the user wants to operate on the data, and the convenience
+        //! operations boil down to thin wrappers for single calls to SetConstantRaw and GetConstantRaw. So these
         //! convenience functions are provided in situations that are "low-hanging-fruit".
         class ConstantsData
         {
@@ -53,7 +53,7 @@ namespace AZ
 
             //! Assigns an array of type T to the constant shader input.
             template <typename T>
-            bool SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::array_view<T> values);
+            bool SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::span<const T> values);
 
             //! Assigns constant data as a whole.
             bool SetConstantData(const void* bytes, size_t byteCount);
@@ -64,7 +64,7 @@ namespace AZ
             //! of elements in the returned array is the number of evenly divisible elements.
             //! If the strides do not match, an empty array is returned.
             template <typename T>
-            AZStd::array_view<T> GetConstantArray(ShaderInputConstantIndex inputIndex) const;
+            AZStd::span<const T> GetConstantArray(ShaderInputConstantIndex inputIndex) const;
 
             //! Returns the constant data as type 'T' returned by value. The size of the constant region
             //! must match the size of T exactly. Otherwise, an empty instance is returned.
@@ -77,11 +77,11 @@ namespace AZ
             template <typename T>
             T GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const;
 
-            //! Returns constant data for the given shader input index as an array of bytes.
-            AZStd::array_view<uint8_t> GetConstantRaw(ShaderInputConstantIndex inputIndex) const;
+            //! Returns constant data for the given shader input index as a span of bytes.
+            AZStd::span<const uint8_t> GetConstantRaw(ShaderInputConstantIndex inputIndex) const;
 
             //! Returns the opaque constant data populated by calls to SetConstant and SetConstantData.
-            AZStd::array_view<uint8_t> GetConstantData() const;
+            AZStd::span<const uint8_t> GetConstantData() const;
 
             //! Returns the constants layout.
             const ConstantsLayout* GetLayout() const;
@@ -123,7 +123,7 @@ namespace AZ
         template <typename T>
         bool ConstantsData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value)
         {
-            AZStd::array_view<T> valueArray(&value, 1);
+            AZStd::span<const T> valueArray(&value, 1);
             return SetConstantArray(inputIndex, valueArray);
         }
 
@@ -152,7 +152,7 @@ namespace AZ
         bool ConstantsData::SetConstant<Color>(ShaderInputConstantIndex inputIndex, const Color& value);
 
         template <>
-        bool ConstantsData::SetConstantArray<bool>(ShaderInputConstantIndex inputIndex, AZStd::array_view<bool> values);
+        bool ConstantsData::SetConstantArray<bool>(ShaderInputConstantIndex inputIndex, AZStd::span<const bool> values);
 
         template <>
         bool ConstantsData::GetConstant<bool>(ShaderInputConstantIndex inputIndex) const;
@@ -213,7 +213,7 @@ namespace AZ
         }
 
         template <typename T>
-        bool ConstantsData::SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::array_view<T> values)
+        bool ConstantsData::SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::span<const T> values)
         {
             const size_t sizeInBytes = values.size() * sizeof(T);
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, sizeInBytes))
@@ -224,15 +224,15 @@ namespace AZ
         }
 
         template <typename T>
-        AZStd::array_view<T> ConstantsData::GetConstantArray(ShaderInputConstantIndex inputIndex) const
+        AZStd::span<const T> ConstantsData::GetConstantArray(ShaderInputConstantIndex inputIndex) const
         {
-            AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+            AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
             const size_t elementSize = sizeof(T);
             const size_t elementCount = DivideByMultiple(constantBytes.size(), elementSize);
             const size_t sizeInBytes = elementCount * elementSize;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, sizeInBytes))
             {
-                return AZStd::array_view<T>(reinterpret_cast<const T*>(constantBytes.data()), elementCount);
+                return AZStd::span<const T>(reinterpret_cast<const T*>(constantBytes.data()), elementCount);
             }
             return {};
         }
@@ -240,7 +240,7 @@ namespace AZ
         template <typename T>
         T ConstantsData::GetConstant(ShaderInputConstantIndex inputIndex) const
         {
-            AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+            AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
             const size_t sizeInBytes = sizeof(T);
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, sizeInBytes))
             {
@@ -252,7 +252,7 @@ namespace AZ
         template <typename T>
         T ConstantsData::GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const
         {
-            AZStd::array_view<uint8_t> constantBytes = GetConstantRaw(inputIndex);
+            AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
             const size_t elementSize = sizeof(T);
             const size_t elementOffset = arrayIndex * elementSize;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::ArrayElement, elementOffset, elementSize))
