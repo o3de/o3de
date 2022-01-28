@@ -199,6 +199,20 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
+    void CAudioControlsEditorWindow::RefreshAudioSystem()
+    {
+        QString sLevelName = GetIEditor()->GetLevelName();
+
+        if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
+        {
+            // Rather pass empty QString to indicate that no level is loaded!
+            sLevelName = QString();
+        }
+
+        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RefreshAudioSystem, sLevelName.toUtf8().data());
+    }
+
+    //-------------------------------------------------------------------------------------------//
     void CAudioControlsEditorWindow::Save()
     {
         bool bPreloadsChanged = m_pATLModel->IsTypeDirty(eACET_PRELOAD);
@@ -215,15 +229,7 @@ namespace AudioControls
             messageBox.setWindowTitle("Audio Controls Editor");
             if (messageBox.exec() == QMessageBox::Yes)
             {
-                QString sLevelName = GetIEditor()->GetLevelName();
-
-                if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
-                {
-                    // Rather pass empty QString to indicate that no level is loaded!
-                    sLevelName = QString();
-                }
-
-                Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RefreshAudioSystem, sLevelName.toUtf8().data());
+                RefreshAudioSystem();
             }
         }
         m_pATLModel->ClearDirtyFlags();

@@ -63,8 +63,11 @@ namespace AzToolsFramework
         /// Registers an existing set of entities with the editor context.
         virtual void AddEditorEntities(const EntityList& entities) = 0;
 
-        /// Registers an existing set of entities with the editor context.
+        /// Triggers registered callbacks for an existing set of entities with the editor context.
         virtual void HandleEntitiesAdded(const EntityList& entities) = 0;
+
+        /// Creates an editor ready entity, and sends out notification for the creation.
+        virtual void FinalizeEditorEntity(AZ::Entity* entity) = 0;
 
         /// Destroys an entity in the editor context.
         /// \return whether or not the entity was destroyed. A false return value signifies the entity did not belong to the game context.
@@ -201,11 +204,8 @@ namespace AzToolsFramework
         //! Fired after the EditorEntityContext fails to export the root level slice to the game stream
         virtual void OnSaveStreamForGameFailure(AZStd::string_view /*failureString*/) {}
 
-        //! Fired when the user triggers a clone of ComponentEntity object(s), before operation begins
-        virtual void OnEntitiesAboutToBeCloned() {}
-
-        //! Fires when the user triggers a clone of ComponentEntity object(s)), after operation completes
-        virtual void OnEntitiesCloned() {}
+        //! Preserve entity order when re-parenting entities
+        virtual void SetForceAddEntitiesToBackFlag(bool /*forceAddToBack*/) {}
 
     };
 

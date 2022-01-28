@@ -134,7 +134,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include <PNoise3.h>
 
-#include <LyShine/Bus/UiCursorBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
 
@@ -1374,7 +1373,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     // Fall through intended
     case WM_ENTERMENULOOP:
     {
-        UiCursorBus::Broadcast(&UiCursorInterface::IncrementVisibleCounter);
         return true;
     }
     case WM_CAPTURECHANGED:
@@ -1392,7 +1390,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     // Fall through intended
     case WM_EXITMENULOOP:
     {
-        UiCursorBus::Broadcast(&UiCursorInterface::DecrementVisibleCounter);
         return (uMsg != WM_CAPTURECHANGED);
     }
     case WM_SYSKEYUP:

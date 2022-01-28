@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/dialog/PakManager">
-        <file alias="file.png">res/pakmanager_file.png</file>
-        <file alias="folder.png">res/pakmanager_folder.png</file>
-    </qresource>
-</RCC>

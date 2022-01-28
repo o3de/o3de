@@ -181,7 +181,7 @@ def main(args):
                         default=-1)
 
     parser.add_argument(ANDROID_NATIVE_API_LEVEL,
-                        help=f'The android native API level to use for the APK. If not set, this will default to the android SDK platform. (Minimum {MIN_ANDROID_SDK_PLATFORM})',
+                        help=f'The android native API level to use for the APK. If not set, this will default to the android SDK platform. (Minimum {MIN_NATIVE_API_LEVEL})',
                         type=int,
                         default=-1)
 
@@ -227,6 +227,9 @@ def main(args):
                         help='Override path to where the Vulkan Validation Layers libraries are.  Required for use with NDK r23+',
                         default=None,
                         required=False)
+    parser.add_argument('--extra-cmake-configure-args',
+                        help='Extra arguments to supply to the cmake configure step',
+                        nargs='*')
 
     # Asset Options
     parser.add_argument(INCLUDE_APK_ASSETS_ARGUMENT_NAME,
@@ -415,7 +418,8 @@ def main(args):
                                                         overwrite_existing=parsed_args.overwrite_existing,
                                                         unity_build_enabled=parsed_args.enable_unity_build,
                                                         native_build_path=parsed_args.native_build_path,
-                                                        vulkan_validation_path=parsed_args.vulkan_validation_path)
+                                                        vulkan_validation_path=parsed_args.vulkan_validation_path,
+                                                        extra_cmake_configure_args=parsed_args.extra_cmake_configure_args)
     generator.execute()
 
 

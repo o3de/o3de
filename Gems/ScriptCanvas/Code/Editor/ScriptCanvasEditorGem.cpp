@@ -81,7 +81,7 @@ namespace ScriptCanvas
             ScriptCanvasEditor::EditorAssetSystemComponent::CreateDescriptor(),
             ScriptCanvasEditor::EditorScriptCanvasComponent::CreateDescriptor(),
             ScriptCanvasEditor::EntityMimeDataHandler::CreateDescriptor(),
-            ScriptCanvasEditor::Graph::CreateDescriptor(),
+            ScriptCanvasEditor::EditorGraph::CreateDescriptor(),
             ScriptCanvasEditor::IconComponent::CreateDescriptor(),
             ScriptCanvasEditor::ReflectComponent::CreateDescriptor(),
             ScriptCanvasEditor::SystemComponent::CreateDescriptor(),

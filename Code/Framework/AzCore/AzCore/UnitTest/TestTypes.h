@@ -17,16 +17,9 @@
 
 #if defined(HAVE_BENCHMARK)
 
-#if defined(AZ_COMPILER_CLANG)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif // clang
-
+AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-declarations", "-Wdeprecated-declarations")
 #include <benchmark/benchmark.h>
-
-#if defined(AZ_COMPILER_CLANG)
-#pragma clang diagnostic pop
-#endif // clang
+AZ_POP_DISABLE_WARNING
 
 #endif // HAVE_BENCHMARK
 
@@ -71,18 +64,35 @@ namespace UnitTest
     };
 
     /**
-    * RAII wrapper of AllocatorBase.
-    * The benefit of using this wrapper instead of AllocatorsTestFixture is that SetUp/TearDown of the allocator is managed
-    * on construction/destruction, allowing member variables of derived classes to exist as value (and do heap allocation).
-    */
-    class ScopedAllocatorSetupFixture 
-        : public ::testing::Test
-        , AllocatorsBase
+     * RAII wrapper of AllocatorBase.
+     * The benefit of using this wrapper instead of AllocatorsTestFixture is that SetUp/TearDown of the allocator is managed
+     * on construction/destruction, allowing member variables of derived classes to exist as value (and do heap allocation).
+     */
+    class ScopedAllocatorFixture : AllocatorsBase
     {
     public:
-        ScopedAllocatorSetupFixture() { SetupAllocator(); }
-        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) { SetupAllocator(allocatorDesc); }
-        ~ScopedAllocatorSetupFixture() { TeardownAllocator(); }
+        ScopedAllocatorFixture()
+        {
+            SetupAllocator();
+        }
+        explicit ScopedAllocatorFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc)
+        {
+            SetupAllocator(allocatorDesc);
+        }
+        ~ScopedAllocatorFixture() override
+        {
+            TeardownAllocator();
+        }
+    };
+
+    // Like ScopedAllocatorFixture, but includes the Test base class
+    class ScopedAllocatorSetupFixture
+        : public ::testing::Test
+        , public ScopedAllocatorFixture
+    {
+    public:
+        ScopedAllocatorSetupFixture() = default;
+        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) : ScopedAllocatorFixture(allocatorDesc){}
     };
 
     /**
@@ -114,6 +124,7 @@ namespace UnitTest
     using AllocatorsFixture = AllocatorsTestFixture;
 
 #if defined(HAVE_BENCHMARK)
+
     /**
     * Helper class to handle the boiler plate of setting up a benchmark fixture that uses the system allocators
     * If you wish to do additional setup and tear down be sure to call the base class SetUp first and TearDown
@@ -218,7 +229,7 @@ namespace UnitTest
         static constexpr bool sHasPadding = size < alignment;
         AZStd::enable_if<sHasPadding, char[(alignment - size) % alignment]> mPadding;
     };
-    
+
     template <AZ::u32 size, AZ::u8 instance, size_t alignment>
     int CreationCounter<size, instance, alignment>::s_count = 0;
     template <AZ::u32 size, AZ::u8 instance, size_t alignment>

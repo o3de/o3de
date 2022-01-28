@@ -8,6 +8,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
+#include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <TerrainSrg.azsli>
 #include <TerrainCommon.azsli>
@@ -26,7 +27,6 @@ struct VSOutput
     float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_worldPosition : UV0;
-    float2 m_uv : UV1;
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
 };
 
@@ -34,24 +34,30 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
 {
     VSOutput OUT;
  
-    ObjectSrg::TerrainData terrainData = ObjectSrg::m_terrainData;
+    HeightContext heightContext;
+    heightContext.Initialize(SceneSrg::m_heightmapImage, IN.m_position, ObjectSrg::m_patchData, SceneSrg::m_terrainWorldData.m_min, SceneSrg::m_terrainWorldData.m_max);
 
-    float2 uv = IN.m_uv;
-    float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, uv);
-    float3 worldPosition = GetTerrainWorldPosition(terrainData, IN.m_position, origUv);
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
-    OUT.m_worldPosition = worldPosition;
+    if (heightContext.IsVertexOutsideOfTerrainBounds())
+    {
+        // Output a NaN to remove this vertex.
+        OUT.m_position = 1.0 / 0.0;
+        return OUT;
+    }
 
-    // Calculate normal
-    float up    = GetHeight(origUv + terrainData.m_uvStep * float2( 0.0f, -1.0f));
-    float right = GetHeight(origUv + terrainData.m_uvStep * float2( 1.0f,  0.0f));
-    float down  = GetHeight(origUv + terrainData.m_uvStep * float2( 0.0f,  1.0f));
-    float left  = GetHeight(origUv + terrainData.m_uvStep * float2(-1.0f,  0.0f));
+    float height = 0.0;
 
-    float3 bitangent = normalize(float3(0.0, terrainData.m_sampleSpacing * 2.0f, down - up));
-    float3 tangent = normalize(float3(terrainData.m_sampleSpacing * 2.0f, 0.0, right - left));
-    OUT.m_normal = normalize(cross(tangent, bitangent));
-    OUT.m_uv = uv;
+    if (o_useTerrainSmoothing)
+    {
+        height = heightContext.GetSmoothedHeight(SceneSrg::m_heightmapImage, SceneSrg::HeightmapSampler);
+    }
+    else
+    {
+        height = heightContext.GetHeight(SceneSrg::m_heightmapImage);
+    }
+
+    OUT.m_worldPosition = float3(heightContext.m_xyPosition, height);
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
+    OUT.m_normal = heightContext.CalculateNormal(SceneSrg::m_heightmapImage);
 
     // directional light shadow 
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
@@ -59,7 +65,7 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
     {
         DirectionalLightShadow::GetShadowCoords(
             shadowIndex,
-            worldPosition,
+            OUT.m_worldPosition,
             OUT.m_normal,
             OUT.m_shadowCoords);
     }
@@ -76,7 +82,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 
     float viewDistance = length(ViewSrg::m_worldPosition - surface.position);
     float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
-    float2 detailUv = IN.m_uv * TerrainMaterialSrg::m_detailTextureMultiplier;
+    float2 detailUv = IN.m_worldPosition.xy * TerrainMaterialSrg::m_detailTextureMultiplier;
     
     // ------- Normal -------
     float3 macroNormal = normalize(IN.m_normal);
@@ -84,39 +90,54 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     // ------- Macro Color / Normal -------
     float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
 
-    // There's a bug that shows up with an NVidia GTX 1660 Super card happening on driver versions as recent as 496.49 (10/26/21) in which
-    // the IN.m_uv values will intermittently "flicker" to 0.0 after entering and exiting game mode.  
-    // (See https://github.com/o3de/o3de/issues/5014)
-    // This bug has only shown up on PCs when using the DX12 RHI.  It doesn't show up with Vulkan or when capturing frames with PIX or
-    // RenderDoc.  Our best guess is that it is a driver bug.  The workaround is to use the IN.m_uv values in a calculation prior to the 
-    // point that we actually use them for macroUv below.  The "if(any(!isnan(IN.m_uv)))" seems to be sufficient for the workaround.  The
-    // if statement will always be true, but just the act of reading these values in the if statement makes the values stable.  Removing
-    // the if statement causes the flickering to occur using the steps documented in the bug.
-    if (any(!isnan(IN.m_uv)))
+    uint2 macroGridResolution = uint2(TerrainSrg::m_macroMaterialGrid.m_resolution >> 16, TerrainSrg::m_macroMaterialGrid.m_resolution & 0xFFFF);
+    float macroTileSize = TerrainSrg::m_macroMaterialGrid.m_tileSize;
+    float2 macroGridOffset = TerrainSrg::m_macroMaterialGrid.m_offset;
+    uint2 macroGridPosition = (surface.position.xy - macroGridOffset) / macroTileSize;
+
+    uint macroTileIndex = macroGridResolution.x * macroGridPosition.y + macroGridPosition.x;
+    static const uint NumMacroMaterialsPerTile = 4;
+    macroTileIndex *= NumMacroMaterialsPerTile;
+
+    [unroll] for (uint i = 0; i < NumMacroMaterialsPerTile; ++i)
     {
-        [unroll] for (uint i = 0; i < 4 && (i < ObjectSrg::m_macroMaterialCount); ++i)
+        TerrainSrg::MacroMaterialData macroMaterialData = TerrainSrg::m_macroMaterialData[macroTileIndex + i];
+        if ((macroMaterialData.m_flags & 1) == 0)
         {
-            float2 macroUvMin = ObjectSrg::m_macroMaterialData[i].m_uvMin;
-            float2 macroUvMax = ObjectSrg::m_macroMaterialData[i].m_uvMax;
-            float2 macroUv = lerp(macroUvMin, macroUvMax, IN.m_uv);
-            if (macroUv.x >= 0.0 && macroUv.x <= 1.0 && macroUv.y >= 0.0 && macroUv.y <= 1.0)
-            {
-                if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 1) > 0)
-                {
-                    macroColor = GetBaseColorInput(ObjectSrg::m_macroColorMap[i], TerrainMaterialSrg::m_sampler, macroUv, macroColor, true);
-                }
-                if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 2) > 0)
-                {
-                    bool flipX = ObjectSrg::m_macroMaterialData[i].m_flipNormalX;
-                    bool flipY = ObjectSrg::m_macroMaterialData[i].m_flipNormalY;
-                    float factor = ObjectSrg::m_macroMaterialData[i].m_normalFactor;
-                    
-                    float2 sampledValue = SampleNormalXY(ObjectSrg::m_macroNormalMap[i], TerrainMaterialSrg::m_sampler, macroUv, flipX, flipY);
-                    macroNormal = normalize(GetTangentSpaceNormal_Unnormalized(sampledValue.xy, factor));
-                }
-                break;
-            }
+            break; // No more macro materials for this tile
         }
+
+        if (any(surface.position.xy < macroMaterialData.m_boundsMin) || any (surface.position.xy > macroMaterialData.m_boundsMax))
+        {
+            continue; // Macro material exists for this tile but is out of the bounds of this particular position
+        }
+
+        float2 macroUvSize = macroMaterialData.m_boundsMax - macroMaterialData.m_boundsMin;
+        macroUvSize.x = -macroUvSize.x;
+        float2 macroUv = (macroMaterialData.m_boundsMin - surface.position.xy) / macroUvSize;
+
+        // The macro uv gradient can vary massively over the quad because different pixels may choose different macro materials with different UVs.
+        // To fix, we use the world position scaled by the macro uv scale which should be fairly uniform across macro materials.
+        float2 macroUvScale = IN.m_worldPosition.xy / macroUvSize;
+        float2 ddx_macroUv = ddx(macroUvScale);
+        float2 ddy_macroUv = ddy(macroUvScale);
+
+        if (macroMaterialData.m_colorMapId != 0xFFFF)
+        {
+            macroColor = TerrainSrg::m_textures[macroMaterialData.m_colorMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
+            macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+        }
+
+        if (macroMaterialData.m_normalMapId != 0xFFFF)
+        {
+            bool flipX = macroMaterialData.m_flags & 2;
+            bool flipY = macroMaterialData.m_flags & 4;
+            float factor = macroMaterialData.m_normalFactor;
+        
+            float2 sampledValue = SampleNormalXY(TerrainSrg::m_textures[macroMaterialData.m_normalMapId], TerrainMaterialSrg::m_sampler, macroUv, flipX, flipY);
+            macroNormal = normalize(GetTangentSpaceNormal_Unnormalized(sampledValue, factor));
+        }
+        break;
     }
     
     // ------- Base Color -------

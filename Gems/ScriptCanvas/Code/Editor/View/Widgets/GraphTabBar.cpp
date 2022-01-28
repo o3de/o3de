@@ -430,7 +430,7 @@ namespace ScriptCanvasEditor
         void GraphTabBar::UpdateFileState(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState)
         {
             auto tabData = GetTabData(assetId);
-            if (tabData && tabData->m_fileState != fileState)
+            if (tabData && tabData->m_fileState != Tracker::ScriptCanvasFileState::NEW && tabData->m_fileState != fileState)
             {
                 int index = FindTab(assetId);
                 tabData->m_fileState = fileState;

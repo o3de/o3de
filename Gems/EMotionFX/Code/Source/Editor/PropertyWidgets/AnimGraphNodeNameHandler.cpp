@@ -38,6 +38,12 @@ namespace EMotionFX
         m_node = node;
     }
 
+    void AnimGraphNodeNameLineEdit::focusInEvent([[maybe_unused]] QFocusEvent* event)
+    {
+        selectAll();
+        QLineEdit::focusInEvent(event);
+    }
+
     //---------------------------------------------------------------------------------------------------------------------------------------------------------
 
     AnimGraphNodeNameHandler::AnimGraphNodeNameHandler()

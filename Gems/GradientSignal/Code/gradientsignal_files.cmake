@@ -8,12 +8,31 @@
 
 set(FILES
     Include/GradientSignal/GradientSampler.h
+    Include/GradientSignal/GradientTransform.h
     Include/GradientSignal/SmoothStep.h
     Include/GradientSignal/ImageAsset.h
     Include/GradientSignal/ImageSettings.h
     Include/GradientSignal/PerlinImprovedNoise.h
     Include/GradientSignal/Util.h
     Include/GradientSignal/GradientImageConversion.h
+    Include/GradientSignal/Components/ConstantGradientComponent.h
+    Include/GradientSignal/Components/DitherGradientComponent.h
+    Include/GradientSignal/Components/GradientSurfaceDataComponent.h
+    Include/GradientSignal/Components/GradientTransformComponent.h
+    Include/GradientSignal/Components/ImageGradientComponent.h
+    Include/GradientSignal/Components/InvertGradientComponent.h
+    Include/GradientSignal/Components/LevelsGradientComponent.h
+    Include/GradientSignal/Components/MixedGradientComponent.h
+    Include/GradientSignal/Components/PerlinGradientComponent.h
+    Include/GradientSignal/Components/PosterizeGradientComponent.h
+    Include/GradientSignal/Components/RandomGradientComponent.h
+    Include/GradientSignal/Components/ReferenceGradientComponent.h
+    Include/GradientSignal/Components/ShapeAreaFalloffGradientComponent.h
+    Include/GradientSignal/Components/SmoothStepGradientComponent.h
+    Include/GradientSignal/Components/SurfaceAltitudeGradientComponent.h
+    Include/GradientSignal/Components/SurfaceMaskGradientComponent.h
+    Include/GradientSignal/Components/SurfaceSlopeGradientComponent.h
+    Include/GradientSignal/Components/ThresholdGradientComponent.h
     Include/GradientSignal/Ebuses/GradientTransformRequestBus.h
     Include/GradientSignal/Ebuses/GradientRequestBus.h
     Include/GradientSignal/Ebuses/GradientPreviewRequestBus.h
@@ -39,48 +58,30 @@ set(FILES
     Include/GradientSignal/Ebuses/GradientSurfaceDataRequestBus.h
     Include/GradientSignal/Ebuses/SmoothStepRequestBus.h
     Source/Components/ConstantGradientComponent.cpp
-    Source/Components/ConstantGradientComponent.h
     Source/Components/DitherGradientComponent.cpp
-    Source/Components/DitherGradientComponent.h
     Source/Components/GradientSurfaceDataComponent.cpp
-    Source/Components/GradientSurfaceDataComponent.h
     Source/Components/GradientTransformComponent.cpp
-    Source/Components/GradientTransformComponent.h
     Source/Components/ImageGradientComponent.cpp
-    Source/Components/ImageGradientComponent.h
     Source/Components/InvertGradientComponent.cpp
-    Source/Components/InvertGradientComponent.h
     Source/Components/LevelsGradientComponent.cpp
-    Source/Components/LevelsGradientComponent.h
     Source/Components/MixedGradientComponent.cpp
-    Source/Components/MixedGradientComponent.h
     Source/Components/PerlinGradientComponent.cpp
-    Source/Components/PerlinGradientComponent.h
     Source/Components/PosterizeGradientComponent.cpp
-    Source/Components/PosterizeGradientComponent.h
     Source/Components/RandomGradientComponent.cpp
-    Source/Components/RandomGradientComponent.h
     Source/Components/ReferenceGradientComponent.cpp
-    Source/Components/ReferenceGradientComponent.h
     Source/Components/ShapeAreaFalloffGradientComponent.cpp
-    Source/Components/ShapeAreaFalloffGradientComponent.h
     Source/Components/SmoothStepGradientComponent.cpp
-    Source/Components/SmoothStepGradientComponent.h
     Source/Components/SurfaceAltitudeGradientComponent.cpp
-    Source/Components/SurfaceAltitudeGradientComponent.h
     Source/Components/SurfaceMaskGradientComponent.cpp
-    Source/Components/SurfaceMaskGradientComponent.h
     Source/Components/SurfaceSlopeGradientComponent.cpp
-    Source/Components/SurfaceSlopeGradientComponent.h
     Source/Components/ThresholdGradientComponent.cpp
-    Source/Components/ThresholdGradientComponent.h
     Source/GradientSampler.cpp
     Source/GradientSignalSystemComponent.cpp
     Source/GradientSignalSystemComponent.h
+    Source/GradientTransform.cpp
     Source/SmoothStep.cpp
     Source/ImageAsset.cpp
     Source/ImageSettings.cpp
     Source/PerlinImprovedNoise.cpp
-    Source/Util.cpp
     Source/GradientImageConversion.cpp
 )

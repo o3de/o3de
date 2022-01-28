@@ -47,7 +47,6 @@ namespace AssetProcessor
 
 class ApplicationServer;
 class ConnectionManager;
-class FolderWatchCallbackEx;
 class ControlRequestHandler;
 
 class ApplicationManagerBase
@@ -149,7 +148,6 @@ protected:
     void CreateQtApplication() override;
 
     bool InitializeInternalBuilders();
-    bool InitializeExternalBuilders();
     void InitBuilderManager();
     void ShutdownBuilderManager();
     bool InitAssetDatabase();
@@ -173,8 +171,6 @@ protected:
 
     AssetProcessor::AssetCatalog* GetAssetCatalog() const { return m_assetCatalog; }
 
-    static bool WaitForBuilderExit(AzFramework::ProcessWatcher* processWatcher, AssetBuilderSDK::JobCancelListener* jobCancelListener, AZ::u32 processTimeoutLimitInSeconds);
-
     ApplicationServer* m_applicationServer = nullptr;
     ConnectionManager* m_connectionManager = nullptr;
 
@@ -195,9 +191,7 @@ protected:
     bool m_sourceControlReady = false;
     bool m_fullIdle = false;
 
-    AZStd::vector<AZStd::unique_ptr<FolderWatchCallbackEx> > m_folderWatches;
     FileWatcher m_fileWatcher;
-    AZStd::vector<int> m_watchHandles;
     AssetProcessor::PlatformConfiguration* m_platformConfiguration = nullptr;
     AssetProcessor::AssetProcessorManager* m_assetProcessorManager = nullptr;
     AssetProcessor::AssetCatalog* m_assetCatalog = nullptr;
@@ -218,6 +212,8 @@ protected:
     AZStd::shared_ptr<AssetProcessor::InternalRecognizerBasedBuilder> m_internalBuilder;
     AZStd::shared_ptr<AssetProcessor::SettingsRegistryBuilder> m_settingsRegistryBuilder;
 
+    bool m_builderRegistrationComplete = false;
+
     // Builder description map based on the builder id
     AZStd::unordered_map<AZ::Uuid, AssetBuilderSDK::AssetBuilderDesc> m_builderDescMap;
 
@@ -231,7 +227,7 @@ protected:
     AZStd::list<AssetProcessor::ExternalModuleAssetBuilderInfo*>    m_externalAssetBuilders;
 
     AssetProcessor::ExternalModuleAssetBuilderInfo* m_currentExternalAssetBuilder = nullptr;
-    
+
     QAtomicInt m_connectionsAwaitingAssetCatalogSave = 0;
     int m_remainingAPMJobs = 0;
     bool m_assetProcessorManagerIsReady = false;

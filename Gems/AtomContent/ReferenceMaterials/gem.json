@@ -2,7 +2,9 @@
     "gem_name": "ReferenceMaterials",
     "display_name": "PBR Reference Materials",
     "license": "Code, text, data files: Apache-2.0 Or MIT, assets/content/images: CC BY 4.0",
-    "origin": "https://github.com/aws-lumberyard-dev/o3de.git",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Asset",
     "summary": "Atom Asset Gem with a library of reference materials for StandardPBR (and others in the future)",
     "canonical_tags": [
@@ -14,6 +16,8 @@
         "Materials"
     ],
     "icon_path": "preview.png",
-    "dependencies": [],
-    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt"
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": [
+    ]
 }

@@ -53,6 +53,7 @@ def AssetBrowser_TreeNavigation():
     import azlmbr.legacy.general as general
 
     import editor_python_test_tools.pyside_utils as pyside_utils
+    import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
@@ -69,8 +70,7 @@ def AssetBrowser_TreeNavigation():
     file_path = ("AutomatedTesting", "Assets", "ImageGradients", "image_grad_test_gsi.png")
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Open Asset Browser (if not opened already)
     editor_window = pyside_utils.get_editor_main_window()

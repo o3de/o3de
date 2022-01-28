@@ -91,16 +91,17 @@ def ScaleModifierOverrides_InstancesProperlyScale():
         return False
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     general.set_current_view_position(500.49, 498.69, 46.66)
     general.set_current_view_rotation(-42.05, 0.00, -36.33)
 
     # 2) Create a new entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
     entity_position = math.Vector3(512.0, 512.0, 32.0)
-    asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Spawner Entity", entity_position, 16.0, 16.0, 10.0, asset_path)
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "ScaleMod_PinkFlower2")[0]
+    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", entity_position, 16.0, 16.0, 16.0,
+                                                               pink_flower_prefab)
 
     # Create a surface to plant on and add a Vegetation Debugger Level component to allow refreshes
     dynveg.create_surface_entity("Surface Entity", entity_position, 20.0, 20.0, 1.0)

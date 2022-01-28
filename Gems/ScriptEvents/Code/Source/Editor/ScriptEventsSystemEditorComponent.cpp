@@ -69,7 +69,7 @@ namespace ScriptEventsEditor
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
-        AZ::Data::AssetHandler::LoadResult loadedData = loadedData = AzFramework::GenericAssetHandler<ScriptEvents::ScriptEventsAsset>::LoadAssetData(asset, stream, assetLoadFilterCB);
+        AZ::Data::AssetHandler::LoadResult loadedData = AzFramework::GenericAssetHandler<ScriptEvents::ScriptEventsAsset>::LoadAssetData(asset, stream, assetLoadFilterCB);
 
         if (loadedData == AZ::Data::AssetHandler::LoadResult::LoadComplete)
         {

@@ -345,16 +345,11 @@ namespace LUAEditor
             if (selectedAssets.size() == 1)
             {
                 auto selectedAsset = selectedAssets.front();
-
-                AZStd::string current = selectedAsset->GetFullPath();
-                AZStd::replace(current.begin(), current.end(), '\\', '/');
-
-                const AZStd::string filePath = current;
-
+                const AZStd::string filePath = selectedAsset->GetFullPath();
                 auto entryType = selectedAsset->GetEntryType();
                 if (entryType == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
                 {
-                    Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::OnLoadDocument, filePath, true);
+                    EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, filePath, true);
                 }                    
             }
         });
@@ -381,9 +376,17 @@ namespace LUAEditor
         StringFilter* stringFilter = new StringFilter();
         stringFilter->SetFilterPropagation(AssetTypeFilter::PropagateDirection::Up);
 
-        connect(m_gui->m_assetBrowserSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, [stringFilter](const QString& newString)
+        connect(m_gui->m_assetBrowserSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, [&, stringFilter](const QString& newString)
         {
             stringFilter->SetFilterString(newString);
+            if (newString.isEmpty())
+            {
+                m_gui->m_assetBrowserTreeView->collapseAll();
+            }
+            else
+            {
+                m_gui->m_assetBrowserTreeView->expandAll();
+            }
         });
 
         // Construct the final filter where they are all and'd together
