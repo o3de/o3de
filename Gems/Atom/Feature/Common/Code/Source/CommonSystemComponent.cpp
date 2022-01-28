@@ -23,7 +23,7 @@
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/LookupTable/LookupTableAsset.h>
-#include <Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h>
+#include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
