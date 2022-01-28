@@ -376,18 +376,18 @@ namespace AZ
             return parts;
         }
 
-        bool MaterialTypeSourceData::EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, AZStd::string propertyNameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
+        bool MaterialTypeSourceData::EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
         {
             for (auto& propertyGroup : inPropertyGroupList)
             {
-                if (!callback(propertyNameContext, propertyGroup.get()))
+                if (!callback(propertyIdContext, propertyGroup.get()))
                 {
                     return false; // Stop processing
                 }
 
-                const AZStd::string propertyNameContext2 = propertyNameContext + propertyGroup->m_name + ".";
+                const AZStd::string propertyIdContext2 = propertyIdContext + propertyGroup->m_name + ".";
 
-                if (!EnumeratePropertyGroups(callback, propertyNameContext2, propertyGroup->m_propertyGroups))
+                if (!EnumeratePropertyGroups(callback, propertyIdContext2, propertyGroup->m_propertyGroups))
                 {
                     return false; // Stop processing
                 }
@@ -406,22 +406,22 @@ namespace AZ
             return EnumeratePropertyGroups(callback, {}, m_propertyLayout.m_propertyGroups);
         }
 
-        bool MaterialTypeSourceData::EnumerateProperties(const EnumeratePropertiesCallback& callback, AZStd::string propertyNameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
+        bool MaterialTypeSourceData::EnumerateProperties(const EnumeratePropertiesCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
         {
 
             for (auto& propertyGroup : inPropertyGroupList)
             {
-                const AZStd::string propertyNameContext2 = propertyNameContext + propertyGroup->m_name + ".";
+                const AZStd::string propertyIdContext2 = propertyIdContext + propertyGroup->m_name + ".";
 
                 for (auto& property : propertyGroup->m_properties)
                 {
-                    if (!callback(propertyNameContext2, property.get()))
+                    if (!callback(propertyIdContext2, property.get()))
                     {
                         return false; // Stop processing
                     }
                 }
 
-                if (!EnumerateProperties(callback, propertyNameContext2, propertyGroup->m_propertyGroups))
+                if (!EnumerateProperties(callback, propertyIdContext2, propertyGroup->m_propertyGroups))
                 {
                     return false; // Stop processing
                 }
@@ -532,14 +532,14 @@ namespace AZ
         bool MaterialTypeSourceData::BuildPropertyList(
             const AZStd::string& materialTypeSourceFilePath,
             MaterialTypeAssetCreator& materialTypeAssetCreator,
-            AZStd::vector<AZStd::string>& propertyNameContext,
+            AZStd::vector<AZStd::string>& propertyIdContext,
             const MaterialTypeSourceData::PropertyGroup* propertyGroup) const
         {            
             for (const AZStd::unique_ptr<PropertyDefinition>& property : propertyGroup->m_properties)
             {
                 // Register the property...
 
-                MaterialPropertyId propertyId{propertyNameContext, property->GetName()};
+                MaterialPropertyId propertyId{propertyIdContext, property->GetName()};
 
                 if (!propertyId.IsValid())
                 {
@@ -652,15 +652,15 @@ namespace AZ
             
             for (const AZStd::unique_ptr<PropertyGroup>& propertySubset : propertyGroup->m_propertyGroups)
             {
-                propertyNameContext.push_back(propertySubset->m_name);
+                propertyIdContext.push_back(propertySubset->m_name);
 
                 bool success = BuildPropertyList(
                     materialTypeSourceFilePath,
                     materialTypeAssetCreator,
-                    propertyNameContext,
+                    propertyIdContext,
                     propertySubset.get());
 
-                propertyNameContext.pop_back();
+                propertyIdContext.pop_back();
 
                 if (!success)
                 {
@@ -797,9 +797,9 @@ namespace AZ
             
             for (const AZStd::unique_ptr<PropertyGroup>& propertyGroup : m_propertyLayout.m_propertyGroups)
             {
-                AZStd::vector<AZStd::string> propertyNameContext;
-                propertyNameContext.push_back(propertyGroup->m_name);
-                bool success = BuildPropertyList(materialTypeSourceFilePath, materialTypeAssetCreator, propertyNameContext, propertyGroup.get());
+                AZStd::vector<AZStd::string> propertyIdContext;
+                propertyIdContext.push_back(propertyGroup->m_name);
+                bool success = BuildPropertyList(materialTypeSourceFilePath, materialTypeAssetCreator, propertyIdContext, propertyGroup.get());
 
                 if (!success)
                 {

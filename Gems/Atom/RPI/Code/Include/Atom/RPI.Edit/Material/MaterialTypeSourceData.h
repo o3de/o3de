@@ -320,13 +320,13 @@ namespace AZ
 
             //! Recursively populates a material asset with properties from the tree of material property groups.
             //! @param materialTypeSourceFilePath path to the material type file that is being processed, used to look up relative paths
-            //! @param propertyNameContext the accumulated prefix that should be applied to any property names encountered in the current @propertyGroup
+            //! @param propertyIdContext the accumulated prefix that should be applied to any property names encountered in the current @propertyGroup
             //! @param propertyGroup the current PropertyGroup that is being processed
             //! @return false if errors are detected and processing should abort
             bool BuildPropertyList(
                 const AZStd::string& materialTypeSourceFilePath,
                 MaterialTypeAssetCreator& materialTypeAssetCreator,
-                AZStd::vector<AZStd::string>& propertyNameContext,
+                AZStd::vector<AZStd::string>& propertyIdContext,
                 const MaterialTypeSourceData::PropertyGroup* propertyGroup) const;
                             
             //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data.
