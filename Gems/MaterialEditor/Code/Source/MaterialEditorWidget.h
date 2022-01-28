@@ -4,13 +4,13 @@
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <QWidget>
+#include <AzQtComponents/Components/Widgets/TabWidget.h>
 #endif
 
 namespace MaterialEditor
 {
     class MaterialEditorWidget
-        : public QWidget
+        : public AzQtComponents::TabWidget
     {
         Q_OBJECT
     public:

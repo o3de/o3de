@@ -73,6 +73,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
+                AZ::AzQtComponents
                 Gem::O3DEMaterialEditor.Static
     )
 
