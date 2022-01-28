@@ -694,7 +694,12 @@ namespace PhysX
             const float minYBounds = -(numRows * heightfieldShapeConfig.GetGridResolution().GetY()) / 2.0f;
 
             auto heights = heightfieldShapeConfig.GetSamples();
-            
+
+            if (heights.empty())
+            {
+                return;
+            }
+
             for (int xIndex = 0; xIndex < numColumns - 1; xIndex++)
             {
                 for (int yIndex = 0; yIndex < numRows - 1; yIndex++)
