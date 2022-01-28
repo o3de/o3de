@@ -1,39 +1,34 @@
 
-#include <MaterialEditorSystemComponent.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
+
+#include <AzToolsFramework/API/ViewPaneOptions.h>
+
+#include <MaterialEditorWidget.h>
+#include <MaterialEditorSystemComponent.h>
 
 namespace MaterialEditor
 {
     void MaterialEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<MaterialEditorSystemComponent, AZ::Component>()
-                ->Version(0)
-                ;
-
-            if (AZ::EditContext* ec = serialize->GetEditContext())
-            {
-                ec->Class<MaterialEditorSystemComponent>("MaterialEditor", "[Description of functionality provided by this System Component]")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
-            }
+            serializeContext->Class<MaterialEditorSystemComponent>()
+                ->Version(0);
         }
     }
 
+    MaterialEditorSystemComponent::MaterialEditorSystemComponent() = default;
+
+    MaterialEditorSystemComponent::~MaterialEditorSystemComponent() = default;
+
     void MaterialEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("MaterialEditorService"));
+        provided.push_back(AZ_CRC_CE("MaterialEditorEditorService"));
     }
 
     void MaterialEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("MaterialEditorService"));
+        incompatible.push_back(AZ_CRC_CE("MaterialEditorEditorService"));
     }
 
     void MaterialEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -44,40 +39,26 @@ namespace MaterialEditor
     {
     }
 
-    MaterialEditorSystemComponent::MaterialEditorSystemComponent()
-    {
-        if (MaterialEditorInterface::Get() == nullptr)
-        {
-            MaterialEditorInterface::Register(this);
-        }
-    }
-
-    MaterialEditorSystemComponent::~MaterialEditorSystemComponent()
-    {
-        if (MaterialEditorInterface::Get() == this)
-        {
-            MaterialEditorInterface::Unregister(this);
-        }
-    }
-
-    void MaterialEditorSystemComponent::Init()
-    {
-    }
-
     void MaterialEditorSystemComponent::Activate()
     {
-        MaterialEditorRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     void MaterialEditorSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
-        MaterialEditorRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
     }
 
-    void MaterialEditorSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void MaterialEditorSystemComponent::NotifyRegisterViews()
     {
+        AzToolsFramework::ViewPaneOptions options;
+        options.isPreview = true; // indicates it's a pre-release tool
+        options.showInMenu = true;
+        options.showOnToolsToolbar = true;
+        options.toolbarIcon = ":/Menu/material_editor.svg";
+
+        // Register our custom widget as a dockable tool with the Editor under an Examples sub-menu
+        AzToolsFramework::RegisterViewPane<MaterialEditorWidget>("O3DE Material Editor", "Tools", options);
     }
 
 } // namespace MaterialEditor
