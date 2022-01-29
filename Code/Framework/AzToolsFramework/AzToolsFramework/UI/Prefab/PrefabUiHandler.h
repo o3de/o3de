@@ -35,6 +35,7 @@ namespace AzToolsFramework
         QString GenerateItemInfoString(AZ::EntityId entityId) const override;
         QString GenerateItemTooltip(AZ::EntityId entityId) const override;
         QIcon GenerateItemIcon(AZ::EntityId entityId) const override;
+        bool CanToggleLockVisibility(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void PaintDescendantForeground(
@@ -64,6 +65,7 @@ namespace AzToolsFramework
         QColor m_prefabCapsuleColor = QColor("#1E252F");
         QColor m_prefabCapsuleDisabledColor = QColor("#35383C");
         QColor m_prefabCapsuleEditColor = QColor("#4A90E2");
+        QColor m_prefabCapsuleOverrideColor = QColor("#FFA500");
         QString m_prefabIconPath = QString(":/Entity/prefab.svg");
         QString m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
         QString m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open.svg");

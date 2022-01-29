@@ -36,10 +36,12 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
 
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QDir>
 #include <QGraphicsOpacityEffect>
 #include <QHeaderView>
@@ -51,6 +53,8 @@
 #include <QToolButton>
 
 #include <AzToolsFramework/UI/Outliner/ui_EntityOutlinerWidget.h>
+
+// TEMP - This should not live here!
 
 // This has to live outside of any namespaces due to issues on Linux with calls to Q_INIT_RESOURCE if they are inside a namespace
 void initEntityOutlinerWidgetResources()
@@ -237,6 +241,14 @@ namespace AzToolsFramework
 
         m_gui->m_searchWidget->AddWidgetToSearchWidget(display_options);
 
+        // TODO - Ideally this shouldn't be here?
+        /*
+        QCheckBox* prefabEditScopeToggle = new QCheckBox(this);
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(prefabEditScopeToggle);
+        connect(prefabEditScopeToggle, &QCheckBox::toggled, this, &EntityOutlinerWidget::OnPrefabEditScopeChanged);
+        m_gui->m_searchWidget->AddWidgetToSearchWidget(prefabEditScopeToggle);
+        */
+
         // Set the display options menu
         display_options->setMenu(m_displayOptionsMenu);
         connect(m_displayOptionsMenu, &EntityOutliner::DisplayOptionsMenu::OnSortModeChanged, this, &EntityOutlinerWidget::OnSortModeChanged);
@@ -323,6 +335,11 @@ namespace AzToolsFramework
 
         delete m_listModel;
         delete m_gui;
+    }
+
+    void EntityOutlinerWidget::OnPrefabEditScopeChanged(bool /* checked*/)
+    {
+
     }
 
     // Users should be able to drag an entity in the outliner without selecting it.

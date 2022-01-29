@@ -176,6 +176,9 @@ namespace AzToolsFramework
 
         void SetDefaultTreeViewEditTriggers();
 
+        // TODO - This function should not live here!
+        void OnPrefabEditScopeChanged(bool checked);
+
         void ScrollToNewContent();
         bool m_scrollToNewContentQueued;
         bool m_scrollToSelectedEntity;

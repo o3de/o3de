@@ -19,23 +19,36 @@
 
 namespace AzToolsFramework
 {
-    const QColor LevelRootUiHandler::m_levelRootBorderColor = QColor("#656565");
-    const QString LevelRootUiHandler::m_levelRootIconPath = QString(":/Level/level.svg");
+    AzFramework::EntityContextId LevelRootUiHandler::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
+    const QColor LevelRootUiHandler::s_levelRootBorderColor = QColor("#656565");
+    const QColor LevelRootUiHandler::s_levelRootEditColor = QColor("#4A90E2");
+    const QColor LevelRootUiHandler::s_levelRootOverrideColor = QColor("#FFA500");
+    const QString LevelRootUiHandler::s_levelRootIconPath = QString(":/Level/level.svg");
 
     LevelRootUiHandler::LevelRootUiHandler()
     {
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-
         if (m_prefabPublicInterface == nullptr)
         {
             AZ_Assert(false, "LevelRootUiHandler - could not get PrefabPublicInterface on LevelRootUiHandler construction.");
             return;
         }
+
+        m_prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+        if (m_prefabFocusPublicInterface == nullptr)
+        {
+            AZ_Assert(false, "LevelRootUiHandler - could not get PrefabFocusPublicInterface on LevelRootUiHandler construction.");
+            return;
+        }
+
+        // Get EditorEntityContextId
+        EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
     }
 
     QIcon LevelRootUiHandler::GenerateItemIcon(AZ::EntityId /*entityId*/) const
     {
-        return QIcon(m_levelRootIconPath);
+        return QIcon(s_levelRootIconPath);
     }
 
     QString LevelRootUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const
@@ -72,7 +85,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void LevelRootUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+    void LevelRootUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         if (!painter)
         {
@@ -80,18 +93,77 @@ namespace AzToolsFramework
             return;
         }
 
-        QPen borderLinePen(m_levelRootBorderColor, m_levelRootBorderThickness);
+        const QSize iconSize = QSize(32, 16);
+        QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
+        AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        QPen borderLinePen(s_levelRootBorderColor, s_levelRootBorderThickness);
 
         QRect rect = option.rect;
-        rect.setLeft(rect.left() + (m_levelRootBorderThickness / 2));
+
+        QColor backgroundColor = s_levelRootEditColor;
+        QString prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/checked.svg";
+        if (m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
+        {
+            backgroundColor = s_levelRootOverrideColor;
+            prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/unchecked.svg";
+        }
 
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing, true);
-        painter->setPen(borderLinePen);
-        
-        // Draw border at the bottom
-        painter->drawLine(rect.bottomLeft(), rect.bottomRight());
+
+        // Draw background if the root is focused.
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            painter->fillRect(rect, backgroundColor);
+
+            // Paint toggle icon
+            if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle || index.column() == EntityOutlinerListModel::ColumnLockToggle)
+            {
+                QPoint offset = QPoint(6, 4);
+                if (index.column() == EntityOutlinerListModel::ColumnLockToggle)
+                {
+                    offset = QPoint(-14, 4);
+                }
+
+                QIcon openIcon = QIcon(prefabEditScopeIconPath);
+                painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));
+            }
+        }
+        else
+        {
+            // Draw border at the bottom.
+            painter->setPen(borderLinePen);
+            painter->drawLine(rect.bottomLeft(), rect.bottomRight());
+        }
+
         painter->restore();
+    }
+
+    bool LevelRootUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    {
+        QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
+        AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+
+        if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle ||
+            index.column() == EntityOutlinerListModel::ColumnLockToggle)
+        {
+            if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId) && option.rect.contains(position))
+            {
+                if (m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_TEMPLATES)
+                {
+                    m_prefabFocusPublicInterface->SetPrefabEditScope(s_editorEntityContextId, Prefab::PrefabEditScope::NESTED_INSTANCES);
+                }
+                else
+                {
+                    m_prefabFocusPublicInterface->SetPrefabEditScope(s_editorEntityContextId, Prefab::PrefabEditScope::NESTED_TEMPLATES);
+                }
+
+                // Don't propagate event.
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool LevelRootUiHandler::OnEntityDoubleClick(AZ::EntityId entityId) const

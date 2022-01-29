@@ -61,6 +61,8 @@ namespace AzToolsFramework::Prefab
         bool IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const override;
         const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const override;
         const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const override;
+        PrefabEditScope GetPrefabEditScope(AzFramework::EntityContextId entityContextId) const override;
+        void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) override;
 
         // EditorEntityContextNotificationBus overrides ...
         void OnContextReset() override;
@@ -77,8 +79,10 @@ namespace AzToolsFramework::Prefab
         void RefreshInstanceFocusList();
         void RefreshInstanceFocusPath();
 
-        void OpenInstanceContainers(const AZStd::vector<AZ::EntityId>& instances) const;
-        void CloseInstanceContainers(const AZStd::vector<AZ::EntityId>& instances) const;
+        void SetInstanceContainersOpenState(const AZStd::vector<AZ::EntityId>& instances, bool openState) const;
+        void SetInstanceContainersOpenStateOfAllDescendantContainers(InstanceOptionalReference instance, bool openState) const;
+
+        void SwitchToEditScope(PrefabEditScope editScope) const;
 
         InstanceOptionalReference GetReferenceFromContainerEntityId(AZ::EntityId containerEntityId) const;
 
@@ -91,6 +95,8 @@ namespace AzToolsFramework::Prefab
         AZStd::vector<AZ::EntityId> m_instanceFocusHierarchy;
         //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
         AZ::IO::Path m_instanceFocusPath;
+        //! The current focus mode.
+        PrefabEditScope m_prefabEditScope = PrefabEditScope::NESTED_TEMPLATES;
 
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;

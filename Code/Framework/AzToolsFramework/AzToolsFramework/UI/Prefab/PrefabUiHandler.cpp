@@ -91,6 +91,11 @@ namespace AzToolsFramework
         return QIcon(m_prefabIconPath);
     }
 
+    bool PrefabUiHandler::CanToggleLockVisibility(AZ::EntityId entityId) const
+    {
+        return !m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
+    }
+
     void PrefabUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         if (!painter)
@@ -99,10 +104,10 @@ namespace AzToolsFramework
             return;
         }
 
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = index.column() == EntityOutlinerListModel::ColumnLockToggle;
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
+        AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         const bool hasVisibleChildren =
             firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
             firstColumnIndex.model()->hasChildren(firstColumnIndex);
@@ -111,6 +116,11 @@ namespace AzToolsFramework
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             backgroundColor = m_prefabCapsuleEditColor;
+
+            if (m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
+            {
+                backgroundColor = m_prefabCapsuleOverrideColor;
+            }
         }
         else if (!(option.state & QStyle::State_Enabled))
         {
@@ -196,6 +206,11 @@ namespace AzToolsFramework
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             borderColor = m_prefabCapsuleEditColor;
+
+            if (m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_INSTANCES)
+            {
+                borderColor = m_prefabCapsuleOverrideColor;
+            }
         }
 
         QPen borderLinePen(borderColor, m_prefabBorderThickness);
@@ -281,11 +296,11 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    void PrefabUiHandler::PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    void PrefabUiHandler::PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         const QPoint offset = QPoint(-18, 3);
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
+        AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         const int iconSize = 16;
         const bool isHovered = (option.state & QStyle::State_MouseOver);
         const bool isSelected = index.data(EntityOutlinerListModel::SelectedRole).template value<bool>();
@@ -293,10 +308,13 @@ namespace AzToolsFramework
         const bool isExpanded =
             firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
             firstColumnIndex.model()->hasChildren(firstColumnIndex);
+        bool isPrefabEditModeNestedTemplates =
+            m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_TEMPLATES;
 
-        if (!isFirstColumn || !(option.state & QStyle::State_Enabled))
+        QString prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/checked.svg";
+        if (!isPrefabEditModeNestedTemplates)
         {
-            return;
+            prefabEditScopeIconPath = ":/stylesheet/img/UI20/toggleswitch/unchecked.svg";
         }
 
         painter->save();
@@ -304,43 +322,57 @@ namespace AzToolsFramework
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
-            // Only show the close icon if the prefab is expanded.
-            // This allows the prefab container to be opened if it was collapsed during propagation.
-            if (!isExpanded)
+            if (isFirstColumn && (option.state & QStyle::State_Enabled))
             {
-                return;
+                // Only show the close icon if the prefab is expanded.
+                // This allows the prefab container to be opened if it was collapsed during propagation.
+                if (isExpanded)
+                {
+                    // Use the same color as the background.
+                    QColor editIconBackgroundColor = m_backgroundColor;
+                    if (isSelected)
+                    {
+                        editIconBackgroundColor = m_backgroundSelectedColor;
+                    }
+                    else if (isHovered)
+                    {
+                        editIconBackgroundColor = m_backgroundHoverColor;
+                    }
+
+                    // Paint a rect to cover up the expander.
+                    QRect rect = QRect(0, 0, 16, 16);
+                    rect.translate(option.rect.topLeft() + offset);
+                    painter->fillRect(rect, editIconBackgroundColor);
+
+                    // Paint the icon.
+                    QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
+                    painter->drawPixmap(option.rect.topLeft() + offset, closeIcon.pixmap(iconSize));
+                }
             }
 
-            // Use the same color as the background.
-            QColor backgroundColor = m_backgroundColor;
-            if (isSelected)
+            // Paint toggle icon
+            if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle ||
+                index.column() == EntityOutlinerListModel::ColumnLockToggle)
             {
-                backgroundColor = m_backgroundSelectedColor;
-            }
-            else if (isHovered)
-            {
-                backgroundColor = m_backgroundHoverColor;
-            }
+                QPoint toggleOffset = QPoint(5, 5);
+                if (index.column() == EntityOutlinerListModel::ColumnLockToggle)
+                {
+                    toggleOffset = QPoint(-15, 5);
+                }
 
-            // Paint a rect to cover up the expander.
-            QRect rect = QRect(0, 0, 16, 16);
-            rect.translate(option.rect.topLeft() + offset);
-            painter->fillRect(rect, backgroundColor);
-
-            // Paint the icon.
-            QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
-            painter->drawPixmap(option.rect.topLeft() + offset, closeIcon.pixmap(iconSize));
+                const QSize toggleIconSize = QSize(32, 16);
+                QIcon scopeToggleIcon = QIcon(prefabEditScopeIconPath);
+                painter->drawPixmap(option.rect.topLeft() + toggleOffset, scopeToggleIcon.pixmap(toggleIconSize));
+            }
         }
         else
         {
             // Only show the edit icon on hover.
-            if (!isHovered)
+            if (isFirstColumn && isHovered && isPrefabEditModeNestedTemplates)
             {
-                return;
+                QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
+                painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));
             }
-
-            QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
-            painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));
         }
 
         painter->restore();
@@ -389,10 +421,41 @@ namespace AzToolsFramework
 
     bool PrefabUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
+        AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         const QPoint offset = QPoint(-18, 3);
 
-        if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
+        bool isInFocusHierarchy = m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId);
+        bool isFocusedPrefab = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
+        bool isPrefabEditModeNestedTemplates =
+            m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) == Prefab::PrefabEditScope::NESTED_TEMPLATES;
+
+        if (isFocusedPrefab)
+        {
+            if (index.column() == EntityOutlinerListModel::ColumnVisibilityToggle ||
+                index.column() == EntityOutlinerListModel::ColumnLockToggle)
+            {
+                if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId) && option.rect.contains(position))
+                {
+                    if (m_prefabFocusPublicInterface->GetPrefabEditScope(s_editorEntityContextId) ==
+                        Prefab::PrefabEditScope::NESTED_TEMPLATES)
+                    {
+                        m_prefabFocusPublicInterface->SetPrefabEditScope(
+                            s_editorEntityContextId, Prefab::PrefabEditScope::NESTED_INSTANCES);
+                    }
+                    else
+                    {
+                        m_prefabFocusPublicInterface->SetPrefabEditScope(
+                            s_editorEntityContextId, Prefab::PrefabEditScope::NESTED_TEMPLATES);
+                    }
+
+                    // Don't propagate event.
+                    return true;
+                }
+            }
+        }
+
+        if (isInFocusHierarchy && isPrefabEditModeNestedTemplates)
         {
             QRect iconRect = QRect(0, 0, 16, 16);
             iconRect.translate(option.rect.topLeft() + offset);
