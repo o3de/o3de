@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <gmock/gmock.h>
 

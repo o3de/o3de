@@ -10,7 +10,7 @@
 #include <source/utils/utils.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 

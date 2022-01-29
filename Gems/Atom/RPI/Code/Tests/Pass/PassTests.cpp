@@ -21,7 +21,7 @@
 
 #include <Atom/RPI.Public/RenderPipeline.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <Common/RPITestFixture.h>
 

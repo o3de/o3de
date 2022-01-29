@@ -25,8 +25,8 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/Mocks/MockSettingsRegistry.h>
+#include <AzTest/TestTypes.h>
 
 namespace AZ
 {

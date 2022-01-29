@@ -6,7 +6,7 @@
  *
  */
 #include <Tests/GenericStreamMock.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 
 class GenericStreamTest

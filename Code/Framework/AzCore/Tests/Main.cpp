@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzCore/UnitTest/UnitTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/UnitTest.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 
 

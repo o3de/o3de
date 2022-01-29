@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Input/User/LocalUserId.h>
 
 #include <SaveDataSystemComponent.h>

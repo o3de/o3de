@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Name/NameDictionary.h>

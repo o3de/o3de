@@ -8,7 +8,7 @@
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/containers/array.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 
 #if defined(HAVE_BENCHMARK)

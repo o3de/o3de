@@ -11,7 +11,7 @@
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/DOM/DomComparison.h>
 #include <AzCore/Name/NameDictionary.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Tests/DOM/DomFixtures.h>
 
 namespace AZ::Dom::Benchmark

@@ -11,7 +11,7 @@
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Sphere.h>
 #include <AzCore/Math/ShapeIntersection.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <random>
 
 namespace Benchmark

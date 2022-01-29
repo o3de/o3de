@@ -13,7 +13,7 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

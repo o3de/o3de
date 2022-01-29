@@ -6,7 +6,7 @@
  *
  */
 #include <AzCore/std/containers/bitset.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <type_traits>
 #include <bitset> // Used for comparison tests.
 

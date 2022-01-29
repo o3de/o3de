@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 #include <xcb/xcb.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include "MockXcbInterface.h"
 

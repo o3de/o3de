@@ -11,7 +11,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Memory/AllocationRecords.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include "ModuleTestBus.h"
 
 #if !AZ_UNIT_TEST_SKIP_DLL_TEST

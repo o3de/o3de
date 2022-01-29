@@ -14,7 +14,7 @@
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/StringFunc/StringFunc.h>

@@ -14,7 +14,7 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Math/Vector2.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
 #include <AzFramework/Components/TransformComponent.h>

@@ -12,7 +12,7 @@
 #include <MetricsQueue.h>
 
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AWSMetrics

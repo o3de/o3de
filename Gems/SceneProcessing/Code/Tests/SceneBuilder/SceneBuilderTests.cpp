@@ -11,9 +11,9 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
-#include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
+#include <AzTest/TestTypes.h>
+#include <AzTest/Mocks/MockFileIOBase.h>
+#include <AzTest/Mocks/MockSettingsRegistry.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>

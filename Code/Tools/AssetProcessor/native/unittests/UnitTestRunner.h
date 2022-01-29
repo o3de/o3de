@@ -21,7 +21,7 @@
 #endif
 
 #include <gtest/gtest.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 
 //! These macros can be used for checking your unit tests,
 //! you can check AssetScannerUnitTest.cpp for usage

@@ -9,7 +9,7 @@
 #include <AWSMetricsConstant.h>
 #include <MetricsEvent.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace AWSMetrics
 {

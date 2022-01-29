@@ -13,7 +13,7 @@
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/Utils.h>
 
 class AWSGameLiftClientFixture

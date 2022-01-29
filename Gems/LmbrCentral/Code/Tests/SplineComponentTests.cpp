@@ -16,7 +16,7 @@
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Components/TransformComponent.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Shape/SplineComponent.h>
 
 namespace UnitTest

@@ -11,7 +11,7 @@
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Script/ScriptContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
 
 #include "EntityTestbed.h"

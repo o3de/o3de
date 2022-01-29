@@ -11,7 +11,7 @@
 #include <Source/NetworkTime/NetworkTime.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/Time/TimeSystem.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

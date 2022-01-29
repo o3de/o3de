@@ -7,7 +7,7 @@
  */
 
 #include <AzNetworking/DataStructures/RingBufferBitset.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

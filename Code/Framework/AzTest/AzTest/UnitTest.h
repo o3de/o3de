@@ -10,12 +10,6 @@
 #include <AzTest/AzTest.h>
 #include <AzTest/Platform.h>
 
-#if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
-#include <csignal>
-#endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
-
-#include <AzCore/Memory/AllocatorManager.h>
-#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/base.h>
 #include <AzCore/std/typetraits/has_member_function.h>
 #include <AzCore/Debug/Trace.h>
@@ -208,81 +202,13 @@ namespace UnitTest
         , public TraceBusRedirector
     {
     public:
-        void SetupEnvironment() override
-        {
-#if AZ_TRAIT_UNITTEST_USE_TEST_RUNNER_ENVIRONMENT
-            AZ::EnvironmentInstance inst = AZ::Test::GetPlatform().GetTestRunnerEnvironment();
-            AZ::Environment::Attach(inst);
-            m_createdAllocator = false;
-#else
-            if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::OSAllocator>::Create(); // used by the bus
-                m_createdAllocator = true;
-            }
-#endif
-            BusConnect();
-
-            m_environmentSetup = true;
-        }
-
-        void TeardownEnvironment() override
-        {
-            if (m_environmentSetup)
-            {
-                BusDisconnect();
-
-                if (m_createdAllocator)
-                {
-                    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy(); // used by the bus
-                }
-
-                // At this point, the AllocatorManager should not have any allocators left. If we happen to have any,
-                // we exit the test with an error code (this way the test process does not return 0 and the test run
-                // is considered a failure).
-                AZ::AllocatorManager& allocatorManager = AZ::AllocatorManager::Instance();
-                const int numAllocators = allocatorManager.GetNumAllocators();
-                int invalidAllocatorCount = 0;
-
-                for (int i = 0; i < numAllocators; ++i)
-                {
-                    if (!allocatorManager.GetAllocator(i)->IsLazilyCreated())
-                    {
-                        invalidAllocatorCount++;
-                    }
-                }
-
-                if (invalidAllocatorCount && m_createdAllocator)
-                {
-                    // Print the name of the allocators still in the AllocatorManager
-                    ColoredPrintf(COLOR_RED, "[     FAIL ] There are still %d registered non-lazy allocators:\n", invalidAllocatorCount);
-                    for (int i = 0; i < numAllocators; ++i)
-                    {
-                        if (!allocatorManager.GetAllocator(i)->IsLazilyCreated())
-                        {
-                            ColoredPrintf(COLOR_RED, "\t\t%s\n", allocatorManager.GetAllocator(i)->GetName());
-                        }
-                    }
-
-                    AZ::AllocatorManager::Destroy();
-                    m_environmentSetup = false;
-
-#if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
-                    std::raise(SIGTERM);
-#endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
-                }
-
-                AZ::AllocatorManager::Destroy();
-                m_environmentSetup = false;
-            }
-        }
-
+        void SetupEnvironment() override;
+        void TeardownEnvironment() override;
     private:
         bool m_environmentSetup = false;
         bool m_createdAllocator = false;
     };
 }
-
 
 #define AZ_TEST_ASSERT(exp) { \
     if (UnitTest::TestRunner::Instance().m_isAssertTest) \

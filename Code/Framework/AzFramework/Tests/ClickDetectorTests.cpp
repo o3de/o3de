@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 

@@ -10,7 +10,7 @@
 #include <AzCore/Script/lua/lua.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Math/MathReflection.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Aabb.h>

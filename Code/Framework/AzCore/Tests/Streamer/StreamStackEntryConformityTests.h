@@ -15,7 +15,7 @@
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <Tests/Streamer/StreamStackEntryMock.h>
 

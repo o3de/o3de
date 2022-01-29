@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Atom/RHI/PipelineLibrary.h>
 #include <Atom/RHI/PipelineState.h>
 #include <AzCore/Memory/SystemAllocator.h>

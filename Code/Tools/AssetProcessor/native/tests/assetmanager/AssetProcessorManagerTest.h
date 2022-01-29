@@ -25,7 +25,7 @@
 #include <QMetaObject>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include "resourcecompiler/rccontroller.h"
 

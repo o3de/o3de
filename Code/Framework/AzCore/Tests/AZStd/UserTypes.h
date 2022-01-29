@@ -12,7 +12,7 @@
 // define AZSTD_CHECKED_ITERATORS in the lib and then test
 //#define AZSTD_CHECKED_ITERATORS 1
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/base.h>
 #include <AzCore/std/typetraits/typetraits.h>
 

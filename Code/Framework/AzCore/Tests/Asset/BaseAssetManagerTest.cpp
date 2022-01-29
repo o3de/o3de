@@ -24,7 +24,7 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/parallel/condition_variable.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <Streamer/IStreamerMock.h>
 

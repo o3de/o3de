@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Tests/Serialization/Json/BaseJsonSerializerFixture.h>
 
 namespace JsonSerializationTests

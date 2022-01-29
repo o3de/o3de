@@ -23,7 +23,7 @@
 #include <AzCore/IO/SystemFile.h>
 
 #include <AzCore/Memory/AllocationRecords.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzCore/std/parallel/containers/concurrent_unordered_set.h>
 #include <AZTestShared/Utils/Utils.h>

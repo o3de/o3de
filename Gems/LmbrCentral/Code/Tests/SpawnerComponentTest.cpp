@@ -18,7 +18,7 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 // LmbrCentral/Source
 #include "Scripting/SpawnerComponent.h"
 #include "LmbrCentral.h"

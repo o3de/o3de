@@ -8,7 +8,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AWSClientAuthSystemComponent.h>
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/IO/LocalFileIO.h>

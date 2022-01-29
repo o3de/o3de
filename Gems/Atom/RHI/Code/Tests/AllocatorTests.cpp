@@ -11,7 +11,7 @@
 #include <Atom/RHI/FreeListAllocator.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/std/time.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 
 #define PRINTF(...)  do { UnitTest::ColoredPrintf(UnitTest::COLOR_GREEN, "[          ] "); UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, __VA_ARGS__); } while(0)
 

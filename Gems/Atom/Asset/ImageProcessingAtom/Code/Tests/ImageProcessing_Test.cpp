@@ -69,7 +69,7 @@
 //There are some test functions in this test which are DISABLED. They were mainly for programming tests.
 //It's only recommended to enable them for programming test purpose.
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <ImageBuilderComponent.h>
 
 using namespace ImageProcessingAtom;

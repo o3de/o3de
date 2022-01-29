@@ -10,7 +10,7 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <Source/Components/DescriptorListCombinerComponent.h>
 #include <Source/Components/DescriptorListComponent.h>

@@ -12,7 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Name/NameDictionary.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 using namespace AZ;
 

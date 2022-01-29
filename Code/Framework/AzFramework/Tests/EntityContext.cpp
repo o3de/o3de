@@ -14,7 +14,7 @@
 #include <AzCore/Slice/SliceAssetHandler.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Entity/EntityContext.h>
 
 namespace UnitTest

@@ -6,7 +6,7 @@
  *
  */
 
-#include "AzCore/UnitTest/UnitTest.h"
+#include "AzTest/UnitTest.h"
 #include <gtest/gtest.h>
 
 #include <EMotionFX/Source/AnimGraph.h>

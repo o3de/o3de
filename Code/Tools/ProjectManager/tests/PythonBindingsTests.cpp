@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/Utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>

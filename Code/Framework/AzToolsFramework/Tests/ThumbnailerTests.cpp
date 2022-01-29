@@ -7,7 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>

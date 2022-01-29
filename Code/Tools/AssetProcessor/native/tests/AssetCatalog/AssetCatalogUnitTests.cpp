@@ -7,7 +7,7 @@
  */
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 

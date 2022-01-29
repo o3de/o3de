@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/tuple.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>

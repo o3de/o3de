@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <Atom/Feature/Utils/IndexableList.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -15,7 +15,7 @@
 #include <Decals/DecalTextureArray.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAssetCreator.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 
 namespace UnitTest

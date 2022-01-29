@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Serialization/SerializeContext.h>

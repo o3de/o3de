@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <gtest/gtest-param-test.h>
 
 #include <ExpressionEvaluation/ExpressionEngine.h>

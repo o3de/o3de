@@ -9,10 +9,10 @@
 #include <Asset/BlastChunksAsset.h>
 
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <gmock/gmock.h>
 
-#include <AzCore/UnitTest/MockComponentApplication.h>
+#include <AzTest/MockComponentApplication.h>
 
 namespace UnitTest
 {

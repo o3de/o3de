@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI/FrameAttachment.h>

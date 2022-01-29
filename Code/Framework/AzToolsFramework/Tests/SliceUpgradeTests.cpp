@@ -10,7 +10,7 @@
 
 AZ_PUSH_DISABLE_WARNING(,"-Wdelete-non-virtual-dtor")
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/IO/FileIO.h>

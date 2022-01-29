@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/FullFileDecompressor.h>

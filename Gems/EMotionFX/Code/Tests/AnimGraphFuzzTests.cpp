@@ -13,7 +13,7 @@
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include "AnimGraphFixture.h"
 #include "EMotionFX_Traits_Platform.h"
 

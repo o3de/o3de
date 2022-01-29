@@ -7,7 +7,7 @@
  */
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/GenericStreams.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 
 

@@ -13,7 +13,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <Shape/SplineComponent.h>
 #include <Shape/TubeShapeComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

@@ -13,7 +13,7 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
 #include <AzCore/Slice/SliceComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>

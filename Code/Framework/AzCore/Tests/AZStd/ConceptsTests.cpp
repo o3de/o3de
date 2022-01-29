@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/concepts/concepts.h>
 #include <AzCore/std/ranges/ranges_functional.h>
 

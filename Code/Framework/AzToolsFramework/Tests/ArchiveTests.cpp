@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/Memory.h>

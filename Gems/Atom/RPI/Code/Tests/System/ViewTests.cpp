@@ -8,7 +8,7 @@
 
 #include <Atom/RPI.Public/View.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <Common/RPITestFixture.h>
 

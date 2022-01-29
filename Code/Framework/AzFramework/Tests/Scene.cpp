@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 AZ_PUSH_DISABLE_WARNING(, "-Wdelete-non-virtual-dtor")
 

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <MCore/Source/CommandLine.h>
 

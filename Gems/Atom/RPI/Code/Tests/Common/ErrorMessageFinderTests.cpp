@@ -9,7 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <Common/ErrorMessageFinder.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

@@ -10,7 +10,7 @@
 
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/JSON/document.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #define DOM_REGISTER_SERIALIZATION_BENCHMARK(BaseClass, Method)                                                                            \
     BENCHMARK_REGISTER_F(BaseClass, Method)->Args({ 10, 5 })->Args({ 10, 500 })->Args({ 100, 5 })->Args({ 100, 500 })

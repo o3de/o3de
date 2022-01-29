@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/XML/rapidxml.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzCore/std/string/string.h>
 

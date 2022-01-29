@@ -11,7 +11,7 @@
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Settings/SettingsRegistry.h>

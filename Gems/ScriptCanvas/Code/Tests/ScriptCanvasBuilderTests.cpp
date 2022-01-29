@@ -13,7 +13,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <AzTest/AzTest.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>

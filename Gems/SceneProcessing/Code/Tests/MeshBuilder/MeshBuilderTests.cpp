@@ -9,7 +9,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Generation/Components/MeshOptimizer/MeshBuilder.h>
 #include <Generation/Components/MeshOptimizer/MeshBuilderSubMesh.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace AZ::MeshBuilder
 {

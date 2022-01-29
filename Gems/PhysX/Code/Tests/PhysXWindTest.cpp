@@ -7,7 +7,7 @@
  */
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/UnitTest/Helpers.h>
+#include <AzTest/Helpers.h>
 
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Physics/SystemBus.h>

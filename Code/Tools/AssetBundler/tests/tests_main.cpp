@@ -17,7 +17,7 @@
 #include <source/utils/utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>

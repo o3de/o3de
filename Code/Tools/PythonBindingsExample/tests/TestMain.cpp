@@ -8,7 +8,7 @@
 
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
 

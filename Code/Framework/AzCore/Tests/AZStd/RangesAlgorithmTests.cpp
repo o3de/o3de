@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 

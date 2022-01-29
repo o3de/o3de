@@ -11,8 +11,8 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/TestTypes.h>
+#include <AzTest/UnitTest.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzTest/AzTest.h>
 #include <Multiplayer/Components/NetBindComponent.h>

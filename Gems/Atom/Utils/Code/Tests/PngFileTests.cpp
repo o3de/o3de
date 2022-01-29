@@ -7,7 +7,7 @@
  */
 
 #include <Atom/Utils/PngFile.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/IO/FileIO.h>

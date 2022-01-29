@@ -10,7 +10,7 @@
 #include <sstream>
 
 #include <AzCore/Memory/Memory.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/conversions.h>

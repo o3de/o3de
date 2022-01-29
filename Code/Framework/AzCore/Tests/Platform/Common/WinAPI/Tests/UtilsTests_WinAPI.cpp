@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Utils/Utils.h>
 
 namespace UnitTest

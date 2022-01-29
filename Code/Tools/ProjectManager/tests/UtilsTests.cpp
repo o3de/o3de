@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Application.h>
 #include <ProjectUtils.h>
 #include <ProjectManagerDefs.h>

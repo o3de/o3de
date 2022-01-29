@@ -6,13 +6,13 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <Atom/Feature/Utils/IndexableList.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <gtest/gtest.h>
 #include <AzCore/Math/Random.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 
 namespace UnitTest

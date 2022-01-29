@@ -10,7 +10,7 @@
 
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 using namespace AZStd;
 

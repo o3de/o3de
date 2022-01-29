@@ -10,7 +10,7 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryConsoleUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace SettingsRegistryConsoleUtilsTests
 {

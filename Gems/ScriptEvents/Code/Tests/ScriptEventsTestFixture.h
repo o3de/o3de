@@ -18,7 +18,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 

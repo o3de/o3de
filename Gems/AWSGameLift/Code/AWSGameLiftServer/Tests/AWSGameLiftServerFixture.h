@@ -12,7 +12,7 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 class AWSGameLiftServerFixture
     : public UnitTest::ScopedAllocatorSetupFixture

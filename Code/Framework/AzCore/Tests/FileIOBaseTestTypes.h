@@ -14,7 +14,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/functional.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 
 // This header file and CPP handles the platform specific implementation of code as defined by the FileIOBase interface class.
 // In order to make your code portable and functional with both this and the RemoteFileIO class, use the interface to access

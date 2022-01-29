@@ -14,7 +14,7 @@
 #include <AzCore/Script/lua/lua.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Math/MathReflection.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzCore/Math/MathReflection.h>
 #include <AzFramework/Entity/EntityContext.h>

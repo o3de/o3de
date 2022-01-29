@@ -14,7 +14,7 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <Shape/PolygonPrismShapeComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest

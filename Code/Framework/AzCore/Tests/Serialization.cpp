@@ -64,7 +64,7 @@
 
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 
 namespace SerializeTestClasses {

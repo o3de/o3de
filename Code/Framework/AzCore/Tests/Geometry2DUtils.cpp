@@ -8,7 +8,7 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Geometry2DUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace UnitTest

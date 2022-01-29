@@ -8,7 +8,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/Memory/MemoryComponent.h>
 

@@ -15,7 +15,7 @@
 #include <AzFramework/Asset/AssetSeedList.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <Tests/FileIOBaseTestTypes.h>

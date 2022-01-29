@@ -12,7 +12,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>

@@ -11,7 +11,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <FastNoiseGradientComponent.h>

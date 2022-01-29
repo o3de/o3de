@@ -16,7 +16,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <Tests/Asset/MockLoadAssetCatalogAndHandler.h>
 

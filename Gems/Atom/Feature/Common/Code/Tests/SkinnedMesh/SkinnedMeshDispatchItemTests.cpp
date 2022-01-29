@@ -9,7 +9,7 @@
 #include <SkinnedMesh/SkinnedMeshDispatchItem.h>
 
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 
 namespace UnitTest
 {

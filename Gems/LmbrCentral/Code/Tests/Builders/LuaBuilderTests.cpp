@@ -11,7 +11,7 @@
 #include <AzTest/Utils.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>

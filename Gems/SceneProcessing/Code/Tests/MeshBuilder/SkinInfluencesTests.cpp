@@ -7,7 +7,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/Math/Random.h>

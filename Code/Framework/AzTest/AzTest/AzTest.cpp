@@ -8,7 +8,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzTest/Platform.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 
 namespace AZ
 {
@@ -315,5 +315,6 @@ namespace AZ
         {
             return new UnitTest::TraceBusHook();
         }
+
     } // Test
 } // AZ

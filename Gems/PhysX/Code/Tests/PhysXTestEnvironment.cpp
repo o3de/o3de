@@ -12,7 +12,7 @@
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/UnitTest/UnitTest.h>
+#include <AzTest/UnitTest.h>
 
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Physics/Utils.h>

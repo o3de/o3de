@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Math/Random.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 using namespace AZ;
 

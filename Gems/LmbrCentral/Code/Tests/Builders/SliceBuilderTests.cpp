@@ -14,7 +14,7 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <Builders/SliceBuilder/SliceBuilderWorker.h>

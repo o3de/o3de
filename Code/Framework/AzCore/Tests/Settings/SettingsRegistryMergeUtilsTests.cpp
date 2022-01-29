@@ -17,7 +17,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace SettingsRegistryMergeUtilsTests
 {

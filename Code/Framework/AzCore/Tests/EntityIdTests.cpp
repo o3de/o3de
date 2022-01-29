@@ -6,7 +6,7 @@
  *
  */
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 class EntityIdTests
     : public UnitTest::AllocatorsFixture

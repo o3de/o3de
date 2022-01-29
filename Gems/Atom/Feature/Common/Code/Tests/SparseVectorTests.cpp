@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Atom/Feature/Utils/SparseVector.h>
 #include <Atom/Feature/Utils/MultiSparseVector.h>
 

@@ -14,13 +14,13 @@
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <Tests/FileIOBaseTestTypes.h>
 #include <Tests/Asset/TestAssetTypes.h>
 #include <Tests/SerializeContextFixture.h>
 #include <Tests/TestCatalog.h>
-#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <AzTest/Mocks/MockFileIOBase.h>
 #include <Streamer/IStreamerMock.h>
 
 namespace UnitTest

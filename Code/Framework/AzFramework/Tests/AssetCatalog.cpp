@@ -23,7 +23,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>

@@ -13,7 +13,7 @@
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>

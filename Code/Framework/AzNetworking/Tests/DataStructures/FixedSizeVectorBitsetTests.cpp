@@ -7,7 +7,7 @@
  */
 
 #include <AzNetworking/DataStructures/FixedSizeVectorBitset.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

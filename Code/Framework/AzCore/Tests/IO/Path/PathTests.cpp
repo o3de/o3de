@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/StringFunc/StringFunc.h>

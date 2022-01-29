@@ -20,7 +20,7 @@
 
 #include <source/utils/utils.h>
 #include <source/utils/applicationManager.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <tests/main.h>
 
 namespace AssetBundler

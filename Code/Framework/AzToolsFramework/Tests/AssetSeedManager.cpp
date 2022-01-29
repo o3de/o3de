@@ -7,7 +7,7 @@
  */
 
 #include <Asset/AssetDebugInfo.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzCore/IO/FileIO.h>

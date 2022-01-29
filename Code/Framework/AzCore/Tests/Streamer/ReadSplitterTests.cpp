@@ -9,7 +9,7 @@
 #include <AzCore/IO/IStreamerTypes.h>
 #include <AzCore/IO/Streamer/ReadSplitter.h>
 #include <AzCore/Memory/Memory.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <Tests/FileIOBaseTestTypes.h>
 #include <Tests/Streamer/StreamStackEntryConformityTests.h>
 #include <Tests/Streamer/StreamStackEntryMock.h>

@@ -7,7 +7,7 @@
  */
 
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Slice/SliceAssetHandler.h>

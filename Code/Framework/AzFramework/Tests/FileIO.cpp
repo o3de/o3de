@@ -11,7 +11,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/FileOperations.h>

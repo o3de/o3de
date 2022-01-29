@@ -9,7 +9,7 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzTest/AzTest.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>

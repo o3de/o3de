@@ -7,7 +7,7 @@
  */
 
 #include <AzNetworking/DataStructures/TimeoutQueue.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace UnitTest
 {

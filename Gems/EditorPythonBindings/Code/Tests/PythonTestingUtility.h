@@ -16,7 +16,7 @@
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 #include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 

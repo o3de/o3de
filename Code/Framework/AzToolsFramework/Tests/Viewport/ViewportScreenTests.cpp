@@ -11,7 +11,7 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/VectorConversions.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzTest/AzTest.h>

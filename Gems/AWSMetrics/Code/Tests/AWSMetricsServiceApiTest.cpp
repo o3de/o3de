@@ -11,7 +11,7 @@
 #include <MetricsEventBuilder.h>
 #include <Framework/JsonObjectHandler.h>
 
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 
 namespace AWSMetrics
 {

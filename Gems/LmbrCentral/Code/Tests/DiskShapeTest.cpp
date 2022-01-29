@@ -9,7 +9,7 @@
 #include <AzTest/AzTest.h>
 
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <LmbrCentral/Shape/DiskShapeComponentBus.h>
 #include <Shape/DiskShapeComponent.h>
