@@ -66,7 +66,6 @@ ly_append_configurations_options(
         -Wno-enum-compare
         -Wno-int-in-bool-context
         -Wno-sequence-point
-        -Wno-comment
         -Wno-restrict
         -Wno-format-overflow
         -fvisibility-inlines-hidden
