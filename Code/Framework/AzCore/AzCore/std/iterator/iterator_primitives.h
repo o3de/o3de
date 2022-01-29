@@ -12,6 +12,8 @@
 #include <AzCore/std/ranges/iter_move.h>
 #include <AzCore/std/typetraits/common_reference.h>
 #include <AzCore/std/typetraits/conditional.h>
+#include <AzCore/std/typetraits/conjunction.h>
+#include <AzCore/std/typetraits/integral_constant.h>
 #include <AzCore/std/typetraits/is_array.h>
 #include <AzCore/std/typetraits/is_class.h>
 #include <AzCore/std/typetraits/is_enum.h>
@@ -124,21 +126,24 @@ namespace AZStd::Internal
     struct incrementable_requires {};
     // iterator_traits has been specialized
     template <typename T>
-    struct incrementable_requires<T, enable_if_t<!is_primary_template_v<iterator_traits<T>>
-        && is_void_v<void_t<typename iterator_traits<T>::difference_type>> >>
+    struct incrementable_requires<T, enable_if_t<conjunction_v<
+        bool_constant<!is_primary_template_v<iterator_traits<T>>>,
+        bool_constant<is_void_v<void_t<typename iterator_traits<T>::difference_type>>>> >>
     {
         using difference_type = typename iterator_traits<T>::difference_type;
     };
     template <typename T>
-    struct incrementable_requires<T, enable_if_t<is_primary_template_v<iterator_traits<T>>
-        && has_difference_type_v<T>>>
+    struct incrementable_requires<T, enable_if_t<conjunction_v<
+        bool_constant<is_primary_template_v<iterator_traits<T>>>,
+        bool_constant<has_difference_type_v<T>>> >>
     {
         using difference_type = typename T::difference_type;
     };
     template <typename T>
-    struct incrementable_requires<T, enable_if_t<is_primary_template_v<iterator_traits<T>>
-        && !has_difference_type_v<T>
-        && integral<decltype(declval<T>() - declval<T>())> >>
+    struct incrementable_requires<T, enable_if_t< conjunction_v<
+        bool_constant<is_primary_template_v<iterator_traits<T>>>,
+        bool_constant<!has_difference_type_v<T>>,
+        bool_constant<integral<decltype(declval<T>() - declval<T>())>>> >>
     {
         using difference_type = make_signed_t<decltype(declval<T>() - declval<T>())>;
     };
@@ -187,11 +192,12 @@ namespace AZStd
         constexpr bool indirectly_readable_impl = false;
 
         template <class In>
-        constexpr bool indirectly_readable_impl<In, enable_if_t<same_as<decltype(*declval<In>()), iter_reference_t<In>>
-            && same_as<decltype(AZStd::ranges::iter_move(declval<In>())), iter_rvalue_reference_t<In>>
-            && common_reference_with<iter_reference_t<In>&&, iter_value_t<In>&>
-            && common_reference_with<iter_reference_t<In>&&, iter_rvalue_reference_t<In>&>
-            && common_reference_with<iter_rvalue_reference_t<In>&&, const iter_value_t<In>&>>> = true;
+        constexpr bool indirectly_readable_impl<In, enable_if_t<conjunction_v<
+            bool_constant<same_as<decltype(*declval<In>()), iter_reference_t<In>>>,
+            bool_constant<same_as<decltype(AZStd::ranges::iter_move(declval<In>())), iter_rvalue_reference_t<In>>>,
+            bool_constant<common_reference_with<iter_reference_t<In>&&, iter_value_t<In>&>>,
+            bool_constant<common_reference_with<iter_reference_t<In>&&, iter_rvalue_reference_t<In>&>>,
+            bool_constant<common_reference_with<iter_rvalue_reference_t<In>&&, const iter_value_t<In>&>> >>> = true;
     }
 
     template <typename T>

@@ -7,30 +7,10 @@
  */
 #pragma once
 
-#include <AzCore/std/typetraits/typetraits.h>
-#include <AzCore/std/typetraits/conditional.h>
-#include <AzCore/std/typetraits/integral_constant.h> // for true_type
+#include <type_traits>
 
 namespace AZStd
 {
-    template<class... Bases>
-    struct conjunction
-        : true_type
-    {
-    };
-
-    template<class B1>
-    struct conjunction<B1>
-        : B1
-    {
-    };
-
-    template<class B1, class... Bases>
-    struct conjunction<B1, Bases...>
-        : conditional_t<!B1::value, B1, conjunction<Bases...>>
-    {
-    };
-
-    template<class... Bases>
-    constexpr bool conjunction_v = conjunction<Bases...>::value;
+    using std::conjunction;
+    using std::conjunction_v;
 } // namespace AZStd

@@ -34,8 +34,15 @@ set(FILES
     numeric.h
     math.h
     optional.h
+    ranges/all_view.h
     ranges/iter_move.h
+    ranges/join_view.h
+    ranges/owning_view.h
     ranges/ranges.h
+    ranges/ranges_adaptor.h
+    ranges/ref_view.h
+    ranges/split_view.h
+    ranges/zip_view.h
     ratio.h
     reference_wrapper.h
     sort.h

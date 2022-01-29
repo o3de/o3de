@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#include <type_traits>
+#include <AzCore/std/ranges/ranges_adaptor.h>
 
-namespace AZStd
+namespace AZStd::ranges::views::Internal
 {
-    using std::negation;
-    using std::negation_v;
 }
