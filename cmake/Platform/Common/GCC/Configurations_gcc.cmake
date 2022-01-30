@@ -33,6 +33,8 @@ ly_append_configurations_options(
     COMPILATION_CXX
         -fno-exceptions
         -fvisibility=hidden
+        -fvisibility-inlines-hidden
+
         -Wall
         -Werror
 
@@ -40,40 +42,33 @@ ly_append_configurations_options(
         ${LY_GCC_GPROF_FLAGS}
 
         # Disabled warnings 
-        -Wno-format-security
-        -Wno-multichar
+        -Wno-array-bounds
+        -Wno-attributes
+        -Wno-class-memaccess
+        -Wno-comment
+        -Wno-delete-non-virtual-dtor
+        -Wno-enum-compare
+        -Wno-format-overflow
+        -Wno-format-truncation
+        -Wno-int-in-bool-context
+        -Wno-logical-not-parentheses
+        -Wno-memset-elt-size
+        -Wno-nonnull-compare
         -Wno-parentheses
+        -Wno-reorder
+        -Wno-restrict
+        -Wno-return-local-addr
+        -Wno-sequence-point
+        -Wno-sign-compare
+        -Wno-strict-aliasing
+        -Wno-stringop-overflow
+        -Wno-stringop-truncation
         -Wno-switch
-        -Wno-tautological-compare
-        -Wno-unknown-pragmas
-        -Wno-unused-function
+        -Wno-uninitialized
+        -Wno-unused-but-set-variable
+        -Wno-unused-result
         -Wno-unused-value
         -Wno-unused-variable
-        -Wno-format-truncation
-        -Wno-uninitialized
-        -Wno-array-bounds
-        -Wno-nonnull-compare
-        -Wno-strict-aliasing
-        -Wno-unused-result
-        -Wno-sign-compare
-        -Wno-return-local-addr
-        -Wno-stringop-overflow
-        -Wno-attributes
-        -Wno-logical-not-parentheses
-        -Wno-stringop-truncation
-        -Wno-memset-elt-size
-        -Wno-unused-but-set-variable
-        -Wno-enum-compare
-        -Wno-int-in-bool-context
-        -Wno-sequence-point
-        -Wno-comment
-        -Wno-restrict
-        -Wno-format-overflow
-        -fvisibility-inlines-hidden
-        -Wno-invalid-offsetof
-        -Wno-class-memaccess
-        -Wno-delete-non-virtual-dtor
-        -Wno-reorder
 
     COMPILATION_DEBUG
         -O0 # No optimization
@@ -88,4 +83,3 @@ ly_append_configurations_options(
 )
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
-
