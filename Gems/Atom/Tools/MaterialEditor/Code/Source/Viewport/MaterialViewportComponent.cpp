@@ -442,16 +442,16 @@ namespace MaterialEditor
             if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset"))
             {
                 m_lightingPresetAssets[assetInfo.m_assetId] = { assetInfo.m_assetId, assetInfo.m_assetType };
-                AZ::Data::AssetBus::MultiHandler::BusConnect(assetInfo.m_assetId);
                 m_lightingPresetAssets[assetInfo.m_assetId].QueueLoad();
+                AZ::Data::AssetBus::MultiHandler::BusConnect(assetInfo.m_assetId);
                 return;
             }
 
             if (AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset"))
             {
                 m_modelPresetAssets[assetInfo.m_assetId] = { assetInfo.m_assetId, assetInfo.m_assetType };
-                AZ::Data::AssetBus::MultiHandler::BusConnect(assetInfo.m_assetId);
                 m_modelPresetAssets[assetInfo.m_assetId].QueueLoad();
+                AZ::Data::AssetBus::MultiHandler::BusConnect(assetInfo.m_assetId);
                 return;
             }
         };

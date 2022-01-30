@@ -77,6 +77,7 @@ namespace MaterialEditor
         bool SavePropertiesToSourceData(
             const AZStd::string& exportPath, AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
 
+        // AtomToolsFramework::AtomToolsDocument overrides...
         void Clear() override;
 
         bool ReopenRecordState() override;

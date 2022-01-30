@@ -122,7 +122,7 @@ namespace AtomToolsFramework
 
         if (!IsSavable())
         {
-            AZ_Error("AtomToolsDocument", false, "Material types can only be saved as a child: '%s'.", m_absolutePath.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
             return SaveFailed();
         }
 
@@ -146,7 +146,7 @@ namespace AtomToolsFramework
 
         if (!IsSavable())
         {
-            AZ_Error("AtomToolsDocument", false, "Material types can only be saved as a child: '%s'.", m_absolutePath.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
             return SaveFailed();
         }
 
@@ -170,7 +170,7 @@ namespace AtomToolsFramework
 
         if (m_absolutePath == m_savePathNormalized || m_sourceDependencies.find(m_savePathNormalized) != m_sourceDependencies.end())
         {
-            AZ_Error("AtomToolsDocument", false, "Document can't be saved over a dependancy: '%s'.", m_savePathNormalized.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document can not be saved over a dependancy: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
@@ -268,7 +268,7 @@ namespace AtomToolsFramework
 
         m_absolutePath.clear();
         m_sourceDependencies.clear();
-        m_saveTriggeredInternally = {};
+        m_ignoreSourceFileChangeToSelf = {};
         m_undoHistory.clear();
         m_undoHistoryIndex = {};
     }
@@ -289,26 +289,9 @@ namespace AtomToolsFramework
         return false;
     }
 
-    bool AtomToolsDocument::ReopenRecordState()
-    {
-        // Store history and property changes that should be reapplied after reload
-        m_undoHistoryBeforeReopen = m_undoHistory;
-        m_undoHistoryIndexBeforeReopen = m_undoHistoryIndex;
-        return true;
-    }
-
-    bool AtomToolsDocument::ReopenRestoreState()
-    {
-        m_undoHistory = m_undoHistoryBeforeReopen;
-        m_undoHistoryIndex = m_undoHistoryIndexBeforeReopen;
-        m_undoHistoryBeforeReopen = {};
-        m_undoHistoryIndexBeforeReopen = {};
-        return true;
-    }
-
     bool AtomToolsDocument::SaveSucceeded()
     {
-        m_saveTriggeredInternally = true;
+        m_ignoreSourceFileChangeToSelf = true;
 
         AZ_TracePrintf("AtomToolsDocument", "Document saved: '%s'.\n", m_savePathNormalized.c_str());
 
@@ -326,6 +309,22 @@ namespace AtomToolsFramework
     {
         AZ_TracePrintf("AtomToolsDocument", "Document not saved: '%s'.\n", m_savePathNormalized.c_str());
         return false;
+    }
+
+    bool AtomToolsDocument::ReopenRecordState()
+    {
+        m_undoHistoryBeforeReopen = m_undoHistory;
+        m_undoHistoryIndexBeforeReopen = m_undoHistoryIndex;
+        return true;
+    }
+
+    bool AtomToolsDocument::ReopenRestoreState()
+    {
+        m_undoHistory = m_undoHistoryBeforeReopen;
+        m_undoHistoryIndex = m_undoHistoryIndexBeforeReopen;
+        m_undoHistoryBeforeReopen = {};
+        m_undoHistoryIndexBeforeReopen = {};
+        return true;
     }
 
     void AtomToolsDocument::AddUndoRedoHistory(const UndoRedoFunction& undoCommand, const UndoRedoFunction& redoCommand)
@@ -349,13 +348,13 @@ namespace AtomToolsFramework
         if (m_absolutePath == sourcePath)
         {
             // ignore notifications caused by saving the open document
-            if (!m_saveTriggeredInternally)
+            if (!m_ignoreSourceFileChangeToSelf)
             {
                 AZ_TracePrintf("AtomToolsDocument", "Document changed externally: '%s'.\n", m_absolutePath.c_str());
                 AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
                     &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentExternallyModified, m_id);
             }
-            m_saveTriggeredInternally = false;
+            m_ignoreSourceFileChangeToSelf = false;
         }
         else if (m_sourceDependencies.find(sourcePath) != m_sourceDependencies.end())
         {

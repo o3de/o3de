@@ -58,29 +58,36 @@ namespace AtomToolsFramework
         virtual bool OpenSucceeded();
         virtual bool OpenFailed();
 
-        virtual bool ReopenRecordState();
-        virtual bool ReopenRestoreState();
-
         virtual bool SaveSucceeded();
         virtual bool SaveFailed();
 
-        // Unique id of this document
+        //! Record state that needs to be restored after a document is reopened.
+        //! This can be overridden to record additional data.
+        virtual bool ReopenRecordState();
+
+        //! Restore state that was recorded prior to document being reloaded.
+        //! This can be overridden to restore additional data.
+        virtual bool ReopenRestoreState();
+
+        //! The unique id of this document, used for all bus notifications and requests.
         AZ::Uuid m_id = AZ::Uuid::CreateRandom();
 
-        // Absolute path to the material source file
+        //! The absolute path to the document source file.
         AZStd::string m_absolutePath;
 
+        //! The normalized, absolute path where the document will be saved.
         AZStd::string m_savePathNormalized;
 
         AZStd::any m_invalidValue;
         
         AtomToolsFramework::DynamicProperty m_invalidProperty;
 
-        // Set of assets that can trigger a document reload
+        //! This contains absolute paths of other source files that affect this document.
+        //! If any of the source files in this container are modified, the document system will he notified to reload this document.
         AZStd::unordered_set<AZStd::string> m_sourceDependencies;
 
-        // Track if document saved itself last to skip external modification notification
-        bool m_saveTriggeredInternally = false;
+        //! If this flag is true then the next source file change notification for this document will be ignored.
+        bool m_ignoreSourceFileChangeToSelf = false;
 
         // Variables needed for tracking the undo and redo state of this document
 
@@ -101,6 +108,7 @@ namespace AtomToolsFramework
         int m_undoHistoryIndex = {};
         int m_undoHistoryIndexBeforeReopen = {};
 
+        //! Add new undo redo command functions at the current position in the undo history.
         void AddUndoRedoHistory(const UndoRedoFunction& undoCommand, const UndoRedoFunction& redoCommand);
 
         // AzToolsFramework::AssetSystemBus::Handler overrides...

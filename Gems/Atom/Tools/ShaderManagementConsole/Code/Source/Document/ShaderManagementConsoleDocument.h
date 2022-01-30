@@ -49,7 +49,9 @@ namespace ShaderManagementConsole
         const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(size_t index) const override;
 
     private:
+        // AtomToolsFramework::AtomToolsDocument overrides...
         void Clear() override;
+
         bool SaveSourceData();
 
         // Source data for shader variant list
@@ -58,6 +60,6 @@ namespace ShaderManagementConsole
         // Shader asset for the corresponding shader variant list
         AZ::Data::Asset<AZ::RPI::ShaderAsset> m_shaderAsset;
 
-        const AZ::RPI::ShaderOptionDescriptor m_invalidDescriptor;
+        AZ::RPI::ShaderOptionDescriptor m_invalidDescriptor;
     };
 } // namespace ShaderManagementConsole
