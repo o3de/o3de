@@ -121,9 +121,6 @@ namespace AZ
             // recompute the number of probes since the spacing changed
             UpdateProbeCount();
 
-            // probes need to be relocated since the grid density changed
-            m_remainingRelocationIterations = DefaultNumRelocationIterations;
-
             m_updateTextures = true;
         }
 
@@ -174,9 +171,6 @@ namespace AZ
 
             m_obbWs = Obb::CreateFromPositionRotationAndHalfLengths(m_transform.GetTranslation(), m_transform.GetRotation(), m_renderExtents / 2.0f);
 
-            // probes need to be relocated since the grid extents changed
-            m_remainingRelocationIterations = DefaultNumRelocationIterations;
-
             m_updateTextures = true;
         }
 
@@ -206,9 +200,6 @@ namespace AZ
             }
 
             m_updateTextures = true;
-
-            // probes need to be relocated since the mode has changed
-            m_remainingRelocationIterations = DefaultNumRelocationIterations;
         }
 
         void DiffuseProbeGrid::SetBakedTextures(const DiffuseProbeGridBakedTextures& bakedTextures)
@@ -363,6 +354,9 @@ namespace AZ
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDataImage image");
                 }
+
+                // probes need to be relocated since the textures changed
+                m_remainingRelocationIterations = DefaultNumRelocationIterations;
             }
 
             m_updateTextures = false;
