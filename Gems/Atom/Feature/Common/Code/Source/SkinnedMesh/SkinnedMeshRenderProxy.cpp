@@ -145,7 +145,7 @@ namespace AZ
             }
         }
 
-        AZStd::array_view<AZStd::unique_ptr<SkinnedMeshDispatchItem>> SkinnedMeshRenderProxy::GetDispatchItems() const
+        AZStd::span<const AZStd::unique_ptr<SkinnedMeshDispatchItem>> SkinnedMeshRenderProxy::GetDispatchItems() const
         {
             return m_dispatchItemsByLod;
         }

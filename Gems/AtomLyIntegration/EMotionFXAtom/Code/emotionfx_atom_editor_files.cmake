@@ -22,4 +22,6 @@ set(FILES
     Tools/EMStudio/AnimViewportToolBar.h
     Tools/EMStudio/AnimViewportToolBar.cpp
     Tools/EMStudio/AnimViewportRequestBus.h
+    Tools/EMStudio/AnimViewportInputController.h
+    Tools/EMStudio/AnimViewportInputController.cpp
 )

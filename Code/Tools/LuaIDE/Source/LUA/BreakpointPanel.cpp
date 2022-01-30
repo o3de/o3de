@@ -140,7 +140,7 @@ void DHBreakpointsWidget::CreateBreakpoint(const AZStd::string& debugName, int l
     QTableWidgetItem* newItem = new QTableWidgetItem(debugName.c_str());
     newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
     setItem(newRow, 1, newItem);
-    newItem = new QTableWidgetItem(QString().setNum(lineNumber + 1));  // +1 offset to match editor numbering
+    newItem = new QTableWidgetItem(QString().setNum(lineNumber));
     newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
     setItem(newRow, 0, newItem);
 }

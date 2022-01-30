@@ -13,24 +13,23 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <Tests/DOM/DomFixtures.h>
 
 namespace AZ::Dom::Tests
 {
-    class DomJsonTests : public UnitTest::AllocatorsFixture
+    class DomJsonTests : public DomTestFixture
     {
     public:
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
-            NameDictionary::Create();
+            DomTestFixture::SetUp();
             m_document = AZStd::make_unique<rapidjson::Document>();
         }
 
         void TearDown() override
         {
             m_document.reset();
-            NameDictionary::Destroy();
-            UnitTest::AllocatorsFixture::TearDown();
+            DomTestFixture::TearDown();
         }
 
         rapidjson::Value CreateString(const AZStd::string& text)

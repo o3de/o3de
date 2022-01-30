@@ -24,11 +24,12 @@ namespace GraphCanvas
             }
             else
             {
-                const AZStd::string& existingValue = translationDbItr->second;
+                [[maybe_unused]] const AZStd::string& existingValue = translationDbItr->second;
 
                 // There is a name collision
-                const AZStd::string error = AZStd::string::format("Unable to store key: %s with value: %s because that key already exists with value: %s (proposed: %s)", baseKey.c_str(), it.GetString(), existingValue.c_str(), it.GetString());
-                AZ_Error("TranslationSerializer", false, error.c_str());
+                AZ_Error("TranslationSerializer", existingValue == it.GetString(),
+                    R"(Unable to store key: "%s" with value: "%s" because that key already exists with value: "%s" (proposed: "%s"))",
+                    baseKey.c_str(), it.GetString(), existingValue.c_str(), it.GetString());
             }
         }
         else if (it.IsObject())
@@ -136,7 +137,7 @@ namespace GraphCanvas
 
                 if (keyStr.empty())
                 {
-                    AZ_Error("TranslationDatabase", false, "Every entry in the Translation data must have a key: %s", contextStr.c_str());
+                    AZ_Warning("TranslationDatabase", false, "Every entry in the Translation data must have a key: %s", baseKey.c_str());
                     return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Every entry in the Translation data must have a key");
                 }
 

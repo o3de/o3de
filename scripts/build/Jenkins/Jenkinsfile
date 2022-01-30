@@ -9,6 +9,7 @@
 import groovy.json.JsonOutput
 PIPELINE_CONFIG_FILE = 'scripts/build/Jenkins/lumberyard.json'
 INCREMENTAL_BUILD_SCRIPT_PATH = 'scripts/build/bootstrap/incremental_build_util.py'
+EBS_SNAPSHOT_SCRIPT_PATH = 'scripts/build/tools/ebs_snapshot.py'
 PIPELINE_RETRY_ATTEMPTS = 3
 
 EMPTY_JSON = readJSON text: '{}'
@@ -38,14 +39,17 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME')
 ]
 
-def palSh(cmd, lbl = '', winSlashReplacement = true) {
+def palSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
-    } else if (winSlashReplacement) {
-        bat label: lbl,
-            script: cmd.replace('/','\\')
     } else {
+        if (winSlashReplacement) {
+            cmd = cmd.replace('/','\\')
+        }
+        if (winCharReplacement) {
+            cmd = cmd.replace('%', '%%')
+        }
         bat label: lbl,
             script: cmd
     }
@@ -203,7 +207,8 @@ def CheckoutBootstrapScripts(String branchName) {
             [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/Jenkins/' ],
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/bootstrap/' ],
-                [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ]
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ],
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/tools/' ]
             ]],
             // Shallow checkouts break changelog computation. Do not enable.
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
@@ -261,7 +266,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     commitDateFmt = '%%cI'
     if (env.IS_UNIX) commitDateFmt = '%cI'
 
-    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date')
+    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date', winSlashReplacement=true, winCharReplacement=false)
     env.CHANGE_DATE = readFile file: 'commitdate'
     env.CHANGE_DATE = env.CHANGE_DATE.trim()
     palRm('commitdate')
@@ -492,6 +497,19 @@ def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
     }
 }
 
+def HandleDriveSnapshots(String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType) {  
+    unstash name: 'ebs_snapshot_script'
+
+    catchError(message: "Error snapshotting volume (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {        
+        def pythonCmd = 'python3 -u '
+        
+        mountName = "Name:${repositoryName}_${projectName}_${pipeline}_${branchName}_${platform}_${buildType}"
+        mountName = mountName.replace('/', '_').replace('\\', '_')
+        palSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action create --tags ${mountName} --execute", "Starting volume snapshots", true)
+        palSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action delete --tags ${mountName} --retention ${env.SNAP_RETENTION} --execute", "Cleaning up old snapshots", true)
+    }
+}
+
 def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars, boolean onlyMountEBSVolume = false) {
     return {
         stage('Setup') {
@@ -561,6 +579,14 @@ def CreateTeardownStage(Map environmentVars, Map params) {
     }
 }
 
+def CreateSnapshotStage(String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String buildType, String jobName) {
+    return{
+        stage("${jobName}_snapshot_ebs_volume") {
+            HandleDriveSnapshots(repositoryName, projectName, pipelineName, branchName, platformName, buildType)
+        }
+    }
+}
+
 def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVars, String branchName, String pipelineName, String repositoryName, String projectName, boolean onlyMountEBSVolume = false) {
     def nodeLabel = envVars['NODE_LABEL']
     return {
@@ -610,7 +636,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
                         }
                         // Upload test artifacts only on builds that failed and ran test suites
-                        if (env.IS_UPLOAD_TEST_ARTIFACTS?.toBoolean() && params.containsKey('CMAKE_TARGET') && params.CMAKE_TARGET.contains("TEST_SUITE")) {
+                        if (env.IS_UPLOAD_TEST_ARTIFACTS?.toBoolean() && params.containsKey('CTEST_OPTIONS')) {
                             CreateUploadTestArtifactStage(build_job_name, envVars['WORKSPACE'], params.OUTPUT_DIRECTORY).call()
                         }
                         // All other errors will be raised outside the retry block
@@ -629,6 +655,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
                         }
                         CreateTeardownStage(envVars, params).call()
+                        if (envVars['CREATE_SNAPSHOT']?.toBoolean()) {
+                            CreateSnapshotStage(repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, build_job_name).call()
+                        }
                     }
                 }
             }
@@ -810,12 +839,16 @@ try {
                         }
                     }
 
-                    pipelineProperties.add(parameters(pipelineParameters))
+                    pipelineProperties.add(parameters(pipelineParameters.unique()))
                     properties(pipelineProperties)
 
-                    // Stash the INCREMENTAL_BUILD_SCRIPT_PATH since all nodes will use it
+                    // Stash the INCREMENTAL_BUILD_SCRIPT_PATH and EBS_SNAPSHOT_SCRIPT_PATH since all nodes will use it
                     stash name: 'incremental_build_script',
                           includes: INCREMENTAL_BUILD_SCRIPT_PATH
+                    if (fileExists(EBS_SNAPSHOT_SCRIPT_PATH)) {
+                        stash name: 'ebs_snapshot_script',
+                          includes: EBS_SNAPSHOT_SCRIPT_PATH
+                    }
                  }
             }
         }

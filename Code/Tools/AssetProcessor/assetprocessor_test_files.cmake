@@ -25,7 +25,6 @@ set(FILES
     native/tests/resourcecompiler/RCControllerTest.cpp
     native/tests/resourcecompiler/RCControllerTest.h
     native/tests/resourcecompiler/RCJobTest.cpp
-    native/tests/resourcecompiler/RCJobTest.h
     native/tests/assetBuilderSDK/assetBuilderSDKTest.h
     native/tests/assetBuilderSDK/assetBuilderSDKTest.cpp
     native/tests/assetBuilderSDK/SerializationDependenciesTests.cpp
@@ -48,6 +47,7 @@ set(FILES
     native/tests/InternalBuilders/SettingsRegistryBuilderTests.cpp
     native/tests/MissingDependencyScannerTests.cpp
     native/tests/SourceFileRelocatorTests.cpp
+    native/tests/PathDependencyManagerTests.cpp
     native/tests/AssetProcessorMessagesTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.h
@@ -67,8 +67,6 @@ set(FILES
     native/unittests/PlatformConfigurationUnitTests.h
     native/unittests/RCcontrollerUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.h
-    native/unittests/ShaderCompilerUnitTests.cpp
-    native/unittests/ShaderCompilerUnitTests.h
     native/unittests/UnitTestRunner.cpp
     native/unittests/UnitTestRunner.h
     native/unittests/UtilitiesUnitTests.cpp

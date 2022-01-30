@@ -206,6 +206,7 @@ set(FILES
     Passes/Skinning.pass
     Passes/SkyBox.pass
     Passes/SkyBox_TwoOutputs.pass
+    Passes/SlowClear.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
     Passes/SMAA1xApplyPerceptualColor.pass
     Passes/SMAABlendingWeightCalculation.pass
@@ -372,8 +373,6 @@ set(FILES
     Shaders/LightCulling/LightCullingRemap.shader
     Shaders/LightCulling/LightCullingTilePrepare.azsl
     Shaders/LightCulling/LightCullingTilePrepare.shader
-    Shaders/LuxCore/RenderTexture.azsl
-    Shaders/LuxCore/RenderTexture.shader
     Shaders/MorphTargets/MorphTargetCS.azsl
     Shaders/MorphTargets/MorphTargetCS.shader
     Shaders/MorphTargets/MorphTargetSRG.azsli

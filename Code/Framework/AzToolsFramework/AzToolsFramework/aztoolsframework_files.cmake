@@ -38,7 +38,6 @@ set(FILES
     API/EditorLevelNotificationBus.h
     API/ViewportEditorModeTrackerNotificationBus.h
     API/ViewportEditorModeTrackerNotificationBus.cpp
-    API/EditorVegetationRequestsBus.h
     API/EditorPythonConsoleBus.h
     API/EditorPythonRunnerRequestsBus.h
     API/EditorPythonScriptNotificationsBus.h
@@ -106,9 +105,6 @@ set(FILES
     Debug/TraceContextSingleStackHandler.cpp
     Debug/TraceContextMultiStackHandler.h
     Debug/TraceContextMultiStackHandler.cpp
-    Debug/TraceContextBufferedFormatter.cpp
-    Debug/TraceContextBufferedFormatter.inl
-    Debug/TraceContextBufferedFormatter.h
     Debug/TraceContextLogFormatter.cpp
     Debug/TraceContextLogFormatter.h
     Component/EditorComponentAPIBus.h
@@ -123,6 +119,8 @@ set(FILES
     ContainerEntity/ContainerEntitySystemComponent.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
+    Editor/RichTextHighlighter.h
+    Editor/RichTextHighlighter.cpp
     Entity/EditorEntityStartStatus.h
     Entity/EditorEntityAPIBus.h
     Entity/EditorEntityContextComponent.cpp
@@ -358,8 +356,6 @@ set(FILES
     UI/ComponentPalette/ComponentPaletteWidget.cpp
     UI/ComponentPalette/ComponentPaletteModel.hxx
     UI/ComponentPalette/ComponentPaletteModel.cpp
-    UI/ComponentPalette/ComponentPaletteModelFilter.hxx
-    UI/ComponentPalette/ComponentPaletteModelFilter.cpp
     UI/ComponentPalette/ComponentPaletteUtil.hxx
     UI/ComponentPalette/ComponentPaletteUtil.cpp
     UI/Layer/NameConflictWarning.hxx
@@ -372,8 +368,6 @@ set(FILES
     UI/PropertyEditor/QtWidgetLimits.h
     UI/PropertyEditor/DHQComboBox.hxx
     UI/PropertyEditor/DHQComboBox.cpp
-    UI/PropertyEditor/DHQSlider.hxx
-    UI/PropertyEditor/DHQSlider.cpp
     UI/PropertyEditor/EntityIdQLabel.hxx
     UI/PropertyEditor/EntityIdQLabel.cpp
     UI/PropertyEditor/EntityIdQLineEdit.h
@@ -404,7 +398,6 @@ set(FILES
     UI/PropertyEditor/PropertyDoubleSliderCtrl.cpp
     UI/PropertyEditor/PropertyDoubleSpinCtrl.hxx
     UI/PropertyEditor/PropertyDoubleSpinCtrl.cpp
-    UI/PropertyEditor/PropertyEditor_UITypes.h
     UI/PropertyEditor/PropertyEditorAPI.h
     UI/PropertyEditor/PropertyEditorApi.cpp
     UI/PropertyEditor/PropertyEditorAPI_Internals.h
@@ -451,10 +444,6 @@ set(FILES
     UI/Slice/SliceRelationshipWidget.hxx
     UI/UICore/AspectRatioAwarePixmapWidget.hxx
     UI/UICore/AspectRatioAwarePixmapWidget.cpp
-    UI/UICore/AZAutoSizingScrollArea.hxx
-    UI/UICore/AZAutoSizingScrollArea.cpp
-    UI/UICore/ColorPickerDelegate.hxx
-    UI/UICore/ColorPickerDelegate.cpp
     UI/UICore/ClickableLabel.hxx
     UI/UICore/ClickableLabel.cpp
     UI/UICore/IconButton.hxx
@@ -482,11 +471,8 @@ set(FILES
     Commands/EntityStateCommand.h
     Commands/SelectionCommand.cpp
     Commands/SelectionCommand.h
-    Commands/EntityTransformCommand.cpp
-    Commands/EntityTransformCommand.h
     Commands/PreemptiveUndoCache.cpp
     Commands/PreemptiveUndoCache.h
-    Commands/LegacyCommand.h
     Commands/BaseSliceCommand.cpp
     Commands/BaseSliceCommand.h
     Commands/SliceDetachEntityCommand.cpp
@@ -502,6 +488,8 @@ set(FILES
     Viewport/EditorContextMenu.cpp
     Viewport/VertexContainerDisplay.h
     Viewport/VertexContainerDisplay.cpp
+    Viewport/ViewportInteractionHelpers.h
+    Viewport/ViewportInteractionHelpers.cpp
     Viewport/ViewportMessages.h
     Viewport/ViewportMessages.cpp
     Viewport/ViewportTypes.h
@@ -641,8 +629,6 @@ set(FILES
     AssetBrowser/Previewer/PreviewerFrame.h
     Archive/ArchiveComponent.h
     Archive/ArchiveComponent.cpp
-    Archive/NullArchiveComponent.h
-    Archive/NullArchiveComponent.cpp
     Archive/ArchiveAPI.h
     UI/PropertyEditor/Model/AssetCompleterModel.h
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
@@ -723,6 +709,7 @@ set(FILES
     Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
+    Prefab/Spawnable/EntityAliasTypes.h
     Prefab/Spawnable/InMemorySpawnableAssetContainer.h
     Prefab/Spawnable/InMemorySpawnableAssetContainer.cpp
     Prefab/Spawnable/PrefabCatchmentProcessor.h
@@ -730,6 +717,9 @@ set(FILES
     Prefab/Spawnable/PrefabConversionPipeline.h
     Prefab/Spawnable/PrefabConversionPipeline.cpp
     Prefab/Spawnable/PrefabConverterStackProfileNames.h
+    Prefab/Spawnable/PrefabDocument.h
+    Prefab/Spawnable/PrefabDocument.inl
+    Prefab/Spawnable/PrefabDocument.cpp
     Prefab/Spawnable/ProcesedObjectStore.h
     Prefab/Spawnable/ProcesedObjectStore.cpp
     Prefab/Spawnable/PrefabProcessor.h

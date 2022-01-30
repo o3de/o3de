@@ -19,8 +19,6 @@
 #include "Util/UndoUtil.h"
 #include <CryVersion.h>
 
-#include <WinWidgetId.h>
-
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Debug/Budget.h>
 
@@ -44,18 +42,13 @@ class CMusicManager;
 struct IEditorParticleManager;
 class CEAXPresetManager;
 class CErrorReport;
-class CBaseLibraryItem;
 class ICommandManager;
 class CEditorCommandManager;
 class CHyperGraphManager;
 class CConsoleSynchronization;
-class CUIEnumsDatabase;
 struct ISourceControl;
 struct IEditorClassFactory;
-struct IDataBaseItem;
 struct ITransformManipulator;
-struct IDataBaseManager;
-class IFacialEditor;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
@@ -69,12 +62,6 @@ class CSelectionTreeManager;
 struct SEditorSettings;
 class CGameExporter;
 class IAWSResourceManager;
-struct IEditorPanelUtils;
-
-namespace WinWidget
-{
-    class WinWidgetManager;
-}
 
 struct ISystem;
 struct IRenderer;
@@ -83,8 +70,6 @@ struct IEventLoopHook;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
-struct IEditorMaterialManager;  // Vladimir@conffx
-struct IBaseLibraryManager;  // Vladimir@conffx
 struct IImageUtil;  // Vladimir@conffx
 struct IEditorParticleUtils;  // Leroy@conffx
 struct ILogFile; // Vladimir@conffx
@@ -330,17 +315,6 @@ enum MouseCallbackFlags
     MK_CALLBACK_FLAGS = 0x100
 };
 
-//! Types of database items
-enum EDataBaseItemType
-{
-    EDB_TYPE_MATERIAL,
-    EDB_TYPE_PARTICLE,
-    EDB_TYPE_MUSIC,
-    EDB_TYPE_EAXPRESET,
-    EDB_TYPE_SOUNDMOOD,
-    EDB_TYPE_FLARE
-};
-
 enum EEditorPathName
 {
     EDITOR_PATH_OBJECTS,
@@ -520,14 +494,8 @@ struct IEditor
     //! Get access to object manager.
     virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
-    //! Get DB manager that own items of specified type.
-    virtual IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) = 0;
-    virtual IBaseLibraryManager* GetMaterialManagerLibrary() = 0; // Vladimir@conffx
-    virtual IEditorMaterialManager* GetIEditorMaterialManager() = 0; // Vladimir@Conffx
     //! Returns IconManager.
     virtual IIconManager* GetIconManager() = 0;
-    //! Get Panel Editor Utilities
-    virtual IEditorPanelUtils* GetEditorPanelUtils() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
@@ -610,10 +578,6 @@ struct IEditor
     virtual bool SetViewFocus(const char* sViewClassName) = 0;
     virtual void CloseView(const GUID& classId) = 0; // close ALL panels related to classId, used when unloading plugins.
 
-    // We want to open a view object but not wrap it in a view pane)
-    virtual QWidget* OpenWinWidget(WinWidgetId openId) = 0;
-    virtual WinWidget::WinWidgetManager* GetWinWidgetManager() const = 0;
-
     //! Opens standard color selection dialog.
     //! Initialized with the color specified in color parameter.
     //! Returns true if selection is made and false if selection is canceled.
@@ -695,15 +659,10 @@ struct IEditor
     //! Only returns true if source control is both available AND currently connected and functioning
     virtual bool IsSourceControlConnected() = 0;
 
-    virtual CUIEnumsDatabase* GetUIEnumsDatabase() = 0;
-    virtual void AddUIEnums() = 0;
     virtual void ReduceMemory() = 0;
 
     //! Export manager for exporting objects and a terrain from the game to DCC tools
     virtual IExportManager* GetExportManager() = 0;
-    //! Set current configuration spec of the editor.
-    virtual void SetEditorConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform) = 0;
-    virtual ESystemConfigSpec GetEditorConfigSpec() const = 0;
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;

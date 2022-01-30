@@ -66,8 +66,27 @@ namespace Terrain
         }
     };
 
+    void MacroMaterialData::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<MacroMaterialData>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Terrain")
+                ->Attribute(AZ::Script::Attributes::Module, "terrain")
+                ->Property("EntityId", BehaviorValueProperty(&MacroMaterialData::m_entityId))
+                ->Property("Bounds", BehaviorValueProperty(&MacroMaterialData::m_bounds))
+                ->Property("NormalFlipX", BehaviorValueProperty(&MacroMaterialData::m_normalFlipX))
+                ->Property("NormalFlipY", BehaviorValueProperty(&MacroMaterialData::m_normalFlipY))
+                ->Property("NormalFactor", BehaviorValueProperty(&MacroMaterialData::m_normalFactor))
+                ;
+        }
+    }
+
     void TerrainMacroMaterialRequests::Reflect(AZ::ReflectContext* context)
     {
+        MacroMaterialData::Reflect(context);
+
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<Terrain::TerrainMacroMaterialRequestBus>("TerrainMacroMaterialRequestBus")

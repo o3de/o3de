@@ -26,12 +26,12 @@ struct ResourceBindingData
         AZ::RHI::ShaderInputImageAccess m_imageAccess;
         AZ::RHI::ShaderInputBufferAccess m_bufferAccess;
     };
-    
+
     bool operator==(const ResourceBindingData& other) const
     {
         return this->m_resourcPtr == other.m_resourcPtr;
     };
-    
+
     size_t GetHash() const
     {
         return static_cast<size_t>(m_resourcPtr->GetHash());
@@ -58,12 +58,12 @@ namespace AZ
         class BufferMemoryAllocator;
         class ShaderResourceGroup;
         struct ShaderResourceGroupCompiledData;
-        
+
         class ArgumentBuffer final
             : public RHI::DeviceObject
         {
             using Base = RHI::DeviceObject;
-            
+
         public:
             AZ_CLASS_ALLOCATOR(ArgumentBuffer, AZ::SystemAllocator, 0);
             AZ_RTTI(ArgumentBuffer, "FEFE8823-7772-4EA0-9241-65C49ADFF6B3", Base);
@@ -78,21 +78,21 @@ namespace AZ
 
             void UpdateImageViews(const RHI::ShaderInputImageDescriptor& shaderInputImage,
                                   const RHI::ShaderInputImageIndex shaderInputIndex,
-                                  const AZStd::array_view<RHI::ConstPtr<RHI::ImageView>>& imageViews);
-            
+                                  const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews);
+
             void UpdateSamplers(const RHI::ShaderInputSamplerDescriptor& shaderInputSampler,
                                 const RHI::ShaderInputSamplerIndex shaderInputIndex,
-                                const AZStd::array_view<RHI::SamplerState>& samplerStates);
-            
+                                const AZStd::span<const RHI::SamplerState>& samplerStates);
+
             void UpdateBufferViews(const RHI::ShaderInputBufferDescriptor& shaderInputBuffer,
                                    const RHI::ShaderInputBufferIndex shaderInputIndex,
-                                   const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufferViews);
-            
-            void UpdateConstantBufferViews(AZStd::array_view<uint8_t> rawData);
-                        
+                                   const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews);
+
+            void UpdateConstantBufferViews(AZStd::span<const uint8_t> rawData);
+
             id<MTLBuffer> GetArgEncoderBuffer() const;
             size_t GetOffset() const;
-            
+
             //Map to cache all the resources based on the usage as we can batch all the resources for a given usage.
             using ComputeResourcesToMakeResidentMap = AZStd::unordered_map<MTLResourceUsage, AZStd::unordered_set<id <MTLResource>>>;
             //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage.
@@ -102,31 +102,31 @@ namespace AZ
                                            const ShaderResourceGroupVisibility& srgResourcesVisInfo,
                                            ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
                                            GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
-            
+
             void ClearResourceTracking();
             bool IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
             bool IsNullDescHeapNeeded() const;
-            
+
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceObject
             void Shutdown() override;
             //////////////////////////////////////////////////////////////////////////
-            
+
         private:
-            
+
             bool CreateArgumentDescriptors(NSMutableArray * argBufferDecriptors);
             void AttachStaticSamplers();
             void AttachConstantBuffer();
-            
+
             // Use a cache to store and retrieve samplers
             id<MTLSamplerState> GetMtlSampler(MTLSamplerDescriptor* samplerDesc);
 
             using ResourceBindingsSet = AZStd::unordered_set<ResourceBindingData>;
             using ResourceBindingsMap =  AZStd::unordered_map<AZ::Name, ResourceBindingsSet>;
             ResourceBindingsMap m_resourceBindings;
-            
+
             static const int MaxEntriesInArgTable = 31;
-                        
+
             void CollectResourcesForCompute(id<MTLCommandEncoder> encoder,
                                             const ResourceBindingsSet& resourceBindingData,
                                             ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
@@ -139,13 +139,13 @@ namespace AZ
                                   const ResourceBindingsMap& resourceMap,
                                   const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
             void BindNullSamplers(uint32_t registerId, uint32_t samplerCount);
-            
+
             Device* m_device = nullptr;
             RHI::ConstPtr<RHI::ShaderResourceGroupLayout> m_srgLayout;
-                        
+
             id <MTLArgumentEncoder> m_argumentEncoder;
             uint32_t m_constantBufferSize = 0;
-                        
+
 #if defined(ARGUMENTBUFFER_PAGEALLOCATOR)
             BufferMemoryView m_argumentBuffer;
             BufferMemoryView m_constantBuffer;

@@ -2577,11 +2577,11 @@ namespace ScriptCanvas
         }
     }
 
-    bool Node::ConvertSlotToReference(const SlotId& slotId)
+    bool Node::ConvertSlotToReference(const SlotId& slotId, bool isNewSlot)
     {
         Slot* slot = GetSlot(slotId);
 
-        if (slot && slot->ConvertToReference())
+        if (slot && slot->ConvertToReference(isNewSlot))
         {
             InitializeVariableReference((*slot), {});
             return true;

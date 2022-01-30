@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __RENDERGL_GLACTOR_H
-#define __RENDERGL_GLACTOR_H
+#pragma once
 
 #include "RenderGLConfig.h"
 #include "VertexBuffer.h"
@@ -99,6 +98,4 @@ namespace RenderGL
 
         void Delete() override;
     };
-}
-
-#endif
+} // namespace RenderGL

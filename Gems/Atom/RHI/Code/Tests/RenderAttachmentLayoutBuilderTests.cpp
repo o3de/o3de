@@ -21,13 +21,13 @@ namespace UnitTest
     protected:
 
         template<class T>
-        void ExpectEqMemory(AZStd::array_view<T> expected, AZStd::array_view<T> actual)
+        void ExpectEqMemory(AZStd::span<const T> expected, AZStd::span<const T> actual)
         {
             EXPECT_EQ(expected.size(), actual.size());
             EXPECT_TRUE(memcmp(expected.data(), actual.data(), expected.size() * sizeof(T)) == 0);
         }
 
-        void ExpectEq(AZStd::array_view<SubpassRenderAttachmentLayout> expected, AZStd::array_view<SubpassRenderAttachmentLayout> actual)
+        void ExpectEq(AZStd::span<const SubpassRenderAttachmentLayout> expected, AZStd::span<const SubpassRenderAttachmentLayout> actual)
         {
             EXPECT_EQ(expected.size(), actual.size());
             for (int i = 0; i < expected.size() && i < actual.size(); ++i)

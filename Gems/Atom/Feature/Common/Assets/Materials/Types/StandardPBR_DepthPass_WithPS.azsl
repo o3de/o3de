@@ -29,7 +29,7 @@ struct VSInput
 struct VSDepthOutput
 {
     // "centroid" is needed for SV_Depth to compile
-    linear centroid float4 m_position : SV_Position;
+    precise linear centroid float4 m_position : SV_Position;
     float2 m_uv[UvSetCount] : UV1;
 
     // only used for parallax depth calculation
@@ -63,7 +63,7 @@ VSDepthOutput MainVS(VSInput IN)
 
 struct PSDepthOutput
 {
-    float m_depth : SV_Depth;
+    precise float m_depth : SV_Depth;
 };
 
 PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
