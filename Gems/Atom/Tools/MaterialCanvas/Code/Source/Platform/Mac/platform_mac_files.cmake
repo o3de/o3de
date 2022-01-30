@@ -5,3 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+set(FILES
+    MaterialCanvas_Traits_Platform.h
+    MaterialCanvas_Traits_Mac.h
+)
