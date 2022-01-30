@@ -31,6 +31,8 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
+    enum class CursorInputMode;
+    
     namespace ViewportInteraction
     {
         //! Result of handling mouse interaction.
@@ -323,6 +325,8 @@ namespace AzToolsFramework
             virtual void BeginCursorCapture() = 0;
             //! Restores the cursor and ends locking it in place, allowing it to be moved freely.
             virtual void EndCursorCapture() = 0;
+            //! sets the cursor mode.
+            virtual void SetCursorMode(AzToolsFramework::CursorInputMode mode) = 0;
             //! Is the mouse over the viewport.
             virtual bool IsMouseOver() const = 0;
             //! Set the cursor style override.

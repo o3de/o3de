@@ -18,6 +18,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportInteractionHelpers.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 
 #include <QApplication>
 
@@ -69,16 +70,24 @@ namespace SandboxEditor
             // Cache the ray trace results when doing manipulator interaction checks, no need to recalculate after
             if (event.m_priority == ManipulatorPriority)
             {
+
                 const auto* position = event.m_inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
                 AZ_Assert(position, "Expected PositionData2D but found nullptr");
+
+                if(m_captureStart) {
+                    m_virtualPosition = position->m_normalizedPosition;
+                    m_captureStart = false;
+                } else {
+                    m_virtualPosition += position->m_normalizedPositionDelta;
+                }
 
                 AzFramework::WindowSize windowSize;
                 AzFramework::WindowRequestBus::EventResult(
                     windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
                 const auto screenPoint = AzFramework::ScreenPoint(
-                    aznumeric_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
-                    aznumeric_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height));
+                    aznumeric_cast<int>(m_virtualPosition.GetX() * windowSize.m_width),
+                    aznumeric_cast<int>(m_virtualPosition.GetY() * windowSize.m_height));
 
                 ProjectedViewportRay ray{};
                 ViewportInteractionRequestBus::EventResult(
@@ -97,6 +106,7 @@ namespace SandboxEditor
             overrideButton = mouseButton;
             if (state == InputChannel::State::Began)
             {
+                
                 m_mouseInteraction.m_mouseButtons.m_mouseButtons |= mouseButtonValue;
                 if (IsDoubleClick(mouseButton))
                 {
@@ -116,6 +126,10 @@ namespace SandboxEditor
                     }
                     eventType = MouseEvent::Down;
                 }
+                m_captureStart = true;
+                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                    GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
+                    AzToolsFramework::CursorInputMode::CursorModeWrapped);
             }
             else if (state == InputChannel::State::Ended)
             {
@@ -131,6 +145,9 @@ namespace SandboxEditor
                     }
                     eventType = MouseEvent::Up;
                 }
+                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                    GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
+                    AzToolsFramework::CursorInputMode::CursorModeNone);
             }
         }
         else if (auto keyboardModifier = Helpers::GetKeyboardModifier(event.m_inputChannel); keyboardModifier != KeyboardModifier::None)
