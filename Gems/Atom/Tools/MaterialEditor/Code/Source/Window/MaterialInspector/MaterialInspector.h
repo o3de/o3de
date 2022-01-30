@@ -19,8 +19,7 @@
 
 namespace MaterialEditor
 {
-    //! Provides controls for viewing and editing a material document settings.
-    //! The settings can be divided into cards, with each one showing a subset of properties.
+    //! Provides controls for viewing and editing document settings.
     class MaterialInspector
         : public AtomToolsFramework::InspectorWidget
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler

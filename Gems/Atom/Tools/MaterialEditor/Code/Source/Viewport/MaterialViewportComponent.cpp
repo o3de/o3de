@@ -170,11 +170,14 @@ namespace MaterialEditor
             {
                 m_lightingPresetAssets[info.m_assetId] = { info.m_assetId, info.m_assetType };
                 AZ::Data::AssetBus::MultiHandler::BusConnect(info.m_assetId);
+                return;
             }
-            else if (AZ::StringFunc::EndsWith(info.m_relativePath.c_str(), ".modelpreset.azasset"))
+
+            if (AZ::StringFunc::EndsWith(info.m_relativePath.c_str(), ".modelpreset.azasset"))
             {
                 m_modelPresetAssets[info.m_assetId] = { info.m_assetId, info.m_assetType };
                 AZ::Data::AssetBus::MultiHandler::BusConnect(info.m_assetId);
+                return;
             }
         };
 
@@ -436,24 +439,20 @@ namespace MaterialEditor
         auto ReloadLightingAndModelPresets = [this, &assetId](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
         {
             AZ::Data::AssetInfo assetInfo = assetCatalogRequests->GetAssetInfoById(assetId);
-            AZ::Data::Asset<AZ::RPI::AnyAsset>* modifiedPresetAsset{};
             if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset"))
             {
                 m_lightingPresetAssets[assetInfo.m_assetId] = { assetInfo.m_assetId, assetInfo.m_assetType };
                 AZ::Data::AssetBus::MultiHandler::BusConnect(assetInfo.m_assetId);
-                modifiedPresetAsset = &m_lightingPresetAssets[assetInfo.m_assetId];
+                m_lightingPresetAssets[assetInfo.m_assetId].QueueLoad();
+                return;
             }
-            else if (AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset"))
+
+            if (AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset"))
             {
                 m_modelPresetAssets[assetInfo.m_assetId] = { assetInfo.m_assetId, assetInfo.m_assetType };
                 AZ::Data::AssetBus::MultiHandler::BusConnect(assetInfo.m_assetId);
-                modifiedPresetAsset = &m_modelPresetAssets[assetInfo.m_assetId];
-            }
-
-            // Queue a load on the changed asset
-            if (modifiedPresetAsset != nullptr)
-            {
-                modifiedPresetAsset->QueueLoad();
+                m_modelPresetAssets[assetInfo.m_assetId].QueueLoad();
+                return;
             }
         };
         AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(ReloadLightingAndModelPresets));
@@ -470,11 +469,14 @@ namespace MaterialEditor
         {
             AZ::Data::AssetBus::MultiHandler::BusDisconnect(assetInfo.m_assetId);
             m_lightingPresetAssets.erase(assetId);
+            return;
         }
+
         if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset"))
         {
             AZ::Data::AssetBus::MultiHandler::BusDisconnect(assetInfo.m_assetId);
             m_modelPresetAssets.erase(assetId);
+            return;
         }
     }
 }
