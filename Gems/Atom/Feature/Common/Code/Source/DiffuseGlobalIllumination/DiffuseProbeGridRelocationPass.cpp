@@ -74,49 +74,71 @@ namespace AZ
             }
         }
 
+        bool DiffuseProbeGridRelocationPass::IsEnabled() const
+        {
+            if (!RenderPass::IsEnabled())
+            {
+                return false;
+            }
+
+            RPI::Scene* scene = m_pipeline->GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount())
+            {
+                // empty scene
+                return false;
+            }
+
+            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
+            {
+                // no diffuse probe grids
+                return false;
+            }
+
+            // check TLAS version
+            uint32_t rayTracingDataRevision = rayTracingFeatureProcessor->GetRevision();
+            if (rayTracingDataRevision != m_rayTracingDataRevision)
+            {
+                return true;
+            }
+
+            // check to see if any grids need relocation           
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            {
+                if (diffuseProbeGrid->GetRemainingRelocationIterations() > 0)
+                {
+                    return true;
+                }
+            }
+           
+            return false;
+        }
+
         void DiffuseProbeGridRelocationPass::FrameBeginInternal(FramePrepareParams params)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
-            {
-                // no diffuse probe grids
-                return;
-            }
-
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
             AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridRelocationPass requires the RayTracingFeatureProcessor");
 
-            if (!rayTracingFeatureProcessor->GetSubMeshCount())
-            {
-                // empty scene
-                return;
-            }
-
-            // create the Relocation Srgs for each DiffuseProbeGrid, and check to see if any grids need relocation
-            bool needRelocation = false;
+            // reset the relocation iterations on the grids if the TLAS was updated
+            uint32_t rayTracingDataRevision = rayTracingFeatureProcessor->GetRevision();    
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
-            {
-                uint32_t rayTracingDataRevision = rayTracingFeatureProcessor->GetRevision();
+            {                
                 if (rayTracingDataRevision != m_rayTracingDataRevision)
                 {
                     // the TLAS changed, relocate probes
-                    m_rayTracingDataRevision = rayTracingDataRevision;
                     diffuseProbeGrid->ResetRemainingRelocationIterations();
                 }
-
-                if (diffuseProbeGrid->GetRemainingRelocationIterations() > 0)
-                {
-                    needRelocation = true;
-                }
             }
 
-            if (!needRelocation)
-            {
-                // no diffuseProbeGrids require relocation, this pass can be skipped entirely
-                return;
-            }
+            m_rayTracingDataRevision = rayTracingDataRevision;
 
             RenderPass::FrameBeginInternal(params);
         }
@@ -160,11 +182,7 @@ namespace AZ
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateRelocationSrg(m_shader, m_srgLayout);
-
                 diffuseProbeGrid->GetRelocationSrg()->Compile();
-
-                // relocation stops after a limited number of iterations
-                diffuseProbeGrid->DecrementRemainingRelocationIterations();
             }
         }
 
@@ -180,19 +198,30 @@ namespace AZ
                 const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetRelocationSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                uint32_t probeCountX;
-                uint32_t probeCountY;
-                diffuseProbeGrid->GetTexture2DProbeCount(probeCountX, probeCountY);
-
                 RHI::DispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_pipelineState = m_pipelineState;
-                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
-                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
+                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = diffuseProbeGrid->GetTotalProbeCount();
+                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = 1;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
                 commandList->Submit(dispatchItem);
             }
+        }
+
+        void DiffuseProbeGridRelocationPass::FrameEndInternal()
+        {
+            RPI::Scene* scene = m_pipeline->GetScene();
+            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+
+            // submit the DispatchItems for each DiffuseProbeGrid
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            {
+                // relocation stops after a limited number of iterations
+                diffuseProbeGrid->DecrementRemainingRelocationIterations();
+            }
+
+            RenderPass::FrameEndInternal();
         }
     }   // namespace Render
 }   // namespace AZ

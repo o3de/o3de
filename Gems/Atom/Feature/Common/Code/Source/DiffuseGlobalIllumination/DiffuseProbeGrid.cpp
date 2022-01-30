@@ -43,10 +43,15 @@ namespace AZ
             m_irradianceImageAttachmentId = AZStd::string::format("ProbeIrradianceImageAttachmentId_%s", uuidString.c_str());
             m_distanceImageAttachmentId = AZStd::string::format("ProbeDistanceImageAttachmentId_%s", uuidString.c_str());
             m_probeDataImageAttachmentId = AZStd::string::format("ProbeDataImageAttachmentId_%s", uuidString.c_str());
+            m_visualizationTlasAttachmentId = AZStd::string::format("ProbeVisualizationTlasAttachmentId_%s", uuidString.c_str());
+            m_visualizationTlasInstancesAttachmentId = AZStd::string::format("ProbeVisualizationTlasInstancesAttachmentId_%s", uuidString.c_str());
 
             // setup culling
             m_cullable.m_cullData.m_scene = m_scene;
             m_cullable.SetDebugName(AZ::Name("DiffuseProbeGrid Volume"));
+
+            // create the visualization TLAS
+            m_visualizationTlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();
         }
 
         void DiffuseProbeGrid::Simulate(uint32_t probeIndex)
@@ -253,6 +258,23 @@ namespace AZ
             return m_cullable.m_isVisible;
         }
 
+        void DiffuseProbeGrid::SetVisualizationEnabled(bool visualizationEnabled)
+        {
+            m_visualizationEnabled = visualizationEnabled;
+            m_visualizationTlasUpdateRequired = true;
+        }
+
+        void DiffuseProbeGrid::SetVisualizationSphereRadius(float visualizationSphereRadius)
+        {
+            m_visualizationSphereRadius = visualizationSphereRadius;
+            m_visualizationTlasUpdateRequired = true;
+        }
+
+        bool DiffuseProbeGrid::GetVisualizationTlasUpdateRequired() const
+        {
+            return m_visualizationTlasUpdateRequired || m_remainingRelocationIterations > 0;
+        }
+
         uint32_t DiffuseProbeGrid::GetTotalProbeCount() const
         {
             return m_probeCountX * m_probeCountY * m_probeCountZ;
@@ -348,8 +370,8 @@ namespace AZ
             // textures have changed so we need to update the render Srg to bind the new ones
             m_updateRenderObjectSrg = true;
 
-            // we need to clear the irradiance texture
-            m_irradianceClearRequired = true;
+            // we need to clear the Irradiance, Distance, and ProbeData textures
+            m_textureClearRequired = true;
         }
 
         void DiffuseProbeGrid::ComputeProbeCount(const AZ::Vector3& extents, const AZ::Vector3& probeSpacing, uint32_t& probeCountX, uint32_t& probeCountY, uint32_t& probeCountZ)
@@ -751,6 +773,77 @@ namespace AZ
 
             // update culling now since the position and/or extents may have changed
             UpdateCulling();
+        }
+
+        void DiffuseProbeGrid::UpdateVisualizationPrepareSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
+        {
+            if (!m_visualizationPrepareSrg)
+            {
+                m_visualizationPrepareSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
+                AZ_Error("DiffuseProbeGrid", m_visualizationPrepareSrg.get(), "Failed to create VisualizationPrepare shader resource group");
+            }
+
+            RHI::ShaderInputConstantIndex constantIndex;
+            RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+
+            // TLAS instances
+            bufferIndex = layout->FindShaderInputBufferIndex(AZ::Name("m_tlasInstances"));
+            uint32_t tlasInstancesBufferByteCount = aznumeric_cast<uint32_t>(m_visualizationTlas->GetTlasInstancesBuffer()->GetDescriptor().m_byteCount);
+            RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, tlasInstancesBufferByteCount / RayTracingTlasInstanceElementSize, RayTracingTlasInstanceElementSize);
+            m_visualizationPrepareSrg->SetBufferView(bufferIndex, m_visualizationTlas->GetTlasInstancesBuffer()->GetBufferView(bufferViewDescriptor).get());
+
+            // probe data
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
+            m_visualizationPrepareSrg->SetImageView(imageIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+
+            // probe sphere radius
+            constantIndex = layout->FindShaderInputConstantIndex(Name("m_probeSphereRadius"));
+            m_visualizationPrepareSrg->SetConstant(constantIndex, m_visualizationSphereRadius);
+
+            SetGridConstants(m_visualizationPrepareSrg);
+        }
+
+        void DiffuseProbeGrid::UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout, const RHI::ImageView* outputImageView)
+        {
+            if (!m_visualizationRayTraceSrg)
+            {
+                m_visualizationRayTraceSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
+                AZ_Error("DiffuseProbeGrid", m_visualizationRayTraceSrg.get(), "Failed to create VisualizationRayTrace shader resource group");
+            }
+
+            RHI::ShaderInputConstantIndex constantIndex;
+            RHI::ShaderInputImageIndex imageIndex;
+            RHI::ShaderInputBufferIndex bufferIndex;
+
+            // TLAS
+            uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(m_visualizationTlas->GetTlasBuffer()->GetDescriptor().m_byteCount);
+            RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
+
+            bufferIndex = layout->FindShaderInputBufferIndex(AZ::Name("m_tlas"));
+            m_visualizationRayTraceSrg->SetBufferView(bufferIndex, m_visualizationTlas->GetTlasBuffer()->GetBufferView(bufferViewDescriptor).get());
+
+            // probe irradiance
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeIrradiance"));
+            m_visualizationRayTraceSrg->SetImageView(imageIndex, GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+
+            // probe distance
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeDistance"));
+            m_visualizationRayTraceSrg->SetImageView(imageIndex, GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+
+            // probe data
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_probeData"));
+            m_visualizationRayTraceSrg->SetImageView(imageIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+
+            // show inactive probes
+            constantIndex = layout->FindShaderInputConstantIndex(Name("m_showInactiveProbes"));
+            m_visualizationRayTraceSrg->SetConstant(constantIndex, m_visualizationShowInactiveProbes);
+
+            // output
+            imageIndex = layout->FindShaderInputImageIndex(AZ::Name("m_output"));
+            m_visualizationRayTraceSrg->SetImageView(imageIndex, outputImageView);
+
+            SetGridConstants(m_visualizationRayTraceSrg);
         }
 
         void DiffuseProbeGrid::UpdateCulling()
