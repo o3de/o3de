@@ -490,7 +490,7 @@ namespace AZ
             return m_asset->FindFallbackShaderResourceGroupLayout(m_supervariantIndex);
         }
 
-        AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> Shader::GetShaderResourceGroupLayouts() const
+        AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> Shader::GetShaderResourceGroupLayouts() const
         {
             return m_asset->GetShaderResourceGroupLayouts(m_supervariantIndex);
         }

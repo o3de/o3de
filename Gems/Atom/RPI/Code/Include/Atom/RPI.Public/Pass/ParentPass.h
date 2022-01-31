@@ -73,7 +73,7 @@ namespace AZ
             Ptr<PassType> FindChildPass() const;
 
             //! Gets the list of children. Useful for validating hierarchies
-            AZStd::array_view<Ptr<Pass>> GetChildren() const;
+            AZStd::span<const Ptr<Pass>> GetChildren() const;
 
             //! Searches the tree for the first pass that uses the given DrawListTag.
             const Pass* FindPass(RHI::DrawListTag drawListTag) const;

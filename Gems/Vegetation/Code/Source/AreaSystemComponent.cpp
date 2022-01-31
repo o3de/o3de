@@ -1099,7 +1099,7 @@ namespace Vegetation
         // 0 = lower left corner, 0.5 = center
         const float texelOffset = (sectorPointSnapMode == SnapMode::Center) ? 0.5f : 0.0f;
 
-        SurfaceData::SurfacePointListPerPosition availablePointsPerPosition;
+        SurfaceData::SurfacePointLists availablePointsPerPosition;
         AZ::Vector2 stepSize(vegStep, vegStep);
         AZ::Vector3 regionOffset(texelOffset * vegStep, texelOffset * vegStep, 0.0f);
         AZ::Aabb regionBounds = sectorInfo.m_bounds;
@@ -1127,7 +1127,7 @@ namespace Vegetation
         uint claimIndex = 0;
         for (auto& availablePoints : availablePointsPerPosition)
         {
-            for (auto& surfacePoint : availablePoints.second)
+            for (auto& surfacePoint : availablePoints)
             {
                 sectorInfo.m_baseContext.m_availablePoints.push_back();
                 ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();

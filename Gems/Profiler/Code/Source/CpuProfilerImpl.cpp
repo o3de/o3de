@@ -96,7 +96,7 @@ namespace Profiler
         AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
-    void CpuProfilerImpl::BeginRegion(const AZ::Debug::Budget* budget, const char* eventName)
+    void CpuProfilerImpl::BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, [[maybe_unused]] size_t eventNameArgCount, ...)
     {
         // Try to lock here, the shutdownMutex will only be contested when the CpuProfiler is shutting down.
         if (m_shutdownMutex.try_lock_shared())

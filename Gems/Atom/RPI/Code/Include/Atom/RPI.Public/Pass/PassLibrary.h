@@ -15,7 +15,7 @@
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <Atom/RPI.Reflect/System/AssetAliases.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {

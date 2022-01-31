@@ -37,9 +37,9 @@ namespace AZ
 
             const RHI::GraphGroupId& GetGroupId() const;
 
-            virtual AZStd::array_view<const Scope*> GetScopes() const = 0;
+            virtual AZStd::span<const Scope* const> GetScopes() const = 0;
 
-            virtual AZStd::array_view<RHI::Ptr<CommandList>> GetCommandLists() const = 0;
+            virtual AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const = 0;
 
         protected:
             RHI::Ptr<CommandList> AcquireCommandList(VkCommandBufferLevel level) const;

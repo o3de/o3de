@@ -17,6 +17,7 @@
 #include "../../../../EMStudioSDK/Source/RenderPlugin/RenderWidget.h"
 #include "../../../../EMStudioSDK/Source/RenderPlugin/RenderLayouts.h"
 #include "../../../../EMStudioSDK/Source/RenderPlugin/RenderUpdateCallback.h"
+#include <MysticQt/Source/MysticQtManager.h>
 #include "GLWidget.h"
 #endif
 
