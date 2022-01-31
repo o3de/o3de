@@ -400,8 +400,8 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestAabbOverlaps2D)
 
         // Make sure the test produces the correct result.
         // Also make sure it's correct regardless of which order the boxes are passed in.
-        EXPECT_TRUE(SurfaceData::AabbOverlaps2D(box1, box2) == testCase.m_overlaps);
-        EXPECT_TRUE(SurfaceData::AabbOverlaps2D(box2, box1) == testCase.m_overlaps);
+        EXPECT_EQ(SurfaceData::AabbOverlaps2D(box1, box2), testCase.m_overlaps);
+        EXPECT_EQ(SurfaceData::AabbOverlaps2D(box2, box1), testCase.m_overlaps);
     }
 }
 
@@ -449,9 +449,9 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestAabbContains2D)
         AZ::Vector3& point = testCase.m_testData[TestCase::POINT];
 
         // Make sure the test produces the correct result.
-        EXPECT_TRUE(SurfaceData::AabbContains2D(box, point) == testCase.m_contains);
+        EXPECT_EQ(SurfaceData::AabbContains2D(box, point), testCase.m_contains);
         // Test the Vector2 version as well.
-        EXPECT_TRUE(SurfaceData::AabbContains2D(box, AZ::Vector2(point.GetX(), point.GetY())) == testCase.m_contains);
+        EXPECT_EQ(SurfaceData::AabbContains2D(box, AZ::Vector2(point.GetX(), point.GetY())), testCase.m_contains);
     }
 }
 
@@ -488,12 +488,12 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion)
     // We *could* check every mask as well for completeness, but that seems like overkill.
     for (auto& pointList : availablePointsPerPosition)
     {
-        EXPECT_TRUE(pointList.size() == 2);
-        EXPECT_TRUE(pointList[0].m_position.GetZ() == 4.0f);
-        EXPECT_TRUE(pointList[1].m_position.GetZ() == 0.0f);
+        EXPECT_EQ(pointList.size(), 2);
+        EXPECT_EQ(pointList[0].m_position.GetZ(), 4.0f);
+        EXPECT_EQ(pointList[1].m_position.GetZ(), 0.0f);
         for (auto& point : pointList)
         {
-            EXPECT_TRUE(point.m_masks.size() == providerTags.size());
+            EXPECT_EQ(point.m_masks.size(), providerTags.size());
         }
     }
 }
@@ -523,7 +523,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingMas
     // any of the masks from our mock surface provider.
     for (auto& queryPosition : availablePointsPerPosition)
     {
-        EXPECT_TRUE(queryPosition.size() == 0);
+        EXPECT_TRUE(queryPosition.empty());
     }
 }
 
@@ -606,7 +606,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_ProviderModif
             for (auto& point : pointList)
             {
                 EXPECT_EQ(point.m_position.GetZ(), expectedZ);
-                EXPECT_TRUE(point.m_masks.size() == 2);
+                EXPECT_EQ(point.m_masks.size(), 2);
                 expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
             }
         }
@@ -653,7 +653,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_SimilarPoints
         for (auto& point : pointList)
         {
             EXPECT_EQ(point.m_position.GetZ(), expectedZ);
-            EXPECT_TRUE(point.m_masks.size() == 2);
+            EXPECT_EQ(point.m_masks.size(), 2);
             expectedZ = (expectedZ == 4.0005f) ? 0.0005f : 4.0005f;
         }
     }
@@ -696,7 +696,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_DissimilarPoi
         EXPECT_EQ(pointList.size(), 4);
         for (auto& point : pointList)
         {
-            EXPECT_TRUE(point.m_masks.size() == 1);
+            EXPECT_EQ(point.m_masks.size(), 1);
         }
     }
 }
