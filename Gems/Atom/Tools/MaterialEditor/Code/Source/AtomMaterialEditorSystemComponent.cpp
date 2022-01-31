@@ -11,7 +11,7 @@ namespace AtomMaterialEditor
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AtomMaterialEditorSystemComponent>()
+            serializeContext->Class<AtomMaterialEditorSystemComponent, AZ::Component>()
                 ->Version(0);
         }
     }

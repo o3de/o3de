@@ -11,7 +11,7 @@ namespace PhysX
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<PhysXMaterialEditorSystemComponent>()
+            serializeContext->Class<PhysXMaterialEditorSystemComponent, AZ::Component>()
                 ->Version(0);
         }
     }

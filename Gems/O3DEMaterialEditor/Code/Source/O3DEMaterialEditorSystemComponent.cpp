@@ -12,7 +12,7 @@ namespace O3DEMaterialEditor
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<O3DEMaterialEditorSystemComponent>()
+            serializeContext->Class<O3DEMaterialEditorSystemComponent, AZ::Component>()
                 ->Version(0);
         }
     }

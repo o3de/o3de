@@ -11,7 +11,7 @@ namespace Blast
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<BlastMaterialEditorSystemComponent>()
+            serializeContext->Class<BlastMaterialEditorSystemComponent, AZ::Component>()
                 ->Version(0);
         }
     }
