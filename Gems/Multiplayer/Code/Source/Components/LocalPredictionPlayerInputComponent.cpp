@@ -229,7 +229,7 @@ namespace Multiplayer
                         if (!inputLogs.empty())
                         {
                             AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
-                                MultiplayerAuditCategory::Input, input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(),
+                                AuditCategory::Input, input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(),
                                 AZStd::move(inputLogs));
                         }
                     }
@@ -378,7 +378,7 @@ namespace Multiplayer
                 PrintCorrectionDifferences(*iter->second, serverValues, &detail);
                 detail.m_name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from index=%d",
                     aznumeric_cast<int32_t>(inputId), startReplayIndex);
-                AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(MultiplayerAuditCategory::Desync,
+                AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(AuditCategory::Desync,
                     inputId, startReplayInput.GetHostFrameId(), GetEntity()->GetName(), { AZStd::move(detail) });
             }
             else
@@ -544,7 +544,7 @@ namespace Multiplayer
                 AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
                 if (!inputLogs.empty())
                 {
-                    AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(MultiplayerAuditCategory::Input,
+                    AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(AuditCategory::Input,
                         input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(), AZStd::move(inputLogs));
                 }
 

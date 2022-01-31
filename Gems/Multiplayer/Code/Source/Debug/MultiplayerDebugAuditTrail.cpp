@@ -69,7 +69,7 @@ namespace Multiplayer
 
             for (auto elem = auditTrailElems.begin(); elem != auditTrailElems.end(); ++elem)
             {
-                if (elem == auditTrailElems.begin() && elem->m_category != MultiplayerAuditCategory::Desync)
+                if (elem == auditTrailElems.begin() && elem->m_category != AuditCategory::Desync)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
@@ -79,23 +79,23 @@ namespace Multiplayer
                     ImGui::TableNextColumn();
                     ImGui::TableNextColumn();
                 }
-                else if (!atRootLevel && elem != auditTrailElems.begin() && elem->m_category == MultiplayerAuditCategory::Desync)
+                else if (!atRootLevel && elem != auditTrailElems.begin() && elem->m_category == AuditCategory::Desync)
                 {
                     atRootLevel = true;
                     ImGui::TreePop();
                 }
 
-                if (!atRootLevel || elem->m_category == MultiplayerAuditCategory::Desync)
+                if (!atRootLevel || elem->m_category == AuditCategory::Desync)
                 {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
 
-                    const char* nodeTitle = elem->m_category == MultiplayerAuditCategory::Desync
+                    const char* nodeTitle = elem->m_category == AuditCategory::Desync
                         ? DESYNC_TITLE
-                        : (elem->m_category == MultiplayerAuditCategory::Input ? INPUT_TITLE : EVENT_TITLE);
+                        : (elem->m_category == AuditCategory::Input ? INPUT_TITLE : EVENT_TITLE);
 
                     // Draw Events as a single line entry, they should only have one line item
-                    if (elem->m_category == MultiplayerAuditCategory::Event)
+                    if (elem->m_category == AuditCategory::Event)
                     {
                         if (elem->m_children.size() > 0 && elem->m_children.front().m_elements.size() > 0)
                         {
@@ -134,7 +134,7 @@ namespace Multiplayer
                             ImGui::TableNextColumn();
                             if (child.m_elements.size() > 0)
                             {
-                                const ImGuiTableFlags childFlags = elem->m_category == MultiplayerAuditCategory::Desync
+                                const ImGuiTableFlags childFlags = elem->m_category == AuditCategory::Desync
                                     ? ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_DefaultOpen
                                     : ImGuiTreeNodeFlags_SpanFullWidth;
                                 if (ImGui::TreeNodeEx(child.m_name.c_str(), childFlags))
@@ -171,7 +171,7 @@ namespace Multiplayer
                                 ImGui::TableNextColumn();
                             }
                         }
-                        if (elem->m_category != MultiplayerAuditCategory::Desync)
+                        if (elem->m_category != AuditCategory::Desync)
                         {
                             ImGui::TreePop();
                         }

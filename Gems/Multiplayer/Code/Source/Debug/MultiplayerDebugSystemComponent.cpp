@@ -75,14 +75,14 @@ namespace Multiplayer
     }
 
     void MultiplayerDebugSystemComponent::AddAuditEntry(
-            const MultiplayerAuditCategory category,
+            const AuditCategory category,
             const ClientInputId inputId,
             const HostFrameId frameId,
             const AZStd::string& name,
             AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
-        if ((!net_DebugEntities_AuditInputs && category == MultiplayerAuditCategory::Input)
-            || (!net_DebugEntities_AuditEvents && category == MultiplayerAuditCategory::Event))
+        if ((!net_DebugEntities_AuditInputs && category == AuditCategory::Input)
+            || (!net_DebugEntities_AuditEvents && category == AuditCategory::Event))
         {
             return;
         }
@@ -94,7 +94,7 @@ namespace Multiplayer
 
         m_auditTrailElems.emplace_front(category, inputId, frameId, name, AZStd::move(entryDetails));
 
-        if ((m_auditTrail == nullptr || m_auditTrail->CanPumpAuditTrail()) && category == MultiplayerAuditCategory::Desync)
+        if ((m_auditTrail == nullptr || m_auditTrail->CanPumpAuditTrail()) && category == AuditCategory::Desync)
         {
             while (m_auditTrailElems.size() > 0)
             {
@@ -596,15 +596,15 @@ namespace Multiplayer
         for (auto elem = m_committedAuditTrail.begin(); elem != m_committedAuditTrail.end(); ++elem)
         {
 
-            if (elem->m_category == MultiplayerAuditCategory::Desync)
+            if (elem->m_category == AuditCategory::Desync)
             {
-                const char* nodeTitle = elem->m_category == MultiplayerAuditCategory::Desync
+                const char* nodeTitle = elem->m_category == AuditCategory::Desync
                     ? MultiplayerDebugAuditTrail::DESYNC_TITLE
-                    : (elem->m_category == MultiplayerAuditCategory::Input ? MultiplayerDebugAuditTrail::INPUT_TITLE
+                    : (elem->m_category == AuditCategory::Input ? MultiplayerDebugAuditTrail::INPUT_TITLE
                                                                            : MultiplayerDebugAuditTrail::EVENT_TITLE);
 
                 // Events only have one item
-                if (elem->m_category == MultiplayerAuditCategory::Event)
+                if (elem->m_category == AuditCategory::Event)
                 {
                     if (elem->m_children.size() > 0 && elem->m_children.front().m_elements.size() > 0)
                     {
