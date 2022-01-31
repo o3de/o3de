@@ -63,13 +63,13 @@ def AtomEditorComponents_Grid_AddedToEntity():
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
     5) Grid Size changed.
-    5) Enter/Exit game mode.
-    6) Test IsHidden.
-    7) Test IsVisible.
-    8) Delete Grid entity.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors.
+    6) Enter/Exit game mode.
+    7) Test IsHidden.
+    8) Test IsVisible.
+    9) Delete Grid entity.
+    10) UNDO deletion.
+    11) REDO deletion.
+    12) Look for errors.
 
     :return: None
     """
@@ -123,7 +123,7 @@ def AtomEditorComponents_Grid_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, grid_entity.exists())
 
-        # 5. Grid Size changed (default is 32, changed to 64)
+        # 5. Grid Size changed
         grid_component.set_component_property_value(
             AtomComponentProperties.grid('Grid Size'), value=64)
         current_grid_size = grid_component.get_component_property_value(

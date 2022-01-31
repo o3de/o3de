@@ -27,9 +27,6 @@ class Tests:
     light_component = (
         "Entity has a Light component",
         "Entity failed to find Light component")
-    light_type_value = (
-        "Light type value set",
-        "Light type value could not be set")
     enter_game_mode = (
         "Entered game mode",
         "Failed to enter game mode")
@@ -71,7 +68,7 @@ def AtomEditorComponents_Light_AddedToEntity():
     2) Add Light component to the Light entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Set the light type to sphere.
+    5) Cycle through all light types.
     6) Enter/Exit game mode.
     7) Test IsHidden.
     8) Test IsVisible.
@@ -128,12 +125,16 @@ def AtomEditorComponents_Light_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, light_entity.exists())
 
-        # 5. Set the light type to sphere
-        light_component.set_component_property_value(
-            AtomComponentProperties.light('Light type'), LIGHT_TYPES['sphere'])
-        current_light_type = light_component.get_component_property_value(
-            AtomComponentProperties.light('Light type'))
-        Report.result(Tests.light_type_value, current_light_type == LIGHT_TYPES['sphere'])
+        # 5. Cycle through all light types.
+        for ltype, value in LIGHT_TYPES.items():
+            light_component.set_component_property_value(
+                AtomComponentProperties.light('Light type'), LIGHT_TYPES[ltype])
+            current_light_type = light_component.get_component_property_value(
+                AtomComponentProperties.light('Light type'))
+            test_shape = (
+                f"Light component has {ltype} type set",
+                f"Light component failed to set {ltype} type")
+            Report.result(test_shape, current_light_type == LIGHT_TYPES[ltype])
 
         # 6. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)

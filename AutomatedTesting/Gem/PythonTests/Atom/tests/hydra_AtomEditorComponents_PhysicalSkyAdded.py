@@ -28,7 +28,7 @@ class Tests:
         "Entity has a Physical Sky component",
         "Entity failed to find Physical Sky component")
     sky_intensity = (
-        "Sky Intensity value set to 2",
+        "Sky Intensity value updated successfully",
         "Sky Intensity value could not be set")
     enter_game_mode = (
         "Entered game mode",
@@ -71,7 +71,7 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
     2) Add Physical Sky component to Physical Sky entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Set Sky Intensity to a value of 2.
+    5) Update Sky Intensity value.
     6) Enter/Exit game mode.
     7) Test IsHidden.
     8) Test IsVisible.
@@ -130,7 +130,7 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, physical_sky_entity.exists())
 
-        # 5. Set Sky Intensity to a value of 2 (default value is 4)
+        # 5. Set Sky Intensity value
         physical_sky_component.set_component_property_value(
             AtomComponentProperties.physical_sky('Sky Intensity'), value=2)
         current_sky_intensity = physical_sky_component.get_component_property_value(
