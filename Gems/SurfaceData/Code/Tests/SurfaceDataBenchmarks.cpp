@@ -137,6 +137,17 @@ namespace UnitTest
             return testEntities;
         }
 
+        SurfaceData::SurfaceTagVector CreateBenchmarkTagFilterList()
+        {
+            SurfaceData::SurfaceTagVector tagFilterList;
+            tagFilterList.emplace_back("surface1");
+            tagFilterList.emplace_back("surface2");
+            tagFilterList.emplace_back("surface3");
+            tagFilterList.emplace_back("modifier2");
+            tagFilterList.emplace_back("modifier3");
+            return tagFilterList;
+        }
+
     protected:
         void SetUp([[maybe_unused]] const benchmark::State& state) override
         {
@@ -166,6 +177,7 @@ namespace UnitTest
         // Create our benchmark world
         const float worldSize = aznumeric_cast<float>(state.range(0));
         AZStd::vector<AZStd::unique_ptr<AZ::Entity>> benchmarkEntities = CreateBenchmarkEntities(worldSize);
+        SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
         for (auto _ : state)
@@ -181,8 +193,7 @@ namespace UnitTest
                     points.clear();
 
                     SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
-                        queryPosition, SurfaceData::SurfaceTagVector(), points);
+                        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, filterTags, points);
                     benchmark::DoNotOptimize(points);
                 }
             }
@@ -196,6 +207,7 @@ namespace UnitTest
         // Create our benchmark world
         float worldSize = aznumeric_cast<float>(state.range(0));
         AZStd::vector<AZStd::unique_ptr<AZ::Entity>> benchmarkEntities = CreateBenchmarkEntities(worldSize);
+        SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
         for (auto _ : state)
@@ -205,8 +217,7 @@ namespace UnitTest
             AZ::Aabb inRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(worldSize));
             AZ::Vector2 stepSize(1.0f);
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion, inRegion, stepSize,
-                SurfaceData::SurfaceTagVector(),
+                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion, inRegion, stepSize, filterTags,
                 points);
             benchmark::DoNotOptimize(points);
         }
@@ -220,6 +231,7 @@ namespace UnitTest
         const float worldSize = aznumeric_cast<float>(state.range(0));
         const int64_t worldSizeInt = state.range(0);
         AZStd::vector<AZStd::unique_ptr<AZ::Entity>> benchmarkEntities = CreateBenchmarkEntities(worldSize);
+        SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
         for (auto _ : state)
@@ -238,8 +250,7 @@ namespace UnitTest
             SurfaceData::SurfacePointLists points;
 
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList,
-                queryPositions, SurfaceData::SurfaceTagVector(), points);
+                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, queryPositions, filterTags, points);
             benchmark::DoNotOptimize(points);
         }
     }
