@@ -14,7 +14,7 @@ namespace AZ
 {
     namespace Utils
     {
-        int16_t CalcMaxChannelDifference(AZStd::array_view<uint8_t> bufferA, AZStd::array_view<uint8_t> bufferB, size_t index)
+        int16_t CalcMaxChannelDifference(AZStd::span<const uint8_t> bufferA, AZStd::span<const uint8_t> bufferB, size_t index)
         {
             // We use the max error from a single channel instead of accumulating the error from each channel.
             // This normalizes differences so that for example black vs red has the same weight as black vs yellow.
