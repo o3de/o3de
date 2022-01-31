@@ -207,6 +207,7 @@ set(FILES
     AZStd/Pair.cpp
     AZStd/Parallel.cpp
     AZStd/RangesTests.cpp
+    AZStd/RangesAlgorithmTests.cpp
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp
     AZStd/SmartPtr.cpp

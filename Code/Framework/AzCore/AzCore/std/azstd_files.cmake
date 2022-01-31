@@ -40,6 +40,8 @@ set(FILES
     ranges/owning_view.h
     ranges/ranges.h
     ranges/ranges_adaptor.h
+    ranges/ranges_algorithm.h
+    ranges/ranges_functional.h
     ranges/ref_view.h
     ranges/split_view.h
     ranges/zip_view.h
