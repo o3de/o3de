@@ -28,8 +28,6 @@
 namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(AtomRenderPlugin, EMotionFX::EditorAllocator, 0);
-    const AzToolsFramework::ManipulatorManagerId g_animManipulatorManagerId =
-        AzToolsFramework::ManipulatorManagerId(AZ::Crc32("AnimManipulatorManagerId"));
 
     AtomRenderPlugin::AtomRenderPlugin()
         : DockWidgetPlugin()
