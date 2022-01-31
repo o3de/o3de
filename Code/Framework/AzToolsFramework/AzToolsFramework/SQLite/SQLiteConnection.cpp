@@ -65,6 +65,9 @@ namespace AzToolsFramework
 
         bool Connection::Open(const AZStd::string& filename, bool readOnly)
         {
+            AZ_Assert(sqlite3_libversion_number() == SQLITE_VERSION_NUMBER, "Sqlite header version number does not match library");
+            AZ_Assert(strncmp(sqlite3_sourceid(), SQLITE_SOURCE_ID, 80) == 0, "Sqlite header source id does not match library");
+            AZ_Assert(strcmp(sqlite3_libversion(), SQLITE_VERSION) == 0, "Sqlite header version does not match library");
             AZ_Assert(m_db == NULL, "You have to close the database prior to opening a new one.");
             if (m_db)
             {

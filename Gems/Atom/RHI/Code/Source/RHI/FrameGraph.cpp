@@ -327,7 +327,7 @@ namespace AZ
             return ResultCode::InvalidArgument;
         }
 
-        ResultCode FrameGraph::UseAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors, ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
+        ResultCode FrameGraph::UseAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors, ScopeAttachmentAccess access, ScopeAttachmentUsage usage)
         {
             for (const ImageScopeAttachmentDescriptor& descriptor : descriptors)
             {
@@ -354,7 +354,7 @@ namespace AZ
             return ResultCode::InvalidArgument;
         }
 
-        ResultCode FrameGraph::UseColorAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors)
+        ResultCode FrameGraph::UseColorAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
         {
             return UseAttachments(descriptors, ScopeAttachmentAccess::Write, ScopeAttachmentUsage::RenderTarget);
         }
@@ -364,7 +364,7 @@ namespace AZ
             return UseAttachment(descriptor, access, ScopeAttachmentUsage::DepthStencil);
         }
 
-        ResultCode FrameGraph::UseSubpassInputAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors)
+        ResultCode FrameGraph::UseSubpassInputAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
         {
             return UseAttachments(descriptors, ScopeAttachmentAccess::Read, ScopeAttachmentUsage::SubpassInput);
         }

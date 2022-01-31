@@ -10,7 +10,7 @@
 #include <Atom/RHI/AsyncWorkQueue.h>
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI/StreamingImagePool.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/Image.h>
@@ -34,7 +34,7 @@ namespace AZ
             : public RHI::DeviceObject
         {
             using Base = RHI::DeviceObject;
-            
+
         public:
             AsyncUploadQueue() = default;
 
@@ -57,13 +57,13 @@ namespace AZ
             uint64_t QueueUpload(const RHI::BufferStreamRequest& request);
 
             //! Queue copy commands to upload image subresources.
-            //! @param residentMip is the resident mip level the expand request starts from. 
+            //! @param residentMip is the resident mip level the expand request starts from.
             //! @return queue id which can be use to check whether upload finished or wait for upload finish
             RHI::AsyncWorkHandle QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);
 
             bool IsUploadFinished(uint64_t fenceValue);
             void WaitForUpload(const RHI::AsyncWorkHandle& workHandle);
-            
+
         private:
             struct FramePacket;
             RHI::AsyncWorkHandle CreateAsyncWork(Fence& fence, RHI::Fence::SignalCallback callback = nullptr);
@@ -84,26 +84,26 @@ namespace AZ
                 Fence m_fence;
 
                 // Using persistent mapping for the staging resource so the Map function only need to be called called once.
-                uint8_t* m_stagingResourceData = nullptr; 
+                uint8_t* m_stagingResourceData = nullptr;
                 uint32_t m_dataOffset = 0;
             };
-            
+
             RHI::Ptr<CommandQueue> m_copyQueue;
-            // Begin the frame packet which m_frameIndex point to and get ready to start recording copy command by using this frame packet 
+            // Begin the frame packet which m_frameIndex point to and get ready to start recording copy command by using this frame packet
             FramePacket* BeginFramePacket(CommandQueue* commandQueue);
             void EndFramePacket(CommandQueue* commandQueue);
             bool m_recordingFrame = false;
 
-            AZStd::vector<FramePacket> m_framePackets; 
+            AZStd::vector<FramePacket> m_framePackets;
             size_t m_frameIndex = 0;
 
             Descriptor m_descriptor;
 
             // Fence for external upload request
             Fence m_uploadFence;
-            
+
             RHI::Ptr<Device> m_device;
-            
+
             //Command Buffer associated with the async copy queue
             CommandQueueCommandBuffer m_commandBuffer;
 

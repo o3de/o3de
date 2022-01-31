@@ -5,17 +5,18 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Source/JointComponent.h>
 
+#include <Source/Utils.h>
+#include <PhysX/MathConversion.h>
+#include <PhysX/NativeTypeIdentifiers.h>
+#include <PhysX/PhysXLocks.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
-#include <PhysX/NativeTypeIdentifiers.h>
-#include <PhysX/PhysXLocks.h>
-#include <Source/JointComponent.h>
-#include <Source/Utils.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
-#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {

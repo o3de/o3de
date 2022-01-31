@@ -51,22 +51,18 @@ def AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude():
 
     import os
 
-    import azlmbr.asset as asset
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
     import azlmbr.math as math
-    import azlmbr.prefab as prefab
 
     import editor_python_test_tools.hydra_editor_utils as hydra
-    from editor_python_test_tools.prefab_utils import Prefab
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("", "Base")
+    hydra.open_base_level()
 
     # Set view of planting area for visual debugging
     general.set_current_view_position(512.0, 500.0, 38.0)
@@ -76,9 +72,9 @@ def AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude():
     center_point = math.Vector3(512.0, 512.0, 32.0)
 
     flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
-    flower_prefab = dynveg.create_temp_mesh_prefab(flower_asset_path, "PinkFlower")[0]
+    flower_prefab = dynveg.create_temp_mesh_prefab(flower_asset_path, "AltFilter_PinkFlower")[0]
 
-    spawner_entity = dynveg.create_prefab_vegetation_area("Instance Spawner", center_point, 32.0, 32.0, 32.0, flower_prefab)
+    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", center_point, 32.0, 32.0, 32.0, flower_prefab)
 
     # Add a Vegetation Altitude Filter
     spawner_entity.add_component("Vegetation Altitude Filter")

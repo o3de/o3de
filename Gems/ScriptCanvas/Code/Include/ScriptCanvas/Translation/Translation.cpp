@@ -18,7 +18,6 @@
 
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
-#include <ScriptCanvas/Translation/GraphToCPlusPlus.h>
 #include <ScriptCanvas/Translation/GraphToLua.h>
 #include <ScriptCanvas/Core/Graph.h>
 
@@ -26,41 +25,6 @@ namespace TranslationCPP
 {
     using namespace ScriptCanvas;
     using namespace ScriptCanvas::Translation;
-
-    /*
-    AZ::Outcome<AZStd::pair<AZStd::string, AZStd::string>, AZStd::pair<AZStd::string, AZStd::string>> ToCPlusPlus(const Grammar::AbstractCodeModel& model, bool rawSave = false)
-    {
-        AZStd::string dotH, dotCPP;
-        auto outcome = GraphToCPlusPlus::Translate(model, dotH, dotCPP);
-        if (outcome.IsSuccess())
-        {
-#if defined(SCRIPT_CANVAS_PRINT_FILES_CONSOLE)
-            AZ_TracePrintf("ScriptCanvas", "\n\n *** .h file ***\n\n");
-            AZ_TracePrintf("ScriptCanvas", dotH.data());
-            AZ_TracePrintf("ScriptCanvas", "\n\n *** .cpp file *\n\n");
-            AZ_TracePrintf("ScriptCanvas", dotCPP.data());
-            AZ_TracePrintf("ScriptCanvas", "\n\n");
-#endif
-            if (rawSave)
-            {
-                auto saveOutcome = SaveDotH(model.GetSource(), dotH);
-                if (saveOutcome.IsSuccess())
-                {
-                    saveOutcome = SaveDotCPP(model.GetSource(), dotCPP);
-                }
-                if (!saveOutcome.IsSuccess())
-                {
-                    AZ_TracePrintf("Save failed %s", saveOutcome.GetError().data());
-                }
-            }
-            return AZ::Success(AZStd::make_pair(AZStd::move(dotH), AZStd::move(dotCPP)));
-        }
-        else
-        {
-            return AZ::Failure(outcome.TakeError());
-        }
-    }
-    */
 
     AZ::Outcome<TargetResult, ErrorList> ToLua(const Grammar::AbstractCodeModel& model, bool rawSave = false)
     {

@@ -589,6 +589,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.path.join', mock.MagicMock())
     def test_ExecEditorTest_TestSucceeds_ReturnsPass(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                      mock_retrieve_log, mock_retrieve_editor_log,
                                                      mock_get_output_results, mock_create):
@@ -616,6 +617,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.path.join', mock.MagicMock())
     def test_ExecEditorTest_TestFails_ReturnsFail(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                      mock_retrieve_log, mock_retrieve_editor_log,
                                                      mock_get_output_results, mock_create):
@@ -644,6 +646,8 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.path.join', mock.MagicMock())
+    @mock.patch('os.path.basename', mock.MagicMock())
     def test_ExecEditorTest_TestCrashes_ReturnsCrash(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                      mock_retrieve_log, mock_retrieve_editor_log,
                                                      mock_get_output_results, mock_retrieve_crash, mock_create):
@@ -699,10 +703,14 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.path.join', mock.MagicMock())
     def test_ExecEditorMultitest_AllTestsPass_ReturnsPasses(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                             mock_retrieve_log, mock_retrieve_editor_log, mock_create):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
+        mock_artifact_manager = mock.MagicMock()
+        mock_artifact_manager.save_artifact.return_value = mock.MagicMock()
+        mock_workspace.artifact_manager = mock_artifact_manager
         mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
         mock_editor.get_returncode.return_value = 0
@@ -727,6 +735,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.path.join', mock.MagicMock())
     def test_ExecEditorMultitest_OneFailure_CallsCorrectFunc(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                            mock_retrieve_log, mock_retrieve_editor_log, mock_get_results):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -752,6 +761,8 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.path.join', mock.MagicMock())
+    @mock.patch('os.path.basename', mock.MagicMock())
     def test_ExecEditorMultitest_OneCrash_ReportsOnUnknownResult(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                  mock_retrieve_log, mock_retrieve_editor_log,
                                                                  mock_get_results, mock_retrieve_crash, mock_create):
@@ -787,6 +798,8 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.path.join', mock.MagicMock())
+    @mock.patch('os.path.basename', mock.MagicMock())
     def test_ExecEditorMultitest_ManyUnknown_ReportsUnknownResults(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                    mock_retrieve_log, mock_retrieve_editor_log,
                                                                    mock_get_results, mock_retrieve_crash, mock_create):

@@ -6,9 +6,9 @@
  *
  */
 
-#include <Source/Window/ToolBar/LightingPresetComboBox.h>
-#include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
+#include <Viewport/MaterialViewportRequestBus.h>
+#include <Window/ToolBar/LightingPresetComboBox.h>
 
 namespace MaterialEditor
 {
@@ -102,4 +102,4 @@ namespace MaterialEditor
 
 } // namespace MaterialEditor
 
-#include <Source/Window/ToolBar/moc_LightingPresetComboBox.cpp>
+#include <Window/ToolBar/moc_LightingPresetComboBox.cpp>

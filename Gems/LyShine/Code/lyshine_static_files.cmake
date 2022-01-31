@@ -7,12 +7,11 @@
 #
 
 set(FILES
-    Source/Draw2d.cpp
-    Include/LyShine/Draw2d.h
     Include/LyShine/IDraw2d.h
     Include/LyShine/IRenderGraph.h
     Include/LyShine/ISprite.h
     Include/LyShine/ILyShine.h
+    Include/LyShine/UiAssetTypes.h
     Include/LyShine/UiBase.h
     Include/LyShine/UiLayoutCellBase.h
     Include/LyShine/UiSerializeHelpers.h
@@ -28,6 +27,7 @@ set(FILES
     Include/LyShine/Bus/UiCanvasManagerBus.h
     Include/LyShine/Bus/UiCanvasUpdateNotificationBus.h
     Include/LyShine/Bus/UiCheckboxBus.h
+    Include/LyShine/Bus/UiCursorBus.h
     Include/LyShine/Bus/UiDraggableBus.h
     Include/LyShine/Bus/UiDropdownBus.h
     Include/LyShine/Bus/UiDropdownOptionBus.h
@@ -88,6 +88,8 @@ set(FILES
     Include/LyShine/Bus/World/UiCanvasOnMeshBus.h
     Include/LyShine/Bus/World/UiCanvasRefBus.h
     Include/LyShine/Bus/Tools/UiSystemToolsBus.h
+    Source/Draw2d.cpp
+    Source/Draw2d.h
     Source/LyShine.cpp
     Source/LyShine.h
     Source/LyShinePassDataBus.h
@@ -102,7 +104,6 @@ set(FILES
     Source/UiImageSequenceComponent.h
     Source/UiRenderer.cpp
     Source/UiRenderer.h
-    Source/resource.h
     Include/LyShine/LyShineBus.h
     Source/EditorPropertyTypes.cpp
     Source/EditorPropertyTypes.h
@@ -207,10 +208,8 @@ set(FILES
     Source/Animation/AnimNode.h
     Source/Animation/AnimSequence.cpp
     Source/Animation/AnimSequence.h
-    Source/Animation/AnimSplineTrack.cpp
     Source/Animation/AnimSplineTrack.h
     Source/Animation/AnimSplineTrack_Vec2Specialization.h
-    Source/Animation/AnimTrack.cpp
     Source/Animation/AnimTrack.h
     Source/Animation/AzEntityNode.cpp
     Source/Animation/AzEntityNode.h

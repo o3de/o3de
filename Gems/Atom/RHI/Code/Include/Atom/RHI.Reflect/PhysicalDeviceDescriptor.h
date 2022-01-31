@@ -28,7 +28,8 @@ namespace AZ
             (AMD,      0x1002),
             (Qualcomm, 0x5143),
             (Samsung,  0x1099),
-            (ARM,      0x13B5)
+            (ARM,      0x13B5),
+            (Warp,     0x1414)
         );
 
         void ReflectVendorIdEnums(ReflectContext* context);

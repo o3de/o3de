@@ -383,17 +383,29 @@ void CViewportTitleDlg::OnInitDialog()
     bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-    if (isPrefabSystemEnabled)
-    {
-        m_prefabViewportFocusPathHandler = new AzToolsFramework::Prefab::PrefabViewportFocusPathHandler();
-        m_prefabViewportFocusPathHandler->Initialize(m_ui->m_prefabFocusPath, m_ui->m_prefabFocusBackButton);
-    }
-    else
+    if (!isPrefabSystemEnabled)
     {
         m_ui->m_prefabFocusPath->setEnabled(false);
         m_ui->m_prefabFocusBackButton->setEnabled(false);
         m_ui->m_prefabFocusPath->hide();
         m_ui->m_prefabFocusBackButton->hide();
+    }
+}
+
+void CViewportTitleDlg::InitializePrefabViewportFocusPathHandler(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton)
+{
+    if (m_prefabViewportFocusPathHandler != nullptr)
+    {
+        return;
+    }
+
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+    if (isPrefabSystemEnabled)
+    {
+        m_prefabViewportFocusPathHandler = new AzToolsFramework::Prefab::PrefabViewportFocusPathHandler();
+        m_prefabViewportFocusPathHandler->Initialize(breadcrumbsWidget, backButton);
     }
 }
 

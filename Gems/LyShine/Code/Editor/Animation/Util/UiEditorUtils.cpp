@@ -93,23 +93,6 @@ QString TrimTrailingZeros(QString str)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// This function is supposed to format float in user-friendly way,
-// omitting the exponent notation.
-//
-// Why not using printf? Its formatting rules has following drawbacks:
-//  %g   - will use exponent for small numbers;
-//  %.Nf - doesn't allow to control total amount of significant numbers,
-//         which exposes limited precision during binary-to-decimal fraction
-//         conversion.
-//////////////////////////////////////////////////////////////////////////
-void FormatFloatForUI(QString& str, int significantDigits, double value)
-{
-    str = TrimTrailingZeros(QString::number(value, 'f', significantDigits));
-    return;
-}
-//////////////////////////////////////////////////////////////////////////-
-
-//////////////////////////////////////////////////////////////////////////
 QColor ColorLinearToGamma(ColorF col)
 {
     float r = clamp_tpl(col.r, 0.0f, 1.0f);

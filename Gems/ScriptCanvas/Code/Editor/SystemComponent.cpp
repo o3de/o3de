@@ -20,7 +20,6 @@
 #include <Editor/Framework/ScriptCanvasGraphUtilities.h>
 #include <Editor/Settings.h>
 #include <Editor/SystemComponent.h>
-#include <Editor/View/Dialogs/NewGraphDialog.h>
 #include <Editor/View/Dialogs/SettingsDialog.h>
 #include <Editor/View/Widgets/SourceHandlePropertyAssetCtrl.h>
 #include <Editor/View/Windows/MainWindow.h>
@@ -36,7 +35,6 @@
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
-#include <ScriptCanvas/View/EditCtrls/GenericLineEditCtrl.h>
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 
 
@@ -183,7 +181,7 @@ namespace ScriptCanvasEditor
     {
         if (entity)
         {
-            auto graph = entity->CreateComponent<Graph>();
+            auto graph = entity->CreateComponent<EditorGraph>();
             entity->CreateComponent<EditorGraphVariableManagerComponent>(graph->GetScriptCanvasId());
         }
     }

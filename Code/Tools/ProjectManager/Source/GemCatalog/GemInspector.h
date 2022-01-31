@@ -28,7 +28,7 @@ namespace O3DE::ProjectManager
     class GemInspector
         : public QScrollArea
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit GemInspector(GemModel* model, QWidget* parent = nullptr);

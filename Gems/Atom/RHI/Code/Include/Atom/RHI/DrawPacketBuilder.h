@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    class IAllocatorAllocate;
+    class IAllocator;
 
     namespace RHI
     {
@@ -32,7 +32,7 @@ namespace AZ
                 uint8_t m_stencilRef = 0;
 
                 //! The array of stream buffers to bind for this draw item.
-                AZStd::array_view<StreamBufferView> m_streamBufferViews;
+                AZStd::span<const StreamBufferView> m_streamBufferViews;
 
                 //! Shader resource group unique for this draw request
                 const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
@@ -50,19 +50,19 @@ namespace AZ
             // NOTE: This is configurable; just used to control the amount of memory held by the builder.
             static const size_t DrawItemCountMax = 16;
 
-            void Begin(IAllocatorAllocate* allocator);
+            void Begin(IAllocator* allocator);
 
             void SetDrawArguments(const DrawArguments& drawArguments);
 
             void SetIndexBufferView(const IndexBufferView& indexBufferView);
 
-            void SetRootConstants(AZStd::array_view<uint8_t> rootConstants);
+            void SetRootConstants(AZStd::span<const uint8_t> rootConstants);
 
-            void SetScissors(AZStd::array_view<Scissor> scissors);
+            void SetScissors(AZStd::span<const Scissor> scissors);
 
             void SetScissor(const Scissor& scissor);
 
-            void SetViewports(AZStd::array_view<Viewport> viewports);
+            void SetViewports(AZStd::span<const Viewport> viewports);
 
             void SetViewport(const Viewport& viewport);
 
@@ -77,7 +77,7 @@ namespace AZ
         private:
             void ClearData();
 
-            IAllocatorAllocate* m_allocator = nullptr;
+            IAllocator* m_allocator = nullptr;
             DrawArguments m_drawArguments;
             DrawListMask m_drawListMask = 0;
             DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
@@ -85,7 +85,7 @@ namespace AZ
             IndexBufferView m_indexBufferView;
             AZStd::fixed_vector<DrawRequest, DrawItemCountMax> m_drawRequests;
             AZStd::fixed_vector<const ShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;
-            AZStd::array_view<uint8_t> m_rootConstants;
+            AZStd::span<const uint8_t> m_rootConstants;
             AZStd::fixed_vector<Scissor, Limits::Pipeline::AttachmentColorCountMax> m_scissors;
             AZStd::fixed_vector<Viewport, Limits::Pipeline::AttachmentColorCountMax> m_viewports;
         };

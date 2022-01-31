@@ -8,6 +8,8 @@
 
 #include <Atom/Utils/ImageComparison.h>
 
+#include <AzCore/Casting/numeric_cast.h>
+
 namespace AZ
 {
     namespace Utils
@@ -23,8 +25,8 @@ namespace AZ
         }
 
         ImageDiffResultCode CalcImageDiffRms(
-            AZStd::array_view<uint8_t> bufferA, const RHI::Size& sizeA, RHI::Format formatA,
-            AZStd::array_view<uint8_t> bufferB, const RHI::Size& sizeB, RHI::Format formatB,
+            AZStd::span<const uint8_t> bufferA, const RHI::Size& sizeA, RHI::Format formatA,
+            AZStd::span<const uint8_t> bufferB, const RHI::Size& sizeB, RHI::Format formatB,
             float* diffScore,
             float* filteredDiffScore,
             float minDiffFilter)

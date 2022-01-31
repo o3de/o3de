@@ -29,21 +29,34 @@ namespace UnitTest
         {
             GradientSignalTest::SetUp();
 
-            // Set up job manager with two threads so that we can run and test the preview job logic.
-            AZ::JobManagerDesc desc;
-            AZ::JobManagerThreadDesc threadDesc;
-            desc.m_workerThreads.push_back(threadDesc);
-            desc.m_workerThreads.push_back(threadDesc);
-            m_jobManager = aznew AZ::JobManager(desc);
-            m_jobContext = aznew AZ::JobContext(*m_jobManager);
-            AZ::JobContext::SetGlobalContext(m_jobContext);
+            auto globalContext = AZ::JobContext::GetGlobalContext();
+            if (globalContext)
+            {
+                AZ_Assert(
+                    globalContext->GetJobManager().GetNumWorkerThreads() >= 2,
+                    "Job Manager previously started by test environment with too few threads for this test.");
+            }
+            else
+            {
+                // Set up job manager with two threads so that we can run and test the preview job logic.
+                AZ::JobManagerDesc desc;
+                AZ::JobManagerThreadDesc threadDesc;
+                desc.m_workerThreads.push_back(threadDesc);
+                desc.m_workerThreads.push_back(threadDesc);
+                m_jobManager = aznew AZ::JobManager(desc);
+                m_jobContext = aznew AZ::JobContext(*m_jobManager);
+                AZ::JobContext::SetGlobalContext(m_jobContext);
+            }
         }
 
         void TearDown() override
         {
-            AZ::JobContext::SetGlobalContext(nullptr);
-            delete m_jobContext;
-            delete m_jobManager;
+            if (m_jobContext)
+            {
+                AZ::JobContext::SetGlobalContext(nullptr);
+                delete m_jobContext;
+                delete m_jobManager;
+            }
 
             GradientSignalTest::TearDown();
         }
@@ -180,4 +193,5 @@ namespace UnitTest
     }
 }
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+// This uses a custom test hook so that we can load LmbrCentral and use Shape components in our unit tests.
+AZ_UNIT_TEST_HOOK(new UnitTest::GradientSignalTestEnvironment);

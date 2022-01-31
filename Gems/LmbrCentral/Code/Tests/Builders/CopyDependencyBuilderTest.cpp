@@ -19,8 +19,6 @@
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Utils/Utils.h>
 
-#include <LyShine/UiAssetTypes.h>
-
 #include <Builders/CopyDependencyBuilder/CfgBuilderWorker/CfgBuilderWorker.h>
 #include <Builders/CopyDependencyBuilder/FontBuilderWorker/FontBuilderWorker.h>
 #include <Builders/CopyDependencyBuilder/SchemaBuilderWorker/SchemaBuilderWorker.h>

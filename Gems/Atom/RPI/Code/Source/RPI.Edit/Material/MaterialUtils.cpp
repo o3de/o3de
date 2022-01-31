@@ -19,6 +19,7 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <AzCore/std/string/string.h>
 
@@ -101,6 +102,7 @@ namespace AZ
                 settings.m_metadata.Add(fileLoadContext);
 
                 JsonSerialization::Load(materialType, *document, settings);
+                materialType.ConvertToNewDataFormat();
                 materialType.ResolveUvEnums();
 
                 if (reportingHelper.ErrorsReported())
@@ -134,6 +136,20 @@ namespace AZ
                         result.Combine(context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Skipped, "Skipping unrecognized field"));
                     }
                 }
+            }
+            
+            bool BuildersShouldFinalizeMaterialAssets()
+            {
+                // We default to the faster workflow for developers. Enable this registry setting when releasing the
+                // game for faster load times and obfuscation of material assets.
+                bool shouldFinalize = false;
+
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    settingsRegistry->Get(shouldFinalize, "/O3DE/Atom/RPI/MaterialBuilder/FinalizeMaterialAssets");
+                }
+
+                return shouldFinalize;
             }
         }
     }

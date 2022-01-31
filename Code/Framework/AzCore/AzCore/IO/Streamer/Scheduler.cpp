@@ -6,9 +6,11 @@
  *
  */
 
+#include <AzCore/IO/Streamer/Scheduler.h>
+
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/IO/Streamer/Scheduler.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/sort.h>
 
@@ -34,6 +36,8 @@ namespace AZ::IO
 
         m_threadData.m_streamStack = AZStd::move(streamStack);
     }
+
+    Scheduler::~Scheduler() = default;
 
     void Scheduler::Start(const AZStd::thread_desc& threadDesc)
     {
@@ -222,10 +226,10 @@ namespace AZ::IO
         {
             using Command = AZStd::decay_t<decltype(args)>;
             if constexpr (
-                AZStd::is_same_v<Command, FileRequest::ReadData> ||
-                AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+                AZStd::is_same_v<Command, Requests::ReadData> ||
+                AZStd::is_same_v<Command, Requests::CompressedReadData>)
             {
-                auto parentReadRequest = next->GetCommandFromChain<FileRequest::ReadRequestData>();
+                auto parentReadRequest = next->GetCommandFromChain<Requests::ReadRequestData>();
                 AZ_Assert(parentReadRequest != nullptr, "The issued read request can't be found for the (compressed) read command.");
 
                 size_t size = parentReadRequest->m_size;
@@ -234,7 +238,7 @@ namespace AZ::IO
                     AZ_Assert(parentReadRequest->m_allocator,
                         "The read request was issued without a memory allocator or valid output address.");
                     u64 recommendedSize = size;
-                    if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                    if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
                     {
                         recommendedSize = m_recommendations.CalculateRecommendedMemorySize(size, parentReadRequest->m_offset);
                     }
@@ -249,12 +253,12 @@ namespace AZ::IO
                     parentReadRequest->m_output = allocation.m_address;
                     parentReadRequest->m_outputSize = allocation.m_size;
                     parentReadRequest->m_memoryType = allocation.m_type;
-                    if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                    if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
                     {
                         args.m_output = parentReadRequest->m_output;
                         args.m_outputSize = allocation.m_size;
                     }
-                    else if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+                    else if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
                     {
                         args.m_output = parentReadRequest->m_output;
                     }
@@ -267,7 +271,7 @@ namespace AZ::IO
                 }
 #endif
 
-                if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
                 {
                     m_threadData.m_lastFilePath = args.m_path;
                     m_threadData.m_lastFileOffset = args.m_offset + args.m_size;
@@ -275,7 +279,7 @@ namespace AZ::IO
                     m_processingSize += args.m_size;
 #endif
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
                 {
                     const CompressionInfo& info = args.m_compressionInfo;
                     m_threadData.m_lastFilePath = info.m_archiveFilename;
@@ -288,15 +292,15 @@ namespace AZ::IO
                     "Streamer queued %zu: %s", next->GetCommand().index(), parentReadRequest->m_path.GetRelativePath());
                 m_threadData.m_streamStack->QueueRequest(next);
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CancelData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CancelData>)
             {
                 return Thread_ProcessCancelRequest(next, args);
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::RescheduleData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::RescheduleData>)
             {
                 return Thread_ProcessRescheduleRequest(next, args);
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::FlushData> || AZStd::is_same_v<Command, FileRequest::FlushAllData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::FlushData> || AZStd::is_same_v<Command, Requests::FlushAllData>)
             {
                 AZ_PROFILE_INTERVAL_START_COLORED(AzCore, next, ProfilerColor,
                     "Streamer queued %zu", next->GetCommand().index());
@@ -345,7 +349,7 @@ namespace AZ::IO
 #endif
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadRequestData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadRequestData>)
             {
                 if (args.m_output == nullptr && args.m_allocator != nullptr)
                 {
@@ -393,7 +397,7 @@ namespace AZ::IO
         }
     }
 
-    void Scheduler::Thread_ProcessCancelRequest(FileRequest* request, FileRequest::CancelData& data)
+    void Scheduler::Thread_ProcessCancelRequest(FileRequest* request, Requests::CancelData& data)
     {
         AZ_PROFILE_INTERVAL_START_COLORED(AzCore, request, ProfilerColor, "Streamer queued cancel");
         auto& pending = m_context.GetPreparedRequests();
@@ -415,7 +419,7 @@ namespace AZ::IO
         m_threadData.m_streamStack->QueueRequest(request);
     }
 
-    void Scheduler::Thread_ProcessRescheduleRequest(FileRequest* request, FileRequest::RescheduleData& data)
+    void Scheduler::Thread_ProcessRescheduleRequest(FileRequest* request, Requests::RescheduleData& data)
     {
         AZ_PROFILE_INTERVAL_START_COLORED(AzCore, request, ProfilerColor, "Streamer queued reschedule");
         auto& pendingRequests = m_context.GetPreparedRequests();
@@ -424,7 +428,7 @@ namespace AZ::IO
             if (pending->WorksOn(data.m_target))
             {
                 // Read requests are the only requests that use deadlines and dynamic priorities.
-                auto readRequest = pending->GetCommandFromChain<FileRequest::ReadRequestData>();
+                auto readRequest = pending->GetCommandFromChain<Requests::ReadRequestData>();
                 if (readRequest)
                 {
                     readRequest->m_deadline = data.m_newDeadline;
@@ -463,8 +467,8 @@ namespace AZ::IO
 
         // Order is the same for both requests, so prioritize the request that are at risk of missing
         // it's deadline.
-        const FileRequest::ReadRequestData* firstRead = first->GetCommandFromChain<FileRequest::ReadRequestData>();
-        const FileRequest::ReadRequestData* secondRead = second->GetCommandFromChain<FileRequest::ReadRequestData>();
+        const Requests::ReadRequestData* firstRead = first->GetCommandFromChain<Requests::ReadRequestData>();
+        const Requests::ReadRequestData* secondRead = second->GetCommandFromChain<Requests::ReadRequestData>();
 
         if (firstRead == nullptr || secondRead == nullptr)
         {
@@ -496,11 +500,11 @@ namespace AZ::IO
         auto sameFile = [this](auto&& args)
         {
             using Command = AZStd::decay_t<decltype(args)>;
-            if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+            if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
             {
                 return m_threadData.m_lastFilePath == args.m_path;
             }
-            else if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+            else if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
             {
                 return m_threadData.m_lastFilePath == args.m_compressionInfo.m_archiveFilename;
             }
@@ -517,11 +521,11 @@ namespace AZ::IO
             auto offset = [](auto&& args) -> s64
             {
                 using Command = AZStd::decay_t<decltype(args)>;
-                if constexpr (AZStd::is_same_v<Command, FileRequest::ReadData>)
+                if constexpr (AZStd::is_same_v<Command, Requests::ReadData>)
                 {
                     return aznumeric_caster(args.m_offset);
                 }
-                else if constexpr (AZStd::is_same_v<Command, FileRequest::CompressedReadData>)
+                else if constexpr (AZStd::is_same_v<Command, Requests::CompressedReadData>)
                 {
                     return aznumeric_caster(args.m_compressionInfo.m_offset);
                 }

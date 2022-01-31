@@ -7,7 +7,7 @@
  */
 #include "LyShineDebug.h"
 #include "IConsole.h"
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
@@ -377,7 +377,7 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
 {
     IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
     imageOptions.color = color.GetAsVector3();
     auto whiteTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
     draw2d->DrawImageAligned(whiteTexture, pos, size, horizontalAlignment, verticalAlignment,
@@ -392,7 +392,7 @@ static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int eff
 {
     IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+    IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     if (!font.empty())
     {
         textOptions.fontName = font;
@@ -618,7 +618,7 @@ static AZ::Vector2 DebugDrawFontColorTestBox(AZ::Vector2 pos, const char* string
     float pointSize = 32.0f;
     const float spacing = 6.0f;
 
-    CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+    IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
     textOptions.effectIndex = 1;    // no drop shadow baked in
     textOptions.color = color;
 
@@ -742,7 +742,7 @@ static void DebugDraw2dImageColor()
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetMonoAlphaTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText(
         "Testing image colors, image is black and white, top row is opacity=1, bottom row is opacity = 0.5",
@@ -780,7 +780,7 @@ static void DebugDraw2dImageBlendMode()
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorAlphaTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing blend modes, src blend changes across x-axis, dst blend changes across y axis",
         AZ::Vector2(20, 20), 16);
@@ -801,7 +801,7 @@ static void DebugDraw2dImageBlendMode()
             AZ::Vector2 pos(xStart + xSpacing * srcIndex, yStart + ySpacing * dstIndex);
 
             // first draw a background with varying color and alpha
-            CDraw2d::VertexPosColUV verts[4] =
+            IDraw2d::VertexPosColUV verts[4] =
             {
                 { // top left
                     AZ::Vector2(pos.GetX(), pos.GetY()),
@@ -828,7 +828,7 @@ static void DebugDraw2dImageBlendMode()
 
             // Draw the image with this color
 
-            CDraw2d::RenderState renderState;
+            IDraw2d::RenderState renderState;
             renderState.m_blendState.m_blendSource = g_srcBlendModes[srcIndex];
             renderState.m_blendState.m_blendDest = g_dstBlendModes[dstIndex];
             draw2d->DrawImage(texture, pos, size, 1.0f, 0.0f, 0, 0, &imageOptions);
@@ -845,7 +845,7 @@ static void DebugDraw2dImageUVs()
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText(
         "Testing DrawImage with minMaxTexCoords. Full image, top left quadrant, middle section, full flipped",
@@ -894,7 +894,7 @@ static void DebugDraw2dImagePixelRounding()
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing DrawImage pixel rounding options", AZ::Vector2(20, 20), 16);
 
@@ -933,7 +933,7 @@ static void DebugDraw2dLineBasic()
 {
     IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    CDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
+    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing DrawLine", AZ::Vector2(20, 20), 16);
 
@@ -997,7 +997,7 @@ static AZ::Entity* CreateButton(const char* name, bool atRoot, AZ::EntityId pare
         EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor.GetA());
 
         AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
-        ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
+        ISprite* sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(pathname);
 
         EBUS_EVENT_ID(buttonId, UiImageBus, SetSprite, sprite);
         EBUS_EVENT_ID(buttonId, UiImageBus, SetImageType, UiImageInterface::ImageType::Sliced);
@@ -1096,7 +1096,7 @@ static AZ::Entity* CreateTextInput(const char* name, bool atRoot, AZ::EntityId p
         EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor.GetA());
 
         AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
-        ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
+        ISprite* sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(pathname);
 
         EBUS_EVENT_ID(textInputId, UiImageBus, SetSprite, sprite);
         EBUS_EVENT_ID(textInputId, UiImageBus, SetImageType, UiImageInterface::ImageType::Sliced);
@@ -1192,7 +1192,7 @@ static void DestroyTestCanvas()
         delete g_testActionListener2;
         g_testActionListener2 = nullptr;
 
-        gEnv->pLyShine->ReleaseCanvas(g_testCanvasId, false);
+        AZ::Interface<ILyShine>::Get()->ReleaseCanvas(g_testCanvasId, false);
         g_testCanvasId.SetInvalid();
     }
 }
@@ -1216,7 +1216,7 @@ static void TestCanvasCreate ([[maybe_unused]] IConsoleCmdArgs* Cmd)
     DestroyTestCanvas();
 
     // test creation of canvas and some simple elements
-    AZ::EntityId canvasEntityId = gEnv->pLyShine->CreateCanvas();
+    AZ::EntityId canvasEntityId = AZ::Interface<ILyShine>::Get()->CreateCanvas();
     UiCanvasInterface* canvas = UiCanvasBus::FindFirstHandler(canvasEntityId);
     if (!canvas)
     {

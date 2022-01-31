@@ -8,22 +8,27 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamerContext_Platform.h>
-#include <AzCore/std/containers/deque.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/queue.h>
 #include <AzCore/Statistics/RunningStatistic.h>
+#include <AzCore/std/containers/deque.h>
+#include <AzCore/std/containers/queue.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ::IO
 {
+    class FileRequest;
+    class ExternalFileRequest;
+
+    using FileRequestPtr = AZStd::intrusive_ptr<ExternalFileRequest>;
+
     class StreamerContext
     {
     public:
         using PreparedQueue = AZStd::deque<FileRequest*>;
 
+        StreamerContext();
         ~StreamerContext();
 
         //! Gets a new file request, either by creating a new instance or

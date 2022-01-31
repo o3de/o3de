@@ -20,7 +20,7 @@
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Debug/Trace.h>
 
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -449,7 +449,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
         // local function to write a line of text (with a background rect) and increment Y offset
         AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
         {
-            CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+            IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
             textOptions.color = color;
             AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
             AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
