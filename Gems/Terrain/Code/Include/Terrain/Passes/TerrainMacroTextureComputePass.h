@@ -17,36 +17,36 @@
 namespace Terrain
 {
     class TerrainFeatureProcessor;
-
-    struct TerrainDetailTextureComputePassData
+    
+    struct TerrainMacroTextureComputePassData
         : public AZ::RPI::ComputePassData
     {
-        AZ_RTTI(Terrain::TerrainDetailTextureComputePassData, "{387F7457-16E5-4AA6-8D96-56ED4532CA8D}", AZ::RPI::ComputePassData);
-        AZ_CLASS_ALLOCATOR(Terrain::TerrainDetailTextureComputePassData, AZ::SystemAllocator, 0);
+        AZ_RTTI(Terrain::TerrainMacroTextureComputePassData, "{BB11DACF-AF47-402D-92C6-33C644F6F530}", AZ::RPI::ComputePassData);
+        AZ_CLASS_ALLOCATOR(Terrain::TerrainMacroTextureComputePassData, AZ::SystemAllocator, 0);
 
-        TerrainDetailTextureComputePassData() = default;
-        virtual ~TerrainDetailTextureComputePassData() = default;
+        TerrainMacroTextureComputePassData() = default;
+        virtual ~TerrainMacroTextureComputePassData() = default;
 
         static void Reflect(AZ::ReflectContext* context);
     };
 
-    class TerrainDetailTextureComputePass
+    class TerrainMacroTextureComputePass
         : public AZ::RPI::ComputePass
     {
-        AZ_RPI_PASS(TerrainDetailTextureComputePass);
+        AZ_RPI_PASS(TerrainMacroTextureComputePass);
 
     public:
-        AZ_RTTI(Terrain::TerrainDetailTextureComputePass, "{69A8207B-3311-4BB1-BD4E-A08B5E0424B5}", AZ::RPI::ComputePass);
-        AZ_CLASS_ALLOCATOR(Terrain::TerrainDetailTextureComputePass, AZ::SystemAllocator, 0);
-        virtual ~TerrainDetailTextureComputePass() = default;
+        AZ_RTTI(Terrain::TerrainMacroTextureComputePass, "{E493C3D2-D657-49ED-A5B1-A29B2995F6A8}", AZ::RPI::ComputePass);
+        AZ_CLASS_ALLOCATOR(Terrain::TerrainMacroTextureComputePass, AZ::SystemAllocator, 0);
+        virtual ~TerrainMacroTextureComputePass() = default;
 
-        static AZ::RPI::Ptr<TerrainDetailTextureComputePass> Create(const AZ::RPI::PassDescriptor& descriptor);
+        static AZ::RPI::Ptr<TerrainMacroTextureComputePass> Create(const AZ::RPI::PassDescriptor& descriptor);
 
         void SetFeatureProcessor();
 
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
     private:
-        TerrainDetailTextureComputePass(const AZ::RPI::PassDescriptor& descriptor);
+        TerrainMacroTextureComputePass(const AZ::RPI::PassDescriptor& descriptor);
 
         void BuildCommandListInternal(const AZ::RHI::FrameGraphExecuteContext& context) override;
 

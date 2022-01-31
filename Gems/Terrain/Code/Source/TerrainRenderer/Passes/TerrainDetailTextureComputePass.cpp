@@ -7,7 +7,10 @@
  */
 
 #include <Terrain/Passes/TerrainDetailTextureComputePass.h>
+#include <TerrainRenderer/TerrainFeatureProcessor.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
 
 namespace Terrain
 {
@@ -29,8 +32,8 @@ namespace Terrain
     TerrainDetailTextureComputePass::TerrainDetailTextureComputePass(const AZ::RPI::PassDescriptor& descriptor)
         : AZ::RPI::ComputePass(descriptor)
     {
-        const TerrainDetailTextureComputePass* clipmapPassData = AZ::RPI::PassUtils::GetPassData<TerrainDetailTextureComputePass>(descriptor);
-        if (clipmapPassData)
+        const TerrainDetailTextureComputePass* passData = AZ::RPI::PassUtils::GetPassData<TerrainDetailTextureComputePass>(descriptor);
+        if (passData)
         {
             // Copy data to pass
 
@@ -42,9 +45,9 @@ namespace Terrain
         ComputePass::BuildCommandListInternal(context);
     }
 
-    void TerrainDetailTextureComputePass::SetFeatureProcessor(TerrainFeatureProcessor* terrainFeatureProcessor)
+    void TerrainDetailTextureComputePass::SetFeatureProcessor()
     {
-        m_terrainFeatureProcessor = terrainFeatureProcessor;
+        m_terrainFeatureProcessor = GetRenderPipeline()->GetScene()->GetFeatureProcessor<TerrainFeatureProcessor>();
     }
 
     void TerrainDetailTextureComputePass::CompileResources(const AZ::RHI::FrameGraphCompileContext& context)

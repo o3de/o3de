@@ -48,6 +48,11 @@
                     "Enabled": false
                 },
                 {
+                    "Name": "TerrainMacroTextureComputePass",
+                    "TemplateName": "TerrainMacroTextureComputePassTemplate",
+                    "Enabled": false
+                },
+                {
                     "Name": "DepthPrePass",
                     "TemplateName": "DepthMSAAParentTemplate",
                     "Connections": [

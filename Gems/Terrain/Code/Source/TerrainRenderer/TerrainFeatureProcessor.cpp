@@ -7,6 +7,7 @@
  */
 
 #include <Terrain/Passes/TerrainDetailTextureComputePass.h>
+#include <Terrain/Passes/TerrainMacroTextureComputePass.h>
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 #include <Atom/Utils/Utils.h>
@@ -54,6 +55,7 @@ namespace Terrain
         }
 
         TerrainDetailTextureComputePassData::Reflect(context);
+        TerrainMacroTextureComputePassData::Reflect(context);
     }
 
     void TerrainFeatureProcessor::Activate()

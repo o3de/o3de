@@ -7,6 +7,10 @@
             {
                 "Name": "TerrainDetailTextureComputePassTemplate",
                 "Path": "Passes/TerrainDetailTextureComputePass.pass"
+            },
+            {
+                "Name": "TerrainMacroTextureComputePassTemplate",
+                "Path": "Passes/TerrainMacroTextureComputePass.pass"
             }
         ]
     }
