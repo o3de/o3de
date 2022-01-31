@@ -83,7 +83,7 @@ namespace AtomToolsFramework
         AtomToolsFramework::DynamicProperty m_invalidProperty;
 
         //! This contains absolute paths of other source files that affect this document.
-        //! If any of the source files in this container are modified, the document system will he notified to reload this document.
+        //! If any of the source files in this container are modified, the document system is notified to reload this document.
         AZStd::unordered_set<AZStd::string> m_sourceDependencies;
 
         //! If this flag is true then the next source file change notification for this document will be ignored.
