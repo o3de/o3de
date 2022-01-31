@@ -181,8 +181,6 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::GetSurfacePoints(const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         const bool hasDesiredTags = HasValidTags(desiredTags);
         const bool hasModifierTags = hasDesiredTags && HasMatchingTags(desiredTags, m_registeredModifierTags);
 
@@ -228,16 +226,11 @@ namespace SurfaceData
     void SurfaceDataSystemComponent::GetSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize,
         const SurfaceTagVector& desiredTags, SurfacePointLists& surfacePointLists) const
     {
-        AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
-
         const size_t totalQueryPositions = aznumeric_cast<size_t>(ceil(inRegion.GetXExtent() / stepSize.GetX())) *
             aznumeric_cast<size_t>(ceil(inRegion.GetYExtent() / stepSize.GetY()));
 
         AZStd::vector<AZ::Vector3> inPositions;
         inPositions.reserve(totalQueryPositions);
-
-        surfacePointLists.clear();
-        surfacePointLists.reserve(totalQueryPositions);
 
         // Initialize our list-per-position list with every input position to query from the region.
         // This is inclusive on the min sides of inRegion, and exclusive on the max sides.
@@ -245,25 +238,35 @@ namespace SurfaceData
         {
             for (float x = inRegion.GetMin().GetX(); x < inRegion.GetMax().GetX(); x += stepSize.GetX())
             {
-                inPositions.emplace_back(AZ::Vector3(x, y, AZ::Constants::FloatMax));
-                surfacePointLists.emplace_back(SurfaceData::SurfacePointList{});
+                inPositions.emplace_back(x, y, AZ::Constants::FloatMax);
             }
         }
+
+        GetSurfacePointsFromList(inPositions, desiredTags, surfacePointLists);
+    }
+
+    void SurfaceDataSystemComponent::GetSurfacePointsFromList(
+        AZStd::span<const AZ::Vector3> inPositions, const SurfaceTagVector& desiredTags, SurfacePointLists& surfacePointLists) const
+    {
+        AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+
+        const size_t totalQueryPositions = inPositions.size();
+
+        surfacePointLists.clear();
+        surfacePointLists.resize(totalQueryPositions);
 
         const bool hasDesiredTags = HasValidTags(desiredTags);
         const bool hasModifierTags = hasDesiredTags && HasMatchingTags(desiredTags, m_registeredModifierTags);
 
         // Loop through each data provider, and query all the points for each one.  This allows us to check the tags and the overall
-        // AABB bounds just once per provider, instead of once per point.  It also allows for an eventual optimization in which we could send
-        // the list of points directly into each SurfaceDataProvider.
+        // AABB bounds just once per provider, instead of once per point.  It also allows for an eventual optimization in which we could
+        // send the list of points directly into each SurfaceDataProvider.
         for (const auto& entryPair : m_registeredSurfaceDataProviders)
         {
             const SurfaceDataRegistryEntry& entry = entryPair.second;
             bool alwaysApplies = !entry.m_bounds.IsValid();
 
-            if ((!hasDesiredTags || hasModifierTags || HasMatchingTags(desiredTags, entry.m_tags)) &&
-                ( alwaysApplies || AabbOverlaps2D(entry.m_bounds, inRegion) )
-                )
+            if (!hasDesiredTags || hasModifierTags || HasMatchingTags(desiredTags, entry.m_tags))
             {
                 for (size_t index = 0; index < totalQueryPositions; index++)
                 {
@@ -288,18 +291,16 @@ namespace SurfaceData
             const SurfaceDataRegistryEntry& entry = entryPair.second;
             bool alwaysApplies = !entry.m_bounds.IsValid();
 
-            if (alwaysApplies || AabbOverlaps2D(entry.m_bounds, inRegion))
+            for (size_t index = 0; index < totalQueryPositions; index++)
             {
-                for (size_t index = 0; index < totalQueryPositions; index++)
+                const auto& inPosition = inPositions[index];
+                SurfacePointList& surfacePointList = surfacePointLists[index];
+                if (!surfacePointList.empty())
                 {
-                    const auto& inPosition = inPositions[index];
-                    SurfacePointList& surfacePointList = surfacePointLists[index];
-                    if (!surfacePointList.empty())
+                    if (alwaysApplies || AabbContains2D(entry.m_bounds, inPosition))
                     {
-                        if (alwaysApplies || AabbContains2D(entry.m_bounds, inPosition))
-                        {
-                            SurfaceDataModifierRequestBus::Event(entryPair.first, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, surfacePointList);
-                        }
+                        SurfaceDataModifierRequestBus::Event(
+                            entryPair.first, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, surfacePointList);
                     }
                 }
             }
@@ -317,6 +318,8 @@ namespace SurfaceData
             }
         }
     }
+
+
 
     void SurfaceDataSystemComponent::CombineSortAndFilterNeighboringPoints(SurfacePointList& sourcePointList, bool hasDesiredTags, const SurfaceTagVector& desiredTags) const
     {
