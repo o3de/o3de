@@ -80,9 +80,6 @@
            <property name="toolTip">
             <string extracomment="Collapse All">Collapse All</string>
            </property>
-           <property name="toolTipDuration">
-            <number>10000</number>
-           </property>
            <property name="text">
             <string/>
            </property>
