@@ -14,20 +14,10 @@
 
 namespace UnitTest
 {
-    class MockEditorViewportIconDisplayInterface : public AzToolsFramework::EditorViewportIconDisplayInterface
+    class MockEditorViewportIconDisplayInterface : public AZ::Interface<AzToolsFramework::EditorViewportIconDisplayInterface>::Registrar
     {
     public:
         virtual ~MockEditorViewportIconDisplayInterface() = default;
-
-        void Register()
-        {
-            AZ::Interface<EditorViewportIconDisplayInterface>::Register(this);
-        }
-
-        void Deregister()
-        {
-            AZ::Interface<EditorViewportIconDisplayInterface>::Unregister(this);
-        }
 
         //! AzToolsFramework::EditorViewportIconDisplayInterface overrides ...
         MOCK_METHOD1(DrawIcon, void(const DrawParameters&));

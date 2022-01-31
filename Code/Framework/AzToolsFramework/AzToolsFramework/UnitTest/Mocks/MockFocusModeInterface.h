@@ -14,25 +14,16 @@
 
 namespace UnitTest
 {
-    class MockFocusModeInterface : public AzToolsFramework::FocusModeInterface
+    class MockFocusModeInterface : public AZ::Interface<AzToolsFramework::FocusModeInterface>::Registrar
     {
     public:
         virtual ~MockFocusModeInterface() = default;
-
-        void Register()
-        {
-            AZ::Interface<FocusModeInterface>::Register(this);
-        }
-
-        void Deregister()
-        {
-            AZ::Interface<FocusModeInterface>::Unregister(this);
-        }
 
         // AzToolsFramework::FocusModeInterface overrides ...
         MOCK_METHOD1(SetFocusRoot, void(AZ::EntityId entityId));
         MOCK_METHOD1(ClearFocusRoot, void(AzFramework::EntityContextId entityContextId));
         MOCK_METHOD1(GetFocusRoot, AZ::EntityId(AzFramework::EntityContextId entityContextId));
+        MOCK_METHOD1(GetFocusedEntities, AzToolsFramework::EntityIdList(AzFramework::EntityContextId entityContextId));
         MOCK_CONST_METHOD1(IsInFocusSubTree, bool(AZ::EntityId entityId));
     };
 } // namespace UnitTest

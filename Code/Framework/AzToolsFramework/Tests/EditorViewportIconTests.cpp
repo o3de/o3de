@@ -29,11 +29,7 @@ namespace UnitTest
             AllocatorsTestFixture::SetUp();
 
             m_focusModeMock = AZStd::make_unique<::testing::NiceMock<MockFocusModeInterface>>();
-            m_focusModeMock->Register();
-
             m_editorViewportIconDisplayMock = AZStd::make_unique<::testing::NiceMock<MockEditorViewportIconDisplayInterface>>();
-            m_editorViewportIconDisplayMock->Register();
-
             m_entityVisibleEntityDataCacheMock = AZStd::make_unique<::testing::NiceMock<MockEditorVisibleEntityDataCacheInterface>>();
             m_editorHelpers = AZStd::make_unique<AzToolsFramework::EditorHelpers>(m_entityVisibleEntityDataCacheMock.get());
             m_viewportSettings = AZStd::make_unique<ViewportSettingsTestImpl>();
@@ -59,11 +55,7 @@ namespace UnitTest
             m_viewportSettings.reset();
             m_editorHelpers.reset();
             m_entityVisibleEntityDataCacheMock.reset();
-
-            m_editorViewportIconDisplayMock->Deregister();
             m_editorViewportIconDisplayMock.reset();
-
-            m_focusModeMock->Deregister();
             m_focusModeMock.reset();
 
             AllocatorsTestFixture::TearDown();
