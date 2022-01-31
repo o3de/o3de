@@ -46,7 +46,6 @@ namespace AZ::IO
 struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
-struct IProcess;
 struct ICryFont;
 struct IMovieSystem;
 namespace Audio
@@ -86,19 +85,6 @@ enum ESystemUpdateFlags
     // Summary:
     //   Special update mode for editor.
     ESYSUPDATE_EDITOR = 0x0004
-};
-
-// Description:
-//   Configuration specification, depends on user selected machine specification.
-enum ESystemConfigSpec
-{
-    CONFIG_AUTO_SPEC = 0,
-    CONFIG_LOW_SPEC = 1,
-    CONFIG_MEDIUM_SPEC = 2,
-    CONFIG_HIGH_SPEC = 3,
-    CONFIG_VERYHIGH_SPEC = 4,
-
-    END_CONFIG_SPEC_ENUM, // MUST BE LAST VALUE. USED FOR ERROR CHECKING.
 };
 
 // Description:
@@ -1294,15 +1280,7 @@ namespace Detail
 
 #endif
 
-#if defined(USE_CRY_ASSERT)
-static void AssertConsoleExists(void)
-{
-    CRY_ASSERT(gEnv->pConsole != NULL);
-}
-#define ASSERT_CONSOLE_EXISTS AssertConsoleExists()
-#else
 #define ASSERT_CONSOLE_EXISTS 0
-#endif // defined(USE_CRY_ASSERT)
 
 // the following macros allow the help text to be easily stripped out
 

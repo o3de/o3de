@@ -33,7 +33,6 @@ namespace MaterialEditor
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
         MaterialEditorWindow(QWidget* parent = 0);
-        ~MaterialEditorWindow() = default;
 
     protected:
         void ResizeViewportRenderTarget(uint32_t width, uint32_t height) override;

@@ -92,6 +92,12 @@ namespace AZ::Data
             result.Combine(resultHint);
         }
 
+        if (SerializedAssetTracker* assetTracker = context.GetMetadata().Find<SerializedAssetTracker>();
+            assetTracker != nullptr && result.GetProcessing() == JSR::Processing::Completed)
+        {
+            assetTracker->AddAsset(*instance);
+        }
+
         return context.Report(result,
             result.GetProcessing() == JSR::Processing::Completed ? "Successfully stored Asset<T>." : "Failed to store Asset<T>.");
     }

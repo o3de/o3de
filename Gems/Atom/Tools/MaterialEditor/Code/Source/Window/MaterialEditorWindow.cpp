@@ -19,7 +19,6 @@
 #include <Window/MaterialEditorWindow.h>
 #include <Window/MaterialEditorWindowSettings.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
-#include <Window/PerformanceMonitor/PerformanceMonitorWidget.h>
 #include <Window/SettingsDialog/SettingsDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
@@ -30,6 +29,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QStatusBar>
 #include <QUrl>
 #include <QWindow>
 AZ_POP_DISABLE_WARNING
@@ -95,10 +95,7 @@ namespace MaterialEditor
 
         AddDockWidget("Inspector", new MaterialInspector, Qt::RightDockWidgetArea, Qt::Vertical);
         AddDockWidget("Viewport Settings", new ViewportSettingsInspector, Qt::LeftDockWidgetArea, Qt::Vertical);
-        AddDockWidget("Performance Monitor", new PerformanceMonitorWidget, Qt::BottomDockWidgetArea, Qt::Horizontal);
-
         SetDockWidgetVisible("Viewport Settings", false);
-        SetDockWidgetVisible("Performance Monitor", false);
 
         // Restore geometry and show the window
         mainWindowWrapper->showFromSettings();

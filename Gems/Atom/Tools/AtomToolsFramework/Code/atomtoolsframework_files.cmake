@@ -28,6 +28,8 @@ set(FILES
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h
+    Include/AtomToolsFramework/PerformanceMonitor/PerformanceMetrics.h
+    Include/AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
@@ -61,6 +63,8 @@ set(FILES
     Source/Inspector/InspectorGroupWidget.cpp
     Source/Inspector/InspectorGroupHeaderWidget.cpp
     Source/Inspector/InspectorPropertyGroupWidget.cpp
+    Source/PerformanceMonitor/PerformanceMonitorSystemComponent.cpp
+    Source/PerformanceMonitor/PerformanceMonitorSystemComponent.h
     Source/Util/MaterialPropertyUtil.cpp
     Source/Util/Util.cpp
     Source/Viewport/RenderViewportWidget.cpp

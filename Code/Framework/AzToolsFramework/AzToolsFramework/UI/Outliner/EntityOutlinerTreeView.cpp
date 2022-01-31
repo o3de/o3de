@@ -81,6 +81,61 @@ namespace AzToolsFramework
         update();
     }
 
+    void EntityOutlinerTreeView::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
+    {
+        AzQtComponents::StyledTreeView::dataChanged(topLeft, bottomRight, roles);
+
+        if (topLeft.isValid() && topLeft.parent() == bottomRight.parent() && topLeft.row() <= bottomRight.row() &&
+            topLeft.column() <= bottomRight.column())
+        {
+            for (int i = topLeft.row(); i <= bottomRight.row(); i++)
+            {
+                auto modelRow = topLeft.sibling(i, EntityOutlinerListModel::ColumnName);
+                if (modelRow.isValid())
+                {
+                    checkExpandedState(modelRow);
+                }
+            }
+        }
+    }
+
+    void EntityOutlinerTreeView::rowsInserted(const QModelIndex& parent, int start, int end)
+    {
+        if (parent.isValid())
+        {
+            for (int i = start; i <= end; i++)
+            {
+                auto modelRow = model()->index(i, EntityOutlinerListModel::ColumnName, parent);
+                if (modelRow.isValid())
+                {
+                    checkExpandedState(modelRow);
+                    recursiveCheckExpandedStates(modelRow);
+                }
+            }
+        }
+        AzQtComponents::StyledTreeView::rowsInserted(parent, start, end);
+    }
+
+    void EntityOutlinerTreeView::recursiveCheckExpandedStates(const QModelIndex& current)
+    {
+        const int rowCount = model()->rowCount(current);
+        for (int i = 0; i < rowCount; i++)
+        {
+            auto modelRow = model()->index(i, EntityOutlinerListModel::ColumnName, current);
+            if (modelRow.isValid())
+            {
+                checkExpandedState(modelRow);
+                recursiveCheckExpandedStates(modelRow);
+            }
+        }
+    }
+
+    void EntityOutlinerTreeView::checkExpandedState(const QModelIndex& current)
+    {
+        const bool expandState = current.data(EntityOutlinerListModel::ExpandedRole).template value<bool>();
+        setExpanded(current, expandState);
+    }
+
     void EntityOutlinerTreeView::mousePressEvent(QMouseEvent* event)
     {
         //postponing normal mouse pressed logic until mouse is released or dragged

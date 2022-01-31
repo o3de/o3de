@@ -59,7 +59,6 @@ set(FILES
     Asset/AssetSeedList.h
     Asset/AssetSystemComponent.cpp
     Asset/AssetSystemComponent.h
-    Asset/CfgFileAsset.h
     Asset/GenericAssetHandler.h
     Asset/AssetBundleManifest.cpp
     Asset/AssetBundleManifest.h
@@ -78,8 +77,6 @@ set(FILES
     Asset/Benchmark/BenchmarkSettingsAsset.h
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
-    Debug/DebugCameraBus.h
-    feature_options.cmake
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
@@ -124,7 +121,6 @@ set(FILES
     Entity/SliceGameEntityOwnershipService.cpp
     Entity/SliceGameEntityOwnershipServiceBus.h
     Entity/PrefabEntityOwnershipService.h
-    Entity/PrefabEntityOwnershipService.cpp
     Components/ComponentAdapter.h
     Components/ComponentAdapter.inl
     Components/ComponentAdapterHelpers.h
