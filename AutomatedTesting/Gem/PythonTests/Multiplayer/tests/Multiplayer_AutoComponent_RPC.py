@@ -67,10 +67,10 @@ def Multiplayer_AutoComponent_RPC():
         helper.succeed_if_log_line_found('Script', "AutoComponent_RPC: I'm Player #1", section_tracer.prints, PLAYERID_RPC_WAIT_TIME_SECONDS)
 
         # Uncomment once editor game-play mode supports level entities with net-binding
-        #PLAYFX_RPC_WAIT_TIME_SECONDS = 1.1  # The server will send an RPC to play an fx on the client every second.
-        #helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC_NetLevelEntity Activated on entity: NetLevelEntity", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
-        #helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC_NetLevelEntity: Authority sending RPC to play some fx.", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
-        #helper.succeed_if_log_line_found('Script', "AutoComponent_RPC_NetLevelEntity: I'm a client playing some superficial fx.", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
+        PLAYFX_RPC_WAIT_TIME_SECONDS = 1.1  # The server will send an RPC to play an fx on the client every second.
+        helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC_NetLevelEntity Activated on entity: NetLevelEntity", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC_NetLevelEntity: Authority sending RPC to play some fx.", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('Script', "AutoComponent_RPC_NetLevelEntity: I'm a client playing some fx.", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
 
     
     # Exit game mode
