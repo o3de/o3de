@@ -11,6 +11,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Math/Random.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -681,6 +682,89 @@ namespace UnitTest
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_GetClosestIntersectionRandom)(benchmark::State& state)
+    {
+        // Run the benchmark
+        const uint32_t numRays = aznumeric_cast<uint32_t>(state.range(1));
+        RunTerrainApiBenchmark(
+            state,
+            [numRays]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+                [[maybe_unused]]AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                // Cast rays starting at random positions above the terrain,
+                // and ending at a random positions below the terrain.
+                AZ::SimpleLcgRandom random;
+                AzFramework::RenderGeometry::RayRequest ray;
+                AzFramework::RenderGeometry::RayResult result;
+                for (uint32_t i = 0; i < numRays; ++i)
+                {
+                    ray.m_startWorldPosition.SetX(worldBounds.GetMin().GetX() + (random.GetRandomFloat() * worldBounds.GetXExtent()));
+                    ray.m_startWorldPosition.SetY(worldBounds.GetMin().GetY() + (random.GetRandomFloat() * worldBounds.GetYExtent()));
+                    ray.m_startWorldPosition.SetZ(worldBounds.GetMax().GetZ());
+                    ray.m_endWorldPosition.SetX(worldBounds.GetMin().GetX() + (random.GetRandomFloat() * worldBounds.GetXExtent()));
+                    ray.m_endWorldPosition.SetY(worldBounds.GetMin().GetY() + (random.GetRandomFloat() * worldBounds.GetYExtent()));
+                    ray.m_endWorldPosition.SetZ(worldBounds.GetMin().GetZ());
+                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                        result, &AzFramework::Terrain::TerrainDataRequests::GetClosestIntersection, ray);
+                }
+            });
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_GetClosestIntersectionRandom)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 1024, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 4096, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 1024, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 4096, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 1024, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 4096, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_GetClosestIntersectionWorstCase)(benchmark::State& state)
+    {
+        // Run the benchmark
+        const uint32_t numRays = aznumeric_cast<uint32_t>(state.range(1));
+        RunTerrainApiBenchmark(
+            state,
+            [numRays]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+                [[maybe_unused]]AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                // Cast rays starting at an upper corner of the terrain world,
+                // and ending at the opposite top corner of the terrain world,
+                // traversing the entire grid without finding an intersection.
+                AzFramework::RenderGeometry::RayRequest ray;
+                AzFramework::RenderGeometry::RayResult result;
+                ray.m_startWorldPosition = worldBounds.GetMax();
+                ray.m_endWorldPosition = worldBounds.GetMin();
+                ray.m_endWorldPosition.SetZ(ray.m_startWorldPosition.GetZ());
+                for (uint32_t i = 0; i < numRays; ++i)
+                {
+                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                        result, &AzFramework::Terrain::TerrainDataRequests::GetClosestIntersection, ray);
+                }
+            });
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_GetClosestIntersectionWorstCase)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 1024, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 4096, 10, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 1024, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 4096, 100, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 1024, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 4096, 1000, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 #endif
 
