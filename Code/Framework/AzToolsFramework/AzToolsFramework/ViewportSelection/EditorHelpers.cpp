@@ -159,7 +159,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache)
+    EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCacheInterface* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
         m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
@@ -346,9 +346,8 @@ namespace AzToolsFramework
 
                     const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
                     const AZ::Vector3 entityCameraVector = entityPosition - cameraState.m_position;
-                    
-                    if (const float directionFromCamera = entityCameraVector.Dot(cameraState.m_forward);
-                        directionFromCamera < 0.0f)
+
+                    if (const float directionFromCamera = entityCameraVector.Dot(cameraState.m_forward); directionFromCamera < 0.0f)
                     {
                         continue;
                     }
@@ -377,7 +376,7 @@ namespace AzToolsFramework
 
                     int iconTextureId = 0;
                     EditorEntityIconComponentRequestBus::EventResult(
-                        iconTextureId, entityId, &EditorEntityIconComponentRequests::GetEntityIconTextureId);
+                        iconTextureId, entityId, &EditorEntityIconComponentRequestBus::Events::GetEntityIconTextureId);
 
                     editorViewportIconDisplay->DrawIcon(EditorViewportIconDisplayInterface::DrawParameters{
                         viewportInfo.m_viewportId, iconTextureId, iconHighlight, entityPosition,
