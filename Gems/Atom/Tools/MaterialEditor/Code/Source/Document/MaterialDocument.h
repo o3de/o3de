@@ -74,8 +74,7 @@ namespace MaterialEditor
         // AZ::TickBus overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        bool SavePropertiesToSourceData(
-            const AZStd::string& exportPath, AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
+        bool SaveSourceData(AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
 
         // AtomToolsFramework::AtomToolsDocument overrides...
         void Clear() override;

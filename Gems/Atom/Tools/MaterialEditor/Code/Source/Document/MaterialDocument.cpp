@@ -168,27 +168,17 @@ namespace MaterialEditor
             return false;
         }
 
-        // create source data from properties
+        // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
         sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
         sourceData.m_materialType = AtomToolsFramework::GetExteralReferencePath(m_absolutePath, m_materialSourceData.m_materialType);
         sourceData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(m_absolutePath, m_materialSourceData.m_parentMaterial);
-
-        // populate sourceData with modified or overwritten properties
-        const bool savedProperties = SavePropertiesToSourceData(m_absolutePath, sourceData, [](const AtomToolsFramework::DynamicProperty& property)
-        {
+        auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
             return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
-        });
+        };
 
-        if (!savedProperties)
+        if (!SaveSourceData(sourceData, propertyFilter))
         {
-            return SaveFailed();
-        }
-
-        // write sourceData to .material file
-        if (!AZ::RPI::JsonUtils::SaveObjectToFile(m_absolutePath, sourceData))
-        {
-            AZ_Error("MaterialDocument", false, "Document could not be saved: '%s'.", m_absolutePath.c_str());
             return SaveFailed();
         }
 
@@ -211,27 +201,17 @@ namespace MaterialEditor
             return false;
         }
 
-        // create source data from properties
+        // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
         sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
         sourceData.m_materialType = AtomToolsFramework::GetExteralReferencePath(m_savePathNormalized, m_materialSourceData.m_materialType);
         sourceData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(m_savePathNormalized, m_materialSourceData.m_parentMaterial);
-
-        // populate sourceData with modified or overwritten properties
-        const bool savedProperties = SavePropertiesToSourceData(m_savePathNormalized, sourceData, [](const AtomToolsFramework::DynamicProperty& property)
-        {
+        auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
             return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
-        });
+        };
 
-        if (!savedProperties)
+        if (!SaveSourceData(sourceData, propertyFilter))
         {
-            return SaveFailed();
-        }
-
-        // write sourceData to .material file
-        if (!AZ::RPI::JsonUtils::SaveObjectToFile(m_savePathNormalized, sourceData))
-        {
-            AZ_Error("MaterialDocument", false, "Document could not be saved: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
@@ -251,7 +231,7 @@ namespace MaterialEditor
             return false;
         }
 
-        // create source data from properties
+        // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
         sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
         sourceData.m_materialType = AtomToolsFramework::GetExteralReferencePath(m_savePathNormalized, m_materialSourceData.m_materialType);
@@ -262,21 +242,12 @@ namespace MaterialEditor
             sourceData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(m_savePathNormalized, m_absolutePath);
         }
 
-        // populate sourceData with modified properties
-        const bool savedProperties = SavePropertiesToSourceData(m_savePathNormalized, sourceData, [](const AtomToolsFramework::DynamicProperty& property)
-        {
+        auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
             return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_originalValue);
-        });
+        };
 
-        if (!savedProperties)
+        if (!SaveSourceData(sourceData, propertyFilter))
         {
-            return SaveFailed();
-        }
-
-        // write sourceData to .material file
-        if (!AZ::RPI::JsonUtils::SaveObjectToFile(m_savePathNormalized, sourceData))
-        {
-            AZ_Error("MaterialDocument", false, "Document could not be saved: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
@@ -362,13 +333,12 @@ namespace MaterialEditor
         }
     }
 
-    bool MaterialDocument::SavePropertiesToSourceData(
-        const AZStd::string& exportPath, AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const
+    bool MaterialDocument::SaveSourceData(AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const
     {
-        bool result = true;
+        bool addPropertiesResult = true;
 
         // populate sourceData with properties that meet the filter
-        m_materialTypeSourceData.EnumerateProperties([&](const AZStd::string& propertyIdContext, const auto& propertyDefinition) {
+        m_materialTypeSourceData.EnumerateProperties([&, this](const AZStd::string& propertyIdContext, const auto& propertyDefinition) {
 
             AZ::Name propertyId{propertyIdContext + propertyDefinition->GetName()};
 
@@ -381,7 +351,7 @@ namespace MaterialEditor
                     if (!AtomToolsFramework::ConvertToExportFormat(exportPath, propertyId, *propertyDefinition, propertyValue))
                     {
                         AZ_Error("MaterialDocument", false, "Document property could not be converted: '%s' in '%s'.", propertyId.GetCStr(), m_absolutePath.c_str());
-                        result = false;
+                        addPropertiesResult = false;
                         return false;
                     }
                     
@@ -393,7 +363,12 @@ namespace MaterialEditor
             return true;
         });
 
-        return result;
+        if (!addPropertiesResult || !AZ::RPI::JsonUtils::SaveObjectToFile(m_savePathNormalized, sourceData))
+        {
+            AZ_Error("MaterialDocument", false, "Document could not be saved: '%s'.", m_savePathNormalized.c_str());
+            return false;
+        }
+        return true;
     }
 
     bool MaterialDocument::Open(AZStd::string_view loadPath)
