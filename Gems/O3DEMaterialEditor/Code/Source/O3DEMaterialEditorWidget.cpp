@@ -35,6 +35,20 @@ namespace O3DEMaterialEditor
             }
             return tab;
         }
+
+        QWidget* CreateTabFromWidgetFunc(const WidgetCreationFunc& widgetCreationFunc)
+        {
+            QWidget* tab = new QWidget();
+            {
+                QVBoxLayout* mainLayout = new QVBoxLayout(tab);
+
+                QWidget* content = widgetCreationFunc(tab);
+                mainLayout->addWidget(content, 1);
+
+                tab->setLayout(mainLayout);
+            }
+            return tab;
+        }
     }
 
     O3DEMaterialEditorWidget::O3DEMaterialEditorWidget(QWidget* parent)
@@ -48,6 +62,7 @@ namespace O3DEMaterialEditor
             for (const auto& registeredTab : registeredTabs)
             {
                 //addTab(registeredTab.second(nullptr), registeredTab.first.c_str());
+                //addTab(CreateTabFromWidgetFunc(registeredTab.second), registeredTab.first.c_str());
                 addTab(CreateTab(registeredTab.first), registeredTab.first.c_str());
             }
         }
