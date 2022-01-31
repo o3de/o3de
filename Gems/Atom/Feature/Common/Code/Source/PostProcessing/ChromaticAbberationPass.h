@@ -24,8 +24,14 @@ namespace AZ
             ~ChromaticAbberationPass() = default;
             static RPI::Ptr<ChromaticAbberationPass> Create(const RPI::PassDescriptor& descriptor);
 
+        protected:
+            // Behavior functions override...
+            void FrameBeginInternal(FramePrepareParams params) override;
+
         private:
             ChromaticAbberationPass(const RPI::PassDescriptor& descriptor);
+
+            AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
         };
     } // namespace Render
 } // namespace AZ

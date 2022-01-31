@@ -3,39 +3,54 @@
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
-        "PassTemplate": {
-            "Name": "ChromaticAbberationTemplate",
-            "PassClass": "ChromaticAbberationPass",
-            "Slots": [
-              {
-                "Name": "InputOutput",
-                "ShaderInputName": "m_outputColor",
-                "SlotType": "InputOutput",
-                "ScopeAttachmentUsage": "Shader"
-              }
-            ],
-          "PassData": {
-            "$type": "ComputePassData",
-            "ShaderAsset": {
-              "FilePath": "Shaders/PostProcessing/ChromaticAbberation.shader"
-            },
-            "ShaderDataMappings": {
-              "FloatMappings": [
-                {
-                  "Name": "m_size",
-                  "Value": 0.5
-                },
-                {
-                  "Name": "m_strength",
-                  "Value": 0.9
-                },
-                {
-                  "Name": "m_falloff",
-                  "Value": 0.1
-                }
-              ]
+      "PassTemplate": {
+        "Name": "ChromaticAbberationTemplate",
+        "PassClass": "ChromaticAbberationPass",
+        "Slots": [
+          {
+            "Name": "Input",
+            "SlotType": "Input",
+            "ScopeAttachmentUsage": "Shader"
+          },
+          {
+            "Name": "Output",
+            "SlotType": "Output",
+            "ScopeAttachmentUsage": "Shader",
+            "LoadStoreAction": {
+              "LoadAction": "Clear"
             }
           }
+        ],
+        "ImageAttachments": [
+          {
+            "Name": "ChromaticAbberation",
+            "SizeSource": {
+              "Source": {
+                "Pass": "This",
+                "Attachment": "Input"
+              },
+              "FormatSource": {
+                "Pass": "This",
+                "Attachment": "Input"
+              }
+            }
+          }
+        ],
+        "Connections": [
+          {
+            "LocalSlot": "Output",
+            "AttachmentRef": {
+              "Pass": "This",
+              "Attachment": "ChromaticAbberation"
+            }
+          }
+        ],
+        "PassData": {
+          "$type": "ComputePassData",
+          "ShaderAsset": {
+            "FilePath": "Shaders/PostProcessing/ChromaticAbberation.shader"
+          }
         }
+      }
     }
 }
