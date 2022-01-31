@@ -56,7 +56,7 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
                 if (!m_dismiss)
                 {
                     // Closing the window at the same moment is opened leads to crashes and is unstable,
-                    // so do it after a long 1 ms
+                    // so do it after a long 2 ms (needed for Jenkins to realise the dialog is there in some circumstances)
                     QTimer::singleShot(2, this, &ModalWindowDismisser::DismissWindows);
                     m_dismiss = true;
                 }
