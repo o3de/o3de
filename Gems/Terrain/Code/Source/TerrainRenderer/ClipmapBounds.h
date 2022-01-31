@@ -89,6 +89,7 @@ namespace Terrain
     {
     public:
 
+        ClipmapBounds() = default;
         explicit ClipmapBounds(const ClipmapBoundsDescriptor& desc);
         ~ClipmapBounds() = default;
 

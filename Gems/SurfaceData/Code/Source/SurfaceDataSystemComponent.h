@@ -39,7 +39,9 @@ namespace SurfaceData
         ////////////////////////////////////////////////////////////////////////
         // SurfaceDataSystemRequestBus implementation
         void GetSurfacePoints(const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointList) const override;
-        void GetSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, const SurfaceTagVector& desiredTags, SurfacePointListPerPosition& surfacePointListPerPosition) const override;
+        void GetSurfacePointsFromRegion(
+            const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, const SurfaceTagVector& desiredTags,
+            SurfacePointLists& surfacePointListPerPosition) const override;
 
         SurfaceDataRegistryHandle RegisterSurfaceDataProvider(const SurfaceDataRegistryEntry& entry) override;
         void UnregisterSurfaceDataProvider(const SurfaceDataRegistryHandle& handle) override;
