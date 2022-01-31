@@ -68,15 +68,31 @@ namespace Terrain
         // the level component.
         m_terrainSystem = new TerrainSystem();
 
-        // Register terrain system related passes
         auto* passSystem = AZ::RPI::PassSystemInterface::Get();
         AZ_Assert(passSystem, "Cannot get the pass system.");
+
+        // Setup handler for load pass templates mappings
+        m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
+        passSystem->ConnectEvent(m_loadTemplatesHandler);
+
+        // Register terrain system related passes
         passSystem->AddPassCreator(AZ::Name("TerrainDetailTextureComputePass"), &TerrainDetailTextureComputePass::Create);
     }
 
     void TerrainSystemComponent::Deactivate()
     {
+        m_loadTemplatesHandler.Disconnect();
+
         delete m_terrainSystem;
         m_terrainSystem = nullptr;
+    }
+
+    void TerrainSystemComponent::LoadPassTemplateMappings()
+    {
+        auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+        AZ_Assert(passSystem, "Cannot get the pass system.");
+
+        const char* passTemplatesFile = "Passes/TerrainPassTemplates.azasset";
+        passSystem->LoadPassTemplateMappings(passTemplatesFile);
     }
 }
