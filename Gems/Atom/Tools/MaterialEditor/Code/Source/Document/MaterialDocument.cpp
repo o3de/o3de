@@ -348,7 +348,7 @@ namespace MaterialEditor
                 AZ::RPI::MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(it->second.GetValue());
                 if (propertyValue.IsValid())
                 {
-                    if (!AtomToolsFramework::ConvertToExportFormat(exportPath, propertyId, *propertyDefinition, propertyValue))
+                    if (!AtomToolsFramework::ConvertToExportFormat(m_savePathNormalized, propertyId, *propertyDefinition, propertyValue))
                     {
                         AZ_Error("MaterialDocument", false, "Document property could not be converted: '%s' in '%s'.", propertyId.GetCStr(), m_absolutePath.c_str());
                         addPropertiesResult = false;
@@ -608,13 +608,13 @@ namespace MaterialEditor
         // Add material functors that are in the top-level functors list.
         const AZ::RPI::MaterialFunctorSourceData::EditorContext editorContext =
             AZ::RPI::MaterialFunctorSourceData::EditorContext(m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout());
-        for (Ptr<AZ::RPI::MaterialFunctorSourceDataHolder> functorData : m_materialTypeSourceData.m_materialFunctorSourceData)
+        for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder> functorData : m_materialTypeSourceData.m_materialFunctorSourceData)
         {
             AZ::RPI::MaterialFunctorSourceData::FunctorResult result2 = functorData->CreateFunctor(editorContext);
 
             if (result2.IsSuccess())
             {
-                Ptr<AZ::RPI::MaterialFunctor>& functor = result2.GetValue();
+                AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>& functor = result2.GetValue();
                 if (functor != nullptr)
                 {
                     m_editorFunctors.push_back(functor);
@@ -634,13 +634,13 @@ namespace MaterialEditor
                 const AZ::RPI::MaterialFunctorSourceData::EditorContext editorContext = AZ::RPI::MaterialFunctorSourceData::EditorContext(
                     m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout());
 
-                for (Ptr<AZ::RPI::MaterialFunctorSourceDataHolder> functorData : propertyGroup->GetFunctors())
+                for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder> functorData : propertyGroup->GetFunctors())
                 {
                     AZ::RPI::MaterialFunctorSourceData::FunctorResult result = functorData->CreateFunctor(editorContext);
 
                     if (result.IsSuccess())
                     {
-                        Ptr<AZ::RPI::MaterialFunctor>& functor = result.GetValue();
+                        AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>& functor = result.GetValue();
                         if (functor != nullptr)
                         {
                             m_editorFunctors.push_back(functor);
