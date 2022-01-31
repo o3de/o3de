@@ -35,6 +35,7 @@
 // Editor
 #include "CryEdit.h"
 #include "MainWindow.h"
+#include <EditorBookmarkSettings.h>
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -641,6 +642,8 @@ void SEditorSettings::Save(bool isEditorClosing)
 
     if (!isEditorClosing)
     {
+        EditorBookmarSettings bookmarkSettings;
+        bookmarkSettings.SaveBookmarkSettingsFile();
         SaveSettingsRegistryFile();
     }
 }
