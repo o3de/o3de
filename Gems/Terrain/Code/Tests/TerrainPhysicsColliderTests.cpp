@@ -490,7 +490,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     const float mockHeight = 32768.0f;
-    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+    float mockHeightResolution = 1.0f;
 
     AzFramework::SurfaceData::SurfaceTagWeight tagWeight1(tag1, 1.0f);
     AzFramework::SurfaceData::SurfaceTagWeight tagWeight2(tag2, 1.0f);
@@ -554,7 +554,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     const float mockHeight = 32768.0f;
-    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+    float mockHeightResolution = 1.0f;
 
     const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
     AzFramework::SurfaceData::SurfaceTagWeight tagWeight1(tag1, 1.0f);
