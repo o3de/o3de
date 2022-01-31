@@ -128,12 +128,11 @@ namespace AZ
             AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridRelocationPass requires the RayTracingFeatureProcessor");
 
             // reset the relocation iterations on the grids if the TLAS was updated
-            uint32_t rayTracingDataRevision = rayTracingFeatureProcessor->GetRevision();    
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
-            {                
-                if (rayTracingDataRevision != m_rayTracingDataRevision)
+            uint32_t rayTracingDataRevision = rayTracingFeatureProcessor->GetRevision();
+            if (rayTracingDataRevision != m_rayTracingDataRevision)
+            {
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
                 {
-                    // the TLAS changed, relocate probes
                     diffuseProbeGrid->ResetRemainingRelocationIterations();
                 }
             }
