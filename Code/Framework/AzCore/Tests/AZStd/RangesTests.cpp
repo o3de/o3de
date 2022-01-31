@@ -11,6 +11,7 @@
 #include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/ranges/ranges_adaptor.h>
 #include <AzCore/std/ranges/all_view.h>
+#include <AzCore/std/ranges/zip_view.h>
 
 namespace UnitTest
 {
