@@ -327,7 +327,7 @@ namespace O3DE::ProjectManager
 
     QRect GemItemDelegate::CalcButtonRect(const QRect& contentRect) const
     {
-        const QPoint topLeft = QPoint( 
+        const QPoint topLeft = QPoint(
             s_itemMargins.left() + CalcColumnXBounds(HeaderOrder::Status).first + AdjustableHeaderWidget::s_headerTextIndent + s_statusIconSize +
                 s_statusButtonSpacing,
             contentRect.center().y() - s_buttonHeight / 2);

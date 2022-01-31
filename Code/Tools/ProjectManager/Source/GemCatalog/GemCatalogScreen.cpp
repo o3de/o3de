@@ -103,7 +103,7 @@ namespace O3DE::ProjectManager
                 GemPreviewImageWidth + AdjustableHeaderWidget::s_headerTextIndent,
                 -GemPreviewImageWidth - AdjustableHeaderWidget::s_headerTextIndent + GemItemDelegate::s_defaultSummaryStartX - 30,
                 0, // Section is set to stretch to fit
-                GemItemDelegate::s_buttonWidth + GemItemDelegate::s_itemMargins.left() + GemItemDelegate::s_itemMargins.right() + GemItemDelegate::s_contentMargins.right()
+                GemItemDelegate::s_statusIconSize + GemItemDelegate::s_statusButtonSpacing + GemItemDelegate::s_buttonWidth + GemItemDelegate::s_contentMargins.right()
             },
             minHeaderSectionWidth,
             QVector<QHeaderView::ResizeMode>

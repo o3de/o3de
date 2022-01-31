@@ -68,6 +68,10 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_featureTagBorderMarginY = 3;
         inline constexpr static int s_featureTagSpacing = 7;
 
+        // Status icon
+        inline constexpr static int s_statusIconSize = 16;
+        inline constexpr static int s_statusButtonSpacing = 5;
+
         enum class HeaderOrder
         {
             Preview,
@@ -110,8 +114,6 @@ namespace O3DE::ProjectManager
 
         // Status icons
         void SetStatusIcon(QPixmap& m_iconPixmap, const QString& iconPath);
-        inline constexpr static int s_statusIconSize = 16;
-        inline constexpr static int s_statusButtonSpacing = 5;
 
         QPixmap m_unknownStatusPixmap;
         QPixmap m_notDownloadedPixmap;
