@@ -4327,11 +4327,13 @@ namespace AssetProcessor
         // QSet is not ordered.
         SourceFilesForFingerprintingContainer knownDependenciesAbsolutePaths;
         // this automatically adds the input file to the list:
-        QueryAbsolutePathDependenciesRecursive(QString::fromUtf8(fileDatabaseName.c_str()), knownDependenciesAbsolutePaths, SourceFileDependencyEntry::DEP_Any, false);
+        QueryAbsolutePathDependenciesRecursive(QString::fromUtf8(fileDatabaseName.c_str()), knownDependenciesAbsolutePaths,
+            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any, false);
         AddMetadataFilesForFingerprinting(QString::fromUtf8(fileAbsolutePath.c_str()), knownDependenciesAbsolutePaths);
 
         // reserve 17 chars for each since its a 64 bit hex number, and then one more for the dash inbetween each.
-        concatenatedFingerprints.reserve((knownDependenciesAbsolutePaths.size() * 17));
+        constexpr int bytesPerFingerprint = (sizeof(AZ::u64) * 2) + 1; // 2 HEX characters per byte +1 for the `-` we will add between each fingerprint
+        concatenatedFingerprints.reserve((knownDependenciesAbsolutePaths.size() * bytesPerFingerprint));
 
         for (const auto& element : knownDependenciesAbsolutePaths)
         {
