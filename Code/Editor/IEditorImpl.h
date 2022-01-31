@@ -155,8 +155,6 @@ public:
     CMusicManager* GetMusicManager() override { return m_pMusicManager; };
 
     IEditorFileMonitor* GetFileMonitor() override;
-    void RegisterEventLoopHook(IEventLoopHook* pHook) override;
-    void UnregisterEventLoopHook(IEventLoopHook* pHook) override;
     IIconManager* GetIconManager() override;
     float GetTerrainElevation(float x, float y) override;
     Editor::EditorQtApplication* GetEditorQtApplication() override { return m_QtApplication; }
