@@ -229,33 +229,65 @@ namespace O3DELauncher
 
     void CreateRemoteFileIO();
 
-    bool ConnectToAssetProcessor()
+    // This function make sure the launcher has signaled the "CriticalAssetsCompiled"
+    // lifecycle event as well as to load the "assetcatalog.xml" file if it exists
+    void CompileCriticalAssets()
     {
-        bool connectedToAssetProcessor{};
-        // When the AssetProcessor is already launched it should take less than a second to perform a connection
-        // but when the AssetProcessor needs to be launch it could take up to 15 seconds to have the AssetProcessor initialize
-        // and able to negotiate a connection when running a debug build
-        // and to negotiate a connection
-        // Setting the connectTimeout to 3 seconds if not set within the settings registry
-
-        AzFramework::AssetSystem::ConnectionSettings connectionSettings;
-        AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
-
-        connectionSettings.m_launchAssetProcessorOnFailedConnection = true;
-        connectionSettings.m_connectionIdentifier = AzFramework::AssetSystem::ConnectionIdentifiers::Game;
-        connectionSettings.m_loggingCallback = []([[maybe_unused]] AZStd::string_view logData)
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            AZ_TracePrintf("Launcher", "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
-        };
+            AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
+            // Reload the assetcatalog.xml at this point again
+            // Start Monitoring Asset changes over the network and load the AssetCatalog
+            auto LoadCatalog = [settingsRegistry](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+            {
+                if (AZ::IO::FixedMaxPath assetCatalogPath;
+                    settingsRegistry->Get(assetCatalogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+                {
+                    assetCatalogPath /= "assetcatalog.xml";
+                    assetCatalogRequests->LoadCatalog(assetCatalogPath.c_str());
+                }
+            };
+            AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+        }
+    }
 
-        AzFramework::AssetSystemRequestBus::BroadcastResult(connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
-
-        if (connectedToAssetProcessor)
+    // If the connect option is false, this function will return true
+    // to make sure the Launcher passes the connected to AP check
+    // If REMOTE_ASSET_PROCESSOR is not defined, then the launcher doesn't need
+    // to connect to the AssetProcessor and therefore this function returns true
+    bool ConnectToAssetProcessor([[maybe_unused]] bool connect)
+    {
+        bool connectedToAssetProcessor = true;
+#if defined(REMOTE_ASSET_PROCESSOR)
+        if (connect)
         {
-            AZ_TracePrintf("Launcher", "Connected to Asset Processor\n");
-            CreateRemoteFileIO();
+            // When the AssetProcessor is already launched it should take less than a second to perform a connection
+            // but when the AssetProcessor needs to be launch it could take up to 15 seconds to have the AssetProcessor initialize
+            // and able to negotiate a connection when running a debug build
+            // and to negotiate a connection
+            // Setting the connectTimeout to 3 seconds if not set within the settings registry
+
+            AzFramework::AssetSystem::ConnectionSettings connectionSettings;
+            AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
+
+            connectionSettings.m_launchAssetProcessorOnFailedConnection = true;
+            connectionSettings.m_connectionIdentifier = AzFramework::AssetSystem::ConnectionIdentifiers::Game;
+            connectionSettings.m_loggingCallback = []([[maybe_unused]] AZStd::string_view logData)
+            {
+                AZ_TracePrintf("Launcher", "%.*s", aznumeric_cast<int>(logData.size()), logData.data());
+            };
+
+            AzFramework::AssetSystemRequestBus::BroadcastResult(connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection, connectionSettings);
+
+            if (connectedToAssetProcessor)
+            {
+                AZ_TracePrintf("Launcher", "Connected to Asset Processor\n");
+                CreateRemoteFileIO();
+            }
         }
 
+#endif
+        CompileCriticalAssets();
         return connectedToAssetProcessor;
     }
 
@@ -403,25 +435,21 @@ namespace O3DELauncher
 
             gameApplication.Start({}, gameApplicationStartupParams);
 
-#if defined(REMOTE_ASSET_PROCESSOR)
-            bool allowedEngineConnection = !systemInitParams.bToolMode && !systemInitParams.bTestMode && bg_ConnectToAssetProcessor;
 
             //connect to the asset processor using the bootstrap values
-            if (allowedEngineConnection)
+            const bool allowedEngineConnection = !systemInitParams.bToolMode && !systemInitParams.bTestMode && bg_ConnectToAssetProcessor;
+            if (!ConnectToAssetProcessor(allowedEngineConnection))
             {
-                if (!ConnectToAssetProcessor())
+                AZ::s64 waitForConnect{};
+                AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, waitForConnect,
+                    AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "wait_for_connect");
+                if (waitForConnect != 0)
                 {
-                    AZ::s64 waitForConnect{};
-                    AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, waitForConnect,
-                        AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "wait_for_connect");
-                    if (waitForConnect != 0)
-                    {
-                        AZ_Error("Launcher", false, "Failed to connect to AssetProcessor.");
-                        return ReturnCode::ErrAssetProccessor;
-                    }
+                    AZ_Error("Launcher", false, "Failed to connect to AssetProcessor.");
+                    return ReturnCode::ErrAssetProccessor;
                 }
             }
-#endif
+
             AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "System allocator was not created or creation failed.");
             //Initialize the Debug trace instance to create necessary environment variables
             AZ::Debug::Trace::Instance().Init();

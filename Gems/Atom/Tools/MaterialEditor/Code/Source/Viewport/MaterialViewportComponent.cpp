@@ -18,7 +18,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Viewport/MaterialViewportComponent.h>
@@ -165,12 +165,12 @@ namespace MaterialEditor
         // AssetCatalogRequestBus::EnumerateAssets can lead to deadlocked)
         AZ::Data::AssetCatalogRequests::AssetEnumerationCB enumerateCB = [this]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& info)
         {
-            if (AzFramework::StringFunc::EndsWith(info.m_relativePath.c_str(), ".lightingpreset.azasset"))
+            if (AZ::StringFunc::EndsWith(info.m_relativePath.c_str(), ".lightingpreset.azasset"))
             {
                 m_lightingPresetAssets[info.m_assetId] = { info.m_assetId, info.m_assetType };
                 AZ::Data::AssetBus::MultiHandler::BusConnect(info.m_assetId);
             }
-            else if (AzFramework::StringFunc::EndsWith(info.m_relativePath.c_str(), ".modelpreset.azasset"))
+            else if (AZ::StringFunc::EndsWith(info.m_relativePath.c_str(), ".modelpreset.azasset"))
             {
                 m_modelPresetAssets[info.m_assetId] = { info.m_assetId, info.m_assetType };
                 AZ::Data::AssetBus::MultiHandler::BusConnect(info.m_assetId);
@@ -428,5 +428,52 @@ namespace MaterialEditor
         AZ::TickBus::QueueFunction([this]() {
             ReloadContent();
         });
+    }
+
+    void MaterialViewportComponent::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+    {
+        auto ReloadLightingAndModelPresets = [this, &assetId](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
+        {
+            AZ::Data::AssetInfo assetInfo = assetCatalogRequests->GetAssetInfoById(assetId);
+            AZ::Data::Asset<AZ::RPI::AnyAsset>* modifiedPresetAsset{};
+            if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset"))
+            {
+                m_lightingPresetAssets[assetInfo.m_assetId] = { assetInfo.m_assetId, assetInfo.m_assetType };
+                AZ::Data::AssetBus::MultiHandler::BusConnect(assetInfo.m_assetId);
+                modifiedPresetAsset = &m_lightingPresetAssets[assetInfo.m_assetId];
+            }
+            else if (AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset"))
+            {
+                m_modelPresetAssets[assetInfo.m_assetId] = { assetInfo.m_assetId, assetInfo.m_assetType };
+                AZ::Data::AssetBus::MultiHandler::BusConnect(assetInfo.m_assetId);
+                modifiedPresetAsset = &m_modelPresetAssets[assetInfo.m_assetId];
+            }
+
+            // Queue a load on the changed asset
+            if (modifiedPresetAsset != nullptr)
+            {
+                modifiedPresetAsset->QueueLoad();
+            }
+        };
+        AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(ReloadLightingAndModelPresets));
+    }
+
+    void MaterialViewportComponent::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+    {
+        OnCatalogAssetChanged(assetId);
+    }
+
+    void MaterialViewportComponent::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
+    {
+        if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".lightingpreset.azasset"))
+        {
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect(assetInfo.m_assetId);
+            m_lightingPresetAssets.erase(assetId);
+        }
+        if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), ".modelpreset.azasset"))
+        {
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect(assetInfo.m_assetId);
+            m_modelPresetAssets.erase(assetId);
+        }
     }
 }
