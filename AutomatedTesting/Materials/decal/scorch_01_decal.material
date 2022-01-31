@@ -1,0 +1,35 @@
+{
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/decal/scorch_01_decal.tif"
+        },
+        "general": {
+            "doubleSided": true
+        },
+        "metallic": {
+            "useTexture": false
+        },
+        "normal": {
+            "useTexture": false
+        },
+        "opacity": {
+            "factor": 1.0,
+            "mode": "Blended",
+            "textureMap": "Materials/decal/scorch_01_decal.tif"
+        },
+        "roughness": {
+            "useTexture": false
+        },
+        "specularF0": {
+            "useTexture": false
+        },
+        "uv": {
+            "center": [
+                0.0,
+                1.0
+            ]
+        }
+    }
+}
