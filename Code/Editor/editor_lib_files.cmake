@@ -270,7 +270,6 @@ set(FILES
     Include/ICommandManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
-    Include/IEventLoopHook.h
     Include/IExportManager.h
     Include/IGizmoManager.h
     Include/IIconManager.h

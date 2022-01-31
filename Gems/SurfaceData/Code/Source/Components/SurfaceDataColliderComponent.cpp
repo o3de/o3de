@@ -240,15 +240,16 @@ namespace SurfaceData
             point.m_entityId = GetEntityId();
             point.m_position = hitPosition;
             point.m_normal = hitNormal;
-            AddMaxValueForMasks(point.m_masks, m_configuration.m_providerTags, 1.0f);
+            for (auto& tag : m_configuration.m_providerTags)
+            {
+                point.m_masks[tag] = 1.0f;
+            }
             surfacePointList.push_back(point);
         }
     }
 
     void SurfaceDataColliderComponent::ModifySurfacePoints(SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_colliderBounds.IsValid() && !m_configuration.m_modifierTags.empty())
