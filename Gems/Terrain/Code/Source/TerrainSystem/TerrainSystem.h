@@ -54,8 +54,8 @@ namespace Terrain
 
         ///////////////////////////////////////////
         // TerrainDataRequestBus::Handler Impl
-        AZ::Vector2 GetTerrainHeightQueryResolution() const override;
-        void SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution) override;
+        float GetTerrainHeightQueryResolution() const override;
+        void SetTerrainHeightQueryResolution(float queryResolution) override;
 
         AZ::Aabb GetTerrainAabb() const override;
         void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
@@ -213,7 +213,7 @@ namespace Terrain
         struct TerrainSystemSettings
         {
             AZ::Aabb m_worldBounds;
-            AZ::Vector2 m_heightQueryResolution{ 1.0f };
+            float m_heightQueryResolution{ 1.0f };
             bool m_systemActive{ false };
         };
 

@@ -117,7 +117,7 @@ namespace UnitTest
         // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
         // on a test-by-test basis.
         AZStd::unique_ptr<Terrain::TerrainSystem> CreateAndActivateTerrainSystem(
-            AZ::Vector2 queryResolution = AZ::Vector2(1.0f),
+            float queryResolution = 1.0f,
             AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-128.0f), AZ::Vector3(128.0f)))
         {
             // Create the terrain system and give it one tick to fully initialize itself.
@@ -216,7 +216,7 @@ namespace UnitTest
         void RunTerrainApiBenchmark(
             benchmark::State& state,
             AZStd::function<void(
-                const AZ::Vector2& queryResolution,
+                float queryResolution,
                 const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)> ApiCaller)
         {
@@ -228,7 +228,7 @@ namespace UnitTest
 
             // Set up our world bounds and query resolution
             AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-boundsRange / 2.0f), AZ::Vector3(boundsRange / 2.0f));
-            AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
+            float queryResolution = 1.0f;
 
             // Create a Random Gradient to use as our height provider
             const uint32_t heightRandomSeed = 12345;
@@ -281,17 +281,17 @@ namespace UnitTest
             surfaceGradientShapeRequests.clear();
         }
 
-        void GenerateInputPositionsList(const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds, AZStd::vector<AZ::Vector3>& positions)
+        void GenerateInputPositionsList(float queryResolution, const AZ::Aabb& worldBounds, AZStd::vector<AZ::Vector3>& positions)
         {
-            const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution.GetX()));
-            const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution.GetY()));
+            const size_t numSamplesX = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetX() / queryResolution));
+            const size_t numSamplesY = aznumeric_cast<size_t>(ceil(worldBounds.GetExtents().GetY() / queryResolution));
 
             for (size_t y = 0; y < numSamplesY; y++)
             {
-                float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution.GetY()));
+                float fy = aznumeric_cast<float>(worldBounds.GetMin().GetY() + (y * queryResolution));
                 for (size_t x = 0; x < numSamplesX; x++)
                 {
-                    float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution.GetX()));
+                    float fx = aznumeric_cast<float>(worldBounds.GetMin().GetX() + (x * queryResolution));
                     positions.emplace_back(fx, fy, 0.0f);
                 }
             }
@@ -307,7 +307,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 float worldMinZ = worldBounds.GetMin().GetZ();
@@ -343,7 +343,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
@@ -351,9 +351,10 @@ namespace UnitTest
                 {
                     benchmark::DoNotOptimize(surfacePoint.m_position.GetZ());
                 };
-                
+
+                AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion, worldBounds, queryResolution, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
             }
         );
     }
@@ -375,7 +376,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
@@ -409,7 +410,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 for (float y = worldBounds.GetMin().GetY(); y < worldBounds.GetMax().GetY(); y += 1.0f)
@@ -440,7 +441,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
@@ -449,8 +450,9 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_normal);
                 };
                 
+                AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromRegion, worldBounds, queryResolution, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
             }
         );
     }
@@ -469,7 +471,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
@@ -500,7 +502,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AzFramework::SurfaceData::SurfaceTagWeightList surfaceWeights;
@@ -532,7 +534,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
@@ -541,8 +543,9 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
                 };
                 
+                AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, worldBounds, queryResolution, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
             }
         );
     }
@@ -561,7 +564,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
@@ -592,7 +595,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AzFramework::SurfaceData::SurfacePoint surfacePoint;
@@ -624,7 +627,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            []([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            []([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 auto perPositionCallback = []([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex, 
@@ -633,8 +636,9 @@ namespace UnitTest
                     benchmark::DoNotOptimize(surfacePoint);
                 };
                 
+                AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion, worldBounds, queryResolution, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
             }
         );
     }
@@ -653,7 +657,7 @@ namespace UnitTest
         // Run the benchmark
         RunTerrainApiBenchmark(
             state,
-            [this]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
+            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
                 AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 AZStd::vector<AZ::Vector3> inPositions;
