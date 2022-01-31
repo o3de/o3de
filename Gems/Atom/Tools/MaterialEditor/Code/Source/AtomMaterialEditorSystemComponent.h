@@ -4,6 +4,11 @@
 #include <AzCore/Component/Component.h>
 #include <O3DEMaterialEditor/O3DEMaterialEditorBus.h>
 
+namespace MaterialEditor
+{
+    class MaterialEditorBrowserInteractions;
+}
+
 namespace AtomMaterialEditor
 {
     /// System component for MaterialEditor editor
@@ -30,5 +35,7 @@ namespace AtomMaterialEditor
         void RegisterAtomWindow();
 
         O3DEMaterialEditor::O3DEMaterialEditorRequests::NotifyRegisterViewsEvent::Handler m_notifyRegisterViewsEventHandler;
+
+        AZStd::unique_ptr<MaterialEditor::MaterialEditorBrowserInteractions> m_materialEditorBrowserInteractions;
     };
 } // namespace MaterialEditor

@@ -4,6 +4,15 @@
 #include <AzCore/Module/Module.h>
 
 #include <AtomMaterialEditorSystemComponent.h>
+#include <Viewport/MaterialViewportComponent.h>
+
+void InitAtomMaterialEditorResources()
+{
+    // Must register qt resources from other modules
+    Q_INIT_RESOURCE(MaterialEditor);
+    Q_INIT_RESOURCE(InspectorWidget);
+    Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+}
 
 namespace AtomMaterialEditor
 {
@@ -16,12 +25,15 @@ namespace AtomMaterialEditor
 
         AtomMaterialEditorModule()
         {
+            InitAtomMaterialEditorResources();
+
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
             // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
                 AtomMaterialEditorSystemComponent::CreateDescriptor(),
+                MaterialEditor::MaterialViewportComponent::CreateDescriptor(),
                 });
         }
 
@@ -33,6 +45,7 @@ namespace AtomMaterialEditor
         {
             return AZ::ComponentTypeList{
                 azrtti_typeid<AtomMaterialEditorSystemComponent>(),
+                azrtti_typeid<MaterialEditor::MaterialViewportComponent>(),
             };
         }
     };

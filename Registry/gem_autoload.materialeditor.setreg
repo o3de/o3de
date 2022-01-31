@@ -1,6 +1,9 @@
 {
     "Amazon": {
         "Gems": {
+            "AtomMaterialEditor": {
+                "AutoLoad": false
+            },
             "ImGui.Editor": {
                 "AutoLoad": false
             },

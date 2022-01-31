@@ -1,9 +1,13 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+
 #include <AtomMaterialEditorSystemComponent.h>
 
+#include <Window/MaterialEditorBrowserInteractions.h>
 #include <Window/MaterialEditorWindow.h>
+#include <Document/MaterialDocument.h>
 
 namespace AtomMaterialEditor
 {
@@ -35,6 +39,7 @@ namespace AtomMaterialEditor
 
     void AtomMaterialEditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
+        required.push_back(AZ_CRC_CE("AtomToolsDocumentSystemService"));
         required.push_back(AZ_CRC_CE("O3DEMaterialEditorService"));
     }
 
@@ -57,6 +62,12 @@ namespace AtomMaterialEditor
 
     void AtomMaterialEditorSystemComponent::RegisterAtomWindow()
     {
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType,
+            []() { return aznew MaterialEditor::MaterialDocument(); });
+
+        m_materialEditorBrowserInteractions.reset(aznew MaterialEditor::MaterialEditorBrowserInteractions);
+
         O3DEMaterialEditor::RegisterViewPane<MaterialEditor::MaterialEditorWindow>("Atom");
     }
 

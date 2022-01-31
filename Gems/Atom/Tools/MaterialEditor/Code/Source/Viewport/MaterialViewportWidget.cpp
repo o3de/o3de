@@ -69,9 +69,15 @@ namespace MaterialEditor
 
         // The viewport context created by AtomToolsFramework::RenderViewportWidget has no name.
         // Systems like frame capturing and post FX expect there to be a context with DefaultViewportContextName
-        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
-        viewportContextManager->RenameViewportContext(GetViewportContext(), defaultContextName);
+        // ------------------------------
+        // TODO: When MaterialViewportWidget is opened inside the Editor as a dll it already exists
+        //       a viewport context with the default viewport context name. It asserts if it cannot
+        //       be renamed or for now keeping the original viewport context name. This has to be
+        //       handled properly in the future.
+        // ------------------------------
+        //auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        //const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
+        //viewportContextManager->RenameViewportContext(GetViewportContext(), defaultContextName);
 
         // Create and register a scene with all available feature processors
         AZ::RPI::SceneDescriptor sceneDesc;

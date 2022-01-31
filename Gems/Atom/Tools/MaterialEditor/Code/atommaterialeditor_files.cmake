@@ -16,8 +16,6 @@ set(FILES
     Source/Document/MaterialDocument.h
     Source/Document/MaterialDocumentSettings.cpp
 
-    Source/Viewport/MaterialViewportModule.h
-    Source/Viewport/MaterialViewportModule.cpp
     Source/Viewport/InputController/MaterialEditorViewportInputControllerBus.h
     Source/Viewport/MaterialViewportSettings.h
     Source/Viewport/MaterialViewportRequestBus.h
