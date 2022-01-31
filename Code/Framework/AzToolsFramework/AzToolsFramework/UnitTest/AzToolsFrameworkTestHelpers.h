@@ -244,7 +244,7 @@ namespace UnitTest
             m_editorActions.Connect();
 
             const auto viewportHandlerBuilder =
-                [this](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+                [this](const AzToolsFramework::EditorVisibleEntityDataCacheInterface* entityDataCache,
                     [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
                 // create the default viewport (handles ComponentMode)

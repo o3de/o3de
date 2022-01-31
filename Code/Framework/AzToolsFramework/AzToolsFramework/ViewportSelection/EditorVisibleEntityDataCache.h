@@ -42,6 +42,7 @@ namespace AzToolsFramework
         //! @note It may still be desirable to be able to 'click' an entity that is a descendant of a closed container
         //! to select the container itself, not the individual entity.
         virtual bool IsVisibleEntityIndividuallySelectableInViewport(size_t index) const = 0;
+        virtual AZStd::optional<size_t> GetVisibleEntityIndexFromId(AZ::EntityId entityId) const = 0;
     };
 
     //! A cache of packed EntityData that can be iterated over efficiently without
@@ -81,8 +82,7 @@ namespace AzToolsFramework
         bool IsVisibleEntitySelected(size_t index) const override;
         bool IsVisibleEntityIconHidden(size_t index) const override;
         bool IsVisibleEntityIndividuallySelectableInViewport(size_t index) const override;
-
-        AZStd::optional<size_t> GetVisibleEntityIndexFromId(AZ::EntityId entityId) const;
+        AZStd::optional<size_t> GetVisibleEntityIndexFromId(AZ::EntityId entityId) const override;
 
         void AddEntityIds(const EntityIdList& entityIds);
 
