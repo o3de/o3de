@@ -98,8 +98,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_ui->m_collapseAllButton->setAutoRaise(true); // hover highlight
     m_ui->m_collapseAllButton->setIcon(QIcon(AzAssetBrowser::CollapseAllIcon));
-    m_ui->m_collapseAllButton->setToolTip(tr("Collapse All"));
-    m_ui->m_collapseAllButton->setToolTipDuration(10000);
 
     connect(
         m_ui->m_collapseAllButton, &QToolButton::clicked, this,

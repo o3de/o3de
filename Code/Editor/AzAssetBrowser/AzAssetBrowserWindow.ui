@@ -78,10 +78,10 @@
             <enum>Qt::ClickFocus</enum>
            </property>
            <property name="toolTip">
-            <string extracomment="Collapse All"/>
+            <string extracomment="Collapse All">Collapse All</string>
            </property>
            <property name="toolTipDuration">
-            <number>3</number>
+            <number>10000</number>
            </property>
            <property name="text">
             <string/>
