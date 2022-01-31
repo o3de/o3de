@@ -17,7 +17,6 @@
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
-#include <SurfaceDataSystemComponent.h>
 
 namespace UnitTest
 {
