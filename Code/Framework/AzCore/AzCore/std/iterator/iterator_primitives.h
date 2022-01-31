@@ -169,7 +169,7 @@ namespace AZStd
     using iter_reference_t = enable_if_t<Internal::dereferenceable<T>, decltype(*declval<T&>())>;
 
     // incrementable_traits for iter_difference_t
-    template <typename T>
+    template <typename T, class = void>
     struct incrementable_traits
         : Internal::incrementable_requires<T> {};
     template <typename T>
