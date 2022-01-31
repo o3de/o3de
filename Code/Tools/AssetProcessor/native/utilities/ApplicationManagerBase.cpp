@@ -449,50 +449,54 @@ void ApplicationManagerBase::InitFileMonitor()
     {
         const auto cachePath = QDir::toNativeSeparators(cacheRoot.absolutePath());
 
+        // For the handlers below, we need to make sure to use invokeMethod on any QObjects so Qt can queue
+        // the callback to run on the QObject's thread if needed.  The APM methods for example are not thread-safe.
+
         const auto OnFileAdded = [this, cachePath](QString path)
         {
             const bool isCacheRoot = path.startsWith(cachePath);
-            if (isCacheRoot)
+            if (!isCacheRoot)
             {
-                m_fileStateCache->AddFile(path);
-            }
-            else
-            {
-                m_assetProcessorManager->AssessAddedFile(path);
-                m_fileStateCache->AddFile(path);
+                bool result = QMetaObject::invokeMethod(m_assetProcessorManager, "AssessAddedFile", Q_ARG(QString, path));
+                AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessAddedFile");
+
+                result = QMetaObject::invokeMethod(m_fileProcessor.get(), "AssessAddedFile", Q_ARG(QString, path));
+                AZ_Assert(result, "Failed to invoke m_fileProcessor::AssessAddedFile");
+                
                 AZ::Interface<AssetProcessor::ExcludedFolderCacheInterface>::Get()->FileAdded(path);
-                m_fileProcessor->AssetProcessor::FileProcessor::AssessAddedFile(path);
             }
+
+            m_fileStateCache->AddFile(path);
         };
 
         const auto OnFileModified = [this, cachePath](QString path)
         {
             const bool isCacheRoot = path.startsWith(cachePath);
-            if (isCacheRoot)
+            if (!isCacheRoot)
             {
-                m_assetProcessorManager->AssessModifiedFile(path);
-            }
-            else
-            {
-                m_assetProcessorManager->AssessModifiedFile(path);
                 m_fileStateCache->UpdateFile(path);
             }
+
+            bool result = QMetaObject::invokeMethod(m_assetProcessorManager, "AssessModifiedFile", Q_ARG(QString, path));
+
+            AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessModifiedFile");
+            m_assetProcessorManager->AssessModifiedFile(path);
         };
 
         const auto OnFileRemoved = [this, cachePath](QString path)
         {
+            bool result = false;
             const bool isCacheRoot = path.startsWith(cachePath);
-            if (isCacheRoot)
+            if (!isCacheRoot)
             {
-                m_fileStateCache->RemoveFile(path);
-                m_assetProcessorManager->AssessDeletedFile(path);
+                result = QMetaObject::invokeMethod(m_fileProcessor.get(), "AssessDeletedFile", Q_ARG(QString, path));
+                AZ_Assert(result, "Failed to invoke m_fileProcessor::AssessDeletedFile");
             }
-            else
-            {
-                m_assetProcessorManager->AssessDeletedFile(path);
-                m_fileStateCache->RemoveFile(path);
-                m_fileProcessor->AssessDeletedFile(path);
-            }
+
+            result = QMetaObject::invokeMethod(m_assetProcessorManager, "AssessDeletedFile", Q_ARG(QString, path));
+            AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessDeletedFile");
+
+            m_fileStateCache->RemoveFile(path);
         };
 
         connect(&m_fileWatcher, &FileWatcher::fileAdded, OnFileAdded);
