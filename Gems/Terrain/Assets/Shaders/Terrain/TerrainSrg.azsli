@@ -81,9 +81,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     MacroMaterialGrid m_macroMaterialGrid;
     
     Texture2D m_textures[]; // bindless array of all textures for detail and macro materials
-    float2 m_detailMaterialIdImageCenter;
-    float m_detailHalfPixelUv;
-    float4 m_detailAabb;
+    float m_detailMaterialIdScale;
 
 }
 

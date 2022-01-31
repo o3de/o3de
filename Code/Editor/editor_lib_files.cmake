@@ -270,7 +270,6 @@ set(FILES
     Include/ICommandManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
-    Include/IEventLoopHook.h
     Include/IExportManager.h
     Include/IGizmoManager.h
     Include/IIconManager.h
@@ -281,7 +280,6 @@ set(FILES
     Include/IPreferencesPage.h
     Include/ISourceControl.h
     Include/ITransformManipulator.h
-    Include/IViewPane.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
