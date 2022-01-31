@@ -98,15 +98,17 @@ namespace O3DE::ProjectManager
 
         constexpr int minHeaderSectionWidth = 100;
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
-            QStringList{ tr("Gem Name"), tr("Gem Summary"), tr("Status") },
+            QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Status") },
             QVector<int>{
-                GemItemDelegate::s_defaultSummaryStartX - 30,
+                GemPreviewImageWidth + AdjustableHeaderWidget::s_headerTextIndent,
+                -GemPreviewImageWidth - AdjustableHeaderWidget::s_headerTextIndent + GemItemDelegate::s_defaultSummaryStartX - 30,
                 0, // Section is set to stretch to fit
                 GemItemDelegate::s_buttonWidth + GemItemDelegate::s_itemMargins.left() + GemItemDelegate::s_itemMargins.right() + GemItemDelegate::s_contentMargins.right()
             },
             minHeaderSectionWidth,
             QVector<QHeaderView::ResizeMode>
             {
+                QHeaderView::ResizeMode::Fixed,
                 QHeaderView::ResizeMode::Interactive,
                 QHeaderView::ResizeMode::Stretch,
                 QHeaderView::ResizeMode::Fixed
