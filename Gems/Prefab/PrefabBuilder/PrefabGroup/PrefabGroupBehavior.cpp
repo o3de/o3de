@@ -99,6 +99,7 @@ namespace AZ::SceneAPI::Behaviors
         using MeshTransformEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshTransformPair>;
         using MeshTransformMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshTransformPair>;
 
+#if false
         MeshTransformMap CalculateMeshTransformMap(const Containers::Scene& scene)
         {
             auto graph = scene.GetGraph();
@@ -140,7 +141,93 @@ namespace AZ::SceneAPI::Behaviors
             }
             return meshTransformMap;
         }
+#else
+        using MeshIndexContainer = AZStd::unordered_set<Containers::SceneGraph::NodeIndex>;
 
+        Containers::SceneGraph::NodeIndex CalculateMeshTransform(const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex meshIndex)
+        {
+            // MakeSceneGraphDownwardsView(const SceneGraph & graph, SceneGraph::HierarchyStorageConstIterator graphIterator, Iterator iterator, bool rootIterator)
+            const auto view = Containers::Views::MakeSceneGraphDownwardsView<Containers::Views::DepthFirst>(
+                graph,
+                graph.ConvertToHierarchyIterator(meshIndex),
+                graph.ConvertToStorageIterator(meshIndex),
+                true);
+
+            for (auto it = view.begin(); it != view.end(); ++it)
+            {
+                Containers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
+                AZStd::string currentNodeName = graph.GetNodeName(currentIndex).GetPath();
+                const auto currentContent = graph.GetNodeContent(currentIndex);
+                if (currentContent)
+                {
+                    if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(currentContent.get()))
+                    {
+                        return currentIndex;
+                    }
+                }
+            }
+
+            return {};
+        }
+
+        MeshTransformMap CalculateMeshTransformMap(const Containers::Scene& scene)
+        {
+            auto graph = scene.GetGraph();
+            const auto view = Containers::Views::MakeSceneGraphDownwardsView<Containers::Views::BreadthFirst>(
+                graph,
+                graph.GetRoot(),
+                graph.GetContentStorage().cbegin(),
+                true);
+
+            if (view.empty())
+            {
+                return {};
+            }
+
+            MeshIndexContainer meshIndexContainer;
+            MeshTransformMap meshTransformMap;
+            for (auto it = view.begin(); it != view.end(); ++it)
+            {
+                Containers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
+                AZStd::string currentNodeName = graph.GetNodeName(currentIndex).GetPath();
+                const auto currentContent = graph.GetNodeContent(currentIndex);
+                if (currentContent)
+                {
+                    if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(currentContent.get()))
+                    {
+                        const auto parentIndex = graph.GetNodeParent(currentIndex);
+                        if (parentIndex.IsValid() == false)
+                        {
+                            continue;
+                        }
+                        const auto parentContent = graph.GetNodeContent(parentIndex);
+                        if (parentContent && azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(parentContent.get()))
+                        {
+                            // map the node parent to the ITransform
+                            meshIndexContainer.erase(parentIndex);
+                            MeshTransformPair pair{ parentIndex, currentIndex };
+                            meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(parentIndex), AZStd::move(pair) });
+                        }
+                    }
+                    else if (azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(currentContent.get()))
+                    {
+                        meshIndexContainer.insert(currentIndex);
+                    }
+                }
+            }
+
+            // all mesh data nodes left in the meshIndexContainer do not have a matching TransformData node since
+            // since the nodes have an identity transform, so map the MeshData index with an Invalid mesh index to
+            // indicate the transform should not be set
+            for( const auto meshIndex : meshIndexContainer)
+            {
+                MeshTransformPair pair{ meshIndex, Containers::SceneGraph::NodeIndex{} };
+                meshTransformMap.emplace(MeshTransformEntry{ graph.GetNodeParent(meshIndex), AZStd::move(pair) });
+            }
+
+            return meshTransformMap;
+        }
+#endif
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
         using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>;
 
@@ -303,7 +390,14 @@ namespace AZ::SceneAPI::Behaviors
 
                 // get node matrix data to set the entity's local transform
                 const auto nodeTransform = azrtti_cast<const DataTypes::ITransform*>(graph.GetNodeContent(thisTransformIndex));
-                entityTransform->SetLocalTM(AZ::Transform::CreateFromMatrix3x4(nodeTransform->GetMatrix()));
+                if (nodeTransform)
+                {
+                    entityTransform->SetLocalTM(AZ::Transform::CreateFromMatrix3x4(nodeTransform->GetMatrix()));
+                }
+                else
+                {
+                    entityTransform->SetLocalTM(AZ::Transform::CreateUniformScale(1.0f));
+                }
             }
 
             return entities;
