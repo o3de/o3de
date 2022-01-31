@@ -143,8 +143,6 @@ namespace SurfaceData
 
     void SurfaceDataShapeComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_shapeBoundsIsValid)
@@ -160,7 +158,10 @@ namespace SurfaceData
                 point.m_entityId = GetEntityId();
                 point.m_position = rayOrigin + intersectionDistance * rayDirection;
                 point.m_normal = AZ::Vector3::CreateAxisZ();
-                AddMaxValueForMasks(point.m_masks, m_configuration.m_providerTags, 1.0f);
+                for (auto& tag : m_configuration.m_providerTags)
+                {
+                    point.m_masks[tag] = 1.0f;
+                }
                 surfacePointList.push_back(point);
             }
         }
