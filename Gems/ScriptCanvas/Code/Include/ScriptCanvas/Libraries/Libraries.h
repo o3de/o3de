@@ -50,7 +50,7 @@ namespace ScriptCanvas
     // Call to reset Node Registry
     void ResetNodeRegistry();
     AZ::EnvironmentVariable<NodeRegistry> GetNodeRegistry();
-    static const char* s_nodeRegistryName = "ScriptCanvasNodeRegistry";
+    static constexpr const char* s_nodeRegistryName = "ScriptCanvasNodeRegistry";
 
     namespace Library
     {

@@ -52,7 +52,7 @@ namespace Multiplayer
         , m_onEntityStopHandler([this](const ConstNetworkEntityHandle&) { OnEntityRemovedEvent(); })
         , m_proxyRemovalEvent([this] { OnProxyRemovalTimedEvent(); }, AZ::Name("ProxyRemovalTimedEvent"))
     {
-        if (auto localEnt = m_entityHandle.GetEntity())
+        if (m_entityHandle.GetEntity())
         {
             m_netBindComponent = m_entityHandle.GetNetBindComponent();
             m_boundLocalNetworkRole = m_netBindComponent->GetNetEntityRole();
@@ -92,7 +92,7 @@ namespace Multiplayer
     {
         AZ_Assert(entityHandle, "Empty handle passed to Initialize");
         m_entityHandle = entityHandle;
-        if (auto localEntity = m_entityHandle.GetEntity())
+        if (m_entityHandle.GetEntity())
         {
             m_netBindComponent = m_entityHandle.GetNetBindComponent();
             AZ_Assert(m_netBindComponent, "No Multiplayer::NetBindComponent");
@@ -145,7 +145,7 @@ namespace Multiplayer
         }
 
         // Prepare event handlers
-        if (auto localEntity = m_entityHandle.GetEntity())
+        if (m_entityHandle.GetEntity())
         {
             NetBindComponent* netBindComponent = m_entityHandle.GetNetBindComponent();
             AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
@@ -168,7 +168,7 @@ namespace Multiplayer
         m_onForwardRpcHandler.Disconnect();
         m_onForwardAutonomousRpcHandler.Disconnect();
 
-        if (auto localEntity = m_entityHandle.GetEntity())
+        if (m_entityHandle.GetEntity())
         {
             NetBindComponent* netBindComponent = m_entityHandle.GetNetBindComponent();
             AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
@@ -258,7 +258,7 @@ namespace Multiplayer
     bool EntityReplicator::CanSendUpdates()
     {
         bool ret(false);
-        if (auto localEnt = GetEntityHandle().GetEntity())
+        if (GetEntityHandle().GetEntity())
         {
             NetBindComponent* netBindComponent = m_netBindComponent;
             AZ_Assert(netBindComponent, "No Multiplayer::NetBindComponent");
@@ -501,7 +501,7 @@ namespace Multiplayer
             return;
         }
 
-        if (auto localEntity = m_entityHandle.GetEntity())
+        if (m_entityHandle.GetEntity())
         {
             DeferRpcMessage(entityRpcMessage);
         }

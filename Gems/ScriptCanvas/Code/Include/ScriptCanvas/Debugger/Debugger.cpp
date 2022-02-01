@@ -71,7 +71,7 @@ namespace ScriptCanvas
                 // AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, sender, Message::Denied());
                 return nullptr;
             }
-            else if (auto disconnection = azrtti_cast<Message::DisconnectRequest*>(msg.get()))
+            else if (azrtti_cast<Message::DisconnectRequest*>(msg.get()))
             {
                 DisconnectFromClient();
             }

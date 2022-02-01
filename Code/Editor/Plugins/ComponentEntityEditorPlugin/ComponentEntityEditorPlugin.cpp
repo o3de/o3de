@@ -73,7 +73,7 @@ namespace ComponentEntityEditorPluginInternal
             const AZ::TypeId& componentTypeId = componentDescriptor->GetUuid();
             const AZ::TypeId& typeOfAZComponent = azrtti_typeid<AZ::Component>();
 
-            if (const AZ::SerializeContext::ClassData* serializeData = serializeContext->FindClassData(componentTypeId))
+            if (serializeContext->FindClassData(componentTypeId))
             {
                 if (!AZ::EntityUtils::CheckIfClassIsDeprecated(serializeContext, componentTypeId)
                     && !AZ::EntityUtils::CheckDeclaresSerializeBaseClass(serializeContext, typeOfAZComponent, componentTypeId))

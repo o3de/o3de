@@ -21,16 +21,16 @@ namespace AzToolsFramework
         class Instance;
         namespace PrefabDomUtils
         {
-            inline static const char* InstancesName = "Instances";
-            inline static const char* PatchesName = "Patches";
-            inline static const char* SourceName = "Source";
-            inline static const char* LinkIdName = "LinkId";
-            inline static const char* EntityIdName = "Id";
-            inline static const char* EntitiesName = "Entities";
-            inline static const char* ContainerEntityName = "ContainerEntity";
-            inline static const char* ComponentsName = "Components";
-            inline static const char* EntityOrderName = "Child Entity Order";
-            inline static const char* TypeName = "$type";
+            inline static constexpr const char* InstancesName = "Instances";
+            inline static constexpr const char* PatchesName = "Patches";
+            inline static constexpr const char* SourceName = "Source";
+            inline static constexpr const char* LinkIdName = "LinkId";
+            inline static constexpr const char* EntityIdName = "Id";
+            inline static constexpr const char* EntitiesName = "Entities";
+            inline static constexpr const char* ContainerEntityName = "ContainerEntity";
+            inline static constexpr const char* ComponentsName = "Components";
+            inline static constexpr const char* EntityOrderName = "Child Entity Order";
+            inline static constexpr const char* TypeName = "$type";
 
             /**
             * Find Prefab value from given parent value and target value's name.

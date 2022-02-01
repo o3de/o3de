@@ -171,6 +171,7 @@ namespace ScriptCanvas
 #undef REGISTER_ENUM
 
         // create the Symbol strings
+        AZ_PUSH_DISABLE_WARNING_GCC("-Wunused-variable")
 #define REGISTER_ENUM(x) #x,
         static const char* g_SymbolNames[] =
         {
@@ -178,6 +179,7 @@ namespace ScriptCanvas
             "<ERROR>"
         };
 #undef REGISTER_ENUM
+        AZ_POP_DISABLE_WARNING_GCC
 
         class AbstractCodeModel;
 

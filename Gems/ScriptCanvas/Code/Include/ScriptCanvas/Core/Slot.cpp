@@ -237,7 +237,7 @@ namespace ScriptCanvas
             AddContract(contractDesc);
         }
 
-        if (const DataSlotConfiguration* dataSlotConfiguration = azrtti_cast<const DataSlotConfiguration*>(&slotConfiguration))
+        if (azrtti_cast<const DataSlotConfiguration*>(&slotConfiguration))
         {
             m_dataType = DataType::Data;
         }

@@ -25,10 +25,6 @@ namespace AZ
                     ->Version(0)
                     ->Field("Configuration", &ShapeWeightModifierComponentController::m_configuration);
             }
-
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-            }
         }
 
         void ShapeWeightModifierComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

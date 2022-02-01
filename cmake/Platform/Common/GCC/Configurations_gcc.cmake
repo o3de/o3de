@@ -68,7 +68,6 @@ ly_append_configurations_options(
         -Wno-unused-but-set-variable
         -Wno-unused-result
         -Wno-unused-value
-        -Wno-unused-variable
 
     COMPILATION_DEBUG
         -O0 # No optimization

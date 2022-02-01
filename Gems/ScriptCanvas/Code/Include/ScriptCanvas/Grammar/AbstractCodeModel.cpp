@@ -1272,7 +1272,7 @@ namespace ScriptCanvas
                     CreateUserFunctionDefinition(node, *entrySlot);
                     return true;
                 }
-                else if (auto exitSlot = nodeling->GetExitSlot())
+                else if (nodeling->GetExitSlot())
                 {
                     auto displayName = nodeling->GetDisplayName();
                     if (m_uniqueOutNames.contains(displayName))

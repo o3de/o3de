@@ -10,11 +10,13 @@
 
 namespace AWSGameLift
 {
+    AZ_PUSH_DISABLE_WARNING_GCC("-Wunused-variable")
     // Reference https://sdk.amazonaws.com/cpp/api/LATEST/_game_session_status_8h_source.html
     static const char* AWSGameLiftSessionStatusNames[6] = { "NotSet", "Active", "Activating", "Terminated", "Terminating", "Error"};
 
     // Reference https://sdk.amazonaws.com/cpp/api/LATEST/_game_session_status_reason_8h.html
     static const char* AWSGameLiftSessionStatusReasons[2] = { "NotSet", "Interrupted" };
+    AZ_POP_DISABLE_WARNING_GCC
 
     static constexpr const char AWSGameLiftErrorMessageTemplate[] = "Exception: %s, Message: %s";
     static constexpr const char AWSGameLiftClientMissingErrorMessage[] = "GameLift client is not configured yet.";

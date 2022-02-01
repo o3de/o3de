@@ -1019,7 +1019,7 @@ namespace ScriptCanvasEditor
             ? *AZStd::any_cast<AZ::EntityId>(connectionUserData)
             : AZ::EntityId();
 
-        if (ScriptCanvas::Connection* connection = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
+        if (AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
         {
             ScriptCanvas::GraphNotificationBus::Event
                 ( GetScriptCanvasId()
@@ -1178,7 +1178,7 @@ namespace ScriptCanvasEditor
                 GraphCanvas::DataInterface* dataInterface = nullptr;
                 GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
 
-                if (auto comboBoxPropertyInterface = azrtti_cast<ScriptCanvas::ComboBoxPropertyInterface*>(propertyInterface))
+                if (azrtti_cast<ScriptCanvas::ComboBoxPropertyInterface*>(propertyInterface))
                 {
                     GraphCanvas::ComboBoxDataInterface* comboBoxInterface = nullptr;
 

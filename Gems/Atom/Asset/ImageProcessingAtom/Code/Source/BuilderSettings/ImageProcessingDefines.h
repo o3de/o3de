@@ -50,6 +50,7 @@ namespace ImageProcessingAtom
     static const unsigned int s_MaxReduceLevel = 5;
 
     static const int s_TotalSupportedImageExtensions = 10;
+    AZ_PUSH_DISABLE_WARNING_GCC("-Wunused-variable")
     static const char* s_SupportedImageExtensions[s_TotalSupportedImageExtensions] = {
         "*.tif",
         "*.tiff",
@@ -62,6 +63,7 @@ namespace ImageProcessingAtom
         "*.dds",
         "*.exr"
     };
+    AZ_POP_DISABLE_WARNING_GCC
 
     enum class RGBWeight : AZ::u32
     {

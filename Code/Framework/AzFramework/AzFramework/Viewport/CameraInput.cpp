@@ -656,7 +656,7 @@ namespace AzFramework
     bool OrbitDollyScrollCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
-        if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
+        if (AZStd::get_if<ScrollEvent>(&event))
         {
             BeginActivation();
         }
@@ -743,7 +743,7 @@ namespace AzFramework
     bool LookScrollTranslationCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
-        if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
+        if (AZStd::get_if<ScrollEvent>(&event))
         {
             BeginActivation();
         }

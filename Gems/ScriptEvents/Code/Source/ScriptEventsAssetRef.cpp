@@ -120,7 +120,7 @@ namespace ScriptEvents
     void ScriptEventsAssetRef::OnAssetUnloaded(
         [[maybe_unused]] const AZ::Data::AssetId assetId, [[maybe_unused]] const AZ::Data::AssetType assetType)
     {
-        if (ScriptEventsAsset* ebusAsset = m_asset.GetAs<ScriptEventsAsset>())
+        if (/*ScriptEventsAsset* ebusAsset = */m_asset.GetAs<ScriptEventsAsset>())
         {
             bool isRegistered = false;
             // ScriptEventsLegacy::RegistrationRequestBus::BroadcastResult(isRegistered,
