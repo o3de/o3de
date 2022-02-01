@@ -88,9 +88,9 @@ namespace AZ::SceneGenerationComponents
                     AZ_Warning(
                         AZ::SceneAPI::Utilities::WarningWindow,
                         AZ::StringFunc::Equal(defaultTangentGenerationMethodString, "FromSourceScene", isCaseSensitive),
-                        "'%s' is not a valid default tangent generation method. Check the value of %s in your settings registry, and change "
+                        "'" AZ_STRING_FORMAT "' is not a valid default tangent generation method. Check the value of %s in your settings registry, and change "
                         "it to 'FromSourceScene' or 'MikkT'",
-                        defaultTangentGenerationMethodString.c_str(), AZStd::string(DefaultTangentGenerationKey).c_str());
+                        defaultTangentGenerationMethodString.c_str(), AZ_STRING_ARG(DefaultTangentGenerationKey));
                 }
             }
 
