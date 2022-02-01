@@ -17,7 +17,7 @@ namespace Blast
     }
 
     BlastMaterialEditorSystemComponent::BlastMaterialEditorSystemComponent()
-        : m_notifyRegisterViewsEventHandler([this]() { RegisterAtomWindow(); })
+        : m_notifyRegisterViewsEventHandler([this]() { RegisterBlastWindow(); })
     {
     }
 
@@ -55,7 +55,7 @@ namespace Blast
         m_notifyRegisterViewsEventHandler.Disconnect();
     }
 
-    void BlastMaterialEditorSystemComponent::RegisterAtomWindow()
+    void BlastMaterialEditorSystemComponent::RegisterBlastWindow()
     {
         O3DEMaterialEditor::RegisterViewPane<MaterialEditorWindow>("Blast");
     }

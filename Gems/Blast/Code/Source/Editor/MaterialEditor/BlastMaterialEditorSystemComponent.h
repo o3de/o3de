@@ -27,7 +27,7 @@ namespace Blast
         void Activate() override;
         void Deactivate() override;
 
-        void RegisterAtomWindow();
+        void RegisterBlastWindow();
 
         O3DEMaterialEditor::O3DEMaterialEditorRequests::NotifyRegisterViewsEvent::Handler m_notifyRegisterViewsEventHandler;
     };
