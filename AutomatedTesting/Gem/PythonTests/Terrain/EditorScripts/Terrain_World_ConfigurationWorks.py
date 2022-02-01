@@ -93,7 +93,7 @@ def Terrain_World_ConfigurationWorks():
         # 5) Set the base Terrain World values
         world_bounds_max = azmath.Vector3(1100.0, 1100.0, 1100.0)
         world_bounds_min = azmath.Vector3(10.0, 10.0, 10.0)
-        height_query_resolution = azmath.Vector2(1.0, 1.0)
+        height_query_resolution = 1.0
         hydra.set_component_property_value(terrain_world_component, "Configuration|World Bounds (Max)", world_bounds_max)
         hydra.set_component_property_value(terrain_world_component, "Configuration|World Bounds (Min)", world_bounds_min)
         hydra.set_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)", height_query_resolution)
@@ -148,7 +148,7 @@ def Terrain_World_ConfigurationWorks():
 
         # 13) Check height value is the expected one when query resolution is changed
         testpoint = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeightFromFloats', 10.5, 10.5, CLAMP)
-        height_query_resolution = azmath.Vector2(0.5, 0.5)
+        height_query_resolution = 0.5
         hydra.set_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)", height_query_resolution)
         general.idle_wait_frames(1)
         testpoint2 =  terrain.TerrainDataRequestBus(bus.Broadcast, 'GetHeightFromFloats', 10.5, 10.5, CLAMP)
@@ -165,4 +165,3 @@ if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
     Report.start_test(Terrain_World_ConfigurationWorks)
-

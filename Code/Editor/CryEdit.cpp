@@ -1828,34 +1828,6 @@ bool CCryEditApp::InitInstance()
     return true;
 }
 
-void CCryEditApp::RegisterEventLoopHook(IEventLoopHook* pHook)
-{
-    pHook->pNextHook = m_pEventLoopHook;
-    m_pEventLoopHook = pHook;
-}
-
-void CCryEditApp::UnregisterEventLoopHook(IEventLoopHook* pHookToRemove)
-{
-    IEventLoopHook* pPrevious = nullptr;
-    for (IEventLoopHook* pHook = m_pEventLoopHook; pHook != nullptr; pHook = pHook->pNextHook)
-    {
-        if (pHook == pHookToRemove)
-        {
-            if (pPrevious)
-            {
-                pPrevious->pNextHook = pHookToRemove->pNextHook;
-            }
-            else
-            {
-                m_pEventLoopHook = pHookToRemove->pNextHook;
-            }
-
-            pHookToRemove->pNextHook = nullptr;
-            return;
-        }
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::LoadFile(QString fileName)
 {

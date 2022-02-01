@@ -42,6 +42,10 @@ namespace SurfaceData
         void GetSurfacePointsFromRegion(
             const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, const SurfaceTagVector& desiredTags,
             SurfacePointLists& surfacePointListPerPosition) const override;
+        void GetSurfacePointsFromList(
+            AZStd::span<const AZ::Vector3> inPositions,
+            const SurfaceTagVector& desiredTags,
+            SurfacePointLists& surfacePointLists) const override;
 
         SurfaceDataRegistryHandle RegisterSurfaceDataProvider(const SurfaceDataRegistryEntry& entry) override;
         void UnregisterSurfaceDataProvider(const SurfaceDataRegistryHandle& handle) override;

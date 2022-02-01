@@ -50,6 +50,7 @@
         "Gems/MessagePopup",
         "Gems/Metastream",
         "Gems/Microphone",
+        "Gems/MotionMatching",
         "Gems/Multiplayer",
         "Gems/MultiplayerCompression",
         "Gems/NvCloth",
