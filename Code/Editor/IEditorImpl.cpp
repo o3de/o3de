@@ -789,16 +789,6 @@ IEditorFileMonitor* CEditorImpl::GetFileMonitor()
     return m_pEditorFileMonitor.get();
 }
 
-void CEditorImpl::RegisterEventLoopHook(IEventLoopHook* pHook)
-{
-    CCryEditApp::instance()->RegisterEventLoopHook(pHook);
-}
-
-void CEditorImpl::UnregisterEventLoopHook(IEventLoopHook* pHook)
-{
-    CCryEditApp::instance()->UnregisterEventLoopHook(pHook);
-}
-
 float CEditorImpl::GetTerrainElevation(float x, float y)
 {
     float terrainElevation = AzFramework::Terrain::TerrainDataRequests::GetDefaultTerrainHeight();

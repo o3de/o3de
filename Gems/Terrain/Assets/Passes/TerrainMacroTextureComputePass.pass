@@ -1,0 +1,52 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        // Note: all the data here works as placeholders.
+        "PassTemplate": {
+            "Name": "TerrainMacroTextureComputePassTemplate",
+            "PassClass": "TerrainMacroTextureComputePass",
+            "Slots": [
+                {
+                    "Name": "MacroTextureClipmapOutput",
+                    "ShaderInputName": "m_macroTexClipmap",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "MacroTextureClipmap",
+                    "ImageDescriptor": {
+                        "Format": "R32G32B32A32_FLOAT",
+                        "BindFlags": "3",
+                        "SharedQueueMask": "1",
+                        "Size": {
+                            "Width": 1024,
+                            "Height": 1024
+                        }
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "MacroTextureClipmapOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "MacroTextureClipmap"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "Terrain::TerrainMacroTextureComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Terrain/TerrainMacroTextureComputePass.shader"
+                },
+                "Target Thread Count X": 1024,
+                "Target Thread Count Y": 1024,
+                "Target Thread Count Z": 1
+            }
+        }
+    }
+}

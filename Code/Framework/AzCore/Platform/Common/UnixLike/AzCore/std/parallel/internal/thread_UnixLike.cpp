@@ -21,6 +21,7 @@ namespace AZStd
         void PreCreateSetThreadAffinity(int cpuId, pthread_attr_t& attr);
         void SetThreadPriority(int priority, pthread_attr_t& attr);
         void PostCreateThread(pthread_t tId, const char * name, int cpuId);
+        uint8_t GetDefaultThreadPriority();
     }
 
     namespace Internal
@@ -60,12 +61,13 @@ namespace AZStd
                 }
                 else
                 {
-                    priority = SCHED_OTHER;
+                    priority = Platform::GetDefaultThreadPriority();
                 }
                 if (desc->m_name)
                 {
                     name = desc->m_name;
                 }
+                ti->m_name = name;
                 cpuId = desc->m_cpuId;
 
                 pthread_attr_setdetachstate(&attr, desc->m_isJoinable ? PTHREAD_CREATE_JOINABLE : PTHREAD_CREATE_DETACHED);
