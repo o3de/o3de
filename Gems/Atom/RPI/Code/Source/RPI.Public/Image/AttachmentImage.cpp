@@ -110,6 +110,11 @@ namespace AZ
 
             return nullptr;
         }
+        
+        AttachmentImage::~AttachmentImage()
+        {
+            Shutdown(); 
+        }
 
         RHI::ResultCode AttachmentImage::Init(const AttachmentImageAsset& imageAsset)
         {

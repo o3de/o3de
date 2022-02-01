@@ -54,7 +54,7 @@ namespace AZ
             AZ_INSTANCE_DATA(AttachmentImage, "{85691099-5143-4C11-88B0-897DA9064FDF}", Image);
             AZ_CLASS_ALLOCATOR(AttachmentImage, AZ::SystemAllocator, 0);
 
-            ~AttachmentImage() = default;
+            ~AttachmentImage();
 
             //! Instantiates or returns an existing image instance using its paired asset.
             static Data::Instance<AttachmentImage> FindOrCreate(const Data::Asset<AttachmentImageAsset>& imageAsset);
