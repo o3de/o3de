@@ -156,6 +156,11 @@ namespace AzToolsFramework::Prefab
 
         InstanceOptionalReference focusedInstance = GetInstanceReferenceFromRootAliasPath(m_instanceFocusHierarchy[index]);
 
+        if (!focusedInstance.has_value())
+        {
+            return AZ::Failure(AZStd::string::format("Prefab Focus Handler: Could not retrieve instance at index %i.", index));
+        }
+
         return FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
     }
 
@@ -194,8 +199,8 @@ namespace AzToolsFramework::Prefab
         // Close all container entities in the old path.
         SetInstanceContainersOpenState(m_instanceFocusHierarchy, false);
 
-        RootAliasPath previousContainerRootAliasPath = m_focusedInstanceRootAliasPath;
-        InstanceOptionalReference previousFocusedInstance = GetInstanceReferenceFromRootAliasPath(previousContainerRootAliasPath);
+        const RootAliasPath previousContainerRootAliasPath = m_focusedInstanceRootAliasPath;
+        const InstanceOptionalConstReference previousFocusedInstance = GetInstanceReferenceFromRootAliasPath(previousContainerRootAliasPath);
 
         m_focusedInstanceRootAliasPath = focusedInstance->get().GetAbsoluteInstanceAliasPath();
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
@@ -214,12 +219,15 @@ namespace AzToolsFramework::Prefab
         // Refresh the read-only cache, if the interface is initialized.
         if (m_readOnlyEntityQueryInterface)
         {
-            m_readOnlyEntityQueryInterface->RefreshReadOnlyState(
-                {
-                    previousFocusedInstance->get().GetContainerEntityId(),
-                    focusedInstance->get().GetContainerEntityId()
-                }
-            );
+            EntityIdList containerEntities;
+
+            if (previousFocusedInstance.has_value())
+            {
+                containerEntities.push_back(previousFocusedInstance->get().GetContainerEntityId());
+            }
+            containerEntities.push_back(focusedInstance->get().GetContainerEntityId());
+
+            m_readOnlyEntityQueryInterface->RefreshReadOnlyState(containerEntities);
         }
 
         // Refresh path variables.
@@ -247,7 +255,7 @@ namespace AzToolsFramework::Prefab
 
     AZ::EntityId PrefabFocusHandler::GetFocusedPrefabContainerEntityId([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        if (auto instance = GetInstanceReferenceFromRootAliasPath(m_focusedInstanceRootAliasPath); instance.has_value())
+        if (const InstanceOptionalConstReference instance = GetInstanceReferenceFromRootAliasPath(m_focusedInstanceRootAliasPath); instance.has_value())
         {
             return instance->get().GetContainerEntityId();
         }
@@ -262,7 +270,7 @@ namespace AzToolsFramework::Prefab
             return false;
         }
 
-        InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+        const InstanceOptionalConstReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         if (!instance.has_value())
         {
             return false;
@@ -278,8 +286,7 @@ namespace AzToolsFramework::Prefab
             return false;
         }
 
-        InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-
+        InstanceOptionalConstReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         while (instance.has_value())
         {
             if (instance->get().GetAbsoluteInstanceAliasPath() == m_focusedInstanceRootAliasPath)
@@ -363,9 +370,7 @@ namespace AzToolsFramework::Prefab
     {
         m_instanceFocusHierarchy.clear();
 
-        AZStd::list<InstanceOptionalReference> instanceFocusList;
-
-        InstanceOptionalReference currentInstance = GetInstanceReferenceFromRootAliasPath(m_focusedInstanceRootAliasPath);
+        InstanceOptionalConstReference currentInstance = GetInstanceReferenceFromRootAliasPath(m_focusedInstanceRootAliasPath);
         while (currentInstance.has_value())
         {
             m_instanceFocusHierarchy.emplace_back(currentInstance->get().GetAbsoluteInstanceAliasPath());
@@ -387,7 +392,7 @@ namespace AzToolsFramework::Prefab
 
         for (const RootAliasPath& rootAliasPath : m_instanceFocusHierarchy)
         {
-            InstanceOptionalReference instance = GetInstanceReferenceFromRootAliasPath(rootAliasPath);
+            const InstanceOptionalConstReference instance = GetInstanceReferenceFromRootAliasPath(rootAliasPath);
             if (instance.has_value())
             {
                 AZStd::string prefabName;
@@ -443,10 +448,9 @@ namespace AzToolsFramework::Prefab
         {
             InstanceOptionalReference instance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
 
-            int i = 0;
-            for (auto pathElement : rootAliasPath)
+            for (const auto pathElement : rootAliasPath)
             {
-                if (i == 0)
+                if (pathElement.Native() == rootAliasPath.begin()->Native())
                 {
                     // If the root is not the root Instance, the rootAliasPath is invalid.
                     if (pathElement.Native() != instance->get().GetInstanceAlias())
@@ -463,8 +467,6 @@ namespace AzToolsFramework::Prefab
                         return InstanceOptionalReference();
                     }
                 }
-
-                ++i;
             }
 
             return instance;
