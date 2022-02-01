@@ -198,7 +198,8 @@ def GetEnvStringList(Map envVarMap) {
 }
 
 def CheckoutBootstrapScripts(String branchName) {
-    checkout([$class: 'GitSCM',
+    echo "ENTER: CheckoutBootstrapScripts"
+    map_vars = checkout([$class: 'GitSCM',
         branches: [[name: "*/${branchName}"]],
         doGenerateSubmoduleConfigurations: false,
         extensions: [
@@ -216,10 +217,15 @@ def CheckoutBootstrapScripts(String branchName) {
         submoduleCfg: [],
         userRemoteConfigs: scm.userRemoteConfigs
     ])
+    echo "OUTPUTTING MAP VARS"
+    for (element in map_vars) {
+        echo "${element.key} ${element.value}"
+    }
+    echo "EXIT: CheckoutBootstrapScripts"
 }
 
 def CheckoutRepo(boolean disableSubmodules = false) {
-
+    echo "ENTER: CheckoutRepo"
     if (!fileExists(ENGINE_REPOSITORY_NAME)) {
         palMkdir(ENGINE_REPOSITORY_NAME)
     }
@@ -243,7 +249,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             sleep random.nextInt(60 * retryAttempt)  // Stagger checkouts to prevent HTTP 429 (Too Many Requests) response from CodeCommit
         }
         retryAttempt = retryAttempt + 1
-        checkout scm: [
+        map_vars = checkout scm: [
             $class: 'GitSCM',
             branches: scm.branches,
             extensions: [
@@ -254,6 +260,11 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             ],
             userRemoteConfigs: scm.userRemoteConfigs
        ]
+
+        echo "OUTPUTTING MAP VARS"
+        for (element in map_vars) {
+            echo "${element.key} ${element.value}"
+        }
     }
 
     // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
@@ -270,6 +281,8 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     env.CHANGE_DATE = readFile file: 'commitdate'
     env.CHANGE_DATE = env.CHANGE_DATE.trim()
     palRm('commitdate')
+
+    echo "EXIT: CheckoutRepo"
 }
 
 def HandleDriveMount(String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean recreateVolume = false) {
@@ -790,8 +803,6 @@ try {
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
-                    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${scm.GIT_COMMIT}\"..."
-
                     CheckoutBootstrapScripts(branchName)
 
                     // Load configs
@@ -878,7 +889,9 @@ try {
                 buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
             }
         }
-    }
+    }    
+
+    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMIT: \"${env.GIT_COMMIT}\"..."
 
     timestamps {
 
