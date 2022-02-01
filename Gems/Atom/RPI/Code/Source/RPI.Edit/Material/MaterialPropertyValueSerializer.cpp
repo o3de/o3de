@@ -9,6 +9,7 @@
 #include <Atom/RPI.Edit/Material/MaterialPropertyValueSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>

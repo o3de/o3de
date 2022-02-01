@@ -312,8 +312,11 @@ namespace AZ
 
             const View::UsageFlags viewFlags = worklistData->m_view->GetUsageFlags();
             const RHI::DrawListMask drawListMask = worklistData->m_view->GetDrawListMask();
-            [[maybe_unused]] uint32_t numDrawPackets = 0;
-            uint32_t numVisibleCullables = 0;
+            #ifdef AZ_CULL_DEBUG_ENABLED
+                // These variable are only used for the gathering of debug information.
+                uint32_t numDrawPackets = 0;
+                uint32_t numVisibleCullables = 0;
+            #endif
 
             AZ_Assert(worklist.size() > 0, "Received empty worklist in ProcessWorklist");
 
@@ -351,8 +354,15 @@ namespace AZ
                                 if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
 #endif
                                 {
-                                    numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
-                                    ++numVisibleCullables;
+                                    // There are ways to write this without [[maybe_unused]], but they are brittle.
+                                    // For example, using #else could cause a bug where the function's parameter
+                                    // is changed in #ifdef but not in #else.
+                                    [[maybe_unused]] const uint32_t drawPacketCount=AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
+                                    #ifdef AZ_CULL_DEBUG_ENABLED
+                                        ++numVisibleCullables;
+                                        numDrawPackets += drawPacketCount;
+                                    #endif
+
                                     c->m_isVisible = true;
                                 }
                             }
@@ -387,8 +397,15 @@ namespace AZ
                                 if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
 #endif
                                 {
-                                    numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
-                                    ++numVisibleCullables;
+                                    // There are ways to write this without [[maybe_unused]], but they are brittle.
+                                    // For example, using #else could cause a bug where the function's parameter
+                                    // is changed in #ifdef but not in #else.
+                                    [[maybe_unused]] const uint32_t drawPacketCount=AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
+                                    #ifdef AZ_CULL_DEBUG_ENABLED
+                                        ++numVisibleCullables;
+                                        numDrawPackets += drawPacketCount;
+                                    #endif
+
                                     c->m_isVisible = true;
                                 }
                             }

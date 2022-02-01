@@ -152,12 +152,12 @@ namespace AZ
 
         RHI::ResultCode DescriptorSetLayout::BuildDescriptorSetLayoutBindings()
         {
-            const AZStd::array_view<RHI::ShaderInputBufferDescriptor> bufferDescs = m_shaderResourceGroupLayout->GetShaderInputListForBuffers();
-            const AZStd::array_view<RHI::ShaderInputImageDescriptor> imageDescs = m_shaderResourceGroupLayout->GetShaderInputListForImages();
-            const AZStd::array_view<RHI::ShaderInputBufferUnboundedArrayDescriptor> bufferUnboundedArrayDescs = m_shaderResourceGroupLayout->GetShaderInputListForBufferUnboundedArrays();
-            const AZStd::array_view<RHI::ShaderInputImageUnboundedArrayDescriptor> imageUnboundedArrayDescs = m_shaderResourceGroupLayout->GetShaderInputListForImageUnboundedArrays();
-            const AZStd::array_view<RHI::ShaderInputSamplerDescriptor> samplerDescs = m_shaderResourceGroupLayout->GetShaderInputListForSamplers();
-            const AZStd::array_view<RHI::ShaderInputStaticSamplerDescriptor>& staticSamplerDescs = m_shaderResourceGroupLayout->GetStaticSamplers();
+            const AZStd::span<const RHI::ShaderInputBufferDescriptor> bufferDescs = m_shaderResourceGroupLayout->GetShaderInputListForBuffers();
+            const AZStd::span<const RHI::ShaderInputImageDescriptor> imageDescs = m_shaderResourceGroupLayout->GetShaderInputListForImages();
+            const AZStd::span<const RHI::ShaderInputBufferUnboundedArrayDescriptor> bufferUnboundedArrayDescs = m_shaderResourceGroupLayout->GetShaderInputListForBufferUnboundedArrays();
+            const AZStd::span<const RHI::ShaderInputImageUnboundedArrayDescriptor> imageUnboundedArrayDescs = m_shaderResourceGroupLayout->GetShaderInputListForImageUnboundedArrays();
+            const AZStd::span<const RHI::ShaderInputSamplerDescriptor> samplerDescs = m_shaderResourceGroupLayout->GetShaderInputListForSamplers();
+            const AZStd::span<const RHI::ShaderInputStaticSamplerDescriptor>& staticSamplerDescs = m_shaderResourceGroupLayout->GetStaticSamplers();
 
             // The + 1 is for Constant Data.
             m_descriptorSetLayoutBindings.reserve(
@@ -173,7 +173,7 @@ namespace AZ
             m_constantDataSize = m_shaderResourceGroupLayout->GetConstantDataSize();
             if (m_constantDataSize)
             {
-                AZStd::array_view<RHI::ShaderInputConstantDescriptor> inputListForConstants = m_shaderResourceGroupLayout->GetShaderInputListForConstants();
+                AZStd::span<const RHI::ShaderInputConstantDescriptor> inputListForConstants = m_shaderResourceGroupLayout->GetShaderInputListForConstants();
                 AZ_Assert(!inputListForConstants.empty(), "Empty constant input list");
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();

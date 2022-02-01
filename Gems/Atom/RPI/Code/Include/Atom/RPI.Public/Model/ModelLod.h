@@ -20,7 +20,7 @@
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AtomCore/std/containers/vector_set.h>
 
 #include <AzCore/std/containers/fixed_vector.h>
@@ -92,7 +92,7 @@ namespace AZ
             //! Blocks the CPU until pending buffer uploads have completed.
             void WaitForUpload();
 
-            AZStd::array_view<Mesh> GetMeshes() const;
+            AZStd::span<const Mesh> GetMeshes() const;
 
             //! Compares a ShaderInputContract to the mesh's available streams, and if any of them are optional, sets the corresponding "*_isBound" shader option.
             //! Call this function to update the ShaderOptionKey before fetching a ShaderVariant, to find a variant that is compatible with this mesh's streams.

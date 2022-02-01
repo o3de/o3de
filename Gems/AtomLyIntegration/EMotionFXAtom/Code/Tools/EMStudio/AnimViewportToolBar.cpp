@@ -79,11 +79,16 @@ namespace EMStudio
             // [EMFX-TODO] Add those option once implemented.
             // CreateViewOptionEntry(contextMenu, "Actor Bind Pose", EMotionFX::ActorRenderFlag::RENDER_ACTORBINDPOSE);
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlag::RENDER_HITDETECTION_COLLIDERS);
-            CreateViewOptionEntry(contextMenu, "Ragdoll Colliders", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_COLLIDERS);
-            CreateViewOptionEntry(contextMenu, "Ragdoll Joint Limits", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_JOINTLIMITS);
-            CreateViewOptionEntry(contextMenu, "Cloth Colliders", EMotionFX::ActorRenderFlag::RENDER_CLOTH_COLLIDERS);
-            CreateViewOptionEntry(contextMenu, "Simulated Object Colliders", EMotionFX::ActorRenderFlag::RENDER_SIMULATEDOBJECT_COLLIDERS);
+            CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlag::RENDER_HITDETECTION_COLLIDERS, true,
+                ":/EMotionFXAtom/HitDetection.svg");
+            CreateViewOptionEntry(contextMenu, "Ragdoll Colliders", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_COLLIDERS, true,
+                ":/EMotionFXAtom/RagdollCollider.svg");
+            CreateViewOptionEntry(contextMenu, "Ragdoll Joint Limits", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_JOINTLIMITS, true,
+                ":/EMotionFXAtom/RagdollJointLimit.svg");
+            CreateViewOptionEntry(contextMenu, "Cloth Colliders", EMotionFX::ActorRenderFlag::RENDER_CLOTH_COLLIDERS, true,
+                ":/EMotionFXAtom/Cloth.svg");
+            CreateViewOptionEntry(contextMenu, "Simulated Object Colliders", EMotionFX::ActorRenderFlag::RENDER_SIMULATEDOBJECT_COLLIDERS, true,
+                ":/EMotionFXAtom/SimulatedObjectCollider.svg");
             CreateViewOptionEntry(contextMenu, "Simulated Joints", EMotionFX::ActorRenderFlag::RENDER_SIMULATEJOINTS);
         }
 
@@ -153,7 +158,7 @@ namespace EMStudio
     }
 
     void AnimViewportToolBar::CreateViewOptionEntry(
-        QMenu* menu, const char* menuEntryName, uint32_t actionIndex, bool visible, char* iconFileName)
+        QMenu* menu, const char* menuEntryName, uint32_t actionIndex, bool visible, const char* iconFileName)
     {
         QAction* action = menu->addAction(
             menuEntryName,

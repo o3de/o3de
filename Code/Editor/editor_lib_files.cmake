@@ -270,7 +270,6 @@ set(FILES
     Include/ICommandManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
-    Include/IEventLoopHook.h
     Include/IExportManager.h
     Include/IGizmoManager.h
     Include/IIconManager.h
@@ -281,7 +280,6 @@ set(FILES
     Include/IPreferencesPage.h
     Include/ISourceControl.h
     Include/ITransformManipulator.h
-    Include/IViewPane.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
@@ -441,7 +439,6 @@ set(FILES
     IPostRenderer.h
     ToolBox.h
     TrackViewNewSequenceDialog.h
-    UndoConfigSpec.h
     Util/GeometryUtil.h
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
@@ -528,7 +525,6 @@ set(FILES
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
-    UndoConfigSpec.cpp
     Dialogs/ErrorsDlg.cpp
     Dialogs/ErrorsDlg.h
     Dialogs/ErrorsDlg.ui
