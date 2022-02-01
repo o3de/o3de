@@ -690,8 +690,8 @@ namespace UnitTest
         const uint32_t numRays = aznumeric_cast<uint32_t>(state.range(1));
         RunTerrainApiBenchmark(
             state,
-            [numRays]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
-                [[maybe_unused]]AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [numRays]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 // Cast rays starting at random positions above the terrain,
                 // and ending at a random positions below the terrain.
@@ -733,8 +733,8 @@ namespace UnitTest
         const uint32_t numRays = aznumeric_cast<uint32_t>(state.range(1));
         RunTerrainApiBenchmark(
             state,
-            [numRays]([[maybe_unused]] const AZ::Vector2& queryResolution, const AZ::Aabb& worldBounds,
-                [[maybe_unused]]AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            [numRays]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
+                [[maybe_unused]] AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
             {
                 // Cast rays starting at an upper corner of the terrain world,
                 // and ending at the opposite top corner of the terrain world,
