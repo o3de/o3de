@@ -147,7 +147,7 @@ def AtomEditorComponents_Decal_AddedToEntity():
         Report.result(Tests.creation_redo, decal_entity.exists())
 
         # 5. Set Material property on Decal component.
-        decal_material_asset_path = os.path.join("materials", "basic_grey.azmaterial")
+        decal_material_asset_path = os.path.join("Materials", "decal", "airship_symbol_decal.azmaterial")
         decal_material_asset = Asset.find_asset_by_path(decal_material_asset_path, False)
         decal_component.set_component_property_value(AtomComponentProperties.decal('Material'), decal_material_asset.id)
         get_material_property = decal_component.get_component_property_value(AtomComponentProperties.decal('Material'))
