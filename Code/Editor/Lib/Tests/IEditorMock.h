@@ -97,8 +97,6 @@ public:
     MOCK_METHOD0(GetActiveView, class CViewport* ());
     MOCK_METHOD1(SetActiveView, void(CViewport*));
     MOCK_METHOD0(GetFileMonitor, struct IEditorFileMonitor* ());
-    MOCK_METHOD1(RegisterEventLoopHook, void(IEventLoopHook* ));
-    MOCK_METHOD1(UnregisterEventLoopHook, void(IEventLoopHook* ));
     MOCK_CONST_METHOD0(CreateQMimeData, QMimeData* ());
     MOCK_CONST_METHOD1(DestroyQMimeData, void(QMimeData*));
     MOCK_METHOD0(GetLevelIndependentFileMan, class CLevelIndependentFileMan* ());

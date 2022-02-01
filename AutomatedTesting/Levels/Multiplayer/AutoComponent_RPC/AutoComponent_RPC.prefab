@@ -568,22 +568,10 @@
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 14750978061505735417,
                     "m_name": "GlobalGameData",
-                    "m_assetHolder": {
-                        "m_asset": {
-                            "assetId": {
-                                "guid": "{B16589A0-EA01-56BC-8141-91A3967FB95F}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_rpc/globalgamedata.scriptcanvas"
-                        }
-                    },
                     "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "assetId": {
-                                "guid": "{B16589A0-EA01-56BC-8141-91A3967FB95F}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_rpc/globalgamedata.scriptcanvas"
-                        }
+                    "sourceHandle": {
+                        "id": "{B16589A0-EA01-56BC-8141-91A3967FB95F}",
+                        "path": "levels/multiplayer/autocomponent_rpc/globalgamedata.scriptcanvas"
                     }
                 },
                 "Component_[16436925042043744033]": {
@@ -636,6 +624,13 @@
                     "$type": "SelectionComponent",
                     "Id": 12302672911455629152
                 },
+                "Component_[12517591696100736853]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 12517591696100736853,
+                    "m_template": {
+                        "$type": "AutomatedTesting::NetworkTestLevelEntityComponent"
+                    }
+                },
                 "Component_[14169903623243423134]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 14169903623243423134
@@ -643,13 +638,6 @@
                 "Component_[14607413934411389854]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 14607413934411389854
-                },
-                "Component_[15396284312416541768]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 15396284312416541768,
-                    "m_template": {
-                        "$type": "Multiplayer::LocalPredictionPlayerInputComponent"
-                    }
                 },
                 "Component_[15494977028055234270]": {
                     "$type": "EditorDisabledCompositionComponent",
@@ -682,22 +670,10 @@
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 7256163899440301540,
                     "m_name": "AutoComponent_RPC_NetLevelEntity",
-                    "m_assetHolder": {
-                        "m_asset": {
-                            "assetId": {
-                                "guid": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc_netlevelentity.scriptcanvas"
-                        }
-                    },
                     "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "assetId": {
-                                "guid": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc_netlevelentity.scriptcanvas"
-                        }
+                    "sourceHandle": {
+                        "id": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}",
+                        "path": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc_netlevelentity.scriptcanvas"
                     }
                 },
                 "Component_[731336627222243355]": {
@@ -728,13 +704,6 @@
                     "Id": 8805228647591404845,
                     "m_template": {
                         "$type": "NetBindComponent"
-                    }
-                },
-                "Component_[9816897251206708579]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 9816897251206708579,
-                    "m_template": {
-                        "$type": "AutomatedTesting::NetworkTestPlayerComponent"
                     }
                 },
                 "Component_[9880860858035405475]": {

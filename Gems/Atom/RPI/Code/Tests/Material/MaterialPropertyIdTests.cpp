@@ -94,6 +94,40 @@ namespace UnitTest
         errorMessageFinder.CheckExpectedErrorsFound();
     }
     
+    TEST_F(MaterialPropertyIdTests, TestConstructWithMultipleParentNamesSeparateFromPropertyName)
+    {
+        AZStd::vector<AZStd::string> names{"layer1", "clearCoat", "normal"};
+        MaterialPropertyId id{names, "factor"};
+        EXPECT_TRUE(id.IsValid());
+        EXPECT_STREQ(id.GetCStr(), "layer1.clearCoat.normal.factor");
+        AZ::Name idCastedToName = id;
+        EXPECT_EQ(idCastedToName, AZ::Name{"layer1.clearCoat.normal.factor"});
+    }
+
+    TEST_F(MaterialPropertyIdTests, TestConstructWithMultipleParentNamesSeparateFromPropertyName_BadParentName)
+    {
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("not a valid identifier");
+        
+        AZStd::vector<AZStd::string> names{"layer1", "clear-coat", "normal"};
+        MaterialPropertyId id{names, "factor"};
+        EXPECT_FALSE(id.IsValid());
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
+    
+    TEST_F(MaterialPropertyIdTests, TestConstructWithMultipleParentNamesSeparateFromPropertyName_BadPropertyName)
+    {
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("not a valid identifier");
+        
+        AZStd::vector<AZStd::string> names{"layer1", "clearCoat", "normal"};
+        MaterialPropertyId id{names, "#factor"};
+        EXPECT_FALSE(id.IsValid());
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
+
     TEST_F(MaterialPropertyIdTests, TestParse)
     {
         MaterialPropertyId id = MaterialPropertyId::Parse("layer1.clearCoat.normal.factor");
