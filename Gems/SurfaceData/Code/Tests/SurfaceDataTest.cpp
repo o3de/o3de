@@ -211,6 +211,8 @@ public:
     {
         SurfaceData::SurfacePointLists singleQueryPointLists;
 
+        AZ_Assert(false, "need to implement");
+
         for (auto& queryPosition : queryPositions)
         {
             SurfaceData::SurfacePointList tempSingleQueryPointList;

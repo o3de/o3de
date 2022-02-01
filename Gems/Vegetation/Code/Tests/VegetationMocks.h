@@ -336,8 +336,8 @@ namespace UnitTest
             SurfaceData::SurfacePoint outPoint;
             outPoint.m_position = m_outPosition;
             outPoint.m_normal = m_outNormal;
-            SurfaceData::AddMaxValueForMasks(outPoint.m_masks, m_outMasks);
-            surfacePointList.push_back(outPoint);
+            outPoint.m_masks = m_outMasks;
+            surfacePointList.AddSurfacePoint(AZStd::move(outPoint));
         }
 
         void GetSurfacePointsFromRegion([[maybe_unused]] const AZ::Aabb& inRegion, [[maybe_unused]] const AZ::Vector2 stepSize, [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
