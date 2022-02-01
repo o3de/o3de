@@ -10,7 +10,6 @@
 
 // Editor
 #include "PropertyCtrl.h"
-#include "PropertyResourceCtrl.h"
 #include "PropertyGenericCtrl.h"
 #include "PropertyMiscCtrl.h"
 #include "PropertyMotionCtrl.h"
@@ -21,7 +20,6 @@ void RegisterReflectedVarHandlers()
     if (!registered)
     {
         registered = true;
-        EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew FileResourceSelectorWidgetHandler());
         EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew SequencePropertyHandler());
         EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew SequenceIdPropertyHandler());
         EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew LocalStringPropertyHandler());
