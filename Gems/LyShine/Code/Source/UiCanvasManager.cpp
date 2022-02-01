@@ -6,7 +6,7 @@
  *
  */
 #include "UiCanvasManager.h"
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include "UiCanvasFileObject.h"
 #include "UiCanvasComponent.h"
@@ -997,33 +997,30 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 {
     bool onlyShowEnabledCanvases = (setting == 2) ? true : false;
 
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    float xOffset = 20.0f;
-    float yOffset = 20.0f;
+    float dpiScale = draw2d->GetViewportDpiScalingFactor();
+    float xOffset = 20.0f * dpiScale;
+    float yOffset = 20.0f * dpiScale;
 
     const int elementNameFieldLength = 20;
 
     auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
-
     float textOpacity = 1.0f;
-    float backgroundRectOpacity = 0.75f;
+    float backgroundRectOpacity = 0.0f; // 0.75f; // [GHI #6515] Reenable background rect
 
     const AZ::Vector3 white(1.0f, 1.0f, 1.0f);
     const AZ::Vector3 grey(0.5f, 0.5f, 0.5f);
     const AZ::Vector3 red(1.0f, 0.3f, 0.3f);
     const AZ::Vector3 blue(0.3f, 0.3f, 1.0f);
 
-    // If the viewport is narrow then a font size of 16 might be too large, so we use a size between 12 and 16 depending
-    // on the viewport width.
-    float fontSize(draw2d->GetViewportWidth() / 75.f);
-    fontSize = AZ::GetClamp(fontSize, 12.f, 16.f);
-    const float lineSpacing = fontSize;
+    const float fontSize = 8.0f;
+    const float lineSpacing = 20.0f * dpiScale;
 
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
     {
-        CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+        IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
         textOptions.color = color;
         AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
         AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
@@ -1155,15 +1152,15 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayDrawCallData() const
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
-    float xOffset = 20.0f;
-    float yOffset = 20.0f;
+    float dpiScale = draw2d->GetViewportDpiScalingFactor();
+    float xOffset = 20.0f * dpiScale;
+    float yOffset = 20.0f * dpiScale;
 
     auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
     float textOpacity = 1.0f;
-    float backgroundRectOpacity = 0.75f;
-    const float lineSpacing = 20.0f;
+    float backgroundRectOpacity = 0.0f; // 0.75f; // [GHI #6515] Reenable background rect
 
     const AZ::Vector3 white(1,1,1);
     const AZ::Vector3 red(1,0.3f,0.3f);
@@ -1171,16 +1168,19 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
     const AZ::Vector3 green(0.3f,1,0.3f);
     const AZ::Vector3 yellow(0.7f,0.7f,0.2f);
 
+    const float fontSize = 8.0f;
+    const float lineSpacing = 20.0f * dpiScale;
+
     // local function to write a line of text (with a background rect) and increment Y offset
     AZStd::function<void(const char*, const AZ::Vector3&)> WriteLine = [&](const char* buffer, const AZ::Vector3& color)
     {
-        CDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
+        IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
         textOptions.color = color;
-        AZ::Vector2 textSize = draw2d->GetTextSize(buffer, 16, &textOptions);
+        AZ::Vector2 textSize = draw2d->GetTextSize(buffer, fontSize, &textOptions);
         AZ::Vector2 rectTopLeft = AZ::Vector2(xOffset - 2, yOffset);
         AZ::Vector2 rectSize = AZ::Vector2(textSize.GetX() + 4, lineSpacing);
         draw2d->DrawImage(blackTexture, rectTopLeft, rectSize, backgroundRectOpacity);
-        draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), 16, textOpacity, &textOptions);
+        draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), fontSize, textOpacity, &textOptions);
         yOffset += lineSpacing;
     };
 
@@ -1486,7 +1486,7 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayElemBounds(int canvasIndexFilter) const
 {
-    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
+    IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     int canvasIndex = 0;
     for (auto canvas : m_loadedCanvases)

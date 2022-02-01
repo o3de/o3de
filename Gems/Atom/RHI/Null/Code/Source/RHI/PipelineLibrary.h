@@ -30,7 +30,7 @@ namespace AZ
             // RHI::PipelineLibrary
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineLibraryData* serializedData) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
-            RHI::ResultCode MergeIntoInternal([[maybe_unused]] AZStd::array_view<const RHI::PipelineLibrary*> libraries) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> libraries) override { return RHI::ResultCode::Success;}
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr;}
             //////////////////////////////////////////////////////////////////////////
         };

@@ -31,7 +31,7 @@ set(FILES
     Include/Atom/Feature/PostProcessing/PostProcessingConstants.h
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
-    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h
+    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyboxConstants.h
     Include/Atom/Feature/SkyBox/SkyBoxLUT.h
@@ -134,8 +134,6 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h
-    Source/DiffuseGlobalIllumination/DiffuseCompositePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseCompositePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGrid.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGrid.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.cpp
@@ -274,7 +272,9 @@ set(FILES
     Source/RayTracing/RayTracingPass.cpp
     Source/RayTracing/RayTracingPass.h
     Source/RayTracing/RayTracingPassData.h
+    Source/ReflectionProbe/ReflectionProbeFeatureProcessor.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
+    Source/ReflectionProbe/ReflectionProbe.h
     Source/ReflectionProbe/ReflectionProbe.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h

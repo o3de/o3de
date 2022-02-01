@@ -66,6 +66,7 @@ namespace AzToolsFramework
             m_tableModel = qobject_cast<AssetBrowserTableModel*>(model);
             AZ_Assert(m_tableModel, "Expecting AssetBrowserTableModel");
             m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
+            m_delegate->Init();
             AzQtComponents::TableView::setModel(model);
             connect(m_tableModel, &AssetBrowserTableModel::layoutChanged, this, &AssetBrowserTableView::layoutChangedSlot);
 

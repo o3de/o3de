@@ -89,6 +89,7 @@
 #include <LmbrCentral/Rendering/EditorCameraCorrectionBus.h>
 
 // Atom
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
@@ -454,9 +455,6 @@ void EditorViewportWidget::Update()
 
     // Render
     {
-        // TODO: Move out this logic to a controller and refactor to work with Atom
-        ProcessRenderLisneters(m_displayContext);
-
         m_displayContext.Flush2D();
 
         // Post Render Callback
@@ -585,11 +583,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
     case eNotify_OnCloseScene:
         m_renderViewport->SetScene(nullptr);
-        SetDefaultCamera();
         break;
 
-    case eNotify_OnEndSceneOpen:
+    case eNotify_OnEndLoad:
         UpdateScene();
+        SetDefaultCamera();
         break;
 
     case eNotify_OnBeginNewScene:
@@ -1030,8 +1028,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Safe Frame"), &gSettings.viewports.bShowSafeFrame);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Construction Plane"), &gSettings.snap.constructPlaneDisplay);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Trigger Bounds"), &gSettings.viewports.bShowTriggerBounds);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Icons"), &gSettings.viewports.bShowIcons, &gSettings.viewports.bShowSizeBasedIcons);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Size-based Icons"), &gSettings.viewports.bShowSizeBasedIcons, &gSettings.viewports.bShowIcons);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Helpers of Frozen Objects"), &gSettings.viewports.nShowFrozenHelpers);
 
     if (!m_predefinedAspectRatios.IsEmpty())
@@ -2329,7 +2325,26 @@ void EditorViewportWidget::UpdateScene()
         {
             AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
             m_renderViewport->SetScene(mainScene);
-            AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
+            auto viewportContext = m_renderViewport->GetViewportContext();
+            AZ::RPI::SceneNotificationBus::Handler::BusConnect(viewportContext->GetRenderScene()->GetId());
+
+            // Don't enable the render pipeline until a level has been loaded
+            // Also show/hide the RenderViewportWidget accordingly so that we get the
+            // expected gradient background when no level is loaded
+            auto renderPipeline = viewportContext->GetCurrentPipeline();
+            if (renderPipeline)
+            {
+                if (GetIEditor()->IsLevelLoaded())
+                {
+                    m_renderViewport->show();
+                    renderPipeline->AddToRenderTick();
+                }
+                else
+                {
+                    m_renderViewport->hide();
+                    renderPipeline->RemoveFromRenderTick();
+                }
+            }
         }
     }
 }

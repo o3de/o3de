@@ -93,7 +93,7 @@ namespace Terrain
             bool m_isDirty{ true };
         };
 
-        void RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution, float worldMinZ);
+        void RebuildSectorWireframe(WireframeSector& sector, const AZ::Vector2& gridResolution);
         void MarkDirtySectors(const AZ::Aabb& dirtyRegion);
         void DrawWorldBounds(AzFramework::DebugDisplayRequests& debugDisplay);
         void DrawWireframe(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay);

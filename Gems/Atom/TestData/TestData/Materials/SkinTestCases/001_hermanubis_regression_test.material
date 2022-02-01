@@ -1,0 +1,55 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/Skin.materialtype",
+    "parentMaterial": "",
+    "materialTypeVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.1277027577161789,
+                0.174273282289505,
+                0.29372090101242068,
+                1.0
+            ],
+            "textureMap": "Objects/Hermanubis/Hermanubis_bronze_BaseColor.png",
+            "useTexture": false
+        },
+        "detailLayerGroup": {
+            "baseColorDetailBlend": 0.4300000071525574,
+            "baseColorDetailMap": "TestData/Textures/cc0/Concrete019_1K_Color.jpg",
+            "enableBaseColor": true,
+            "enableDetailLayer": true,
+            "enableNormals": true,
+            "normalDetailFlipY": true,
+            "normalDetailMap": "TestData/Textures/cc0/Concrete019_1K_Normal.jpg",
+            "normalDetailStrength": 0.25999999046325686,
+            "textureMapUv": "Tiled"
+        },
+        "detailUV": {
+            "scale": 5.0
+        },
+        "normal": {
+            "flipY": true,
+            "textureMap": "Objects/Hermanubis/Hermanubis_Normal.png"
+        },
+        "subsurfaceScattering": {
+            "enableSubsurfaceScattering": true,
+            "influenceMap": "Objects/Hermanubis/Hermanubis_thickness.tif",
+            "scatterDistance": 15.0,
+            "subsurfaceScatterFactor": 0.4300000071525574,
+            "thicknessMap": "Objects/Hermanubis/Hermanubis_thickness.tif",
+            "transmissionAttenuation": 15.0,
+            "transmissionDistortion": 0.3499999940395355,
+            "transmissionMode": "ThickObject",
+            "transmissionPower": 16.399999618530275,
+            "transmissionScale": 0.10000000149011612,
+            "transmissionTint": [
+                1.0,
+                0.3182879388332367,
+                0.16388189792633058,
+                1.0
+            ],
+            "useInfluenceMap": false
+        }
+    }
+}

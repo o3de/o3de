@@ -46,14 +46,13 @@ namespace AZ
             ID3D12DeviceX* dx12Device = device.GetDevice();
 
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
-            AZStd::array_view<uint8_t> bytes;
+            AZStd::span<const uint8_t> bytes;
 
             bool shouldCreateLibFromSerializedData = true;
             if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
-                RHI::Factory::Get().IsPixModuleLoaded() ||
-                RHI::Factory::Get().UsingWarpDevice())
+                RHI::Factory::Get().IsPixModuleLoaded())
             {
-                // CreatePipelineLibrary api does not function properly if Renderdoc, Pix or Warp is enabled
+                // CreatePipelineLibrary api does not function properly if Renderdoc or Pix is enabled
                 shouldCreateLibFromSerializedData = false;
             }
 
@@ -215,13 +214,12 @@ namespace AZ
 #endif
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::array_view<const RHI::PipelineLibrary*> pipelineLibraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> pipelineLibraries)
         {
             if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
-                RHI::Factory::Get().IsPixModuleLoaded() ||
-                RHI::Factory::Get().UsingWarpDevice())
+                RHI::Factory::Get().IsPixModuleLoaded())
             {
-                // StorePipeline api does not function properly if RenderDoc, Pix or Warp is enabled
+                // StorePipeline api does not function properly if RenderDoc or Pix is enabled
                 return RHI::ResultCode::Fail;
             }
 
@@ -241,14 +239,14 @@ namespace AZ
                 }
             }
 #endif
-            return RHI::ResultCode::Success;           
+            return RHI::ResultCode::Success;
         }
 
         RHI::ConstPtr<RHI::PipelineLibraryData> PipelineLibrary::GetSerializedDataInternal() const
         {
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-     
+
             AZStd::vector<uint8_t> serializedData(m_library->GetSerializedSize());
 
             HRESULT hr = m_library->Serialize(serializedData.data(), serializedData.size());

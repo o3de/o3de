@@ -36,7 +36,6 @@ set(FILES
     Source/DebugDraw.cpp
     Source/DualQuatSkinDeformer.cpp
     Source/DualQuatSkinDeformer.h
-    Source/EMotionFX.h
     Source/EMotionFXConfig.h
     Source/EMotionFXManager.cpp
     Source/EMotionFXManager.h
@@ -144,6 +143,8 @@ set(FILES
     Source/TransformData.h
     Source/TriggerActionSetup.cpp
     Source/TriggerActionSetup.h
+    Source/Velocity.cpp
+    Source/Velocity.h
     Source/VertexAttributeLayer.cpp
     Source/VertexAttributeLayer.h
     Source/VertexAttributeLayerAbstractData.cpp

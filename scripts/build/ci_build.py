@@ -88,7 +88,7 @@ def build(build_config_filename, build_platform, build_type):
                 env_params[v] = build_params[v]
             print('    {} = {} {}'.format(v, env_params[v], '(environment override)' if existing_param else ''))
     print('--------------------------------------------------------------------------------', flush=True)
-    process_return = subprocess.run(build_cmd_path, cwd=cwd_dir, env=env_params)
+    process_return = subprocess.run([build_cmd_path], cwd=cwd_dir, env=env_params)
     print('--------------------------------------------------------------------------------')
     if process_return.returncode != 0:
         print('[ci_build] FAIL: Command {} returned {}'.format(build_cmd_path, process_return.returncode), flush=True)

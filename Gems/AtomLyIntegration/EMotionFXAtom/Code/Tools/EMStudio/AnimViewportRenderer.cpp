@@ -210,6 +210,20 @@ namespace EMStudio
         return m_frameworkScene;
     }
 
+    AZ::EntityId AnimViewportRenderer::GetEntityId() const
+    {
+        if (m_actorEntities.empty())
+        {
+            return AZ::EntityId();
+        }
+        return m_actorEntities[0]->GetId();
+    }
+
+    AzFramework::EntityContextId AnimViewportRenderer::GetEntityContextId() const
+    {
+        return m_entityContext->GetContextId();
+    }
+
     void AnimViewportRenderer::ResetEnvironment()
     {
         // Reset environment

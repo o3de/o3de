@@ -114,7 +114,8 @@ def create_dynamic_slice_vegetation_area(name, center_point, box_size_x, box_siz
     return spawner_entity
 
 
-def create_prefab_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, target_prefab):
+def create_temp_prefab_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, target_prefab):
+    """Creates a vegetation area using in-memory prefabs. Use when test is solely contained to Editor"""
     # Create a vegetation area entity to use as our test vegetation spawner
     spawner_entity = hydra.Entity(name)
     spawner_entity.create_entity(
@@ -148,6 +149,31 @@ def create_prefab_vegetation_area(name, center_point, box_size_x, box_size_y, bo
     return spawner_entity
 
 
+def create_prefab_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, prefab_path):
+    """Creates a vegetation area using on-disk spawnable prefabs. Use when test requires saving/loading in Launcher"""
+    # Create a vegetation area entity to use as our test vegetation spawner
+    prefab_asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", prefab_path, math.Uuid(),
+                                                   False)
+    spawner_entity = hydra.Entity(name)
+    spawner_entity.create_entity(
+        center_point,
+        ["Vegetation Layer Spawner", "Box Shape", "Vegetation Asset List"]
+    )
+    if spawner_entity.id.IsValid():
+        print(f"'{spawner_entity.name}' created")
+    spawner_entity.get_set_test(1, "Box Shape|Box Configuration|Dimensions", math.Vector3(box_size_x, box_size_y,
+                                                                                          box_size_z))
+
+    # Set the vegetation area to a prefab instance spawner with a specific prefab asset selected
+    descriptor = hydra.get_component_property_value(spawner_entity.components[2],
+                                                    'Configuration|Embedded Assets|[0]')
+    prefab_spawner = vegetation.PrefabInstanceSpawner()
+    prefab_spawner.SetPrefabAssetId(prefab_asset_id)
+    descriptor.spawner = prefab_spawner
+    spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
+    return spawner_entity
+
+
 def create_blocker_area(name, center_point, box_size_x, box_size_y, box_size_z):
     # Create a Vegetation Layer Blocker area
     blocker_entity = hydra.Entity(name)
@@ -160,6 +186,23 @@ def create_blocker_area(name, center_point, box_size_x, box_size_y, box_size_z):
     blocker_entity.get_set_test(1, "Box Shape|Box Configuration|Dimensions", math.Vector3(box_size_x, box_size_y,
                                                                                           box_size_z))
     return blocker_entity
+
+
+def create_empty_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z):
+    # Create a vegetation area entity to use as our test vegetation spawner
+    spawner_entity = EditorEntity.create_editor_entity_at(center_point, name=name)
+    spawner_entity.add_components(["Vegetation Layer Spawner", "Box Shape", "Vegetation Asset List"])
+    if spawner_entity.id.IsValid():
+        print(f"'{spawner_entity.get_name()}' created")
+    spawner_entity.components[1].set_component_property_value("Box Shape|Box Configuration|Dimensions",
+                                                              math.Vector3(box_size_x, box_size_y, box_size_z))
+
+    # Set the vegetation area to an empty spawner
+    empty_spawner = vegetation.EmptyInstanceSpawner()
+    descriptor = spawner_entity.components[2].get_component_property_value("Configuration|Embedded Assets|[0]")
+    descriptor.spawner = empty_spawner
+    spawner_entity.components[2].set_component_property_value("Configuration|Embedded Assets|[0]", descriptor)
+    return spawner_entity
 
 
 def validate_instance_count(center, radius, num_expected):

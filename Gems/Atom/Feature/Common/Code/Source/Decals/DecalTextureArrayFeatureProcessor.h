@@ -111,7 +111,7 @@ namespace AZ
             void CacheShaderIndices();
 
             // This call could fail (returning nullopt) if we run out of texture arrays
-            AZStd::optional<DecalLocation> AddMaterialToTextureArrays(const AZ::RPI::MaterialAsset* materialAsset);
+            AZStd::optional<DecalLocation> AddMaterialToTextureArrays(AZ::RPI::MaterialAsset* materialAsset);
 
             int FindTextureArrayWithSize(const RHI::Size& size) const;
             void RemoveMaterialFromDecal(const uint16_t decalIndex);

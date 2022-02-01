@@ -1975,7 +1975,7 @@ namespace AZ::IO
             AZ_Error("Archive", false, "OSAllocator is not ready. It cannot be used to allocate a MemoryBlock");
             return {};
         }
-        AZ::IAllocatorAllocate* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
+        AZ::IAllocator* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
         AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ new (allocator->Allocate(sizeof(AZ::IO::MemoryBlock), alignof(AZ::IO::MemoryBlock))) AZ::IO::MemoryBlock{AZ::IO::MemoryBlockDeleter{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get() }} };
         auto CreateFunc = [](size_t byteSize, size_t byteAlignment, const char* name)
         {

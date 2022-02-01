@@ -33,11 +33,6 @@ namespace ScriptCanvasEditor
 {
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
     {
-        if (source.IsDescriptionValid())
-        {
-            return source;
-        }
-
         AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
         if (assetSystem)
         {
@@ -171,7 +166,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void GraphStatisticsHelper::PopulateStatisticData(const Graph* editorGraph)
+    void GraphStatisticsHelper::PopulateStatisticData(const EditorGraph* editorGraph)
     {
         // Opportunistically use this time to refresh out node count array.
         m_nodeIdentifierCount.clear();

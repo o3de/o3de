@@ -23,6 +23,7 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 #include <EMotionFX/Source/ActorManager.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -428,6 +429,18 @@ namespace EMStudio
             if (commands[i].find("//") == 0)
             {
                 continue;
+            }
+
+            // Temp solution after we refactor / remove the actor manager.
+            // We only need to create the actor instance by ourselves when openGLRenderPlugin is present.
+            // Atom render viewport will create actor instance along with the actor component.
+            PluginManager* pluginManager = GetPluginManager();
+            if (!pluginManager->FindActivePlugin(static_cast<uint32>(OpenGLRenderPlugin::CLASS_ID)))
+            {
+                if (commands[i].find("CreateActorInstance") == 0)
+                {
+                    continue;
+                }
             }
 
             AzFramework::StringFunc::Replace(commands[i], "@products@", assetCacheFolder.c_str());

@@ -430,14 +430,14 @@ namespace AWSMetrics
         ReplaceLocalFileIOWithMockIO();
     }
 
-    TEST_F(MetricsManagerTest, OnResponseReceived_WithResponseRecords_RetryFailedMetrics)
+    TEST_F(MetricsManagerTest, OnResponseReceived_WithResponseEntries_RetryFailedMetrics)
     {
         // Reset the config file to change the max queue size setting.
         ResetClientConfig(false, (double)TestMetricsEventSizeInBytes * (MaxNumMetricsEvents + 1) / MbToBytes,
             DefaultFlushPeriodInSeconds, 1);
 
         MetricsQueue metricsEvents;
-        ServiceAPI::MetricsEventSuccessResponsePropertyEvents responseRecords;
+        ServiceAPI::PostMetricsEventsResponseEntries responseEntries;
         for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
             MetricsEvent newEvent;
@@ -445,19 +445,19 @@ namespace AWSMetrics
 
             metricsEvents.AddMetrics(newEvent);
 
-            ServiceAPI::MetricsEventSuccessResponseRecord responseRecord;
+            ServiceAPI::PostMetricsEventsResponseEntry responseEntry;
             if (index % 2 == 0)
             {
-                responseRecord.errorCode = "Error";
+                responseEntry.m_errorCode = "Error";
             }
             else
             {
-                responseRecord.result = "Ok";
+                responseEntry.m_result = "Ok";
             }
-            responseRecords.emplace_back(responseRecord);
+            responseEntries.emplace_back(responseEntry);
         }
 
-        m_metricsManager->OnResponseReceived(metricsEvents, responseRecords);
+        m_metricsManager->OnResponseReceived(metricsEvents, responseEntries);
 
         const GlobalStatistics& stats = m_metricsManager->GetGlobalStatistics();
         EXPECT_EQ(stats.m_numEvents, MaxNumMetricsEvents);
@@ -471,7 +471,7 @@ namespace AWSMetrics
         ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MaxNumMetricsEvents / 2);
     }
 
-    TEST_F(MetricsManagerTest, OnResponseReceived_NoResponseRecords_RetryAllMetrics)
+    TEST_F(MetricsManagerTest, OnResponseReceived_NoResponseEntries_RetryAllMetrics)
     {
         // Reset the config file to change the max queue size setting.
         ResetClientConfig(false, (double)TestMetricsEventSizeInBytes * (MaxNumMetricsEvents + 1) / MbToBytes,
