@@ -17,6 +17,8 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::SurfaceData.Static
         PUBLIC
             AZ::AzCore
             AZ::AzFramework

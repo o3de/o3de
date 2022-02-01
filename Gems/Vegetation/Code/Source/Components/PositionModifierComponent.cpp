@@ -317,19 +317,40 @@ namespace Vegetation
             }
 
             //get the intersection data at the new position
-            m_points.clear();
+            m_points.Clear();
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, instanceData.m_position, m_surfaceTagsToSnapToCombined, m_points);
-            if (!m_points.empty())
-            {
-                //sort the intersection data by distance from the new position in case there are multiple intersections at different or unrelated heights
-                AZStd::sort(m_points.begin(), m_points.end(), [&instanceData](const SurfaceData::SurfacePoint& a, const SurfaceData::SurfacePoint& b)
+
+            // Get the point with the closest distance from the new position in case there are multiple intersections at different or
+            // unrelated heights
+            float closestPointDistanceSq = AZStd::numeric_limits<float>::max();
+            SurfaceData::SurfacePoint closestPoint;
+            bool pointFound = false;
+            m_points.EnumeratePoints(
+                [instanceData, &pointFound, &closestPoint, &closestPointDistanceSq](const SurfaceData::SurfacePoint& point) -> bool
                 {
-                    return a.m_position.GetDistanceSq(instanceData.m_position) < b.m_position.GetDistanceSq(instanceData.m_position);
+                    float distanceSq = point.m_position.GetDistanceSq(instanceData.m_position);
+                    if (!pointFound)
+                    {
+                        closestPoint = point;
+                        pointFound = true;
+                        closestPointDistanceSq = distanceSq;
+                    }
+                    else
+                    {
+                        if (distanceSq < closestPointDistanceSq)
+                        {
+                            closestPoint = point;
+                            closestPointDistanceSq = distanceSq;
+                        }
+                    }
+                    return true;
                 });
 
-                instanceData.m_position = m_points[0].m_position;
-                instanceData.m_normal = m_points[0].m_normal;
-                instanceData.m_masks = m_points[0].m_masks;
+            if (pointFound)
+            {
+                instanceData.m_position = closestPoint.m_position;
+                instanceData.m_normal = closestPoint.m_normal;
+                instanceData.m_masks = closestPoint.m_masks;
             }
         }
 

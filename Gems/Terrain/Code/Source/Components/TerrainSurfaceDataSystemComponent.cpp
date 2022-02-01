@@ -177,7 +177,7 @@ namespace Terrain
         const AZ::Crc32 terrainTag = isHole ? Constants::s_terrainHoleTagCrc : Constants::s_terrainTagCrc;
         point.m_masks[terrainTag] = 1.0f;
 
-        surfacePointList.push_back(AZStd::move(point));
+        surfacePointList.AddSurfacePoint(AZStd::move(point));
     }
 
     AZ::Aabb TerrainSurfaceDataSystemComponent::GetSurfaceAabb() const

@@ -242,7 +242,7 @@ namespace SurfaceData
             point.m_position = hitPosition;
             point.m_normal = hitNormal;
             point.m_masks = m_newPointWeights;
-            surfacePointList.push_back(AZStd::move(point));
+            surfacePointList.AddSurfacePoint(AZStd::move(point));
         }
     }
 
@@ -253,19 +253,21 @@ namespace SurfaceData
         if (m_colliderBounds.IsValid() && !m_configuration.m_modifierTags.empty())
         {
             const AZ::EntityId entityId = GetEntityId();
-            for (auto& point : surfacePointList)
-            {
-                if (point.m_entityId != entityId && m_colliderBounds.Contains(point.m_position))
+            surfacePointList.EnumeratePoints(
+                [this, entityId](SurfacePoint& point) -> bool
                 {
-                    AZ::Vector3 hitPosition;
-                    AZ::Vector3 hitNormal;
-                    constexpr bool queryPointOnly = true;
-                    if (DoRayTrace(point.m_position, queryPointOnly, hitPosition, hitNormal))
+                    if (point.m_entityId != entityId && m_colliderBounds.Contains(point.m_position))
                     {
-                        AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                        AZ::Vector3 hitPosition;
+                        AZ::Vector3 hitNormal;
+                        constexpr bool queryPointOnly = true;
+                        if (DoRayTrace(point.m_position, queryPointOnly, hitPosition, hitNormal))
+                        {
+                            AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                        }
                     }
-                }
-            }
+                    return true;
+                });
         }
     }
 

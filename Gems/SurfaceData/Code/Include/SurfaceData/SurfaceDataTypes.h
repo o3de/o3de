@@ -33,7 +33,59 @@ namespace SurfaceData
         SurfaceTagWeightMap m_masks;
     };
 
-    using SurfacePointList = AZStd::vector<SurfacePoint>;
+    class SurfacePointList
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(SurfacePointList, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(SurfacePointList, "{DBA02848-2131-4279-BDEF-3581B76AB736}");
+
+        SurfacePointList() = default;
+        ~SurfacePointList() = default;
+
+        //! Constructor for creating a SurfacePointList from a list of SurfacePoint data.
+        //! Primarily used as a convenience for unit tests.
+        //! @param surfacePoints - An initial set of SurfacePoint points to store in the SurfacePointList.
+        SurfacePointList(AZStd::initializer_list<const SurfacePoint> surfacePoints);
+
+        //! Add a surface point to the list.
+        //! @param surfacePoint - The point to add to the list.
+        void AddSurfacePoint(const SurfacePoint& surfacePoint);
+
+        //! Add a surface point to the list.
+        //! @param surfacePoint - The point to add to the list. It will be moved, so surfacePoint will no longer be valid after this call.
+        void AddSurfacePoint(SurfacePoint&& surfacePoint);
+
+        //! Clear the surface point list.
+        void Clear();
+
+        //! Preallocate space in the list based on the maximum number of output points per input point we can generate.
+        //! @param maxPointsPerInput - The maximum number of output points per input point.
+        void ReserveSpace(size_t maxPointsPerInput);
+
+        //! Check if the surface point list is empty.
+        //! @return - true if empty, false if it contains points.
+        bool IsEmpty() const;
+
+        //! Get the size of the surface point list.
+        //! @return - The number of valid points in the list.
+        size_t GetSize() const;
+
+        void EnumeratePoints(AZStd::function<bool(SurfacePoint&)> pointCallback);
+        void EnumeratePoints(AZStd::function<bool(const SurfacePoint&)> pointCallback) const;
+
+        const SurfacePoint& GetHighestSurfacePoint() const;
+
+        void FilterPoints(const SurfaceTagVector& desiredTags);
+        void SortAndCombineNeighboringPoints();
+
+    protected:
+
+        AZStd::vector<SurfacePoint> m_surfacePointList;
+
+        // Controls whether we combine neighboring points and sort by height when adding points, or as a post-process step.
+        bool m_sortAndCombineOnPointInsertion{ true };
+    };
+
     using SurfacePointLists = AZStd::vector<SurfacePointList>;
 
     struct SurfaceDataRegistryEntry

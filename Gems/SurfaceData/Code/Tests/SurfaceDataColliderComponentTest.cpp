@@ -155,12 +155,17 @@ namespace UnitTest
                                                               queryPoint, pointList);
             if (pointOnProvider)
             {
-                ASSERT_TRUE(pointList.size() == 1);
-                EXPECT_TRUE(SurfacePointsAreEqual(pointList[0], expectedOutput));
+                ASSERT_EQ(pointList.GetSize(), 1);
+                pointList.EnumeratePoints(
+                    [this, expectedOutput](SurfaceData::SurfacePoint& point) -> bool
+                    {
+                        EXPECT_TRUE(SurfacePointsAreEqual(point, expectedOutput));
+                        return true;
+                    });
             }
             else
             {
-                EXPECT_TRUE(pointList.empty());
+                EXPECT_TRUE(pointList.IsEmpty());
             }
         }
 
@@ -192,10 +197,15 @@ namespace UnitTest
 
             // Call ModifySurfacePoints and verify the results
             SurfaceData::SurfacePointList pointList;
-            pointList.emplace_back(input);
+            pointList.AddSurfacePoint(input);
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
-            ASSERT_TRUE(pointList.size() == 1);
-            EXPECT_TRUE(SurfacePointsAreEqual(pointList[0], expectedOutput));
+            ASSERT_EQ(pointList.GetSize(), 1);
+            pointList.EnumeratePoints(
+                [this, expectedOutput](SurfaceData::SurfacePoint& point) -> bool
+                {
+                    EXPECT_TRUE(SurfacePointsAreEqual(point, expectedOutput));
+                    return true;
+                });
         }
     };
 

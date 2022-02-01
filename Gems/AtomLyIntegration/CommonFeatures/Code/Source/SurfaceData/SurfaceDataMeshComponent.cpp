@@ -183,7 +183,7 @@ namespace SurfaceData
             point.m_position = hitPosition;
             point.m_normal = hitNormal;
             point.m_masks = m_newPointWeights;
-            surfacePointList.push_back(AZStd::move(point));
+            surfacePointList.AddSurfacePoint(AZStd::move(point));
         }
     }
 

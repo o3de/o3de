@@ -83,10 +83,15 @@ namespace UnitTest
             EXPECT_TRUE(modifierHandle != SurfaceData::InvalidSurfaceDataRegistryHandle);
 
             // Call ModifySurfacePoints and verify the results
-            SurfaceData::SurfacePointList pointList;
-            pointList.emplace_back(input);
+            SurfaceData::SurfacePointList pointList = { { input } };
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
-            EXPECT_TRUE(SurfacePointsAreEqual(pointList[0],expectedOutput));
+            ASSERT_EQ(pointList.GetSize(), 1);
+            pointList.EnumeratePoints(
+                [this, expectedOutput](const SurfaceData::SurfacePoint& point)
+                {
+                    EXPECT_TRUE(SurfacePointsAreEqual(point, expectedOutput));
+                    return true;
+                });
         }
 
 

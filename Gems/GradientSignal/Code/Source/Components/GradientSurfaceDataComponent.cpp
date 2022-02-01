@@ -225,39 +225,40 @@ namespace GradientSignal
             }
 
             const AZ::EntityId entityId = GetEntityId();
-            for (auto& point : surfacePointList)
-            {
-                if (point.m_entityId != entityId)
+            surfacePointList.EnumeratePoints(
+                [this, entityId, validShapeBounds, shapeConstraintBounds](SurfaceData::SurfacePoint& point) -> bool
                 {
-                    bool inBounds = true;
-
-                    // If we have an optional shape bounds, verify the point exists inside of it before querying the gradient value.
-                    // Otherwise, assume an unbounded surface modifier and allow *all* points through the shape check.
-                    if (validShapeBounds)
+                    if (point.m_entityId != entityId)
                     {
-                        inBounds = false;
-                        if (shapeConstraintBounds.Contains(point.m_position))
+                        bool inBounds = true;
+
+                        // If we have an optional shape bounds, verify the point exists inside of it before querying the gradient value.
+                        // Otherwise, assume an unbounded surface modifier and allow *all* points through the shape check.
+                        if (validShapeBounds)
                         {
-                            LmbrCentral::ShapeComponentRequestsBus::EventResult(inBounds, m_configuration.m_shapeConstraintEntityId,
-                                                                                &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, point.m_position);
+                            inBounds = false;
+                            if (shapeConstraintBounds.Contains(point.m_position))
+                            {
+                                LmbrCentral::ShapeComponentRequestsBus::EventResult(
+                                    inBounds, m_configuration.m_shapeConstraintEntityId,
+                                    &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, point.m_position);
+                            }
+                        }
+
+                        // If the point is within our allowed shape bounds, verify that it meets the gradient thresholds.
+                        // If so, then add the value to the surface tags.
+                        if (inBounds)
+                        {
+                            const GradientSampleParams sampleParams = { point.m_position };
+                            const float value = m_gradientSampler.GetValue(sampleParams);
+                            if (value >= m_configuration.m_thresholdMin && value <= m_configuration.m_thresholdMax)
+                            {
+                                SurfaceData::AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, value);
+                            }
                         }
                     }
-
-                    // If the point is within our allowed shape bounds, verify that it meets the gradient thresholds.
-                    // If so, then add the value to the surface tags.
-                    if (inBounds)
-                    {
-                        const GradientSampleParams sampleParams = { point.m_position };
-                        const float value = m_gradientSampler.GetValue(sampleParams);
-                        if (value >= m_configuration.m_thresholdMin &&
-                            value <= m_configuration.m_thresholdMax)
-                        {
-                            SurfaceData::AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, value);
-                        }
-                    }
-
-                }
-            }
+                    return true;
+                });
         }
     }
 

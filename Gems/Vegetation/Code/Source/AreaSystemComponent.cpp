@@ -1127,16 +1127,18 @@ namespace Vegetation
         uint claimIndex = 0;
         for (auto& availablePoints : availablePointsPerPosition)
         {
-            for (auto& surfacePoint : availablePoints)
-            {
-                sectorInfo.m_baseContext.m_availablePoints.push_back();
-                ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();
-                claimPoint.m_handle = CreateClaimHandle(sectorInfo, ++claimIndex);
-                claimPoint.m_position = surfacePoint.m_position;
-                claimPoint.m_normal = surfacePoint.m_normal;
-                claimPoint.m_masks = surfacePoint.m_masks;
-                SurfaceData::AddMaxValueForMasks(sectorInfo.m_baseContext.m_masks, surfacePoint.m_masks);
-            }
+            availablePoints.EnumeratePoints(
+                [this, &sectorInfo, &claimIndex](const SurfaceData::SurfacePoint& surfacePoint) -> bool
+                {
+                    sectorInfo.m_baseContext.m_availablePoints.push_back();
+                    ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();
+                    claimPoint.m_handle = CreateClaimHandle(sectorInfo, ++claimIndex);
+                    claimPoint.m_position = surfacePoint.m_position;
+                    claimPoint.m_normal = surfacePoint.m_normal;
+                    claimPoint.m_masks = surfacePoint.m_masks;
+                    SurfaceData::AddMaxValueForMasks(sectorInfo.m_baseContext.m_masks, surfacePoint.m_masks);
+                    return true;
+                });
         }
     }
 

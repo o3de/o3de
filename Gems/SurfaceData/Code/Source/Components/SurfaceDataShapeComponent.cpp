@@ -160,7 +160,7 @@ namespace SurfaceData
                 point.m_position = rayOrigin + intersectionDistance * rayDirection;
                 point.m_normal = AZ::Vector3::CreateAxisZ();
                 point.m_masks = m_newPointWeights;
-                surfacePointList.push_back(AZStd::move(point));
+                surfacePointList.AddSurfacePoint(AZStd::move(point));
             }
         }
     }
@@ -176,17 +176,19 @@ namespace SurfaceData
                 GetEntityId(),
                 [entityId, this, &surfacePointList](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
                 {
-                    for (auto& point : surfacePointList)
-                    {
-                        if (point.m_entityId != entityId && m_shapeBounds.Contains(point.m_position))
+                    surfacePointList.EnumeratePoints(
+                        [entityId, this, shape](SurfacePoint& point) -> bool
                         {
-                            bool inside = shape->IsPointInside(point.m_position);
-                            if (inside)
+                            if (point.m_entityId != entityId && m_shapeBounds.Contains(point.m_position))
                             {
-                                AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                                bool inside = shape->IsPointInside(point.m_position);
+                                if (inside)
+                                {
+                                    AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                                }
                             }
-                        }
-                    }
+                            return true;
+                        });
                 });
         }
     }

@@ -234,7 +234,7 @@ namespace GradientSignal
                 // For each position, call GetSurfacePoints() and turn the height into a 0-1 value based on our min/max altitudes.
                 for (size_t index = 0; index < positions.size(); index++)
                 {
-                    points.clear();
+                    points.Clear();
                     surfaceDataRequests->GetSurfacePoints(positions[index], m_configuration.m_surfaceTagsToSample, points);
                     outValues[index] = CalculateAltitudeRatio(points, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
                 }
