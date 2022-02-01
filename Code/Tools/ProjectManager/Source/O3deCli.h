@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <PythonBindingsInterface.h>
+#include <O3deCliInterface.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/parallel/semaphore.h>
 
@@ -21,15 +21,15 @@
 
 namespace O3DE::ProjectManager
 {
-    class PythonBindings
-        : public PythonBindingsInterface::Registrar
+    class O3deCli
+        : public O3deCliInterface::Registrar
     {
     public:
-        PythonBindings() = default;
-        PythonBindings(const AZ::IO::PathView& enginePath);
-        ~PythonBindings() override;
+        O3deCli() = default;
+        O3deCli(const AZ::IO::PathView& enginePath);
+        ~O3deCli() override;
 
-        // PythonBindings overrides
+        // O3deCli overrides
         bool PythonStarted() override;
         bool StartPython() override;
 
@@ -77,7 +77,7 @@ namespace O3DE::ProjectManager
         void ClearErrorStrings() override;
 
     private:
-        AZ_DISABLE_COPY_MOVE(PythonBindings);
+        AZ_DISABLE_COPY_MOVE(O3deCli);
 
         AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
         bool ExecuteWithLock(AZStd::function<void()> executionCallback);
@@ -88,7 +88,7 @@ namespace O3DE::ProjectManager
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool StopPython();
-        IPythonBindings::ErrorPair GetErrorPair();
+        IO3deCli::ErrorPair GetErrorPair();
 
 
         bool m_pythonStarted = false;

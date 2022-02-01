@@ -8,7 +8,7 @@
 
 #include <CreateProjectCtrl.h>
 #include <ScreensCtrl.h>
-#include <PythonBindingsInterface.h>
+#include <O3deCliInterface.h>
 #include <NewProjectSettingsScreen.h>
 #include <ScreenHeaderWidget.h>
 #include <GemCatalog/GemModel.h>
@@ -263,11 +263,11 @@ namespace O3DE::ProjectManager
                 ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
                 QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
 
-                auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
+                auto result = O3deCliInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
                 if (result.IsSuccess())
                 {
                     // automatically register the project
-                    PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
+                    O3deCliInterface::Get()->AddProject(projectInfo.m_path);
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
                     const GemCatalogScreen::EnableDisableGemsResult gemResult = m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);

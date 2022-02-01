@@ -12,7 +12,7 @@
 #include <GemRepo/GemRepoModel.h>
 #include <GemRepo/GemRepoAddDialog.h>
 #include <GemRepo/GemRepoInspector.h>
-#include <PythonBindingsInterface.h>
+#include <O3deCliInterface.h>
 #include <ProjectManagerDefs.h>
 #include <ProjectUtils.h>
 #include <AdjustableHeaderWidget.h>
@@ -95,7 +95,7 @@ namespace O3DE::ProjectManager
                 return;
             }
 
-            auto addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
+            auto addGemRepoResult = O3deCliInterface::Get()->AddGemRepo(repoUri);
             if (addGemRepoResult.IsSuccess())
             {
                 Reinit();
@@ -121,7 +121,7 @@ namespace O3DE::ProjectManager
         if (warningResult == QMessageBox::Yes)
         {
             QString repoUri = m_gemRepoModel->GetRepoUri(modelIndex);
-            bool removeGemRepoResult = PythonBindingsInterface::Get()->RemoveGemRepo(repoUri);
+            bool removeGemRepoResult = O3deCliInterface::Get()->RemoveGemRepo(repoUri);
             if (removeGemRepoResult)
             {
                 Reinit();
@@ -138,7 +138,7 @@ namespace O3DE::ProjectManager
 
     void GemRepoScreen::HandleRefreshAllButton()
     {
-        bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos();
+        bool refreshResult = O3deCliInterface::Get()->RefreshAllGemRepos();
         Reinit();
         emit OnRefresh();
 
@@ -153,7 +153,7 @@ namespace O3DE::ProjectManager
     {
         const QString repoUri = m_gemRepoModel->GetRepoUri(modelIndex);
 
-        AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(repoUri);
+        AZ::Outcome<void, AZStd::string> refreshResult = O3deCliInterface::Get()->RefreshGemRepo(repoUri);
         if (refreshResult.IsSuccess())
         {
             Reinit();
@@ -170,7 +170,7 @@ namespace O3DE::ProjectManager
 
     void GemRepoScreen::FillModel()
     {
-        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> allGemRepoInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoInfos();
+        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> allGemRepoInfosResult = O3deCliInterface::Get()->GetAllGemRepoInfos();
         if (allGemRepoInfosResult.IsSuccess())
         {
             // Add all available repos to the model

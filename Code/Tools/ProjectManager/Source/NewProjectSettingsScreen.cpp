@@ -8,7 +8,7 @@
 
 #include <NewProjectSettingsScreen.h>
 #include <ProjectManagerDefs.h>
-#include <PythonBindingsInterface.h>
+#include <O3deCliInterface.h>
 #include <FormBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
 #include <TemplateButtonWidget.h>
@@ -96,7 +96,7 @@ namespace O3DE::ProjectManager
                     }
                 });
 
-            auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
+            auto templatesResult = O3deCliInterface::Get()->GetProjectTemplates();
             if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
             {
                 m_templates = templatesResult.GetValue();
@@ -152,7 +152,7 @@ namespace O3DE::ProjectManager
     QString NewProjectSettingsScreen::GetDefaultProjectPath()
     {
         QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        AZ::Outcome<EngineInfo> engineInfoResult = O3deCliInterface::Get()->GetEngineInfo();
         if (engineInfoResult.IsSuccess())
         {
             QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));

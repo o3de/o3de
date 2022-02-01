@@ -8,7 +8,7 @@
 
 #include <ProjectBuilderWorker.h>
 #include <ProjectManagerDefs.h>
-#include <PythonBindingsInterface.h>
+#include <O3deCliInterface.h>
 #include <ProjectUtils.h>
 
 #include <QDir>
@@ -94,7 +94,7 @@ namespace O3DE::ProjectManager
 
         EngineInfo engineInfo;
 
-        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        AZ::Outcome<EngineInfo> engineInfoResult = O3deCliInterface::Get()->GetEngineInfo();
         if (engineInfoResult.IsSuccess())
         {
             engineInfo = engineInfoResult.GetValue();

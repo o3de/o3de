@@ -69,9 +69,9 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManager", false, "Failed to init logging");
         }
 
-        m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
+        m_o3deCli = AZStd::make_unique<O3deCli>(GetEngineRoot());
 
-        if (!m_pythonBindings->PythonStarted())
+        if (!m_o3deCli->PythonStarted())
         {
             if (!interactive)
             {
@@ -97,7 +97,7 @@ namespace O3DE::ProjectManager
                                     "Please rename your python/runtime folder and then run "
                                     "<pre>%1</pre>").arg(GetPythonScriptPath));
                 }
-                else if (!m_pythonBindings->StartPython())
+                else if (!m_o3deCli->StartPython())
                 {
                     QMessageBox::critical(
                         nullptr, QObject::tr("Failed to start Python"),
@@ -106,7 +106,7 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            if (!m_pythonBindings->PythonStarted())
+            if (!m_o3deCli->PythonStarted())
             {
                 return false;
             }
@@ -176,7 +176,7 @@ namespace O3DE::ProjectManager
     bool Application::RegisterEngine(bool interactive)
     {
         // get this engine's info
-        auto engineInfoOutcome = m_pythonBindings->GetEngineInfo();
+        auto engineInfoOutcome = m_o3deCli->GetEngineInfo();
         if (!engineInfoOutcome)
         {
             if (interactive)
@@ -199,7 +199,7 @@ namespace O3DE::ProjectManager
         }
 
         // check if an engine with this name is already registered and has a valid engine.json
-        auto existingEngineResult = m_pythonBindings->GetEngineInfo(engineInfo.m_name);
+        auto existingEngineResult = m_o3deCli->GetEngineInfo(engineInfo.m_name);
         if (existingEngineResult)
         {
             if (!interactive)
@@ -235,7 +235,7 @@ namespace O3DE::ProjectManager
         // always force register in case there is an engine registered in o3de_manifest.json, but
         // the engine.json is missing or corrupt in which case GetEngineInfo() fails
         constexpr bool forceRegistration = true;
-        auto registerOutcome = m_pythonBindings->SetEngineInfo(engineInfo, forceRegistration);
+        auto registerOutcome = m_o3deCli->SetEngineInfo(engineInfo, forceRegistration);
         if (!registerOutcome)
         {
             if (interactive)
@@ -261,7 +261,7 @@ namespace O3DE::ProjectManager
             m_entity = nullptr;
         }
 
-        m_pythonBindings.reset();
+        m_o3deCli.reset();
         m_mainWindow.reset();
         m_app.reset();
     }

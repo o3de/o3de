@@ -10,7 +10,7 @@
 
 #include <ProjectManagerDefs.h>
 #include <ProjectButtonWidget.h>
-#include <PythonBindingsInterface.h>
+#include <O3deCliInterface.h>
 #include <ProjectUtils.h>
 #include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>
@@ -206,7 +206,7 @@ namespace O3DE::ProjectManager
 
         // Get all projects and create a vertical scrolling list of them
         // Sort building and queued projects first
-        auto projectsResult = PythonBindingsInterface::Get()->GetProjects();
+        auto projectsResult = O3deCliInterface::Get()->GetProjects();
         if (projectsResult.IsSuccess() && !projectsResult.GetValue().isEmpty())
         {
             QVector<ProjectInfo> projectsVector = projectsResult.GetValue();
@@ -593,7 +593,7 @@ namespace O3DE::ProjectManager
 
     bool ProjectsScreen::ShouldDisplayFirstTimeContent()
     {
-        auto projectsResult = PythonBindingsInterface::Get()->GetProjects();
+        auto projectsResult = O3deCliInterface::Get()->GetProjects();
         if (!projectsResult.IsSuccess() || projectsResult.GetValue().isEmpty())
         {
             return true;
@@ -611,7 +611,7 @@ namespace O3DE::ProjectManager
 
     bool ProjectsScreen::RemoveInvalidProjects()
     {
-        return PythonBindingsInterface::Get()->RemoveInvalidProjects();
+        return O3deCliInterface::Get()->RemoveInvalidProjects();
     }
 
     bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)

@@ -39,9 +39,11 @@ set(FILES
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
     Source/ProjectTemplateInfo.cpp
-    Source/PythonBindings.h
-    Source/PythonBindings.cpp
-    Source/PythonBindingsInterface.h
+    Source/PythonCliBindings.h
+    Source/PythonCliBindings.cpp
+    Source/O3deCli.h
+    Source/O3deCli.cpp
+    Source/O3deCliInterface.h
     Source/ProjectInfo.h
     Source/ProjectInfo.cpp
     Source/ProjectUtils.h

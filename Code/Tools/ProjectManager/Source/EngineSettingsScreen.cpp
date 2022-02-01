@@ -9,7 +9,7 @@
 #include <EngineSettingsScreen.h>
 #include <FormLineEditWidget.h>
 #include <FormFolderBrowseEditWidget.h>
-#include <PythonBindingsInterface.h>
+#include <O3deCliInterface.h>
 #include <PathValidator.h>
 #include <ProjectUtils.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
@@ -39,7 +39,7 @@ namespace O3DE::ProjectManager
 
         EngineInfo engineInfo;
 
-        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        AZ::Outcome<EngineInfo> engineInfoResult = O3deCliInterface::Get()->GetEngineInfo();
         if (engineInfoResult.IsSuccess())
         {
             engineInfo = engineInfoResult.GetValue();
@@ -105,7 +105,7 @@ namespace O3DE::ProjectManager
     void EngineSettingsScreen::OnTextChanged()
     {
         // save engine settings
-        auto engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        auto engineInfoResult = O3deCliInterface::Get()->GetEngineInfo();
         if (engineInfoResult.IsSuccess())
         {
             EngineInfo engineInfo;
@@ -115,7 +115,7 @@ namespace O3DE::ProjectManager
             engineInfo.m_defaultGemsFolder      = m_defaultGems->lineEdit()->text();
             engineInfo.m_defaultTemplatesFolder = m_defaultProjectTemplates->lineEdit()->text();
 
-            auto result = PythonBindingsInterface::Get()->SetEngineInfo(engineInfo);
+            auto result = O3deCliInterface::Get()->SetEngineInfo(engineInfo);
             if (!result)
             {
                 ProjectUtils::DisplayDetailedError(tr("Failed to save engine settings"), result, this);

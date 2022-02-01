@@ -7,7 +7,7 @@
  */
 
 #include <GemRepo/GemRepoModel.h>
-#include <PythonBindings.h>
+#include <O3deCli.h>
 
 #include <QItemSelectionModel>
 #include <QMessageBox>
@@ -120,7 +120,7 @@ namespace O3DE::ProjectManager
     {
         QString repoUri = GetRepoUri(modelIndex);
 
-        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& gemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForRepo(repoUri);
+        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& gemInfosResult = O3deCliInterface::Get()->GetGemInfosForRepo(repoUri);
         if (gemInfosResult.IsSuccess())
         {
             return gemInfosResult.GetValue();

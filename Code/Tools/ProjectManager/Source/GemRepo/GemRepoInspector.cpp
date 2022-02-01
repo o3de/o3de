@@ -8,7 +8,7 @@
 
 #include <GemRepo/GemRepoInspector.h>
 #include <GemRepo/GemRepoItemDelegate.h>
-#include <PythonBindingsInterface.h>
+#include <O3deCliInterface.h>
 
 #include <QFrame>
 #include <QLabel>

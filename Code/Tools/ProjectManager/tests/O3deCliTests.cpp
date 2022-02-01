@@ -10,42 +10,42 @@
 #include <AzTest/Utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <PythonBindings.h>
+#include <O3deCli.h>
 #include <ProjectManager_Test_Traits_Platform.h>
 
 #include <QDir>
 
 namespace O3DE::ProjectManager
 {
-    class PythonBindingsTests 
+    class O3deCliTests 
         : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
 
-        PythonBindingsTests()
+        O3deCliTests()
         {
             const AZStd::string engineRootPath{ AZ::Test::GetEngineRootPath() };
-            m_pythonBindings = AZStd::make_unique<PythonBindings>(AZ::IO::PathView(engineRootPath));
+            m_o3deCli = AZStd::make_unique<O3deCli>(AZ::IO::PathView(engineRootPath));
         }
 
-        ~PythonBindingsTests()
+        ~O3deCliTests()
         {
-            m_pythonBindings.reset();
+            m_o3deCli.reset();
         }
 
-        AZStd::unique_ptr<ProjectManager::PythonBindings> m_pythonBindings;
+        AZStd::unique_ptr<ProjectManager::O3deCli> m_o3deCli;
     };
 
-    TEST_F(PythonBindingsTests, PythonBindings_Start_Python_Succeeds)
+    TEST_F(O3deCliTests, O3deCli_Start_Python_Succeeds)
     {
-        EXPECT_TRUE(m_pythonBindings->PythonStarted());
+        EXPECT_TRUE(m_o3deCli->PythonStarted());
     }
 
-    TEST_F(PythonBindingsTests, PythonBindings_Create_Project_Succeeds)
+    TEST_F(O3deCliTests, O3deCli_Create_Project_Succeeds)
     {
-        ASSERT_TRUE(m_pythonBindings->PythonStarted());
+        ASSERT_TRUE(m_o3deCli->PythonStarted());
 
-        auto templateResults = m_pythonBindings->GetProjectTemplates();
+        auto templateResults = m_o3deCli->GetProjectTemplates();
         ASSERT_TRUE(templateResults.IsSuccess());
 
         QVector<ProjectTemplateInfo> templates = templateResults.GetValue();
@@ -60,7 +60,7 @@ namespace O3DE::ProjectManager
         projectInfo.m_path = QDir::toNativeSeparators(QString(tempDir.GetDirectory()) + "/" + "TestProject");
         projectInfo.m_projectName = "TestProjectName";
 
-        auto result = m_pythonBindings->CreateProject(templatePath, projectInfo);
+        auto result = m_o3deCli->CreateProject(templatePath, projectInfo);
         EXPECT_TRUE(result.IsSuccess());
 
         ProjectInfo resultProjectInfo = result.GetValue();

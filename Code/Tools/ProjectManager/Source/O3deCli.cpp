@@ -6,7 +6,7 @@
  *
  */
 
-#include <PythonBindings.h>
+#include <O3deCli.h>
 
 #include <ProjectManagerDefs.h>
 
@@ -219,7 +219,7 @@ namespace RedirectOutput
             {
                 lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
             }
-            O3DE::ProjectManager::PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
+            O3DE::ProjectManager::O3deCliInterface::Get()->AddErrorString(lastPythonError);
 
             AZ_TracePrintf("Python", msg);
         });
@@ -239,23 +239,23 @@ namespace RedirectOutput
 
 namespace O3DE::ProjectManager
 {
-    PythonBindings::PythonBindings(const AZ::IO::PathView& enginePath)
+    O3deCli::O3deCli(const AZ::IO::PathView& enginePath)
         : m_enginePath(enginePath)
     {
         m_pythonStarted = StartPython();
     }
 
-    PythonBindings::~PythonBindings()
+    O3deCli::~O3deCli()
     {
         StopPython();
     }
 
-    bool PythonBindings::PythonStarted()
+    bool O3deCli::PythonStarted()
     {
         return m_pythonStarted && Py_IsInitialized();
     }
 
-    bool PythonBindings::StartPython()
+    bool O3deCli::StartPython()
     {
         if (Py_IsInitialized())
         {
@@ -330,7 +330,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    bool PythonBindings::StopPython()
+    bool O3deCli::StopPython()
     {
         if (Py_IsInitialized())
         {
@@ -344,7 +344,7 @@ namespace O3DE::ProjectManager
         return !PyErr_Occurred();
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback)
+    AZ::Outcome<void, AZStd::string> O3deCli::ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback)
     {
         if (!Py_IsInitialized())
         {
@@ -363,19 +363,19 @@ namespace O3DE::ProjectManager
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
-            AZ_Warning("PythonBindings", false, "Python exception %s", e.what());
+            AZ_Warning("O3deCli", false, "Python exception %s", e.what());
             return AZ::Failure<AZStd::string>(e.what());
         }
 
         return AZ::Success();
     }
 
-    bool PythonBindings::ExecuteWithLock(AZStd::function<void()> executionCallback)
+    bool O3deCli::ExecuteWithLock(AZStd::function<void()> executionCallback)
     {
         return ExecuteWithLockErrorHandling(executionCallback).IsSuccess();
     }
 
-    EngineInfo PythonBindings::EngineInfoFromPath(pybind11::handle enginePath)
+    EngineInfo O3deCli::EngineInfoFromPath(pybind11::handle enginePath)
     {
         EngineInfo engineInfo;
         try
@@ -425,12 +425,12 @@ namespace O3DE::ProjectManager
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
-            AZ_Warning("PythonBindings", false, "Failed to get EngineInfo from %s", Py_To_String(enginePath));
+            AZ_Warning("O3deCli", false, "Failed to get EngineInfo from %s", Py_To_String(enginePath));
         }
         return engineInfo;
     }
 
-    AZ::Outcome<EngineInfo> PythonBindings::GetEngineInfo()
+    AZ::Outcome<EngineInfo> O3deCli::GetEngineInfo()
     {
         EngineInfo engineInfo;
 
@@ -449,7 +449,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<EngineInfo> PythonBindings::GetEngineInfo(const QString& engineName)
+    AZ::Outcome<EngineInfo> O3deCli::GetEngineInfo(const QString& engineName)
     {
         EngineInfo engineInfo;
         bool result = ExecuteWithLock([&] {
@@ -475,7 +475,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    IPythonBindings::DetailedOutcome PythonBindings::SetEngineInfo(const EngineInfo& engineInfo, bool force)
+    IO3deCli::DetailedOutcome O3deCli::SetEngineInfo(const EngineInfo& engineInfo, bool force)
     {
         bool registrationSuccess = false;
         bool pythonSuccess = ExecuteWithLock([&] {
@@ -531,7 +531,7 @@ namespace O3DE::ProjectManager
         return AZ::Failure<ErrorPair>(GetErrorPair());
     }
 
-    AZ::Outcome<GemInfo> PythonBindings::GetGemInfo(const QString& path, const QString& projectPath)
+    AZ::Outcome<GemInfo> O3deCli::GetGemInfo(const QString& path, const QString& projectPath)
     {
         GemInfo gemInfo = GemInfoFromPath(QString_To_Py_String(path), QString_To_Py_Path(projectPath));
         if (gemInfo.IsValid())
@@ -544,7 +544,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetEngineGemInfos()
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> O3deCli::GetEngineGemInfos()
     {
         QVector<GemInfo> gems;
 
@@ -564,7 +564,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gems));
     }
 
-    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemInfos(const QString& projectPath)
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> O3deCli::GetAllGemInfos(const QString& projectPath)
     {
         QVector<GemInfo> gems;
 
@@ -589,7 +589,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gems));
     }
 
-    AZ::Outcome<QVector<AZStd::string>, AZStd::string> PythonBindings::GetEnabledGemNames(const QString& projectPath)
+    AZ::Outcome<QVector<AZStd::string>, AZStd::string> O3deCli::GetEnabledGemNames(const QString& projectPath)
     {
         // Retrieve the path to the cmake file that lists the enabled gems.
         pybind11::str enabledGemsFilename;
@@ -622,7 +622,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemNames));
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::GemRegistration(const QString& gemPath, const QString& projectPath, bool remove)
+    AZ::Outcome<void, AZStd::string> O3deCli::GemRegistration(const QString& gemPath, const QString& projectPath, bool remove)
     {
         bool registrationResult = false;
         auto result = ExecuteWithLockErrorHandling(
@@ -665,17 +665,17 @@ namespace O3DE::ProjectManager
         return AZ::Success();
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::RegisterGem(const QString& gemPath, const QString& projectPath)
+    AZ::Outcome<void, AZStd::string> O3deCli::RegisterGem(const QString& gemPath, const QString& projectPath)
     {
         return GemRegistration(gemPath, projectPath);
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::UnregisterGem(const QString& gemPath, const QString& projectPath)
+    AZ::Outcome<void, AZStd::string> O3deCli::UnregisterGem(const QString& gemPath, const QString& projectPath)
     {
         return GemRegistration(gemPath, projectPath, /*remove*/true);
     }
 
-    bool PythonBindings::AddProject(const QString& path)
+    bool O3deCli::AddProject(const QString& path)
     {
         bool registrationResult = false;
         bool result = ExecuteWithLock(
@@ -691,7 +691,7 @@ namespace O3DE::ProjectManager
         return result && registrationResult;
     }
 
-    bool PythonBindings::RemoveProject(const QString& path)
+    bool O3deCli::RemoveProject(const QString& path)
     {
         bool registrationResult = false;
         bool result = ExecuteWithLock(
@@ -724,7 +724,7 @@ namespace O3DE::ProjectManager
         return result && registrationResult;
     }
 
-    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo)
+    AZ::Outcome<ProjectInfo> O3deCli::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo)
     {
         ProjectInfo createdProjectInfo;
         bool result = ExecuteWithLock([&] {
@@ -751,7 +751,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<ProjectInfo> PythonBindings::GetProject(const QString& path)
+    AZ::Outcome<ProjectInfo> O3deCli::GetProject(const QString& path)
     {
         ProjectInfo projectInfo = ProjectInfoFromPath(QString_To_Py_Path(path));
         if (projectInfo.IsValid())
@@ -764,7 +764,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    GemInfo PythonBindings::GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath)
+    GemInfo O3deCli::GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath)
     {
         GemInfo gemInfo;
         gemInfo.m_path = Py_To_String(path);
@@ -847,14 +847,14 @@ namespace O3DE::ProjectManager
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
-                AZ_Warning("PythonBindings", false, "Failed to get GemInfo for gem %s", Py_To_String(path));
+                AZ_Warning("O3deCli", false, "Failed to get GemInfo for gem %s", Py_To_String(path));
             }
         }
 
         return gemInfo;
     }
 
-    ProjectInfo PythonBindings::ProjectInfoFromPath(pybind11::handle path)
+    ProjectInfo O3deCli::ProjectInfoFromPath(pybind11::handle path)
     {
         ProjectInfo projectInfo;
         projectInfo.m_path = Py_To_String(path);
@@ -881,14 +881,14 @@ namespace O3DE::ProjectManager
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
-                AZ_Warning("PythonBindings", false, "Failed to get ProjectInfo for project %s", Py_To_String(path));
+                AZ_Warning("O3deCli", false, "Failed to get ProjectInfo for project %s", Py_To_String(path));
             }
         }
 
         return projectInfo;
     }
 
-    AZ::Outcome<QVector<ProjectInfo>> PythonBindings::GetProjects()
+    AZ::Outcome<QVector<ProjectInfo>> O3deCli::GetProjects()
     {
         QVector<ProjectInfo> projects;
 
@@ -916,7 +916,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::AddGemToProject(const QString& gemPath, const QString& projectPath)
+    AZ::Outcome<void, AZStd::string> O3deCli::AddGemToProject(const QString& gemPath, const QString& projectPath)
     {
         return ExecuteWithLockErrorHandling([&]
         {
@@ -929,7 +929,7 @@ namespace O3DE::ProjectManager
         });
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::RemoveGemFromProject(const QString& gemPath, const QString& projectPath)
+    AZ::Outcome<void, AZStd::string> O3deCli::RemoveGemFromProject(const QString& gemPath, const QString& projectPath)
     {
         return ExecuteWithLockErrorHandling([&]
         {
@@ -942,7 +942,7 @@ namespace O3DE::ProjectManager
         });
     }
 
-    bool PythonBindings::RemoveInvalidProjects()
+    bool O3deCli::RemoveInvalidProjects()
     {
         bool removalResult = false;
         bool result = ExecuteWithLock(
@@ -957,7 +957,7 @@ namespace O3DE::ProjectManager
         return result && removalResult;
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::UpdateProject(const ProjectInfo& projectInfo)
+    AZ::Outcome<void, AZStd::string> O3deCli::UpdateProject(const ProjectInfo& projectInfo)
     {
         bool updateProjectSucceeded = false;
         auto result = ExecuteWithLockErrorHandling([&]
@@ -995,7 +995,7 @@ namespace O3DE::ProjectManager
         return AZ::Success();
     }
 
-    ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath)
+    ProjectTemplateInfo O3deCli::ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath)
     {
         ProjectTemplateInfo templateInfo;
         templateInfo.m_path = Py_To_String(path);
@@ -1043,14 +1043,14 @@ namespace O3DE::ProjectManager
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
-                AZ_Warning("PythonBindings", false, "Failed to get ProjectTemplateInfo for %s", Py_To_String(path));
+                AZ_Warning("O3deCli", false, "Failed to get ProjectTemplateInfo for %s", Py_To_String(path));
             }
         }
 
         return templateInfo;
     }
 
-    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplates(const QString& projectPath)
+    AZ::Outcome<QVector<ProjectTemplateInfo>> O3deCli::GetProjectTemplates(const QString& projectPath)
     {
         QVector<ProjectTemplateInfo> templates;
 
@@ -1071,7 +1071,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::RefreshGemRepo(const QString& repoUri)
+    AZ::Outcome<void, AZStd::string> O3deCli::RefreshGemRepo(const QString& repoUri)
     {
         bool refreshResult = false;
         AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
@@ -1096,7 +1096,7 @@ namespace O3DE::ProjectManager
         return AZ::Success();
     }
 
-    bool PythonBindings::RefreshAllGemRepos()
+    bool O3deCli::RefreshAllGemRepos()
     {
         bool refreshResult = false;
         bool result = ExecuteWithLock(
@@ -1111,7 +1111,7 @@ namespace O3DE::ProjectManager
         return result && refreshResult;
     }
 
-    IPythonBindings::DetailedOutcome PythonBindings::AddGemRepo(const QString& repoUri)
+    IO3deCli::DetailedOutcome O3deCli::AddGemRepo(const QString& repoUri)
     {
         bool registrationResult = false;
         bool result = ExecuteWithLock(
@@ -1127,13 +1127,13 @@ namespace O3DE::ProjectManager
 
         if (!result || !registrationResult)
         {
-            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+            return AZ::Failure<IO3deCli::ErrorPair>(GetErrorPair());
         }
 
         return AZ::Success();
     }
 
-    bool PythonBindings::RemoveGemRepo(const QString& repoUri)
+    bool O3deCli::RemoveGemRepo(const QString& repoUri)
     {
         bool registrationResult = false;
         bool result = ExecuteWithLock(
@@ -1166,7 +1166,7 @@ namespace O3DE::ProjectManager
         return result && registrationResult;
     }
 
-    GemRepoInfo PythonBindings::GetGemRepoInfo(pybind11::handle repoUri)
+    GemRepoInfo O3deCli::GetGemRepoInfo(pybind11::handle repoUri)
     {
         GemRepoInfo gemRepoInfo;
         gemRepoInfo.m_repoUri = Py_To_String(repoUri);
@@ -1210,14 +1210,14 @@ namespace O3DE::ProjectManager
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
-                AZ_Warning("PythonBindings", false, "Failed to get GemRepoInfo for repo %s", Py_To_String(repoUri));
+                AZ_Warning("O3deCli", false, "Failed to get GemRepoInfo for repo %s", Py_To_String(repoUri));
             }
         }
 
         return gemRepoInfo;
     }
 
-    AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> PythonBindings::GetAllGemRepoInfos()
+    AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> O3deCli::GetAllGemRepoInfos()
     {
         QVector<GemRepoInfo> gemRepos;
 
@@ -1238,7 +1238,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemRepos));
     }
 
-    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetGemInfosForRepo(const QString& repoUri)
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> O3deCli::GetGemInfosForRepo(const QString& repoUri)
     {
         QVector<GemInfo> gemInfos;
         AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
@@ -1266,7 +1266,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemInfos));
     }
 
-    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetGemInfosForAllRepos()
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> O3deCli::GetGemInfosForAllRepos()
     {
         QVector<GemInfo> gemInfos;
         AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
@@ -1293,7 +1293,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemInfos));
     }
 
-    IPythonBindings::DetailedOutcome  PythonBindings::DownloadGem(
+    IO3deCli::DetailedOutcome  O3deCli::DownloadGem(
         const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force)
     {
         // This process is currently limited to download a single gem at a time.
@@ -1322,23 +1322,23 @@ namespace O3DE::ProjectManager
 
         if (!result.IsSuccess())
         {
-            IPythonBindings::ErrorPair pythonRunError(result.GetError(), result.GetError());
-            return AZ::Failure<IPythonBindings::ErrorPair>(AZStd::move(pythonRunError));
+            IO3deCli::ErrorPair pythonRunError(result.GetError(), result.GetError());
+            return AZ::Failure<IO3deCli::ErrorPair>(AZStd::move(pythonRunError));
         }
         else if (!downloadSucceeded)
         {
-            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+            return AZ::Failure<IO3deCli::ErrorPair>(GetErrorPair());
         }
 
         return AZ::Success();
     }
 
-    void PythonBindings::CancelDownload()
+    void O3deCli::CancelDownload()
     {
         m_requestCancelDownload = true;
     }
 
-    bool PythonBindings::IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated)
+    bool O3deCli::IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated)
     {
         bool updateAvaliableResult = false;
         bool result = ExecuteWithLock(
@@ -1354,21 +1354,21 @@ namespace O3DE::ProjectManager
         return result && updateAvaliableResult;
     }
 
-    IPythonBindings::ErrorPair PythonBindings::GetErrorPair()
+    IO3deCli::ErrorPair O3deCli::GetErrorPair()
     {
         AZStd::string detailedString = m_pythonErrorStrings.size() == 1
             ? ""
             : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
 
-        return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+        return IO3deCli::ErrorPair(m_pythonErrorStrings.front(), detailedString);
     }
 
-    void PythonBindings::AddErrorString(AZStd::string errorString)
+    void O3deCli::AddErrorString(AZStd::string errorString)
     {
         m_pythonErrorStrings.push_back(errorString);
     }
 
-    void PythonBindings::ClearErrorStrings()
+    void O3deCli::ClearErrorStrings()
     {
         m_pythonErrorStrings.clear();
     }

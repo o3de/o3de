@@ -10,7 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzFramework/Application/Application.h>
 #include <QCoreApplication>
-#include <PythonBindings.h>
+#include <O3deCli.h>
 #include <Settings.h>
 #include <ProjectManagerWindow.h>
 #endif
@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
         bool InitLog(const char* logName);
         bool RegisterEngine(bool interactive);
 
-        AZStd::unique_ptr<PythonBindings> m_pythonBindings;
+        AZStd::unique_ptr<O3deCli> m_o3deCli;
         AZStd::unique_ptr<Settings> m_settings;
         QSharedPointer<QCoreApplication> m_app;
         QSharedPointer<ProjectManagerWindow> m_mainWindow;

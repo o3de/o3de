@@ -12,7 +12,7 @@ set(FILES
     tests/ApplicationTests.cpp
     tests/GemCatalogTests.cpp
     tests/SettingsTests.cpp
-    tests/PythonBindingsTests.cpp
+    tests/O3deCliTests.cpp
     tests/main.cpp
     tests/UtilsTests.cpp
 )

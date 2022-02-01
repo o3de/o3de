@@ -10,7 +10,7 @@
 #include <FormFolderBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
 #include <PathValidator.h>
-#include <PythonBindingsInterface.h>
+#include <O3deCliInterface.h>
 
 #include <QFileDialog>
 #include <QFrame>
@@ -75,7 +75,7 @@ namespace O3DE::ProjectManager
     QString ProjectSettingsScreen::GetDefaultProjectPath()
     {
         QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        AZ::Outcome<EngineInfo> engineInfoResult = O3deCliInterface::Get()->GetEngineInfo();
         if (engineInfoResult.IsSuccess())
         {
             QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
