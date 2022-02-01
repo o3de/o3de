@@ -48,11 +48,13 @@ namespace EMotionFX::MotionMatching
         Clear();
 
         // Verify the dimensions.
-        // Going above a 20 dimensional tree would start eating up too much memory.
         m_numDimensions = CalcNumDimensions(features);
-        if (m_numDimensions == 0 || m_numDimensions > 20)
+
+        // Going above a 48 dimensional tree would start eating up too much memory.
+        const size_t maxNumDimensions = 48;
+        if (m_numDimensions == 0 || m_numDimensions > maxNumDimensions)
         {
-            AZ_Error("Motion Matching", false, "Cannot initialize KD-tree. KD-tree dimension (%d) has to be between 1 and 20. Please use Feature::SetIncludeInKdTree(false) on some features.", m_numDimensions);
+            AZ_Error("Motion Matching", false, "Cannot initialize KD-tree. KD-tree dimension (%d) has to be between 1 and %zu. Please use Feature::SetIncludeInKdTree(false) on some features.", m_numDimensions, maxNumDimensions);
             return false;
         }
 
@@ -203,6 +205,12 @@ namespace EMotionFX::MotionMatching
 
     void KdTree::MergeSmallLeafNodesToParents()
     {
+        // If the tree is empty or only has a single node, there is nothing to merge.
+        if (m_nodes.size() < 2)
+        {
+            return;
+        }
+
         AZStd::vector<Node*> nodesToRemove;
         for (Node* node : m_nodes)
         {
@@ -410,7 +418,7 @@ namespace EMotionFX::MotionMatching
             }
             else
             {
-                // We have both a left and right node, so we're not at a leaf yet.
+                // We have either a left and right node, so we're not at a leaf yet.
                 if (curNode->m_leftNode)
                 {
                     if (frameFloats[d] <= curNode->m_median)

@@ -17,7 +17,7 @@
 
 //! Enable in case you want to use the Eigen SDK Eigen::Matrix as base for the feature matrix (https://eigen.tuxfamily.org/)
 //! In case Eigen is disabled, a small simple NxM wrapper class is provided by default.
-#define O3DE_USE_EIGEN
+//#define O3DE_USE_EIGEN
 #define O3DE_MM_FLOATTYPE float
 
 #ifdef O3DE_USE_EIGEN
