@@ -129,6 +129,7 @@ namespace AZ
                 GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
                 libraryEntry.m_readOnlyCache.clear();
                 libraryEntry.m_pipelineLibraryDescriptor.m_serializedData = nullptr;
+                libraryEntry.m_pipelineLibraryDescriptor.m_filePath = "";
                 
                 m_globalLibraryActiveBits[handle.GetIndex()] = false;
                 m_libraryFreeList.push_back(handle);

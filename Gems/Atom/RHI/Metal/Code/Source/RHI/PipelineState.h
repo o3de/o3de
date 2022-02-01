@@ -76,7 +76,7 @@ namespace AZ
             AZStd::atomic_bool m_isCompiled = {false};
 
             // PSOs + descriptors
-            id<MTLRenderPipelineState> m_graphicsPipelineState = nil;           
+            id<MTLRenderPipelineState> m_graphicsPipelineState = nil;
             id<MTLComputePipelineState> m_computePipelineState = nil;
             id<MTLDepthStencilState> m_depthStencilState = nil;
             MTLRenderPipelineDescriptor* m_renderPipelineDesc = nil;

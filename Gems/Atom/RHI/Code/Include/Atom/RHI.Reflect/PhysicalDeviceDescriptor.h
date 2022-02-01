@@ -30,7 +30,7 @@ namespace AZ
             (Samsung,       0x1099),
             (ARM,           0x13B5),
             (Warp,          0x1414),
-            (Apple,         0xffff) // Apple Vendor id is a dummy one for now. It is not used for anything.
+            (Apple,         0x106B) 
         );
 
         void ReflectVendorIdEnums(ReflectContext* context);
