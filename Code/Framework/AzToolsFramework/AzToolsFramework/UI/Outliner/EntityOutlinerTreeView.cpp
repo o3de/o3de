@@ -176,19 +176,6 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::mouseMoveEvent(QMouseEvent* event)
     {
-        if (m_queuedMouseEvent)
-        {
-            //disable selection for the pending click if the mouse moved so selection is maintained for dragging
-            QAbstractItemView::SelectionMode selectionModeBefore = selectionMode();
-            setSelectionMode(QAbstractItemView::NoSelection);
-
-            //treat this as a mouse pressed event to process everything but selection, but use the position data from the mousePress message
-            processQueuedMousePressedEvent(m_queuedMouseEvent);
-
-            //restore selection state
-            setSelectionMode(selectionModeBefore);
-        }
-
         m_mousePosition = event->pos();
         if (QModelIndex hoveredIndex = indexAt(m_mousePosition); m_currentHoveredIndex != indexAt(m_mousePosition))
         {
