@@ -93,10 +93,28 @@ namespace UnitTest
         // Compare two surface points.
         bool SurfacePointsAreEqual(const SurfaceData::SurfacePoint& lhs, const SurfaceData::SurfacePoint& rhs)
         {
-            return (lhs.m_entityId == rhs.m_entityId)
-                && (lhs.m_position == rhs.m_position)
-                && (lhs.m_normal == rhs.m_normal)
-                && (lhs.m_masks == rhs.m_masks);
+            if ((lhs.m_entityId != rhs.m_entityId)
+                || (lhs.m_position != rhs.m_position)
+                || (lhs.m_normal != rhs.m_normal)
+                || (lhs.m_masks.size() != rhs.m_masks.size()))
+            {
+                return false;
+            }
+
+            for (auto& mask : lhs.m_masks)
+            {
+                auto maskEntry = rhs.m_masks.find(mask.first);
+                if (maskEntry == rhs.m_masks.end())
+                {
+                    return false;
+                }
+                if (maskEntry->second != mask.second)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         // Common test function for testing the "Provider" functionality of the component.
