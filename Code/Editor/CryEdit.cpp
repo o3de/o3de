@@ -1709,7 +1709,6 @@ bool CCryEditApp::InitInstance()
     mainWindow->Initialize();
 
     GetIEditor()->GetCommandManager()->RegisterAutoCommands();
-    GetIEditor()->AddUIEnums();
 
     mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "O3DE", "mainWindowGeometry");
     m_pDocManager->OnFileNew();
@@ -1827,34 +1826,6 @@ bool CCryEditApp::InitInstance()
     RunInitPythonScript(cmdInfo);
 
     return true;
-}
-
-void CCryEditApp::RegisterEventLoopHook(IEventLoopHook* pHook)
-{
-    pHook->pNextHook = m_pEventLoopHook;
-    m_pEventLoopHook = pHook;
-}
-
-void CCryEditApp::UnregisterEventLoopHook(IEventLoopHook* pHookToRemove)
-{
-    IEventLoopHook* pPrevious = nullptr;
-    for (IEventLoopHook* pHook = m_pEventLoopHook; pHook != nullptr; pHook = pHook->pNextHook)
-    {
-        if (pHook == pHookToRemove)
-        {
-            if (pPrevious)
-            {
-                pPrevious->pNextHook = pHookToRemove->pNextHook;
-            }
-            else
-            {
-                m_pEventLoopHook = pHookToRemove->pNextHook;
-            }
-
-            pHookToRemove->pNextHook = nullptr;
-            return;
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

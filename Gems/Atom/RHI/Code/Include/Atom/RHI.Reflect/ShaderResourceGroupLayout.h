@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -116,7 +116,7 @@ namespace AZ
             // The following methods are only permitted on a finalized layout.
 
             /// Returns the full list of static samplers descriptors declared on the layout.
-            AZStd::array_view<ShaderInputStaticSamplerDescriptor> GetStaticSamplers() const;
+            AZStd::span<const ShaderInputStaticSamplerDescriptor> GetStaticSamplers() const;
 
             /**
              * Resolves an shader input name to an index for each type of shader input. To maximize performance,
@@ -148,13 +148,13 @@ namespace AZ
              * maintain their original order with respect to AddShaderInput. Each type
              * of shader input has its own separate list.
              */
-            AZStd::array_view<ShaderInputBufferDescriptor>   GetShaderInputListForBuffers() const;
-            AZStd::array_view<ShaderInputImageDescriptor>    GetShaderInputListForImages() const;
-            AZStd::array_view<ShaderInputSamplerDescriptor>  GetShaderInputListForSamplers() const;
-            AZStd::array_view<ShaderInputConstantDescriptor> GetShaderInputListForConstants() const;
+            AZStd::span<const ShaderInputBufferDescriptor>   GetShaderInputListForBuffers() const;
+            AZStd::span<const ShaderInputImageDescriptor>    GetShaderInputListForImages() const;
+            AZStd::span<const ShaderInputSamplerDescriptor>  GetShaderInputListForSamplers() const;
+            AZStd::span<const ShaderInputConstantDescriptor> GetShaderInputListForConstants() const;
 
-            AZStd::array_view<ShaderInputBufferUnboundedArrayDescriptor> GetShaderInputListForBufferUnboundedArrays() const;
-            AZStd::array_view<ShaderInputImageUnboundedArrayDescriptor>  GetShaderInputListForImageUnboundedArrays() const;
+            AZStd::span<const ShaderInputBufferUnboundedArrayDescriptor> GetShaderInputListForBufferUnboundedArrays() const;
+            AZStd::span<const ShaderInputImageUnboundedArrayDescriptor>  GetShaderInputListForImageUnboundedArrays() const;
 
             /**
              * Each shader input may contain multiple shader resources. The layout computes

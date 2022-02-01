@@ -267,7 +267,7 @@ namespace AZ
             return AZ::RHI::GetImageSubresourceLayout(mipSize, descriptor.m_format);
         }
 
-        AZStd::array_view<uint8_t> DecalTextureArray::GetRawImageData(const AZ::Name& mapName, int arrayLevel, const int mip) const
+        AZStd::span<const uint8_t> DecalTextureArray::GetRawImageData(const AZ::Name& mapName, int arrayLevel, const int mip) const
         {
             // We always want to provide valid data to the AssetCreator for each texture.
             // If this spot in the array is empty, just provide some random image as filler.

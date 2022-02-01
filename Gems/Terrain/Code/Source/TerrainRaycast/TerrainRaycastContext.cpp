@@ -377,10 +377,11 @@ AzFramework::RenderGeometry::RayResult TerrainRaycastContext::RayIntersect(
     const AzFramework::RenderGeometry::RayRequest& ray)
 {
     const AZ::Aabb terrainWorldBounds = m_terrainSystem.GetTerrainAabb();
-    const AZ::Vector2 terrainResolution = m_terrainSystem.GetTerrainHeightQueryResolution();
+    const float terrainResolution = m_terrainSystem.GetTerrainHeightQueryResolution();
+    const AZ::Vector2 terrainResolution2d(terrainResolution);
     AzFramework::RenderGeometry::RayResult rayIntersectionResult;
     FindNearestIntersectionIterative(m_terrainSystem,
-                                     terrainResolution,
+                                     terrainResolution2d,
                                      terrainWorldBounds,
                                      ray.m_startWorldPosition,
                                      ray.m_endWorldPosition,

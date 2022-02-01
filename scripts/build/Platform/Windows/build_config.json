@@ -9,7 +9,8 @@
   },
   "validation_pipe": {
     "TAGS": [
-      "default"
+      "default",
+      "snapshot"
     ],
     "steps": [
       "validation"
@@ -27,7 +28,8 @@
   },
   "profile_pipe": {
     "TAGS": [
-      "default"
+      "default",
+      "snapshot"
     ],
     "steps": [
       "profile",
@@ -288,7 +290,8 @@
       "default",
       "nightly-incremental",
       "nightly-clean",
-      "weekly-build-metrics"
+      "weekly-build-metrics",
+      "snapshot"
     ],
     "COMMAND": "build_windows.cmd",
     "PARAMETERS": {

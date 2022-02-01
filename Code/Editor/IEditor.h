@@ -46,7 +46,6 @@ class ICommandManager;
 class CEditorCommandManager;
 class CHyperGraphManager;
 class CConsoleSynchronization;
-class CUIEnumsDatabase;
 struct ISourceControl;
 struct IEditorClassFactory;
 struct ITransformManipulator;
@@ -67,7 +66,6 @@ class IAWSResourceManager;
 struct ISystem;
 struct IRenderer;
 struct AABB;
-struct IEventLoopHook;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
@@ -510,11 +508,6 @@ struct IEditor
     virtual void SetActiveView(CViewport* viewport) = 0;
     virtual struct IEditorFileMonitor* GetFileMonitor() = 0;
 
-    // These are needed for Qt integration:
-    virtual void RegisterEventLoopHook(IEventLoopHook* pHook) = 0;
-    virtual void UnregisterEventLoopHook(IEventLoopHook* pHook) = 0;
-    // ^^^
-
     //! QMimeData is used by the Qt clipboard.
     //! IMPORTANT: Any QMimeData allocated for the clipboard will be deleted
     //! when the editor exists. If a QMimeData is allocated by a different
@@ -660,15 +653,10 @@ struct IEditor
     //! Only returns true if source control is both available AND currently connected and functioning
     virtual bool IsSourceControlConnected() = 0;
 
-    virtual CUIEnumsDatabase* GetUIEnumsDatabase() = 0;
-    virtual void AddUIEnums() = 0;
     virtual void ReduceMemory() = 0;
 
     //! Export manager for exporting objects and a terrain from the game to DCC tools
     virtual IExportManager* GetExportManager() = 0;
-    //! Set current configuration spec of the editor.
-    virtual void SetEditorConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform) = 0;
-    virtual ESystemConfigSpec GetEditorConfigSpec() const = 0;
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
