@@ -102,4 +102,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME Gem::SurfaceData.Tests
     )
+    ly_add_googlebenchmark(
+        NAME Gem::SurfaceData.Benchmarks
+        TARGET Gem::SurfaceData.Tests
+    )
 endif()

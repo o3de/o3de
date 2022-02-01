@@ -149,7 +149,7 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListReturnsH
     const float worldMax = 10000.0f;
     const AZ::Aabb worldAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(worldMax));
     NiceMock<UnitTest::MockTerrainDataRequests> mockterrainDataRequests;
-    ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(AZ::Vector2(1.0f)));
+    ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(1.0f));
     ON_CALL(mockterrainDataRequests, GetTerrainAabb).WillByDefault(Return(worldAabb));
 
     // Ensure the cached values in the HeightGradientListComponent are up to date.
@@ -198,7 +198,7 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListGetHeigh
     const float worldMax = 10000.0f;
     const AZ::Aabb worldAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(worldMax));
     NiceMock<UnitTest::MockTerrainDataRequests> mockterrainDataRequests;
-    ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(AZ::Vector2(1.0f)));
+    ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(1.0f));
     ON_CALL(mockterrainDataRequests, GetTerrainAabb).WillByDefault(Return(worldAabb));
 
     // Ensure the cached values in the HeightGradientListComponent are up to date.

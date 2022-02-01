@@ -34,7 +34,8 @@ namespace AZ
             explicit MaterialPropertyId(AZStd::string_view propertyName);
             MaterialPropertyId(AZStd::string_view groupName, AZStd::string_view propertyName);
             MaterialPropertyId(const Name& groupName, const Name& propertyName);
-            explicit MaterialPropertyId(const AZStd::span<const AZStd::string> names);
+            explicit MaterialPropertyId(const AZStd::span<AZStd::string> names);
+            MaterialPropertyId(const AZStd::span<AZStd::string> groupNames, AZStd::string_view propertyName);
 
             AZ_DEFAULT_COPY_MOVE(MaterialPropertyId);
 
