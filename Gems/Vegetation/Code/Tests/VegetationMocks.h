@@ -345,6 +345,13 @@ namespace UnitTest
         {
         }
 
+        void GetSurfacePointsFromList(
+            [[maybe_unused]] AZStd::span<const AZ::Vector3> inPositions,
+            [[maybe_unused]] const SurfaceData::SurfaceTagVector& desiredTags,
+            [[maybe_unused]] SurfaceData::SurfacePointLists& surfacePointLists) const override
+        {
+        }
+
         SurfaceData::SurfaceDataRegistryHandle RegisterSurfaceDataProvider([[maybe_unused]] const SurfaceData::SurfaceDataRegistryEntry& entry) override
         {
             ++m_count;

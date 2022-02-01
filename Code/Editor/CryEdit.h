@@ -30,7 +30,6 @@ class CConsoleDialog;
 struct mg_connection;
 struct mg_request_info;
 struct mg_context;
-struct IEventLoopHook;
 class QAction;
 class MainWindow;
 class QSharedMemory;
@@ -153,8 +152,6 @@ public:
     int IdleProcessing(bool bBackground);
     bool IsWindowInForeground();
     void RunInitPythonScript(CEditCommandLineInfo& cmdInfo);
-    void RegisterEventLoopHook(IEventLoopHook* pHook);
-    void UnregisterEventLoopHook(IEventLoopHook* pHook);
 
     void DisableIdleProcessing() override;
     void EnableIdleProcessing() override;
@@ -344,7 +341,6 @@ private:
 
     QString m_lastOpenLevelPath;
     CQuickAccessBar* m_pQuickAccessBar = nullptr;
-    IEventLoopHook* m_pEventLoopHook = nullptr;
     QString m_rootEnginePath;
 
     int m_disableIdleProcessingCounter = 0; //!< Counts requests to disable idle processing. When non-zero, idle processing will be disabled.
