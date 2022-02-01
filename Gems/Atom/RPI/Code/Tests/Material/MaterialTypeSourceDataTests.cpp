@@ -292,10 +292,7 @@ namespace UnitTest
             m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
             EXPECT_TRUE(m_testMaterialSrgLayout->Finalize());
 
-            AZStd::vector<RPI::ShaderOptionValuePair> optionValues;
-            optionValues.push_back({Name("Low"),  RPI::ShaderOptionValue(0)});
-            optionValues.push_back({Name("Med"), RPI::ShaderOptionValue(1)});
-            optionValues.push_back({Name("High"), RPI::ShaderOptionValue(2)});
+            AZStd::vector<RPI::ShaderOptionValuePair> optionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
 
             Ptr<ShaderOptionGroupLayout> shaderOptions = ShaderOptionGroupLayout::Create();
             uint32_t order = 0;
@@ -709,10 +706,7 @@ namespace UnitTest
     {
         // Set up the shaders...
 
-        AZStd::vector<RPI::ShaderOptionValuePair> optionValues;
-        optionValues.push_back({Name("Low"),  RPI::ShaderOptionValue(0)});
-        optionValues.push_back({Name("Med"), RPI::ShaderOptionValue(1)});
-        optionValues.push_back({Name("High"), RPI::ShaderOptionValue(2)});
+        AZStd::vector<RPI::ShaderOptionValuePair> optionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
 
         Ptr<ShaderOptionGroupLayout> shaderOptions = ShaderOptionGroupLayout::Create();
         uint32_t order = 0;
@@ -1078,10 +1072,7 @@ namespace UnitTest
     {
         // Setup the shader...
 
-        AZStd::vector<RPI::ShaderOptionValuePair> optionValues;
-        optionValues.push_back({ Name("Low"),  RPI::ShaderOptionValue(0) });
-        optionValues.push_back({ Name("Med"), RPI::ShaderOptionValue(1) });
-        optionValues.push_back({ Name("High"), RPI::ShaderOptionValue(2) });
+        AZStd::vector<RPI::ShaderOptionValuePair> optionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
 
         uint32_t order = 0;
 
@@ -1408,9 +1399,7 @@ namespace UnitTest
         layeredMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_blendFactor" }, 4, 4, 0 });
         layeredMaterialSrgLayout->Finalize();
         
-        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues;
-        boolOptionValues.push_back({Name("False"),  RPI::ShaderOptionValue(0)});
-        boolOptionValues.push_back({Name("True"), RPI::ShaderOptionValue(1)});
+        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
         Ptr<ShaderOptionGroupLayout> shaderOptionsLayout = ShaderOptionGroupLayout::Create();
         uint32_t order = 0;
         shaderOptionsLayout->AddShaderOption(ShaderOptionDescriptor{Name{"o_layer2_clearCoat_enable"}, ShaderOptionType::Boolean, 0, order++, boolOptionValues, Name{"False"}});

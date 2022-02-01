@@ -793,16 +793,6 @@ namespace UnitTest
         EXPECT_FALSE(success);
         errorMessageFinder.CheckExpectedErrorsFound();
 
-        // Add shader option with an empty default value.
-        errorMessageFinder.Reset();
-        errorMessageFinder.AddExpectedErrorMessage("invalid default value");
-        AZStd::vector<RPI::ShaderOptionValuePair> list5;
-        list5.push_back({ Name("0"),    RPI::ShaderOptionValue(0) }); // 1+ bit
-        list5.push_back({ Name("1"),    RPI::ShaderOptionValue(1) }); // ...
-        success = shaderOptionGroupLayout->AddShaderOption(AZ::RPI::ShaderOptionDescriptor{ Name{"Invalid"}, intRangeType, 16, order++, list5, Name() });
-        EXPECT_FALSE(success);
-        errorMessageFinder.CheckExpectedErrorsFound();
-
         // Add shader option with an invalid default int value.
         errorMessageFinder.Reset();
         errorMessageFinder.AddExpectedErrorMessage("invalid default value");
@@ -885,6 +875,18 @@ namespace UnitTest
         EXPECT_FALSE(shaderOptionGroupLayout->FindValue(Name{ "Blah" }, Name{ "Navy" }).IsValid());
 
         EXPECT_FALSE(shaderOptionGroupLayout->FindShaderOptionIndex(Name{ "Invalid" }).IsValid());
+    }
+    
+    TEST_F(ShaderTests, ImplicitDefaultValue)
+    {
+        // Add shader option with no default value.
+
+        RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
+
+        AZStd::vector<RPI::ShaderOptionValuePair> values = AZ::RPI::CreateEnumShaderOptionValues({"A", "B", "C"});
+        bool success = shaderOptionGroupLayout->AddShaderOption(AZ::RPI::ShaderOptionDescriptor{ Name{"NoDefaultSpecified"}, RPI::ShaderOptionType::Enumeration, 0, 0, values });
+        EXPECT_TRUE(success);
+        EXPECT_STREQ("A", shaderOptionGroupLayout->GetShaderOptions().back().GetDefaultValue().GetCStr());
     }
 
     TEST_F(ShaderTests, ShaderOptionGroupTest)
