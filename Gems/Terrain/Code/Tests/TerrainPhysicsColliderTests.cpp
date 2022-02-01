@@ -169,7 +169,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAligned
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
-    const AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+    float mockHeightResolution = 1.0f;
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
 
@@ -197,7 +197,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMinBoun
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
-    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+    float mockHeightResolution = 1.0f;
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
 
@@ -226,7 +226,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderExpandsMaxBoun
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
-    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+    float mockHeightResolution = 1.0f;
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
 
@@ -254,7 +254,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
-    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+    float mockHeightResolution = 1.0f;
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
     ON_CALL(terrainListener, ProcessHeightsFromRegion).WillByDefault(
@@ -291,7 +291,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativ
     const AZ::Vector3 boundsMax = AZ::Vector3(256.0f, 256.0f, 32768.0f);
 
     const float mockHeight = 32768.0f;
-    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+    float mockHeightResolution = 1.0f;
 
     NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
     ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
@@ -410,7 +410,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     const float mockHeight = 32768.0f;
-    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+    float mockHeightResolution = 1.0f;
 
     AzFramework::SurfaceData::SurfaceTagWeight tagWeight1(tag1, 1.0f);
     AzFramework::SurfaceData::SurfaceTagWeight tagWeight2(tag2, 1.0f);
@@ -490,7 +490,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     const float mockHeight = 32768.0f;
-    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+    float mockHeightResolution = 1.0f;
 
     AzFramework::SurfaceData::SurfaceTagWeight tagWeight1(tag1, 1.0f);
     AzFramework::SurfaceData::SurfaceTagWeight tagWeight2(tag2, 1.0f);
@@ -554,7 +554,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
     ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
 
     const float mockHeight = 32768.0f;
-    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
+    float mockHeightResolution = 1.0f;
 
     const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
     AzFramework::SurfaceData::SurfaceTagWeight tagWeight1(tag1, 1.0f);

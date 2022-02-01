@@ -318,13 +318,17 @@ namespace AZ::SceneAPI::Behaviors
         {
             AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
 
+            AZStd::string prefabTemplateName { relativeSourcePath };
+            AZ::StringFunc::Path::ReplaceFullName(prefabTemplateName, filenameOnly.c_str());
+            AZ::StringFunc::Replace(prefabTemplateName, "\\", "/"); // the source folder uses forward slash
+
             // create prefab group for entire stack
             AzToolsFramework::Prefab::TemplateId prefabTemplateId;
             AzToolsFramework::Prefab::PrefabSystemScriptingBus::BroadcastResult(
                 prefabTemplateId,
                 &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplate,
                 entities,
-                filenameOnly);
+                prefabTemplateName);
 
             if (prefabTemplateId == AzToolsFramework::Prefab::InvalidTemplateId)
             {
@@ -349,12 +353,12 @@ namespace AZ::SceneAPI::Behaviors
             prefabDom.Parse(outcome.GetValue().c_str());
 
             auto prefabGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::PrefabGroup>();
-            prefabGroup->SetName(relativeSourcePath);
+            prefabGroup->SetName(prefabTemplateName);
             prefabGroup->SetPrefabDom(AZStd::move(prefabDom));
             prefabGroup->SetId(DataTypes::Utilities::CreateStableUuid(
                 scene,
                 azrtti_typeid<AZ::SceneAPI::SceneData::PrefabGroup>(),
-                relativeSourcePath));
+                prefabTemplateName));
 
             manifestUpdates.emplace_back(prefabGroup);
 
@@ -414,7 +418,7 @@ namespace AZ::SceneAPI::Behaviors
         AZ::StringFunc::Replace(relativeSourcePath, ".", "_");
         AZStd::string filenameOnly{ relativeSourcePath };
         AZ::StringFunc::Path::GetFileName(filenameOnly.c_str(), filenameOnly);
-        AZ::StringFunc::Path::ReplaceExtension(filenameOnly, "prefab");
+        AZ::StringFunc::Path::ReplaceExtension(filenameOnly, "procprefab");
 
         ManifestUpdates manifestUpdates;
 
@@ -482,7 +486,10 @@ namespace AZ::SceneAPI::Behaviors
         // The originPath we pass to LoadTemplateFromString must be the relative path of the file
         AZ::IO::Path templateName(prefabGroup->GetName());
         templateName.ReplaceExtension(AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
-        templateName = relativePath / templateName;
+        if (!AZ::StringFunc::StartsWith(templateName.c_str(), relativePath.c_str()))
+        {
+            templateName = relativePath / templateName;
+        }
 
         auto templateId = prefabLoaderInterface->LoadTemplateFromString(sb.GetString(), templateName.Native().c_str());
         if (templateId == InvalidTemplateId)
@@ -569,11 +576,12 @@ namespace AZ::SceneAPI::Behaviors
         // Get the relative path of the source and then take just the path portion of it (no file name)
         AZ::IO::Path relativePath = context.GetScene().GetSourceFilename();
         relativePath = relativePath.LexicallyRelative(AZStd::string_view(context.GetScene().GetWatchFolder()));
-        relativePath = relativePath.ParentPath();
+        AZStd::string relativeSourcePath { AZStd::move(relativePath.ParentPath().Native()) };
+        AZ::StringFunc::Replace(relativeSourcePath, "\\", "/"); // the source paths use forward slashes
 
         for (const auto* prefabGroup : prefabGroupCollection)
         {
-            auto result = CreateProductAssetData(prefabGroup, relativePath);
+            auto result = CreateProductAssetData(prefabGroup, relativeSourcePath);
             if (!result)
             {
                 return Events::ProcessingResult::Failure;
