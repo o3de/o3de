@@ -34,8 +34,8 @@
 
 namespace AZ::SceneGenerationComponents
 {
-    static constexpr const char* DefaultTangentGenerationKey{ "/O3DE/SceneAPI/TangentGenerateComponent/DefaultGenerationMethod" };
-    static constexpr const char* DebugBitangentFlipKey{ "/O3DE/SceneAPI/TangentGenerateComponent/DebugBitangentFlip" };
+    static constexpr AZStd::string_view DefaultTangentGenerationKey{ "/O3DE/SceneAPI/TangentGenerateComponent/DefaultGenerationMethod" };
+    static constexpr AZStd::string_view DebugBitangentFlipKey{ "/O3DE/SceneAPI/TangentGenerateComponent/DebugBitangentFlip" };
 
     TangentGenerateComponent::TangentGenerateComponent()
     {
@@ -78,9 +78,19 @@ namespace AZ::SceneGenerationComponents
             AZStd::string defaultTangentGenerationMethodString;
             if (settingsRegistry->Get(defaultTangentGenerationMethodString, DefaultTangentGenerationKey))
             {
-                if (AZ::StringFunc::Equal(defaultTangentGenerationMethodString, "MikkT"))
+                const bool isCaseSensitive = false;
+                if (AZ::StringFunc::Equal(defaultTangentGenerationMethodString, "MikkT", isCaseSensitive))
                 {
                     defaultGenerationMethod = AZ::SceneAPI::DataTypes::TangentGenerationMethod::MikkT;
+                }
+                else
+                {
+                    AZ_Warning(
+                        AZ::SceneAPI::Utilities::WarningWindow,
+                        AZ::StringFunc::Equal(defaultTangentGenerationMethodString, "FromSourceScene", isCaseSensitive),
+                        "'%s' is not a valid default tangent generation method. Check the value of %s in your settings registry, and change "
+                        "it to 'FromSourceScene' or 'MikkT'",
+                        defaultTangentGenerationMethodString.c_str(), AZStd::string(DefaultTangentGenerationKey).c_str());
                 }
             }
 
@@ -201,7 +211,8 @@ namespace AZ::SceneGenerationComponents
                             // compared to the original behavior. Report an error and fail to process as an indication
                             // that this asset will be impacted by GHI-7125
                             
-                            AZ_Error("TangentGeneration", false,
+                            AZ_Error(
+                                AZ::SceneAPI::Utilities::ErrorWindow, false,
                                 "Tangent w is positive for at least one vertex in the mesh. This model will be impacted by GHI-7125. "
                                 "See https://github.com/o3de/o3de/issues/7125 for details.");
                             return false;
