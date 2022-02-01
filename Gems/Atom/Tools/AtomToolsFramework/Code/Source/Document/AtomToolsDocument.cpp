@@ -102,6 +102,10 @@ namespace AtomToolsFramework
             return false;
         }
 
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
         return true;
     }
 
