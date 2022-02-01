@@ -91,11 +91,11 @@ namespace AZ
                 //! Get the property value. The type must be one of those in MaterialPropertyValue.
                 //! Otherwise, a compile error will be reported.
                 template<typename Type>
-                const Type& GetMaterialPropertyValue(const Name& propertyName) const;
+                const Type& GetMaterialPropertyValue(const Name& propertyId) const;
                 template<typename Type>
                 const Type& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
                 //! Get the property value. GetMaterialPropertyValue<T>() is equivalent to GetMaterialPropertyValue().GetValue<T>().
-                const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyName) const;
+                const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyId) const;
                 const MaterialPropertyValue& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
 
                 const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const { return m_materialPropertiesLayout.get(); }
@@ -164,19 +164,19 @@ namespace AZ
             {
                 friend class LuaMaterialFunctorEditorContext;
             public:
-                const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const Name& propertyName) const;
+                const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const Name& propertyId) const;
                 const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const MaterialPropertyIndex& index) const;
 
-                const MaterialPropertyGroupDynamicMetadata* GetMaterialPropertyGroupMetadata(const Name& propertyName) const;
+                const MaterialPropertyGroupDynamicMetadata* GetMaterialPropertyGroupMetadata(const Name& propertyId) const;
 
                 //! Get the property value. The type must be one of those in MaterialPropertyValue.
                 //! Otherwise, a compile error will be reported.
                 template<typename Type>
-                const Type& GetMaterialPropertyValue(const Name& propertyName) const;
+                const Type& GetMaterialPropertyValue(const Name& propertyId) const;
                 template<typename Type>
                 const Type& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
                 //! Get the property value. GetMaterialPropertyValue<T>() is equivalent to GetMaterialPropertyValue().GetValue<T>().
-                const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyName) const;
+                const MaterialPropertyValue& GetMaterialPropertyValue(const Name& propertyId) const;
                 const MaterialPropertyValue& GetMaterialPropertyValue(const MaterialPropertyIndex& index) const;
 
                 const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const { return m_materialPropertiesLayout.get(); }
@@ -184,22 +184,22 @@ namespace AZ
                 MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const { return MaterialPropertyPsoHandling::Allowed; }
 
                 //! Set the visibility dynamic metadata of a material property.
-                bool SetMaterialPropertyVisibility(const Name& propertyName, MaterialPropertyVisibility visibility);
+                bool SetMaterialPropertyVisibility(const Name& propertyId, MaterialPropertyVisibility visibility);
                 bool SetMaterialPropertyVisibility(const MaterialPropertyIndex& index, MaterialPropertyVisibility visibility);
 
-                bool SetMaterialPropertyDescription(const Name& propertyName, AZStd::string description);
+                bool SetMaterialPropertyDescription(const Name& propertyId, AZStd::string description);
                 bool SetMaterialPropertyDescription(const MaterialPropertyIndex& index, AZStd::string description);
 
-                bool SetMaterialPropertyMinValue(const Name& propertyName, const MaterialPropertyValue& min);
+                bool SetMaterialPropertyMinValue(const Name& propertyId, const MaterialPropertyValue& min);
                 bool SetMaterialPropertyMinValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& min);
 
-                bool SetMaterialPropertyMaxValue(const Name& propertyName, const MaterialPropertyValue& max);
+                bool SetMaterialPropertyMaxValue(const Name& propertyId, const MaterialPropertyValue& max);
                 bool SetMaterialPropertyMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max);
 
-                bool SetMaterialPropertySoftMinValue(const Name& propertyName, const MaterialPropertyValue& min);
+                bool SetMaterialPropertySoftMinValue(const Name& propertyId, const MaterialPropertyValue& min);
                 bool SetMaterialPropertySoftMinValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& min);
 
-                bool SetMaterialPropertySoftMaxValue(const Name& propertyName, const MaterialPropertyValue& max);
+                bool SetMaterialPropertySoftMaxValue(const Name& propertyId, const MaterialPropertyValue& max);
                 bool SetMaterialPropertySoftMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max);
 
                 bool SetMaterialPropertyGroupVisibility(const Name& propertyGroupName, MaterialPropertyGroupVisibility visibility);
@@ -218,8 +218,8 @@ namespace AZ
                 );
 
             private:
-                MaterialPropertyDynamicMetadata* QueryMaterialPropertyMetadata(const Name& propertyName) const;
-                MaterialPropertyGroupDynamicMetadata* QueryMaterialPropertyGroupMetadata(const Name& propertyGroupName) const;
+                MaterialPropertyDynamicMetadata* QueryMaterialPropertyMetadata(const Name& propertyId) const;
+                MaterialPropertyGroupDynamicMetadata* QueryMaterialPropertyGroupMetadata(const Name& propertyGroupId) const;
 
                 const AZStd::vector<MaterialPropertyValue>& m_materialPropertyValues;
                 RHI::ConstPtr<MaterialPropertiesLayout> m_materialPropertiesLayout;
