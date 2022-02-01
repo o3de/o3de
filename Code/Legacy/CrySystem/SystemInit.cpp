@@ -1046,7 +1046,7 @@ AZ_POP_DISABLE_WARNING
         // LEVEL SYSTEM
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
         if (usePrefabSystemForLevels)
         {
