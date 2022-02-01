@@ -150,7 +150,13 @@ namespace PhysX
     {
         ClearHeightfield();
         InitHeightfieldShapeConfiguration();
-        InitStaticRigidBody();
+
+        Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig.second);
+        if (!configuration.GetSamples().empty())
+        {
+            InitStaticRigidBody();
+        }
+
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 
