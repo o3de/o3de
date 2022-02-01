@@ -383,11 +383,11 @@ namespace Terrain
 
     AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const
     {
-        AZ::Vector2 gridResolution = AZ::Vector2(1.0f);
+        float gridResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             gridResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
-        return gridResolution;
+        return AZ::Vector2(gridResolution);
     }
 
     void TerrainPhysicsColliderComponent::GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const
