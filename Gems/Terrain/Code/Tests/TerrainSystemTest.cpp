@@ -158,6 +158,15 @@ namespace UnitTest
                         // Let the test function modify these values based on the needs of the specific test.
                         mockHeights(outPosition, terrainExists);
                     });
+            ON_CALL(*m_terrainAreaHeightRequests, GetHeights)
+                .WillByDefault(
+                    [mockHeights](AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList)
+                    {
+                        for (int i = 0; i < inOutPositionList.size(); i++)
+                        {
+                            mockHeights(inOutPositionList[i], terrainExistsList[i]);
+                        }
+                    });
 
             ActivateEntity(entity.get());
             return entity;

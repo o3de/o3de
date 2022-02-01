@@ -177,6 +177,143 @@ bool TerrainSystem::InWorldBounds(float x, float y) const
     return false;
 }
 
+void TerrainSystem::MapPositionToArea(float x, float y,
+    AZStd::unordered_map<AZ::EntityId, TerrainHeightDataLists>& areaIdToPos,
+    AZStd::vector<TerrainHeightDataIterators>& outPositions,
+    size_t outIndex) const
+{
+    AZ::Aabb bounds;
+    AZ::EntityId areaId = FindBestAreaEntityAtPosition(x, y, bounds);
+    auto it = areaIdToPos.find(areaId);
+    if (it == areaIdToPos.end())
+    {
+        auto insertResult = areaIdToPos.insert(AZStd::pair<AZ::EntityId, TerrainHeightDataLists>(areaId, {}));
+        it = insertResult.first;
+        (*it).second.m_positions.resize(outPositions.size());
+        (*it).second.m_terrainExists.resize(outPositions.size());
+        (*it).second.m_count = 0;
+    }
+    (*it).second.m_positions[(*it).second.m_count].Set(x, y, 0.0f);
+    (*it).second.m_terrainExists[(*it).second.m_count] = false;
+    outPositions[outIndex].m_positionIterator = ((*it).second.m_positions.begin() + (*it).second.m_count);
+    outPositions[outIndex].m_terrainExistsIterator = ((*it).second.m_terrainExists.begin() + (*it).second.m_count);
+    (*it).second.m_count++;
+}
+
+void TerrainSystem::MapPositionsToAreas(const AZStd::span<AZ::Vector3>& inPositions,
+    AZStd::unordered_map<AZ::EntityId, TerrainHeightDataLists>& areaIdToPos,
+    AZStd::vector<TerrainHeightDataIterators>& outPositions,
+    Sampler sampler, size_t indexStepSize) const
+{
+    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++)
+    {
+        if (!InWorldBounds(inPositions[i].GetX(), inPositions[i].GetY()))
+        {
+            continue;
+        }
+
+        switch(sampler)
+        {
+        case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
+            {
+                AZ::Vector2 normalizedDelta;
+                AZ::Vector2 pos0;
+                ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), pos0, normalizedDelta);
+                const AZ::Vector2 pos1 = pos0 + m_currentSettings.m_heightQueryResolution;
+                MapPositionToArea(pos0.GetX(), pos0.GetY(), areaIdToPos, outPositions, iteratorIndex);
+                MapPositionToArea(pos1.GetX(), pos0.GetY(), areaIdToPos, outPositions, iteratorIndex + 1);
+                MapPositionToArea(pos0.GetX(), pos1.GetY(), areaIdToPos, outPositions, iteratorIndex + 2);
+                MapPositionToArea(pos1.GetX(), pos1.GetY(), areaIdToPos, outPositions, iteratorIndex + 3);
+            }
+            break;
+        case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
+            {
+                AZ::Vector2 normalizedDelta;
+                AZ::Vector2 clampedPosition;
+                ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), clampedPosition, normalizedDelta);
+                MapPositionToArea(clampedPosition.GetX(), clampedPosition.GetY(), areaIdToPos, outPositions, iteratorIndex);
+            }
+            break;
+        case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
+            [[fallthrough]];
+        default:
+            MapPositionToArea(inPositions[i].GetX(), inPositions[i].GetY(), areaIdToPos, outPositions, iteratorIndex);
+            break;
+        }
+        
+        iteratorIndex += indexStepSize;
+    }
+}
+
+void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPositions, Sampler sampler, 
+    AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
+{
+    float minHeight = m_currentSettings.m_worldBounds.GetMin().GetZ();
+
+    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
+    AZStd::unordered_map<AZ::EntityId, TerrainHeightDataLists> areaIdToPos;
+    AZStd::vector<TerrainHeightDataIterators> outPositions;
+
+    size_t indexStepSize = 1;
+    if (sampler == AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR)
+    {
+        outPositions.resize(inPositions.size() * 4);
+        indexStepSize = 4;
+    }
+    else
+    {
+        outPositions.resize(inPositions.size());
+    }
+
+    MapPositionsToAreas(inPositions, areaIdToPos, outPositions, sampler, indexStepSize);
+
+    for(auto& [areaId, terrainHeightDataLists] : areaIdToPos)
+    {
+        Terrain::TerrainAreaHeightRequestBus::Event(
+            areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights, terrainHeightDataLists.m_positions, terrainHeightDataLists.m_terrainExists);
+    }
+
+    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++)
+    {
+        if (!InWorldBounds(inPositions[i].GetX(), inPositions[i].GetY()))
+        {
+            heights[i] = minHeight;
+            terrainExists[i] = false;
+            continue;
+        }
+
+        switch(sampler)
+        {
+        case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
+            {
+                AZ::Vector2 normalizedDelta;
+                AZ::Vector2 clampedPosition;
+                ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), clampedPosition, normalizedDelta);
+                const float heightX0Y0 = (outPositions[iteratorIndex].m_positionIterator)->GetZ();
+                const float heightX1Y0 = (outPositions[iteratorIndex + 1].m_positionIterator)->GetZ();
+                const float heightX0Y1 = (outPositions[iteratorIndex + 2].m_positionIterator)->GetZ();
+                const float heightX1Y1 = (outPositions[iteratorIndex + 3].m_positionIterator)->GetZ();
+                const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, normalizedDelta.GetX());
+                const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, normalizedDelta.GetX());
+                heights[i] = AZ::Lerp(heightXY0, heightXY1, normalizedDelta.GetY());
+                terrainExists[i] = *(outPositions[iteratorIndex].m_terrainExistsIterator);
+            }
+            break;
+        case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
+            [[fallthrough]];
+        case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
+            [[fallthrough]];
+        default:
+            heights[i] = (outPositions[iteratorIndex].m_positionIterator)->GetZ();
+            terrainExists[i] = *(outPositions[iteratorIndex].m_terrainExistsIterator);
+            break;
+        }
+
+        iteratorIndex += indexStepSize;
+    }
+}
+
 float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
     bool terrainExists = false;
@@ -551,13 +688,18 @@ void TerrainSystem::ProcessHeightsFromList(
         return;
     }
 
+    AZStd::vector<bool> terrainExists;
+    AZStd::vector<float> heights;
+    terrainExists.resize(inPositions.size());
+    heights.resize(inPositions.size());
+    
+    GetHeightsSynchronous(inPositions, sampleFilter, heights, terrainExists);
     AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
+    for (size_t i = 0; i < inPositions.size(); i++)
     {
-        bool terrainExists = false;
-        surfacePoint.m_position = position;
-        surfacePoint.m_position.SetZ(GetHeight(position, sampleFilter, &terrainExists));
-        perPositionCallback(surfacePoint, terrainExists);
+        surfacePoint.m_position = inPositions[i];
+        surfacePoint.m_position.SetZ(heights[i]);
+        perPositionCallback(surfacePoint, terrainExists[i]);
     }
 }
 

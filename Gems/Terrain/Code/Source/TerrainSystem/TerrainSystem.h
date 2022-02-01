@@ -207,6 +207,31 @@ namespace Terrain
         float GetTerrainAreaHeight(float x, float y, bool& terrainExists) const;
         AZ::Vector3 GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
 
+
+        struct TerrainHeightDataLists
+        {
+            AZStd::vector<AZ::Vector3> m_positions;
+            AZStd::vector<bool> m_terrainExists;
+            size_t m_count;
+        };
+        struct TerrainHeightDataIterators
+        {
+            AZStd::vector<AZ::Vector3>::iterator m_positionIterator;
+            AZStd::vector<bool>::iterator m_terrainExistsIterator;
+        };
+
+        void GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPositions,
+            Sampler sampler, AZStd::span<float> heights,
+            AZStd::span<bool> terrainExists) const;
+        void MapPositionsToAreas(const AZStd::span<AZ::Vector3>& inPositions, 
+            AZStd::unordered_map<AZ::EntityId, TerrainHeightDataLists>& areaIdToPos,
+            AZStd::vector<TerrainHeightDataIterators>& outPositions,
+            Sampler sampler, size_t indexStepSize) const;
+        void MapPositionToArea(float x, float y,
+            AZStd::unordered_map<AZ::EntityId, TerrainHeightDataLists>& areaIdToPos,
+            AZStd::vector<TerrainHeightDataIterators>& outPositions,
+            size_t outIndex) const;
+
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
