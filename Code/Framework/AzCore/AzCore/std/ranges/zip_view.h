@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/ranges/all_view.h>
+#include <AzCore/std/ranges/empty_view.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzCore/std/tuple.h>
 
@@ -26,22 +27,67 @@ namespace AZStd::ranges
         template<class F, class Tuple>
         constexpr auto tuple_transform(F&& f, Tuple&& tuple)
         {
-            auto transform_to_result_tuple = [&](auto&&... elements)
+            auto TransformToResultTuple = [&](auto&&... elements)
             {
                 using tuple_invoke_result = invoke_result_t<F&, decltype(elements)...>;
                 return tuple_or_pair<tuple_invoke_result>(AZStd::invoke(f, AZStd::forward<decltype(elements)>(elements))...);
             };
-            return apply(AZStd::move(transform_to_result_tuple), AZStd::forward<Tuple>(tuple));
+            return AZStd::apply(AZStd::move(TransformToResultTuple), AZStd::forward<Tuple>(tuple));
         }
 
         template<class F, class Tuple>
         constexpr void tuple_for_each(F&& f, Tuple&& tuple)
         {
-            auto invoke_tuple_element = [&](auto&&... elements)
+            auto InvokeTupleElement = [&](auto&&... elements)
             {
                 (AZStd::invoke(f, AZStd::forward<decltype(elements)>(elements)), ...);
             };
-            apply(AZStd::move(invoke_tuple_element), AZStd::forward<Tuple>(tuple));
+            AZStd::apply(AZStd::move(InvokeTupleElement), AZStd::forward<Tuple>(tuple));
+        }
+
+        template<class F, class... Tuples, size_t... Indices>
+        constexpr decltype(auto) tuple_zip(F&& f, AZStd::index_sequence<Indices...>, Tuples&&... tuples)
+        {
+            AZStd::invoke(AZStd::forward<F>(f), AZStd::get<Indices>(AZStd::forward<Tuples>(tuples))...);
+        }
+    }
+
+    template<class... Views>
+    class zip_view;
+
+    // views::zip customization point
+    namespace views
+    {
+        namespace Internal
+        {
+            struct zip_view_fn
+            {
+                template <class... Views>
+                constexpr auto operator()(Views&&... views)
+                    -> enable_if_t<ranges::view<Views...>,
+                    decltype(create_view(AZStd::forward<Views>(views)...))>
+                {
+                    return create_view(AZStd::forward<Views>(views)...);
+                }
+            private:
+                template <class... Views>
+                constexpr decltype(auto) create_view(Views&&... views)
+                {
+                    if constexpr (sizeof...(Views))
+                    {
+                        return views::empty<tuple<>>;
+                    }
+                    else
+                    {
+                        return zip_view<views::all_t<Views...>>(AZStd::forward<Views>(views)...);
+                    }
+                }
+
+            };
+        }
+        inline namespace customization_point_object
+        {
+            constexpr Internal::zip_view_fn zip{};
         }
     }
 
@@ -53,8 +99,6 @@ namespace AZStd::ranges
             bool_constant<view<Views>>...
         >,view_interface<zip_view<Views...>>>
     {
-        tuple<Views...> m_views; // exposition only
-
         // [range.zip.iterator], class template zip_view::iterator
         template<bool>
         class iterator;
@@ -65,80 +109,33 @@ namespace AZStd::ranges
 
     public:
         zip_view() = default;
-        constexpr explicit zip_view(Views... views)
-            : m_views{ AZStd::move(views)... }
-        {
-        }
+        constexpr explicit zip_view(Views... views);
 
-        constexpr auto begin() -> enable_if_t<negation_v<
-            conjunction<bool_constant<Internal::simple_view<Views>>...>
-            >, decltype(iterator<false>(Internal::tuple_transform(ranges::begin, m_views)))>
-        {
-            return iterator<false>(Internal::tuple_transform(ranges::begin, m_views));
-        }
-        constexpr auto begin() const -> enable_if_t<conjunction_v<
-            bool_constant<range<const Views>>...
-            >, decltype(iterator<true>(Internal::tuple_transform(ranges::begin, m_views)))>
-        {
-            return iterator<true>(Internal::tuple_transform(ranges::begin, m_views));
-        }
+        template<bool Enable = !conjunction_v<bool_constant<Internal::simple_view<Views>>...>, class = enable_if_t<Enable>>
+        constexpr auto begin();
+        template<bool Enable = conjunction_v<bool_constant<range<const Views>>...>, class = enable_if_t<Enable>>
+        constexpr auto begin() const;
 
-        constexpr auto end(enable_if_t<negation_v<conjunction<bool_constant<Internal::simple_view<Views>>...>>>* = nullptr)
-        {
-            if constexpr (!Internal::zip_is_common<Views...>)
-            {
-                return sentinel<false>(Internal::tuple_transform(ranges::end, m_views));
-            }
-            else if constexpr ((random_access_range<Views> && ...))
-            {
-                return begin() + iter_difference_t<iterator<false>>(size());
-            }
-            else
-            {
-                return iterator<false>(Internal::tuple_transform(ranges::end, m_views));
-            }
-        }
+        template<bool Enable = !conjunction_v<bool_constant<Internal::simple_view<Views>>...>, class = enable_if_t<Enable>>
+        constexpr auto end();
+        template<bool Enable = conjunction_v<bool_constant<range<const Views>>...>, class = enable_if_t<Enable>>
+        constexpr auto end() const;
 
-        constexpr auto end(enable_if_t<conjunction_v<bool_constant<range<const Views>>...>>* = nullptr) const
-        {
-            if constexpr (!Internal::zip_is_common<const Views...>)
-            {
-                return sentinel<true>(Internal::tuple_transform(ranges::end, m_views));
-            }
-            else if constexpr ((random_access_range<const Views> && ...))
-            {
-                return begin() + iter_difference_t<iterator<true>>(size());
-            }
-            else
-            {
-                return iterator<true>(Internal::tuple_transform(ranges::end, m_views));
-            }
-        }
+        template<bool Enable = conjunction_v<bool_constant<sized_range<Views>>...>, class = enable_if_t<Enable>>
+        constexpr auto size();
+        template<bool Enable = conjunction_v<bool_constant<sized_range<const Views>>...>, class = enable_if_t<Enable>>
+        constexpr auto size() const;
 
-        constexpr auto size(enable_if_t<conjunction_v<bool_constant<sized_range<Views>>...>>* = nullptr)
-        {
-            return apply(
-                [](auto... sizes)
-                {
-                    using CommonType = make_unsigned_t<common_type_t<decltype(sizes)...>>;
-                    return ranges::min({ CommonType(sizes)... });
-                },
-                Internal::tuple_transform(ranges::size, m_views));
-        }
-        constexpr auto size(enable_if_t<conjunction_v<bool_constant<sized_range<const Views>>...>>* = nullptr) const
-        {
-            return apply(
-                [](auto... sizes)
-                {
-                    using CommonType = make_unsigned_t<common_type_t<decltype(sizes)...>>;
-                    return ranges::min({ CommonType(sizes)... });
-                },
-                Internal::tuple_transform(ranges::size, m_views));
-        }
+    private:
+        tuple<Views...> m_views;
     };
 
     template<class... Rs>
     zip_view(Rs&&...) -> zip_view<views::all_t<Rs>...>;
+
+    template<class... Views>
+    inline constexpr bool enable_borrowed_range<zip_view<Views...>> = (enable_borrowed_range<Views> && ...);
+
 
     namespace Internal
     {
@@ -155,14 +152,14 @@ namespace AZStd::ranges
     template<class... Views>
     template<bool Const>
     class zip_view<Views...>::iterator
-            : public enable_if_t<conjunction_v<
+        : public enable_if_t<(conjunction_v<
             bool_constant<(sizeof...(Views) > 0)>,
             bool_constant<input_range<Views>>...,
-            bool_constant<view<Views>>...
-            >, Internal::zip_view_iterator_requires>
+            bool_constant<view<Views>>...>),
+        Internal::zip_view_iterator_requires>
     {
+        friend class zip_view<Views...>;
         constexpr explicit iterator(Internal::tuple_or_pair<iterator_t<Internal::maybe_const<Const, Views>>...>);
-        // exposition only
     public:
         using iterator_category = input_iterator_tag; // not always present
         using iterator_concept = conditional_t<Internal::all_random_access<Const, Views...>, random_access_iterator_tag,
@@ -171,76 +168,135 @@ namespace AZStd::ranges
         using value_type = Internal::tuple_or_pair<range_value_t<Internal::maybe_const<Const, Views>>...>;
         using difference_type = common_type_t<range_difference_t<Internal::maybe_const<Const, Views>>...>;
 
+    private:
+        constexpr auto view_iterator_to_value_tuple(difference_type n) const;
+        template<size_t... Indices>
+        static constexpr auto any_iterator_equal(const iterator& x, const iterator& y, AZStd::index_sequence<Indices...>);
+        template<size_t... Indices>
+        static constexpr auto min_distance_in_views(const iterator& x, const iterator& y, AZStd::index_sequence<Indices...>);
+        template<size_t... Indices>
+        static constexpr auto iter_swap_index(const iterator& l, const iterator& r, AZStd::index_sequence<Indices...>);
+    public:
+
         iterator() = default;
-        constexpr iterator(iterator<!Const> i, enable_if_t<Const && conjunction_v<
-            bool_constant<convertible_to<iterator_t<Views>, iterator_t<Internal::maybe_const<Const, Views>>>>...>>* = nullptr);
+        template<bool Enable = Const && conjunction_v<
+            bool_constant<convertible_to<iterator_t<Views>, iterator_t<Internal::maybe_const<Const, Views>>>>...>,
+            class = enable_if_t<Enable>>
+        constexpr iterator(iterator<!Const> other);
 
         constexpr auto operator*() const;
         constexpr iterator& operator++();
-        constexpr void operator++(int);
-        constexpr auto operator++(int) -> enable_if_t<Internal::all_forward<Const, Views...>, iterator>;
+        constexpr decltype(auto) operator++(int);
 
-        constexpr auto operator--() -> enable_if_t<Internal::all_bidirectional<Const, Views...>, iterator&>;
-        constexpr auto operator--(int) -> enable_if_t<Internal::all_bidirectional<Const, Views...>, iterator>;
+        template<bool Enable = Internal::all_bidirectional<Const, Views...>, class = enable_if_t<Enable>>
+        constexpr auto operator--() -> iterator&;
+        template<bool Enable = Internal::all_bidirectional<Const, Views...>, class = enable_if_t<Enable>>
+        constexpr auto operator--(int) -> iterator;
 
-        constexpr auto operator+=(difference_type x) -> enable_if_t<Internal::all_random_access<Const, Views...>, iterator&>;
-        constexpr auto operator-=(difference_type x) -> enable_if_t<Internal::all_random_access<Const, Views...>, iterator&>;
+        template<bool Enable = Internal::all_random_access<Const, Views...>, class = enable_if_t<Enable>>
+        constexpr auto operator+=(difference_type x) -> iterator&;
+        template<bool Enable = Internal::all_random_access<Const, Views...>, class = enable_if_t<Enable>>
+        constexpr auto operator-=(difference_type x) -> iterator&;
 
-        constexpr auto operator[](difference_type n) const ->
-            enable_if_t<Internal::all_random_access<Const, Views...>,
-            decltype(view_iterator_to_value_tuple(n))>;
+        template<bool Enable = Internal::all_random_access<Const, Views...>, class = enable_if_t<Enable>>
+        constexpr auto operator[](difference_type n) const;
 
-        friend constexpr auto operator==(const iterator& x, const iterator& y) ->
-            enable_if_t<conjunction_v<bool_constant<equality_comparable<iterator_t<Internal::maybe_const<Const, Views>>>>...>, bool>;
+        // Out-of-line defintions with these friend functions are possible, but quite a mess signature wise
+        // that is why the defintions are inline, instead of
+        // template<bool Const, class... Views>
+        // constexpr auto operator==(const typename zip_views<Views...>::template iterator<Const>& x,
+        //     const typename zip_views<Views...>::template iterator<Const>& y){}
+        template<bool Enable = conjunction_v<bool_constant<equality_comparable<iterator_t<Internal::maybe_const<Const, Views>>>>...>,
+            class = enable_if_t<Enable>>
+        friend constexpr auto operator==(const iterator& x, const iterator& y) -> bool
+        {
+            if constexpr (Internal::all_bidirectional<Const, Views...>)
+            {
+                return x.m_current == y.m_current;
+            }
+            else
+            {
+                // Returns true if it at least one of the iterator views are equal
+                return any_iterator_equal(x, y, AZStd::index_sequence_for<Views...>{});
+            }
+        }
 
-        friend constexpr auto operator<(const iterator& x, const iterator& y) ->
-            enable_if_t<Internal::all_random_access<Const, Views...>, bool>;
-        friend constexpr auto operator>(const iterator& x, const iterator& y) ->
-            enable_if_t<Internal::all_random_access<Const, Views...>, bool>;
-        friend constexpr auto operator<=(const iterator& x, const iterator& y) ->
-            enable_if_t<Internal::all_random_access<Const, Views...>, bool>;
-        friend constexpr auto operator>=(const iterator& x, const iterator& y) ->
-            enable_if_t<Internal::all_random_access<Const, Views...>, bool>;
+        template<bool Enable = Internal::all_random_access<Const, Views...>, class = enable_if_t<Enable>>
+        friend constexpr auto operator<(const iterator& x, const iterator& y) -> bool
+        {
+            return x.m_current < y.m_current;
+        }
+        template<bool Enable = Internal::all_random_access<Const, Views...>, class = enable_if_t<Enable>>
+        friend constexpr auto operator>(const iterator& x, const iterator& y) -> bool
+        {
+            return y.m_current < x.m_current;
+        }
+        template<bool Enable = Internal::all_random_access<Const, Views...>, class = enable_if_t<Enable>>
+        friend constexpr auto operator<=(const iterator& x, const iterator& y) -> bool
+        {
+            return !(y.m_current < x.m_current);
+        }
+        template<bool Enable = Internal::all_random_access<Const, Views...>, class = enable_if_t<Enable>>
+        friend constexpr auto operator>=(const iterator& x, const iterator& y) -> bool
+        {
+            return !(x.m_current < y.m_current);
+        }
         /* Requires C++20 compiler support
         friend constexpr auto operator<=>(const iterator& x, const iterator& y) requires Internal::all_random_access<Const, Views...> &&
             (three_way_comparable<iterator_t<Internal::maybe_const<Const, Views>>> && ...);
         */
 
-        friend constexpr auto operator+(const iterator& i, difference_type n) ->
-            enable_if_t<Internal::all_random_access<Const, Views...>, iterator>;
-        friend constexpr auto operator+(difference_type n, const iterator& i) ->
-            enable_if_t<Internal::all_random_access<Const, Views...>, iterator>;
-        friend constexpr auto operator-(const iterator& i, difference_type n) ->
-            enable_if_t<Internal::all_random_access<Const, Views...>, iterator>;
-        friend constexpr auto operator-(const iterator& x, const iterator& y) ->
-            enable_if_t<conjunction_v<
-                bool_constant<sized_sentinel_for<
-                    iterator_t<Internal::maybe_const<Const, Views>>,
-                    iterator_t<Internal::maybe_const<Const, Views>>>>...
-            >, difference_type>;
+        template<bool Enable = Internal::all_random_access<Const, Views...>, class = enable_if_t<Enable>>
+        friend constexpr auto operator+(const iterator& i, difference_type n) -> iterator
+        {
+            auto r = i;
+            r += n;
+            return r;
+        }
+        template<bool Enable = Internal::all_random_access<Const, Views...>, class = enable_if_t<Enable>>
+        friend constexpr auto operator+(difference_type n, const iterator& i) -> iterator
+        {
+            auto r = i;
+            r += n;
+            return r;
+        }
+        template<bool Enable = Internal::all_random_access<Const, Views...>, class = enable_if_t<Enable>>
+        friend constexpr auto operator-(const iterator& i, difference_type n) -> iterator
+        {
+            auto r = i;
+            r -= n;
+            return r;
+        }
+        template<bool Enable = conjunction_v<
+            bool_constant<sized_sentinel_for<
+            iterator_t<Internal::maybe_const<Const, Views>>,
+            iterator_t<Internal::maybe_const<Const, Views>>>>...
+            >, class = enable_if_t<Enable>>
+        friend constexpr auto operator-(const iterator& x, const iterator& y) -> difference_type
+        {
+            return min_distance_in_views(x, y, AZStd::index_sequence_for<Views...>{});
+        }
 
         friend constexpr auto iter_move(const iterator& i) noexcept(
-            noexcept(ranges::iter_move(declval<const iterator_t<Internal::maybe_const<Const, Views>>&>()) && ...) &&
-            (is_nothrow_move_constructible_v<range_rvalue_reference_t<Internal::maybe_const<Const, Views>>> && ...));
+            noexcept((ranges::iter_move(declval<const iterator_t<Internal::maybe_const<Const, Views>>&>()) && ...)) &&
+            (is_nothrow_move_constructible_v<range_rvalue_reference_t<Internal::maybe_const<Const, Views>>> && ...))
+        {
+            return tuple_transform(ranges::iter_move, i.m_current);
+        }
 
-        friend constexpr auto iter_swap(const iterator& l, const iterator& r) noexcept(
-            noexcept(ranges::iter_swap(AZStd::get<0>(l.m_current), AZStd::get<0>(r.m_current))))
-            -> enable_if_t<conjunction_v<
-            bool_constant<indirectly_swappable<iterator_t<Internal::maybe_const<Const, Views>>>>...>>;
+        template<bool Enable =
+            conjunction_v<bool_constant<indirectly_swappable<iterator_t<Internal::maybe_const<Const, Views>>>>...>,
+            class = enable_if_t<Enable>>
+        friend constexpr void iter_swap(const iterator& l, const iterator& r) noexcept(
+            noexcept(iter_swap_index(l.m_current, r.m_current, AZStd::index_sequence_for<Views...>{})))
+        {
+            iter_swap_with_index(l, r, AZStd::index_sequence_for<Views...>{});
+        }
 
     private:
-        auto view_iterator_to_value_tuple(difference_type n)
-        {
-            auto tranform_iterator_to_value = [&](auto& i)
-            {
-                using I = decltype(i);
-                return i[iter_difference_t<I>(n)];
-            };
-            Internal::tuple_transform(AZStd::move(tranform_iterator_to_value), m_current);
-        };
-
         Internal::tuple_or_pair<iterator_t<Internal::maybe_const<Const, Views>>...> m_current;
     };
+
 
     namespace Internal
     {
@@ -256,37 +312,63 @@ namespace AZStd::ranges
         bool_constant<view<Views>>...
             >, Internal::zip_view_sentinel_requires>
     {
+        friend class zip_view<Views...>;
         constexpr explicit sentinel(Internal::tuple_or_pair<sentinel_t<Internal::maybe_const<Const, Views>>...> end);
+
+        template<bool OtherConst, size_t... Indices>
+        static constexpr auto min_distance_between_view_iterators(const iterator<OtherConst>& x,
+            const sentinel& y, AZStd::index_sequence<Indices...>) ->
+            common_type_t<range_difference_t<Internal::maybe_const<OtherConst, Views>>...>;
     public:
         sentinel() = default;
-        constexpr sentinel(sentinel<!Const> i, enable_if_t<Const && conjunction_v<
-            bool_constant<convertible_to<sentinel_t<Views>, sentinel_t<Internal::maybe_const<Const, Views>>>>...>>* = nullptr);
+        template<bool Enable = Const && conjunction_v<
+            bool_constant<convertible_to<sentinel_t<Views>, sentinel_t<Internal::maybe_const<Const, Views>>>>...>,
+            class = enable_if_t<Enable>>
+        constexpr sentinel(sentinel<!Const> i);
 
-        template<bool OtherConst>
-        friend constexpr auto operator==(const iterator<OtherConst>& x, const sentinel& y) ->
-            enable_if_t<conjunction_v<
+        template<bool OtherConst, class = enable_if_t<conjunction_v<
             bool_constant<sentinel_for<
-                sentinel_t<Internal::maybe_const<Const, Views>>,
-                iterator_t<Internal::maybe_const<OtherConst, Views>>>>...
-            >,bool>;
+            sentinel_t<Internal::maybe_const<Const, Views>>,
+            iterator_t<Internal::maybe_const<OtherConst, Views>>>>...>
+            >>
+        friend constexpr auto operator==(const iterator<OtherConst>& x, const sentinel& y) -> bool
+        {
+            // Tracks if any iterator of the Views is equal to a sentinel of the views
+            bool anyIteratorEqual = false;
+            auto CompareIterator = [&anyIteratorEqual](auto&& lhs, auto&& rhs)
+            {
+                anyIteratorEqual = anyIteratorEqual || AZStd::forward<decltype(lhs)>(lhs) == AZStd::forward<decltype(rhs)>(rhs);
+            };
+            Internal::tuple_zip(AZStd::move(CompareIterator), x.m_current, y.m_end);
 
-        template<bool OtherConst>
+            return anyIteratorEqual;
+        }
+
+        template<bool OtherConst, class = enable_if_t<conjunction_v<
+            bool_constant<sentinel_for<
+            sentinel_t<Internal::maybe_const<Const, Views>>,
+            iterator_t<Internal::maybe_const<OtherConst, Views>>>>...>
+            >>
         friend constexpr auto operator-(const iterator<OtherConst>& x, const sentinel& y) ->
-            enable_if_t<conjunction_v<
-            bool_constant<sentinel_for<
-            sentinel_t<Internal::maybe_const<Const, Views>>,
-            iterator_t<Internal::maybe_const<OtherConst, Views>>>>...
-            >, common_type_t<range_difference_t<Internal::maybe_const<OtherConst, Views>>...>>;
+            common_type_t<range_difference_t<Internal::maybe_const<OtherConst, Views>>...>
+        {
+            return min_distance_between_view_iterators(x, y, AZStd::index_sequence_for<Views...>{});
+        }
 
-        template<bool OtherConst>
-        friend constexpr auto operator-(const sentinel& y, const iterator<OtherConst>& x) ->
-            enable_if_t<conjunction_v<
+        template<bool OtherConst, class = enable_if_t<conjunction_v<
             bool_constant<sentinel_for<
             sentinel_t<Internal::maybe_const<Const, Views>>,
-            iterator_t<Internal::maybe_const<OtherConst, Views>>>>...
-            >, common_type_t<range_difference_t<Internal::maybe_const<OtherConst, Views>>...>>;
+            iterator_t<Internal::maybe_const<OtherConst, Views>>>>...>
+            >>
+        friend constexpr auto operator-(const sentinel& y, const iterator<OtherConst>& x) ->
+            common_type_t<range_difference_t<Internal::maybe_const<OtherConst, Views>>...>
+        {
+            return -(x - y);
+        }
 
     private:
         Internal::tuple_or_pair<sentinel_t<Internal::maybe_const<Const, Views>>...> m_end;
     };
 } // namespace AZStd::ranges
+
+#include <AzCore/std/ranges/zip_view.inl>

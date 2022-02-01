@@ -92,36 +92,13 @@ namespace AZStd
     //////////////////////////////////////////////////////////////////////////
 
     // The structure that encapsulates index lists
-    template <size_t... Is>
-    struct index_sequence
-    {
-        static constexpr size_t size = sizeof...(Is);
-    };
-
-    // Collects internal details for generating index ranges [MIN, MAX)
-    namespace Internal
-    {
-        // Declare primary template for index range builder
-        template <size_t MIN, size_t N, size_t... Is>
-        struct range_builder;
-
-        // Base step
-        template <size_t MIN, size_t... Is>
-        struct range_builder<MIN, MIN, Is...>
-        {
-            typedef index_sequence<Is...> type;
-        };
-
-        // Induction step
-        template <size_t MIN, size_t N, size_t... Is>
-        struct range_builder : public range_builder<MIN, N - 1, N - 1, Is...>
-        {
-        };
-    }
+    using std::integer_sequence;
+    using std::index_sequence;
+    using std::index_sequence_for;
 
     // Create index range [0,N]
-    template<size_t N>
-    using make_index_sequence = typename Internal::range_builder<0, N>::type;
+    using std::make_index_sequence;
+    using std::make_integer_sequence;
 
     struct piecewise_construct_t {};
     static constexpr piecewise_construct_t piecewise_construct{};
@@ -445,36 +422,6 @@ namespace AZStd
         using type = R(C::*)(Args...) noexcept;
     };
 #endif
-
-    template <template <class> class, typename...>
-    struct sequence_and;
-
-    template <template <class> class trait, typename T1, typename... Ts>
-    struct sequence_and<trait, T1, Ts...>
-    {
-        static const bool value = trait<T1>::value && sequence_and<trait, Ts...>::value;
-    };
-
-    template <template <class> class trait>
-    struct sequence_and<trait>
-    {
-        static const bool value = true;
-    };
-
-    template <template <class> class, typename...>
-    struct sequence_or;
-
-    template <template <class> class trait, typename T1, typename... Ts>
-    struct sequence_or<trait, T1, Ts...>
-    {
-        static const bool value = trait<T1>::value || sequence_or<trait, Ts...>::value;
-    };
-
-    template <template <class> class trait>
-    struct sequence_or<trait>
-    {
-        static const bool value = false;
-    };
 
     using std::in_place_t;
     using std::in_place;

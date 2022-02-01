@@ -9,9 +9,6 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/ranges/ranges.h>
-#include <AzCore/std/ranges/ranges_adaptor.h>
-#include <AzCore/std/ranges/all_view.h>
-#include <AzCore/std/ranges/zip_view.h>
 
 namespace UnitTest
 {
@@ -582,60 +579,5 @@ namespace UnitTest
         EXPECT_EQ(testString.end() - 5, AZStd::ranges::prev(strIter, 10, boundIter));
         strIter = testString.end();
         EXPECT_EQ(testString.end() - 4, AZStd::ranges::prev(strIter, 4, boundIter));
-    }
-
-    TEST_F(RangesTestFixture, AllRangeAdaptor_Succeeds)
-    {
-        AZStd::string_view testString{ "Hello World" };
-        auto testAllView = AZStd::ranges::views::all(testString);
-        EXPECT_EQ(testString.size(), testAllView.size());
-        EXPECT_EQ(testString.data(), testAllView.data());
-        EXPECT_EQ(testString.begin(), testAllView.begin());
-        EXPECT_EQ(testString.end(), testAllView.end());
-        EXPECT_EQ(testString.empty(), testAllView.empty());
-        EXPECT_EQ(testString.front(), testAllView.front());
-        EXPECT_EQ(testString.back(), testAllView.back());
-        EXPECT_EQ(testString[5], testAllView[5]);
-
-        auto testAllViewChain = testString | AZStd::ranges::views::all;
-        EXPECT_EQ(testString.size(), testAllViewChain.size());
-        EXPECT_EQ(testString.data(), testAllViewChain.data());
-        EXPECT_EQ(testString.begin(), testAllViewChain.begin());
-        EXPECT_EQ(testString.end(), testAllViewChain.end());
-        EXPECT_EQ(testString.empty(), testAllViewChain.empty());
-        EXPECT_EQ(testString.front(), testAllViewChain.front());
-        EXPECT_EQ(testString.back(), testAllViewChain.back());
-        EXPECT_EQ(testString[5], testAllViewChain[5]);
-    }
-
-    TEST_F(RangesTestFixture, RefView_CanWrapStringView_Succeeds)
-    {
-        AZStd::string_view testString{ "Hello World" };
-        AZStd::ranges::ref_view refView(testString);
-        EXPECT_EQ(testString.size(), refView.size());
-        EXPECT_EQ(testString.data(), refView.data());
-        EXPECT_EQ(testString.begin(), refView.begin());
-        EXPECT_EQ(testString.end(), refView.end());
-        EXPECT_EQ(testString.empty(), refView.empty());
-        EXPECT_EQ(testString.front(), refView.front());
-        EXPECT_EQ(testString.back(), refView.back());
-        EXPECT_EQ(testString[5], refView[5]);
-    }
-
-    TEST_F(RangesTestFixture, OwningView_CanWrapStringView_Succeeds)
-    {
-        AZStd::string_view sourceView{ "Hello World" };
-        AZStd::string_view testString{ sourceView };
-        AZStd::ranges::owning_view owningView(AZStd::move(testString));
-        EXPECT_TRUE(testString.empty());
-        EXPECT_FALSE(owningView.empty());
-        EXPECT_EQ(sourceView.size(), owningView.size());
-        EXPECT_EQ(sourceView.data(), owningView.data());
-        EXPECT_EQ(sourceView.begin(), owningView.begin());
-        EXPECT_EQ(sourceView.end(), owningView.end());
-        EXPECT_EQ(sourceView.empty(), owningView.empty());
-        EXPECT_EQ(sourceView.front(), owningView.front());
-        EXPECT_EQ(sourceView.back(), owningView.back());
-        EXPECT_EQ(sourceView[5], owningView[5]);
     }
 }

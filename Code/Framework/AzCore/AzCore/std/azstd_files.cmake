@@ -43,8 +43,10 @@ set(FILES
     ranges/ranges_algorithm.h
     ranges/ranges_functional.h
     ranges/ref_view.h
+    ranges/subrange.h
     ranges/split_view.h
     ranges/zip_view.h
+    ranges/zip_view.inl
     ratio.h
     reference_wrapper.h
     sort.h
