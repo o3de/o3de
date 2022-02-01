@@ -73,7 +73,19 @@ def Multiplayer_AutoComponent_RPC():
         helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC_NetLevelEntity: Authority sending RPC to play some fx.", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
         helper.succeed_if_log_line_found('Script', "AutoComponent_RPC_NetLevelEntity: I'm a client playing some fx.", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
 
-    
+        # Autonomous->Authority RPC
+        AUTONOMOUS_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS = 1.0  # This RPC is sent from the server as soon as the player script is spawned. 1 second should be more than enough time to send/receive that RPC.
+        helper.succeed_if_log_line_found('Script', "AutoComponent_RPC: Sending AutonomousToAuthorityNoParam RPC.", section_tracer.prints, AUTONOMOUS_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('Script', "AutoComponent_RPC: Sending AutonomousToAuthority RPC (with float param).", section_tracer.prints, AUTONOMOUS_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC: Successfully received AutonomousToAuthorityNoParams RPC.", section_tracer.prints, AUTONOMOUS_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC: Successfully received AutonomousToAuthorityRPC.", section_tracer.prints, AUTONOMOUS_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+
+        # Server->Authority RPC. Inter-Entity Communication.
+        SERVER_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS = 1.0  # This RPC is sent from the server as soon as the player script is spawned. 1 second should be more than enough time to send/receive that RPC.
+        helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC_NetLevelEntity: Send ServerToAuthority RPC.", section_tracer.prints, SERVER_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC: Received ServerToAuthority RPC. Damage=42.", section_tracer.prints, SERVER_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+
+
     # Exit game mode
     helper.exit_game_mode(TestSuccessFailTuples.exit_game_mode)
 
