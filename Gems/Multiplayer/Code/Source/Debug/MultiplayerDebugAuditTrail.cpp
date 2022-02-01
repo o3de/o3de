@@ -195,8 +195,7 @@ namespace Multiplayer
         ImGui::EndChild();
 
         ImGui::Separator();
-        const ImGuiInputTextFlags inputTextFlags =
-            ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion;
+        const ImGuiInputTextFlags inputTextFlags = ImGuiInputTextFlags_EnterReturnsTrue;
         ImGui::Text("Search:");
         ImGui::SameLine();
         const bool textWasInput =

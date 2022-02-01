@@ -567,6 +567,7 @@ namespace Multiplayer
                     }
                 }
             }
+            ImGui::End();
         }
         else
         {

@@ -46,7 +46,7 @@ namespace Multiplayer
         MultiplayerAuditingElement(const MultiplayerAuditingElement& rhs)
         {
             m_name = rhs.m_name;
-            m_elements.resize_no_construct(rhs.m_elements.size());
+            m_elements.resize(rhs.m_elements.size());
             for (int32_t i = 0; i < rhs.m_elements.size(); ++i)
             {
                 m_elements[i] = rhs.m_elements[i]->Clone();
@@ -58,7 +58,7 @@ namespace Multiplayer
             if (&rhs != this)
             {
                 m_name = rhs.m_name;
-                m_elements.resize_no_construct(rhs.m_elements.size());
+                m_elements.resize(rhs.m_elements.size());
                 for (int32_t i = 0; i < rhs.m_elements.size(); ++i)
                 {
                     m_elements[i] = rhs.m_elements[i]->Clone();
