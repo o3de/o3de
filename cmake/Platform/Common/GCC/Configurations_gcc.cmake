@@ -34,7 +34,6 @@ ly_append_configurations_options(
         -fno-exceptions
         -fvisibility=hidden
         -fvisibility-inlines-hidden
-
         -Wall
         -Werror
 
@@ -45,7 +44,6 @@ ly_append_configurations_options(
         -Wno-array-bounds
         -Wno-attributes
         -Wno-class-memaccess
-        -Wno-comment
         -Wno-delete-non-virtual-dtor
         -Wno-enum-compare
         -Wno-format-overflow
