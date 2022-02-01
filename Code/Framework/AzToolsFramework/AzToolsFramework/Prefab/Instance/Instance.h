@@ -179,14 +179,6 @@ namespace AzToolsFramework
             AZStd::pair<const Instance*, AZ::EntityId> GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath) const;
 
             /**
-             * Gets the nested instance with the given alias, if present.
-             *
-             * @param alias The alias of the instance we want to get.
-             * @return The reference of the instance with the alias queried, or a null reference if there's no match.
-             */
-            InstanceOptionalReference GetNestedInstanceByAlias(InstanceAlias alias) const;
-
-            /**
             * Gets the aliases of all the nested instances, which are sourced by the template with the given id.
             * 
             * @param templateId The source template id of the nested instances.

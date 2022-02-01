@@ -652,16 +652,6 @@ namespace AzToolsFramework
             return AZStd::pair<const Instance*, AZ::EntityId>(instance, instance->GetEntityId(relativeAliasPath.Filename().Native()));
         }
 
-        InstanceOptionalReference Instance::GetNestedInstanceByAlias(InstanceAlias alias) const
-        {
-            if (m_nestedInstances.contains(alias))
-            {
-                return *(m_nestedInstances.at(alias).get());
-            }
-
-            return AZStd::nullopt;
-        }
-
         AZStd::vector<InstanceAlias> Instance::GetNestedInstanceAliases(TemplateId templateId) const
         {
             AZStd::vector<InstanceAlias> nestedInstanceAliases;

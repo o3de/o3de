@@ -458,7 +458,7 @@ namespace AzToolsFramework::Prefab
                 else
                 {
                     // If the instance alias can't be found, the rootAliasPath is invalid.
-                    instance = instance->get().GetNestedInstanceByAlias(pathElement.Native());
+                    instance = instance->get().FindNestedInstance(pathElement.Native());
                     if (!instance.has_value())
                     {
                         return InstanceOptionalReference();
