@@ -22,6 +22,7 @@ namespace AZ
     namespace RPI
     {
         class MaterialTypeAsset;
+        class MaterialTypeAssetCreator;
         class MaterialFunctorSourceDataHolder;
         class JsonMaterialPropertySerializer;
 
