@@ -88,10 +88,10 @@ namespace AZ
             pipelineStateDesc.binaryArchives = binArchives;
             //Create a new PSO. The drivers will use the Pso cache if the PSO resides in it
             id<MTLComputePipelineState> computePipelineState =
-                [device.GetMtlDevice() newComputePipelineStateWithDescriptor:pipelineStateDesc
-                                                                     options:MTLPipelineOptionBufferTypeInfo
-                                                                  reflection:&ref
-                                                                       error:&error];
+                [device.GetMtlDevice() newComputePipelineStateWithDescriptor: pipelineStateDesc
+                                                                     options: MTLPipelineOptionBufferTypeInfo
+                                                                  reflection: &ref
+                                                                       error: &error];
             m_computePipelineStates.emplace(hash, pipelineStateDesc);
             return computePipelineState;
         }

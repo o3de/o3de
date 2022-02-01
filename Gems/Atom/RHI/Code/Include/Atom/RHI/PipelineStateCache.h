@@ -192,8 +192,9 @@ namespace AZ
                 // Tracks the number of pipeline states actively being compiled across all threads.
                 AZStd::atomic_uint32_t m_pendingCompileCount = {0};
 
-                // Used to prime the thread libraries.
-                ConstPtr<PipelineLibraryData> m_serializedData;
+                // Contains the initial serialized data (Used to prime the thread libraries)
+                // or the file name that contains the serialized data
+                PipelineLibraryDescriptor m_pipelineLibraryDescriptor;
             };
 
             using GlobalLibrarySet = AZStd::fixed_vector<GlobalLibraryEntry, LibraryCountMax>;
@@ -250,10 +251,6 @@ namespace AZ
             /// to recycle slots in m_globalLibrarySet.
             AZStd::fixed_vector<PipelineLibraryHandle, LibraryCountMax> m_libraryFreeList;
 
-            /// The file path names associated with serialized data for entries within m_globalLibrarySet. It can be  passed
-            /// to the RHI backend to do load/save operation via the drivers.
-            AZStd::fixed_vector<AZStd::string, LibraryCountMax> m_libraryFileNames;
-            
             // Friends
             friend class UnitTest::PipelineStateTests;
         };

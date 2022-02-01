@@ -30,9 +30,7 @@ namespace AZ
             (Samsung,       0x1099),
             (ARM,           0x13B5),
             (Warp,          0x1414),
-            (AppleA13GPU,   0x2c4),
-            (AppleM1Max,    0x983)
-            //Add other GPUs. If a GPU is not added it will fallback to Unknown
+            (Apple,         0xffff) // Apple Vendor id is a dummy one for now. It is not used for anything.
         );
 
         void ReflectVendorIdEnums(ReflectContext* context);

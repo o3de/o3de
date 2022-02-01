@@ -22,8 +22,9 @@ namespace AZ
         struct PipelineLibraryDescriptor
         {
             //Serialized data with which to init the PipelineLibrary
-            const PipelineLibraryData* m_serializedData = nullptr;
-            //File path where the serialised data may reside.
+            ConstPtr<PipelineLibraryData> m_serializedData = nullptr;
+            //The file path name associated with serialized data. It can be passed
+            //to the RHI backend to do load/save operation via the drivers.
             AZStd::string m_filePath;
         };
             

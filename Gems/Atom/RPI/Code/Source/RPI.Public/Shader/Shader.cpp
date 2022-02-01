@@ -104,7 +104,7 @@ namespace AZ
 
                 char pipelineLibraryPathTemp[AZ_MAX_PATH_LEN];
                 azsnprintf(
-                    pipelineLibraryPathTemp, AZ_MAX_PATH_LEN, "@user@/Atom/PipelineStateCache_%s_%i_%i_Ver_%i/%s/%s_%s_%d.bin",
+                    pipelineLibraryPathTemp, AZ_MAX_PATH_LEN, "@user@/Atom/PipelineStateCache_%s_%u_%u_Ver_%i/%s/%s_%s_%d.bin",
                     ToString(physicalDeviceDesc.m_vendorId).data(), physicalDeviceDesc.m_deviceId, physicalDeviceDesc.m_driverVersion, PSOCacheVersion,
                     platformName.GetCStr(),
                     shaderName.GetCStr(),

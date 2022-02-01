@@ -35,13 +35,15 @@ namespace AZ
             {
                 m_mtlNativeDevice = mtlDevice;
                 NSString * deviceName = [mtlDevice name];
-                deviceName = [deviceName stringByReplacingOccurrencesOfString:@" " withString:@""];
-                const char * secondName = [ deviceName UTF8String ];
-                m_descriptor.m_description = AZStd::string(secondName);
+                const char * deviceNameCStr = [ deviceName UTF8String ];
+                m_descriptor.m_description = AZStd::string(deviceNameCStr);
+                m_descriptor.m_deviceId = deviceName.hash; //Used for storing PipelineLibraries
                 
-                m_descriptor.m_deviceId = [mtlDevice registryID];
-                
-                if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::Intel).data()))
+                if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::Apple).data()))
+                {
+                    m_descriptor.m_vendorId = RHI::VendorId::Apple;
+                }
+                else if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::Intel).data()))
                 {
                     m_descriptor.m_vendorId = RHI::VendorId::Intel;
                 }
@@ -52,26 +54,6 @@ namespace AZ
                 else if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::AMD).data()))
                 {
                     m_descriptor.m_vendorId = RHI::VendorId::AMD;
-                }
-                else if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::Qualcomm).data()))
-                {
-                    m_descriptor.m_vendorId = RHI::VendorId::Qualcomm;
-                }
-                else if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::Samsung).data()))
-                {
-                    m_descriptor.m_vendorId = RHI::VendorId::Samsung;
-                }
-                else if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::ARM).data()))
-                {
-                    m_descriptor.m_vendorId = RHI::VendorId::ARM;
-                }
-                else if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::AppleA13GPU).data()))
-                {
-                    m_descriptor.m_vendorId = RHI::VendorId::AppleA13GPU;
-                }
-                else if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::AppleM1Max).data()))
-                {
-                    m_descriptor.m_vendorId = RHI::VendorId::AppleM1Max;
                 }
                 
                 m_descriptor.m_type = Platform::GetPhysicalDeviceType(mtlDevice);
