@@ -27,7 +27,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 [numthreads(8, 8, 1)]
 void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-    float2 uv = (dispatchThreadID.xy + 0.5) * PassSrg::m_constants.m_outputSize;
+    float2 uv = dispatchThreadID.xy * PassSrg::m_constants.m_outputSize;
     
     float2 disp = uv - (PassSrg::m_constants.m_outputSize * 0.5f);
     float dist = length(disp);
