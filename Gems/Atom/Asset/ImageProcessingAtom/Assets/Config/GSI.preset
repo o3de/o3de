@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
+            "Name": "GSI",
+            "PixelFormat": "R8G8B8A8",
+            "UncompressedAutoPick": true,
+            "DiscardAlpha": true,
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
+                "Name": "GSI",
+                "PixelFormat": "R8G8B8A8",
+                "UncompressedAutoPick": true,
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
+                "Name": "GSI",
+                "PixelFormat": "R8G8B8A8",
+                "UncompressedAutoPick": true,
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "mac": {
+                "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
+                "Name": "GSI",
+                "PixelFormat": "R8G8B8A8",
+                "UncompressedAutoPick": true,
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
+                "Name": "GSI",
+                "PixelFormat": "R8G8B8A8",
+                "UncompressedAutoPick": true,
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

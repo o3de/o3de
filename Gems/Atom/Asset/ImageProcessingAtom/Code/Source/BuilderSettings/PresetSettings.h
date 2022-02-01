@@ -103,6 +103,10 @@ namespace ImageProcessingAtom
         //"swizzle". need to be 4 character and each character need to be one of "rgba01"
         AZStd::string m_swizzle;
 
+        //! Convert to an uncompressed pixel format that automatically picks a preferred pixel
+        //! format based on the source input
+        bool m_uncompressedAutoPick = false;
+
     protected:
         void DeepCopyMembers(const PresetSettings& other);
     };

@@ -50,7 +50,9 @@ namespace ImageProcessingAtom
                 ->Field("NumberResidentMips", &PresetSettings::m_numResidentMips)
                 ->Field("Swizzle", &PresetSettings::m_swizzle)
                 ->Field("CubemapSettings", &PresetSettings::m_cubemapSetting)
-                ->Field("MipMapSetting", &PresetSettings::m_mipmapSetting);
+                ->Field("MipMapSetting", &PresetSettings::m_mipmapSetting)
+                ->Field("UncompressedAutoPick", &PresetSettings::m_uncompressedAutoPick)
+                ;
 
             serialize->Enum<RGBWeight>()
                 ->Value("Uniform", RGBWeight::uniform)
@@ -200,7 +202,9 @@ namespace ImageProcessingAtom
             m_glossFromNormals == other.m_glossFromNormals &&
             m_swizzle == other.m_swizzle &&
             m_isMipRenormalize == other.m_isMipRenormalize &&
-            m_numResidentMips == other.m_numResidentMips;
+            m_numResidentMips == other.m_numResidentMips &&
+            m_uncompressedAutoPick == other.m_uncompressedAutoPick
+            ;
     }
 
     void PresetSettings::DeepCopyMembers(const PresetSettings& other)
@@ -237,6 +241,7 @@ namespace ImageProcessingAtom
             m_swizzle = other.m_swizzle;
             m_isMipRenormalize = other.m_isMipRenormalize;
             m_numResidentMips = other.m_numResidentMips;
+            m_uncompressedAutoPick = other.m_uncompressedAutoPick;
         }
     }
 
