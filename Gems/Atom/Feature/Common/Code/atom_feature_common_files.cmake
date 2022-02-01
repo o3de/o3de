@@ -140,6 +140,14 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.cpp
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp

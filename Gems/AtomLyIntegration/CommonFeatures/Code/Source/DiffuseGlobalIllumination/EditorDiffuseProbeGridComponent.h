@@ -69,6 +69,9 @@ namespace AZ
             AZ::u32 OnNumRaysPerProbeChanged();
             AZ::u32 OnEditorModeChanged();
             AZ::u32 OnRuntimeModeChanged();
+            AZ::u32 OnShowVisualizationChanged();
+            AZ::u32 OnShowInactiveProbesChanged();
+            AZ::u32 OnVisualizationSphereRadiusChanged();
             AZ::Outcome<void, AZStd::string> OnModeChangeValidate(void* newValue, const AZ::Uuid& valueType);
 
             // Button handler
@@ -85,6 +88,9 @@ namespace AZ
             DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
+            bool m_showVisualization = false;
+            bool m_showInactiveProbes = false;
+            float m_visualizationSphereRadius = DefaultVisualizationSphereRadius;
 
             // flags
             bool m_editorModeSet = false;
