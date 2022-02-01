@@ -226,6 +226,14 @@ namespace ImageProcessingAtom
         MultiplatformTextureSettings settings;
         PlatformNameList platformsList = BuilderSettingManager::Instance()->GetPlatformList();
         PresetName suggestedPreset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilepath);
+
+        // If the suggested preset doesn't exist (or was failed to be loaded), return empty texture settings
+        if (BuilderSettingManager::Instance()->GetPreset(suggestedPreset) == nullptr)
+        {            
+            AZ_Error("Image Processing", false, "Failed to find suggested preset [%s]", suggestedPreset.GetCStr());
+            return settings;
+        }
+
         for (PlatformName& platform : platformsList)
         {
             TextureSettings textureSettings;

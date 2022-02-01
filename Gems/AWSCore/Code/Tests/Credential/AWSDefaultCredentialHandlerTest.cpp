@@ -6,11 +6,9 @@
  *
  */
 
-#include <AzCore/UnitTest/TestTypes.h>
-#include <AzTest/AzTest.h>
-
 #include <AWSCoreInternalBus.h>
 #include <Credential/AWSDefaultCredentialHandler.h>
+#include <TestFramework/AWSCoreFixture.h>
 
 using namespace AWSCore;
 
@@ -18,13 +16,15 @@ static constexpr char AWSDEFAULTCREDENTIALHANDLERTEST_ALLOC_TAG[] = "AWSDefaultC
 static constexpr const char* AWS_ACCESS_KEY = "AWSACCESSKEY";
 static constexpr const char* AWS_SECRET_KEY = "AWSSECRETKEY";
 
-class EnvironmentAWSCredentialsProviderMock : public Aws::Auth::EnvironmentAWSCredentialsProvider
+class EnvironmentAWSCredentialsProviderMock
+    : public Aws::Auth::EnvironmentAWSCredentialsProvider
 {
 public:
     MOCK_METHOD0(GetAWSCredentials, Aws::Auth::AWSCredentials());
 };
 
-class ProfileConfigFileAWSCredentialsProviderMock : public Aws::Auth::ProfileConfigFileAWSCredentialsProvider
+class ProfileConfigFileAWSCredentialsProviderMock
+    : public Aws::Auth::ProfileConfigFileAWSCredentialsProvider
 {
 public:
     MOCK_METHOD0(GetAWSCredentials, Aws::Auth::AWSCredentials());
@@ -44,7 +44,7 @@ public:
 };
 
 class AWSDefaultCredentialHandlerTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public AWSCoreFixture
     , public AWSCoreInternalRequestBus::Handler
 {
 public:
@@ -53,6 +53,8 @@ public:
 
     void SetUp() override
     {
+        AWSCoreFixture::SetUpFixture();
+
         AWSCoreInternalRequestBus::Handler::BusConnect();
         m_environmentCredentialsProviderMock = Aws::MakeShared<EnvironmentAWSCredentialsProviderMock>(AWSDEFAULTCREDENTIALHANDLERTEST_ALLOC_TAG);
         m_profileCredentialsProviderMock = Aws::MakeShared<ProfileConfigFileAWSCredentialsProviderMock>(AWSDEFAULTCREDENTIALHANDLERTEST_ALLOC_TAG);
@@ -68,6 +70,8 @@ public:
         m_profileCredentialsProviderMock.reset();
         m_environmentCredentialsProviderMock.reset();
         AWSCoreInternalRequestBus::Handler::BusDisconnect();
+
+        AWSCoreFixture::TearDownFixture();
     }
 
     // AWSCoreInternalRequestBus interface implementation

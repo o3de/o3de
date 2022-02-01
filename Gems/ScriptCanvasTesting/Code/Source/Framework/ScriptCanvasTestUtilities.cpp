@@ -6,7 +6,6 @@
  *
  */
 
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <Asset/EditorAssetSystemComponent.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>

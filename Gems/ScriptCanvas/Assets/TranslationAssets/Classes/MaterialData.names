@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Material Data"
+                "name": "Material Data",
+                "category": "Rendering"
             },
             "methods": [
                 {

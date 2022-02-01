@@ -99,6 +99,11 @@ namespace AZ
             //! Queue material instance recreation notifiucations until tick
             void QueueMaterialUpdateNotification();
 
+            //! Converts property overrides storing image asset references into asset IDs. This addresses a problem where image property
+            //! overrides are lost during prefab serialization and patching. This suboptimal function will be removed once the underlying
+            //! problem is resolved.
+            void ConvertAssetsForSerialization();
+
             EntityId m_entityId;
             MaterialComponentConfig m_configuration;
             AZStd::unordered_set<MaterialAssignmentId> m_materialsWithDirtyProperties;

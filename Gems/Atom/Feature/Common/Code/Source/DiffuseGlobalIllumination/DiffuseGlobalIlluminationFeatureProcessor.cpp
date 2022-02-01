@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h>
@@ -90,10 +91,11 @@ namespace AZ
                     downsamplePassFilter,
                     [sizeMultiplier](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                     {
-                        for (uint32_t outputIndex = 0; outputIndex < pass->GetOutputCount(); ++outputIndex)
+                        // update the downsample pass size multipliers
+                        for (uint32_t attachmentIndex = 0; attachmentIndex < pass->GetOutputCount(); ++attachmentIndex)
                         {
-                            RPI::Ptr<RPI::PassAttachment> outputAttachment = pass->GetOutputBinding(outputIndex).m_attachment;
-                            RPI::PassAttachmentSizeMultipliers& sizeMultipliers = outputAttachment->m_sizeMultipliers;
+                            RPI::Ptr<RPI::PassAttachment> attachment = pass->GetOutputBinding(attachmentIndex).m_attachment;
+                            RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
 
                             sizeMultipliers.m_widthMultiplier = sizeMultiplier;
                             sizeMultipliers.m_heightMultiplier = sizeMultiplier;
@@ -104,6 +106,25 @@ namespace AZ
                         RHI::ShaderInputNameIndex outputImageScaleShaderInput = "m_outputImageScale";
                         downsamplePass->GetShaderResourceGroup()->SetConstant(
                             outputImageScaleShaderInput, aznumeric_cast<uint32_t>(1.0f / sizeMultiplier));
+
+                        // update the parent pass IrradianceImage size multiplier
+                        RPI::ParentPass* parentPass = pass->GetParent();
+                        RPI::Ptr<RPI::PassAttachment> irradianceImageAttachment;
+                        for (uint32_t attachmentIndex = 0; attachmentIndex < parentPass->GetInputOutputCount(); ++attachmentIndex)
+                        {
+                            RPI::Ptr<RPI::PassAttachment> attachment = parentPass->GetInputOutputBinding(attachmentIndex).m_attachment;
+                            if (attachment->m_name == Name("IrradianceImage"))
+                            {
+                                irradianceImageAttachment = attachment;
+                                break;
+                            }
+                        }
+
+                        AZ_Assert(irradianceImageAttachment != nullptr, "Unable to find IrradianceImage attachment");
+
+                        RPI::PassAttachmentSizeMultipliers& sizeMultipliers = irradianceImageAttachment->m_sizeMultipliers;
+                        sizeMultipliers.m_widthMultiplier = sizeMultiplier;
+                        sizeMultipliers.m_heightMultiplier = sizeMultiplier;
 
                         // handle all downsample passes
                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;

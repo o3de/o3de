@@ -17,7 +17,6 @@
 #include <ScriptCanvas/Core/NodeableOut.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.h>
-#include <ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
@@ -509,9 +508,9 @@ namespace ScriptCanvas
 
                 for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    if (!dependency.Get()->GetData().m_areStaticsInitialized)
+                    if (!dependency.Get()->m_runtimeData.m_areStaticsInitialized)
                     {
-                        InitializeInterpretedStatics(dependency.Get()->GetData());
+                        InitializeInterpretedStatics(dependency.Get()->m_runtimeData);
                     }
                 }
 

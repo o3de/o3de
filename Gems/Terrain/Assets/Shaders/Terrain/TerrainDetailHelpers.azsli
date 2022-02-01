@@ -123,7 +123,7 @@ float3 GetDetailColor(TerrainSrg::DetailMaterialData materialData, float2 uv, fl
     float3 color = materialData.m_baseColor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureBaseColor) > 0)
     {
-        color = TerrainSrg::m_detailTextures[GetDetailColorIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rgb;
+        color = TerrainSrg::m_textures[GetDetailColorIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rgb;
     }
     return color * materialData.m_baseColorFactor;
 }
@@ -133,7 +133,7 @@ float3 GetDetailNormal(TerrainSrg::DetailMaterialData materialData, float2 uv, f
     float2 normal = float2(0.0, 0.0);
     if ((materialData.m_flags & DetailTextureFlags::UseTextureNormal) > 0)
     {
-        normal = TerrainSrg::m_detailTextures[GetDetailNormalIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rg;
+        normal = TerrainSrg::m_textures[GetDetailNormalIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).rg;
     }
     
     // X and Y are inverted here to be consistent with SampleNormalXY in NormalInput.azsli.
@@ -153,7 +153,7 @@ float GetDetailRoughness(TerrainSrg::DetailMaterialData materialData, float2 uv,
     float roughness = materialData.m_roughnessScale;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureRoughness) > 0)
     {
-        roughness = TerrainSrg::m_detailTextures[GetDetailRoughnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        roughness = TerrainSrg::m_textures[GetDetailRoughnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
         roughness = materialData.m_roughnessBias + roughness * materialData.m_roughnessScale;
     }
     return roughness;
@@ -164,7 +164,7 @@ float GetDetailMetalness(TerrainSrg::DetailMaterialData materialData, float2 uv,
     float metalness = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureMetallic) > 0)
     {
-        metalness = TerrainSrg::m_detailTextures[GetDetailMetalnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        metalness = TerrainSrg::m_textures[GetDetailMetalnessIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
     }
     return metalness * materialData.m_metalFactor;
 }
@@ -174,7 +174,7 @@ float GetDetailSpecularF0(TerrainSrg::DetailMaterialData materialData, float2 uv
     float specularF0 = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureSpecularF0) > 0)
     {
-        specularF0 = TerrainSrg::m_detailTextures[GetDetailSpecularF0Index(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        specularF0 = TerrainSrg::m_textures[GetDetailSpecularF0Index(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
     }
     return specularF0 * materialData.m_specularF0Factor;
 }
@@ -184,7 +184,7 @@ float GetDetailOcclusion(TerrainSrg::DetailMaterialData materialData, float2 uv,
     float occlusion = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureOcclusion) > 0)
     {
-        occlusion = TerrainSrg::m_detailTextures[GetDetailOcclusionIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        occlusion = TerrainSrg::m_textures[GetDetailOcclusionIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
     }
     return occlusion * materialData.m_occlusionFactor;
 }
@@ -194,7 +194,7 @@ float GetDetailHeight(TerrainSrg::DetailMaterialData materialData, float2 uv, fl
     float height = materialData.m_heightFactor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureHeight) > 0)
     {
-        height = TerrainSrg::m_detailTextures[GetDetailHeightIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
+        height = TerrainSrg::m_textures[GetDetailHeightIndex(materialData)].SampleGrad(TerrainMaterialSrg::m_sampler, uv, ddx, ddy).r;
         height = materialData.m_heightOffset + height * materialData.m_heightFactor;
     }
     return height;
@@ -274,25 +274,20 @@ instance, if detailMaterialIdUv falls perfectly in-between all 4 samples, then e
 Each sample can have two different detail materials defined with a blend value to determine their relative contribution.
 The detailUv is used for sampling the textures of each detail material.
 */
-bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, float2 detailUv)
+bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord, float2 detailUv)
 {
     float2 textureSize;
     TerrainSrg::m_detailMaterialIdImage.GetDimensions(textureSize.x, textureSize.y);
 
-    float2 detailMaterialIdCoord = detailMaterialIdUv * textureSize; // uv -> pixel coordinate
-
-    // detailMaterialIdCoord could be negative, so add textureSize to ensure it is positive
-    detailMaterialIdCoord += textureSize; 
-
     // The detail material id texture wraps since the "center" point can be anywhere in the texture, so mod by texturesize
-    int2 detailMaterailIdTopLeft = int2(detailMaterialIdCoord) % textureSize;
-    int2 detailMaterailIdBottomRight = (int2(detailMaterialIdCoord) + 1) % textureSize;
+    int2 detailMaterialIdTopLeft = ((int2(detailMaterialIdCoord) % textureSize) + textureSize) % textureSize;
+    int2 detailMaterialIdBottomRight = (detailMaterialIdTopLeft + 1) % textureSize;
 
     // Using Load() to gather the nearest 4 samples (Gather4() isn't used because of precision issues with uvs).
-    uint4 s1 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdTopLeft.x, detailMaterailIdBottomRight.y, 0));
-    uint4 s2 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdBottomRight, 0));
-    uint4 s3 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdBottomRight.x, detailMaterailIdTopLeft.y, 0));
-    uint4 s4 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdTopLeft, 0));
+    uint4 s1 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdTopLeft.x, detailMaterialIdBottomRight.y, 0));
+    uint4 s2 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdBottomRight, 0));
+    uint4 s3 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdBottomRight.x, detailMaterialIdTopLeft.y, 0));
+    uint4 s4 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdTopLeft, 0));
 
     uint4 material1 = uint4(s1.x, s2.x, s3.x, s4.x);
     uint4 material2 = uint4(s1.y, s2.y, s3.y, s4.y);

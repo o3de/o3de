@@ -30,7 +30,6 @@
 #include "Objects/ObjectManager.h"
 #include "Util/3DConnexionDriver.h"
 #include "PluginManager.h"
-#include "Include/IRenderListener.h"
 #include "GameEngine.h"
 #include "Settings.h"
 
@@ -225,61 +224,6 @@ void QtViewport::GetDimensions(int* pWidth, int* pHeight) const
     {
         *pHeight = height();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::RegisterRenderListener(IRenderListener*    piListener)
-{
-#ifdef _DEBUG
-    size_t nCount(0);
-    size_t nTotal(0);
-
-    nTotal = m_cRenderListeners.size();
-    for (nCount = 0; nCount < nTotal; ++nCount)
-    {
-        if (m_cRenderListeners[nCount] == piListener)
-        {
-            assert(!"Registered the same RenderListener multiple times.");
-            break;
-        }
-    }
-#endif //_DEBUG
-    m_cRenderListeners.push_back(piListener);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool QtViewport::UnregisterRenderListener(IRenderListener*  piListener)
-{
-    size_t nCount(0);
-    size_t nTotal(0);
-
-    nTotal = m_cRenderListeners.size();
-    for (nCount = 0; nCount < nTotal; ++nCount)
-    {
-        if (m_cRenderListeners[nCount] == piListener)
-        {
-            m_cRenderListeners.erase(m_cRenderListeners.begin() + nCount);
-            return true;
-        }
-    }
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool QtViewport::IsRenderListenerRegistered(IRenderListener*    piListener)
-{
-    size_t nCount(0);
-    size_t nTotal(0);
-
-    nTotal = m_cRenderListeners.size();
-    for (nCount = 0; nCount < nTotal; ++nCount)
-    {
-        if (m_cRenderListeners[nCount] == piListener)
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1164,18 +1108,6 @@ bool QtViewport::GetAdvancedSelectModeFlag()
     return m_bAdvancedSelectMode;
 }
 
-//////////////////////////////////////////////////////////////////////////
-void QtViewport::ProcessRenderLisneters(DisplayContext& rstDisplayContext)
-{
-    size_t nCount(0);
-    size_t nTotal(0);
-
-    nTotal = m_cRenderListeners.size();
-    for (nCount = 0; nCount < nTotal; ++nCount)
-    {
-        m_cRenderListeners[nCount]->Render(rstDisplayContext);
-    }
-}
 //////////////////////////////////////////////////////////////////////////
 #if defined(AZ_PLATFORM_WINDOWS)
 // Note: Both CreateAnglesYPR and CreateOrientationYPR were copied verbatim from Cry_Camera.h which has been removed.

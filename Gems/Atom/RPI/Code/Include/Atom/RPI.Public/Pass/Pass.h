@@ -25,7 +25,7 @@
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/map.h>

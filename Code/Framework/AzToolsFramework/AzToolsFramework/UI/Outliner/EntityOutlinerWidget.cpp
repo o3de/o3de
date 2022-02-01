@@ -224,7 +224,6 @@ namespace AzToolsFramework
         connect(m_gui->m_objectTree, &QTreeView::expanded, this, &EntityOutlinerWidget::OnTreeItemExpanded);
         connect(m_gui->m_objectTree, &QTreeView::collapsed, this, &EntityOutlinerWidget::OnTreeItemCollapsed);
         connect(m_gui->m_objectTree, &EntityOutlinerTreeView::ItemDropped, this, &EntityOutlinerWidget::OnDropEvent);
-        connect(m_listModel, &EntityOutlinerListModel::ExpandEntity, this, &EntityOutlinerWidget::OnExpandEntity);
         connect(m_listModel, &EntityOutlinerListModel::SelectEntity, this, &EntityOutlinerWidget::OnSelectEntity);
         connect(m_listModel, &EntityOutlinerListModel::EnableSelectionUpdates, this, &EntityOutlinerWidget::OnEnableSelectionUpdates);
         connect(m_listModel, &EntityOutlinerListModel::ResetFilter, this, &EntityOutlinerWidget::ClearFilter);
@@ -890,6 +889,7 @@ namespace AzToolsFramework
 
         m_actionGoToEntitiesInViewport = new QAction(tr("Find in viewport"), this);
         m_actionGoToEntitiesInViewport->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        m_actionGoToEntitiesInViewport->setShortcut(tr("Z"));
         connect(m_actionGoToEntitiesInViewport, &QAction::triggered, this, &EntityOutlinerWidget::GoToEntitiesInViewport);
         addAction(m_actionGoToEntitiesInViewport);
     }
@@ -971,10 +971,6 @@ namespace AzToolsFramework
         m_listModel->OnEntityCollapsed(entityId);
     }
 
-    void EntityOutlinerWidget::OnExpandEntity(const AZ::EntityId& entityId, bool expand)
-    {
-        m_gui->m_objectTree->setExpanded(GetIndexFromEntityId(entityId), expand);
-    }
 
     void EntityOutlinerWidget::OnSelectEntity(const AZ::EntityId& entityId, bool selected)
     {
@@ -1117,6 +1113,8 @@ namespace AzToolsFramework
 
         m_listModel->SearchStringChanged(filterString);
         m_proxyModel->UpdateFilter();
+
+        m_gui->m_objectTree->expandAll();
     }
 
     void EntityOutlinerWidget::OnFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters)

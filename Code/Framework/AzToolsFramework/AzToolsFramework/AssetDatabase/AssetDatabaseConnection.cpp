@@ -14,7 +14,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/SQLite/SQLiteConnection.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/SQLite/SQLiteQuery.h>
 #include <AzToolsFramework/SQLite/SQLiteBoundColumnSet.h>
 #include <cinttypes>

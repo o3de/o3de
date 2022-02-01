@@ -384,16 +384,16 @@ namespace LyShine
         // When module is linked statically, we'll share the application's gEnv pointer.
         gEnv = system.GetGlobalEnvironment();
 #endif
-        m_pLyShine = new CLyShine(gEnv->pSystem);
-        gEnv->pLyShine = m_pLyShine;
+        m_lyShine = AZStd::make_unique<CLyShine>();
+        AZ::Interface<ILyShine>::Register(m_lyShine.get());
 
         system.GetILevelSystem()->AddListener(this);
 
         BroadcastCursorImagePathname();
 
-        if (gEnv->pLyShine)
+        if (AZ::Interface<ILyShine>::Get())
         {
-            gEnv->pLyShine->PostInit();
+            AZ::Interface<ILyShine>::Get()->PostInit();
         }
     }
 
@@ -402,18 +402,20 @@ namespace LyShine
     {
         system.GetILevelSystem()->RemoveListener(this);
 
-        gEnv->pLyShine = nullptr;
-        delete m_pLyShine;
-        m_pLyShine = nullptr;       
+        if (m_lyShine)
+        {
+            AZ::Interface<ILyShine>::Unregister(m_lyShine.get());
+            m_lyShine.reset();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::OnUnloadComplete([[maybe_unused]] const char* levelName)
     {
         // Perform level unload procedures for the LyShine UI system
-        if (gEnv && gEnv->pLyShine)
+        if (AZ::Interface<ILyShine>::Get())
         {
-            gEnv->pLyShine->OnLevelUnload();
+            AZ::Interface<ILyShine>::Get()->OnLevelUnload();
         }
     }
 

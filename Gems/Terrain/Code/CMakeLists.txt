@@ -98,7 +98,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME Terrain.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
-            terrain_files.cmake
             terrain_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
@@ -117,6 +116,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Add Terrain.Tests to googletest
     ly_add_googletest(
         NAME Gem::Terrain.Tests
+    )
+
+    ly_add_googlebenchmark(
+        NAME Gem::Terrain.Benchmarks
+        TARGET Gem::Terrain.Tests
     )
 
     # If we are a host platform we want to add tools test like editor tests here

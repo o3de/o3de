@@ -13,7 +13,6 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
 
 #include "Attributes.h"
 #include "Core.h"
@@ -21,6 +20,12 @@
 
 namespace ScriptCanvas
 {
+    AZ_CVAR(bool, g_saveRuntimeAssetsAsPlainTextForDebug, false, {}, AZ::ConsoleFunctorFlags::Null
+        , "Save runtime assets as plain text rather than binary for debug purposes.");
+
+    AZ_CVAR(bool, g_saveEditorAssetsAsPlainTextForDebug, false, {}, AZ::ConsoleFunctorFlags::Null
+        , "Save editor assets as plain text rather than binary for debug purposes.");
+
     ScopedAuxiliaryEntityHandler::ScopedAuxiliaryEntityHandler(AZ::Entity* buildEntity)
         : m_buildEntity(buildEntity)
         , m_wasAdded(false)
@@ -323,9 +328,9 @@ namespace ScriptCanvas
         return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
     }
 
-    const ScriptCanvasEditor::Graph* ScriptCanvasData::GetEditorGraph() const
+    const ScriptCanvasEditor::EditorGraph* ScriptCanvasData::GetEditorGraph() const
     {
-        return reinterpret_cast<const ScriptCanvasEditor::Graph*>(GetGraph());
+        return reinterpret_cast<const ScriptCanvasEditor::EditorGraph*>(GetGraph());
     }
 
     Graph* ScriptCanvasData::ModGraph()
@@ -333,8 +338,8 @@ namespace ScriptCanvas
         return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
     }
 
-    ScriptCanvasEditor::Graph* ScriptCanvasData::ModEditorGraph()
+    ScriptCanvasEditor::EditorGraph* ScriptCanvasData::ModEditorGraph()
     {
-        return reinterpret_cast<ScriptCanvasEditor::Graph*>(ModGraph());
+        return reinterpret_cast<ScriptCanvasEditor::EditorGraph*>(ModGraph());
     }
 }

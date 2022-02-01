@@ -10,7 +10,6 @@
 #include "EditorDefs.h"
 
 #include "Variable.h"
-#include "UIEnumsDatabase.h"
 
 #include "UsedResources.h"              // for CUsedResources
 
@@ -496,49 +495,3 @@ void CVarObject::Serialize(XmlNodeRef node, bool load)
         m_vars->Serialize(node, load);
     }
 }
-
-
-CVarGlobalEnumList::CVarGlobalEnumList(CUIEnumsDatabase_SEnum* pEnum)
-    : m_pEnum(pEnum)
-{
-}
-
-CVarGlobalEnumList::CVarGlobalEnumList(const QString& enumName)
-{
-    m_pEnum = GetIEditor()->GetUIEnumsDatabase()->FindEnum(enumName);
-}
-
-//! Get the name of specified value in enumeration.
-QString CVarGlobalEnumList::GetItemName(uint index)
-{
-    if (!m_pEnum || index >= static_cast<uint>(m_pEnum->strings.size()))
-    {
-        return QString();
-    }
-    return m_pEnum->strings[index];
-}
-
-QString CVarGlobalEnumList::NameToValue(const QString& name)
-{
-    if (m_pEnum)
-    {
-        return m_pEnum->NameToValue(name);
-    }
-    else
-    {
-        return name;
-    }
-}
-
-QString CVarGlobalEnumList::ValueToName(const QString& value)
-{
-    if (m_pEnum)
-    {
-        return m_pEnum->ValueToName(value);
-    }
-    else
-    {
-        return value;
-    }
-}
-

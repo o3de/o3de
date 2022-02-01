@@ -23,7 +23,7 @@ namespace ScriptCanvasEditor
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         virtual Reporter RunGraph(AZStd::string_view path, ScriptCanvas::ExecutionMode mode) = 0;
-        virtual Reporter RunAssetGraph(AZ::Data::Asset<AZ::Data::AssetData>, ScriptCanvas::ExecutionMode mode) = 0;
+        virtual Reporter RunAssetGraph(SourceHandle source, ScriptCanvas::ExecutionMode mode) = 0;
     };
     using ScriptCanvasExecutionBus = AZ::EBus<ScriptCanvasExecutionRequests>;
 

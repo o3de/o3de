@@ -43,7 +43,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         using RemoveEditorInfoResult = AZ::Outcome<void, AZStd::string>;
         RemoveEditorInfoResult RemoveEditorInfo(
-            PrefabDom& prefab,
+            PrefabDocument& prefab,
             AZ::SerializeContext* serializeContext,
             PrefabProcessorContext& prefabProcessorContext);
 
@@ -51,8 +51,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
      protected:
         using EntityList = AZStd::vector<AZ::Entity*>;
-        static void GetEntitiesFromInstance(
-            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& instance, EntityList& hierarchyEntities);
+        static void GetEntitiesFromInstance(AzToolsFramework::Prefab::Instance& instance, EntityList& hierarchyEntities);
 
         static bool ReadComponentAttribute(
             AZ::Component* component,

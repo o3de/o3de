@@ -1,0 +1,17 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            {
+                "Name": "TerrainDetailTextureComputePassTemplate",
+                "Path": "Passes/TerrainDetailTextureComputePass.pass"
+            },
+            {
+                "Name": "TerrainMacroTextureComputePassTemplate",
+                "Path": "Passes/TerrainMacroTextureComputePass.pass"
+            }
+        ]
+    }
+}

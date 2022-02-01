@@ -71,7 +71,7 @@ namespace AZ
             }
         }
 
-        const AZStd::array_view<RPI::PipelineViewTag> CascadedShadowmapsPass::GetPipelineViewTags()
+        const AZStd::span<const RPI::PipelineViewTag> CascadedShadowmapsPass::GetPipelineViewTags()
         {
             if (m_childrenPipelineViewTags.size() != Shadow::MaxNumberOfCascades)
             {
@@ -181,7 +181,7 @@ namespace AZ
 
         RPI::Ptr<ShadowmapPass> CascadedShadowmapsPass::CreateChild(uint16_t cascadeIndex)
         {
-            const AZStd::array_view<RPI::PipelineViewTag> childrenViewTags = GetPipelineViewTags();
+            const AZStd::span<const RPI::PipelineViewTag> childrenViewTags = GetPipelineViewTags();
             const Name passName{ AZStd::string::format("DirectionalLightShadowmapPass.%d", cascadeIndex) };
 
             auto passData = AZStd::make_shared<RPI::RasterPassData>();

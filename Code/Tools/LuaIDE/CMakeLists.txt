@@ -10,6 +10,8 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+
 ly_add_target(
     NAME LuaIDE APPLICATION
     NAMESPACE AZ
@@ -18,7 +20,7 @@ ly_add_target(
     AUTORCC
     FILES_CMAKE
         lua_ide_files.cmake
-        Platform/${PAL_PLATFORM_NAME}/lua_ide_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        ${pal_dir}/lua_ide_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .

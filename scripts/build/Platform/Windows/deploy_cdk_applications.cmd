@@ -49,6 +49,10 @@ FOR /f "tokens=1,2,3" %%a IN ('CALL aws sts assume-role --query Credentials.[Sec
 )
 FOR /F "tokens=4 delims=:" %%a IN ("%ASSUME_ROLE_ARN%") DO SET O3DE_AWS_DEPLOY_ACCOUNT=%%a
 
+IF "%O3DE_AWS_PROJECT_NAME%"=="" (
+    SET O3DE_AWS_PROJECT_NAME=%BRANCH_NAME%-%PIPELINE_NAME%-Windows
+)
+
 REM Bootstrap and deploy the CDK applications
 ECHO [cdk_bootstrap] Bootstrap CDK
 CALL cdk bootstrap aws://%O3DE_AWS_DEPLOY_ACCOUNT%/%O3DE_AWS_DEPLOY_REGION%

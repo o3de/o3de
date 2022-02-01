@@ -20,7 +20,6 @@
 #include <Editor/Framework/ScriptCanvasGraphUtilities.h>
 #include <Editor/Settings.h>
 #include <Editor/SystemComponent.h>
-#include <Editor/View/Dialogs/NewGraphDialog.h>
 #include <Editor/View/Dialogs/SettingsDialog.h>
 #include <Editor/View/Widgets/SourceHandlePropertyAssetCtrl.h>
 #include <Editor/View/Windows/MainWindow.h>
@@ -36,7 +35,8 @@
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
-#include <ScriptCanvas/View/EditCtrls/GenericLineEditCtrl.h>
+#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
+
 
 namespace ScriptCanvasEditor
 {
@@ -109,7 +109,6 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::Activate()
     {
-        m_assetTracker.Activate();
         AZ::JobManagerDesc jobDesc;
         for (size_t i = 0; i < cs_jobThreads; ++i)
         {
@@ -165,7 +164,6 @@ namespace ScriptCanvasEditor
 
         m_jobContext.reset();
         m_jobManager.reset();
-        m_assetTracker.Deactivate();
     }
 
     void SystemComponent::AddAsyncJob(AZStd::function<void()>&& jobFunc)
@@ -183,7 +181,7 @@ namespace ScriptCanvasEditor
     {
         if (entity)
         {
-            auto graph = entity->CreateComponent<Graph>();
+            auto graph = entity->CreateComponent<EditorGraph>();
             entity->CreateComponent<EditorGraphVariableManagerComponent>(graph->GetScriptCanvasId());
         }
     }
@@ -265,11 +263,13 @@ namespace ScriptCanvasEditor
  
                             action = entityMenu->addAction(QString("%1").arg(QString(displayName.c_str())));
  
-                            QObject::connect(action, &QAction::triggered, [assetId]
+                            QObject::connect(action, &QAction::triggered, [assetInfo]
                             {
                                 AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
+                                SourceHandle sourceHandle(nullptr, assetInfo.m_assetId.m_guid, "");
+                                CompleteDescriptionInPlace(sourceHandle);
                                 GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset
-                                    , SourceHandle(nullptr, assetId.m_guid, "")
+                                    , sourceHandle
                                     , Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
                             });
                         }
@@ -316,8 +316,8 @@ namespace ScriptCanvasEditor
         using namespace AzToolsFramework::AssetBrowser;
 
         bool isScriptCanvasAsset = false;
-        ScriptCanvasAssetDescription scriptCanvasAssetDescription;
-        if (AZStd::wildcard_match(AZStd::string::format("*%s", scriptCanvasAssetDescription.GetExtensionImpl()).c_str(), fullSourceFileName))
+
+        if (AZStd::wildcard_match(ScriptCanvasEditor::SourceDescription::GetFileExtension(), fullSourceFileName))
         {
             isScriptCanvasAsset = true;
         }
@@ -339,7 +339,7 @@ namespace ScriptCanvasEditor
                 }
             };
  
-            openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(ScriptCanvasAssetDescription().GetIconPathImpl()), scriptCanvasEditorCallback });
+            openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath()), scriptCanvasEditorCallback });
          }
     }
 
@@ -394,7 +394,7 @@ namespace ScriptCanvasEditor
         return ScriptCanvasEditor::RunGraph(runGraphSpec).front();
     }
 
-    Reporter SystemComponent::RunAssetGraph(AZ::Data::Asset<AZ::Data::AssetData> asset, ScriptCanvas::ExecutionMode mode)
+    Reporter SystemComponent::RunAssetGraph(SourceHandle asset, ScriptCanvas::ExecutionMode mode)
     {
         Reporter reporter;
         RunEditorAsset(asset, reporter, mode);

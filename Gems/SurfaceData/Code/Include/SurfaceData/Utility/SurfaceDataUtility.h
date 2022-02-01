@@ -88,6 +88,16 @@ namespace SurfaceData
         const AZ::Vector3& rayStart, const AZ::Vector3& rayEnd,
         AZ::Vector3& outPosition, AZ::Vector3& outNormal);
 
+    AZ_INLINE void AssignSurfaceTagWeights(const SurfaceTagVector& tags, float weight, SurfaceTagWeightMap& weights)
+    {
+        weights.clear();
+        weights.reserve(tags.size());
+        for (auto& tag : tags)
+        {
+            weights[tag] = weight;
+        }
+    }
+
     AZ_INLINE void AddMaxValueForMasks(SurfaceTagWeightMap& masks, const AZ::Crc32 tag, const float value)
     {
         const auto maskItr = masks.find(tag);
@@ -166,7 +176,8 @@ namespace SurfaceData
     }
 
     template<typename SampleContainer>
-    AZ_INLINE bool HasMatchingTags(const SurfaceTagWeightMap& sourceTags, const SampleContainer& sampleTags, float valueMin, float valueMax)
+    AZ_INLINE bool HasMatchingTags(
+        const SurfaceTagWeightMap& sourceTags, const SampleContainer& sampleTags, float valueMin, float valueMax)
     {
         for (const auto& sampleTag : sampleTags)
         {

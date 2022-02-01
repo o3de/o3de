@@ -12,7 +12,7 @@
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
-#include <Components/RandomGradientComponent.h>
+#include <GradientSignal/Components/RandomGradientComponent.h>
 
 namespace GradientSignal
 {
