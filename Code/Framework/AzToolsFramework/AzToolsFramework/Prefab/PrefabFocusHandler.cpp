@@ -197,7 +197,6 @@ namespace AzToolsFramework::Prefab
         RootAliasPath previousContainerRootAliasPath = m_focusedInstanceRootAliasPath;
         InstanceOptionalReference previousFocusedInstance = GetInstanceReferenceFromRootAliasPath(previousContainerRootAliasPath);
 
-        // Do not store the container for the root instance, use an invalid EntityId instead.
         m_focusedInstanceRootAliasPath = focusedInstance->get().GetAbsoluteInstanceAliasPath();
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
 
@@ -318,7 +317,7 @@ namespace AzToolsFramework::Prefab
         // Determine if the entityId is the container for any of the instances in the vector.
         auto result = AZStd::find_if(
             m_instanceFocusHierarchy.begin(), m_instanceFocusHierarchy.end(),
-            [&, entityId ](const RootAliasPath& rootAliasPath)
+            [&, entityId](const RootAliasPath& rootAliasPath)
             {
                 InstanceOptionalReference instance = GetInstanceReferenceFromRootAliasPath(rootAliasPath);
                 return (instance->get().GetContainerEntityId() == entityId);
