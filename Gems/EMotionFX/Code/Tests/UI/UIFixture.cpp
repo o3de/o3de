@@ -8,6 +8,7 @@
 
 #include <Tests/UI/UIFixture.h>
 #include <Tests/UI/ModalPopupHandler.h>
+#include <Tests/Mocks/AtomRenderPlugin.h>
 #include <Integration/System/SystemCommon.h>
 
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
@@ -69,6 +70,7 @@ namespace EMotionFX
         // Set ignore visibilty so that the visibility check can be ignored in plugins
         EMStudio::GetManager()->SetIgnoreVisibility(true);
     }
+
     void UIFixture::SetupPluginWindows()
     {
         // Plugins have to be created after both the QApplication object and
@@ -80,10 +82,17 @@ namespace EMotionFX
             EMStudio::GetPluginManager()->CreateWindowOfType(plugin->GetName());
         }
     }
-
+    
+    void UIFixture::OnRegisterPlugin()
+    {
+        EMStudio::PluginManager* pluginManager = EMStudio::EMStudioManager::GetInstance()->GetPluginManager();
+        pluginManager->RegisterPlugin(new EMStudio::MockAtomRenderPlugin());
+    }
 
     void UIFixture::SetUp()
     {
+        Integration::SystemNotificationBus::Handler::BusConnect();
+
         using namespace testing;
         SetupQtAndFixtureBase();
         SetupPluginWindows();
@@ -97,6 +106,7 @@ namespace EMotionFX
     void UIFixture::TearDown()
     {
         m_assetSystemRequestMock.BusDisconnect();
+        Integration::SystemNotificationBus::Handler::BusDisconnect();
         CloseAllNotificationWindows();
 
         DeselectAllAnimGraphNodes();
