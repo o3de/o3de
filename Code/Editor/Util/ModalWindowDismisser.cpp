@@ -14,7 +14,6 @@
 
 // Qt
 #include <QDialog>
-#include <QTimer>
 
 ModalWindowDismisser::ModalWindowDismisser()
 {
@@ -29,37 +28,22 @@ ModalWindowDismisser::~ModalWindowDismisser()
     }
 }
 
-void ModalWindowDismisser::DismissWindows()
-{
-    for (QDialog* dialog : m_windows)
-    {
-        dialog->close();
-    }
-    m_windows.clear();
-    m_dismiss = false;
-}
-
 bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
 {
     if (QDialog* dialog = qobject_cast<QDialog*>(object))
     {
         if (dialog->isModal())
         {
-            QEvent::Type test = event->type();
-            if (test == QEvent::Show || test == QEvent::WindowActivate)
+            // if we wait until a Paint event arrives, we can be sure the dialog is fully open
+            // and that close() will work correctly.
+            if (event->type() == QEvent::Paint)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
                 if (it == m_windows.end())
                 {
                     m_windows.push_back(dialog);
                 }
-                if (!m_dismiss)
-                {
-                    // Closing the window at the same moment is opened leads to crashes and is unstable,
-                    // so do it after a long 2 ms (needed for Jenkins to realise the dialog is there in some circumstances)
-                    QTimer::singleShot(2, this, &ModalWindowDismisser::DismissWindows);
-                    m_dismiss = true;
-                }
+                dialog->close();
             }
             else if (event->type() == QEvent::Close)
             {
