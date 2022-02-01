@@ -165,6 +165,8 @@ namespace MaterialEditor
     {
         if (!AtomToolsDocument::Save())
         {
+            // SaveFailed has already been called so just forward the result without additional notifications.
+            // TODO Replace bool return value with enum for open and save states.
             return false;
         }
 
@@ -198,6 +200,8 @@ namespace MaterialEditor
     {
         if (!AtomToolsDocument::SaveAsCopy(savePath))
         {
+            // SaveFailed has already been called so just forward the result without additional notifications.
+            // TODO Replace bool return value with enum for open and save states.
             return false;
         }
 
@@ -228,6 +232,8 @@ namespace MaterialEditor
     {
         if (!AtomToolsDocument::SaveAsChild(savePath))
         {
+            // SaveFailed has already been called so just forward the result without additional notifications.
+            // TODO Replace bool return value with enum for open and save states.
             return false;
         }
 
@@ -363,11 +369,18 @@ namespace MaterialEditor
             return true;
         });
 
-        if (!addPropertiesResult || !AZ::RPI::JsonUtils::SaveObjectToFile(m_savePathNormalized, sourceData))
+        if (!addPropertiesResult)
+        {
+            AZ_Error("MaterialDocument", false, "Document properties could not be saved: '%s'.", m_savePathNormalized.c_str());
+            return false;
+        }
+
+        if (!AZ::RPI::JsonUtils::SaveObjectToFile(m_savePathNormalized, sourceData))
         {
             AZ_Error("MaterialDocument", false, "Document could not be saved: '%s'.", m_savePathNormalized.c_str());
             return false;
         }
+
         return true;
     }
 

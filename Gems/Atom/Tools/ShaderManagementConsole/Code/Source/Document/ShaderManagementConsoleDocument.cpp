@@ -107,6 +107,8 @@ namespace ShaderManagementConsole
     {
         if (!AtomToolsDocument::Save())
         {
+            // SaveFailed has already been called so just forward the result without additional notifications.
+            // TODO Replace bool return value with enum for open and save states.
             return false;
         }
 
@@ -117,6 +119,8 @@ namespace ShaderManagementConsole
     {
         if (!AtomToolsDocument::SaveAsCopy(savePath))
         {
+            // SaveFailed has already been called so just forward the result without additional notifications.
+            // TODO Replace bool return value with enum for open and save states.
             return false;
         }
 
@@ -127,6 +131,8 @@ namespace ShaderManagementConsole
     {
         if (!AtomToolsDocument::SaveAsChild(savePath))
         {
+            // SaveFailed has already been called so just forward the result without additional notifications.
+            // TODO Replace bool return value with enum for open and save states.
             return false;
         }
 
