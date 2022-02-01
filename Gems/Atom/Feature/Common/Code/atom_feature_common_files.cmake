@@ -216,6 +216,8 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
+    Source/PostProcessing/EditorModeFeedbackParentPass.cpp
+    Source/PostProcessing/EditorModeFeedbackParentPass.h
     Source/PostProcessing/EditorModeFeedbackPass.cpp
     Source/PostProcessing/EditorModeFeedbackPass.h
     Source/PostProcessing/EditorModeMaskPass.cpp
