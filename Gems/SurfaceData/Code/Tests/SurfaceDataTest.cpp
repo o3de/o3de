@@ -204,30 +204,31 @@ public:
         m_surfaceDataSystemEntity.reset();
     }
 
-    bool ValidateRegionListSize(AZ::Aabb bounds, AZ::Vector2 stepSize, const SurfaceData::SurfacePointLists& outputLists)
-    {
-        // We expect the output list to contain width * height output entries.
-        // The right edge of the AABB should be treated as exclusive, so a 4x4 box with 1 step size will produce 16 entries (0, 1, 2, 3 on each dimension),
-        // but a 4.1 x 4.1 box with 1 step size will produce 25 entries (0, 1, 2, 3, 4 on each dimension).
-        return (outputLists.size() == aznumeric_cast<size_t>(ceil(bounds.GetXExtent() * stepSize.GetX()) * ceil(bounds.GetYExtent() * stepSize.GetY())));
-    }
-
     void CompareSurfacePointListWithGetSurfacePoints(
-        SurfaceData::SurfacePointLists surfacePointLists, const SurfaceData::SurfaceTagVector& testTags)
+        const AZStd::vector<AZ::Vector3>& queryPositions, SurfaceData::SurfacePointLists surfacePointLists,
+        const SurfaceData::SurfaceTagVector& testTags)
     {
-        for (auto& pointList : surfacePointLists)
+        SurfaceData::SurfacePointLists singleQueryPointLists;
+
+        for (auto& queryPosition : queryPositions)
         {
-            AZ::Vector3 queryPosition(pointList[0].m_position.GetX(), pointList[0].m_position.GetY(), 16.0f);
-            SurfaceData::SurfacePointList singleQueryPointList;
-
+            SurfaceData::SurfacePointList tempSingleQueryPointList;
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, testTags, singleQueryPointList);
+                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, testTags, tempSingleQueryPointList);
+            singleQueryPointLists.push_back(tempSingleQueryPointList);
+        }
 
-            // Verify the two point lists are the same size, then verify that each point in each list is equal.
-            ASSERT_EQ(pointList.size(), singleQueryPointList.size());
-            for (size_t index = 0; index < pointList.size(); index++)
+        // Verify the two point lists are the same size, then verify that each point in each list is equal.
+        ASSERT_EQ(singleQueryPointLists.size(), surfacePointLists.size());
+        for (size_t listIndex = 0; listIndex < surfacePointLists.size(); listIndex++)
+        {
+            auto& surfacePointList = surfacePointLists[listIndex];
+            auto& singleQueryPointList = singleQueryPointLists[listIndex];
+
+            ASSERT_EQ(singleQueryPointList.size(), surfacePointList.size());
+            for (size_t index = 0; index < surfacePointList.size(); index++)
             {
-                SurfaceData::SurfacePoint& point1 = pointList[index];
+                SurfaceData::SurfacePoint& point1 = surfacePointList[index];
                 SurfaceData::SurfacePoint& point2 = singleQueryPointList[index];
 
                 EXPECT_EQ(point1.m_entityId, point2.m_entityId);
@@ -399,8 +400,8 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestAabbOverlaps2D)
 
         // Make sure the test produces the correct result.
         // Also make sure it's correct regardless of which order the boxes are passed in.
-        EXPECT_TRUE(SurfaceData::AabbOverlaps2D(box1, box2) == testCase.m_overlaps);
-        EXPECT_TRUE(SurfaceData::AabbOverlaps2D(box2, box1) == testCase.m_overlaps);
+        EXPECT_EQ(SurfaceData::AabbOverlaps2D(box1, box2), testCase.m_overlaps);
+        EXPECT_EQ(SurfaceData::AabbOverlaps2D(box2, box1), testCase.m_overlaps);
     }
 }
 
@@ -448,9 +449,9 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestAabbContains2D)
         AZ::Vector3& point = testCase.m_testData[TestCase::POINT];
 
         // Make sure the test produces the correct result.
-        EXPECT_TRUE(SurfaceData::AabbContains2D(box, point) == testCase.m_contains);
+        EXPECT_EQ(SurfaceData::AabbContains2D(box, point), testCase.m_contains);
         // Test the Vector2 version as well.
-        EXPECT_TRUE(SurfaceData::AabbContains2D(box, AZ::Vector2(point.GetX(), point.GetY())) == testCase.m_contains);
+        EXPECT_EQ(SurfaceData::AabbContains2D(box, AZ::Vector2(point.GetX(), point.GetY())), testCase.m_contains);
     }
 }
 
@@ -482,19 +483,17 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion)
         &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
         regionBounds, stepSize, testTags, availablePointsPerPosition);
 
-    EXPECT_TRUE(ValidateRegionListSize(regionBounds, stepSize, availablePointsPerPosition));
-
     // We expect every entry in the output list to have two surface points, at heights 0 and 4, sorted in
     // decreasing height order.  The masks list should be the same size as the set of masks the provider owns.
     // We *could* check every mask as well for completeness, but that seems like overkill.
     for (auto& pointList : availablePointsPerPosition)
     {
-        EXPECT_TRUE(pointList.size() == 2);
-        EXPECT_TRUE(pointList[0].m_position.GetZ() == 4.0f);
-        EXPECT_TRUE(pointList[1].m_position.GetZ() == 0.0f);
+        EXPECT_EQ(pointList.size(), 2);
+        EXPECT_EQ(pointList[0].m_position.GetZ(), 4.0f);
+        EXPECT_EQ(pointList[1].m_position.GetZ(), 0.0f);
         for (auto& point : pointList)
         {
-            EXPECT_TRUE(point.m_masks.size() == providerTags.size());
+            EXPECT_EQ(point.m_masks.size(), providerTags.size());
         }
     }
 }
@@ -520,13 +519,11 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingMas
         &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
         regionBounds, stepSize, testTags, availablePointsPerPosition);
 
-    EXPECT_TRUE(ValidateRegionListSize(regionBounds, stepSize, availablePointsPerPosition));
-
     // We expect every entry in the output list to have no surface points, since the requested mask doesn't match
     // any of the masks from our mock surface provider.
     for (auto& queryPosition : availablePointsPerPosition)
     {
-        EXPECT_TRUE(queryPosition.size() == 0);
+        EXPECT_TRUE(queryPosition.empty());
     }
 }
 
@@ -550,13 +547,11 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingReg
         &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
         regionBounds, stepSize, testTags, availablePointsPerPosition);
 
-    EXPECT_TRUE(ValidateRegionListSize(regionBounds, stepSize, availablePointsPerPosition));
-
     // We expect every entry in the output list to have no surface points, since the input points don't overlap with
     // our surface provider.
     for (auto& pointList : availablePointsPerPosition)
     {
-        EXPECT_TRUE(pointList.size() == 0);
+        EXPECT_TRUE(pointList.empty());
     }
 }
 
@@ -602,16 +597,17 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_ProviderModif
             &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
             regionBounds, stepSize, testTags, availablePointsPerPosition);
 
-        EXPECT_TRUE(ValidateRegionListSize(regionBounds, stepSize, availablePointsPerPosition));
-
         // We expect every entry in the output list to have two surface points (with heights 0 and 4),
         // and each point should have both the "test_surface1" and "test_surface2" tag.
         for (auto& pointList : availablePointsPerPosition)
         {
-            EXPECT_TRUE(pointList.size() == 2);
+            EXPECT_EQ(pointList.size(), 2);
+            float expectedZ = 4.0f;
             for (auto& point : pointList)
             {
-                EXPECT_TRUE(point.m_masks.size() == 2);
+                EXPECT_EQ(point.m_position.GetZ(), expectedZ);
+                EXPECT_EQ(point.m_masks.size(), 2);
+                expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
             }
         }
     }
@@ -624,7 +620,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_SimilarPoints
     // sets of tags.
 
     // Create two mock Surface Providers that covers from (0, 0) - (8, 8) in space, with points spaced 0.25 apart.
-    // The first has heights 0 and 4, with the tag "surfaceTag1".  The second has heights 0.005 and 4.005, with the tag "surfaceTag2".
+    // The first has heights 0 and 4, with the tag "surfaceTag1".  The second has heights 0.0005 and 4.0005, with the tag "surfaceTag2".
     SurfaceData::SurfaceTagVector provider1Tags = { SurfaceData::SurfaceTag(m_testSurface1Crc) };
     MockSurfaceProvider mockProvider1(MockSurfaceProvider::ProviderType::SURFACE_PROVIDER, provider1Tags,
                                       AZ::Vector3(0.0f), AZ::Vector3(8.0f), AZ::Vector3(0.25f, 0.25f, 4.0f),
@@ -648,16 +644,17 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_SimilarPoints
         &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
         regionBounds, stepSize, testTags, availablePointsPerPosition);
 
-    EXPECT_TRUE(ValidateRegionListSize(regionBounds, stepSize, availablePointsPerPosition));
-
     // We expect every entry in the output list to have two surface points, not four.  The two points
     // should have both surface tags on them.
     for (auto& pointList : availablePointsPerPosition)
     {
-        EXPECT_TRUE(pointList.size() == 2);
+        EXPECT_EQ(pointList.size(), 2);
+        float expectedZ = 4.0005f;
         for (auto& point : pointList)
         {
-            EXPECT_TRUE(point.m_masks.size() == 2);
+            EXPECT_EQ(point.m_position.GetZ(), expectedZ);
+            EXPECT_EQ(point.m_masks.size(), 2);
+            expectedZ = (expectedZ == 4.0005f) ? 0.0005f : 4.0005f;
         }
     }
 }
@@ -692,16 +689,14 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_DissimilarPoi
         &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
         regionBounds, stepSize, testTags, availablePointsPerPosition);
 
-    EXPECT_TRUE(ValidateRegionListSize(regionBounds, stepSize, availablePointsPerPosition));
-
     // We expect every entry in the output list to have four surface points with one tag each,
     // because the points are far enough apart that they won't merge.
     for (auto& pointList : availablePointsPerPosition)
     {
-        EXPECT_TRUE(pointList.size() == 4);
+        EXPECT_EQ(pointList.size(), 4);
         for (auto& point : pointList)
         {
-            EXPECT_TRUE(point.m_masks.size() == 1);
+            EXPECT_EQ(point.m_masks.size(), 1);
         }
     }
 }
@@ -727,10 +722,17 @@ TEST_F(SurfaceDataTestApp, SurfaceData_VerifyGetSurfacePointsFromRegionAndGetSur
         &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion, regionBounds, stepSize, providerTags,
         availablePointsPerPosition);
 
-    EXPECT_TRUE(ValidateRegionListSize(regionBounds, stepSize, availablePointsPerPosition));
-
     // For each point entry returned from GetSurfacePointsFromRegion, call GetSurfacePoints and verify the results match.
-    CompareSurfacePointListWithGetSurfacePoints(availablePointsPerPosition, providerTags);
+    AZStd::vector<AZ::Vector3> queryPositions;
+    for (float y = 0.0f; y < 4.0f; y += 1.0f)
+    {
+        for (float x = 0.0f; x < 4.0f; x += 1.0f)
+        {
+            queryPositions.push_back(AZ::Vector3(x, y, 16.0f));
+        }
+    }
+
+    CompareSurfacePointListWithGetSurfacePoints(queryPositions, availablePointsPerPosition, providerTags);
 }
 
 TEST_F(SurfaceDataTestApp, SurfaceData_VerifyGetSurfacePointsFromListAndGetSurfacePointsMatch)
@@ -763,7 +765,7 @@ TEST_F(SurfaceDataTestApp, SurfaceData_VerifyGetSurfacePointsFromListAndGetSurfa
     EXPECT_EQ(availablePointsPerPosition.size(), 16);
 
     // For each point entry returned from GetSurfacePointsFromList, call GetSurfacePoints and verify the results match.
-    CompareSurfacePointListWithGetSurfacePoints(availablePointsPerPosition, providerTags);
+    CompareSurfacePointListWithGetSurfacePoints(queryPositions, availablePointsPerPosition, providerTags);
 }
 // This uses custom test / benchmark hooks so that we can load LmbrCentral and use Shape components in our unit tests and benchmarks.
 AZ_UNIT_TEST_HOOK(new UnitTest::SurfaceDataTestEnvironment, UnitTest::SurfaceDataBenchmarkEnvironment);
