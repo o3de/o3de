@@ -189,17 +189,29 @@ void TerrainSystem::MapPositionToArea(float x, float y,
     {
         auto insertResult = areaIdToPos.insert(AZStd::pair<AZ::EntityId, TerrainHeightDataLists>(areaId, {}));
         it = insertResult.first;
+        
+        // We maintain iterators to the positions to correspond to the input positions list.
+        // We resize these to the max expected size because we don't want any reallocations happening later.
+        // Reallocations will invalidate our iterators.
         (*it).second.m_positions.resize(outPositions.size());
         (*it).second.m_terrainExists.resize(outPositions.size());
         (*it).second.m_count = 0;
     }
     (*it).second.m_positions[(*it).second.m_count].Set(x, y, 0.0f);
     (*it).second.m_terrainExists[(*it).second.m_count] = false;
+
+    // We take the iterator to each element from the lists we're generating and storing them in (input)sequence.
+    // This will be used to store or, in the case of the bilinear sampler, compute the height value for the input positions.
     outPositions[outIndex].m_positionIterator = ((*it).second.m_positions.begin() + (*it).second.m_count);
     outPositions[outIndex].m_terrainExistsIterator = ((*it).second.m_terrainExists.begin() + (*it).second.m_count);
     (*it).second.m_count++;
 }
 
+// Given a list of positions, this function generates positions based on the sampler type
+// and then maps the generated positions to the corresponding area's entity id. When this 
+// function returns, it would have generated positions based on sampler type and then sorted
+// those points into lists based on the area entity id. These lists will then be used to make 
+// bulk queries to the TerrainAreaHeightRequestBus.
 void TerrainSystem::MapPositionsToAreas(const AZStd::span<AZ::Vector3>& inPositions,
     AZStd::unordered_map<AZ::EntityId, TerrainHeightDataLists>& areaIdToPos,
     AZStd::vector<TerrainHeightDataIterators>& outPositions,
@@ -209,6 +221,7 @@ void TerrainSystem::MapPositionsToAreas(const AZStd::span<AZ::Vector3>& inPositi
     {
         if (!InWorldBounds(inPositions[i].GetX(), inPositions[i].GetY()))
         {
+            // Defaults will be stored to results later.
             continue;
         }
 
@@ -258,6 +271,9 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
     size_t indexStepSize = 1;
     if (sampler == AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR)
     {
+        // outPositions holds the iterators to results of the bulk queries.
+        // In the case of the bilinear sampler, we'll be making 4 queries per
+        // input position.
         outPositions.resize(inPositions.size() * 4);
         indexStepSize = 4;
     }
@@ -268,6 +284,7 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
 
     MapPositionsToAreas(inPositions, areaIdToPos, outPositions, sampler, indexStepSize);
 
+    // Now that we've mapped the positions to the area ids, we make the bulk queries to each area id.
     for(auto& [areaId, terrainHeightDataLists] : areaIdToPos)
     {
         Terrain::TerrainAreaHeightRequestBus::Event(
@@ -278,6 +295,7 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
     {
         if (!InWorldBounds(inPositions[i].GetX(), inPositions[i].GetY()))
         {
+            // Not in world bounds. Store defaults and move on.
             heights[i] = minHeight;
             terrainExists[i] = false;
             continue;
@@ -287,6 +305,7 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
         {
         case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
             {
+                // We now need to compute the final height after all the bulk queries are done.
                 AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
                 ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), clampedPosition, normalizedDelta);
@@ -305,6 +324,7 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
         case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
             [[fallthrough]];
         default:
+            // For clamp and exact, we just need to store the results of the bulk query.
             heights[i] = (outPositions[iteratorIndex].m_positionIterator)->GetZ();
             terrainExists[i] = *(outPositions[iteratorIndex].m_terrainExistsIterator);
             break;
