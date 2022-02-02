@@ -284,8 +284,8 @@ namespace AZ
             //! Call back function type used with the enumeration functions.
             //! Return false to terminate the traversal.
             using EnumeratePropertyGroupsCallback = AZStd::function<bool(
-                const MaterialNameContext&, // The name context used to scope properties and shader connections (i.e. "levelA.levelB.")
-                const PropertyGroup* // the next property group in the tree
+                const PropertyGroup*, // the next property group in the tree
+                const MaterialNameContext& // The PropertyGroup's name context, used to scope properties and shader connections (i.e. "levelA.levelB.")
                 )>;
 
             //! Recursively traverses all of the property groups contained in the material type, executing a callback function for each.
@@ -295,8 +295,8 @@ namespace AZ
             //! Call back function type used with the numeration functions.
             //! Return false to terminate the traversal.
             using EnumeratePropertiesCallback = AZStd::function<bool(
-                const MaterialNameContext&, // The name context used to scope properties and shader connections (i.e. "levelA.levelB.")
-                const PropertyDefinition* // the property definition object 
+                const PropertyDefinition*, // the property definition object 
+                const MaterialNameContext& // The property's name context, used to scope properties and shader connections (i.e. "levelA.levelB.")
                 )>;
             
             //! Recursively traverses all of the properties contained in the material type, executing a callback function for each.

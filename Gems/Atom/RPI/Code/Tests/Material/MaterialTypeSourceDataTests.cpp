@@ -486,8 +486,8 @@ namespace UnitTest
 
         struct EnumeratePropertyGroupsResult
         {
-            MaterialNameContext m_materialNameContext;
             const MaterialTypeSourceData::PropertyGroup* m_propertyGroup;
+            MaterialNameContext m_materialNameContext;
 
             void Check(AZStd::string expectedIdContext, const MaterialTypeSourceData::PropertyGroup* expectedPropertyGroup)
             {
@@ -502,9 +502,9 @@ namespace UnitTest
         };
         AZStd::vector<EnumeratePropertyGroupsResult> enumeratePropertyGroupsResults;
 
-        sourceData.EnumeratePropertyGroups([&enumeratePropertyGroupsResults](const MaterialNameContext& materialNameContext, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
+        sourceData.EnumeratePropertyGroups([&enumeratePropertyGroupsResults](const MaterialTypeSourceData::PropertyGroup* propertyGroup, const MaterialNameContext& nameContext)
             {
-                enumeratePropertyGroupsResults.push_back(EnumeratePropertyGroupsResult{materialNameContext, propertyGroup});
+                enumeratePropertyGroupsResults.push_back(EnumeratePropertyGroupsResult{propertyGroup, nameContext});
                 return true;
             });
 
@@ -525,8 +525,8 @@ namespace UnitTest
         
         struct EnumeratePropertiesResult
         {
-            MaterialNameContext m_materialNameContext;
             const MaterialTypeSourceData::PropertyDefinition* m_propertyDefinition;
+            MaterialNameContext m_materialNameContext;
 
             void Check(AZStd::string expectedIdContext, const MaterialTypeSourceData::PropertyDefinition* expectedPropertyDefinition)
             {
@@ -541,9 +541,9 @@ namespace UnitTest
         };
         AZStd::vector<EnumeratePropertiesResult> enumeratePropertiesResults;
 
-        sourceData.EnumerateProperties([&enumeratePropertiesResults](const MaterialNameContext& materialNameContext, const MaterialTypeSourceData::PropertyDefinition* propertyDefinition)
+        sourceData.EnumerateProperties([&enumeratePropertiesResults](const MaterialTypeSourceData::PropertyDefinition* propertyDefinition, const MaterialNameContext& nameContext)
             {
-                enumeratePropertiesResults.push_back(EnumeratePropertiesResult{materialNameContext, propertyDefinition});
+                enumeratePropertiesResults.push_back(EnumeratePropertiesResult{propertyDefinition, nameContext});
                 return true;
             });
         

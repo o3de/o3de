@@ -28,6 +28,8 @@ namespace AZ
 
         namespace MaterialUtils
         {
+            using ImportedJsonFiles = AZStd::unordered_set<AZStd::string>;
+
             enum class GetImageAssetResult
             {
                 Empty,             //! No image was actually requested, the path was empty
@@ -52,7 +54,8 @@ namespace AZ
             //! Otherwise, it will use the passed in document first if not null, or load the json document from the path.
             //! @param filePath path to the JSON file to load, unless the @document is already provided. In either case, this path will be used to resolve any relative file references.
             //! @param document an optional already loaded json document.
-            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, rapidjson::Document* document = nullptr);
+            //! @param importedFiles receives the list of files that were imported by the JSON serializer
+            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, rapidjson::Document* document = nullptr, ImportedJsonFiles* importedFiles = nullptr);
 
             //! Utility function for custom JSON serializers to report results as "Skipped" when encountering keys that aren't recognized
             //! as part of the custom format.

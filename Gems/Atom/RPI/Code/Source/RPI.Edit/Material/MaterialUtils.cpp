@@ -74,7 +74,7 @@ namespace AZ
                 return true;
             }
             
-            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, rapidjson::Document* document)
+            AZ::Outcome<MaterialTypeSourceData> LoadMaterialTypeSourceData(const AZStd::string& filePath, rapidjson::Document* document, ImportedJsonFiles* importedFiles)
             {
                 rapidjson::Document localDocument;
 
@@ -96,6 +96,10 @@ namespace AZ
                 importSettings.m_importer = &jsonImporter;
                 importSettings.m_loadedJsonPath = filePath;
                 AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ResolveImports(document->GetObject(), document->GetAllocator(), importSettings);
+                if (importedFiles)
+                {
+                    *importedFiles = importSettings.m_importer->GetImportedFiles();
+                }
 
                 MaterialTypeSourceData materialType;
 

@@ -381,13 +381,13 @@ namespace AZ
         {
             for (auto& propertyGroup : inPropertyGroupList)
             {
-                if (!callback(materialNameContext, propertyGroup.get()))
+                MaterialNameContext materialNameContext2 = ExtendNameContext(materialNameContext, *propertyGroup);
+
+                if (!callback(propertyGroup.get(), materialNameContext2))
                 {
                     return false; // Stop processing
                 }
                 
-                MaterialNameContext materialNameContext2 = ExtendNameContext(materialNameContext, *propertyGroup);
-
                 if (!EnumeratePropertyGroups(callback, materialNameContext2, propertyGroup->m_propertyGroups))
                 {
                     return false; // Stop processing
@@ -415,7 +415,7 @@ namespace AZ
 
                 for (auto& property : propertyGroup->m_properties)
                 {
-                    if (!callback(materialNameContext2, property.get()))
+                    if (!callback(property.get(), materialNameContext2))
                     {
                         return false; // Stop processing
                     }
@@ -483,7 +483,7 @@ namespace AZ
                 enumValues.push_back(uvNamePair.second);
             }
             
-            EnumerateProperties([&enumValues](const MaterialNameContext&, const MaterialTypeSourceData::PropertyDefinition* property)
+            EnumerateProperties([&enumValues](const MaterialTypeSourceData::PropertyDefinition* property, const MaterialNameContext&)
                 {
                     if (property->m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && property->m_enumIsUv)
                     {

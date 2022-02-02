@@ -187,11 +187,19 @@ namespace AZ
                 const bool isMaterialTypeFile = AzFramework::StringFunc::Path::IsExtension(request.m_sourceFile.c_str(), MaterialTypeSourceData::Extension);
                 if (isMaterialTypeFile)
                 {
-                    auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(fullSourcePath, &document);
+                    MaterialUtils::ImportedJsonFiles importedJsonFiles;
+                    auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(fullSourcePath, &document, &importedJsonFiles);
 
                     if (!materialTypeSourceData.IsSuccess())
                     {
                         return;
+                    }
+
+                    for (auto& importedJsonFile : importedJsonFiles)
+                    {
+                        AssetBuilderSDK::SourceFileDependency sourceDependency;
+                        sourceDependency.m_sourceFileDependencyPath = importedJsonFile;
+                        response.m_sourceFileDependencyList.push_back(sourceDependency);
                     }
 
                     for (auto& shader : materialTypeSourceData.GetValue().m_shaderCollection)

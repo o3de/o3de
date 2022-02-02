@@ -586,10 +586,10 @@ namespace MaterialEditor
         bool result = true;
 
         // populate sourceData with properties that meet the filter
-        m_materialTypeSourceData.EnumerateProperties([&](const MaterialNameContext& materialNameContext, const auto& propertyDefinition) {
+        m_materialTypeSourceData.EnumerateProperties([&](const auto& propertyDefinition, const MaterialNameContext& nameContext) {
 
             Name propertyId{propertyDefinition->GetName()};
-            materialNameContext.ContextualizeProperty(propertyId);
+            nameContext.ContextualizeProperty(propertyId);
 
             const auto it = m_properties.find(propertyId);
             if (it != m_properties.end() && propertyFilter(it->second))
@@ -783,17 +783,15 @@ namespace MaterialEditor
         // Populate the property map from a combination of source data and assets
         // Assets must still be used for now because they contain the final accumulated value after all other materials
         // in the hierarchy are applied
-        m_materialTypeSourceData.EnumeratePropertyGroups([this, &parentPropertyValues](const MaterialNameContext& materialNameContext, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
+        m_materialTypeSourceData.EnumeratePropertyGroups([this, &parentPropertyValues](const MaterialTypeSourceData::PropertyGroup* propertyGroup, const MaterialNameContext& nameContext)
             {
                 AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
                 for (const auto& propertyDefinition : propertyGroup->GetProperties())
                 {
                     // Assign id before conversion so it can be used in dynamic description
-                    MaterialNameContext groupNameContext = materialNameContext;
-                    groupNameContext.ExtendPropertyIdContext(propertyGroup->GetName());
                     propertyConfig.m_id = propertyDefinition->GetName();
-                    groupNameContext.ContextualizeProperty(propertyConfig.m_id);
+                    nameContext.ContextualizeProperty(propertyConfig.m_id);
 
                     const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                     const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
@@ -907,7 +905,7 @@ namespace MaterialEditor
         
         // Add any material functors that are located inside each property group.
         bool enumerateResult = m_materialTypeSourceData.EnumeratePropertyGroups(
-            [this](const MaterialNameContext& nameContext, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
+            [this](const MaterialTypeSourceData::PropertyGroup* propertyGroup, const MaterialNameContext& nameContext)
             {
                 const MaterialFunctorSourceData::EditorContext editorContext = MaterialFunctorSourceData::EditorContext(
                     m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout(), &nameContext);

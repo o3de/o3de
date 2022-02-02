@@ -198,7 +198,10 @@ namespace AZ
 
             for (const Name& materialProperty : materialPropertyDependencies.GetValue())
             {
-                MaterialPropertyIndex index = propertiesLayout->FindPropertyIndex(Name{m_propertyNamePrefix + materialProperty.GetCStr()});
+                Name propertyName{materialProperty.GetCStr()};
+                functor->m_materialNameContext.ContextualizeProperty(propertyName);
+
+                MaterialPropertyIndex index = propertiesLayout->FindPropertyIndex(propertyName);
                 if (!index.IsValid())
                 {
                     AZ_Error("LuaMaterialFunctorSourceData", false, "Property '%s' is not found in material type.", materialProperty.GetCStr());
