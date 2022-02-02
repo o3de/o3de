@@ -586,6 +586,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
 
     case eNotify_OnEndLoad:
+    case eNotify_OnEndCreate:
         UpdateScene();
         SetDefaultCamera();
         break;

@@ -111,10 +111,14 @@ namespace AZ
                 {
                 case AZ::RHI::Format::R8_UNORM:
                 case AZ::RHI::Format::A8_UNORM:
+                case AZ::RHI::Format::R8G8_UNORM:
+                case AZ::RHI::Format::R8G8B8A8_UNORM:
                 {
                     return mem[index] / static_cast<float>(std::numeric_limits<AZ::u8>::max());
                 }
                 case AZ::RHI::Format::R8_SNORM:
+                case AZ::RHI::Format::R8G8_SNORM:
+                case AZ::RHI::Format::R8G8B8A8_SNORM:
                 {
                     // Scale the value from AZ::s8 min/max to -1 to 1
                     // We need to treat -128 and -127 the same, so that we get a symmetric
@@ -126,10 +130,14 @@ namespace AZ
                 }
                 case AZ::RHI::Format::D16_UNORM:
                 case AZ::RHI::Format::R16_UNORM:
+                case AZ::RHI::Format::R16G16_UNORM:
+                case AZ::RHI::Format::R16G16B16A16_UNORM:
                 {
                     return mem[index] / static_cast<float>(std::numeric_limits<AZ::u16>::max());
                 }
                 case AZ::RHI::Format::R16_SNORM:
+                case AZ::RHI::Format::R16G16_SNORM:
+                case AZ::RHI::Format::R16G16B16A16_SNORM:
                 {
                     // Scale the value from AZ::s16 min/max to -1 to 1
                     // We need to treat -32768 and -32767 the same, so that we get a symmetric
@@ -140,18 +148,23 @@ namespace AZ
                     return ScaleValue(AZStd::max(actualMem[index], signedMin), signedMin, signedMax, -1.0f, 1.0f);
                 }
                 case AZ::RHI::Format::R16_FLOAT:
+                case AZ::RHI::Format::R16G16_FLOAT:
+                case AZ::RHI::Format::R16G16B16A16_FLOAT:
                 {
                     auto actualMem = reinterpret_cast<const float*>(mem);
                     return SHalf(actualMem[index]);
                 }
                 case AZ::RHI::Format::D32_FLOAT:
                 case AZ::RHI::Format::R32_FLOAT:
+                case AZ::RHI::Format::R32G32_FLOAT:
+                case AZ::RHI::Format::R32G32B32_FLOAT:
+                case AZ::RHI::Format::R32G32B32A32_FLOAT:
                 {
                     auto actualMem = reinterpret_cast<const float*>(mem);
                     return actualMem[index];
                 }
                 default:
-                    AZ_Assert(false, "Unsupported pixel format");
+                    AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return 0.0f;
                 }
             }
@@ -161,21 +174,28 @@ namespace AZ
                 switch (format)
                 {
                 case AZ::RHI::Format::R8_UINT:
+                case AZ::RHI::Format::R8G8_UINT:
+                case AZ::RHI::Format::R8G8B8A8_UINT:
                 {
                     return mem[index] / static_cast<AZ::u32>(std::numeric_limits<AZ::u8>::max());
                 }
                 case AZ::RHI::Format::R16_UINT:
+                case AZ::RHI::Format::R16G16_UINT:
+                case AZ::RHI::Format::R16G16B16A16_UINT:
                 {
                     auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
                     return actualMem[index] / static_cast<AZ::u32>(std::numeric_limits<AZ::u16>::max());
                 }
                 case AZ::RHI::Format::R32_UINT:
+                case AZ::RHI::Format::R32G32_UINT:
+                case AZ::RHI::Format::R32G32B32_UINT:
+                case AZ::RHI::Format::R32G32B32A32_UINT:
                 {
                     auto actualMem = reinterpret_cast<const AZ::u32*>(mem);
                     return actualMem[index];
                 }
                 default:
-                    AZ_Assert(false, "Unsupported pixel format");
+                    AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return 0;
                 }
             }
@@ -185,21 +205,28 @@ namespace AZ
                 switch (format)
                 {
                 case AZ::RHI::Format::R8_SINT:
+                case AZ::RHI::Format::R8G8_SINT:
+                case AZ::RHI::Format::R8G8B8A8_SINT:
                 {
                     return mem[index] / static_cast<AZ::s32>(std::numeric_limits<AZ::s8>::max());
                 }
                 case AZ::RHI::Format::R16_SINT:
+                case AZ::RHI::Format::R16G16_SINT:
+                case AZ::RHI::Format::R16G16B16A16_SINT:
                 {
                     auto actualMem = reinterpret_cast<const AZ::s16*>(mem);
                     return actualMem[index] / static_cast<AZ::s32>(std::numeric_limits<AZ::s16>::max());
                 }
                 case AZ::RHI::Format::R32_SINT:
+                case AZ::RHI::Format::R32G32_SINT:
+                case AZ::RHI::Format::R32G32B32_SINT:
+                case AZ::RHI::Format::R32G32B32A32_SINT:
                 {
                     auto actualMem = reinterpret_cast<const AZ::s32*>(mem);
                     return actualMem[index];
                 }
                 default:
-                    AZ_Assert(false, "Unsupported pixel format");
+                    AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return 0;
                 }
             }
@@ -439,9 +466,6 @@ namespace AZ
 
         bool GetSubImagePixelValues(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<float> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
-            // TODO: Use the component index
-            (void)componentIndex;
-
             if (!imageAsset.IsReady())
             {
                 return false;
@@ -455,14 +479,15 @@ namespace AZ
 
             const AZ::RHI::ImageDescriptor imageDescriptor = imageAsset->GetImageDescriptor();
             auto width = imageDescriptor.m_size.m_width;
-            const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format);
+            const uint32_t numComponents = AZ::RHI::GetFormatComponentCount(imageDescriptor.m_format);
+            const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format) / numComponents;
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
-                    size_t imageDataIndex = (y * width + x) * pixelSize;
+                    size_t imageDataIndex = (y * width + x) * pixelSize + componentIndex;
 
                     auto& outValue = outValues[outValuesIndex++];
                     outValue = Internal::RetrieveFloatValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
@@ -474,9 +499,6 @@ namespace AZ
 
         bool GetSubImagePixelValues(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::u32> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
-            // TODO: Use the component index
-            (void)componentIndex;
-
             if (!imageAsset.IsReady())
             {
                 return false;
@@ -490,14 +512,15 @@ namespace AZ
 
             const AZ::RHI::ImageDescriptor imageDescriptor = imageAsset->GetImageDescriptor();
             auto width = imageDescriptor.m_size.m_width;
-            const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format);
+            const uint32_t numComponents = AZ::RHI::GetFormatComponentCount(imageDescriptor.m_format);
+            const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format) / numComponents;
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
-                    size_t imageDataIndex = (y * width + x) * pixelSize;
+                    size_t imageDataIndex = (y * width + x) * pixelSize + componentIndex;
 
                     auto& outValue = outValues[outValuesIndex++];
                     outValue = Internal::RetrieveUintValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
@@ -509,9 +532,6 @@ namespace AZ
 
         bool GetSubImagePixelValues(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::s32> outValues, uint32_t componentIndex, uint32_t mip, uint32_t slice)
         {
-            // TODO: Use the component index
-            (void)componentIndex;
-
             if (!imageAsset.IsReady())
             {
                 return false;
@@ -525,14 +545,15 @@ namespace AZ
 
             const AZ::RHI::ImageDescriptor imageDescriptor = imageAsset->GetImageDescriptor();
             auto width = imageDescriptor.m_size.m_width;
-            const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format);
+            const uint32_t numComponents = AZ::RHI::GetFormatComponentCount(imageDescriptor.m_format);
+            const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format) / numComponents;
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
-                    size_t imageDataIndex = (y * width + x) * pixelSize;
+                    size_t imageDataIndex = (y * width + x) * pixelSize + componentIndex;
 
                     auto& outValue = outValues[outValuesIndex++];
                     outValue = Internal::RetrieveIntValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);

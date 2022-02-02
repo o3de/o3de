@@ -203,11 +203,10 @@ namespace Terrain
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 worldBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
 
-            AZ::Vector2 queryResolution2D = AZ::Vector2(1.0f);
+            float queryResolution = 1.0f;
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                queryResolution2D, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
+                queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
             // Currently query resolution is multidimensional but the rendering system only supports this changing in one dimension.
-            float queryResolution = queryResolution2D.GetX();
 
             // Sectors need to be rebuilt if the world bounds change in the x/y, or the sample spacing changes.
             m_rebuildSectors = m_rebuildSectors ||
