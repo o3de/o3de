@@ -36,7 +36,7 @@ namespace EMotionFX
         {
             using ::testing::_;
 
-            SetupQtAndFixtureBase();
+            UIFixture::SetUp();
 
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -66,8 +66,6 @@ namespace EMotionFX
                     {
                         return AZStd::make_unique<D6JointLimitConfiguration>();
                     });
-
-            SetupPluginWindows();
         }
 
         void TearDown() override
