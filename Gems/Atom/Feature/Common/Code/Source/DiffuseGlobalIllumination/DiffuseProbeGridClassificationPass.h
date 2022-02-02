@@ -43,8 +43,7 @@ namespace AZ
             void LoadShader();
 
             // Pass overrides
-            void FrameBeginInternal(FramePrepareParams params) override;
-
+            bool IsEnabled() const override;
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;

@@ -37,6 +37,7 @@ namespace AzToolsFramework
 
         using AliasPath = AZ::IO::Path;
         using AliasPathView = AZ::IO::PathView;
+        using RootAliasPath = AliasPath;
         using EntityAlias = AZStd::string;
         using EntityAliasView = AZStd::string_view;
         using InstanceAlias = AZStd::string;
@@ -176,7 +177,6 @@ namespace AzToolsFramework
              */
             AZStd::pair<Instance*, AZ::EntityId> GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath);
             AZStd::pair<const Instance*, AZ::EntityId> GetInstanceAndEntityIdFromAliasPath(AliasPathView relativeAliasPath) const;
-
 
             /**
             * Gets the aliases of all the nested instances, which are sourced by the template with the given id.

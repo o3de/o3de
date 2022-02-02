@@ -73,11 +73,11 @@ namespace AZ
                     const auto* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                     const auto* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
-                    [blitEncoder copyFromBuffer:sourceBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
-                                   sourceOffset:descriptor.m_sourceOffset
-                                       toBuffer:destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
-                              destinationOffset:descriptor.m_destinationOffset
-                                           size:descriptor.m_size];
+                    [blitEncoder copyFromBuffer: sourceBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
+                                   sourceOffset: descriptor.m_sourceOffset
+                                       toBuffer: destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
+                              destinationOffset: descriptor.m_destinationOffset
+                                           size: descriptor.m_size];
 
                     Platform::SynchronizeBufferOnGPU(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
                     break;
@@ -101,14 +101,14 @@ namespace AZ
                                                     descriptor.m_destinationOrigin.m_front);
 
                     [blitEncoder copyFromTexture: sourceImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
-                                            sourceSlice: descriptor.m_sourceSubresource.m_arraySlice
-                                            sourceLevel: descriptor.m_sourceSubresource.m_mipSlice
-                                           sourceOrigin: sourceOrigin
-                                             sourceSize: sourceSize
-                                              toTexture: destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
-                                       destinationSlice: descriptor.m_destinationSubresource.m_arraySlice
-                                       destinationLevel: descriptor.m_destinationSubresource.m_mipSlice
-                                      destinationOrigin: destinationOrigin];
+                                     sourceSlice: descriptor.m_sourceSubresource.m_arraySlice
+                                     sourceLevel: descriptor.m_sourceSubresource.m_mipSlice
+                                    sourceOrigin: sourceOrigin
+                                      sourceSize: sourceSize
+                                       toTexture: destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
+                                destinationSlice: descriptor.m_destinationSubresource.m_arraySlice
+                                destinationLevel: descriptor.m_destinationSubresource.m_mipSlice
+                               destinationOrigin: destinationOrigin];
 
                     Platform::SynchronizeTextureOnGPU(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
                     break;
@@ -127,15 +127,15 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
-                    [blitEncoder copyFromBuffer:sourceBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
-                                   sourceOffset:sourceBuffer->GetMemoryView().GetOffset() + descriptor.m_sourceOffset
-                              sourceBytesPerRow:descriptor.m_sourceBytesPerRow
-                            sourceBytesPerImage:descriptor.m_sourceBytesPerImage
-                                     sourceSize:sourceSize
-                                      toTexture:destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
-                               destinationSlice:descriptor.m_destinationSubresource.m_arraySlice
-                               destinationLevel:descriptor.m_destinationSubresource.m_mipSlice
-                              destinationOrigin:destinationOrigin];
+                    [blitEncoder copyFromBuffer: sourceBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
+                                   sourceOffset: sourceBuffer->GetMemoryView().GetOffset() + descriptor.m_sourceOffset
+                              sourceBytesPerRow: descriptor.m_sourceBytesPerRow
+                            sourceBytesPerImage: descriptor.m_sourceBytesPerImage
+                                     sourceSize: sourceSize
+                                      toTexture: destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
+                               destinationSlice: descriptor.m_destinationSubresource.m_arraySlice
+                               destinationLevel: descriptor.m_destinationSubresource.m_mipSlice
+                              destinationOrigin: destinationOrigin];
 
                     Platform::SynchronizeTextureOnGPU(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
                     break;
@@ -154,15 +154,15 @@ namespace AZ
                                                      descriptor.m_sourceSize.m_height,
                                                      descriptor.m_sourceSize.m_depth);
 
-                    [blitEncoder copyFromTexture:sourceImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
-                                     sourceSlice:descriptor.m_sourceSubresource.m_arraySlice
-                                     sourceLevel:descriptor.m_sourceSubresource.m_mipSlice
-                                    sourceOrigin:sourceOrigin
-                                      sourceSize:sourceSize
-                                        toBuffer:destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
-                               destinationOffset:destinationBuffer->GetMemoryView().GetOffset() + descriptor.m_destinationOffset
-                          destinationBytesPerRow:descriptor.m_destinationBytesPerRow
-                        destinationBytesPerImage:descriptor.m_destinationBytesPerImage];
+                    [blitEncoder copyFromTexture: sourceImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>()
+                                     sourceSlice: descriptor.m_sourceSubresource.m_arraySlice
+                                     sourceLevel: descriptor.m_sourceSubresource.m_mipSlice
+                                    sourceOrigin: sourceOrigin
+                                      sourceSize: sourceSize
+                                        toBuffer: destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>()
+                               destinationOffset: destinationBuffer->GetMemoryView().GetOffset() + descriptor.m_destinationOffset
+                          destinationBytesPerRow: descriptor.m_destinationBytesPerRow
+                        destinationBytesPerImage: descriptor.m_destinationBytesPerImage];
 
                     Platform::SynchronizeBufferOnGPU(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
                     break;
@@ -192,7 +192,7 @@ namespace AZ
 
             id<MTLComputeCommandEncoder> computeEncoder = GetEncoder<id<MTLComputeCommandEncoder>>();
             [computeEncoder dispatchThreadgroups: numThreadGroup
-                             threadsPerThreadgroup: threadsPerGroup];
+                           threadsPerThreadgroup: threadsPerGroup];
 
         }
 
@@ -235,8 +235,8 @@ namespace AZ
                 {
                     id<MTLComputeCommandEncoder> computeEncoder = GetEncoder<id<MTLComputeCommandEncoder>>();
                     [computeEncoder setBytes: item.m_rootConstants
-                                     length: pipelineLayout.GetRootConstantsSize()
-                                    atIndex: pipelineLayout.GetRootConstantsSlotIndex()];
+                                      length: pipelineLayout.GetRootConstantsSize()
+                                     atIndex: pipelineLayout.GetRootConstantsSlotIndex()];
 
                 }
             }
@@ -434,25 +434,25 @@ namespace AZ
                             case RHI::ShaderStage::Vertex:
                             {
                                 id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
-                                [renderEncoder setVertexBuffers:&mtlArgBuffers[startingIndex]
-                                                        offsets:&mtlArgBufferOffsets[startingIndex]
-                                                      withRange:range];
+                                [renderEncoder setVertexBuffers: &mtlArgBuffers[startingIndex]
+                                                        offsets: &mtlArgBufferOffsets[startingIndex]
+                                                      withRange: range];
                                 break;
                             }
                             case RHI::ShaderStage::Fragment:
                             {
                                 id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
-                                [renderEncoder setFragmentBuffers:&mtlArgBuffers[startingIndex]
-                                                          offsets:&mtlArgBufferOffsets[startingIndex]
-                                                        withRange:range];
+                                [renderEncoder setFragmentBuffers: &mtlArgBuffers[startingIndex]
+                                                          offsets: &mtlArgBufferOffsets[startingIndex]
+                                                        withRange: range];
                                 break;
                             }
                             case RHI::ShaderStage::Compute:
                             {
                                 id<MTLComputeCommandEncoder> computeEncoder = GetEncoder<id<MTLComputeCommandEncoder>>();
-                                [computeEncoder     setBuffers:&mtlArgBuffers[startingIndex]
-                                                       offsets:&mtlArgBufferOffsets[startingIndex]
-                                                     withRange:range];
+                                [computeEncoder     setBuffers: &mtlArgBuffers[startingIndex]
+                                                       offsets: &mtlArgBufferOffsets[startingIndex]
+                                                     withRange: range];
                                 break;
                             }
                             default:
@@ -537,13 +537,13 @@ namespace AZ
 
                     uint32_t indexOffset = indexBuffDescriptor.GetByteOffset() + (indexed.m_indexOffset * indexTypeSize) + buff->GetMemoryView().GetOffset();
                     [renderEncoder drawIndexedPrimitives: mtlPrimType
-                                                indexCount: indexed.m_indexCount
-                                                indexType: mtlIndexType
-                                                indexBuffer: mtlBuff
-                                                indexBufferOffset: indexOffset
-                                                instanceCount: indexed.m_instanceCount
-                                                baseVertex: indexed.m_vertexOffset
-                                                baseInstance: indexed.m_instanceOffset];
+                                              indexCount: indexed.m_indexCount
+                                               indexType: mtlIndexType
+                                             indexBuffer: mtlBuff
+                                       indexBufferOffset: indexOffset
+                                           instanceCount: indexed.m_instanceCount
+                                              baseVertex: indexed.m_vertexOffset
+                                            baseInstance: indexed.m_instanceOffset];
                     break;
                 }
 
@@ -551,10 +551,10 @@ namespace AZ
                 {
                     const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
                     [renderEncoder drawPrimitives: mtlPrimType
-                                        vertexStart: linear.m_vertexOffset
-                                        vertexCount: linear.m_vertexCount
-                                      instanceCount: linear.m_instanceCount
-                                       baseInstance: linear.m_instanceOffset];
+                                      vertexStart: linear.m_vertexOffset
+                                      vertexCount: linear.m_vertexCount
+                                    instanceCount: linear.m_instanceCount
+                                     baseInstance: linear.m_instanceOffset];
                     break;
                 }
             }

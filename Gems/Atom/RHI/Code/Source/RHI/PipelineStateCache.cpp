@@ -81,7 +81,7 @@ namespace AZ
             }
         }
 
-        PipelineLibraryHandle PipelineStateCache::CreateLibrary(const PipelineLibraryData* serializedData)
+        PipelineLibraryHandle PipelineStateCache::CreateLibrary(const PipelineLibraryData* serializedData, const AZStd::string& filePath)
         {
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
@@ -110,8 +110,8 @@ namespace AZ
             m_globalLibraryActiveBits[handle.GetIndex()] = true;
 
             GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
-            libraryEntry.m_serializedData = serializedData;
-
+            libraryEntry.m_pipelineLibraryDescriptor.m_serializedData = serializedData;
+            libraryEntry.m_pipelineLibraryDescriptor.m_filePath = filePath;
             AZ_Assert(libraryEntry.m_readOnlyCache.empty() && libraryEntry.m_pendingCache.empty(), "Library entry has entries in its caches!");
 
             return handle;
@@ -128,8 +128,9 @@ namespace AZ
 
                 GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
                 libraryEntry.m_readOnlyCache.clear();
-                libraryEntry.m_serializedData = nullptr;
-
+                libraryEntry.m_pipelineLibraryDescriptor.m_serializedData = nullptr;
+                libraryEntry.m_pipelineLibraryDescriptor.m_filePath = "";
+                
                 m_globalLibraryActiveBits[handle.GetIndex()] = false;
                 m_libraryFreeList.push_back(handle);
             }
@@ -162,7 +163,7 @@ namespace AZ
             libraryEntry.m_pendingCacheMutex.unlock();
         }
 
-        ConstPtr<PipelineLibraryData> PipelineStateCache::GetLibrarySerializedData(PipelineLibraryHandle handle) const
+        Ptr<PipelineLibrary> PipelineStateCache::GetMergedLibrary(PipelineLibraryHandle handle) const
         {
             if (handle.IsNull())
             {
@@ -188,7 +189,7 @@ namespace AZ
                 }
             });
 
-            bool doesPSODataExist = entry.m_serializedData.get();
+            bool doesPSODataExist = entry.m_pipelineLibraryDescriptor.m_serializedData.get();
             for (const RHI::PipelineLibrary* libraryBase : threadLibraries)
             {
                 const PipelineLibrary* library = static_cast<const PipelineLibrary*>(libraryBase);
@@ -198,7 +199,7 @@ namespace AZ
             if (doesPSODataExist)
             {
                 Ptr<PipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
-                ResultCode resultCode = pipelineLibrary->Init(*m_device, entry.m_serializedData.get());
+                ResultCode resultCode = pipelineLibrary->Init(*m_device, entry.m_pipelineLibraryDescriptor);
 
                 if (resultCode == ResultCode::Success)
                 {
@@ -206,7 +207,7 @@ namespace AZ
 
                     if (resultCode == ResultCode::Success)
                     {
-                        return pipelineLibrary->GetSerializedData();
+                        return pipelineLibrary;
                     }
                 }
             }
@@ -316,7 +317,7 @@ namespace AZ
                     if (!threadLibraryEntry.m_library)
                     {
                         Ptr<PipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
-                        RHI::ResultCode resultCode = pipelineLibrary->Init(*m_device, globalLibraryEntry.m_serializedData.get());
+                        RHI::ResultCode resultCode = pipelineLibrary->Init(*m_device, globalLibraryEntry.m_pipelineLibraryDescriptor);
                         if (resultCode != RHI::ResultCode::Success)
                         {
                             AZ_Warning("PipelineStateCache", false, "Failed to initialize pipeline library. PipelineLibrary usage is disabled.");
