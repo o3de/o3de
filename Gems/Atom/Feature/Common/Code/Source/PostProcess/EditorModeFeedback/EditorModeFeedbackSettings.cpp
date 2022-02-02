@@ -28,12 +28,7 @@ namespace AZ
         {
             AZ_Assert(target != nullptr, "EditorModeFeedbackSettings::ApplySettingsTo called with nullptr as argument.");
 
-            if (GetEnabled())
-            {
-                target->m_enabled = m_enabled;
-
             // Auto-gen code to blend individual params based on their override value onto target settings
-#define AZ_GFX_BOOL_PARAM(NAME, MEMBER_NAME, DefaultValue) ;
 #define AZ_GFX_FLOAT_PARAM(NAME, MEMBER_NAME, DefaultValue)                                                                                \
     {                                                                                                                                      \
         target->Set##NAME(AZ::Lerp(target->MEMBER_NAME, MEMBER_NAME, alpha));                                                              \
@@ -41,7 +36,6 @@ namespace AZ
 
 #include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
-            }
         }
 
         void EditorModeFeedbackSettings::Simulate([[maybe_unused]] float deltaTime)

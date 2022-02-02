@@ -44,8 +44,9 @@
 
         bool EditorModeFeedbackPass::IsEnabled() const
         {
-            const auto* editorModeFeedbackSettings = GetEditorModeFeedbackSettings();
-            return editorModeFeedbackSettings ? editorModeFeedbackSettings->GetEnabled() : false;
+            //const auto* editorModeFeedbackSettings = GetEditorModeFeedbackSettings();
+            //return editorModeFeedbackSettings ? editorModeFeedbackSettings->GetEnabled() : false;
+            return true;
         }
 
         void EditorModeFeedbackPass::SetSrgConstants()
@@ -70,7 +71,7 @@
                     if (postProcessSettings)
                     {
                         const EditorModeFeedbackSettings* editorModeFeedbackSettings = postProcessSettings->GetEditorModeFeedbackSettings();
-                        if (editorModeFeedbackSettings != nullptr && editorModeFeedbackSettings->GetEnabled())
+                        if (editorModeFeedbackSettings != nullptr/* && editorModeFeedbackSettings->GetEnabled()*/)
                         {
                             return postProcessSettings->GetEditorModeFeedbackSettings();
                         }

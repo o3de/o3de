@@ -9,5 +9,4 @@
 // Macros below are of the form:
 // PARAM(NAME, MEMBER_NAME, DEFAULT_VALUE, ...)
 
-AZ_GFX_BOOL_PARAM(Enabled, m_enabled, true)
 AZ_GFX_FLOAT_PARAM(DesaturationAmount, m_desaturationAmount, 1.0)
