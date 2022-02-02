@@ -313,8 +313,6 @@ set(FILES
     AssetEditor/AssetEditorWindow.ui
     Commands/CommandManager.cpp
     Commands/CommandManager.h
-    Controls/BitmapToolTip.cpp
-    Controls/BitmapToolTip.h
     Controls/ConsoleSCB.cpp
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
@@ -336,8 +334,6 @@ set(FILES
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.h
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.h
-    Controls/ReflectedPropertyControl/PropertyResourceCtrl.cpp
-    Controls/ReflectedPropertyControl/PropertyResourceCtrl.h
     Controls/ReflectedPropertyControl/PropertyCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyCtrl.h
     MainStatusBar.cpp

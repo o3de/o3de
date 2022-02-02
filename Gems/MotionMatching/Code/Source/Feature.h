@@ -98,8 +98,8 @@ namespace EMotionFX::MotionMatching
         };
         virtual float CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const;
 
-        /// Specifies how the feature value differences (residuals), between the input query values
-        /// and the frames in the motion database that sum up the feature cost, are calculated.
+        //! Specifies how the feature value differences (residuals), between the input query values
+        //! and the frames in the motion database that sum up the feature cost, are calculated.
         enum ResidualType
         {
             Absolute,
