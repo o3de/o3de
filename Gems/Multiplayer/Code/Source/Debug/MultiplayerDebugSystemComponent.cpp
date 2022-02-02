@@ -616,11 +616,11 @@ namespace Multiplayer
 
                         AZStd::pair<AZStd::string, AZStd::string> cliServValues =
                             elem->m_children.front().m_elements.front()->GetClientServerValues();
-                       if(AZStd::string::format(
+                        if(AZStd::string::format(
                             "%d %d %s %s", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId), cliServValues.first.c_str(), cliServValues.second.c_str()).contains(filter))
-                       {
-                           m_filteredAuditTrail.push_back(*elem);
-                       }
+                        {
+                            m_filteredAuditTrail.push_back(*elem);
+                        }
 
                     }
                 }
@@ -667,8 +667,7 @@ namespace Multiplayer
 
                             if (filteredChild.m_elements.size() > 0)
                             {
-
-                            filteredInput.m_children.push_back(filteredChild);
+                                filteredInput.m_children.push_back(filteredChild);
                             }
                         }
                     }
