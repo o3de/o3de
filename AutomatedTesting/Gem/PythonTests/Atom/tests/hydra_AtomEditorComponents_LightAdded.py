@@ -126,15 +126,15 @@ def AtomEditorComponents_Light_AddedToEntity():
         Report.result(Tests.creation_redo, light_entity.exists())
 
         # 5. Cycle through all light types.
-        for ltype, value in LIGHT_TYPES.items():
+        for light_type in LIGHT_TYPES.keys():
             light_component.set_component_property_value(
-                AtomComponentProperties.light('Light type'), LIGHT_TYPES[ltype])
+                AtomComponentProperties.light('Light type'), LIGHT_TYPES[light_type])
             current_light_type = light_component.get_component_property_value(
                 AtomComponentProperties.light('Light type'))
-            test_shape = (
-                f"Light component has {ltype} type set",
-                f"Light component failed to set {ltype} type")
-            Report.result(test_shape, current_light_type == LIGHT_TYPES[ltype])
+            test_light_type = (
+                f"Light component has {light_type} type set",
+                f"Light component failed to set {light_type} type")
+            Report.result(test_light_type, current_light_type == LIGHT_TYPES[light_type])
 
         # 6. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
