@@ -16,7 +16,6 @@ namespace UnitTests
 {
     using namespace testing;
     using ::testing::NiceMock;
-    using namespace AssetProcessor;
 
     class FileStateCacheTests : public ::testing::Test
     {
