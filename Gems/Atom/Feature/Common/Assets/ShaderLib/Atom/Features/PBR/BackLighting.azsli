@@ -23,7 +23,7 @@ float3 TransmissionKernel(float t, float3 s)
     return 0.25 * (1.0 / exp(exponent) + 3.0 / exp(exponent / 3.0));
 }
 
-// [specific profile for SKIN (not used ATM, replaced by TransmissionKernel)]
+// [specific profile for human skin]
 // Analytical integation (approximation) of diffusion profile over radius, could be precomputed in a LUT
 // From d'Eon and Luebke (https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-14-advanced-techniques-realistic-real-time-skin, section 14.4.7)
 float3 T(float s) 
@@ -72,6 +72,8 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 }
 
                 // Irradiance arround surface point. 
+                // Albedo at front (surface point) is used to approximate irradiance at the back of the object
+                // See observation 4 in [Jimenez J. et al, 2010] 
                 // Increase angle of influence (angle(N,L) -> angle(N,L) + acos(transmissionNdLBias)) to smooth transition regions
                 float3 E = surface.albedo * saturate(lightingData.transmissionNdLBias + dot(-surface.normal, dirToLight));
 
@@ -82,13 +84,14 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 // Use scattering color to weight thin object transmission color
                 const float3 invScattering = rcp(max(surface.transmission.scatterDistance, float(0.00001)));
                 
-                // Albedo at front (surface point) is used to approximate irradiance at the back of the object
-                // See observation 4 in [Jimenez J. et al, 2010] 
+#ifndef USE_HUMAN_SKIN_PROFILE
+                // Generic profile based on scatter color
                 result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmissionParams.w;
-                
-                // Alternative specific to skin translucency
-                // result = T(s) * lightIntensity * E * transmissionParams.w;
-                
+#else // USE_HUMAN_SKIN_PROFILE
+                // Profile specific to human skin
+                result = T(s) * lightIntensity * E * transmissionParams.w;
+#endif
+
                 // Distance attenuation applied to hide artifacts due to low-res projected areas onto shadowmaps (might need some work in the future)
                 result /= max(1.0, attenuationDistance * attenuationDistance * lightingData.distanceAttenuation);
             }
