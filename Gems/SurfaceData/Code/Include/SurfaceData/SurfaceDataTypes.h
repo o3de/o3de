@@ -13,6 +13,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzFramework/SurfaceData/SurfaceData.h>
 #include <SurfaceData/SurfaceTag.h>
 
 namespace SurfaceData
@@ -21,16 +22,6 @@ namespace SurfaceData
     using SurfaceTagWeightMap = AZStd::unordered_map<AZ::Crc32, float>;
     using SurfaceTagNameSet = AZStd::unordered_set<AZStd::string>;
     using SurfaceTagVector = AZStd::vector<SurfaceTag>;
-
-    struct SurfacePoint final
-    {
-        AZ_CLASS_ALLOCATOR(SurfacePoint, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(SurfacePoint, "{0DC7E720-68D6-47D4-BB6D-B89EF23C5A5C}");
-
-        AZ::Vector3 m_position;
-        AZ::Vector3 m_normal;
-        SurfaceTagWeightMap m_masks;
-    };
 
     class SurfacePointList
     {
@@ -44,7 +35,7 @@ namespace SurfaceData
         //! Constructor for creating a SurfacePointList from a list of SurfacePoint data.
         //! Primarily used as a convenience for unit tests.
         //! @param surfacePoints - An initial set of SurfacePoint points to store in the SurfacePointList.
-        SurfacePointList(AZStd::initializer_list<const SurfacePoint> surfacePoints);
+        SurfacePointList(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints);
 
         //! Add a surface point to the list.
         void AddSurfacePoint(const AZ::EntityId& entityId,
@@ -71,17 +62,19 @@ namespace SurfaceData
             const AZ::EntityId& currentEntityId,
             AZStd::function<void(const AZ::Vector3&, SurfaceTagWeightMap&)> modificationWeightCallback);
 
-        SurfacePoint GetHighestSurfacePoint() const;
+        AzFramework::SurfaceData::SurfacePoint GetHighestSurfacePoint() const;
 
         void FilterPoints(const SurfaceTagVector& desiredTags);
-        void SortAndCombineNeighboringPoints();
 
     protected:
+        // These are kept in separate parallel vectors instead of a single struct so that it's possible to pass just specific data
+        // "channels" into other methods as span<> without having to pass the full struct into the span<>. Specifically, we want to be
+        // able to pass spans of the positions down through nesting gradient/surface calls.
+        // A side benefit is that profiling showed the data access to be faster than packing all the fields into a single struct.
         AZStd::vector<AZ::EntityId> m_surfaceCreatorIdList;
         AZStd::vector<AZ::Vector3> m_surfacePositionList;
         AZStd::vector<AZ::Vector3> m_surfaceNormalList;
         AZStd::vector<SurfaceTagWeightMap> m_surfaceWeightsList;
-
 
         AZ::Aabb m_pointBounds = AZ::Aabb::CreateNull();
     };

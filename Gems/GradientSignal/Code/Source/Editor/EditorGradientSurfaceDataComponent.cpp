@@ -98,7 +98,7 @@ namespace GradientSignal
         return [this]([[maybe_unused]] float sampleValue, const GradientSampleParams& params)
         {
             // Create a fake surface point with the position we're sampling.
-            SurfaceData::SurfacePoint point;
+            AzFramework::SurfaceData::SurfacePoint point;
             point.m_position = params.m_position;
             SurfaceData::SurfacePointList pointList = { { point } };
 

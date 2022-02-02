@@ -54,7 +54,7 @@ class MockSurfaceProvider
         }
 
     private:
-        AZStd::unordered_map<AZStd::pair<float, float>, AZStd::vector<SurfaceData::SurfacePoint>> m_GetSurfacePoints;
+        AZStd::unordered_map<AZStd::pair<float, float>, AZStd::vector<AzFramework::SurfaceData::SurfacePoint>> m_GetSurfacePoints;
         SurfaceData::SurfaceTagVector m_tags;
         ProviderType m_providerType;
         AZ::EntityId m_id;
@@ -71,14 +71,16 @@ class MockSurfaceProvider
             {
                 for (float x = start.GetX(); x < end.GetX(); x += stepSize.GetX())
                 {
-                    AZStd::vector<SurfaceData::SurfacePoint> points;
+                    AZStd::vector<AzFramework::SurfaceData::SurfacePoint> points;
                     for (float z = start.GetZ(); z < end.GetZ(); z += stepSize.GetZ())
                     {
-                        SurfaceData::SurfacePoint point;
+                        AzFramework::SurfaceData::SurfacePoint point;
                         point.m_position = AZ::Vector3(x, y, z);
                         point.m_normal = AZ::Vector3::CreateAxisZ();
-                        AddMaxValueForMasks(point.m_masks, m_tags, 1.0f);
-
+                        for (auto& tag : m_tags)
+                        {
+                            point.m_surfaceTags.emplace_back(tag, 1.0f);
+                        }
                         points.push_back(point);
                     }
                     m_GetSurfacePoints[AZStd::pair<float, float>(x, y)] = points;
@@ -149,7 +151,13 @@ class MockSurfaceProvider
             {
                 for (auto& point : surfacePoints->second)
                 {
-                    surfacePointList.AddSurfacePoint(m_id, point.m_position, point.m_normal, point.m_masks);
+                    SurfaceData::SurfaceTagWeightMap weights;
+                    for (auto& tag : point.m_surfaceTags)
+                    {
+                        weights[tag.m_surfaceType] = tag.m_weight;
+                    }
+
+                    surfacePointList.AddSurfacePoint(m_id, point.m_position, point.m_normal, weights);
                 }
             }
         }
@@ -208,7 +216,7 @@ public:
         const AZStd::vector<AZ::Vector3>& queryPositions, SurfaceData::SurfacePointLists& surfacePointLists,
         const SurfaceData::SurfaceTagVector& testTags)
     {
-        AZStd::vector<SurfaceData::SurfacePoint> singleQueryResults;
+        AZStd::vector<AzFramework::SurfaceData::SurfacePoint> singleQueryResults;
 
         for (auto& queryPosition : queryPositions)
         {
@@ -219,17 +227,20 @@ public:
                 [&singleQueryResults](
                     const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
                 {
-                    SurfaceData::SurfacePoint point;
+                    AzFramework::SurfaceData::SurfacePoint point;
                     point.m_position = position;
                     point.m_normal = normal;
-                    point.m_masks = masks;
+                    for (auto& mask : masks)
+                    {
+                        point.m_surfaceTags.emplace_back(mask.first, mask.second);
+                    }
                     singleQueryResults.emplace_back(AZStd::move(point));
                     return true;
                 });
         }
 
         // Verify that each point in each list is equal.
-        SurfaceData::SurfacePoint* singleQueryPoint = singleQueryResults.begin();
+        AzFramework::SurfaceData::SurfacePoint* singleQueryPoint = singleQueryResults.begin();
         for (size_t listIndex = 0; listIndex < surfacePointLists.size(); listIndex++)
         {
             auto& surfacePointList = surfacePointLists[listIndex];
@@ -241,10 +252,12 @@ public:
 
                     EXPECT_EQ(position, singleQueryPoint->m_position);
                     EXPECT_EQ(normal, singleQueryPoint->m_normal);
-                    EXPECT_EQ(masks.size(), singleQueryPoint->m_masks.size());
-                    for (auto& mask : masks)
+                    EXPECT_EQ(masks.size(), singleQueryPoint->m_surfaceTags.size());
+                    for (auto& mask : singleQueryPoint->m_surfaceTags)
                     {
-                        EXPECT_EQ(mask.second, singleQueryPoint->m_masks[mask.first]);
+                        auto maskLookup = masks.find(mask.m_surfaceType);
+                        EXPECT_NE(maskLookup, masks.end());
+                        EXPECT_EQ(mask.m_weight, maskLookup->second);
                     }
 
                     ++singleQueryPoint;

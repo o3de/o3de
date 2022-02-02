@@ -323,40 +323,21 @@ namespace Vegetation
             // Get the point with the closest distance from the new position in case there are multiple intersections at different or
             // unrelated heights
             float closestPointDistanceSq = AZStd::numeric_limits<float>::max();
-            SurfaceData::SurfacePoint closestPoint;
-            bool pointFound = false;
+            AZ::Vector3 originalInstanceDataPosition = instanceData.m_position;
             m_points.EnumeratePoints(
-                [instanceData, &pointFound, &closestPoint, &closestPointDistanceSq](
+                [&instanceData, originalInstanceDataPosition, &closestPointDistanceSq](
                     const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
                 {
-                    float distanceSq = position.GetDistanceSq(instanceData.m_position);
-                    if (!pointFound)
+                    float distanceSq = position.GetDistanceSq(originalInstanceDataPosition);
+                    if (distanceSq < closestPointDistanceSq)
                     {
-                        closestPoint.m_position = position;
-                        closestPoint.m_normal = normal;
-                        closestPoint.m_masks = masks;
-                        pointFound = true;
+                        instanceData.m_position = position;
+                        instanceData.m_normal = normal;
+                        instanceData.m_masks = masks;
                         closestPointDistanceSq = distanceSq;
-                    }
-                    else
-                    {
-                        if (distanceSq < closestPointDistanceSq)
-                        {
-                            closestPoint.m_position = position;
-                            closestPoint.m_normal = normal;
-                            closestPoint.m_masks = masks;
-                            closestPointDistanceSq = distanceSq;
-                        }
                     }
                     return true;
                 });
-
-            if (pointFound)
-            {
-                instanceData.m_position = closestPoint.m_position;
-                instanceData.m_normal = closestPoint.m_normal;
-                instanceData.m_masks = closestPoint.m_masks;
-            }
         }
 
         instanceData.m_position.SetZ(instanceData.m_position.GetZ() + delta.GetZ());

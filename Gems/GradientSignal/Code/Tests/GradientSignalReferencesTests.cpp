@@ -66,7 +66,7 @@ namespace UnitTest
                                                 float falloffMidpoint, float falloffRange, float falloffStrength)
         {
             MockSurfaceDataSystem mockSurfaceDataSystem;
-            SurfaceData::SurfacePoint point;
+            AzFramework::SurfaceData::SurfacePoint point;
 
             // Fill our mock surface with the correct normal value for each point based on our test angle set.
             for (int y = 0; y < dataSize; y++)
@@ -668,14 +668,15 @@ namespace UnitTest
         };
 
         MockSurfaceDataSystem mockSurfaceDataSystem;
-        SurfaceData::SurfacePoint point;
+        AzFramework::SurfaceData::SurfacePoint point;
 
         // Fill our mock surface with the test_mask set and the expected gradient value at each point.
         for (int y = 0; y < dataSize; y++)
         {
             for (int x = 0; x < dataSize; x++)
             {
-                point.m_masks[AZ_CRC("test_mask", 0x7a16e9ff)] = expectedOutput[(y * dataSize) + x];
+                point.m_surfaceTags.clear();
+                point.m_surfaceTags.emplace_back(AZ_CRC_CE("test_mask"), expectedOutput[(y * dataSize) + x]);
                 mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] = { { point } };
             }
         }

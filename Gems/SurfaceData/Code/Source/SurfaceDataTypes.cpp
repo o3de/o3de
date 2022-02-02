@@ -11,13 +11,18 @@
 
 namespace SurfaceData
 {
-    SurfacePointList::SurfacePointList(AZStd::initializer_list<const SurfacePoint> surfacePoints)
+    SurfacePointList::SurfacePointList(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
     {
         ReserveSpace(surfacePoints.size());
 
         for (auto& point : surfacePoints)
         {
-            AddSurfacePoint(AZ::EntityId(), point.m_position, point.m_normal, point.m_masks);
+            SurfaceTagWeightMap weights;
+            for (auto& weight : point.m_surfaceTags)
+            {
+                weights.emplace(weight.m_surfaceType, weight.m_weight);
+            }
+            AddSurfacePoint(AZ::EntityId(), point.m_position, point.m_normal, weights);
         }
     }
 
@@ -111,12 +116,17 @@ namespace SurfaceData
         }
     }
 
-    SurfacePoint SurfacePointList::GetHighestSurfacePoint() const
+    AzFramework::SurfaceData::SurfacePoint SurfacePointList::GetHighestSurfacePoint() const
     {
-        SurfacePoint point;
+        AzFramework::SurfaceData::SurfacePoint point;
         point.m_position = m_surfacePositionList.front();
         point.m_normal = m_surfaceNormalList.front();
-        point.m_masks = m_surfaceWeightsList.front();
+        const SurfaceTagWeightMap& weights = m_surfaceWeightsList.front();
+        for (auto& weight : weights)
+        {
+            point.m_surfaceTags.emplace_back(weight.first, weight.second);
+        }
+
         return point;
     }
 
@@ -155,9 +165,5 @@ namespace SurfaceData
             m_surfaceNormalList.resize(index);
             m_surfaceWeightsList.resize(index);
         }
-    }
-
-    void SurfacePointList::SortAndCombineNeighboringPoints()
-    {
     }
 }

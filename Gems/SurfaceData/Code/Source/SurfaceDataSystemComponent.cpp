@@ -45,15 +45,6 @@ namespace SurfaceData
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<SurfacePoint>()
-                ->Constructor()
-                ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
-                ->Attribute(AZ::Script::Attributes::Module, "surface_data")
-                ->Property("position", BehaviorValueProperty(&SurfacePoint::m_position))
-                ->Property("normal", BehaviorValueProperty(&SurfacePoint::m_normal))
-                ->Property("masks", BehaviorValueProperty(&SurfacePoint::m_masks))
-                ;
-
             behaviorContext->Class<SurfacePointList>()
                 ->Constructor()
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
@@ -229,8 +220,6 @@ namespace SurfaceData
             {
                 surfacePointList.FilterPoints(desiredTags);
             }
-
-            surfacePointList.SortAndCombineNeighboringPoints();
         }
     }
 
@@ -326,13 +315,12 @@ namespace SurfaceData
         // same XY coordinates and extremely similar Z values.  This produces results that are sorted in decreasing Z order.
         // Also, this filters out any remaining points that don't match the desired tag list.  This can happen when a surface provider
         // doesn't add a desired tag, and a surface modifier has the *potential* to add it, but then doesn't.
-        for (auto& surfacePointList : surfacePointLists)
+        if (useTagFilters)
         {
-            if (useTagFilters)
+            for (auto& surfacePointList : surfacePointLists)
             {
                 surfacePointList.FilterPoints(desiredTags);
             }
-            surfacePointList.SortAndCombineNeighboringPoints();
         }
 
     }
