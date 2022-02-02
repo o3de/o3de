@@ -135,6 +135,11 @@ namespace AZ
             return m_hardwareQueueClass;
         }
 
+        void Scope::SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass)
+        {
+            m_hardwareQueueClass = hardwareQueueClass;
+        }
+
         uint32_t Scope::GetEstimatedItemCount() const
         {
             return m_estimatedItemCount;

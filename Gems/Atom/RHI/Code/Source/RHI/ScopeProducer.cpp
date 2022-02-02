@@ -40,6 +40,17 @@ namespace AZ
             return m_scope.get();
         }
 
+        void ScopeProducer::SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass)
+        {
+            m_scope->SetHardwareQueueClass(hardwareQueueClass);
+        }
+
+        // DEPRECATED: use InitScope instead
+        void ScopeProducer::SetScopeId(const ScopeId& scopeId)
+        {
+            InitScope(scopeId);
+        }
+
         void ScopeProducer::InitScope(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass)
         {
             m_scopeId = scopeId;
