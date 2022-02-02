@@ -50,7 +50,6 @@ namespace EMotionFX::MotionMatching
         const MotionMatchingData* data = instance->GetData();
         const ActorInstance* actorInstance = instance->GetActorInstance();
         const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-        const Transform jointModelTM = pose->GetModelSpaceTransform(m_jointIndex);
         const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(m_relativeToNodeIndex);
 
         const AZ::Vector3 position = GetFeatureData(data->GetFeatureMatrix(), frameIndex);

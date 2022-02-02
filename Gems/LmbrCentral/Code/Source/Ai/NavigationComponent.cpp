@@ -823,7 +823,6 @@ namespace LmbrCentral
                 // Set the position of the entity
                 AZ::Transform newEntityTransform = m_entityTransform;
                 AZ::Vector3 movementDelta = targetVelocity * deltaTime;
-                AZ::Vector3 currentPosition = m_entityTransform.GetTranslation();
                 AZ::Vector3 newPosition = m_entityTransform.GetTranslation() + movementDelta;
                 newEntityTransform.SetTranslation(newPosition);
                 AZ::TransformBus::Event(m_entity->GetId(), &AZ::TransformBus::Events::SetWorldTM, newEntityTransform);

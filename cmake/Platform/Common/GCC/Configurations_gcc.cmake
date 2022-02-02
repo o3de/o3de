@@ -65,7 +65,6 @@ ly_append_configurations_options(
         -Wno-stringop-truncation
         -Wno-switch
         -Wno-uninitialized
-        -Wno-unused-but-set-variable
         -Wno-unused-result
         -Wno-unused-value
         -Wno-unused-variable

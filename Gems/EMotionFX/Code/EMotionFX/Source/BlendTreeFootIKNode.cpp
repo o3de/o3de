@@ -279,7 +279,6 @@ namespace EMotionFX
         const AZ::Vector3 jointPositionModelSpace = inputPose.GetModelSpaceTransform(jointIndex).m_position;
         const AZ::Vector3 hipPositionModelSpace = inputPose.GetModelSpaceTransform(uniqueData->m_hipJointIndex).m_position;
         const AZ::Vector3 jointPositionWorldSpace = inputPose.GetWorldSpaceTransform(jointIndex).m_position;
-        const AZ::Vector3 hipPositionWorldSpace = inputPose.GetWorldSpaceTransform(uniqueData->m_hipJointIndex).m_position;
         const float hipHeightDiff = hipPositionModelSpace.GetZ() - jointPositionModelSpace.GetZ();
         outRayStart = jointPositionWorldSpace + upVector * hipHeightDiff;
         outRayEnd = jointPositionWorldSpace - upVector * rayLength;

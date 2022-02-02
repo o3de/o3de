@@ -1589,9 +1589,6 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
         item.resH = m_customResH;
     }
     // cvars
-    const int kCVarNameMaxSize = 256;
-    char buf[kCVarNameMaxSize];
-    buf[kCVarNameMaxSize - 1] = 0;
     const QStringList lines = m_ui->m_cvarsEdit->toPlainText().split('\n');
     for (const QString& line : lines)
     {

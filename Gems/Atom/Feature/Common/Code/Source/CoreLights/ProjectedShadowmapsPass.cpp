@@ -101,7 +101,6 @@ namespace AZ
             }
 
             const uint32_t baseSize = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());
-            const RHI::Size imageSize = { baseSize, baseSize, 1 };
 
             const size_t shadowmapCount = m_sizes.size();
             SetChildrenCount(shadowmapCount);

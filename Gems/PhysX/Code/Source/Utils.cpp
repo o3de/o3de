@@ -1468,7 +1468,6 @@ namespace PhysX
             void GetTriangleMeshGeometry(const physx::PxTriangleMeshGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices)
             {
                 const physx::PxTriangleMesh* triangleMesh = geometry.triangleMesh;
-                const physx::PxMeshScale scale = geometry.scale;
                 const physx::PxVec3* meshVertices = triangleMesh->getVertices();
                 const AZ::u32 vertCount = triangleMesh->getNbVertices();
                 const AZ::u32 triangleCount = triangleMesh->getNbTriangles();
