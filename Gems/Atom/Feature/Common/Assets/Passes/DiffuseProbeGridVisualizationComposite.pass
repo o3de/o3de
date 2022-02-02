@@ -1,0 +1,40 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DiffuseProbeGridVisualizationCompositePassTemplate",
+            "PassClass": "DiffuseProbeGridVisualizationCompositePass",
+            "Slots": [
+                {
+                    "Name": "VisualizationInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "ColorInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationComposite.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

@@ -20,7 +20,8 @@ endif()
 
 
 ly_append_configurations_options(
-    COMPILATION
+
+    COMPILATION_C
         -fno-exceptions
         -fvisibility=hidden
         -Wall
@@ -29,47 +30,43 @@ ly_append_configurations_options(
         ${LY_GCC_GCOV_FLAGS}
         ${LY_GCC_GPROF_FLAGS}
 
+    COMPILATION_CXX
+        -fno-exceptions
+        -fvisibility=hidden
+        -fvisibility-inlines-hidden
+        -Wall
+        -Werror
+
+        ${LY_GCC_GCOV_FLAGS}
+        ${LY_GCC_GPROF_FLAGS}
+
         # Disabled warnings 
-        -Wno-format-security
-        -Wno-multichar
-        -Wno-parentheses
-        -Wno-switch
-        -Wno-tautological-compare
-        -Wno-unknown-pragmas
-        -Wno-unused-function
-        -Wno-unused-value
-        -Wno-unused-variable
-        -Wno-format-truncation
-        -Wno-reorder
-        -Wno-uninitialized
         -Wno-array-bounds
-        -Wno-class-memaccess
-        -Wno-nonnull-compare
-        -Wno-strict-aliasing
-        -Wno-unused-result
-        -Wno-sign-compare
-        -Wno-return-local-addr
-        -Wno-stringop-overflow
         -Wno-attributes
-        -Wno-logical-not-parentheses
-        -Wno-stringop-truncation
-        -Wno-memset-elt-size
-        -Wno-unused-but-set-variable
-        -Wno-enum-compare
-        -Wno-int-in-bool-context
-        -Wno-sequence-point
+        -Wno-class-memaccess
         -Wno-delete-non-virtual-dtor
-        -Wno-comment
+        -Wno-enum-compare
+        -Wno-format-overflow
+        -Wno-format-truncation
+        -Wno-int-in-bool-context
+        -Wno-logical-not-parentheses
+        -Wno-memset-elt-size
+        -Wno-nonnull-compare
+        -Wno-parentheses
         -Wno-reorder
         -Wno-restrict
-        -Wno-format-overflow
-
-    COMPILATION_C
-        -Wno-absolute-value
-
-    COMPILATION_CXX
-        -fvisibility-inlines-hidden
-        -Wno-invalid-offsetof
+        -Wno-return-local-addr
+        -Wno-sequence-point
+        -Wno-sign-compare
+        -Wno-strict-aliasing
+        -Wno-stringop-overflow
+        -Wno-stringop-truncation
+        -Wno-switch
+        -Wno-uninitialized
+        -Wno-unused-but-set-variable
+        -Wno-unused-result
+        -Wno-unused-value
+        -Wno-unused-variable
 
     COMPILATION_DEBUG
         -O0 # No optimization
@@ -84,4 +81,3 @@ ly_append_configurations_options(
 )
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
-

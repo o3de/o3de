@@ -1634,19 +1634,19 @@ namespace MCommon
 
         AZ::Vector3 vertices[7];
         /*
-            //              4
-            //             / \
-            //            /   \
-            //          /       \
-            //        /           \
-            //      /               \
-            //    5-----6       2-----3
-            //          |       |
-            //          |       |
-            //          |       |
-            //          |       |
-            //          |       |
-            //         0---------1
+                          4
+                         / \
+                        /   \
+                      /       \
+                    /           \
+                  /               \
+                5-----6       2-----3
+                      |       |
+                      |       |
+                      |       |
+                      |       |
+                      |       |
+                     0---------1
         */
         // construct the arrow vertices
         vertices[0] = center + AZ::Vector3(-right * trailWidthHalf - forward * trailLengh) * scale;
@@ -1744,19 +1744,19 @@ namespace MCommon
         AZ::Vector3 oldLeft, oldRight;
 
         /*
-            //              4
-            //             / \
-            //            /   \
-            //          /       \
-            //        /           \
-            //      /               \
-            //    5-----6       2-----3
-            //          |       |
-            //          |       |
-            //          |       |
-            //          |       |
-            //          |       |
-            //          0-------1
+                            4
+                           / \
+                          /   \
+                        /       \
+                      /           \
+                    /               \
+                  5-----6       2-----3
+                        |       |
+                        |       |
+                        |       |
+                        |       |
+                        |       |
+                        0-------1
         */
         // construct the arrow vertices
         vertices[0] = center + (-right * trailWidthHalf - forward * trailLength) * scale;

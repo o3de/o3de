@@ -104,7 +104,6 @@ set(FILES
     Source/UiImageSequenceComponent.h
     Source/UiRenderer.cpp
     Source/UiRenderer.h
-    Source/resource.h
     Include/LyShine/LyShineBus.h
     Source/EditorPropertyTypes.cpp
     Source/EditorPropertyTypes.h
@@ -209,10 +208,8 @@ set(FILES
     Source/Animation/AnimNode.h
     Source/Animation/AnimSequence.cpp
     Source/Animation/AnimSequence.h
-    Source/Animation/AnimSplineTrack.cpp
     Source/Animation/AnimSplineTrack.h
     Source/Animation/AnimSplineTrack_Vec2Specialization.h
-    Source/Animation/AnimTrack.cpp
     Source/Animation/AnimTrack.h
     Source/Animation/AzEntityNode.cpp
     Source/Animation/AzEntityNode.h

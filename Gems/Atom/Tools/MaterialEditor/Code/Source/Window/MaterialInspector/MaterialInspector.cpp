@@ -152,7 +152,7 @@ namespace MaterialEditor
             AtomToolsFramework::DynamicProperty property;
             AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
                 property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty,
-                AZ::RPI::MaterialPropertyId(groupName, uvNamePair.m_shaderInput.ToString()).GetFullName());
+                AZ::RPI::MaterialPropertyId(groupName, uvNamePair.m_shaderInput.ToString()));
             group.m_properties.push_back(property);
 
             property.SetValue(property.GetConfig().m_parentValue);
@@ -170,28 +170,23 @@ namespace MaterialEditor
         const AZ::RPI::MaterialTypeSourceData* materialTypeSourceData = nullptr;
         MaterialDocumentRequestBus::EventResult(
             materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
-
-        for (const auto& groupDefinition : materialTypeSourceData->GetGroupDefinitionsInDisplayOrder())
+        
+        // TODO: Support populating the Material Editor with nested property groups, not just the top level.
+        for (const AZStd::unique_ptr<AZ::RPI::MaterialTypeSourceData::PropertyGroup>& propertyGroup : materialTypeSourceData->GetPropertyLayout().m_propertyGroups)
         {
-            const AZStd::string& groupName = groupDefinition.m_name;
-            const AZStd::string& groupDisplayName = !groupDefinition.m_displayName.empty() ? groupDefinition.m_displayName : groupName;
-            const AZStd::string& groupDescription =
-                !groupDefinition.m_description.empty() ? groupDefinition.m_description : groupDisplayName;
+            const AZStd::string& groupName = propertyGroup->GetName();
+            const AZStd::string& groupDisplayName = !propertyGroup->GetDisplayName().empty() ? propertyGroup->GetDisplayName() : groupName;
+            const AZStd::string& groupDescription = !propertyGroup->GetDescription().empty() ? propertyGroup->GetDescription() : groupDisplayName;
             auto& group = m_groups[groupName];
 
-            const auto& propertyLayout = materialTypeSourceData->m_propertyLayout;
-            const auto& propertyListItr = propertyLayout.m_properties.find(groupName);
-            if (propertyListItr != propertyLayout.m_properties.end())
+            group.m_properties.reserve(propertyGroup->GetProperties().size());
+            for (const auto& propertyDefinition : propertyGroup->GetProperties())
             {
-                group.m_properties.reserve(propertyListItr->second.size());
-                for (const auto& propertyDefinition : propertyListItr->second)
-                {
-                    AtomToolsFramework::DynamicProperty property;
-                    AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-                        property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty,
-                        AZ::RPI::MaterialPropertyId(groupName, propertyDefinition.m_name).GetFullName());
-                    group.m_properties.push_back(property);
-                }
+                AtomToolsFramework::DynamicProperty property;
+                AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
+                    property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty,
+                    AZ::RPI::MaterialPropertyId(groupName, propertyDefinition->GetName()));
+                group.m_properties.push_back(property);
             }
 
             // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties

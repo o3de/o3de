@@ -70,6 +70,8 @@ public:
     QMenu* const GetAspectMenu();
     QMenu* const GetResolutionMenu();
 
+    void InitializePrefabViewportFocusPathHandler(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton);
+
 Q_SIGNALS:
     void ActionTriggered(int command);
 

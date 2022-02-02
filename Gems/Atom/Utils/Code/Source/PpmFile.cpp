@@ -11,7 +11,7 @@
 
 namespace AZ
 {
-    AZStd::vector<uint8_t> Utils::PpmFile::CreatePpmFromImageBuffer(AZStd::array_view<uint8_t> buffer, const RHI::Size& size, RHI::Format format)
+    AZStd::vector<uint8_t> Utils::PpmFile::CreatePpmFromImageBuffer(AZStd::span<const uint8_t> buffer, const RHI::Size& size, RHI::Format format)
     {
         AZ_Assert(format == RHI::Format::R8G8B8A8_UNORM || format == RHI::Format::B8G8R8A8_UNORM, "CreatePpmFromImageReadbackResult only supports R8G8B8A8_UNORM");
 
@@ -46,7 +46,7 @@ namespace AZ
         return outBuffer;
     }
 
-    bool Utils::PpmFile::CreateImageBufferFromPpm(AZStd::array_view<uint8_t> ppmData, AZStd::vector<uint8_t>& buffer, RHI::Size& size, RHI::Format& format)
+    bool Utils::PpmFile::CreateImageBufferFromPpm(AZStd::span<const uint8_t> ppmData, AZStd::vector<uint8_t>& buffer, RHI::Size& size, RHI::Format& format)
     {
         if (ppmData.size() < 2)
         {

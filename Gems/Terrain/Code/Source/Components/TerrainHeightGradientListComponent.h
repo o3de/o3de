@@ -68,6 +68,7 @@ namespace Terrain
         //////////////////////////////////////////////////////////////////////////
         // TerrainAreaHeightRequestBus
         void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists) override;
+        void GetHeights(AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -91,7 +92,7 @@ namespace Terrain
 
         float m_cachedMinWorldHeight{ 0.0f };
         float m_cachedMaxWorldHeight{ 0.0f };
-        AZ::Vector2 m_cachedHeightQueryResolution{ 1.0f, 1.0f };
+        float m_cachedHeightQueryResolution{ 1.0f };
         AZ::Aabb m_cachedShapeBounds;
 
         // prevent recursion in case user attaches cyclic dependences

@@ -286,7 +286,7 @@ namespace ImageProcessingAtom
 
                 for (u32 slice = 0; slice < arraySize; slice++)
                 {
-                    AZStd::array_view<uint8_t> imageData = imageAsset->GetSubImageData(mip, slice);
+                    AZStd::span<const uint8_t> imageData = imageAsset->GetSubImageData(mip, slice);
                     memcpy(imageBuf + slice * imageData.size(), imageData.data(), imageData.size());
                 }
             }

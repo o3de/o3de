@@ -248,14 +248,14 @@
     #if defined(__has_builtin)
         #if __has_builtin(__builtin_is_constant_evaluated)
             #define az_builtin_is_constant_evaluated() __builtin_is_constant_evaluated()
-        #define az_has_builtin_is_constant_evaluated() true
+        #define az_has_builtin_is_constant_evaluated true
         #endif
     #elif AZ_COMPILER_MSVC >= 1928
         #define az_builtin_is_constant_evaluated() __builtin_is_constant_evaluated()
-        #define az_has_builtin_is_constant_evaluated() true
+        #define az_has_builtin_is_constant_evaluated true
     #elif AZ_COMPILER_GCC
         #define az_builtin_is_constant_evaluated() __builtin_is_constant_evaluated()
-        #define az_has_builtin_is_constant_evaluated() true
+        #define az_has_builtin_is_constant_evaluated true
     #endif
 #endif
 
@@ -271,7 +271,7 @@
         }
     }
     #define az_builtin_is_constant_evaluated() AZ::Internal::builtin_is_constant_evaluated()
-    #define az_has_builtin_is_constant_evaluated() false
+    #define az_has_builtin_is_constant_evaluated false
 #endif
 
 // define builtin functions used by char_traits class for efficient compile time and runtime

@@ -863,7 +863,7 @@ namespace EMotionFX
         }
 
         // process all objects for this frame
-        size_t totalBytesRead = 0;
+        [[maybe_unused]] size_t totalBytesRead = 0;
         const size_t numObjects = frameObjects.size();
         for (size_t a = 0; a < numObjects; ++a)
         {

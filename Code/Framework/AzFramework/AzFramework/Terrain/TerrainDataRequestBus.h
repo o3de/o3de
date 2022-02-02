@@ -12,6 +12,8 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/span.h>
+#include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
 
 namespace AzFramework
@@ -48,8 +50,8 @@ namespace AzFramework
             static AZ::Vector3 GetDefaultTerrainNormal() { return AZ::Vector3::CreateAxisZ(); }
 
             // System-level queries to understand world size and resolution
-            virtual AZ::Vector2 GetTerrainHeightQueryResolution() const = 0;
-            virtual void SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution) = 0;
+            virtual float GetTerrainHeightQueryResolution() const = 0;
+            virtual void SetTerrainHeightQueryResolution(float queryResolution) = 0;
 
             virtual AZ::Aabb GetTerrainAabb() const = 0;
             virtual void SetTerrainAabb(const AZ::Aabb& worldBounds) = 0;
@@ -185,6 +187,11 @@ namespace AzFramework
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
+            //! Get the terrain raycast entity context id.
+            virtual EntityContextId GetTerrainRaycastEntityContextId() const = 0;
+
+            //! Given a ray, return the closest intersection with terrain.
+            virtual RenderGeometry::RayResult GetClosestIntersection(const RenderGeometry::RayRequest& ray) const = 0;
 
         private:
             // Private variations of the GetSurfacePoint API exposed to BehaviorContext that returns a value instead of
