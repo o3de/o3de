@@ -197,5 +197,5 @@ namespace UnitTest
     public:
     };
 
-    const auto DefaultViewportSize = AZ::Vector2(1024.0f, 576.0f); // 16:9 ratio
+    const auto DefaultViewportSize = AzFramework::ScreenSize(1024, 576); // 16:9 ratio
 } // namespace UnitTest

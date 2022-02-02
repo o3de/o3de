@@ -3568,7 +3568,7 @@ namespace AzToolsFramework
         const AZ::Transform gizmoCameraOffset = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f));
         const AZ::Transform gizmoCameraTransform = AZ::Transform::CreateFromMatrix3x3(editorCameraOrientation) * gizmoCameraOffset;
         const AzFramework::CameraState gizmoCameraState =
-            AzFramework::CreateDefaultCamera(gizmoCameraTransform, editorCameraState.m_viewportSize);
+            AzFramework::CreateDefaultCamera(gizmoCameraTransform, AzFramework::ScreenSizeFromVector2(editorCameraState.m_viewportSize));
 
         // cache the gizmo camera view and projection for world-to-screen calculations
         const auto cameraView = AzFramework::CameraView(gizmoCameraState);

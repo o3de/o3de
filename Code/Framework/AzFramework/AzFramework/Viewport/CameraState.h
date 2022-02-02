@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
 
 namespace AZ
 {
@@ -46,22 +46,22 @@ namespace AzFramework
 
     //! Create a camera at the given transform, specifying the near and far clip planes as well as the fov with a specific viewport size.
     CameraState CreateCamera(
-        const AZ::Transform& transform, float nearPlane, float farPlane, float verticalFovRad, const AZ::Vector2& viewportSize);
+        const AZ::Transform& transform, float nearPlane, float farPlane, float verticalFovRad, const ScreenSize& viewportSize);
 
     //! Create a camera at the given transform with a specific viewport size.
     //! @note The near/far clip planes and fov are sensible default values - please
     //! use SetCameraClippingVolume to override them.
-    CameraState CreateDefaultCamera(const AZ::Transform& transform, const AZ::Vector2& viewportSize);
+    CameraState CreateDefaultCamera(const AZ::Transform& transform, const ScreenSize& viewportSize);
 
     //! Create a camera at the given position (no orientation) with a specific viewport size.
     //! @note The near/far clip planes and fov are sensible default values - please
     //! use SetCameraClippingVolume to override them.
-    CameraState CreateIdentityDefaultCamera(const AZ::Vector3& position, const AZ::Vector2& viewportSize);
+    CameraState CreateIdentityDefaultCamera(const AZ::Vector3& position, const ScreenSize& viewportSize);
 
     //! Create a camera transformed by the given view to world matrix with a specific viewport size.
     //! @note The near/far clip planes and fov are sensible default values - please
     //! use SetCameraClippingVolume to override them.
-    CameraState CreateCameraFromWorldFromViewMatrix(const AZ::Matrix4x4& worldFromView, const AZ::Vector2& viewportSize);
+    CameraState CreateCameraFromWorldFromViewMatrix(const AZ::Matrix4x4& worldFromView, const ScreenSize& viewportSize);
 
     //! Override the default near/far clipping planes and fov of the camera.
     void SetCameraClippingVolume(CameraState& cameraState, float nearPlane, float farPlane, float verticalFovRad);
