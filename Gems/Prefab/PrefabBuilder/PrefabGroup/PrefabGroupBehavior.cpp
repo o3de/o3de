@@ -30,20 +30,21 @@
 #include <AzToolsFramework/Prefab/PrefabSystemScriptingBus.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
-#include <SceneAPI/SceneData/Groups/MeshGroup.h>
-#include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
-#include <SceneAPI/SceneCore/Events/ExportProductList.h>
-#include <SceneAPI/SceneCore/Events/ExportEventContext.h>
-#include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
-#include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
-#include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
-#include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
-#include <SceneAPI/SceneCore/Containers/Views/SceneGraphUpwardsIterator.h>
-#include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
-#include <SceneAPI/SceneCore/Containers/SceneManifest.h>
-#include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/Containers/SceneManifest.h>
+#include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
+#include <SceneAPI/SceneCore/Containers/Views/SceneGraphUpwardsIterator.h>
+#include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
+#include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
+#include <SceneAPI/SceneCore/Events/ExportEventContext.h>
+#include <SceneAPI/SceneCore/Events/ExportProductList.h>
+#include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
+#include <SceneAPI/SceneData/Groups/MeshGroup.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+#include <SceneAPI/SceneData/Rules/LodRule.h>
 
 namespace AZStd
 {
@@ -175,15 +176,15 @@ namespace AZ::SceneAPI::Behaviors
                 const auto thisNodeIndex = entry.first;
                 const auto meshNodeIndex = entry.second.first;
                 const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
-                AZStd::string meshNodePath{ meshNodeName.GetPath() };
 
-                AZStd::string meshNodeFullName;
-                meshNodeFullName = relativeSourcePath;
-                meshNodeFullName.append("_");
-                meshNodeFullName.append(meshNodeName.GetName());
+                AZStd::string meshNodePath{ meshNodeName.GetPath() };
+                AZStd::string meshGroupName = "default_";
+                meshGroupName += scene.GetName();
+                meshGroupName += meshNodePath;
+                AZ::StringFunc::Replace(meshGroupName, ".", "_");
 
                 auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
-                meshGroup->SetName(meshNodeFullName);
+                meshGroup->SetName(meshGroupName);
                 meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
                 for (const auto& meshGoupNamePair : meshTransformMap)
                 {
@@ -206,6 +207,9 @@ namespace AZ::SceneAPI::Behaviors
                 coordinateSystemRule->SetTranslation(AZ::Vector3::CreateZero());
                 coordinateSystemRule->SetScale(1.0f);
                 meshGroup->GetRuleContainer().AddRule(coordinateSystemRule);
+
+                // create an empty LOD rule in order to skip the LOD buffer creation
+                meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::LodRule>());
 
                 manifestUpdates.emplace_back(meshGroup);
 
@@ -236,10 +240,14 @@ namespace AZ::SceneAPI::Behaviors
                 }
 
                 // assign mesh asset id hint using JSON
+                AZStd::string modelAssetPath;
+                modelAssetPath = relativeSourcePath;
+                modelAssetPath.append(meshGroupName);
+
                 auto meshAssetJson = AZStd::string::format(
                     R"JSON(
                         {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
-                    )JSON", meshNodeFullName.c_str());
+                    )JSON", modelAssetPath.c_str());
 
                 bool result = false;
                 AzToolsFramework::EntityUtilityBus::BroadcastResult(
