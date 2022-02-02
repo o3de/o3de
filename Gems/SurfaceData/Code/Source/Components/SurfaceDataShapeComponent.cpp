@@ -155,12 +155,8 @@ namespace SurfaceData
             LmbrCentral::ShapeComponentRequestsBus::EventResult(hitShape, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::IntersectRay, rayOrigin, rayDirection, intersectionDistance);
             if (hitShape)
             {
-                SurfacePoint point;
-                point.m_entityId = GetEntityId();
-                point.m_position = rayOrigin + intersectionDistance * rayDirection;
-                point.m_normal = AZ::Vector3::CreateAxisZ();
-                point.m_masks = m_newPointWeights;
-                surfacePointList.AddSurfacePoint(AZStd::move(point));
+                AZ::Vector3 position = rayOrigin + intersectionDistance * rayDirection;
+                surfacePointList.AddSurfacePoint(GetEntityId(), position, AZ::Vector3::CreateAxisZ(), m_newPointWeights);
             }
         }
     }
@@ -173,22 +169,19 @@ namespace SurfaceData
         {
             const AZ::EntityId entityId = GetEntityId();
             LmbrCentral::ShapeComponentRequestsBus::Event(
-                GetEntityId(),
+                entityId,
                 [entityId, this, &surfacePointList](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
                 {
-                    surfacePointList.EnumeratePoints(
-                        [entityId, this, shape](SurfacePoint& point) -> bool
+                    surfacePointList.ModifySurfaceWeights(
+                        entityId,
+                        [this, shape](SurfaceData::SurfacePoint& point)
+                    {
+                        if (m_shapeBounds.Contains(point.m_position) && shape->IsPointInside(point.m_position))
                         {
-                            if (point.m_entityId != entityId && m_shapeBounds.Contains(point.m_position))
-                            {
-                                bool inside = shape->IsPointInside(point.m_position);
-                                if (inside)
-                                {
-                                    AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
-                                }
-                            }
-                            return true;
-                        });
+                            // If the point is inside our shape, add all our modifier tags with a weight of 1.0f.
+                            AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                        }
+                    });
                 });
         }
     }

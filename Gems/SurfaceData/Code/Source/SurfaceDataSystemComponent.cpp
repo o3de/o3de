@@ -49,7 +49,6 @@ namespace SurfaceData
                 ->Constructor()
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
-                ->Property("entityId", BehaviorValueProperty(&SurfacePoint::m_entityId))
                 ->Property("position", BehaviorValueProperty(&SurfacePoint::m_position))
                 ->Property("normal", BehaviorValueProperty(&SurfacePoint::m_normal))
                 ->Property("masks", BehaviorValueProperty(&SurfacePoint::m_masks))

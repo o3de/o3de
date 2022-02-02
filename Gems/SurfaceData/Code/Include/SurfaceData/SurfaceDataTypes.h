@@ -22,15 +22,21 @@ namespace SurfaceData
     using SurfaceTagNameSet = AZStd::unordered_set<AZStd::string>;
     using SurfaceTagVector = AZStd::vector<SurfaceTag>;
 
+    class SurfacePointList;
+
     struct SurfacePoint final
     {
+        friend class SurfacePointList;
+
         AZ_CLASS_ALLOCATOR(SurfacePoint, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(SurfacePoint, "{0DC7E720-68D6-47D4-BB6D-B89EF23C5A5C}");
 
-        AZ::EntityId m_entityId;
         AZ::Vector3 m_position;
         AZ::Vector3 m_normal;
         SurfaceTagWeightMap m_masks;
+
+    private:
+        AZ::EntityId m_entityId;
     };
 
     class SurfacePointList
@@ -48,12 +54,8 @@ namespace SurfaceData
         SurfacePointList(AZStd::initializer_list<const SurfacePoint> surfacePoints);
 
         //! Add a surface point to the list.
-        //! @param surfacePoint - The point to add to the list.
-        void AddSurfacePoint(const SurfacePoint& surfacePoint);
-
-        //! Add a surface point to the list.
-        //! @param surfacePoint - The point to add to the list. It will be moved, so surfacePoint will no longer be valid after this call.
-        void AddSurfacePoint(SurfacePoint&& surfacePoint);
+        void AddSurfacePoint(const AZ::EntityId& entityId,
+            const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeightMap& weights);
 
         //! Clear the surface point list.
         void Clear();
@@ -70,8 +72,11 @@ namespace SurfaceData
         //! @return - The number of valid points in the list.
         size_t GetSize() const;
 
-        void EnumeratePoints(AZStd::function<bool(SurfacePoint&)> pointCallback);
         void EnumeratePoints(AZStd::function<bool(const SurfacePoint&)> pointCallback) const;
+
+        void ModifySurfaceWeights(
+            const AZ::EntityId& currentEntityId,
+            AZStd::function<void(SurfacePoint&)> modificationWeightCallback);
 
         const SurfacePoint& GetHighestSurfacePoint() const;
 
@@ -79,8 +84,8 @@ namespace SurfaceData
         void SortAndCombineNeighboringPoints();
 
     protected:
-
         AZStd::vector<SurfacePoint> m_surfacePointList;
+        AZ::Aabb m_pointBounds = AZ::Aabb::CreateNull();
 
         // Controls whether we combine neighboring points and sort by height when adding points, or as a post-process step.
         bool m_sortAndCombineOnPointInsertion{ true };

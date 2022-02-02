@@ -237,12 +237,7 @@ namespace SurfaceData
 
         if (DoRayTrace(inPosition, queryPointOnly, hitPosition, hitNormal))
         {
-            SurfacePoint point;
-            point.m_entityId = GetEntityId();
-            point.m_position = hitPosition;
-            point.m_normal = hitNormal;
-            point.m_masks = m_newPointWeights;
-            surfacePointList.AddSurfacePoint(AZStd::move(point));
+            surfacePointList.AddSurfacePoint(GetEntityId(), hitPosition, hitNormal, m_newPointWeights);
         }
     }
 
@@ -252,21 +247,21 @@ namespace SurfaceData
 
         if (m_colliderBounds.IsValid() && !m_configuration.m_modifierTags.empty())
         {
-            const AZ::EntityId entityId = GetEntityId();
-            surfacePointList.EnumeratePoints(
-                [this, entityId](SurfacePoint& point) -> bool
+            surfacePointList.ModifySurfaceWeights(
+                GetEntityId(),
+                [this](SurfaceData::SurfacePoint& point)
                 {
-                    if (point.m_entityId != entityId && m_colliderBounds.Contains(point.m_position))
+                    if (m_colliderBounds.Contains(point.m_position))
                     {
                         AZ::Vector3 hitPosition;
                         AZ::Vector3 hitNormal;
                         constexpr bool queryPointOnly = true;
                         if (DoRayTrace(point.m_position, queryPointOnly, hitPosition, hitNormal))
                         {
+                            // If the query point collides with the volume, add all our modifier tags with a weight of 1.0f.
                             AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
                         }
                     }
-                    return true;
                 });
         }
     }

@@ -16,16 +16,12 @@ namespace SurfaceData
         m_surfacePointList.reserve(surfacePoints.size());
         for (auto& point : surfacePoints)
         {
-            AddSurfacePoint(point);
+            AddSurfacePoint(AZ::EntityId(), point.m_position, point.m_normal, point.m_masks);
         }
     }
 
-    void SurfacePointList::AddSurfacePoint(const SurfacePoint& surfacePoint)
-    {
-        AddSurfacePoint(AZStd::move(SurfacePoint(surfacePoint)));
-    }
-
-    void SurfacePointList::AddSurfacePoint(SurfacePoint&& surfacePoint)
+    void SurfacePointList::AddSurfacePoint(const AZ::EntityId& entityId,
+        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeightMap& masks)
     {
         if (m_sortAndCombineOnPointInsertion)
         {
@@ -35,15 +31,23 @@ namespace SurfaceData
             auto pointItr = m_surfacePointList.begin();
             for (; pointItr < m_surfacePointList.end(); ++pointItr)
             {
+                SurfacePoint& point = *pointItr;
+
                 // (Someday we should add a configurable tolerance for comparison)
-                if (pointItr->m_position.IsClose(surfacePoint.m_position) && pointItr->m_normal.IsClose(surfacePoint.m_normal))
+                if (point.m_position.IsClose(position) && point.m_normal.IsClose(normal))
                 {
                     // consolidate points with similar attributes by adding masks/weights to the similar point instead of adding a new one.
-                    AddMaxValueForMasks(pointItr->m_masks, surfacePoint.m_masks);
+                    AddMaxValueForMasks(point.m_masks, masks);
                     return;
                 }
-                else if (pointItr->m_position.GetZ() < surfacePoint.m_position.GetZ())
+                else if (point.m_position.GetZ() < position.GetZ())
                 {
+                    m_pointBounds.AddPoint(position);
+                    SurfacePoint surfacePoint;
+                    surfacePoint.m_position = position;
+                    surfacePoint.m_normal = normal;
+                    surfacePoint.m_masks = masks;
+                    surfacePoint.m_entityId = entityId;
                     m_surfacePointList.insert(pointItr, AZStd::move(surfacePoint));
                     return;
                 }
@@ -53,7 +57,13 @@ namespace SurfaceData
         }
 
         // We're adding this point to the end of the list.
-        m_surfacePointList.emplace_back(AZStd::move(surfacePoint));
+        m_pointBounds.AddPoint(position);
+        SurfacePoint point;
+        point.m_position = position;
+        point.m_normal = normal;
+        point.m_masks = masks;
+        point.m_entityId = entityId;
+        m_surfacePointList.emplace_back(AZStd::move(point));
     }
 
     void SurfacePointList::Clear()
@@ -79,7 +89,7 @@ namespace SurfaceData
         return m_surfacePointList.size();
     }
 
-    void SurfacePointList::EnumeratePoints(AZStd::function<bool(SurfacePoint&)> pointCallback)
+    void SurfacePointList::EnumeratePoints(AZStd::function<bool(const SurfacePoint&)> pointCallback) const
     {
         for (auto& point : m_surfacePointList)
         {
@@ -90,13 +100,15 @@ namespace SurfaceData
         }
     }
 
-    void SurfacePointList::EnumeratePoints(AZStd::function<bool(const SurfacePoint&)> pointCallback) const
+    void SurfacePointList::ModifySurfaceWeights(
+        const AZ::EntityId& currentEntityId,
+        AZStd::function<void(SurfacePoint&)> modificationWeightCallback)
     {
         for (auto& point : m_surfacePointList)
         {
-            if (!pointCallback(point))
+            if (point.m_entityId != currentEntityId)
             {
-                break;
+                modificationWeightCallback(point);
             }
         }
     }
@@ -169,7 +181,8 @@ namespace SurfaceData
             auto prevPointItr = pointItr - 1;
 
             // (Someday we should add a configurable tolerance for comparison)
-            if (pointItr->m_position.IsClose(prevPointItr->m_position) && pointItr->m_normal.IsClose(prevPointItr->m_normal))
+            if (pointItr->m_position.IsClose(prevPointItr->m_position) &&
+                pointItr->m_normal.IsClose(prevPointItr->m_normal))
             {
                 // consolidate points with similar attributes by adding masks/weights to the previous point and deleting this point.
                 AddMaxValueForMasks(prevPointItr->m_masks, pointItr->m_masks);
