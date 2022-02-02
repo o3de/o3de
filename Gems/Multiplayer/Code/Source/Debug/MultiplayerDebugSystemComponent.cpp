@@ -600,9 +600,8 @@ namespace Multiplayer
             if (elem->m_category == AuditCategory::Desync)
             {
                 const char* nodeTitle = elem->m_category == AuditCategory::Desync
-                    ? MultiplayerDebugAuditTrail::DESYNC_TITLE
-                    : (elem->m_category == AuditCategory::Input ? MultiplayerDebugAuditTrail::INPUT_TITLE
-                                                                           : MultiplayerDebugAuditTrail::EVENT_TITLE);
+                    ? MultiplayerDebugAuditTrail::DESYNC_TITLE : (elem->m_category == AuditCategory::Input
+                        ? MultiplayerDebugAuditTrail::INPUT_TITLE : MultiplayerDebugAuditTrail::EVENT_TITLE);
 
                 // Events only have one item
                 if (elem->m_category == AuditCategory::Event)
@@ -617,7 +616,8 @@ namespace Multiplayer
                         AZStd::pair<AZStd::string, AZStd::string> cliServValues =
                             elem->m_children.front().m_elements.front()->GetClientServerValues();
                         if(AZStd::string::format(
-                            "%d %d %s %s", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId), cliServValues.first.c_str(), cliServValues.second.c_str()).contains(filter))
+                            "%d %d %s %s", static_cast<uint16_t>(elem->m_inputId), static_cast<uint32_t>(elem->m_hostFrameId),
+                            cliServValues.first.c_str(), cliServValues.second.c_str()).contains(filter))
                         {
                             m_filteredAuditTrail.push_back(*elem);
                         }
