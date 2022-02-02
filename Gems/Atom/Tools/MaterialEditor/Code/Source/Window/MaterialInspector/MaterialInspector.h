@@ -9,18 +9,17 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Atom/Window/MaterialEditorWindowSettings.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <Window/MaterialEditorWindowSettings.h>
 #endif
 
 namespace MaterialEditor
 {
-    //! Provides controls for viewing and editing a material document settings.
-    //! The settings can be divided into cards, with each one showing a subset of properties.
+    //! Provides controls for viewing and editing document settings.
     class MaterialInspector
         : public AtomToolsFramework::InspectorWidget
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler

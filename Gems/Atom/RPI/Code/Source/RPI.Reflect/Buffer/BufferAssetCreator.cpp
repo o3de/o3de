@@ -165,7 +165,7 @@ namespace AZ
             creator.SetPoolAsset(sourceAsset->GetPoolAsset());
             creator.SetBufferViewDescriptor(sourceAsset->GetBufferViewDescriptor());
 
-            const AZStd::array_view<uint8_t> sourceBuffer = sourceAsset->GetBuffer();
+            const AZStd::span<const uint8_t> sourceBuffer = sourceAsset->GetBuffer();
             creator.SetBuffer(sourceBuffer.data(), sourceBuffer.size(), sourceAsset->GetBufferDescriptor());
 
             return creator.End(clonedResult);

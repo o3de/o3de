@@ -56,19 +56,17 @@ def BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD():
             06. delete parent entity
     """
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.editor_entity_utils import EditorEntity
 
     import azlmbr.bus as bus
     import azlmbr.editor as editor
     import azlmbr.entity as entity
-    import azlmbr.legacy.general as general
     import azlmbr.object
 
     # 01. load an existing level
-    test_level = 'Simple'
-    general.open_level_no_prompt(test_level)
-    Report.result(Tests.load_level, general.get_current_level_name() == test_level)
+    hydra.open_base_level()
 
     # 02. create parent entity and set name
     # Delete any exiting entity and Create a new Entity at the root level

@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
     class GemSortFilterProxyModel
         : public QSortFilterProxyModel
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         enum class GemSelected

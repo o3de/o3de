@@ -67,7 +67,7 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Add Display Mapper level component to the level entity.
@@ -102,7 +102,7 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
         display_mapper_component.set_component_property_value(
             AtomComponentProperties.display_mapper('Enable LDR color grading LUT'), True)
         Report.result(
-            Test.enable_ldr_color_grading_lut,
+            Tests.enable_ldr_color_grading_lut,
             display_mapper_component.get_component_property_value(
                 AtomComponentProperties.display_mapper('Enable LDR color grading LUT')) is True)
 

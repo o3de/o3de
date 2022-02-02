@@ -64,6 +64,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             AZStd::move(uniqueName), context.GetSourceUuid(), AZStd::move(serializer));
         AZ_Assert(spawnable, "Failed to create a new spawnable.");
 
+        object.GetReferencedAssets() = prefab.GetReferencedAssets();
         Instance& instance = prefab.GetInstance();
         // Resolve entity aliases that store PrefabDOM information to use the spawnable instead. This is done before the entities are
         // moved from the instance as they'd otherwise can't be found.

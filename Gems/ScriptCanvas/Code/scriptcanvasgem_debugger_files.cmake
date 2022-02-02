@@ -18,8 +18,6 @@ set(FILES
     Include/ScriptCanvas/Debugger/Debugger.cpp
     Include/ScriptCanvas/Debugger/Logger.h
     Include/ScriptCanvas/Debugger/Logger.cpp
-    Include/ScriptCanvas/Debugger/LogReader.h
-    Include/ScriptCanvas/Debugger/LogReader.cpp
     Include/ScriptCanvas/Debugger/StatusBus.h
     Include/ScriptCanvas/Debugger/Messages/Notify.cpp
     Include/ScriptCanvas/Debugger/Messages/Notify.h

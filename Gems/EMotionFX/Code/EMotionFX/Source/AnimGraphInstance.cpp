@@ -71,6 +71,9 @@ namespace EMotionFX
         // create the parameter value objects
         CreateParameterValues();
 
+        // Assign a unique seed for the lcg random number. Here we use the actorInstanceId because it guaranteed to be unique and available on actor instances.
+        m_lcgRandom.SetSeed(actorInstance->GetID());
+
         m_animGraph->Unlock();
         GetEventManager().OnCreateAnimGraphInstance(this);
     }

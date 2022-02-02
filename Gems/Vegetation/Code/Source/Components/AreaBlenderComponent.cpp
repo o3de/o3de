@@ -224,7 +224,7 @@ namespace Vegetation
 
         bool result = true;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependencies with vegetation entity references");
         if (!m_isRequestInProgress)
         {
             m_isRequestInProgress = true;
@@ -264,7 +264,7 @@ namespace Vegetation
             return;
         }
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependencies with vegetation entity references");
         if (!m_isRequestInProgress)
         {
             m_isRequestInProgress = true;
@@ -295,7 +295,7 @@ namespace Vegetation
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependencies with vegetation entity references");
         if (!m_isRequestInProgress)
         {
             m_isRequestInProgress = true;
@@ -320,7 +320,7 @@ namespace Vegetation
             LmbrCentral::ShapeComponentRequestsBus::EventResult(bounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
         }
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependencies with vegetation entity references");
         if (!m_isRequestInProgress)
         {
             m_isRequestInProgress = true;
@@ -344,7 +344,7 @@ namespace Vegetation
 
         AZ::u32 count = 0;
 
-        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependences with vegetation entity references");
+        AZ_WarningOnce("Vegetation", !m_isRequestInProgress, "Detected cyclic dependencies with vegetation entity references");
         if (!m_isRequestInProgress)
         {
             m_isRequestInProgress = true;

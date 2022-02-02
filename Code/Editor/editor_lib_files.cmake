@@ -249,8 +249,6 @@ set(FILES
     CryEditPy.cpp
     CryEdit.cpp
     CryEdit.h
-    CVarMenu.cpp
-    CVarMenu.h
     EditorToolsApplication.cpp
     EditorToolsApplication.h
     EditorToolsApplicationAPI.h
@@ -270,10 +268,8 @@ set(FILES
     Include/Command.h
     Include/HitContext.h
     Include/ICommandManager.h
-    Include/IConsoleConnectivity.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
-    Include/IEventLoopHook.h
     Include/IExportManager.h
     Include/IGizmoManager.h
     Include/IIconManager.h
@@ -282,11 +278,8 @@ set(FILES
     Include/IObjectManager.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
-    Include/IRenderListener.h
     Include/ISourceControl.h
-    Include/ITextureDatabaseUpdater.h
     Include/ITransformManipulator.h
-    Include/IViewPane.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
@@ -320,8 +313,6 @@ set(FILES
     AssetEditor/AssetEditorWindow.ui
     Commands/CommandManager.cpp
     Commands/CommandManager.h
-    Controls/BitmapToolTip.cpp
-    Controls/BitmapToolTip.h
     Controls/ConsoleSCB.cpp
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
@@ -343,14 +334,11 @@ set(FILES
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.h
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.h
-    Controls/ReflectedPropertyControl/PropertyResourceCtrl.cpp
-    Controls/ReflectedPropertyControl/PropertyResourceCtrl.h
     Controls/ReflectedPropertyControl/PropertyCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyCtrl.h
     MainStatusBar.cpp
     MainStatusBar.h
     MainStatusBarItems.h
-    CrtDebug.cpp
     CryEdit.rc
     CryEditDoc.cpp
     CryEditDoc.h
@@ -361,7 +349,6 @@ set(FILES
     LogFile.cpp
     LogFile.h
     Resource.h
-    UserMessageDefines.h
     ActionManager.cpp
     ActionManager.h
     ShortcutDispatcher.cpp
@@ -397,12 +384,6 @@ set(FILES
     QuickAccessBar.cpp
     QuickAccessBar.h
     QuickAccessBar.ui
-    ResizeResolutionDialog.cpp
-    ResizeResolutionDialog.h
-    ResizeResolutionDialog.ui
-    SelectEAXPresetDlg.cpp
-    SelectEAXPresetDlg.h
-    SelectEAXPresetDlg.ui
     SelectLightAnimationDialog.cpp
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
@@ -424,9 +405,6 @@ set(FILES
     IconListDialog.ui
     UndoDropDown.cpp
     UndoDropDown.h
-    DimensionsDialog.cpp
-    DimensionsDialog.h
-    DimensionsDialog.ui
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
@@ -454,17 +432,10 @@ set(FILES
     FBXExporterDialog.h
     FileTypeUtils.h
     GridUtils.h
-    IObservable.h
     IPostRenderer.h
     ToolBox.h
     TrackViewNewSequenceDialog.h
-    UndoConfigSpec.h
-    UndoViewPosition.h
-    UndoViewRotation.h
     Util/GeometryUtil.h
-    WipFeaturesDlg.h
-    WipFeaturesDlg.ui
-    WipFeaturesDlg.qrc
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
     LogFileImpl.cpp
@@ -474,8 +445,6 @@ set(FILES
     Objects/DisplayContextShared.inl
     Objects/SelectionGroup.cpp
     Objects/SelectionGroup.h
-    Objects/SubObjSelection.cpp
-    Objects/SubObjSelection.h
     Objects/ObjectLoader.cpp
     Objects/ObjectLoader.h
     Objects/ObjectManager.cpp
@@ -552,12 +521,6 @@ set(FILES
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
-    UndoConfigSpec.cpp
-    UndoViewPosition.cpp
-    UndoViewRotation.cpp
-    WipFeatureManager.cpp
-    WipFeatureManager.h
-    WipFeaturesDlg.cpp
     Dialogs/ErrorsDlg.cpp
     Dialogs/ErrorsDlg.h
     Dialogs/ErrorsDlg.ui
@@ -573,9 +536,6 @@ set(FILES
     LevelInfo.h
     ProcessInfo.cpp
     ProcessInfo.h
-    Report.h
-    SurfaceTypeValidator.cpp
-    SurfaceTypeValidator.h
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h
     TrackView/TrackViewDialog.qrc
@@ -654,16 +614,12 @@ set(FILES
     TrackView/TrackViewSequence.h
     TrackView/TrackViewNodeFactories.h
     TrackView/TrackViewEventNode.h
-    ConfigGroup.cpp
-    ConfigGroup.h
     Util/AffineParts.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
     Util/AutoDirectoryRestoreFileDialog.h
     Util/AutoDirectoryRestoreFileDialog.cpp
     Util/CryMemFile.h
-    Util/DynamicArray2D.cpp
-    Util/DynamicArray2D.h
     Util/EditorAutoLevelLoadTest.cpp
     Util/EditorAutoLevelLoadTest.h
     Util/EditorUtils.cpp
@@ -672,33 +628,24 @@ set(FILES
     Util/FileEnum.h
     Util/FileUtil.cpp
     Util/FileUtil.h
-    Util/GdiUtil.cpp
-    Util/GdiUtil.h
     Util/GeometryUtil.cpp
     Util/GuidUtil.cpp
     Util/GuidUtil.h
-    Util/IObservable.h
     Util/Mailer.h
     Util/NamedData.cpp
     Util/NamedData.h
-    Util/Observable.h
     Util/PakFile.cpp
     Util/PakFile.h
     Util/PredefinedAspectRatios.cpp
     Util/PredefinedAspectRatios.h
     Util/StringHelpers.cpp
     Util/StringHelpers.h
-    Util/TRefCountBase.h
-    Util/Triangulate.cpp
-    Util/Triangulate.h
     Util/Util.h
     Util/XmlArchive.cpp
     Util/XmlArchive.h
     Util/XmlTemplate.cpp
     Util/XmlTemplate.h
-    Util/bitarray.h
     Util/fastlib.h
-    Util/smartptr.h
     WaitProgress.cpp
     WaitProgress.h
     Util/FileUtil_impl.h
@@ -727,17 +674,11 @@ set(FILES
     Util/FileChangeMonitor.h
     Util/ImageUtil.cpp
     Util/ImageUtil.h
-    Util/ImageASC.cpp
-    Util/ImageASC.h
-    Util/ImageBT.cpp
-    Util/ImageBT.h
     Util/ImageGif.cpp
     Util/ImageGif.h
     Util/ImageTIF.cpp
     Util/ImageTIF.h
     Util/Math.h
-    Util/UIEnumerations.cpp
-    Util/UIEnumerations.h
     WelcomeScreen/WelcomeScreenDialog.h
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui

@@ -25,7 +25,7 @@ static bool IsSubfolder(const QString& folderA, const QString& folderB)
     using AZStd::begin;
     using AZStd::end;
 
-    constexpr auto isSlash = [](const QChar c) constexpr
+    auto isSlash = [](const QChar c) constexpr
     {
         return c == AZ::IO::WindowsPathSeparator || c == AZ::IO::PosixPathSeparator;
     };

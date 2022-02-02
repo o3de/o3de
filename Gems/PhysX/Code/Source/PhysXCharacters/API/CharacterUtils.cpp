@@ -5,13 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <PhysXCharacters/API/CharacterUtils.h>
+
 #include <PhysXCharacters/API/CharacterController.h>
 #include <PhysXCharacters/API/Ragdoll.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/MaterialBus.h>
-#include <cfloat>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
@@ -19,6 +16,12 @@
 #include <Source/RigidBody.h>
 #include <Source/Scene/PhysXScene.h>
 #include <Source/Shape.h>
+
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzFramework/Physics/MaterialBus.h>
+
+#include <cfloat>
 
 namespace PhysX::Utils::Characters
 {

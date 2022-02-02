@@ -59,7 +59,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->DataElement(Edit::UIHandlers::Color, &DirectionalLightComponentConfig::m_color, "Color", "Color of the light")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetLinearRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_intensityMode, "Intensity mode", "Allows specifying light values in lux or Ev100")
                             ->EnumAttribute(PhotometricUnit::Lux, "Lux")
                             ->EnumAttribute(PhotometricUnit::Ev100Illuminance, "Ev100")

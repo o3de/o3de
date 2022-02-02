@@ -16,6 +16,8 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
+#include <AzCore/std/containers/span.h>
+
 namespace AZ
 {
     namespace RPI
@@ -33,11 +35,11 @@ namespace AZ
         Data::Asset<ShaderAsset> FindCriticalShaderAsset(const AZStd::string& shaderFilePath);
 
         //! Loads a shader for the given shader asset ID. Optional shaderFilePath param for debugging.
-        Data::Instance<Shader> LoadShader(Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath = "");
+        Data::Instance<Shader> LoadShader(Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath = "", const AZStd::string& supervariantName = "");
 
         //! Loads a shader for the given shader file path
-        Data::Instance<Shader> LoadShader(const AZStd::string& shaderFilePath);
-        Data::Instance<Shader> LoadCriticalShader(const AZStd::string& shaderFilePath);
+        Data::Instance<Shader> LoadShader(const AZStd::string& shaderFilePath, const AZStd::string& supervariantName = "");
+        Data::Instance<Shader> LoadCriticalShader(const AZStd::string& shaderFilePath, const AZStd::string& supervariantName = "");
 
         //! Loads a streaming image asset for the given file path
         Data::Instance<RPI::StreamingImage> LoadStreamingTexture(AZStd::string_view path);
@@ -57,7 +59,22 @@ namespace AZ
 
         //! Same as above. Provided as a convenience when all arguments of the 'numthreads' attributes should be assigned to RHI::DispatchDirect::m_threadsPerGroup* variables.
         AZ::Outcome<void, AZStd::string> GetComputeShaderNumThreads(const Data::Asset<ShaderAsset>& shaderAsset, RHI::DispatchDirect& dispatchDirect);
-        
+
+        //! Get single image pixel value for specified mip and slice
+        template<typename T>
+        T GetSubImagePixelValue(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, uint32_t x, uint32_t y, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
+
+        //! Retrieve a region of image pixel values (float) for specified mip and slice
+        //! NOTE: The topLeft coordinate is inclusive, whereas the bottomRight is exclusive
+        bool GetSubImagePixelValues(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<float> outValues, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
+
+        //! Retrieve a region of image pixel values (uint) for specified mip and slice
+        //! NOTE: The topLeft coordinate is inclusive, whereas the bottomRight is exclusive
+        bool GetSubImagePixelValues(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::u32> outValues, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
+
+        //! Retrieve a region of image pixel values (int) for specified mip and slice
+        //! NOTE: The topLeft coordinate is inclusive, whereas the bottomRight is exclusive
+        bool GetSubImagePixelValues(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, AZStd::pair<uint32_t, uint32_t> topLeft, AZStd::pair<uint32_t, uint32_t> bottomRight, AZStd::span<AZ::s32> outValues, uint32_t componentIndex = 0, uint32_t mip = 0, uint32_t slice = 0);
     }   // namespace RPI
 }   // namespace AZ
 

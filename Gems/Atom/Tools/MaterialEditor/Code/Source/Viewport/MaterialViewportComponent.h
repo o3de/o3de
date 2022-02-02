@@ -12,11 +12,11 @@
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
-#include <Atom/Viewport/MaterialViewportRequestBus.h>
-#include <Atom/Viewport/MaterialViewportSettings.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <Viewport/MaterialViewportRequestBus.h>
+#include <Viewport/MaterialViewportSettings.h>
 
 namespace MaterialEditor
 {
@@ -95,6 +95,9 @@ namespace MaterialEditor
         ////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetCatalogEventBus::Handler overrides ...
         void OnCatalogLoaded(const char* catalogFile) override;
+        void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
+        void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
+        void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
         ////////////////////////////////////////////////////////////////////////
 
         AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::AnyAsset>> m_lightingPresetAssets;
