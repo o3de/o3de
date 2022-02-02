@@ -110,9 +110,12 @@ namespace EMotionFX
 
         SimulatedObjectColliderWidget* GetSimulatedObjectColliderWidget() const;
     protected:
+        virtual bool ShouldReflectPhysicSystem() { return false; }
+        virtual void ReflectMockedSystems();
+
         void OnRegisterPlugin();
         void SetupQtAndFixtureBase();
-        virtual void SetupPluginWindows();
+        void SetupPluginWindows();
 
         QApplication* m_uiApp = nullptr;
         EMStudio::AnimGraphPlugin* m_animGraphPlugin = nullptr;

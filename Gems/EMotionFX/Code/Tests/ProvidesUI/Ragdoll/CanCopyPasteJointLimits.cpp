@@ -31,6 +31,8 @@ namespace EMotionFX
 {
     class CopyPasteRagdollJointLimitsFixture : public UIFixture
     {
+    protected:
+        virtual bool ShouldReflectPhysicSystem() override { return true; }
     };
 
 #if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
@@ -40,11 +42,6 @@ namespace EMotionFX
 #endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         using testing::_;
-
-        AZ::SerializeContext* serializeContext = GetSerializeContext();
-
-        Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
-        D6JointLimitConfiguration::Reflect(serializeContext);
 
         EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
 

@@ -32,6 +32,37 @@ namespace EMotionFX
     class RagdollEditTestsFixture : public UIFixture
     {
     public:
+        void SetUp() override
+        {
+            UIFixture::SetUp();
+
+            using ::testing::_;
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
+                .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeId(_))
+                .WillRepeatedly(
+                    [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
+                    {
+                        if (jointType == AzPhysics::JointType::D6Joint)
+                        {
+                            return azrtti_typeid<D6JointLimitConfiguration>();
+                        }
+                        return AZStd::nullopt;
+                    });
+
+            EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
+                .WillRepeatedly(
+                    []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId, [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
+                       [[maybe_unused]] const AZ::Quaternion& childWorldRotation, [[maybe_unused]] const AZ::Vector3& axis,
+                       [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
+                    {
+                        return AZStd::make_unique<D6JointLimitConfiguration>();
+                    });
+
+        }
+
         void TearDown() override
         {
             QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -57,41 +88,7 @@ namespace EMotionFX
         }
 
     protected:
-        void SetupPluginWindows() override
-        {
-            using ::testing::_;
-
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-            Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
-            D6JointLimitConfiguration::Reflect(serializeContext);
-
-            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
-                .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
-
-            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeId(_))
-                .WillRepeatedly(
-                    [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
-                    {
-                        if (jointType == AzPhysics::JointType::D6Joint)
-                        {
-                            return azrtti_typeid<D6JointLimitConfiguration>();
-                        }
-                        return AZStd::nullopt;
-                    });
-
-            EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
-                .WillRepeatedly(
-                    []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId, [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
-                       [[maybe_unused]] const AZ::Quaternion& childWorldRotation, [[maybe_unused]] const AZ::Vector3& axis,
-                       [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
-                    {
-                        return AZStd::make_unique<D6JointLimitConfiguration>();
-                    });
-
-            UIFixture::SetupPluginWindows();
-        }
+        virtual bool ShouldReflectPhysicSystem() override { return true; }
 
         QModelIndexList m_indexList;
         ReselectingTreeView* m_treeView;

@@ -9,6 +9,8 @@
 #include <Tests/UI/UIFixture.h>
 #include <Tests/UI/ModalPopupHandler.h>
 #include <Tests/Mocks/AtomRenderPlugin.h>
+#include <Tests/Mocks/PhysicsSystem.h>
+#include <Tests/D6JointLimitConfiguration.h>
 #include <Integration/System/SystemCommon.h>
 
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
@@ -82,7 +84,18 @@ namespace EMotionFX
             EMStudio::GetPluginManager()->CreateWindowOfType(plugin->GetName());
         }
     }
-    
+
+    void UIFixture::ReflectMockedSystems()
+    {
+        if (ShouldReflectPhysicSystem())
+        {
+            AZ::SerializeContext* serializeContext = GetSerializeContext();
+
+            Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
+            D6JointLimitConfiguration::Reflect(serializeContext);
+        }
+    }
+
     void UIFixture::OnRegisterPlugin()
     {
         EMStudio::PluginManager* pluginManager = EMStudio::EMStudioManager::GetInstance()->GetPluginManager();
@@ -95,6 +108,7 @@ namespace EMotionFX
 
         using namespace testing;
         SetupQtAndFixtureBase();
+        ReflectMockedSystems();
         SetupPluginWindows();
 
         m_animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID));
