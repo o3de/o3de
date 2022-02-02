@@ -158,6 +158,8 @@ namespace AZ
                 AZStd::string m_name;
                 AZStd::string m_displayName;
                 AZStd::string m_description;
+                AZStd::string m_shaderInputsPrefix;  //!< The name of all SRG inputs under this group will get this prefix.
+                AZStd::string m_shaderOptionsPrefix; //!< The name of all shader options under this group will get this prefix.
                 PropertyList m_properties;
                 AZStd::vector<AZStd::unique_ptr<PropertyGroup>> m_propertyGroups;
                 AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>> m_materialFunctorSourceData;
@@ -282,7 +284,7 @@ namespace AZ
             //! Call back function type used with the enumeration functions.
             //! Return false to terminate the traversal.
             using EnumeratePropertyGroupsCallback = AZStd::function<bool(
-                const AZStd::string&, // The property ID context (i.e. "levelA.levelB.")
+                const MaterialNameContext&, // The name context used to scope properties and shader connections (i.e. "levelA.levelB.")
                 const PropertyGroup* // the next property group in the tree
                 )>;
 
@@ -293,7 +295,7 @@ namespace AZ
             //! Call back function type used with the numeration functions.
             //! Return false to terminate the traversal.
             using EnumeratePropertiesCallback = AZStd::function<bool(
-                const AZStd::string&, // The property ID context (i.e. "levelA.levelB."
+                const MaterialNameContext&, // The name context used to scope properties and shader connections (i.e. "levelA.levelB.")
                 const PropertyDefinition* // the property definition object 
                 )>;
             
@@ -316,10 +318,12 @@ namespace AZ
             PropertyDefinition* FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList);
             
             // Function overloads for recursion, returns false to indicate that recursion should end.
-            bool EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
-            bool EnumerateProperties(const EnumeratePropertiesCallback& callback, AZStd::string propertyIdContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
+            bool EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, MaterialNameContext materialNameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
+            bool EnumerateProperties(const EnumeratePropertiesCallback& callback, MaterialNameContext materialNameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
+            
+            static MaterialNameContext ExtendNameContext(MaterialNameContext nameContext, const MaterialTypeSourceData::PropertyGroup& propertyGroup);
 
-            //! Recursively populates a material asset with properties from the tree of material property groups.
+            //! Recursively populates a material type asset with properties from the tree of material property groups.
             //! @param materialTypeSourceFilePath path to the material type file that is being processed, used to look up relative paths
             //! @param propertyIdContext the accumulated prefix that should be applied to any property names encountered in the current @propertyGroup
             //! @param propertyGroup the current PropertyGroup that is being processed
@@ -327,7 +331,7 @@ namespace AZ
             bool BuildPropertyList(
                 const AZStd::string& materialTypeSourceFilePath,
                 MaterialTypeAssetCreator& materialTypeAssetCreator,
-                AZStd::vector<AZStd::string>& propertyIdContext,
+                MaterialNameContext materialNameContext,
                 const MaterialTypeSourceData::PropertyGroup* propertyGroup) const;
                             
             //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data.

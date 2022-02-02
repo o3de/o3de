@@ -19,6 +19,7 @@
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Material/Material.h>
 
@@ -252,6 +253,57 @@ namespace UnitTest
             AZStd::string m_enablePropertyName;
         };
 
+        // All this functor does is save the MaterialNameContext
+        class SaveNameContextTestFunctor final
+            : public AZ::RPI::MaterialFunctor
+        {
+        public:
+            AZ_RTTI(SaveNameContextTestFunctor, "{FD680069-B430-4278-9E5B-A2B9617627D5}", AZ::RPI::MaterialFunctor);
+
+            static void Reflect(AZ::ReflectContext* context)
+            {
+                if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serializeContext->Class<SaveNameContextTestFunctor, AZ::RPI::MaterialFunctor>()
+                    ->Version(1)
+                    ->Field("nameContext", &SaveNameContextTestFunctor::m_nameContext);
+                }
+            }
+
+            using AZ::RPI::MaterialFunctor::Process;
+            void Process(AZ::RPI::MaterialFunctor::RuntimeContext&) override
+            {
+            }
+            
+            MaterialNameContext m_nameContext;
+        };
+        
+        // All this functor does is save the MaterialNameContext
+        class SaveNameContextTestFunctorSourceData final
+            : public MaterialFunctorSourceData
+        {
+        public:
+            AZ_RTTI(SaveNameContextTestFunctorSourceData, "{4261A2EC-4AB6-420E-884A-18D1A36500BE}", MaterialFunctorSourceData);
+
+            static void Reflect(AZ::ReflectContext* context)
+            {
+                if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serializeContext->Class<SaveNameContextTestFunctorSourceData>()
+                        ->Version(1)
+                        ;
+                }
+            }
+
+            using MaterialFunctorSourceData::CreateFunctor;
+            FunctorResult CreateFunctor([[maybe_unused]] const RuntimeContext& context) const override
+            {
+                Ptr<SaveNameContextTestFunctor> functor = aznew SaveNameContextTestFunctor;
+                functor->m_nameContext = *context.GetNameContext();
+                return Success(Ptr<MaterialFunctor>(functor));
+            }
+        };
+
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         void Reflect(ReflectContext* context) override
@@ -265,6 +317,7 @@ namespace UnitTest
             Splat3FunctorSourceData::Reflect(context);
             EnableShaderFunctorSourceData::Reflect(context);
             SetShaderOptionFunctorSourceData::Reflect(context);
+            SaveNameContextTestFunctorSourceData::Reflect(context);
         }
 
         void SetUp() override
@@ -276,6 +329,7 @@ namespace UnitTest
             AZ::RPI::MaterialFunctorSourceDataRegistration::Get()->RegisterMaterialFunctor("Splat3", azrtti_typeid<Splat3FunctorSourceData>());
             AZ::RPI::MaterialFunctorSourceDataRegistration::Get()->RegisterMaterialFunctor("EnableShader", azrtti_typeid<EnableShaderFunctorSourceData>());
             AZ::RPI::MaterialFunctorSourceDataRegistration::Get()->RegisterMaterialFunctor("SetShaderOption", azrtti_typeid<SetShaderOptionFunctorSourceData>());
+            AZ::RPI::MaterialFunctorSourceDataRegistration::Get()->RegisterMaterialFunctor("SaveNameContext", azrtti_typeid<SaveNameContextTestFunctorSourceData>());
 
             const Name materialSrgId{"MaterialSrg"};
             m_testMaterialSrgLayout = RHI::ShaderResourceGroupLayout::Create();
@@ -432,20 +486,25 @@ namespace UnitTest
 
         struct EnumeratePropertyGroupsResult
         {
-            AZStd::string m_propertyIdContext;
+            MaterialNameContext m_materialNameContext;
             const MaterialTypeSourceData::PropertyGroup* m_propertyGroup;
 
             void Check(AZStd::string expectedIdContext, const MaterialTypeSourceData::PropertyGroup* expectedPropertyGroup)
             {
-                EXPECT_EQ(expectedIdContext, m_propertyIdContext);
+                Name groupFullId{m_propertyGroup->GetName()};
+                m_materialNameContext.ContextualizeProperty(groupFullId);
+
+                AZStd::string expectedPropertyId = expectedIdContext + expectedPropertyGroup->GetName();
+
+                EXPECT_EQ(expectedPropertyId, groupFullId.GetStringView());
                 EXPECT_EQ(expectedPropertyGroup, m_propertyGroup);
             }
         };
         AZStd::vector<EnumeratePropertyGroupsResult> enumeratePropertyGroupsResults;
 
-        sourceData.EnumeratePropertyGroups([&enumeratePropertyGroupsResults](const AZStd::string& propertyIdContext, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
+        sourceData.EnumeratePropertyGroups([&enumeratePropertyGroupsResults](const MaterialNameContext& materialNameContext, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
             {
-                enumeratePropertyGroupsResults.push_back(EnumeratePropertyGroupsResult{propertyIdContext, propertyGroup});
+                enumeratePropertyGroupsResults.push_back(EnumeratePropertyGroupsResult{materialNameContext, propertyGroup});
                 return true;
             });
 
@@ -466,20 +525,25 @@ namespace UnitTest
         
         struct EnumeratePropertiesResult
         {
-            AZStd::string m_propertyIdContext;
+            MaterialNameContext m_materialNameContext;
             const MaterialTypeSourceData::PropertyDefinition* m_propertyDefinition;
 
             void Check(AZStd::string expectedIdContext, const MaterialTypeSourceData::PropertyDefinition* expectedPropertyDefinition)
             {
-                EXPECT_EQ(expectedIdContext, m_propertyIdContext);
+                Name propertyFullId{m_propertyDefinition->GetName()};
+                m_materialNameContext.ContextualizeProperty(propertyFullId);
+
+                AZStd::string expectedPropertyId = expectedIdContext + expectedPropertyDefinition->GetName();
+
+                EXPECT_EQ(expectedPropertyId, propertyFullId.GetStringView());
                 EXPECT_EQ(expectedPropertyDefinition, m_propertyDefinition);
             }
         };
         AZStd::vector<EnumeratePropertiesResult> enumeratePropertiesResults;
 
-        sourceData.EnumerateProperties([&enumeratePropertiesResults](const AZStd::string& propertyIdContext, const MaterialTypeSourceData::PropertyDefinition* propertyDefinition)
+        sourceData.EnumerateProperties([&enumeratePropertiesResults](const MaterialNameContext& materialNameContext, const MaterialTypeSourceData::PropertyDefinition* propertyDefinition)
             {
-                enumeratePropertiesResults.push_back(EnumeratePropertiesResult{propertyIdContext, propertyDefinition});
+                enumeratePropertiesResults.push_back(EnumeratePropertiesResult{materialNameContext, propertyDefinition});
                 return true;
             });
         
@@ -1469,7 +1533,7 @@ namespace UnitTest
         // Note that serialization of individual fields within material properties is thoroughly tested in
         // MaterialPropertySerializerTests, so the sample property data used here is cursory.
         // We also don't cover fields related to providing name contexts for nested property groups, like
-        // "shaderInputPrefix" and "shaderOptionPrefix" as those are covered in CreateMaterialTypeAsset_NestedGroups*.
+        // "shaderInputsPrefix" and "shaderOptionsPrefix" as those are covered in CreateMaterialTypeAsset_NestedGroups*.
 
         const AZStd::string inputJson = R"(
             {
@@ -2012,6 +2076,142 @@ namespace UnitTest
         EXPECT_EQ(materialType.FindProperty("myGroup.bar")->GetName(), "bar");
         EXPECT_EQ(materialType.FindProperty("myGroup.foo")->m_dataType, MaterialPropertyDataType::Bool);
         EXPECT_EQ(materialType.FindProperty("myGroup.bar")->m_dataType, MaterialPropertyDataType::Float);
+    }
+
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_NestedGroupNameContext)
+    {
+        const Name materialSrgId{"MaterialSrg"};
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> materialSrgLayout = RHI::ShaderResourceGroupLayout::Create();
+        materialSrgLayout->SetName(materialSrgId);
+        materialSrgLayout->SetBindingSlot(SrgBindingSlot::Material);
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused1" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused2" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_groupA_m_groupB_m_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
+        EXPECT_TRUE(materialSrgLayout->Finalize());
+
+        Ptr<ShaderOptionGroupLayout> shaderOptions = ShaderOptionGroupLayout::Create();
+        shaderOptions->AddShaderOption(ShaderOptionDescriptor{Name{"o_unused"}, ShaderOptionType::Boolean, 0, 0, CreateBoolShaderOptionValues()});
+        shaderOptions->AddShaderOption(ShaderOptionDescriptor{Name{"o_groupA_o_groupB_o_useTexture"}, ShaderOptionType::Boolean, 1, 1, CreateBoolShaderOptionValues()});
+        shaderOptions->AddShaderOption(ShaderOptionDescriptor{Name{"o_groupA_o_groupB_o_useTextureAlt"}, ShaderOptionType::Boolean, 2, 2, CreateBoolShaderOptionValues()});
+        shaderOptions->Finalize();
+
+        Data::Asset<ShaderAsset> shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout, shaderOptions);
+
+        Data::AssetInfo testShaderAssetInfo;
+        testShaderAssetInfo.m_assetId = shaderAsset.GetId();
+        m_assetSystemStub.RegisterSourceInfo("NestedGroupNameContext.shader", testShaderAssetInfo, "");
+
+        const AZStd::string materialTypeJson = R"(
+            {
+                "propertyLayout": {
+                    "propertyGroups": [
+                        {
+                            "name": "groupA",
+                            "shaderInputsPrefix": "m_groupA_",
+                            "shaderOptionsPrefix": "o_groupA_",
+                            "propertyGroups": [
+                                {
+                                    "name": "groupB",
+                                    "shaderInputsPrefix": "m_groupB_",
+                                    "shaderOptionsPrefix": "o_groupB_",
+                                    "propertyGroups": [
+                                        {
+                                            "name": "groupC",
+                                            "properties": [
+                                                {
+                                                    "name": "textureMap",
+                                                    "type": "Image",
+                                                    "connection": {
+                                                        "type": "ShaderInput",
+                                                        "name": "m_texture"
+                                                    }
+                                                },
+                                                {
+                                                    "name": "useTextureMap",
+                                                    "type": "Bool",
+                                                    "connection": [
+                                                        {
+                                                            "type": "ShaderOption",
+                                                            "name": "o_useTexture"
+                                                        },
+                                                        {
+                                                            "type": "ShaderOption",
+                                                            "name": "o_useTextureAlt", 
+                                                            "shaderIndex": 0 // Having a specific shaderIndex traverses a different code path
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "functors": [
+                                                {
+                                                    "type": "SaveNameContext"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "shaders": [
+                    {
+                        "file": "NestedGroupNameContext.shader"
+                    }
+                ]
+            }
+        )";
+        
+        MaterialTypeSourceData materialTypeSourceData;
+        JsonTestResult loadResult = LoadTestDataFromJson(materialTypeSourceData, materialTypeJson);
+        
+        auto materialTypeAssetOutcome = materialTypeSourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
+        EXPECT_TRUE(materialTypeAssetOutcome.IsSuccess());
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeAssetOutcome.TakeValue();
+        const MaterialPropertiesLayout* propertiesLayout = materialTypeAsset->GetMaterialPropertiesLayout();
+
+        EXPECT_EQ(2, propertiesLayout->GetPropertyCount());
+
+        EXPECT_EQ(0, propertiesLayout->FindPropertyIndex(Name("groupA.groupB.groupC.textureMap")).GetIndex());
+        EXPECT_EQ(1, propertiesLayout->FindPropertyIndex(Name("groupA.groupB.groupC.useTextureMap")).GetIndex());
+
+        // groupA.gropuB.groupC.textureMap has a connection to m_groupA_m_groupB_m_texture
+        MaterialPropertyIndex texturePropertyIndex{0};
+        EXPECT_EQ(1, propertiesLayout->GetPropertyDescriptor(texturePropertyIndex)->GetOutputConnections().size());
+        EXPECT_EQ(materialSrgLayout->FindShaderInputImageIndex(Name("m_groupA_m_groupB_m_texture")).GetIndex(),
+            propertiesLayout->GetPropertyDescriptor(texturePropertyIndex)->GetOutputConnections()[0].m_itemIndex.GetIndex());
+
+        // groupA.gropuB.groupC.useTextureMap has a connection to o_groupA_o_groupB_o_useTexture and o_groupA_o_groupB_o_useTextureAlt
+        MaterialPropertyIndex useTexturePropertyIndex{1};
+        EXPECT_EQ(2, propertiesLayout->GetPropertyDescriptor(useTexturePropertyIndex)->GetOutputConnections().size());
+        EXPECT_EQ(shaderOptions->FindShaderOptionIndex(Name("o_groupA_o_groupB_o_useTexture")).GetIndex(),
+            propertiesLayout->GetPropertyDescriptor(useTexturePropertyIndex)->GetOutputConnections()[0].m_itemIndex.GetIndex());
+        EXPECT_EQ(shaderOptions->FindShaderOptionIndex(Name("o_groupA_o_groupB_o_useTextureAlt")).GetIndex(),
+            propertiesLayout->GetPropertyDescriptor(useTexturePropertyIndex)->GetOutputConnections()[1].m_itemIndex.GetIndex());
+
+        // There should be one functor, which processes useTextureMap, and it should have the appropriate name context for constructing the correct full names.
+        EXPECT_EQ(1, materialTypeAsset->GetMaterialFunctors().size());
+
+        EXPECT_TRUE(azrtti_istypeof<SaveNameContextTestFunctor>(materialTypeAsset->GetMaterialFunctors()[0].get()));
+
+        auto saveNameContextFunctor = azrtti_cast<SaveNameContextTestFunctor*>(materialTypeAsset->GetMaterialFunctors()[0].get());
+        const MaterialNameContext& nameContext = saveNameContextFunctor->m_nameContext;
+        
+        Name textureMapProperty{"textureMap"};
+        Name textureMapShaderInput{"m_texture"};
+        Name useTextureMapProperty{"useTextureMap"};
+        Name useTextureShaderOption{"o_useTexture"};
+        
+        nameContext.ContextualizeProperty(textureMapProperty);
+        nameContext.ContextualizeProperty(useTextureMapProperty);
+        nameContext.ContextualizeSrgInput(textureMapShaderInput);
+        nameContext.ContextualizeShaderOption(useTextureShaderOption);
+
+        EXPECT_EQ("groupA.groupB.groupC.useTextureMap", useTextureMapProperty.GetStringView());
+        EXPECT_EQ("o_groupA_o_groupB_o_useTexture", useTextureShaderOption.GetStringView());
+        EXPECT_EQ("groupA.groupB.groupC.textureMap", textureMapProperty.GetStringView());
+        EXPECT_EQ("m_groupA_m_groupB_m_texture", textureMapShaderInput.GetStringView());
     }
 
 }

@@ -17,6 +17,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -113,9 +114,11 @@ namespace AZ
 
                 // Copy all of the properties from the material asset to the source data that will be exported
                 bool result = true;
-                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZStd::string& propertyIdContext, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition* propertyDefinition)
+                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZ::RPI::MaterialNameContext& materialNameContext, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition* propertyDefinition)
                     {
-                        AZ::Name propertyId(propertyIdContext + propertyDefinition->GetName());
+                        AZ::Name propertyId{propertyDefinition->GetName()};
+                        materialNameContext.ContextualizeProperty(propertyId);
+
                         const AZ::RPI::MaterialPropertyIndex propertyIndex =
                             editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
 

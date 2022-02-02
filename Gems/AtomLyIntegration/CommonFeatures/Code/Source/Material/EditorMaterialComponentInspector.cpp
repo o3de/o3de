@@ -15,6 +15,7 @@
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
@@ -80,7 +81,7 @@ namespace AZ
                         m_materialAssignmentId);
                 }
 
-               if (!materialAssetId.IsValid())
+                if (!materialAssetId.IsValid())
                 {
                     UnloadMaterial();
                     return false;
@@ -104,8 +105,9 @@ namespace AZ
 
                 // Get a list of all the editor functors to be used for property editor states
                 auto propertyLayout = m_editData.m_materialAsset->GetMaterialPropertiesLayout();
+                AZ::RPI::MaterialNameContext materialNameContext; // There is no name context for top-level functors, only functors inside PropertyGroups
                 const AZ::RPI::MaterialFunctorSourceData::EditorContext editorContext =
-                    AZ::RPI::MaterialFunctorSourceData::EditorContext(m_editData.m_materialTypeSourcePath, propertyLayout);
+                    AZ::RPI::MaterialFunctorSourceData::EditorContext(m_editData.m_materialTypeSourcePath, propertyLayout, &materialNameContext);
                 for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder> functorData : m_editData.m_materialTypeSourceData.m_materialFunctorSourceData)
                 {
                     AZ::RPI::MaterialFunctorSourceData::FunctorResult createResult = functorData->CreateFunctor(editorContext);

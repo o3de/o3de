@@ -17,6 +17,7 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <AtomCore/Instance/Instance.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
@@ -585,9 +586,10 @@ namespace MaterialEditor
         bool result = true;
 
         // populate sourceData with properties that meet the filter
-        m_materialTypeSourceData.EnumerateProperties([&](const AZStd::string& propertyIdContext, const auto& propertyDefinition) {
+        m_materialTypeSourceData.EnumerateProperties([&](const MaterialNameContext& materialNameContext, const auto& propertyDefinition) {
 
-            Name propertyId{propertyIdContext + propertyDefinition->GetName()};
+            Name propertyId{propertyDefinition->GetName()};
+            materialNameContext.ContextualizeProperty(propertyId);
 
             const auto it = m_properties.find(propertyId);
             if (it != m_properties.end() && propertyFilter(it->second))
@@ -781,14 +783,17 @@ namespace MaterialEditor
         // Populate the property map from a combination of source data and assets
         // Assets must still be used for now because they contain the final accumulated value after all other materials
         // in the hierarchy are applied
-        m_materialTypeSourceData.EnumeratePropertyGroups([this, &parentPropertyValues](const AZStd::string& propertyIdContext, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
+        m_materialTypeSourceData.EnumeratePropertyGroups([this, &parentPropertyValues](const MaterialNameContext& materialNameContext, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
             {
                 AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
                 for (const auto& propertyDefinition : propertyGroup->GetProperties())
                 {
                     // Assign id before conversion so it can be used in dynamic description
-                    propertyConfig.m_id = propertyIdContext + propertyGroup->GetName() + "." + propertyDefinition->GetName();
+                    MaterialNameContext groupNameContext = materialNameContext;
+                    groupNameContext.ExtendPropertyIdContext(propertyGroup->GetName());
+                    propertyConfig.m_id = propertyDefinition->GetName();
+                    groupNameContext.ContextualizeProperty(propertyConfig.m_id);
 
                     const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                     const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
@@ -878,8 +883,9 @@ namespace MaterialEditor
         }
 
         // Add material functors that are in the top-level functors list.
+        AZ::RPI::MaterialNameContext materialNameContext; // There is no name context for top-level functors, only functors inside PropertyGroups
         const MaterialFunctorSourceData::EditorContext editorContext =
-            MaterialFunctorSourceData::EditorContext(m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout());
+            MaterialFunctorSourceData::EditorContext(m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout(), &materialNameContext);
         for (Ptr<MaterialFunctorSourceDataHolder> functorData : m_materialTypeSourceData.m_materialFunctorSourceData)
         {
             MaterialFunctorSourceData::FunctorResult result2 = functorData->CreateFunctor(editorContext);
@@ -901,10 +907,10 @@ namespace MaterialEditor
         
         // Add any material functors that are located inside each property group.
         bool enumerateResult = m_materialTypeSourceData.EnumeratePropertyGroups(
-            [this](const AZStd::string&, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
+            [this](const MaterialNameContext& nameContext, const MaterialTypeSourceData::PropertyGroup* propertyGroup)
             {
                 const MaterialFunctorSourceData::EditorContext editorContext = MaterialFunctorSourceData::EditorContext(
-                    m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout());
+                    m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout(), &nameContext);
 
                 for (Ptr<MaterialFunctorSourceDataHolder> functorData : propertyGroup->GetFunctors())
                 {

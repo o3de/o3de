@@ -49,8 +49,8 @@ namespace AZ
 
         //! MaterialFunctor objects provide custom logic and calculations to configure shaders, render states,
         //! editor metadata, and more.
-        //! Atom will provide an implementation of this class that uses a script to define the custom logic
-        //! for a convenient workflow. Clients may also provide their own custom hard-coded implementations
+        //! Atom provides a LuaMaterialFunctor subclass that uses a script to define the custom logic
+        //! for a convenient workflow. Developers may also provide their own custom hard-coded implementations
         //! as an optimization rather than taking the scripted approach.
         //! Any custom subclasses of MaterialFunctor will also need a corresponding MaterialFunctorSourceData subclass
         //! to create the functor at build-time. Depending on the builder context, clients can choose to create a runtime
