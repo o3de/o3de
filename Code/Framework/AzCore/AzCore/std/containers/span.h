@@ -42,12 +42,11 @@ namespace AZStd::Internal
 namespace AZStd
 {
     /**
-     * First pass partial implementation of span copied over from array_view. It
-     * returns non-const iterator/pointers. first(), last(), and subspan() 
-     * are yet to be implemented. It does not maintain storage for the data, 
-     * but just holds pointers to mark the beginning and end of the array. 
-     * It can be conveniently constructed from a variety of other container 
-     * types like array, vector, and fixed_vector. 
+     * Full C++20 implementation of span done using the C++ draft at https://eel.is/c++draft/views.
+     * It does not maintain storage for the data, 
+     * but just hold a pointer to mark the beginning and the size for the elements. 
+     * It can be constructed any type that models the C++ contiguous_range concept
+     * such like array, vector, fixed_vector, raw-array, string_view, string, etc... . 
      *
      * Example:
      *    Given "void Func(AZStd::span<int> a) {...}" you can call...
@@ -84,7 +83,7 @@ namespace AZStd
 
         inline static constexpr size_t extent = Extent;
 
-        constexpr span() noexcept = default;;
+        constexpr span() noexcept = default;
 
         ~span() = default;
 
@@ -110,12 +109,12 @@ namespace AZStd
             Extent != dynamic_extent, int> = 0>
         constexpr explicit span(It first, End last);
 
-        template<size_t N, class = enable_if_t<N == dynamic_extent || N == Extent>>
+        template<size_t N, class = enable_if_t<extent == dynamic_extent || N == Extent>>
         constexpr span(type_identity_t<element_type> (&arr)[N]) noexcept;
 
-        template <class U, size_t N, class = enable_if_t<N == dynamic_extent || N == Extent>>
+        template <class U, size_t N, class = enable_if_t<extent == dynamic_extent || N == Extent>>
         constexpr span(array<U, N>& data) noexcept;
-        template <class U, size_t N, class = enable_if_t<N == dynamic_extent || N == Extent>>
+        template <class U, size_t N, class = enable_if_t<extent == dynamic_extent || N == Extent>>
         constexpr span(const array<U, N>& data) noexcept;
 
         template <class R, class = enable_if_t<ranges::contiguous_range<R> &&
@@ -190,11 +189,11 @@ namespace AZStd
     // [span.objectrep], views of object representation
     template <class ElementType, size_t Extent>
     auto as_bytes(span<ElementType, Extent> s) noexcept
-        -> span<const byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>;
+        -> span<const AZStd::byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>;
 
     template <class ElementType, size_t Extent>
     auto as_writable_bytes(span<ElementType, Extent> s) noexcept
-        -> enable_if_t<!is_const_v<ElementType>, span<byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>>;
+        -> enable_if_t<!is_const_v<ElementType>, span<AZStd::byte, Extent == dynamic_extent ? dynamic_extent : sizeof(ElementType) * Extent>>;
 
 } // namespace AZStd
 

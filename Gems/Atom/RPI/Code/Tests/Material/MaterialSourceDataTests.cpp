@@ -93,20 +93,23 @@ namespace UnitTest
                     {
                         "version": 10,
                         "propertyLayout": {
-                            "properties": {
-                                "general": [
-                                    {"name": "MyBool", "type": "bool"},
-                                    {"name": "MyInt", "type": "Int"},
-                                    {"name": "MyUInt", "type": "UInt"},
-                                    {"name": "MyFloat", "type": "Float"},
-                                    {"name": "MyFloat2", "type": "Vector2"},
-                                    {"name": "MyFloat3", "type": "Vector3"},
-                                    {"name": "MyFloat4", "type": "Vector4"},
-                                    {"name": "MyColor", "type": "Color"},
-                                    {"name": "MyImage", "type": "Image"},
-                                    {"name": "MyEnum", "type": "Enum", "enumValues": ["Enum0", "Enum1", "Enum2"], "defaultValue": "Enum0"}
-                                ]
-                            }
+                            "propertyGroups": [
+                                {
+                                    "name": "general",
+                                    "properties": [
+                                        {"name": "MyBool", "type": "bool"},
+                                        {"name": "MyInt", "type": "Int"},
+                                        {"name": "MyUInt", "type": "UInt"},
+                                        {"name": "MyFloat", "type": "Float"},
+                                        {"name": "MyFloat2", "type": "Vector2"},
+                                        {"name": "MyFloat3", "type": "Vector3"},
+                                        {"name": "MyFloat4", "type": "Vector4"},
+                                        {"name": "MyColor", "type": "Color"},
+                                        {"name": "MyImage", "type": "Image"},
+                                        {"name": "MyEnum", "type": "Enum", "enumValues": ["Enum0", "Enum1", "Enum2"], "defaultValue": "Enum0"}
+                                    ]
+                                }
+                            ]
                         },
                         "shaders": [
                             {
@@ -466,18 +469,22 @@ namespace UnitTest
     TEST_F(MaterialSourceDataTests, Load_MaterialTypeAfterPropertyList)
     {
         const AZStd::string simpleMaterialTypeJson = R"(
-        {
-            "propertyLayout": {
-                "properties": {
-                    "general": [
+            {
+                "propertyLayout": {
+                    "propertyGroups":
+                    [
                         {
-                            "name": "testValue",
-                            "type": "Float"
+                            "name": "general",
+                            "properties": [
+                                {
+                                    "name": "testValue",
+                                    "type": "Float"
+                                }
+                            ]
                         }
                     ]
                 }
             }
-        }
         )";
 
         const char* materialTypeFilePath = "@exefolder@/Temp/simpleMaterialType.materialtype";
@@ -646,7 +653,7 @@ namespace UnitTest
         MaterialPropertyIndex myFloat2 = layout->FindPropertyIndex(Name("general.MyFloat2"));
         MaterialPropertyIndex myColor = layout->FindPropertyIndex(Name("general.MyColor"));
 
-        AZStd::array_view<MaterialPropertyValue> properties;
+        AZStd::span<const MaterialPropertyValue> properties;
 
         // Check level 1 properties
         properties = materialAssetLevel1.GetValue()->GetPropertyValues();
@@ -736,7 +743,7 @@ namespace UnitTest
 
         // The properties will finalize automatically when we call GetPropertyValues()...
 
-        AZStd::array_view<MaterialPropertyValue> properties;
+        AZStd::span<const MaterialPropertyValue> properties;
 
         // Check level 1 properties
         properties = materialAssetLevel1->GetPropertyValues();

@@ -538,7 +538,11 @@ namespace UnitTest
 
             auto shaderAsset = shader->GetAsset();
             EXPECT_EQ(shader->GetPipelineStateType(), shaderAsset->GetPipelineStateType());
-            EXPECT_EQ(shader->GetShaderResourceGroupLayouts(), shaderAsset->GetShaderResourceGroupLayouts());
+            using ShaderResourceGroupLayoutSpan = AZStd::span<const AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout>>;
+            ShaderResourceGroupLayoutSpan shaderResourceGroupLayoutSpan = shader->GetShaderResourceGroupLayouts();
+            ShaderResourceGroupLayoutSpan shaderAssetResourceGroupLayoutSpan = shader->GetShaderResourceGroupLayouts();
+            EXPECT_EQ(shaderResourceGroupLayoutSpan.data(), shaderAssetResourceGroupLayoutSpan.data());
+            EXPECT_EQ(shaderResourceGroupLayoutSpan.size(), shaderAssetResourceGroupLayoutSpan.size());
             
             const RPI::ShaderVariant& rootShaderVariant = shader->GetVariant( RPI::ShaderVariantStableId{0} );
             
@@ -1662,20 +1666,21 @@ namespace UnitTest
         EXPECT_FALSE(result7.IsFullyBaked());
         EXPECT_EQ(result7.GetStableId().GetIndex(), stableId7);
 
-        // All searches so far found exactly the node we were looking for
-        // The next couple of searches will not find the requested node
-        //  and will instead default to its parent, up the tree to the root
-        //
-        // []                       [Root]
-        //                          /    \
-        // [Color]              [Teal]  [Fuchsia]
-        //                        /        \
-        // [Quality]          [Sublime]   [Auto]
-        //                                  /
-        // [NumberSamples]                [50]
-        //                                /  \
-        // [Raytracing]                [On]  [Off]
-
+        /*
+           All searches so far found exactly the node we were looking for
+           The next couple of searches will not find the requested node
+            and will instead default to its parent, up the tree to the root
+          
+           []                       [Root]
+                                    /    \
+           [Color]              [Teal]  [Fuchsia]
+                                  /        \
+           [Quality]          [Sublime]   [Auto]
+                                            /
+           [NumberSamples]                [50]
+                                          /  \
+           [Raytracing]                [On]  [Off]
+        */
 
         // ----------------------------------------
         // [Quality::Poor]

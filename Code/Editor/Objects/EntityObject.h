@@ -174,8 +174,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
 
-    int GetCastShadowMinSpec() const { return mv_castShadowMinSpec; }
-
     float GetRatioLod() const { return static_cast<float>(mv_ratioLOD); };
     float GetViewDistanceMultiplier() const { return mv_viewDistanceMultiplier; }
 
@@ -306,7 +304,6 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     CVariable<bool> mv_outdoor;
     CVariable<bool> mv_castShadow; // Legacy, required for backwards compatibility
-    CSmartVariableEnum<int> mv_castShadowMinSpec;
     CVariable<int> mv_ratioLOD;
     CVariable<float> mv_viewDistanceMultiplier;
     CVariable<bool> mv_hiddenInGame; // Entity is hidden in game (on start).

@@ -7,9 +7,7 @@
 #
 
 set(FILES
-    BuildInfo.h
     EBus.h
-    Docs.h
     GridMate.cpp
     GridMate.h
     GridMateEventsBus.h
@@ -17,11 +15,9 @@ set(FILES
     MathUtils.h
     Memory.h
     Types.h
-    Version.h
     Carrier/Carrier.cpp
     Carrier/Carrier.h
     Carrier/Compressor.h
-    Carrier/Cripter.h
     Carrier/DefaultHandshake.cpp
     Carrier/DefaultHandshake.h
     Carrier/DefaultSimulator.cpp
@@ -40,15 +36,10 @@ set(FILES
     Carrier/Utils.h
     Containers/list.h
     Containers/queue.h
-    Containers/set.h
-    Containers/slist.h
     Containers/unordered_map.h
     Containers/unordered_set.h
     Containers/vector.h
-    Online/OnlineUtilityThread.h
-    Online/UserServiceTypes.h
     Replica/BasicHostChunkDescriptor.h
-    Replica/DeltaCompressedDataSet.h
     Replica/DataSet.cpp
     Replica/DataSet.h
     Replica/Interpolators.h
@@ -66,7 +57,6 @@ set(FILES
     Replica/ReplicaCommon.h
     Replica/ReplicaDefs.h
     Replica/ReplicaFunctions.h
-    Replica/ReplicaFunctions.inl
     Replica/ReplicaInline.inl
     Replica/ReplicaMgr.cpp
     Replica/ReplicaMgr.h
@@ -88,13 +78,6 @@ set(FILES
     Replica/Tasks/ReplicaProcessPolicy.cpp
     Replica/Tasks/ReplicaProcessPolicy.h
     Replica/Tasks/ReplicaPriorityPolicy.h
-    Replica/Interest/BitmaskInterestHandler.cpp
-    Replica/Interest/BitmaskInterestHandler.h
-    Replica/Interest/InterestDefs.h
-    Replica/Interest/InterestManager.cpp
-    Replica/Interest/InterestManager.h
-    Replica/Interest/InterestQueryResult.h
-    Replica/Interest/RulesHandler.h
     Serialize/Buffer.cpp
     Serialize/Buffer.h
     Serialize/PackedSize.h

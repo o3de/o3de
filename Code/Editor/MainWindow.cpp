@@ -72,7 +72,6 @@
 #include "ToolbarManager.h"
 #include "Core/QtEditorApplication.h"
 #include "UndoDropDown.h"
-#include "CVarMenu.h"
 #include "EditorViewportSettings.h"
 
 #include "KeyboardCustomizationSettings.h"
