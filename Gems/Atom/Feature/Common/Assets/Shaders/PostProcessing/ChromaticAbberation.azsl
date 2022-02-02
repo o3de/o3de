@@ -17,9 +17,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     struct Constants
     {
         uint2 m_outputSize; // texture size of output
-        float m_size; // size of border affected (0 to 1, 0.5 representing half way from edge to center)
+        float2 m_outputCenter; // center of image in pixel coords
         float m_strength; // strength of effect (0 to 1)
-        float m_falloff; // distance
     };
     Constants m_constants;
 }
@@ -27,17 +26,21 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 [numthreads(8, 8, 1)]
 void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-    float2 uv = dispatchThreadID.xy * PassSrg::m_constants.m_outputSize;
-    
-    float2 disp = uv - (PassSrg::m_constants.m_outputSize * 0.5f);
-    float dist = length(disp);
-    float vig = smoothstep(PassSrg::m_constants.m_size, PassSrg::m_constants.m_size - PassSrg::m_constants.m_falloff, dist);
-    vig = 1.0 - lerp(vig, 1.0, PassSrg::m_constants.m_strength);
-    float2 offset = disp * (vig * PassSrg::m_constants.m_strength);
+    if (dispatchThreadID.x >= PassSrg::m_constants.m_outputSize.x || dispatchThreadID.y >= PassSrg::m_constants.m_outputSize.y)
+    {
+        return;
+    }
 
-    float r = PassSrg::m_inputColor[uv + offset].r;
-    float g = PassSrg::m_inputColor[uv].g;
-    float b = PassSrg::m_inputColor[uv - offset].b;
+    float2 disp = dispatchThreadID.xy - PassSrg::m_constants.m_outputCenter;
+    //float2 offset = trunc(disp * PassSrg::m_constants.m_strength);
+    float2 offset = disp * PassSrg::m_constants.m_strength;
 
-    PassSrg::m_outputColor[uv] = float4(r, g, b, 1.0);
+    //float r = (PassSrg::m_inputColor[dispatchThreadID.xy] + PassSrg::m_inputColor[dispatchThreadID.xy - offset].r) * 0.5;
+    float r = PassSrg::m_inputColor[dispatchThreadID.xy].r;
+    //float r = PassSrg::m_inputColor[dispatchThreadID.xy + offset].r;
+    //float g = PassSrg::m_inputColor[dispatchThreadID.xy].g;
+    float g = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 0.5)].g;
+    float b = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)].b;
+
+    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(r, g, b, 1.0);
 }

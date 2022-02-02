@@ -8,6 +8,7 @@
 
 #include <PostProcessing/ChromaticAbberationPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
+#include <Atom/RPI.Public/Scene.h>
 
 namespace AZ
 {
@@ -24,15 +25,39 @@ namespace AZ
         {
         }
 
+        bool ChromaticAbberationPass::IsEnabled() const
+        {
+            if (!ComputePass::IsEnabled())
+            {
+                return false;
+            }
+            const RPI::Scene* scene = GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+            PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
+            const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            if (!fp)
+            {
+                return true;
+            }
+            PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
+            if (!postProcessSettings)
+            {
+                return true;
+            }
+            return true;
+        }
+
         void ChromaticAbberationPass::FrameBeginInternal(FramePrepareParams params)
         {
             // Must match the struct in .azsl
             struct Constants
             {
                 AZStd::array<u32, 2> m_outputSize;
-                float m_size;
+                AZStd::array<float, 2> m_outputCenter;
                 float m_strength;
-                float m_falloff;
             } constants{};
 
             // FUTURE PROOFING WIP
@@ -69,9 +94,9 @@ namespace AZ
 
             constants.m_outputSize[0] = size.m_width;
             constants.m_outputSize[1] = size.m_height;
-            constants.m_size = 0.5f;
-            constants.m_strength = 0.99f;
-            constants.m_falloff = 0.1f;
+            constants.m_outputCenter[0] = (size.m_width - 1) * 0.5f;
+            constants.m_outputCenter[1] = (size.m_height -1) * 0.5f;
+            constants.m_strength = 0.02f;
 
             m_shaderResourceGroup->SetConstant(m_constantsIndex, constants);
 

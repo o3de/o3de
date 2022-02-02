@@ -28,11 +28,11 @@
             "Source": {
               "Pass": "This",
               "Attachment": "Input"
-            },
-            "FormatSource": {
-              "Pass": "This",
-              "Attachment": "Input"
             }
+          },
+          "FormatSource": {
+            "Pass": "This",
+            "Attachment": "Input"
           }
         }
       ],
@@ -49,14 +49,15 @@
         "$type": "ComputePassData",
         "ShaderAsset": {
           "FilePath": "Shaders/PostProcessing/ChromaticAbberation.shader"
+        },
+        "Make Fullscreen Pass": true
+      },
+      "FallbackConnections": [
+        {
+          "Input": "Input",
+          "Output": "Output"
         }
-      }
-    },
-    "FallbackConnections": [
-      {
-        "Input": "Input",
-        "Output": "Output"
-      }
-    ]
+      ]
+    }
   }
 }

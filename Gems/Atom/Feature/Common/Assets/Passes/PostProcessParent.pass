@@ -45,7 +45,7 @@
                     "LocalSlot": "Output",
                     "AttachmentRef": {
                         "Pass": "ChromaticAbberationPass",
-                        "Attachment": "InputOutput"
+                        "Attachment": "Output"
                     }
                 },
                 {
@@ -208,7 +208,7 @@
               "TemplateName": "ChromaticAbberationTemplate",
               "Connections": [
                 {
-                  "LocalSlot": "InputOutput",
+                  "LocalSlot": "Input",
                   "AttachmentRef": {
                     "Pass": "ContrastAdaptiveSharpeningPass",
                     "Attachment": "OutputColor"

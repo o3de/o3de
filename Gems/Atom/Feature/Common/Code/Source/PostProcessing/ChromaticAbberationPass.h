@@ -24,6 +24,8 @@ namespace AZ
             ~ChromaticAbberationPass() = default;
             static RPI::Ptr<ChromaticAbberationPass> Create(const RPI::PassDescriptor& descriptor);
 
+            bool IsEnabled() const override;
+
         protected:
             // Behavior functions override...
             void FrameBeginInternal(FramePrepareParams params) override;
