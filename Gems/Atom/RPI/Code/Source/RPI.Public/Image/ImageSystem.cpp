@@ -232,9 +232,9 @@ namespace AZ
             }
         }
 
-        Data::Instance<AttachmentImage> ImageSystem::FindRegisteredAttachmentImage(const RHI::AttachmentId& attachmentId) const
+        Data::Instance<AttachmentImage> ImageSystem::FindRegisteredAttachmentImage(const Name& uniqueName) const
         {
-            auto itr = m_registeredAttachmentImages.find(attachmentId);
+            auto itr = m_registeredAttachmentImages.find(uniqueName);
 
             if (itr != m_registeredAttachmentImages.end())
             {

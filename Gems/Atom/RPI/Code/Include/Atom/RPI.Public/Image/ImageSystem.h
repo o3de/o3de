@@ -60,7 +60,7 @@ namespace AZ
             const Data::Instance<StreamingImagePool>& GetStreamingPool() const override;
             bool RegisterAttachmentImage(AttachmentImage* attachmentImage) override;
             void UnregisterAttachmentImage(AttachmentImage* attachmentImage) override;
-            Data::Instance<AttachmentImage> FindRegisteredAttachmentImage(const RHI::AttachmentId& attachmentId) const override;
+            Data::Instance<AttachmentImage> FindRegisteredAttachmentImage(const Name& uniqueName) const override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
