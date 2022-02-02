@@ -89,6 +89,7 @@ namespace SurfaceData
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
 
         // Update the cached shape data and bounds, then register the surface data provider / modifier
+        AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f, m_newPointWeights);
         UpdateShapeData();
     }
 
@@ -115,7 +116,7 @@ namespace SurfaceData
 
         // Clear the cached shape data
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
             m_shapeBounds = AZ::Aabb::CreateNull();
             m_shapeBoundsIsValid = false;
         }
@@ -143,9 +144,7 @@ namespace SurfaceData
 
     void SurfaceDataShapeComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_shapeBoundsIsValid)
         {
@@ -160,33 +159,35 @@ namespace SurfaceData
                 point.m_entityId = GetEntityId();
                 point.m_position = rayOrigin + intersectionDistance * rayDirection;
                 point.m_normal = AZ::Vector3::CreateAxisZ();
-                AddMaxValueForMasks(point.m_masks, m_configuration.m_providerTags, 1.0f);
-                surfacePointList.push_back(point);
+                point.m_masks = m_newPointWeights;
+                surfacePointList.push_back(AZStd::move(point));
             }
         }
     }
 
     void SurfaceDataShapeComponent::ModifySurfacePoints(SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         if (m_shapeBoundsIsValid && !m_configuration.m_modifierTags.empty())
         {
             const AZ::EntityId entityId = GetEntityId();
-            for (auto& point : surfacePointList)
-            {
-                if (point.m_entityId != entityId && m_shapeBounds.Contains(point.m_position))
+            LmbrCentral::ShapeComponentRequestsBus::Event(
+                GetEntityId(),
+                [entityId, this, &surfacePointList](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
                 {
-                    bool inside = false;
-                    LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, point.m_position);
-                    if (inside)
+                    for (auto& point : surfacePointList)
                     {
-                        AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                        if (point.m_entityId != entityId && m_shapeBounds.Contains(point.m_position))
+                        {
+                            bool inside = shape->IsPointInside(point.m_position);
+                            if (inside)
+                            {
+                                AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                            }
+                        }
                     }
-                }
-            }
+                });
         }
     }
 
@@ -227,7 +228,7 @@ namespace SurfaceData
         bool shapeValidAfterUpdate = false;
 
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
             shapeValidBeforeUpdate = m_shapeBoundsIsValid;
 

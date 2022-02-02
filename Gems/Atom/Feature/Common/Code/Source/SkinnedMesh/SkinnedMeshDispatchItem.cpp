@@ -225,12 +225,12 @@ namespace AZ
             return m_boneTransforms;
         }
 
-        AZStd::array_view<AZ::RHI::Ptr<RHI::BufferView>> SkinnedMeshDispatchItem::GetSourceUnskinnedBufferViews() const
+        AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> SkinnedMeshDispatchItem::GetSourceUnskinnedBufferViews() const
         {
             return m_inputBuffers->GetInputBufferViews(m_lodIndex);
         }
 
-        AZStd::array_view<AZ::RHI::Ptr<RHI::BufferView>> SkinnedMeshDispatchItem::GetTargetSkinnedBufferViews() const
+        AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> SkinnedMeshDispatchItem::GetTargetSkinnedBufferViews() const
         {
             return m_actorInstanceBufferViews;
         }

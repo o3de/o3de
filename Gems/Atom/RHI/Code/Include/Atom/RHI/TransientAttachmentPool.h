@@ -123,7 +123,7 @@ namespace AZ
 
         protected:
             // Adds the stats of a list of heaps into the Pool's TransientAttachmentStatistics.
-            void CollectHeapStats(AliasedResourceTypeFlags typeMask, AZStd::array_view<TransientAttachmentStatistics::Heap> heapStats);
+            void CollectHeapStats(AliasedResourceTypeFlags typeMask, AZStd::span<const TransientAttachmentStatistics::Heap> heapStats);
 
             Scope* m_currentScope = nullptr;
             RHI::TransientAttachmentStatistics m_statistics;

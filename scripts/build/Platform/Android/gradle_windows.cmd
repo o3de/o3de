@@ -31,11 +31,19 @@ IF NOT EXIST %OUTPUT_DIRECTORY% (
     mkdir %OUTPUT_DIRECTORY%
 )
 
-REM Jenkins reports MSB8029 when TMP/TEMP is not defined, define a dummy folder
-SET TMP=%cd%/temp
-SET TEMP=%cd%/temp
-IF NOT EXIST %TMP% (
-    mkdir %TMP%
+REM Jenkins does not defined TMP
+IF "%TMP%"=="" (
+    IF "%WORKSPACE%"=="" (
+        SET TMP=%APPDATA%\Local\Temp
+        SET TEMP=%APPDATA%\Local\Temp
+    ) ELSE (
+        SET TMP=%WORKSPACE%\Temp
+        SET TEMP=%WORKSPACE%\Temp
+        REM This folder may not be created in the workspace
+        IF NOT EXIST "!TMP!" (
+            MKDIR "!TMP!"
+        )
+    )
 )
 
 REM Optionally sign the APK if we are generating an APK 

@@ -138,14 +138,17 @@ namespace UnitTest
             return true;
         }
 
-        AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> CreateMockScene()
+        AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> CreateMockScene(
+            const AZStd::string manifestFilename = "ManifestFilename",
+            const AZStd::string sourceFileName = "Source",
+            const AZStd::string watchFolder = "WatchFolder")
         {
             using namespace AZ::SceneAPI;
 
             auto scene = AZStd::make_shared<Containers::Scene>("mock_scene");
-            scene->SetManifestFilename("ManifestFilename");
-            scene->SetSource("Source", AZ::Uuid::CreateRandom());
-            scene->SetWatchFolder("WatchFolder");
+            scene->SetManifestFilename(manifestFilename);
+            scene->SetSource(sourceFileName, AZ::Uuid::CreateRandom());
+            scene->SetWatchFolder(watchFolder);
 
             /*---------------------------------------\
                         Root
@@ -319,18 +322,35 @@ namespace UnitTest
         using namespace AZ::SceneAPI;
         using namespace AZ::SceneAPI::Events;
 
-        auto scene = CreateMockScene();
+        #if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+        auto scene = CreateMockScene("Manifest", "C:/o3de/watch.folder/manifest_src_file.xml", "C:/o3de/watch.folder");
+        #else
+        auto scene = CreateMockScene("Manifest", "//o3de/watch.folder/manifest_src_file.xml", "//o3de/watch.folder");
+        #endif
         AssetImportRequest::ManifestAction action = AssetImportRequest::ManifestAction::ConstructDefault;
         AssetImportRequest::RequestingApplication requester = {};
 
         Behaviors::PrefabGroupBehavior prefabGroupBehavior;
         ProcessingResult result = ProcessingResult::Failure;
         AssetImportRequestBus::BroadcastResult(result, &AssetImportRequestBus::Events::UpdateManifest, *scene, action, requester);
+
         EXPECT_EQ(result, ProcessingResult::Success);
         EXPECT_EQ(scene->GetManifest().GetEntryCount(), 3);
+
         EXPECT_TRUE(azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshGroup>(scene->GetManifest().GetValue(0).get()));
         EXPECT_TRUE(azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshGroup>(scene->GetManifest().GetValue(1).get()));
         EXPECT_TRUE(azrtti_istypeof<AZ::SceneAPI::DataTypes::IPrefabGroup>(scene->GetManifest().GetValue(2).get()));
+
+        // The mesh group names are expected to be just the file name relative to the watch folder and not any absolute path
+        for (size_t i = 0; i < scene->GetManifest().GetEntryCount(); i++)
+        {
+            if (azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshGroup>(scene->GetManifest().GetValue(i).get()))
+            {
+                AZ::SceneAPI::DataTypes::IMeshGroup* meshGroup = reinterpret_cast<AZ::SceneAPI::DataTypes::IMeshGroup*>(scene->GetManifest().GetValue(i).get());
+                AZStd::string groupName = meshGroup->GetName();
+                EXPECT_TRUE(groupName.starts_with("manifest_src_file_xml"));
+            }
+        }
     }
 
     TEST_F(PrefabBehaviorTests, PrefabBehavior_UpdateManifest_ToggleWorks)

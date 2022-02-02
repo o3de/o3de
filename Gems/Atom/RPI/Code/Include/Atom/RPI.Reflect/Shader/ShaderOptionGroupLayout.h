@@ -14,6 +14,7 @@
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
 
 #include <AzCore/std/smart_ptr/intrusive_base.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
@@ -44,6 +45,12 @@ namespace AZ
             bool m_bakeEmptyAsDefault = false;
         };
 
+        //! Creates a list of shader option values that can be used to construct a ShaderOptionDescriptor.
+        ShaderOptionValues CreateEnumShaderOptionValues(AZStd::span<const AZStd::string_view> enumNames);
+        ShaderOptionValues CreateEnumShaderOptionValues(AZStd::initializer_list<AZStd::string_view> enumNames);
+        ShaderOptionValues CreateBoolShaderOptionValues();
+        ShaderOptionValues CreateIntRangeShaderOptionValues(uint32_t min, uint32_t max);
+
         //! Describes a shader option to the ShaderOptionGroupLayout class. Maps a shader option
         //! to a set of bits in a mask in order to facilitate packing values into a mask to
         //! form a ShaderKey.
@@ -62,15 +69,16 @@ namespace AZ
             //! @param optionType     Type hint for the option - bool, enum, integer range, etc.
             //! @param bitOffset      Bit offset must match the ShaderOptionGroupLayout where this Option will be added
             //! @param order          The order (rank) of the shader option. Must be unique within a group. Lower order is higher priority.
-            //! @param nameIndexList  List of valid (valueName, value) pairs for this Option
+            //! @param nameIndexList  List of valid (valueName, value) pairs for this Option. See "Create*ShaderOptionValues" utility functions above.  
             //! @param defaultValue   Default value name, which must also be in the nameIndexList. In the cases where the list
             //!                       defines a range (IntegerRange for instance) defaultValue must be within the range instead.
+            //!                       If omitted, the first entry in @nameIndexList will be used.
             ShaderOptionDescriptor(const Name& name,
                                    const ShaderOptionType& optionType,
                                    uint32_t bitOffset,
                                    uint32_t order,
-                                   const AZStd::vector<RPI::ShaderOptionValuePair>& nameIndexList,
-                                   const Name& defaultValue);
+                                   const ShaderOptionValues& nameIndexList,
+                                   const Name& defaultValue = {});
 
             AZ_DEFAULT_COPY_MOVE(ShaderOptionDescriptor);
 

@@ -9,7 +9,8 @@
   },
   "profile_pipe": {
     "TAGS": [
-      "default"
+      "default",
+      "snapshot"
     ],
     "steps": [
       "profile"
@@ -77,7 +78,8 @@
         "default",
         "weekly-build-metrics",
         "nightly-incremental",
-        "nightly-clean"
+        "nightly-clean",
+        "snapshot"
     ],
     "COMMAND":"../Windows/build_asset_windows.cmd",
     "PARAMETERS": {
@@ -127,7 +129,8 @@
   "gradle": {
     "TAGS":[
         "default",
-        "weekly-build-metrics"
+        "weekly-build-metrics",
+        "snapshot"
     ],
     "COMMAND":"gradle_windows.cmd",
     "PARAMETERS": {
