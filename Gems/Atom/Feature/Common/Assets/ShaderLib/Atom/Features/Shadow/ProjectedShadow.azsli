@@ -275,7 +275,7 @@ float ProjectedShadow::GetThickness()
             /*LOD=*/0
             ).r;
         
-        // Denormalized thickness (avoid negative values given by to precission or shrinking offsets)
+        // Denormalized thickness (avoid negative values given by precision errors or shrinking offsets)
         const float viewSpaceThickness = max(UnprojectDepth(m_shadowIndex, depthValue) - UnprojectDepth(m_shadowIndex, m_shadowPosition.z), 0.0); 
         return viewSpaceThickness;    
     }
