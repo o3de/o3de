@@ -47,7 +47,6 @@ namespace EMotionFX
 
         auto ragdollPlugin = static_cast<EMotionFX::RagdollNodeInspectorPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::RagdollNodeInspectorPlugin::CLASS_ID));
         ASSERT_TRUE(ragdollPlugin) << "Ragdoll plugin not found.";
-        ragdollPlugin->Init();
 
         Physics::MockPhysicsSystem physicsSystem;
         Physics::MockPhysicsInterface physicsInterface;

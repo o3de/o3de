@@ -113,7 +113,6 @@ namespace EMotionFX
 
         auto* ragdollPlugin = EMStudio::GetPluginManager()->FindActivePlugin<RagdollNodeInspectorPlugin>();
         ASSERT_TRUE(ragdollPlugin) << "Ragdoll plugin not found.";
-        ragdollPlugin->Init();
 
         auto* skeletonOutlinerPlugin = EMStudio::GetPluginManager()->FindActivePlugin<SkeletonOutlinerPlugin>();
         ASSERT_TRUE(skeletonOutlinerPlugin) << "Skeleton outliner plugin not found.";
