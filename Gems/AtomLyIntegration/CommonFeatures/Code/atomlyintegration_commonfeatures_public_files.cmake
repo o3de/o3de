@@ -42,7 +42,6 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/HDRColorGradingBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/HDRColorGradingComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/EditorModeFeedback/EditorModeFeedbackBus.h
-    Include/AtomLyIntegration/CommonFeatures/PostProcess/EditorModeFeedback/EditorModeFeedbackComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoComponentConfiguration.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/LookModification/LookModificationBus.h

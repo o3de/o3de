@@ -88,11 +88,6 @@ set(FILES
     Source/PostProcess/ColorGrading/HDRColorGradingComponentConfig.cpp
     Source/PostProcess/ColorGrading/HDRColorGradingComponentController.cpp
     Source/PostProcess/ColorGrading/HDRColorGradingComponentController.h
-    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackComponent.cpp
-    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackComponent.h
-    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackComponentConfig.cpp
-    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackComponentController.cpp
-    Source/PostProcess/EditorModeFeedback/EditorModeFeedbackComponentController.h
     Source/PostProcess/DepthOfField/DepthOfFieldComponent.cpp
     Source/PostProcess/DepthOfField/DepthOfFieldComponent.h
     Source/PostProcess/DepthOfField/DepthOfFieldComponentConfig.cpp
