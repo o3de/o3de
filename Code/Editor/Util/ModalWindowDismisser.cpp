@@ -34,9 +34,9 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
     {
         if (dialog->isModal())
         {
-            // if we wait until a Paint event arrives, we can be sure the dialog is fully open
+            // if we wait until a Polish event arrives, we can be sure the dialog is fully open
             // and that close() will work correctly.
-            if (event->type() == QEvent::Paint)
+            if (event->type() == QEvent::Polish)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
                 if (it == m_windows.end())
