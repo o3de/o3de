@@ -24,6 +24,7 @@ namespace Multiplayer
 #ifndef AZ_RELEASE_BUILD
     AZ_CVAR(float, cl_DebugHackTimeMultiplier, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Scalar value used to simulate clock hacking cheats for validating bank time system and anticheat");
     AZ_CVAR(bool, cl_EnableDesyncDebugging, true, nullptr, AZ::ConsoleFunctorFlags::Null, "If enabled, debug logs will contain verbose information on detected state desyncs");
+    AZ_CVAR(bool, cl_DesyncDebugging_AuditInputs, false, nullptr, AZ::ConsoleFunctorFlags::Null, "If true, adds inputs to audit trail");
     AZ_CVAR(uint32_t, cl_PredictiveStateHistorySize, 120, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls how many inputs of predictive state should be retained for debugging desyncs");
 #endif
 
@@ -222,7 +223,7 @@ namespace Multiplayer
                 }
                 else
                 {
-                    if (cl_EnableDesyncDebugging)
+                    if (cl_EnableDesyncDebugging && cl_DesyncDebugging_AuditInputs)
                     {
                         // Add to Audit Trail here (server)
                         AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
@@ -540,12 +541,16 @@ namespace Multiplayer
                 SerializeEntityCorrection(*inputHistory);
                 m_predictiveStateHistory.emplace(m_clientInputId, AZStd::move(inputHistory));
 
-                // Add to audit trail per input here (client)
-                AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
-                if (!inputLogs.empty())
+                if (cl_DesyncDebugging_AuditInputs)
                 {
-                    AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(AuditCategory::Input,
-                        input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(), AZStd::move(inputLogs));
+                    // Add to audit trail per input here (client)
+                    AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
+                    if (!inputLogs.empty())
+                    {
+                        AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
+                            AuditCategory::Input, input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(),
+                            AZStd::move(inputLogs));
+                    }
                 }
 
             }

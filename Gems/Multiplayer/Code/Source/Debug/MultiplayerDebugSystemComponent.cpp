@@ -17,10 +17,6 @@ void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth);
 
 AZ_CVAR(bool, net_DebugEntities_ShowBandwidth, false, &OnDebugEntities_ShowBandwidth_Changed, AZ::ConsoleFunctorFlags::Null,
     "If true, prints bandwidth values over entities that use a considerable amount of network traffic");
-AZ_CVAR(bool, net_DebugEntities_AuditInputs, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "If true, adds inputs to audit trail");
-AZ_CVAR(bool, net_DebugEntities_AuditEvents, true, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "If true, adds events to audit trail");
 AZ_CVAR(uint16_t, net_DebutAuditTrail_HistorySize, 20, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Length of networking debug Audit Trail");
 
@@ -81,12 +77,6 @@ namespace Multiplayer
             const AZStd::string& name,
             AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
-        if ((!net_DebugEntities_AuditInputs && category == AuditCategory::Input)
-            || (!net_DebugEntities_AuditEvents && category == AuditCategory::Event))
-        {
-            return;
-        }
-
         while (m_auditTrailElems.size() >= net_DebutAuditTrail_HistorySize)
         {
             m_auditTrailElems.pop_back();
