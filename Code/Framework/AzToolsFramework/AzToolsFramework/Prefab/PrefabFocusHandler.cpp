@@ -448,7 +448,7 @@ namespace AzToolsFramework::Prefab
         {
             InstanceOptionalReference instance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
 
-            for (const auto pathElement : rootAliasPath)
+            for (const auto& pathElement : rootAliasPath)
             {
                 if (pathElement.Native() == rootAliasPath.begin()->Native())
                 {
