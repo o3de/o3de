@@ -25,7 +25,6 @@
 #include <PostProcess/PostFxLayerComponent.h>
 #include <PostProcess/Bloom/BloomComponent.h>
 #include <PostProcess/ColorGrading/HDRColorGradingComponent.h>
-#include <PostProcess/EditorModeFeedback/EditorModeFeedbackComponent.h>
 #include <PostProcess/DepthOfField/DepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/DisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/ExposureControlComponent.h>
@@ -44,6 +43,7 @@
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
 #include <EditorCommonFeaturesSystemComponent.h>
 #include <PostProcess/EditorPostFxSystemComponent.h>
+#include <PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.h>
 #include <CoreLights/EditorAreaLightComponent.h>
 #include <CoreLights/EditorDirectionalLightComponent.h>
 #include <Decals/EditorDecalComponent.h>
@@ -60,7 +60,6 @@
 #include <PostProcess/EditorPostFxLayerComponent.h>
 #include <PostProcess/Bloom/EditorBloomComponent.h>
 #include <PostProcess/ColorGrading/EditorHDRColorGradingComponent.h>
-#include <PostProcess/EditorModeFeedback/EditorEditorModeFeedbackComponent.h>
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
 #include <PostProcess/ExposureControl/EditorExposureControlComponent.h>
@@ -98,7 +97,6 @@ namespace AZ
                         DirectionalLightComponent::CreateDescriptor(),
                         BloomComponent::CreateDescriptor(),
                         HDRColorGradingComponent::CreateDescriptor(),
-                        EditorModeFeedbackComponent::CreateDescriptor(),
                         DisplayMapperComponent::CreateDescriptor(),
                         DepthOfFieldComponent::CreateDescriptor(),
                         ExposureControlComponent::CreateDescriptor(),
@@ -127,11 +125,11 @@ namespace AZ
                         EditorAreaLightComponent::CreateDescriptor(),
                         EditorCommonFeaturesSystemComponent::CreateDescriptor(),
                         EditorPostFxSystemComponent::CreateDescriptor(),
+                        EditorEditorModeFeedbackSystemComponent::CreateDescriptor(),
                         EditorDecalComponent::CreateDescriptor(),
                         EditorDirectionalLightComponent::CreateDescriptor(),
                         EditorBloomComponent::CreateDescriptor(),
                         EditorHDRColorGradingComponent::CreateDescriptor(),
-                        EditorEditorModeFeedbackComponent::CreateDescriptor(),
                         EditorDepthOfFieldComponent::CreateDescriptor(),
                         EditorDisplayMapperComponent::CreateDescriptor(),
                         EditorExposureControlComponent::CreateDescriptor(),
@@ -170,6 +168,7 @@ namespace AZ
                     azrtti_typeid<EditorMeshSystemComponent>(),
                     azrtti_typeid<EditorCommonFeaturesSystemComponent>(),
                     azrtti_typeid<EditorPostFxSystemComponent>(),
+                    azrtti_typeid<EditorEditorModeFeedbackSystemComponent>()
 #endif
                 };
             }
