@@ -77,7 +77,6 @@ namespace AtomToolsFramework
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "atomtools")
                 ->Event("GetAbsolutePath", &AtomToolsDocumentRequestBus::Events::GetAbsolutePath)
-                ->Event("GetRelativePath", &AtomToolsDocumentRequestBus::Events::GetRelativePath)
                 ->Event("GetPropertyValue", &AtomToolsDocumentRequestBus::Events::GetPropertyValue)
                 ->Event("SetPropertyValue", &AtomToolsDocumentRequestBus::Events::SetPropertyValue)
                 ->Event("Open", &AtomToolsDocumentRequestBus::Events::Open)

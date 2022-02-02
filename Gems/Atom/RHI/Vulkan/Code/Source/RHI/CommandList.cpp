@@ -970,6 +970,26 @@ namespace AZ
             const VkAccelerationStructureBuildRangeInfoKHR& offsetInfo = tlasBuffers.m_offsetInfo;
             const VkAccelerationStructureBuildRangeInfoKHR* pOffsetInfo = &offsetInfo;
             vkCmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tlasBuffers.m_buildInfo, &pOffsetInfo);
+
+            // we need a pipeline barrier on VK_ACCESS_ACCELERATION_STRUCTURE (both read and write) in case we are building
+            // multiple TLAS objects in a command list
+            VkMemoryBarrier memoryBarrier = {};
+            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            memoryBarrier.pNext = nullptr;
+            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+
+            vkCmdPipelineBarrier(
+                GetNativeCommandBuffer(),
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                0,
+                1,
+                &memoryBarrier,
+                0,
+                nullptr,
+                0,
+                nullptr);
         }
 
         void CommandList::ClearImage(const ResourceClearRequest& request)
