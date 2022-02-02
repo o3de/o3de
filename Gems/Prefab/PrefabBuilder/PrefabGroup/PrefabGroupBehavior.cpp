@@ -150,9 +150,9 @@ namespace AZ::SceneAPI::Behaviors
                 }
             }
 
-            // all mesh data nodes left in the meshIndexContainer do not have a matching TransformData node since
+            // all mesh data nodes left in the meshIndexContainer do not have a matching TransformData node
             // since the nodes have an identity transform, so map the MeshData index with an Invalid mesh index to
-            // indicate the transform should not be set
+            // indicate the transform should not be set to a default value
             for( const auto meshIndex : meshIndexContainer)
             {
                 MeshTransformPair pair{ meshIndex, Containers::SceneGraph::NodeIndex{} };
@@ -166,7 +166,7 @@ namespace AZ::SceneAPI::Behaviors
             ManifestUpdates& manifestUpdates,
             const MeshTransformMap& meshTransformMap,
             const Containers::Scene& scene,
-            AZStd::string& relativeSourcePath)
+            const AZStd::string& relativeSourcePath)
         {
             NodeEntityMap nodeEntityMap;
             const auto& graph = scene.GetGraph();
@@ -242,7 +242,8 @@ namespace AZ::SceneAPI::Behaviors
                 // assign mesh asset id hint using JSON
                 AZStd::string modelAssetPath;
                 modelAssetPath = relativeSourcePath;
-                modelAssetPath.append(meshGroupName);
+                AZ::StringFunc::Path::ReplaceFullName(modelAssetPath, meshGroupName.c_str());
+                AZ::StringFunc::Replace(modelAssetPath, "\\", "/"); // asset paths use forward slashes
 
                 auto meshAssetJson = AZStd::string::format(
                     R"JSON(
