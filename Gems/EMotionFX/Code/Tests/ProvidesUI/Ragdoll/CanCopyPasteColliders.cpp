@@ -40,11 +40,6 @@ namespace EMotionFX
 
             UIFixture::SetUp();
 
-            AZ::SerializeContext* serializeContext = GetSerializeContext();
-
-            Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
-            D6JointLimitConfiguration::Reflect(serializeContext);
-
             EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
                 .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
 
@@ -68,7 +63,9 @@ namespace EMotionFX
                                 { return AZStd::make_unique<D6JointLimitConfiguration>(); });
         }
 
-    private:
+    protected:
+        virtual bool ShouldReflectPhysicSystem() override { return true; }
+
         Physics::MockPhysicsSystem m_physicsSystem;
         Physics::MockPhysicsInterface m_physicsInterface;
         Physics::MockJointHelpersInterface m_jointHelpers;
@@ -116,7 +113,6 @@ namespace EMotionFX
 
         auto* ragdollPlugin = EMStudio::GetPluginManager()->FindActivePlugin<RagdollNodeInspectorPlugin>();
         ASSERT_TRUE(ragdollPlugin) << "Ragdoll plugin not found.";
-        ragdollPlugin->Init();
 
         auto* skeletonOutlinerPlugin = EMStudio::GetPluginManager()->FindActivePlugin<SkeletonOutlinerPlugin>();
         ASSERT_TRUE(skeletonOutlinerPlugin) << "Skeleton outliner plugin not found.";
