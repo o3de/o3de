@@ -15,8 +15,10 @@
 
 class Surface
 {
+
+#if ENABLE_CLEAR_COAT
     ClearCoatSurfaceData clearCoat;
-    TransmissionSurfaceData transmission; // This is not actually used for Standard PBR, but must be present for common lighting code to compile
+#endif
 
     // ------- BasePbrSurfaceData -------
     
@@ -37,7 +39,6 @@ class Surface
 
     //! Sets albedo and specularF0 using metallic workflow
     void SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic);
-
 };
 
 // Specular Anti-Aliasing technique from this paper:
