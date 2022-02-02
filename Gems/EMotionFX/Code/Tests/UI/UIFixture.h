@@ -112,7 +112,7 @@ namespace EMotionFX
     protected:
         void OnRegisterPlugin();
         void SetupQtAndFixtureBase();
-        void SetupPluginWindows();
+        virtual void SetupPluginWindows();
 
         QApplication* m_uiApp = nullptr;
         EMStudio::AnimGraphPlugin* m_animGraphPlugin = nullptr;

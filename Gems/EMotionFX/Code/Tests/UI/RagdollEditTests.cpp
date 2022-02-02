@@ -31,12 +31,35 @@ namespace EMotionFX
 {
     class RagdollEditTestsFixture : public UIFixture
     {
-      public:
-        void SetUp() override
+    public:
+        void TearDown() override
+        {
+            QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+            UIFixture::TearDown();
+        }
+
+        void CreateSkeletonAndModelIndices()
+        {
+            // Select the newly created actor
+            AZStd::string result;
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("Select -actorID 0", result)) << result.c_str();
+
+            // Change the Editor mode to Physics
+            EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
+
+            // Get the SkeletonOutlinerPlugin and find its treeview
+            m_skeletonOutliner = static_cast<EMotionFX::SkeletonOutlinerPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::SkeletonOutlinerPlugin::CLASS_ID));
+            EXPECT_TRUE(m_skeletonOutliner);
+            m_treeView = m_skeletonOutliner->GetDockWidget()->findChild<ReselectingTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
+
+            m_indexList.clear();
+            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0), m_indexList);
+        }
+
+    protected:
+        void SetupPluginWindows() override
         {
             using ::testing::_;
-
-            UIFixture::SetUp();
 
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -66,33 +89,10 @@ namespace EMotionFX
                     {
                         return AZStd::make_unique<D6JointLimitConfiguration>();
                     });
+
+            UIFixture::SetupPluginWindows();
         }
 
-        void TearDown() override
-        {
-            QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-            UIFixture::TearDown();
-        }
-
-        void CreateSkeletonAndModelIndices()
-        {
-            // Select the newly created actor
-            AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("Select -actorID 0", result)) << result.c_str();
-
-            // Change the Editor mode to Physics
-            EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
-
-            // Get the SkeletonOutlinerPlugin and find its treeview
-            m_skeletonOutliner = static_cast<EMotionFX::SkeletonOutlinerPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::SkeletonOutlinerPlugin::CLASS_ID));
-            EXPECT_TRUE(m_skeletonOutliner);
-            m_treeView = m_skeletonOutliner->GetDockWidget()->findChild<ReselectingTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
-
-            m_indexList.clear();
-            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0), m_indexList);
-        }
-
-    protected:
         QModelIndexList m_indexList;
         ReselectingTreeView* m_treeView;
         EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutliner;
