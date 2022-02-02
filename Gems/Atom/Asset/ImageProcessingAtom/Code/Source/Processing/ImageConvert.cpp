@@ -537,19 +537,19 @@ namespace ImageProcessingAtom
 
         // Convert to a pixel format based on the desired handling
         // The default behavior will choose the output format specified by the preset
+        EPixelFormat outputFormat;
         switch (m_input->m_presetSetting.m_outputTypeHandling)
         {
-        case PresetSettings::OutputTypeHandling::USE_INPUT_FORMAT_AND_BIT_DEPTH:
-            {
-                EPixelFormat sourceInputFormat = m_input->m_inputImage->GetPixelFormat();
-                m_image->ConvertFormat(sourceInputFormat);
-            }
+        case PresetSettings::OutputTypeHandling::UseInputFormat:
+            outputFormat = m_input->m_inputImage->GetPixelFormat();
             break;
-        case PresetSettings::OutputTypeHandling::USE_SPECIFIED_OUTPUT_TYPE:
+        case PresetSettings::OutputTypeHandling::UseSpecifiedOutputType:
         default:
-            m_image->ConvertFormat(m_input->m_presetSetting.m_pixelFormat);
+            outputFormat = m_input->m_presetSetting.m_pixelFormat;
             break;
         }
+
+        m_image->ConvertFormat(outputFormat);
 
         return true;
     }

@@ -28,8 +28,8 @@ namespace ImageProcessingAtom
         //! Custom overrides for how to handle the output format
         enum OutputTypeHandling
         {
-            USE_SPECIFIED_OUTPUT_TYPE = 0,
-            USE_INPUT_FORMAT_AND_BIT_DEPTH
+            UseSpecifiedOutputType = 0,
+            UseInputFormat
         };
 
         PresetSettings();
@@ -111,7 +111,7 @@ namespace ImageProcessingAtom
         AZStd::string m_swizzle;
 
         //! Controls how the output type format is derived
-        OutputTypeHandling m_outputTypeHandling = USE_SPECIFIED_OUTPUT_TYPE;
+        OutputTypeHandling m_outputTypeHandling = UseSpecifiedOutputType;
 
     protected:
         void DeepCopyMembers(const PresetSettings& other);

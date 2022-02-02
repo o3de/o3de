@@ -134,8 +134,8 @@ namespace ImageProcessingAtom
                 ;
 
             serialize->Enum<OutputTypeHandling>()
-                ->Value("Default", OutputTypeHandling::USE_SPECIFIED_OUTPUT_TYPE)
-                ->Value("UseInputFormatAndBitDepth", OutputTypeHandling::USE_INPUT_FORMAT_AND_BIT_DEPTH)
+                ->Value("Default", OutputTypeHandling::UseSpecifiedOutputType)
+                ->Value("UseInputFormat", OutputTypeHandling::UseInputFormat)
                 ;
         }
     }
