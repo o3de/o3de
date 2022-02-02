@@ -47,7 +47,7 @@ namespace AzFramework
 
         SetCameraTransform(cameraState, transform);
         SetCameraClippingVolume(cameraState, nearPlane, farPlane, verticalFovRad);
-        cameraState.m_viewportSize = Vector2FromScreenSize(viewportSize);
+        cameraState.m_viewportSize = viewportSize;
 
         return cameraState;
     }
@@ -58,7 +58,7 @@ namespace AzFramework
 
         SetCameraTransform(cameraState, transform);
         SetDefaultCameraClippingVolume(cameraState);
-        cameraState.m_viewportSize = Vector2FromScreenSize(viewportSize);
+        cameraState.m_viewportSize = viewportSize;
 
         return cameraState;
     }
@@ -71,7 +71,7 @@ namespace AzFramework
     AzFramework::CameraState CreateCameraFromWorldFromViewMatrix(const AZ::Matrix4x4& worldFromView, const ScreenSize& viewportSize)
     {
         AzFramework::CameraState cameraState;
-        cameraState.m_viewportSize = Vector2FromScreenSize(viewportSize);
+        cameraState.m_viewportSize = viewportSize;
 
         cameraState.m_side = worldFromView.GetBasisXAsVector3();
         cameraState.m_forward = worldFromView.GetBasisYAsVector3();

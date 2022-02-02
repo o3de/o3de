@@ -91,7 +91,8 @@ namespace AzToolsFramework
             debugDisplay.SetLineWidth(s_boxSelectLineWidth);
             debugDisplay.SetColor(s_boxSelectColor);
 
-            AZ::Vector2 viewportSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
+            const AZ::Vector2 viewportSize =
+                AzFramework::Vector2FromScreenSize(AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize);
 
             debugDisplay.DrawWireQuad2d(
                 AZ::Vector2(aznumeric_cast<float>(m_boxSelectRegion->x()), aznumeric_cast<float>(m_boxSelectRegion->y())) / viewportSize,

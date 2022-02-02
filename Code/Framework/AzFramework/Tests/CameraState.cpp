@@ -139,7 +139,7 @@ namespace UnitTest
 
         m_cameraState = AzFramework::CreateCameraFromWorldFromViewMatrix(worldFromView, viewportSize);
 
-        EXPECT_EQ(AzFramework::ScreenSizeFromVector2(m_cameraState.m_viewportSize), viewportSize);
+        EXPECT_EQ(m_cameraState.m_viewportSize, viewportSize);
         EXPECT_THAT(m_cameraState.m_position, IsCloseTolerance(translation, 0.01f));
         // Translate back into a quaternion to safely compare rotations
         auto decomposedCameraStateRotation =
