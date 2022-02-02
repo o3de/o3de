@@ -20,6 +20,8 @@ endif()
 
 
 ly_append_configurations_options(
+    DEFINES
+        _FORTIFY_SOURCE=2
 
     COMPILATION_C
         -fno-exceptions
