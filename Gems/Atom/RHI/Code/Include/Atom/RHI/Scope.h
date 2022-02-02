@@ -120,7 +120,7 @@ namespace AZ
             const AZStd::vector<Ptr<Fence>>& GetFencesToSignal() const;
 
             /// Initializes the scope.
-            void Init(const ScopeId& scopeId);
+            void Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics);
 
             /// Activates the scope for the current frame.
             void Activate(const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId);

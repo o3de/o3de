@@ -40,7 +40,7 @@ namespace AZ
             return m_scope.get();
         }
 
-        void ScopeProducer::SetScopeId(const ScopeId& scopeId)
+        void ScopeProducer::InitScope(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass)
         {
             m_scopeId = scopeId;
             
@@ -49,7 +49,7 @@ namespace AZ
                 m_scope->Shutdown();
             }
             
-            m_scope->Init(scopeId);
+            m_scope->Init(scopeId, hardwareQueueClass);
         }
     }
 }

@@ -177,15 +177,12 @@ namespace AZ
                     }
                 }
             }
+
+            InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass);
         }
 
         void RenderPass::FrameBeginInternal(FramePrepareParams params)
         {
-            if (GetScopeId().IsEmpty())
-            {
-                SetScopeId(RHI::ScopeId(GetPathName()));
-            }
-
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
 
             // Read back the ScopeQueries submitted from previous frames

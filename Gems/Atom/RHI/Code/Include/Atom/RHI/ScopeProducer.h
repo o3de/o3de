@@ -89,7 +89,7 @@ namespace AZ
              *  Sets ID of the scope producer. Used by class that inherit from
              *  ScopeProducer but that can't supply a ScopeId at construction.
              */
-            void SetScopeId(const ScopeId& scopeId);
+            void InitScope(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics);
 
         private:
             //////////////////////////////////////////////////////////////////////////
