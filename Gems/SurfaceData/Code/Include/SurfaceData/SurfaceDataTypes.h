@@ -22,21 +22,14 @@ namespace SurfaceData
     using SurfaceTagNameSet = AZStd::unordered_set<AZStd::string>;
     using SurfaceTagVector = AZStd::vector<SurfaceTag>;
 
-    class SurfacePointList;
-
     struct SurfacePoint final
     {
-        friend class SurfacePointList;
-
         AZ_CLASS_ALLOCATOR(SurfacePoint, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(SurfacePoint, "{0DC7E720-68D6-47D4-BB6D-B89EF23C5A5C}");
 
         AZ::Vector3 m_position;
         AZ::Vector3 m_normal;
         SurfaceTagWeightMap m_masks;
-
-    private:
-        AZ::EntityId m_entityId;
     };
 
     class SurfacePointList
@@ -78,17 +71,19 @@ namespace SurfaceData
             const AZ::EntityId& currentEntityId,
             AZStd::function<void(const AZ::Vector3&, SurfaceTagWeightMap&)> modificationWeightCallback);
 
-        const SurfacePoint& GetHighestSurfacePoint() const;
+        SurfacePoint GetHighestSurfacePoint() const;
 
         void FilterPoints(const SurfaceTagVector& desiredTags);
         void SortAndCombineNeighboringPoints();
 
     protected:
-        AZStd::vector<SurfacePoint> m_surfacePointList;
-        AZ::Aabb m_pointBounds = AZ::Aabb::CreateNull();
+        AZStd::vector<AZ::EntityId> m_surfaceCreatorIdList;
+        AZStd::vector<AZ::Vector3> m_surfacePositionList;
+        AZStd::vector<AZ::Vector3> m_surfaceNormalList;
+        AZStd::vector<SurfaceTagWeightMap> m_surfaceWeightsList;
 
-        // Controls whether we combine neighboring points and sort by height when adding points, or as a post-process step.
-        bool m_sortAndCombineOnPointInsertion{ true };
+
+        AZ::Aabb m_pointBounds = AZ::Aabb::CreateNull();
     };
 
     using SurfacePointLists = AZStd::vector<SurfacePointList>;

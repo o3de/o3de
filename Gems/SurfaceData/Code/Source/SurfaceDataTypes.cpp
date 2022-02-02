@@ -13,7 +13,8 @@ namespace SurfaceData
 {
     SurfacePointList::SurfacePointList(AZStd::initializer_list<const SurfacePoint> surfacePoints)
     {
-        m_surfacePointList.reserve(surfacePoints.size());
+        ReserveSpace(surfacePoints.size());
+
         for (auto& point : surfacePoints)
         {
             AddSurfacePoint(AZ::EntityId(), point.m_position, point.m_normal, point.m_masks);
@@ -23,79 +24,74 @@ namespace SurfaceData
     void SurfacePointList::AddSurfacePoint(const AZ::EntityId& entityId,
         const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeightMap& masks)
     {
-        if (m_sortAndCombineOnPointInsertion)
+        // When adding a surface point, we'll either merge it with a similar existing point, or else add it in order of
+        // decreasing Z, so that our final results are sorted.
+
+        for (size_t index = 0; index < m_surfacePositionList.size(); ++index)
         {
-            // When adding a surface point, we'll either merge it with a similar existing point, or else add it in order of
-            // decreasing Z, so that our final results are sorted.
-
-            auto pointItr = m_surfacePointList.begin();
-            for (; pointItr < m_surfacePointList.end(); ++pointItr)
+            // (Someday we should add a configurable tolerance for comparison)
+            if (m_surfacePositionList[index].IsClose(position) && m_surfaceNormalList[index].IsClose(normal))
             {
-                SurfacePoint& point = *pointItr;
-
-                // (Someday we should add a configurable tolerance for comparison)
-                if (point.m_position.IsClose(position) && point.m_normal.IsClose(normal))
-                {
-                    // consolidate points with similar attributes by adding masks/weights to the similar point instead of adding a new one.
-                    AddMaxValueForMasks(point.m_masks, masks);
-                    return;
-                }
-                else if (point.m_position.GetZ() < position.GetZ())
-                {
-                    m_pointBounds.AddPoint(position);
-                    SurfacePoint surfacePoint;
-                    surfacePoint.m_position = position;
-                    surfacePoint.m_normal = normal;
-                    surfacePoint.m_masks = masks;
-                    surfacePoint.m_entityId = entityId;
-                    m_surfacePointList.insert(pointItr, AZStd::move(surfacePoint));
-                    return;
-                }
+                // consolidate points with similar attributes by adding masks/weights to the similar point instead of adding a new one.
+                AddMaxValueForMasks(m_surfaceWeightsList[index], masks);
+                return;
             }
-
-            // The point wasn't merged and the sort puts it at the end, so just fall through to adding the point to the end of the list.
+            else if (m_surfacePositionList[index].GetZ() < position.GetZ())
+            {
+                m_pointBounds.AddPoint(position);
+                m_surfacePositionList.insert(m_surfacePositionList.begin() + index, position);
+                m_surfaceNormalList.insert(m_surfaceNormalList.begin() + index, normal);
+                m_surfaceWeightsList.insert(m_surfaceWeightsList.begin() + index, masks);
+                m_surfaceCreatorIdList.insert(m_surfaceCreatorIdList.begin() + index, entityId);
+                return;
+            }
         }
 
-        // We're adding this point to the end of the list.
+        // The point wasn't merged and the sort puts it at the end, so just add the point to the end of the list.
         m_pointBounds.AddPoint(position);
-        SurfacePoint point;
-        point.m_position = position;
-        point.m_normal = normal;
-        point.m_masks = masks;
-        point.m_entityId = entityId;
-        m_surfacePointList.emplace_back(AZStd::move(point));
+        m_surfacePositionList.emplace_back(position);
+        m_surfaceNormalList.emplace_back(normal);
+        m_surfaceWeightsList.emplace_back(masks);
+        m_surfaceCreatorIdList.emplace_back(entityId);
     }
 
     void SurfacePointList::Clear()
     {
-        m_surfacePointList.clear();
+        m_surfacePositionList.clear();
+        m_surfaceNormalList.clear();
+        m_surfaceWeightsList.clear();
+        m_surfaceCreatorIdList.clear();
     }
 
     void SurfacePointList::ReserveSpace(size_t maxPointsPerInput)
     {
         AZ_Assert(
-            m_surfacePointList.size() < maxPointsPerInput,
+            m_surfacePositionList.size() < maxPointsPerInput,
             "Trying to reserve space on a list that is already using more points than requested.");
-        m_surfacePointList.reserve(maxPointsPerInput);
+
+        m_surfaceCreatorIdList.reserve(maxPointsPerInput);
+        m_surfacePositionList.reserve(maxPointsPerInput);
+        m_surfaceNormalList.reserve(maxPointsPerInput);
+        m_surfaceWeightsList.reserve(maxPointsPerInput);
     }
 
     bool SurfacePointList::IsEmpty() const
     {
-        return m_surfacePointList.empty();
+        return m_surfacePositionList.empty();
     }
 
     size_t SurfacePointList::GetSize() const
     {
-        return m_surfacePointList.size();
+        return m_surfacePositionList.size();
     }
 
     void SurfacePointList::EnumeratePoints(
         AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceData::SurfaceTagWeightMap&)>
             pointCallback) const
     {
-        for (auto& point : m_surfacePointList)
+        for (size_t index = 0; index < m_surfacePositionList.size(); index++)
         {
-            if (!pointCallback(point.m_position, point.m_normal, point.m_masks))
+            if (!pointCallback(m_surfacePositionList[index], m_surfaceNormalList[index], m_surfaceWeightsList[index]))
             {
                 break;
             }
@@ -106,18 +102,22 @@ namespace SurfaceData
         const AZ::EntityId& currentEntityId,
         AZStd::function<void(const AZ::Vector3&, SurfaceData::SurfaceTagWeightMap&)> modificationWeightCallback)
     {
-        for (auto& point : m_surfacePointList)
+        for (size_t index = 0; index < m_surfacePositionList.size(); index++)
         {
-            if (point.m_entityId != currentEntityId)
+            if (m_surfaceCreatorIdList[index] != currentEntityId)
             {
-                modificationWeightCallback(point.m_position, point.m_masks);
+                modificationWeightCallback(m_surfacePositionList[index], m_surfaceWeightsList[index]);
             }
         }
     }
 
-    const SurfacePoint& SurfacePointList::GetHighestSurfacePoint() const
+    SurfacePoint SurfacePointList::GetHighestSurfacePoint() const
     {
-        return m_surfacePointList.front();
+        SurfacePoint point;
+        point.m_position = m_surfacePositionList.front();
+        point.m_normal = m_surfaceNormalList.front();
+        point.m_masks = m_surfaceWeightsList.front();
+        return point;
     }
 
     void SurfacePointList::FilterPoints(const SurfaceTagVector& desiredTags)
@@ -125,76 +125,39 @@ namespace SurfaceData
         // Filter out any points that don't match our search tags.
         // This has to be done after the Surface Modifiers have processed the points, not at point insertion time, because
         // Surface Modifiers add tags to existing points.
-        m_surfacePointList.erase(
-            AZStd::remove_if(
-                m_surfacePointList.begin(), m_surfacePointList.end(),
-                [desiredTags](SurfacePoint& point) -> bool
+        size_t listSize = m_surfacePositionList.size();
+        size_t index = 0;
+        for (; index < listSize; index++)
+        {
+            if (!HasMatchingTags(m_surfaceWeightsList[index], desiredTags))
+            {
+                break;
+            }
+        }
+
+        if (index != listSize)
+        {
+            size_t next = index + 1;
+            for (; next < listSize; ++next)
+            {
+                if (HasMatchingTags(m_surfaceWeightsList[index], desiredTags))
                 {
-                    return !HasMatchingTags(point.m_masks, desiredTags);
-                }),
-            m_surfacePointList.end());
+                    m_surfaceCreatorIdList[index] = m_surfaceCreatorIdList[next];
+                    m_surfacePositionList[index] = m_surfacePositionList[next];
+                    m_surfaceNormalList[index] = m_surfaceNormalList[next];
+                    m_surfaceWeightsList[index] = m_surfaceWeightsList[next];
+                    ++index;
+                }
+            }
+
+            m_surfaceCreatorIdList.resize(index);
+            m_surfacePositionList.resize(index);
+            m_surfaceNormalList.resize(index);
+            m_surfaceWeightsList.resize(index);
+        }
     }
 
     void SurfacePointList::SortAndCombineNeighboringPoints()
     {
-        // If we've sorted and combined on input, then there's nothing to do here.
-        if (m_sortAndCombineOnPointInsertion)
-        {
-            return;
-        }
-
-        // If there's only 0 or 1 point, there is no sorting or combining that needs to happen, so just return.
-        if (GetSize() <= 1)
-        {
-            return;
-        }
-
-        // Efficient point consolidation requires the points to be pre-sorted so we are only comparing/combining neighbors.
-        // Sort XY points together, with decreasing Z.
-        AZStd::sort(
-            m_surfacePointList.begin(), m_surfacePointList.end(),
-            [](const SurfacePoint& a, const SurfacePoint& b)
-            {
-                // Our goal is to have identical XY values sorted adjacent to each other with decreasing Z.
-                // We sort increasing Y, then increasing X, then decreasing Z, because we need to compare all 3 values for a
-                // stable sort. The choice of increasing Y first is because we'll often generate the points as ranges of X values within
-                // ranges of Y values, so this will produce the most usable and expected output sort.
-                if (a.m_position.GetY() != b.m_position.GetY())
-                {
-                    return a.m_position.GetY() < b.m_position.GetY();
-                }
-                if (a.m_position.GetX() != b.m_position.GetX())
-                {
-                    return a.m_position.GetX() < b.m_position.GetX();
-                }
-                if (a.m_position.GetZ() != b.m_position.GetZ())
-                {
-                    return a.m_position.GetZ() > b.m_position.GetZ();
-                }
-
-                // If we somehow ended up with two points with identical positions getting generated, use the entity ID as the tiebreaker
-                // to guarantee a stable sort. We should never have two identical positions generated from the same entity.
-                return a.m_entityId < b.m_entityId;
-            });
-
-        // iterate over subsequent source points for comparison and consolidation with the last added target/unique point
-        for (auto pointItr = m_surfacePointList.begin() + 1; pointItr < m_surfacePointList.end();)
-        {
-            auto prevPointItr = pointItr - 1;
-
-            // (Someday we should add a configurable tolerance for comparison)
-            if (pointItr->m_position.IsClose(prevPointItr->m_position) &&
-                pointItr->m_normal.IsClose(prevPointItr->m_normal))
-            {
-                // consolidate points with similar attributes by adding masks/weights to the previous point and deleting this point.
-                AddMaxValueForMasks(prevPointItr->m_masks, pointItr->m_masks);
-
-                pointItr = m_surfacePointList.erase(pointItr);
-            }
-            else
-            {
-                pointItr++;
-            }
-        }
     }
 }
