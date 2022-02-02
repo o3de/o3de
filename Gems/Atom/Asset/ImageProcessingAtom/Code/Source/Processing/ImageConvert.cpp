@@ -535,17 +535,20 @@ namespace ImageProcessingAtom
         m_image->GetCompressOption().rgbWeight = m_input->m_presetSetting.GetColorWeight();
         m_image->GetCompressOption().discardAlpha = m_input->m_presetSetting.m_discardAlpha;
 
-        // If the m_uncompressedAutoPick flag is set, then let the converter pick
-        // a pixel format that best matches the source input format
-        if (m_input->m_presetSetting.m_uncompressedAutoPick)
+        // Convert to a pixel format based on the desired handling
+        // The default behavior will choose the output format specified by the preset
+        switch (m_input->m_presetSetting.m_outputTypeHandling)
         {
-            EPixelFormat sourceInputFormat = m_input->m_inputImage->GetPixelFormat();
-            m_image->ConvertFormat(sourceInputFormat);
-        }
-        // Otherwise, convert to the pixel format specified by the preset that was chosen
-        else
-        {
+        case PresetSettings::OutputTypeHandling::USE_INPUT_FORMAT_AND_BIT_DEPTH:
+            {
+                EPixelFormat sourceInputFormat = m_input->m_inputImage->GetPixelFormat();
+                m_image->ConvertFormat(sourceInputFormat);
+            }
+            break;
+        case PresetSettings::OutputTypeHandling::USE_SPECIFIED_OUTPUT_TYPE:
+        default:
             m_image->ConvertFormat(m_input->m_presetSetting.m_pixelFormat);
+            break;
         }
 
         return true;

@@ -51,7 +51,7 @@ namespace ImageProcessingAtom
                 ->Field("Swizzle", &PresetSettings::m_swizzle)
                 ->Field("CubemapSettings", &PresetSettings::m_cubemapSetting)
                 ->Field("MipMapSetting", &PresetSettings::m_mipmapSetting)
-                ->Field("UncompressedAutoPick", &PresetSettings::m_uncompressedAutoPick)
+                ->Field("OutputTypeHandling", &PresetSettings::m_outputTypeHandling)
                 ;
 
             serialize->Enum<RGBWeight>()
@@ -132,6 +132,11 @@ namespace ImageProcessingAtom
                 ->Value("R32", EPixelFormat::ePixelFormat_R32)
                 ->Value("Unknown", EPixelFormat::ePixelFormat_Unknown)
                 ;
+
+            serialize->Enum<OutputTypeHandling>()
+                ->Value("Default", OutputTypeHandling::USE_SPECIFIED_OUTPUT_TYPE)
+                ->Value("UseInputFormatAndBitDepth", OutputTypeHandling::USE_INPUT_FORMAT_AND_BIT_DEPTH)
+                ;
         }
     }
 
@@ -203,7 +208,7 @@ namespace ImageProcessingAtom
             m_swizzle == other.m_swizzle &&
             m_isMipRenormalize == other.m_isMipRenormalize &&
             m_numResidentMips == other.m_numResidentMips &&
-            m_uncompressedAutoPick == other.m_uncompressedAutoPick
+            m_outputTypeHandling == other.m_outputTypeHandling
             ;
     }
 
@@ -241,7 +246,7 @@ namespace ImageProcessingAtom
             m_swizzle = other.m_swizzle;
             m_isMipRenormalize = other.m_isMipRenormalize;
             m_numResidentMips = other.m_numResidentMips;
-            m_uncompressedAutoPick = other.m_uncompressedAutoPick;
+            m_outputTypeHandling = other.m_outputTypeHandling;
         }
     }
 
