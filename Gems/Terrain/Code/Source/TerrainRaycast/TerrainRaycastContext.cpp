@@ -35,7 +35,6 @@ namespace
     inline void FindNearestIntersection(const AZ::Aabb& aabb,
                                         const AZ::Vector3& rayStart,
                                         const AZ::Vector3& rayDirection,
-                                        const AZ::Vector3& rayDirectionReciprocal,
                                         AzFramework::RenderGeometry::RayResult& result)
     {
         float intersectionT;
@@ -43,7 +42,7 @@ namespace
         AZ::Vector3 intersectionNormal;
         const int intersectionResult = AZ::Intersect::IntersectRayAABB(rayStart,
                                                                        rayDirection,
-                                                                       rayDirectionReciprocal,
+                                                                       rayDirection.GetReciprocal(),
                                                                        aabb,
                                                                        intersectionT,
                                                                        intersectionEndT,
@@ -117,7 +116,6 @@ namespace
                                                       const AZ::Aabb& aabb,
                                                       const AZ::Vector3& rayStart,
                                                       const AZ::Vector3& rayDirection,
-                                                      const AZ::Vector3& rayDirectionReciprocal,
                                                       AzFramework::RenderGeometry::RayResult& result)
     {
         // Obtain the height values at each corner of the AABB.
@@ -131,26 +129,6 @@ namespace
         point1.SetZ(terrainSystem.GetHeight(point1, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT));
         point2.SetZ(terrainSystem.GetHeight(point2, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT));
         point3.SetZ(terrainSystem.GetHeight(point3, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT));
-
-        // Construct a smaller AABB that tightly encloses the four terrain points.
-        const float refinedMinZ = AZStd::GetMin(AZStd::GetMin(AZStd::GetMin(point0.GetZ(), point1.GetZ()), point2.GetZ()), point3.GetZ());
-        const float refinedMaxZ = AZStd::GetMax(AZStd::GetMax(AZStd::GetMax(point0.GetZ(), point1.GetZ()), point2.GetZ()), point3.GetZ());
-        const AZ::Vector3 refinedMin(aabbMin.GetX(), aabbMin.GetY(), refinedMinZ);
-        const AZ::Vector3 refinedMax(aabbMax.GetX(), aabbMax.GetY(), refinedMaxZ);
-        const AZ::Aabb refinedAABB = AZ::Aabb::CreateFromMinMax(refinedMin, refinedMax);
-
-        // Check for a hit against the refined AABB.
-        float intersectionT;
-        float intersectionEndT;
-        const int intersectionResult = AZ::Intersect::IntersectRayAABB2(rayStart,
-                                                                        rayDirectionReciprocal,
-                                                                        refinedAABB,
-                                                                        intersectionT,
-                                                                        intersectionEndT);
-        if (intersectionResult == AZ::Intersect::ISECT_RAY_AABB_NONE)
-        {
-            return;
-        }
 
         // Finally, triangulate the four terrain points and check for a hit,
         // splitting using the top-left -> bottom-right diagonal so to match
@@ -218,12 +196,10 @@ namespace
     {
         // Find the nearest intersection (if any) between the ray and terrain world bounds.
         // Note that the ray might (and often will) start inside the terrain world bounds.
-        const AZ::Vector3 rayDirection = rayEnd - rayStart;
-        const AZ::Vector3 rayDirectionReciprocal = rayDirection.GetReciprocal();
+        const AZ::Vector3 rayDirection = (rayEnd - rayStart).GetNormalized();
         FindNearestIntersection(terrainWorldBounds,
                                 rayStart,
                                 rayDirection,
-                                rayDirectionReciprocal,
                                 result);
         if (!result)
         {
@@ -327,7 +303,6 @@ namespace
                                                   currentVoxel,
                                                   rayStart,
                                                   rayDirection,
-                                                  rayDirectionReciprocal,
                                                   result);
             if (result)
             {
@@ -377,10 +352,11 @@ AzFramework::RenderGeometry::RayResult TerrainRaycastContext::RayIntersect(
     const AzFramework::RenderGeometry::RayRequest& ray)
 {
     const AZ::Aabb terrainWorldBounds = m_terrainSystem.GetTerrainAabb();
-    const AZ::Vector2 terrainResolution = m_terrainSystem.GetTerrainHeightQueryResolution();
+    const float terrainResolution = m_terrainSystem.GetTerrainHeightQueryResolution();
+    const AZ::Vector2 terrainResolution2d(terrainResolution);
     AzFramework::RenderGeometry::RayResult rayIntersectionResult;
     FindNearestIntersectionIterative(m_terrainSystem,
-                                     terrainResolution,
+                                     terrainResolution2d,
                                      terrainWorldBounds,
                                      ray.m_startWorldPosition,
                                      ray.m_endWorldPosition,

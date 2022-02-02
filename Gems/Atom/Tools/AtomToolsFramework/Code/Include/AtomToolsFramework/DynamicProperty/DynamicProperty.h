@@ -111,7 +111,7 @@ namespace AtomToolsFramework
         AZStd::string GetDescription() const;
         AZStd::vector<AZ::Edit::EnumConstant<uint32_t>> GetEnumValues() const;
 
-        // Handles changes from the ReflectedPropertyEditor and sends notification to the material document.
+        // Handles changes from the ReflectedPropertyEditor and sends notification.
         AZ::u32 OnDataChanged() const;
 
         template<typename T>

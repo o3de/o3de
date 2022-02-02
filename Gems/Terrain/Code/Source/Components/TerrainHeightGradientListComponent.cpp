@@ -266,7 +266,7 @@ namespace Terrain
         LmbrCentral::ShapeComponentRequestsBus::EventResult(m_cachedShapeBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
         // Get the height range of the entire world
-        m_cachedHeightQueryResolution = AZ::Vector2(1.0f);
+        m_cachedHeightQueryResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             m_cachedHeightQueryResolution, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightQueryResolution);
 

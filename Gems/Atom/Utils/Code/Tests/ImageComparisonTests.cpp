@@ -127,6 +127,16 @@ namespace UnitTest
         EXPECT_EQ(0.0f, diffScore);
     }
 
+    
+    TEST_F(ImageComparisonTests, CheckMaxChannelDifference)
+    {
+        const AZStd::vector<uint8_t> imageA = { 255, 255, 255 };
+        const AZStd::vector<uint8_t> imageB = { 0, 125, 255 };
+        const int16_t maxChannelDiff = 255;
+        const int16_t res = CalcMaxChannelDifference(imageA, imageB, 0);
+        EXPECT_EQ(res, maxChannelDiff);
+    }
+
     TEST_F(ImageComparisonTests, CheckThreshold_SmallImagesWithDifferences)
     {
         AZ::RHI::Size size{2, 2, 1};
