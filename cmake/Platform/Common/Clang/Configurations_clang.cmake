@@ -9,12 +9,17 @@
 include(cmake/Platform/Common/Configurations_common.cmake)
 
 ly_append_configurations_options(
+    DEFINES
+        _FORTIFY_SOURCE=2
     COMPILATION
         -fno-exceptions
         -fvisibility=hidden
         -fvisibility-inlines-hidden
         -Wall
         -Werror
+
+        -fpie                   # Position-Independent Executables
+        -fstack-protector-all   # Enable stack protectors for all functions
 
         ###################
         # Disabled warnings (please do not disable any others without first consulting sig-build)
@@ -35,17 +40,31 @@ ly_append_configurations_options(
         ###################
 
     COMPILATION_DEBUG
-        -O0 # No optimization
-        -g # debug symbols
-        -fno-inline # don't inline functions
-        -fstack-protector # Add additional checks to catch stack corruption issues
+        -O0                         # No optimization
+        -g                          # debug symbols
+        -fno-inline                 # don't inline functions
+
+        -fstack-check
+
     COMPILATION_PROFILE
         -O2
-        -g # debug symbols
+        -g                          # debug symbols
+
+        -fstack-check
+
     COMPILATION_RELEASE
         -O2
     LINK_NON_STATIC
         -Wl,-undefined,error
+
+        -fpie
+        -Wl,-z,relro,-z,now
+        -Wl,-z,noexecstack
+    LINK_EXE
+        -pie
+        -fpie
+        -Wl,-z,relro,-z,now
+        -Wl,-z,noexecstack
 )
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
