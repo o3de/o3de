@@ -540,7 +540,7 @@ namespace UnitTests
         {
             std::sort(
                 m_data->m_processResults.begin(), m_data->m_processResults.end(),
-                [](const decltype(m_data->m_processResults[0])& left, decltype(left) right)
+                [](decltype(m_data->m_processResults[0])& left, decltype(left)& right)
                 {
                     return left.m_jobEntry.m_databaseSourceName < right.m_jobEntry.m_databaseSourceName;
                 });
