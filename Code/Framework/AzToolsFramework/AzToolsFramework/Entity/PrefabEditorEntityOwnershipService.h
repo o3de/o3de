@@ -169,6 +169,11 @@ namespace AzToolsFramework
         void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) override;
         bool IsRootPrefabAssigned() const override;
 
+        bool IsValidRootAliasPath(Prefab::RootAliasPath rootAliasPath) const override;
+        Prefab::InstanceOptionalReference GetInstanceReferenceFromRootAliasPath(Prefab::RootAliasPath rootAliasPath) const override;
+        bool GetInstancesInRootAliasPath(
+            Prefab::RootAliasPath rootAliasPath, const AZStd::function<bool(const Prefab::InstanceOptionalReference)>& callback) const override;
+
     protected:
 
         AZ::SliceComponent::SliceInstanceAddress GetOwningSlice() override;
