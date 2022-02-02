@@ -157,11 +157,7 @@ namespace AzFramework
             // to stop it from continuing to run as a clone of the parent.
             // Communicate the error code back to the parent via a pipe for the
             // parent to read.
-            AZ_PUSH_DISABLE_WARNING_CLANG("-Wunused-result")
-            AZ_PUSH_DISABLE_WARNING_GCC("-Wunused-result")
-            write(errorPipe[1], &errval, sizeof(errval));
-            AZ_POP_DISABLE_WARNING_GCC
-            AZ_POP_DISABLE_WARNING_CLANG
+            [[maybe_unused]] auto writeResult = write(errorPipe[1], &errval, sizeof(errval));
 
             _exit(0);
         }
@@ -325,11 +321,7 @@ namespace AzFramework
 
         // Set up a pipe to communicate the error code from the subprocess's execvpe call
         AZStd::array<int, 2> childErrorPipeFds{};
-        AZ_PUSH_DISABLE_WARNING_CLANG("-Wunused-result")
-        AZ_PUSH_DISABLE_WARNING_GCC("-Wunused-result")
-        pipe(childErrorPipeFds.data());
-        AZ_POP_DISABLE_WARNING_GCC
-        AZ_POP_DISABLE_WARNING_CLANG
+        [[maybe_unused]] auto pipeResult = pipe(childErrorPipeFds.data());
 
         // This configures the write end of the pipe to close on calls to `exec`
         fcntl(childErrorPipeFds[1], F_SETFD, fcntl(childErrorPipeFds[1], F_GETFD) | FD_CLOEXEC);
