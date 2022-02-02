@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzFramework
@@ -40,37 +41,37 @@ namespace AzFramework
         const float nearPlane,
         const float farPlane,
         const float verticalFovRad,
-        const AZ::Vector2& viewportSize)
+        const ScreenSize& viewportSize)
     {
         AzFramework::CameraState cameraState;
 
         SetCameraTransform(cameraState, transform);
         SetCameraClippingVolume(cameraState, nearPlane, farPlane, verticalFovRad);
-        cameraState.m_viewportSize = viewportSize;
+        cameraState.m_viewportSize = Vector2FromScreenSize(viewportSize);
 
         return cameraState;
     }
 
-    AzFramework::CameraState CreateDefaultCamera(const AZ::Transform& transform, const AZ::Vector2& viewportSize)
+    AzFramework::CameraState CreateDefaultCamera(const AZ::Transform& transform, const ScreenSize& viewportSize)
     {
         AzFramework::CameraState cameraState;
 
         SetCameraTransform(cameraState, transform);
         SetDefaultCameraClippingVolume(cameraState);
-        cameraState.m_viewportSize = viewportSize;
+        cameraState.m_viewportSize = Vector2FromScreenSize(viewportSize);
 
         return cameraState;
     }
 
-    AzFramework::CameraState CreateIdentityDefaultCamera(const AZ::Vector3& position, const AZ::Vector2& viewportSize)
+    AzFramework::CameraState CreateIdentityDefaultCamera(const AZ::Vector3& position, const ScreenSize& viewportSize)
     {
         return CreateDefaultCamera(AZ::Transform::CreateTranslation(position), viewportSize);
     }
 
-    AzFramework::CameraState CreateCameraFromWorldFromViewMatrix(const AZ::Matrix4x4& worldFromView, const AZ::Vector2& viewportSize)
+    AzFramework::CameraState CreateCameraFromWorldFromViewMatrix(const AZ::Matrix4x4& worldFromView, const ScreenSize& viewportSize)
     {
         AzFramework::CameraState cameraState;
-        cameraState.m_viewportSize = viewportSize;
+        cameraState.m_viewportSize = Vector2FromScreenSize(viewportSize);
 
         cameraState.m_side = worldFromView.GetBasisXAsVector3();
         cameraState.m_forward = worldFromView.GetBasisYAsVector3();
