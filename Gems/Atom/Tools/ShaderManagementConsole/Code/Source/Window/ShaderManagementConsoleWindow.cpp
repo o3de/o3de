@@ -61,8 +61,6 @@ namespace ShaderManagementConsole
         m_actionNew->setEnabled(false);
         m_actionSaveAsChild->setVisible(false);
         m_actionSaveAsChild->setEnabled(false);
-        m_actionSaveAll->setVisible(false);
-        m_actionSaveAll->setEnabled(false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }

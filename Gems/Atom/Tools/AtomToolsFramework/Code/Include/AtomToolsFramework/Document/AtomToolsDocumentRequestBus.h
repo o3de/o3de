@@ -25,9 +25,6 @@ namespace AtomToolsFramework
         //! Get absolute path of document
         virtual AZStd::string_view GetAbsolutePath() const = 0;
 
-        //! Get relative path of document
-        virtual AZStd::string_view GetRelativePath() const = 0;
-
         //! Return property value
         //! If the document is not open or the id can't be found, an invalid value is returned instead.
         virtual const AZStd::any& GetPropertyValue(const AZ::Name& propertyFullName) const = 0;

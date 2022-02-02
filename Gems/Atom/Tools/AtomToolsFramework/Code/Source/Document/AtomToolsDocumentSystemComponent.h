@@ -24,7 +24,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
-    //! AtomToolsDocumentSystemComponent is the central component of the Material Editor Core gem
+    //! AtomToolsDocumentSystemComponent is the central component for managing documents
     class AtomToolsDocumentSystemComponent
         : public AZ::Component
         , private AtomToolsDocumentNotificationBus::Handler
