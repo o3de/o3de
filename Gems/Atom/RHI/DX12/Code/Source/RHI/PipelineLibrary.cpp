@@ -274,6 +274,8 @@ namespace AZ
         bool PipelineLibrary::SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const
         {
             // DX12 drivers cannot save serialized data
+            [[maybe_unused]] Device& device = static_cast<Device&>(GetDevice());
+            AZ_Assert(!device.GetFeatures().m_isPsoCacheFileOperationsNeeded, "Explicit PSO cache operations should not be disabled for DX12");
             return false;
         }
     }
