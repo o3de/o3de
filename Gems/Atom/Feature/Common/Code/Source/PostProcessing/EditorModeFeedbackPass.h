@@ -42,7 +42,6 @@ namespace AZ
             bool IsEnabled() const override;
 
         private:
-            const EditorModeFeedbackSettings* GetEditorModeFeedbackSettings() const;
             void SetSrgConstants();
 
             RHI::ShaderInputNameIndex m_desaturationAmountIndex = "m_desaturationAmount";

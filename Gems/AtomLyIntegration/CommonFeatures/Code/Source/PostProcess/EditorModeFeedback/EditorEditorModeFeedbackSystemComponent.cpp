@@ -44,12 +44,19 @@ namespace AZ
         {
             AzToolsFramework::Components::EditorComponentBase::Activate();
             AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+            AZ::Interface<EditorModeFeedbackInterface>::Register(this);
         }
 
         void EditorEditorModeFeedbackSystemComponent::Deactivate()
         {
+            AZ::Interface<EditorModeFeedbackInterface>::Unregister(this);
             AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
             AzToolsFramework::Components::EditorComponentBase::Deactivate();
+        }
+
+        bool EditorEditorModeFeedbackSystemComponent::Enabled() const
+        {
+            return m_enabled;
         }
 
         void EditorEditorModeFeedbackSystemComponent::OnEditorModeActivated(
@@ -58,7 +65,7 @@ namespace AZ
         {
             if (mode == AzToolsFramework::ViewportEditorMode::Focus)
             {
-                m_editorModeFeedbackEnabled = true;
+                m_enabled = true;
             }
         }
 
@@ -68,7 +75,7 @@ namespace AZ
         {
             if (mode == AzToolsFramework::ViewportEditorMode::Focus)
             {
-                m_editorModeFeedbackEnabled = false;
+                m_enabled = false;
             }
         }
     }

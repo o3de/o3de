@@ -12,6 +12,7 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/Feature/PostProcess/EditorModeFeedback/EditorModeFeedbackInterface.h>
 
  namespace AZ
 {
@@ -44,41 +45,18 @@
 
         bool EditorModeFeedbackPass::IsEnabled() const
         {
-            //const auto* editorModeFeedbackSettings = GetEditorModeFeedbackSettings();
-            //return editorModeFeedbackSettings ? editorModeFeedbackSettings->GetEnabled() : false;
-            return true;
+            // move this to parent
+            if (const auto editorModeFeedback = AZ::Interface<EditorModeFeedbackInterface>::Get())
+            {
+                return editorModeFeedback->Enabled();
+            }
+
+            return false;
         }
 
         void EditorModeFeedbackPass::SetSrgConstants()
         {
-            const EditorModeFeedbackSettings* settings = GetEditorModeFeedbackSettings();
-            if (settings)
-            {
-                m_shaderResourceGroup->SetConstant(m_desaturationAmountIndex, settings->GetDesaturationAmount());
-            }
-        }
-
-        const AZ::Render::EditorModeFeedbackSettings* EditorModeFeedbackPass::GetEditorModeFeedbackSettings() const
-        {
-            RPI::Scene* scene = GetScene();
-            if (scene)
-            {
-                PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-                AZ::RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
-                if (fp)
-                {
-                    PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
-                    if (postProcessSettings)
-                    {
-                        const EditorModeFeedbackSettings* editorModeFeedbackSettings = postProcessSettings->GetEditorModeFeedbackSettings();
-                        if (editorModeFeedbackSettings != nullptr/* && editorModeFeedbackSettings->GetEnabled()*/)
-                        {
-                            return postProcessSettings->GetEditorModeFeedbackSettings();
-                        }
-                    }
-                }
-            }
-            return nullptr;
+           m_shaderResourceGroup->SetConstant(m_desaturationAmountIndex, 1.0f);
         }
     }
 }
