@@ -66,14 +66,14 @@ namespace AZ
             virtual const Data::Instance<AttachmentImagePool>& GetSystemAttachmentPool() const = 0;
                         
             //! Register an attachment image by its unique name
-            //! Return false if it's the image was failed to register.
+            //! Return false if the image was failed to register.
             //!     It could be the image with same name was already registered. 
             //! Note: this function is only intended to be used by AttachmentImage class
             //!     Only attachment images created with an unique name will be registered
-            virtual bool RegisterAttachmentImage(const AttachmentImage& attachmentImage) = 0;
+            virtual bool RegisterAttachmentImage(AttachmentImage* attachmentImage) = 0;
                         
             //! Unregister an attachment image (if it's was registered)
-            virtual void UnregisterAttachmentImage(const AttachmentImage& attachmentImage) = 0;
+            virtual void UnregisterAttachmentImage(AttachmentImage* attachmentImage) = 0;
 
             //! Find an attachment image by it's attachment id from registered attachment images.
             //! Note: only attachment image created with an uqniue name will be registered.

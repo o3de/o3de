@@ -36,7 +36,7 @@ namespace AZ
             //! Assigns the attachment image pool, which the runtime attachment image will allocate from. Required.
             void SetPoolAsset(const Data::Asset<ResourcePoolAsset>& poolAsset);
 
-            //! Deprecated. Use SetName() instead
+            //! @deprecated. Deprecated, use SetName() instead
             //! Set a string to asset's hint. This info is only kept for runtime generated asset.
             //! For asset on disc, the asset system will assign asset path to asset hint
             void SetAssetHint(AZStd::string_view hint);

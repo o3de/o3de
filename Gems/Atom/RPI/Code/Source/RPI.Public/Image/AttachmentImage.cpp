@@ -157,7 +157,7 @@ namespace AZ
 
                 if (imageAsset.HasUniqueName())
                 {
-                    if (!ImageSystemInterface::Get()->RegisterAttachmentImage(*this))
+                    if (!ImageSystemInterface::Get()->RegisterAttachmentImage(this))
                     {
                         AZ_Error("AttachmentImage", false, "AttachmentImage with same name '%s' was already registered", imageAsset.GeAttachmentId().GetCStr());
                     }
@@ -179,7 +179,7 @@ namespace AZ
         {
             if (m_imageAsset->HasUniqueName())
             {
-                ImageSystemInterface::Get()->UnregisterAttachmentImage(*this);
+                ImageSystemInterface::Get()->UnregisterAttachmentImage(this);
             }
         }
     }

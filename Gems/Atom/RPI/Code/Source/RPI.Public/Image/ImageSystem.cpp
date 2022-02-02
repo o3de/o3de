@@ -200,22 +200,32 @@ namespace AZ
             return m_systemImages[static_cast<size_t>(simpleImage)];
         }
 
-        bool ImageSystem::RegisterAttachmentImage(const AttachmentImage& attachmentImage)
+        bool ImageSystem::RegisterAttachmentImage(AttachmentImage* attachmentImage)
         {
-            if (m_registeredAttachmentImages.find(attachmentImage.GetAttachmentId()) != m_registeredAttachmentImages.end())
+            if (!attachmentImage)
             {
-                AZ_Assert(false, "AttachmangeImage with name '%s' was already registered", attachmentImage.GetAttachmentId().GetCStr());
                 return false;
             }
 
-            m_registeredAttachmentImages[attachmentImage.GetAttachmentId()] = &attachmentImage;
+            auto itr = m_registeredAttachmentImages.find(attachmentImage->GetAttachmentId());
+            if (itr != m_registeredAttachmentImages.end())
+            {
+                AZ_Assert(false, "AttachmangeImage with name '%s' was already registered", attachmentImage->GetAttachmentId().GetCStr());
+                return false;
+            }
+
+            m_registeredAttachmentImages[attachmentImage->GetAttachmentId()] = attachmentImage;
 
             return true;
         }
 
-        void ImageSystem::UnregisterAttachmentImage(const AttachmentImage& attachmentImage)
+        void ImageSystem::UnregisterAttachmentImage(AttachmentImage* attachmentImage)
         {
-            auto itr = m_registeredAttachmentImages.find(attachmentImage.GetAttachmentId());
+            if (!attachmentImage)
+            {
+                return;
+            }
+            auto itr = m_registeredAttachmentImages.find(attachmentImage->GetAttachmentId());
             if (itr != m_registeredAttachmentImages.end())
             {
                 m_registeredAttachmentImages.erase(itr);
@@ -228,7 +238,7 @@ namespace AZ
 
             if (itr != m_registeredAttachmentImages.end())
             {
-                return Data::InstanceDatabase<AttachmentImage>::Instance().Find(itr->second->GetId());
+                return itr->second;
             }
             return nullptr;
         }
