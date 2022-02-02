@@ -226,7 +226,7 @@ namespace GradientSignal
 
             surfacePointList.ModifySurfaceWeights(
                 GetEntityId(), 
-                [this, validShapeBounds, shapeConstraintBounds](SurfaceData::SurfacePoint& point)
+                [this, validShapeBounds, shapeConstraintBounds](const AZ::Vector3& position, SurfaceData::SurfaceTagWeightMap& weights)
                 {
                     bool inBounds = true;
 
@@ -235,11 +235,11 @@ namespace GradientSignal
                     if (validShapeBounds)
                     {
                         inBounds = false;
-                        if (shapeConstraintBounds.Contains(point.m_position))
+                        if (shapeConstraintBounds.Contains(position))
                         {
                             LmbrCentral::ShapeComponentRequestsBus::EventResult(
                                 inBounds, m_configuration.m_shapeConstraintEntityId,
-                                &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, point.m_position);
+                                &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, position);
                         }
                     }
 
@@ -247,11 +247,11 @@ namespace GradientSignal
                     // If so, then return the value to add to the surface tags.
                     if (inBounds)
                     {
-                        const GradientSampleParams sampleParams = { point.m_position };
+                        const GradientSampleParams sampleParams = { position };
                         const float value = m_gradientSampler.GetValue(sampleParams);
                         if (value >= m_configuration.m_thresholdMin && value <= m_configuration.m_thresholdMax)
                         {
-                            AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, value);
+                            AddMaxValueForMasks(weights, m_configuration.m_modifierTags, value);
                         }
                     }
                 });

@@ -90,16 +90,20 @@ namespace UnitTest
         }
 
         // Compare two surface points.
-        bool SurfacePointsAreEqual(const SurfaceData::SurfacePoint& lhs, const SurfaceData::SurfacePoint& rhs)
+        bool SurfacePointsAreEqual(
+            const AZ::Vector3& lhsPosition,
+            const AZ::Vector3& lhsNormal,
+            const SurfaceData::SurfaceTagWeightMap& lhsMasks,
+            const SurfaceData::SurfacePoint& rhs)
         {
-            if ((lhs.m_position != rhs.m_position)
-                || (lhs.m_normal != rhs.m_normal)
-                || (lhs.m_masks.size() != rhs.m_masks.size()))
+            if ((lhsPosition != rhs.m_position)
+                || (lhsNormal != rhs.m_normal)
+                || (lhsMasks.size() != rhs.m_masks.size()))
             {
                 return false;
             }
 
-            for (auto& mask : lhs.m_masks)
+            for (auto& mask : lhsMasks)
             {
                 auto maskEntry = rhs.m_masks.find(mask.first);
                 if (maskEntry == rhs.m_masks.end())
@@ -153,9 +157,10 @@ namespace UnitTest
             {
                 ASSERT_EQ(pointList.GetSize(), 1);
                 pointList.EnumeratePoints(
-                    [this, expectedOutput](const SurfaceData::SurfacePoint& point) -> bool
+                    [this, expectedOutput](
+                        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
                     {
-                        EXPECT_TRUE(SurfacePointsAreEqual(point, expectedOutput));
+                        EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
                         return true;
                     });
             }
@@ -199,9 +204,10 @@ namespace UnitTest
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
             ASSERT_EQ(pointList.GetSize(), 1);
             pointList.EnumeratePoints(
-                [this, expectedOutput](const SurfaceData::SurfacePoint& point) -> bool
+                [this, expectedOutput](
+                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
                 {
-                    EXPECT_TRUE(SurfacePointsAreEqual(point, expectedOutput));
+                    EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
                     return true;
                 });
         }

@@ -85,9 +85,11 @@ namespace GradientSignal
         {
             float result = 0.0f;
 
-            points.EnumeratePoints([&result](const SurfaceData::SurfacePoint& point) -> bool
+            points.EnumeratePoints([&result](
+                [[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
+                const SurfaceData::SurfaceTagWeightMap& masks) -> bool
             {
-                for (const auto& [maskId, weight] : point.m_masks)
+                for (const auto& [maskId, weight] : masks)
                 {
                     result = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), result);
                 }

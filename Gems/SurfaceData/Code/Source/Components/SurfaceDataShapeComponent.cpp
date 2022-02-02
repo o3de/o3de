@@ -174,12 +174,12 @@ namespace SurfaceData
                 {
                     surfacePointList.ModifySurfaceWeights(
                         entityId,
-                        [this, shape](SurfaceData::SurfacePoint& point)
+                        [this, shape](const AZ::Vector3& position, SurfaceData::SurfaceTagWeightMap& weights)
                     {
-                        if (m_shapeBounds.Contains(point.m_position) && shape->IsPointInside(point.m_position))
+                        if (m_shapeBounds.Contains(position) && shape->IsPointInside(position))
                         {
                             // If the point is inside our shape, add all our modifier tags with a weight of 1.0f.
-                            AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                            AddMaxValueForMasks(weights, m_configuration.m_modifierTags, 1.0f);
                         }
                     });
                 });

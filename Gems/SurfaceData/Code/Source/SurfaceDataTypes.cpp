@@ -89,11 +89,13 @@ namespace SurfaceData
         return m_surfacePointList.size();
     }
 
-    void SurfacePointList::EnumeratePoints(AZStd::function<bool(const SurfacePoint&)> pointCallback) const
+    void SurfacePointList::EnumeratePoints(
+        AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceData::SurfaceTagWeightMap&)>
+            pointCallback) const
     {
         for (auto& point : m_surfacePointList)
         {
-            if (!pointCallback(point))
+            if (!pointCallback(point.m_position, point.m_normal, point.m_masks))
             {
                 break;
             }
@@ -102,13 +104,13 @@ namespace SurfaceData
 
     void SurfacePointList::ModifySurfaceWeights(
         const AZ::EntityId& currentEntityId,
-        AZStd::function<void(SurfacePoint&)> modificationWeightCallback)
+        AZStd::function<void(const AZ::Vector3&, SurfaceData::SurfaceTagWeightMap&)> modificationWeightCallback)
     {
         for (auto& point : m_surfacePointList)
         {
             if (point.m_entityId != currentEntityId)
             {
-                modificationWeightCallback(point);
+                modificationWeightCallback(point.m_position, point.m_masks);
             }
         }
     }

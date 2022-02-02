@@ -160,13 +160,13 @@ class MockSurfaceProvider
         {
             surfacePointList.ModifySurfaceWeights(
                 AZ::EntityId(),
-                [this](SurfaceData::SurfacePoint& point)
+                [this](const AZ::Vector3& position, SurfaceData::SurfaceTagWeightMap& weights)
                 {
-                    auto surfacePoints = m_GetSurfacePoints.find(AZStd::make_pair(point.m_position.GetX(), point.m_position.GetY()));
+                    auto surfacePoints = m_GetSurfacePoints.find(AZStd::make_pair(position.GetX(), position.GetY()));
 
                     if (surfacePoints != m_GetSurfacePoints.end())
                     {
-                        AddMaxValueForMasks(point.m_masks, m_tags, 1.0f);
+                        AddMaxValueForMasks(weights, m_tags, 1.0f);
                     }
                 });
         }
@@ -216,9 +216,14 @@ public:
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                 &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, testTags, tempSingleQueryPointList);
             tempSingleQueryPointList.EnumeratePoints(
-                [&singleQueryResults](const SurfaceData::SurfacePoint& point) -> bool
+                [&singleQueryResults](
+                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
                 {
-                    singleQueryResults.emplace_back(point);
+                    SurfaceData::SurfacePoint point;
+                    point.m_position = position;
+                    point.m_normal = normal;
+                    point.m_masks = masks;
+                    singleQueryResults.emplace_back(AZStd::move(point));
                     return true;
                 });
         }
@@ -229,14 +234,15 @@ public:
         {
             auto& surfacePointList = surfacePointLists[listIndex];
             surfacePointList.EnumeratePoints(
-                [&singleQueryPoint, singleQueryResults](const SurfaceData::SurfacePoint& point) -> bool
+                [&singleQueryPoint, singleQueryResults](
+                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
                 {
                     EXPECT_NE(singleQueryPoint, singleQueryResults.end());
 
-                    EXPECT_EQ(point.m_position, singleQueryPoint->m_position);
-                    EXPECT_EQ(point.m_normal, singleQueryPoint->m_normal);
-                    EXPECT_EQ(point.m_masks.size(), singleQueryPoint->m_masks.size());
-                    for (auto& mask : point.m_masks)
+                    EXPECT_EQ(position, singleQueryPoint->m_position);
+                    EXPECT_EQ(normal, singleQueryPoint->m_normal);
+                    EXPECT_EQ(masks.size(), singleQueryPoint->m_masks.size());
+                    for (auto& mask : masks)
                     {
                         EXPECT_EQ(mask.second, singleQueryPoint->m_masks[mask.first]);
                     }
@@ -497,10 +503,12 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion)
         EXPECT_EQ(pointList.GetSize(), 2);
         float expectedZ = 4.0f;
         pointList.EnumeratePoints(
-            [providerTags, &expectedZ](const SurfaceData::SurfacePoint& point) -> bool
+            [providerTags,
+             &expectedZ](const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
+                 const SurfaceData::SurfaceTagWeightMap& masks) -> bool
             {
-                EXPECT_EQ(point.m_position.GetZ(), expectedZ);
-                EXPECT_EQ(point.m_masks.size(), providerTags.size());
+                EXPECT_EQ(position.GetZ(), expectedZ);
+                EXPECT_EQ(masks.size(), providerTags.size());
                 expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
                 return true;
             });
@@ -613,10 +621,11 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_ProviderModif
             EXPECT_EQ(pointList.GetSize(), 2);
             float expectedZ = 4.0f;
             pointList.EnumeratePoints(
-                [&expectedZ](const SurfaceData::SurfacePoint& point) -> bool
+                [&expectedZ](const AZ::Vector3& position,
+                    [[maybe_unused]] const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
                 {
-                    EXPECT_EQ(point.m_position.GetZ(), expectedZ);
-                    EXPECT_EQ(point.m_masks.size(), 2);
+                    EXPECT_EQ(position.GetZ(), expectedZ);
+                    EXPECT_EQ(masks.size(), 2);
                     expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
                     return true;
                 });
@@ -662,12 +671,14 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_SimilarPoints
         EXPECT_EQ(pointList.GetSize(), 2);
         float expectedZ = 4.0f;
         pointList.EnumeratePoints(
-            [&expectedZ](const SurfaceData::SurfacePoint& point) -> bool
+            [&expectedZ](
+                const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
+                const SurfaceData::SurfaceTagWeightMap& masks) -> bool
             {
                 // Similar points get merged, but there's no guarantee which value will be kept, so we set our comparison tolerance
                 // high enough to allow both x.0 and x.0005 to pass.
-                EXPECT_NEAR(point.m_position.GetZ(), expectedZ, 0.001f);
-                EXPECT_EQ(point.m_masks.size(), 2);
+                EXPECT_NEAR(position.GetZ(), expectedZ, 0.001f);
+                EXPECT_EQ(masks.size(), 2);
                 expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
                 return true;
             });
@@ -710,9 +721,10 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_DissimilarPoi
     {
         EXPECT_EQ(pointList.GetSize(), 4);
         pointList.EnumeratePoints(
-            [](const SurfaceData::SurfacePoint& point) -> bool
+            []([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
+               const SurfaceData::SurfaceTagWeightMap& masks) -> bool
             {
-                EXPECT_EQ(point.m_masks.size(), 1);
+                EXPECT_EQ(masks.size(), 1);
                 return true;
             });
     }

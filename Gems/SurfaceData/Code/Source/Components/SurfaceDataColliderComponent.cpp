@@ -249,17 +249,17 @@ namespace SurfaceData
         {
             surfacePointList.ModifySurfaceWeights(
                 GetEntityId(),
-                [this](SurfaceData::SurfacePoint& point)
+                [this](const AZ::Vector3& position, SurfaceData::SurfaceTagWeightMap& weights)
                 {
-                    if (m_colliderBounds.Contains(point.m_position))
+                    if (m_colliderBounds.Contains(position))
                     {
                         AZ::Vector3 hitPosition;
                         AZ::Vector3 hitNormal;
                         constexpr bool queryPointOnly = true;
-                        if (DoRayTrace(point.m_position, queryPointOnly, hitPosition, hitNormal))
+                        if (DoRayTrace(position, queryPointOnly, hitPosition, hitNormal))
                         {
                             // If the query point collides with the volume, add all our modifier tags with a weight of 1.0f.
-                            AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                            AddMaxValueForMasks(weights, m_configuration.m_modifierTags, 1.0f);
                         }
                     }
                 });

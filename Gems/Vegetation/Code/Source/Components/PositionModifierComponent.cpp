@@ -326,12 +326,15 @@ namespace Vegetation
             SurfaceData::SurfacePoint closestPoint;
             bool pointFound = false;
             m_points.EnumeratePoints(
-                [instanceData, &pointFound, &closestPoint, &closestPointDistanceSq](const SurfaceData::SurfacePoint& point) -> bool
+                [instanceData, &pointFound, &closestPoint, &closestPointDistanceSq](
+                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
                 {
-                    float distanceSq = point.m_position.GetDistanceSq(instanceData.m_position);
+                    float distanceSq = position.GetDistanceSq(instanceData.m_position);
                     if (!pointFound)
                     {
-                        closestPoint = point;
+                        closestPoint.m_position = position;
+                        closestPoint.m_normal = normal;
+                        closestPoint.m_masks = masks;
                         pointFound = true;
                         closestPointDistanceSq = distanceSq;
                     }
@@ -339,7 +342,9 @@ namespace Vegetation
                     {
                         if (distanceSq < closestPointDistanceSq)
                         {
-                            closestPoint = point;
+                            closestPoint.m_position = position;
+                            closestPoint.m_normal = normal;
+                            closestPoint.m_masks = masks;
                             closestPointDistanceSq = distanceSq;
                         }
                     }

@@ -72,11 +72,11 @@ namespace SurfaceData
         //! @return - The number of valid points in the list.
         size_t GetSize() const;
 
-        void EnumeratePoints(AZStd::function<bool(const SurfacePoint&)> pointCallback) const;
+        void EnumeratePoints(AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceTagWeightMap&)> pointCallback) const;
 
         void ModifySurfaceWeights(
             const AZ::EntityId& currentEntityId,
-            AZStd::function<void(SurfacePoint&)> modificationWeightCallback);
+            AZStd::function<void(const AZ::Vector3&, SurfaceTagWeightMap&)> modificationWeightCallback);
 
         const SurfacePoint& GetHighestSurfacePoint() const;
 

@@ -109,9 +109,11 @@ namespace GradientSignal
             // Technically, they should all have the same value, but we'll grab the max from all of them in case
             // the underlying logic ever changes to allow separate ranges per tag.
             float result = 0.0f;
-            pointList.EnumeratePoints([&result](SurfaceData::SurfacePoint& point) -> bool
+            pointList.EnumeratePoints([&result](
+                    [[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
+                    const SurfaceData::SurfaceTagWeightMap& masks) -> bool
             {
-                for (auto& mask : point.m_masks)
+                for (auto& mask : masks)
                 {
                     result = AZ::GetMax(result, mask.second);
                 }
