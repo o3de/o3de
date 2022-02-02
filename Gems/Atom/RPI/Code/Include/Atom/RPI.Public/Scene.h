@@ -167,7 +167,7 @@ namespace AZ
 
             //! Rebuild pipeline states lookup table.
             //! This function is called every time scene's render pipelines change.
-            //! User may call this fucntion explicitly if render pipelines were changed
+            //! User may call this function explicitly if render pipelines were changed
             void RebuildPipelineStatesLookup();
 
         protected:

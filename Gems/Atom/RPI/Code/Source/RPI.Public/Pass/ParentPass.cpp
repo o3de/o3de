@@ -53,7 +53,11 @@ namespace AZ
 
         void ParentPass::AddChild(const Ptr<Pass>& child)
         {
-            AZ_Assert(child->m_parent == nullptr, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
+            if (child->m_parent != nullptr)
+            {
+                AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
+                return;
+            }
 
             m_children.push_back(child);
             child->m_parent = this;
@@ -73,7 +77,11 @@ namespace AZ
 
         bool ParentPass::InsertChild(const Ptr<Pass>& child, ChildPassIndex position)
         {
-            AZ_Assert(child->m_parent == nullptr, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
+            if (child->m_parent != nullptr)
+            {
+                AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
+                return false;
+            }
 
             if (!position.IsValid() || position.GetIndex() > m_children.size())
             {

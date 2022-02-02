@@ -78,8 +78,17 @@ namespace AZ
 
         void AttachmentImageAssetCreator::SetName(const AZ::Name& uniqueName, bool isUniqueName)
         {
-            m_asset->m_isUniqueName = isUniqueName;
+            if (uniqueName.IsEmpty())
+            {
+                m_asset->m_isUniqueName = false;
+                AZ_Warning("RPI", false, "Can't set empty string as unique name");
+            }
+            else
+            {
+                m_asset->m_isUniqueName = isUniqueName;
+            }
             m_asset->m_name = uniqueName;
+
         }
     }
 }

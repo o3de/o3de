@@ -44,21 +44,19 @@ namespace AZ
             return m_name;
         }
 
-        RHI::AttachmentId AttachmentImageAsset::GeAttachmentId() const
+        RHI::AttachmentId AttachmentImageAsset::GetAttachmentId() const
         {
-            if (m_isUniqueName)
+            if (HasUniqueName())
             {
-                if (!m_name.IsEmpty())
-                {
-                    return m_name;
-                }
+                return m_name;
             }
             return Name(m_assetId.ToString<AZStd::string>());
         }
 
          bool AttachmentImageAsset::HasUniqueName() const
         {
-            return m_isUniqueName;
+             // The name can still be empty if the asset was loaded for data file but not from AttachmentImageAssetCreator
+            return m_isUniqueName && !m_name.IsEmpty();
         }
     }
 }

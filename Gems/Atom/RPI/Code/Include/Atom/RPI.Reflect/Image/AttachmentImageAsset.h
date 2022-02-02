@@ -46,7 +46,7 @@ namespace AZ
             const AZ::Name& GetName() const;
             
             //! Return an unique name id which can be used as attachment id
-            RHI::AttachmentId GeAttachmentId() const;
+            RHI::AttachmentId GetAttachmentId() const;
 
             //! Return ture if the attachment image has an unique name
             //! An attachment image with an unique name will be registered to image system

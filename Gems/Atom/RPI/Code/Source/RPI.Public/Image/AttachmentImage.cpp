@@ -153,14 +153,11 @@ namespace AZ
                 }
                 
                 m_image->SetName(imageAsset.GetName());
-                m_attachmentId = imageAsset.GeAttachmentId();
+                m_attachmentId = imageAsset.GetAttachmentId();
 
                 if (imageAsset.HasUniqueName())
                 {
-                    if (!ImageSystemInterface::Get()->RegisterAttachmentImage(this))
-                    {
-                        AZ_Error("AttachmentImage", false, "AttachmentImage with same name '%s' was already registered", imageAsset.GeAttachmentId().GetCStr());
-                    }
+                    ImageSystemInterface::Get()->RegisterAttachmentImage(this);
                 }
 
                 return RHI::ResultCode::Success;

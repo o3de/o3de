@@ -59,7 +59,6 @@ namespace AZ
             //! Instantiates or returns an existing image instance using its paired asset.
             static Data::Instance<AttachmentImage> FindOrCreate(const Data::Asset<AttachmentImageAsset>& imageAsset);
 
-            //! [Depecated] Use 'Data::Instance<AttachmentImage> Create(const CreateAttachmentImageRequest&)' function instead
             //! Creates an AttachmentImage
             //! @param imagePool The attachment image pool which the AttachmentImage is created from
             //! @param imageDescriptor The ImageDescriptor for this AttachmentImage
