@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 
 #include <AtomCore/Instance/Instance.h>
@@ -75,7 +76,7 @@ namespace AZ
             //! Unregister an attachment image (if it's was registered)
             virtual void UnregisterAttachmentImage(AttachmentImage* attachmentImage) = 0;
 
-            //! Find an attachment image by it's attachment id from registered attachment images.
+            //! Find an attachment image by its attachment id from registered attachment images.
             //! Note: only attachment image created with an uqniue name will be registered.
             virtual Data::Instance<AttachmentImage> FindRegisteredAttachmentImage(const RHI::AttachmentId& attachmentId) const = 0;
 
