@@ -90,7 +90,7 @@ namespace Multiplayer
         Multiplayer::MultiplayerAuditingElement detail;                                                                                    \
         detail.m_name = INPUT.GetOwnerName();                                                                                              \
         detail.m_elements.push_back(AZStd::make_unique<Multiplayer::MultiplayerAuditingDatum<VALUE_TYPE>>(                                 \
-            #REWINDABLE, REWINDABLE.Get(), REWINDABLE.GetAuthority()));                                                                    \
+            #REWINDABLE, REWINDABLE.Get(), REWINDABLE.GetLastSerializedValue()));                                                                    \
         AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->AddAuditEntry(                                                               \
             Multiplayer::AuditCategory::Event, INPUT.GetClientInputId(), INPUT.GetHostFrameId(),                                           \
             AZStd::string::format("%s rewindable: %s", INPUT.GetOwnerName().c_str(), #REWINDABLE), { AZStd::move(detail) });               \
