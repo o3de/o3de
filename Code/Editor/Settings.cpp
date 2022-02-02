@@ -642,7 +642,7 @@ void SEditorSettings::Save(bool isEditorClosing)
 
     if (!isEditorClosing)
     {
-        EditorBookmarSettings bookmarkSettings;
+        EditorBookmarkSettings bookmarkSettings;
         bookmarkSettings.SaveBookmarkSettingsFile();
         SaveSettingsRegistryFile();
     }
