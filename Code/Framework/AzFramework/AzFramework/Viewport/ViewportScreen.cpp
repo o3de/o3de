@@ -61,8 +61,7 @@ namespace AzFramework
     AZ::Matrix4x4 CameraProjection(const CameraState& cameraState)
     {
         return AZ::Matrix4x4::CreateProjection(
-            cameraState.VerticalFovRadian(), AspectRatio(ScreenSizeFromVector2(cameraState.m_viewportSize)), cameraState.m_nearClip,
-            cameraState.m_farClip);
+            cameraState.VerticalFovRadian(), AspectRatio(cameraState.m_viewportSize), cameraState.m_nearClip, cameraState.m_farClip);
     }
 
     AZ::Matrix4x4 InverseCameraProjection(const CameraState& cameraState)
@@ -91,8 +90,8 @@ namespace AzFramework
         const auto cameraWorldTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
             AZ::Matrix3x3::CreateFromMatrix3x4(worldFromView), worldFromView.GetTranslation());
         return AZ::ViewFrustumAttributes(
-            cameraWorldTransform, AspectRatio(ScreenSizeFromVector2(cameraState.m_viewportSize)), cameraState.m_fovOrZoom,
-            cameraState.m_nearClip, cameraState.m_farClip);
+            cameraWorldTransform, AspectRatio(cameraState.m_viewportSize), cameraState.m_fovOrZoom, cameraState.m_nearClip,
+            cameraState.m_farClip);
     }
 
     AZ::Vector3 WorldToScreenNdc(const AZ::Vector3& worldPosition, const AZ::Matrix3x4& cameraView, const AZ::Matrix4x4& cameraProjection)
@@ -117,8 +116,7 @@ namespace AzFramework
 
     ScreenPoint WorldToScreen(const AZ::Vector3& worldPosition, const CameraState& cameraState)
     {
-        return WorldToScreen(
-            worldPosition, CameraView(cameraState), CameraProjection(cameraState), ScreenSizeFromVector2(cameraState.m_viewportSize));
+        return WorldToScreen(worldPosition, CameraView(cameraState), CameraProjection(cameraState), cameraState.m_viewportSize);
     }
 
     AZ::Vector3 ScreenNdcToWorld(
@@ -149,7 +147,6 @@ namespace AzFramework
     AZ::Vector3 ScreenToWorld(const ScreenPoint& screenPosition, const CameraState& cameraState)
     {
         return ScreenToWorld(
-            screenPosition, InverseCameraView(cameraState), InverseCameraProjection(cameraState),
-            ScreenSizeFromVector2(cameraState.m_viewportSize));
+            screenPosition, InverseCameraView(cameraState), InverseCameraProjection(cameraState), cameraState.m_viewportSize);
     }
 } // namespace AzFramework

@@ -3568,7 +3568,7 @@ namespace AzToolsFramework
         const AZ::Transform gizmoCameraOffset = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f));
         const AZ::Transform gizmoCameraTransform = AZ::Transform::CreateFromMatrix3x3(editorCameraOrientation) * gizmoCameraOffset;
         const AzFramework::CameraState gizmoCameraState =
-            AzFramework::CreateDefaultCamera(gizmoCameraTransform, AzFramework::ScreenSizeFromVector2(editorCameraState.m_viewportSize));
+            AzFramework::CreateDefaultCamera(gizmoCameraTransform, editorCameraState.m_viewportSize);
 
         // cache the gizmo camera view and projection for world-to-screen calculations
         const auto cameraView = AzFramework::CameraView(gizmoCameraState);
@@ -3608,9 +3608,10 @@ namespace AzToolsFramework
         debugDisplay.SetLineWidth(1.0f);
 
         const float labelOffset = ed_viewportGizmoAxisLabelOffset;
-        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize;
-        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize;
-        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize;
+        const auto viewportSize = AzFramework::Vector2FromScreenSize(editorCameraState.m_viewportSize);
+        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * viewportSize;
+        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * viewportSize;
+        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * viewportSize;
 
         // draw the label of of each axis for the gizmo
         const float labelSize = ed_viewportGizmoAxisLabelSize;
