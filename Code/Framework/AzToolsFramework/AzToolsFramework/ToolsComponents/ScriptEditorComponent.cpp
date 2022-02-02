@@ -880,6 +880,12 @@ namespace AzToolsFramework
             return nullptr;
         }
 
+        ScriptEditorComponent::ScriptEditorComponent()
+        {
+            AZ_TracePrintf("Lua", "Created one: %p", this);
+        }
+
+
         void ScriptEditorComponent::BuildGameEntity(AZ::Entity* gameEntity)
         {
             AZ::SerializeContext* context = nullptr;
@@ -890,6 +896,7 @@ namespace AzToolsFramework
                 return;
             }
 
+            AZ_TracePrintf("Lua", "Building game entity: %p, prop count: %d", this, m_scriptComponent.m_properties.m_properties.size());
             gameEntity->AddComponent(context->CloneObject(&m_scriptComponent));
         }
 
