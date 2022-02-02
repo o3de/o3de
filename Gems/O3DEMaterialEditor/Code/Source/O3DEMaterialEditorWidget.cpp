@@ -12,6 +12,8 @@ namespace O3DEMaterialEditor
     O3DEMaterialEditorWidget::O3DEMaterialEditorWidget(QWidget* parent)
         : AzQtComponents::TabWidget(parent)
     {
+        AzQtComponents::TabWidget::applySecondaryStyle(this, false/*bordered*/);
+
         setMovable(true);
 
         if (auto* o3deMaterialEditorSystem = GetO3DEMaterialEditorSystem())
@@ -34,7 +36,7 @@ namespace O3DEMaterialEditor
                 QVBoxLayout* mainLayout = new QVBoxLayout(noWindowsTab);
 
                 QLabel* introLabel = new QLabel("No material editors registered. Enable gems that include material editors.", noWindowsTab);
-                mainLayout->addWidget(introLabel, 0, Qt::AlignCenter);
+                mainLayout->addWidget(introLabel, 0/*stretch*/, Qt::AlignCenter);
 
                 noWindowsTab->setLayout(mainLayout);
             }
