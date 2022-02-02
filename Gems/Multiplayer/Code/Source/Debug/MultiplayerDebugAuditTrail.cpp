@@ -70,7 +70,7 @@ namespace Multiplayer
             for (auto elem = auditTrailElems.begin(); elem != auditTrailElems.end(); ++elem)
             {
                 if (elem == auditTrailElems.begin() && elem->m_category != AuditCategory::Desync)
-                {
+                {                   
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
                     atRootLevel = !ImGui::TreeNodeEx("HEAD", ImGuiTreeNodeFlags_SpanFullWidth);
@@ -187,6 +187,12 @@ namespace Multiplayer
                         ImGui::TableNextRow();
                     }
                 }
+            }
+
+            if (!atRootLevel)
+            {
+                // Make sure to pop back to root on the way out
+                ImGui::TreePop();
             }
 
             ImGui::EndTable();
