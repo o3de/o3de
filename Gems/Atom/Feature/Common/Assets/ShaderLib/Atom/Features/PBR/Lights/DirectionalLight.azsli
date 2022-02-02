@@ -27,10 +27,12 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             surface.vertexNormal,
             debugInfo);
             
+#if ENABLE_TRANSMISSION
         if (o_transmission_mode == TransmissionMode::ThickObject)
         {
             backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
         }
+#endif
     }
 
     // Add the lighting contribution for each directional light
@@ -56,10 +58,12 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
             currentLitRatio = (index == shadowIndex) ? litRatio : 1.;
             
             currentBackShadowRatio = 1.0 - currentLitRatio;
+#if ENABLE_TRANSMISSION
             if (o_transmission_mode == TransmissionMode::ThickObject)
             {
                 currentBackShadowRatio = (index == shadowIndex) ?  backShadowRatio : 0.;
             }
+#endif
         }
         
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
