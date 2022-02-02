@@ -113,7 +113,7 @@ namespace AZ
         {
             //Vulkan drivers cannot save serialized data
             [[maybe_unused]] Device& device = static_cast<Device&>(GetDevice());
-            AZ_Assert(!device.GetFeatures().m_isPsoCacheFileOperationsNeeded, "Explicit PSO cache operations should not be disabled for DX12");
+            AZ_Assert(!device.GetFeatures().m_isPsoCacheFileOperationsNeeded, "Explicit PSO cache operations should not be disabled for Vulkan");
             return false;
         }
     }
