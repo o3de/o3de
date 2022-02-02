@@ -37,7 +37,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         AddressW = Clamp;
     };
  
-    float4 m_color;
     float m_desaturationAmount;
 }
 
