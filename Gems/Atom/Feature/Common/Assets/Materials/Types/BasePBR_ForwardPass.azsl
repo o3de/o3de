@@ -180,7 +180,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace)
 }
 
 
-[earlydepthstencil]
 ForwardPassOutput BasePbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     ForwardPassOutput OUT;

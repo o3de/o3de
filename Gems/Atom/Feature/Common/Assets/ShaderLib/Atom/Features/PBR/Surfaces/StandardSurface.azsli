@@ -20,10 +20,6 @@ class Surface
     ClearCoatSurfaceData clearCoat;
 #endif
 
-#if ENABLE_TRANSMISSION
-    TransmissionSurfaceData transmission; // This is not actually used for Standard PBR, but must be present for common lighting code to compile
-#endif
-
     // ------- BasePbrSurfaceData -------
     
     precise float3 position;    //!< Position in world-space

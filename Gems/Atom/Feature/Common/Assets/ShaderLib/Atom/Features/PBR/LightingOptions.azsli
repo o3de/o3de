@@ -8,6 +8,14 @@
 
 #pragma once
 
+// --- Note: About this file ---
+// This file uses #defines to completely strip out certain lighting features from shaders
+// This enables us to avoid code duplication and write an uber-esque shader code and then
+// be able to adjust the code for different use cases (for example basic materials can strip
+// away transimission related code used for foliage). These are different from shader options
+// in that shader options allow more user flexibility to adjust materials at runtime, whereas
+// these #define options are for customizing and optimizing material types (like BasePBR)
+
 // --- Light Defines ---
 
 #ifndef ENABLE_AREA_LIGHT_VALIDATION
