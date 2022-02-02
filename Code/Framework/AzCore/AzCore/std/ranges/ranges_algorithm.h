@@ -11,14 +11,6 @@
 #include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/ranges/ranges_functional.h>
 
-#if !defined(AZ_COMPILER_MSVC)
-#define AZ_NO_UNIQUE_ADDRESS [[no_unique_address]]
-#else
-#define AZ_NO_UNIQUE_ADDRESS \
-    AZ_PUSH_DISABLE_WARNING_MSVC(4848) \
-    [[msvc::no_unique_address]] \
-    AZ_POP_DISABLE_WARNING
-#endif
 
 namespace AZStd::ranges
 {
@@ -555,4 +547,3 @@ namespace AZStd::ranges
     }
 } // namespace AZStd::ranges
 
-#undef AZ_NO_UNIQUE_ADDRESS

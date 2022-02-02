@@ -35,6 +35,7 @@ set(FILES
     math.h
     optional.h
     ranges/all_view.h
+    ranges/empty_view.h
     ranges/iter_move.h
     ranges/join_view.h
     ranges/owning_view.h
@@ -43,6 +44,7 @@ set(FILES
     ranges/ranges_algorithm.h
     ranges/ranges_functional.h
     ranges/ref_view.h
+    ranges/single_view.h
     ranges/subrange.h
     ranges/split_view.h
     ranges/zip_view.h

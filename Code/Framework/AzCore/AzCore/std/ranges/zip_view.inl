@@ -230,7 +230,7 @@ namespace AZStd::ranges
     constexpr auto zip_view<Views...>::iterator<Const>::min_distance_in_views(const iterator& x, const iterator& y,
         AZStd::index_sequence<Indices...>)
     {
-        AZStd::initializer_list<difference_type> iterDistances{
+        AZStd::array iterDistances{
             ((AZStd::get<Indices>(x.m_current) - AZStd::get<Indices>(y.m_current)), ...) };
         if (iterDistances.empty())
         {
@@ -288,7 +288,7 @@ namespace AZStd::ranges
     {
         using difference_type = common_type_t<range_difference_t<Internal::maybe_const<OtherConst, Views>>...>;
         // Tracks if any iterator of the Views is equal to a sentinel of the views
-        AZStd::initializer_list<difference_type> iterDistances{
+        AZStd::array iterDistances{
             ((AZStd::get<Indices>(x.m_current) - AZStd::get<Indices>(y.m_end)), ...) };
         if (iterDistances.empty())
         {

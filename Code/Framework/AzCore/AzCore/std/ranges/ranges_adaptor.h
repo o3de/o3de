@@ -123,8 +123,8 @@ namespace AZStd::ranges::views::Internal
     template<class T>
     class copyable_box<T, enable_if_t<is_copy_constructible_v<T>&& is_object_v<T>>>
     {
-    private:
-        template<class U = T, class = enable_if_t<AZStd::Internal::is_default_initializable<U>>>
+    public:
+        template<class U = T, class = enable_if_t<default_initializable<U>>>
         constexpr copyable_box() noexcept(is_nothrow_constructible_v<T>)
             : copyable_box{ in_place }
         {}
@@ -137,8 +137,7 @@ namespace AZStd::ranges::views::Internal
         constexpr copyable_box(const copyable_box&) = default;
         constexpr copyable_box(copyable_box&&) = default;
 
-        constexpr auto operator=(const copyable_box& other) noexcept(is_nothrow_copy_constructible_v<T>)
-            -> enable_if_t<!copyable<T>, copyable_box&>
+        constexpr copyable_box& operator=(const copyable_box& other) noexcept(is_nothrow_copy_constructible_v<T>)
         {
             if (this != &other)
             {
@@ -162,8 +161,7 @@ namespace AZStd::ranges::views::Internal
             return *this;
         }
 
-        constexpr auto operator=(copyable_box&& other) noexcept(is_nothrow_move_constructible_v<T>)
-            -> enable_if_t<!copyable<T>, copyable_box&>
+        constexpr copyable_box& operator=(copyable_box&& other) noexcept(is_nothrow_move_constructible_v<T>)
         {
             if (this != &other)
             {
@@ -245,7 +243,7 @@ namespace AZStd::ranges::views::Internal
     class non_propagating_cache<T, enable_if_t<is_object_v<T>>>
     {
     private:
-        template<class U = T, class = enable_if_t<AZStd::Internal::is_default_initializable<U>>>
+        template<class U = T, class = enable_if_t<default_initializable<U>>>
         constexpr non_propagating_cache() noexcept(is_nothrow_constructible_v<T>)
             : non_propagating_cache{ in_place }
         {}

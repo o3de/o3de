@@ -1016,7 +1016,7 @@ namespace AZStd::ranges
     template<class D, class = void>
     class view_interface;
 
-     struct view_base {};
+    struct view_base {};
     namespace Internal
     {
         template<class D>
@@ -1076,7 +1076,7 @@ namespace AZStd::ranges
         }
 
         template <class Derived = D, class = void_t<decltype(ranges::empty(declval<Derived>()))>>
-        constexpr explicit operator bool() const noexcept(noexcept(ranges::empty(static_cast<Derived&>(*this))))
+        constexpr explicit operator bool() const noexcept(noexcept(ranges::empty(static_cast<const Derived&>(*this))))
         {
             return !ranges::empty(derived());
         }
@@ -1107,7 +1107,7 @@ namespace AZStd::ranges
         constexpr auto size() const ->
             enable_if_t<conjunction_v<bool_constant<forward_range<const Derived>>,
             bool_constant<sized_sentinel_for<sentinel_t<const Derived>, iterator_t<const Derived>>>>,
-            decltype(ranges::end(static_cast<Derived&>(*this)) - ranges::begin(static_cast<Derived&>(*this)))>
+            decltype(ranges::end(static_cast<const Derived&>(*this)) - ranges::begin(static_cast<const Derived&>(*this)))>
         {
             return ranges::end(derived()) - ranges::begin(derived());
         }
@@ -1120,7 +1120,7 @@ namespace AZStd::ranges
         }
         template <class Derived = D>
         constexpr auto front() const ->
-            enable_if_t<forward_range<const Derived>, decltype(*ranges::begin(static_cast<Derived&>(*this)))>
+            enable_if_t<forward_range<const Derived>, decltype(*ranges::begin(static_cast<const Derived&>(*this)))>
         {
             return *ranges::begin(derived());
         }
@@ -1138,7 +1138,7 @@ namespace AZStd::ranges
         constexpr auto back() const ->
             enable_if_t<conjunction_v<bool_constant<bidirectional_range<const Derived>>,
             bool_constant<common_range<const Derived>>>,
-            decltype(*ranges::prev(ranges::end(static_cast<Derived&>(*this))))>
+            decltype(*ranges::prev(ranges::end(static_cast<const Derived&>(*this))))>
         {
             return *ranges::prev(ranges::end(derived()));
         }
@@ -1189,16 +1189,11 @@ namespace AZStd::ranges
 
 namespace AZStd::ranges
 {
-#if __has_cpp_attribute(no_unique_address)
-#define az_no_unique_address [[no_unique_address]]
-#else
-#define az_no_unique_address
-#endif
     template<class I1, class I2>
     struct in_in_result
     {
-        az_no_unique_address I1 in1;
-        az_no_unique_address I2 in2;
+        AZ_NO_UNIQUE_ADDRESS I1 in1;
+        AZ_NO_UNIQUE_ADDRESS I2 in2;
 
         template<class II1, class II2, class = enable_if_t<conjunction_v<
             bool_constant<convertible_to<const I1&, II1>>, bool_constant<convertible_to<const I2&, II2>>>> >
@@ -1214,8 +1209,6 @@ namespace AZStd::ranges
             return { AZStd::move(in1), AZStd::move(in2) };
         }
     };
-
-#undef az_no_unique_address
 
     template<class I1, class I2>
     using swap_ranges_result = in_in_result<I1, I2>;
@@ -1275,4 +1268,12 @@ namespace AZStd::ranges::Internal
     {
         ranges::swap_ranges(t, u);
     }
+}
+
+// Opening AZStd::ranges::views namespace to provide access to it in AZStd
+namespace AZStd::ranges::views{}
+
+namespace AZStd
+{
+      namespace views = ranges::views;
 }

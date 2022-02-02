@@ -21,7 +21,7 @@ namespace AZStd::ranges
     {
     public:
 
-        template<class T = R, enable_if_t<AZStd::Internal::is_default_initializable<T>>>
+        template<class T = R, enable_if_t<default_initializable<T>>>
         constexpr owning_view() {}
 
         constexpr owning_view(R&& t)

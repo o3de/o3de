@@ -25,7 +25,7 @@ namespace UnitTest
         EXPECT_EQ(7, AZStd::ranges::min(7, 7));
 
         // Initializer list
-        AZStd::initializer_list testIList{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
+        AZStd::initializer_list<int> testIList{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
         EXPECT_EQ(-8, AZStd::ranges::min(testIList));
 
         // Range
@@ -41,7 +41,7 @@ namespace UnitTest
         EXPECT_EQ(7, AZStd::ranges::max(7, 7));
 
         // Initializer list
-        AZStd::initializer_list testIList{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
+        AZStd::initializer_list<int> testIList{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
         EXPECT_EQ(1000, AZStd::ranges::max(testIList));
 
         // Range
@@ -68,7 +68,7 @@ namespace UnitTest
         EXPECT_EQ(expectedMinMax.max, testMinMax.max);
 
         // Initializer list
-        AZStd::initializer_list testIList{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
+        AZStd::initializer_list<int> testIList{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
         expectedMinMax = { -8, 1000 };
         testMinMax = AZStd::ranges::minmax(testIList);
         EXPECT_EQ(expectedMinMax.min, testMinMax.min);
