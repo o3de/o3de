@@ -431,18 +431,20 @@ void ApplicationManagerBase::DestroyPlatformConfiguration()
     }
 }
 
-void ApplicationManagerBase::InitFileMonitor()
+void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> fileWatcher)
 {
+    m_fileWatcher = AZStd::move(fileWatcher);
+
     for (int folderIdx = 0; folderIdx < m_platformConfiguration->GetScanFolderCount(); ++folderIdx)
     {
         const AssetProcessor::ScanFolderInfo& info = m_platformConfiguration->GetScanFolderAt(folderIdx);
-        m_fileWatcher.AddFolderWatch(info.ScanPath(), info.RecurseSubFolders());
+        m_fileWatcher->AddFolderWatch(info.ScanPath(), info.RecurseSubFolders());
     }
 
     QDir cacheRoot;
     if (AssetUtilities::ComputeProjectCacheRoot(cacheRoot))
     {
-        m_fileWatcher.AddFolderWatch(cacheRoot.absolutePath(), true);
+        m_fileWatcher->AddFolderWatch(cacheRoot.absolutePath(), true);
     }
 
     if (m_platformConfiguration->GetScanFolderCount() || !cacheRoot.path().isEmpty())
@@ -462,8 +464,17 @@ void ApplicationManagerBase::InitFileMonitor()
 
                 result = QMetaObject::invokeMethod(m_fileProcessor.get(), "AssessAddedFile", Q_ARG(QString, path));
                 AZ_Assert(result, "Failed to invoke m_fileProcessor::AssessAddedFile");
-                
-                AZ::Interface<AssetProcessor::ExcludedFolderCacheInterface>::Get()->FileAdded(path);
+
+                auto cache = AZ::Interface<AssetProcessor::ExcludedFolderCacheInterface>::Get();
+
+                if(cache)
+                {
+                    cache->FileAdded(path);
+                }
+                else
+                {
+                    AZ_Error("AssetProcessor", false, "ExcludedFolderCacheInterface not found");
+                }
             }
 
             m_fileStateCache->AddFile(path);
@@ -499,15 +510,19 @@ void ApplicationManagerBase::InitFileMonitor()
             m_fileStateCache->RemoveFile(path);
         };
 
-        connect(&m_fileWatcher, &FileWatcher::fileAdded, OnFileAdded);
-        connect(&m_fileWatcher, &FileWatcher::fileModified, OnFileModified);
-        connect(&m_fileWatcher, &FileWatcher::fileRemoved, OnFileRemoved);
+        connect(m_fileWatcher.get(), &FileWatcher::fileAdded, OnFileAdded);
+        connect(m_fileWatcher.get(), &FileWatcher::fileModified, OnFileModified);
+        connect(m_fileWatcher.get(), &FileWatcher::fileRemoved, OnFileRemoved);
     }
 }
 
 void ApplicationManagerBase::DestroyFileMonitor()
 {
-    m_fileWatcher.ClearFolderWatches();
+    if(m_fileWatcher)
+    {
+        m_fileWatcher->ClearFolderWatches();
+        m_fileWatcher = nullptr;
+    }
 }
 
 void ApplicationManagerBase::DestroyApplicationServer()
@@ -1361,7 +1376,7 @@ bool ApplicationManagerBase::Activate()
     InitFileProcessor();
 
     InitAssetCatalog();
-    InitFileMonitor();
+    InitFileMonitor(AZStd::make_unique<FileWatcher>());
     InitAssetScanner();
     InitAssetServerHandler();
     InitRCController();
