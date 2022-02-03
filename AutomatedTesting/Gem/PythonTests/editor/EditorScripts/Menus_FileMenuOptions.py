@@ -31,8 +31,8 @@ def Menus_FileMenuOptions_Work():
     from editor_python_test_tools.utils import Report
 
     file_menu_options = [
-        #("New Level",),
-        #("Open Level",),
+        ("New Level",),
+        ("Open Level",),
         ("Import",),
         #("Save",),
         #("Save As",),
