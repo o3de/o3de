@@ -188,7 +188,7 @@ namespace UnitTest
         constexpr int expectedIterations = 5;
 
         int iterationCount{};
-        for (auto&& [charX, intY, uintZ] : AZStd::ranges::views::zip(sourceView, AZStd::move(intVector), AZStd::move(uintList)))
+        for (auto [charX, intY, uintZ] : (AZStd::ranges::views::zip(sourceView, AZStd::move(intVector), AZStd::move(uintList))))
         {
             ++iterationCount;
             switch (charX)
