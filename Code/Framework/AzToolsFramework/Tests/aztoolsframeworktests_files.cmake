@@ -24,6 +24,7 @@ set(FILES
     ComponentModeTests.cpp
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
+    EditorViewportIconTests.cpp
     Entity/EditorEntityContextComponentTests.cpp
     Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp

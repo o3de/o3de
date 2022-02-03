@@ -8,6 +8,8 @@
 
 #pragma once
 
+#define ENABLE_TRANSMISSION     0
+
 // Include options first
 #include <Atom/Features/PBR/LightingOptions.azsli>
 

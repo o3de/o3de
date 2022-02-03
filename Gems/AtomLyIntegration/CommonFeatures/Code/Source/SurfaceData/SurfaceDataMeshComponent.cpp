@@ -95,6 +95,7 @@ namespace SurfaceData
         m_refresh = false;
 
         // Update the cached mesh data and bounds, then register the surface data provider
+        AssignSurfaceTagWeights(m_configuration.m_tags, 1.0f, m_newPointWeights);
         UpdateMeshData();
     }
 
@@ -115,7 +116,7 @@ namespace SurfaceData
 
         // Clear the cached mesh data
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
             m_meshAssetData = {};
             m_meshBounds = AZ::Aabb::CreateNull();
             m_meshWorldTM = AZ::Transform::CreateIdentity();
@@ -145,7 +146,7 @@ namespace SurfaceData
 
     bool SurfaceDataMeshComponent::DoRayTrace(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, AZ::Vector3& outNormal) const
     {
-        AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+        AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         // test AABB as first pass to claim the point
         const AZ::Vector3 testPosition = AZ::Vector3(
@@ -181,8 +182,8 @@ namespace SurfaceData
             point.m_entityId = GetEntityId();
             point.m_position = hitPosition;
             point.m_normal = hitNormal;
-            AddMaxValueForMasks(point.m_masks, m_configuration.m_tags, 1.0f);
-            surfacePointList.push_back(point);
+            point.m_masks = m_newPointWeights;
+            surfacePointList.push_back(AZStd::move(point));
         }
     }
 
@@ -235,7 +236,7 @@ namespace SurfaceData
         bool meshValidAfterUpdate = false;
 
         {
-            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            AZStd::unique_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
             meshValidBeforeUpdate = (m_meshAssetData.GetAs<AZ::RPI::ModelAsset>() != nullptr) && (m_meshBounds.IsValid());
 

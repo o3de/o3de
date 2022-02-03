@@ -30,6 +30,8 @@ set(FILES
     native/tests/assetBuilderSDK/SerializationDependenciesTests.cpp
     native/tests/assetmanager/AssetProcessorManagerTest.cpp
     native/tests/assetmanager/AssetProcessorManagerTest.h
+    native/tests/assetmanager/ModtimeScanningTests.cpp
+    native/tests/assetmanager/ModtimeScanningTests.h
     native/tests/utilities/assetUtilsTest.cpp
     native/tests/platformconfiguration/platformconfigurationtests.cpp
     native/tests/platformconfiguration/platformconfigurationtests.h

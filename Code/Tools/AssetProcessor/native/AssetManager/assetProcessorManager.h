@@ -485,6 +485,7 @@ namespace AssetProcessor
         };
 
         void ComputeBuilderDirty();
+        AZStd::string ComputeRecursiveDependenciesFingerprint(const AZStd::string& fileAbsolutePath, const AZStd::string& fileDatabaseName);
         AZStd::unordered_map<AZ::Uuid, BuilderData>  m_builderDataCache;
         bool m_buildersAddedOrRemoved = true; //< true if any new builders exist.  If this happens we actually need to re-analyze everything.
         bool m_anyBuilderChange = true;
