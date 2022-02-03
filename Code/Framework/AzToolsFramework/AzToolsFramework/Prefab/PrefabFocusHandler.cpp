@@ -250,7 +250,7 @@ namespace AzToolsFramework::Prefab
         // Force propagation both the previous and the new focused instances to ensure they are represented correctly.
         if (m_instanceUpdateExecutorInterface)
         {
-            auto previouslyFocusedInstance = m_instanceEntityMapperInterface->FindOwningInstance(previousContainerEntityId);
+            auto previouslyFocusedInstance = GetInstanceReferenceFromRootAliasPath(previousContainerRootAliasPath);
 
             // The most common operation is focusing a prefab instance nested in the currently focused instance.
             // Queuing the previous focus before the new one saves some time in the propagation loop on average.
