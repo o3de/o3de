@@ -42,8 +42,10 @@ namespace EMotionFX::MotionMatching
         size_t maxDepth,
         size_t minFramesPerLeaf)
     {
+#if !defined(_RELEASE)
         AZ::Debug::Timer timer;
         timer.Stamp();
+#endif
 
         Clear();
 
@@ -80,6 +82,7 @@ namespace EMotionFX::MotionMatching
         ClearFramesForNonEssentialNodes();
         RemoveZeroFrameLeafNodes();
 
+#if !defined(_RELEASE)
         const float initTime = timer.GetDeltaTimeInSeconds();
         AZ_TracePrintf("EMotionFX", "KdTree initialized in %f seconds (numNodes = %d  numDims = %d  Memory used = %.2f MB).",
             initTime, m_nodes.size(),
@@ -87,6 +90,7 @@ namespace EMotionFX::MotionMatching
             static_cast<float>(CalcMemoryUsageInBytes()) / 1024.0f / 1024.0f);
 
         PrintStats();
+#endif
         return true;
     }
 
@@ -342,6 +346,7 @@ namespace EMotionFX::MotionMatching
 
     void KdTree::PrintStats()
     {
+#if !defined(_RELEASE)
         size_t leftNumFrames = 0;
         size_t rightNumFrames = 0;
         if (m_nodes[0]->m_leftNode)
@@ -393,6 +398,7 @@ namespace EMotionFX::MotionMatching
 
         const size_t avgFrames = (leftNumFrames + rightNumFrames) / numLeafNodes;
         AZ_TracePrintf("EMotionFX", "KdTree Node Info: leafs=%d avgFrames=%d zeroFrames=%d minFrames=%d maxFrames=%d", numLeafNodes, avgFrames, numZeroNodes, minFrames, maxFrames);
+#endif
     }
 
     void KdTree::FindNearestNeighbors(const AZStd::vector<float>& frameFloats, AZStd::vector<size_t>& resultFrameIndices) const
