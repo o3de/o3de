@@ -512,7 +512,7 @@ namespace AzToolsFramework
 
     bool PrefabEditorEntityOwnershipService::IsValidRootAliasPath(Prefab::RootAliasPath rootAliasPath) const
     {
-        return GetInstanceReferenceFromRootAliasPath(rootAliasPath) == AZStd::nullopt;
+        return GetInstanceReferenceFromRootAliasPath(rootAliasPath) != AZStd::nullopt;
     }
 
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::GetInstanceReferenceFromRootAliasPath(
