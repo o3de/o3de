@@ -70,13 +70,10 @@ namespace UnitTest
         // uses AZ::Android::AndroidEnv::Get()->GetAppPrivateStoragePath() which will retrieve the storage path, but that path could
         // be symlinked, so we need to perform a real path on it before comparison
         char* realExecutableDirectory = realpath(executableDirectory, nullptr);
-        ASSERT_TRUE( realExecutableDirectory != nullptr );
+        ASSERT_NE(realExecutableDirectory, nullptr);
         
         EXPECT_STRCASEEQ(realExecutableDirectory, absolutePath->c_str());
 
-        if (realExecutableDirectory != nullptr)
-        {
-            free(realExecutableDirectory);
-        }
+        free(realExecutableDirectory);
     }
 }
