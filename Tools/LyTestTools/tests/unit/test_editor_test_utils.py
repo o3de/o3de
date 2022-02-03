@@ -204,7 +204,7 @@ class TestEditorTestUtils(unittest.TestCase):
         assert expected
 
     def test_CheckLogErrorWarnings_MultipleValidLine_ReturnsTrue(self):
-        mock_log = '~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 1 errors, 1 warnings'
+        mock_log = 'foo\nfoo\n~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 1 errors, 1 warnings'
         mock_log_path = mock.MagicMock()
 
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
@@ -212,17 +212,17 @@ class TestEditorTestUtils(unittest.TestCase):
         assert expected
 
     def test_CheckLogErrorWarnings_InvalidLine_ReturnsFalse(self):
-        mock_log = '~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 0 errors, 0 warnings'
+        mock_log = 'foo\n~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 0 errors, 0 warnings'
         mock_log_path = mock.MagicMock()
 
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
             expected = editor_test_utils._check_log_errors_warnings(mock_log_path)
         assert not expected
 
-    def test_CheckLogErrorWarnings_InvalidRegex_ReturnsFalse(self):
+    def test_CheckLogErrorWarnings_InvalidRegex_ReturnsTrue(self):
         mock_log = 'Invalid last line'
         mock_log_path = mock.MagicMock()
 
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
             expected = editor_test_utils._check_log_errors_warnings(mock_log_path)
-        assert not expected
+        assert expected

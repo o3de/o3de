@@ -171,23 +171,22 @@ def save_failed_asset_joblogs(workspace: AbstractWorkspace) -> None:
 
 def _check_log_errors_warnings(log_path: str) -> bool:
     """
-    Checks to see if the asset log contains any errors or warnings by reading the last line of the file.
-    Example log line: '~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 0 errors, 1 warnings'
+    Checks to see if the asset log contains any errors or warnings by reading the last line of the file. There are
+    multiple types of log regex. Returns True is no regex is found because something probably went wrong.
+    Example log lines: ~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 0 errors, 1 warnings
+    (Current issue where the expected line isn't always the last line. This function will instead query each line until
+    the issue is resolved).
 
     :param log_path: The pull path to the asset log file to read
     :return: True if the last line regex finds an error or warning, else False
     """
     log_regex = "(\\d+) errors, (\\d+) warnings"
     with open(log_path, 'r') as opened_asset_log:
-        # Read the last line
         for log_line in opened_asset_log:
-            pass
-        last_line = log_line
-    # Use regex to see if there are any non zero values for errors or warnings
-    regex_match = re.search(log_regex, last_line)
-    if regex_match is None:
-        logger.warning(f"Regex for asset log is expected to be in the form:\nn errors, n warnings\nActual: {last_line}")
-        return False
-    if (int)(regex_match.group(1)) != 0 or (int)(regex_match.group(2)) != 0:
+            regex_match = re.search(log_regex, log_line)
+            if regex_match is not None:
+                break
+    # If we match any non zero numbers in: n error, n warnings
+    if regex_match is None or (int)(regex_match.group(1)) != 0 or (int)(regex_match.group(2)) != 0:
         return True
     return False
