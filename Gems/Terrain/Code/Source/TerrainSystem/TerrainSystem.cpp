@@ -713,11 +713,9 @@ void TerrainSystem::ProcessHeightsFromList(
         return;
     }
 
-    AZStd::vector<bool> terrainExists;
-    AZStd::vector<float> heights;
-    terrainExists.resize(inPositions.size());
-    heights.resize(inPositions.size());
-    
+    AZStd::vector<bool> terrainExists(inPositions.size());
+    AZStd::vector<float> heights(inPositions.size());
+
     GetHeightsSynchronous(inPositions, sampleFilter, heights, terrainExists);
     AzFramework::SurfaceData::SurfacePoint surfacePoint;
     for (size_t i = 0; i < inPositions.size(); i++)
