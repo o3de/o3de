@@ -6,8 +6,10 @@
  *
  */
 
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 namespace AtomToolsFramework
 {
@@ -19,6 +21,7 @@ namespace AtomToolsFramework
 
     AtomToolsDocument::~AtomToolsDocument()
     {
+        AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
         AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsDocumentNotificationBus::Events::OnDocumentDestroyed, m_id);
         AtomToolsDocumentRequestBus::Handler::BusDisconnect();
     }
@@ -31,11 +34,6 @@ namespace AtomToolsFramework
     AZStd::string_view AtomToolsDocument::GetAbsolutePath() const
     {
         return m_absolutePath;
-    }
-
-    AZStd::string_view AtomToolsDocument::GetRelativePath() const
-    {
-        return m_relativePath;
     }
 
     const AZStd::any& AtomToolsDocument::GetPropertyValue([[maybe_unused]] const AZ::Name& propertyId) const
@@ -66,49 +64,144 @@ namespace AtomToolsFramework
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
     }
 
-    bool AtomToolsDocument::Open([[maybe_unused]] AZStd::string_view loadPath)
+    bool AtomToolsDocument::Open(AZStd::string_view loadPath)
     {
-        AZ_UNUSED(loadPath);
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return false;
+        Clear();
+
+        m_absolutePath = loadPath;
+        if (!AzFramework::StringFunc::Path::Normalize(m_absolutePath))
+        {
+            AZ_Error("AtomToolsDocument", false, "Document path could not be normalized: '%s'.", m_absolutePath.c_str());
+            return OpenFailed();
+        }
+
+        if (AzFramework::StringFunc::Path::IsRelative(m_absolutePath.c_str()))
+        {
+            AZ_Error("AtomToolsDocument", false, "Document path must be absolute: '%s'.", m_absolutePath.c_str());
+            return OpenFailed();
+        }
+
+        return true;
     }
 
     bool AtomToolsDocument::Reopen()
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return false;
+        if (!ReopenRecordState())
+        {
+            return false;
+        }
+
+        const auto loadPath = m_absolutePath;
+        if (!Open(loadPath))
+        {
+            return false;
+        }
+
+        if (!ReopenRestoreState())
+        {
+            return false;
+        }
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+        return true;
     }
 
     bool AtomToolsDocument::Save()
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return false;
+        m_savePathNormalized = m_absolutePath;
+        if (!AzFramework::StringFunc::Path::Normalize(m_savePathNormalized))
+        {
+            AZ_Error("AtomToolsDocument", false, "Document save path could not be normalized: '%s'.", m_savePathNormalized.c_str());
+            return SaveFailed();
+        }
+
+        if (!IsOpen())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
+        if (!IsSavable())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
+        return true;
     }
 
-    bool AtomToolsDocument::SaveAsCopy([[maybe_unused]] AZStd::string_view savePath)
+    bool AtomToolsDocument::SaveAsCopy(AZStd::string_view savePath)
     {
-        AZ_UNUSED(savePath);
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return false;
+        m_savePathNormalized = savePath;
+        if (!AzFramework::StringFunc::Path::Normalize(m_savePathNormalized))
+        {
+            AZ_Error("AtomToolsDocument", false, "Document save path could not be normalized: '%s'.", m_savePathNormalized.c_str());
+            return SaveFailed();
+        }
+
+        if (!IsOpen())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
+        if (!IsSavable())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document type can not be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
+        return true;
     }
 
-
-    bool AtomToolsDocument::SaveAsChild([[maybe_unused]] AZStd::string_view savePath)
+    bool AtomToolsDocument::SaveAsChild(AZStd::string_view savePath)
     {
-        AZ_UNUSED(savePath);
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return false;
+        m_savePathNormalized = savePath;
+        if (!AzFramework::StringFunc::Path::Normalize(m_savePathNormalized))
+        {
+            AZ_Error("AtomToolsDocument", false, "Document save path could not be normalized: '%s'.", m_savePathNormalized.c_str());
+            return SaveFailed();
+        }
+
+        if (!IsOpen())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            return SaveFailed();
+        }
+
+        if (m_absolutePath == m_savePathNormalized || m_sourceDependencies.find(m_savePathNormalized) != m_sourceDependencies.end())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document can not be saved over a dependancy: '%s'.", m_savePathNormalized.c_str());
+            return SaveFailed();
+        }
+
+        return true;
     }
 
     bool AtomToolsDocument::Close()
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return false;
+        if (!IsOpen())
+        {
+            AZ_Error("AtomToolsDocument", false, "Document is not open.");
+            return false;
+        }
+
+        AZ_TracePrintf("AtomToolsDocument", "Document closed: '%s'.\n", m_absolutePath.c_str());
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentClosed, m_id);
+
+        // Clearing after notification so paths are still available
+        Clear();
+        return true;
     }
 
     bool AtomToolsDocument::IsOpen() const
     {
-        return false;
+        return !m_id.IsNull() && !m_absolutePath.empty();
     }
 
     bool AtomToolsDocument::IsModified() const
@@ -123,23 +216,41 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::CanUndo() const
     {
-        return false;
+        // Undo will only be allowed if something has been recorded and we're not at the beginning of history
+        return IsOpen() && !m_undoHistory.empty() && m_undoHistoryIndex > 0;
     }
 
     bool AtomToolsDocument::CanRedo() const
     {
-        return false;
+        // Redo will only be allowed if something has been recorded and we're not at the end of history
+        return IsOpen() && !m_undoHistory.empty() && m_undoHistoryIndex < m_undoHistory.size();
     }
 
     bool AtomToolsDocument::Undo()
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        if (CanUndo())
+        {
+            // The history index is one beyond the last executed command. Decrement the index then execute undo.
+            m_undoHistory[--m_undoHistoryIndex].first();
+            AZ_TracePrintf("AtomToolsDocument", "Document undo: '%s'.\n", m_absolutePath.c_str());
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+                &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+            return true;
+        }
         return false;
     }
 
     bool AtomToolsDocument::Redo()
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        if (CanRedo())
+        {
+            // Execute the current redo command then move the history index to the next position.
+            m_undoHistory[m_undoHistoryIndex++].second();
+            AZ_TracePrintf("AtomToolsDocument", "Document redo: '%s'.\n", m_absolutePath.c_str());
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+                &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+            return true;
+        }
         return false;
     }
 
@@ -154,4 +265,107 @@ namespace AtomToolsFramework
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
+
+    void AtomToolsDocument::Clear()
+    {
+        AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+
+        m_absolutePath.clear();
+        m_sourceDependencies.clear();
+        m_ignoreSourceFileChangeToSelf = {};
+        m_undoHistory.clear();
+        m_undoHistoryIndex = {};
+    }
+
+    bool AtomToolsDocument::OpenSucceeded()
+    {
+        AZ_TracePrintf("AtomToolsDocument", "Document opened: '%s'.\n", m_absolutePath.c_str());
+        AzToolsFramework::AssetSystemBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
+        return true;
+    }
+
+    bool AtomToolsDocument::OpenFailed()
+    {
+        AZ_TracePrintf("AtomToolsDocument", "Document could not opened: '%s'.\n", m_absolutePath.c_str());
+        Clear();
+        return false;
+    }
+
+    bool AtomToolsDocument::SaveSucceeded()
+    {
+        m_ignoreSourceFileChangeToSelf = true;
+
+        AZ_TracePrintf("AtomToolsDocument", "Document saved: '%s'.\n", m_savePathNormalized.c_str());
+
+        // Auto add or checkout saved file
+        AzToolsFramework::SourceControlCommandBus::Broadcast(
+            &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, m_savePathNormalized.c_str(), true,
+            [](bool, const AzToolsFramework::SourceControlFileInfo&) {});
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentSaved, m_id);
+        return true;
+    }
+
+    bool AtomToolsDocument::SaveFailed()
+    {
+        AZ_TracePrintf("AtomToolsDocument", "Document not saved: '%s'.\n", m_savePathNormalized.c_str());
+        return false;
+    }
+
+    bool AtomToolsDocument::ReopenRecordState()
+    {
+        m_undoHistoryBeforeReopen = m_undoHistory;
+        m_undoHistoryIndexBeforeReopen = m_undoHistoryIndex;
+        return true;
+    }
+
+    bool AtomToolsDocument::ReopenRestoreState()
+    {
+        m_undoHistory = m_undoHistoryBeforeReopen;
+        m_undoHistoryIndex = m_undoHistoryIndexBeforeReopen;
+        m_undoHistoryBeforeReopen = {};
+        m_undoHistoryIndexBeforeReopen = {};
+        return true;
+    }
+
+    void AtomToolsDocument::AddUndoRedoHistory(const UndoRedoFunction& undoCommand, const UndoRedoFunction& redoCommand)
+    {
+        // Wipe any state beyond the current history index
+        m_undoHistory.erase(m_undoHistory.begin() + m_undoHistoryIndex, m_undoHistory.end());
+
+        // Add undo and redo operations using functions that capture state and restore it when executed
+        m_undoHistory.emplace_back(undoCommand, redoCommand);
+
+        // Assign the index to the end of history
+        m_undoHistoryIndex = aznumeric_cast<int>(m_undoHistory.size());
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+    }
+
+    void AtomToolsDocument::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
+    {
+        const auto sourcePath = AZ::RPI::AssetUtils::ResolvePathReference(scanFolder, relativePath);
+
+        if (m_absolutePath == sourcePath)
+        {
+            // ignore notifications caused by saving the open document
+            if (!m_ignoreSourceFileChangeToSelf)
+            {
+                AZ_TracePrintf("AtomToolsDocument", "Document changed externally: '%s'.\n", m_absolutePath.c_str());
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+                    &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentExternallyModified, m_id);
+            }
+            m_ignoreSourceFileChangeToSelf = false;
+        }
+        else if (m_sourceDependencies.find(sourcePath) != m_sourceDependencies.end())
+        {
+            AZ_TracePrintf("AtomToolsDocument", "Document dependency changed: '%s'.\n", m_absolutePath.c_str());
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+                &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentDependencyModified, m_id);
+        }
+    }
+
 } // namespace AtomToolsFramework
