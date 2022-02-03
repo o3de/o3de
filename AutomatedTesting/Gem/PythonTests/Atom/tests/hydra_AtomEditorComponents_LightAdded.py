@@ -68,13 +68,14 @@ def AtomEditorComponents_Light_AddedToEntity():
     2) Add Light component to the Light entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Enter/Exit game mode.
-    6) Test IsHidden.
-    7) Test IsVisible.
-    8) Delete Light entity.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors.
+    5) Cycle through all light types.
+    6) Enter/Exit game mode.
+    7) Test IsHidden.
+    8) Test IsVisible.
+    9) Delete Light entity.
+    10) UNDO deletion.
+    11) REDO deletion.
+    12) Look for errors.
 
     :return: None
     """
@@ -83,7 +84,7 @@ def AtomEditorComponents_Light_AddedToEntity():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
-    from Atom.atom_utils.atom_constants import AtomComponentProperties
+    from Atom.atom_utils.atom_constants import AtomComponentProperties, LIGHT_TYPES
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -124,35 +125,46 @@ def AtomEditorComponents_Light_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, light_entity.exists())
 
-        # 5. Enter/Exit game mode.
+        # 5. Cycle through all light types.
+        for light_type in LIGHT_TYPES.keys():
+            light_component.set_component_property_value(
+                AtomComponentProperties.light('Light type'), LIGHT_TYPES[light_type])
+            current_light_type = light_component.get_component_property_value(
+                AtomComponentProperties.light('Light type'))
+            test_light_type = (
+                f"Light component has {light_type} type set",
+                f"Light component failed to set {light_type} type")
+            Report.result(test_light_type, current_light_type == LIGHT_TYPES[light_type])
+
+        # 6. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Test IsHidden.
+        # 7. Test IsHidden.
         light_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, light_entity.is_hidden() is True)
 
-        # 7. Test IsVisible.
+        # 8. Test IsVisible.
         light_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, light_entity.is_visible() is True)
 
-        # 8. Delete Light entity.
+        # 9. Delete Light entity.
         light_entity.delete()
         Report.result(Tests.entity_deleted, not light_entity.exists())
 
-        # 9. UNDO deletion.
+        # 10. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, light_entity.exists())
 
-        # 10. REDO deletion.
+        # 11. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not light_entity.exists())
 
-        # 11. Look for errors asserts.
+        # 12. Look for errors asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
