@@ -19,7 +19,6 @@ ly_append_configurations_options(
         -Werror
 
         -fpie                   # Position-Independent Executables
-        -fstack-protector-all   # Enable stack protectors for all functions
 
         ###################
         # Disabled warnings (please do not disable any others without first consulting sig-build)
@@ -44,27 +43,18 @@ ly_append_configurations_options(
         -g                          # debug symbols
         -fno-inline                 # don't inline functions
 
+        -fstack-protector-all       # Enable stack protectors for all functions
         -fstack-check
 
     COMPILATION_PROFILE
         -O2
         -g                          # debug symbols
 
+        -fstack-protector-all       # Enable stack protectors for all functions
         -fstack-check
 
     COMPILATION_RELEASE
         -O2
-    LINK_NON_STATIC
-        -Wl,-undefined,error
-
-        -fpie
-        -Wl,-z,relro,-z,now
-        -Wl,-z,noexecstack
-    LINK_EXE
-        -pie
-        -fpie
-        -Wl,-z,relro,-z,now
-        -Wl,-z,noexecstack
 )
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
