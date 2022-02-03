@@ -59,14 +59,7 @@ namespace AZ
 
             uint32_t m_materialTypeVersion = 0; //!< The version of the material type that was used to configure this material
 
-            struct Property
-            {
-                AZ_TYPE_INFO(AZ::RPI::MaterialSourceData::Property, "{8D613464-3750-4122-AFFE-9238010D5AFC}");
-
-                MaterialPropertyValue m_value;
-            };
-
-            using PropertyMap = AZStd::map<AZStd::string, Property>;
+            using PropertyMap = AZStd::map<AZStd::string, MaterialPropertyValue>;
             using PropertyGroupMap = AZStd::map<AZStd::string, PropertyMap>;
 
             PropertyGroupMap m_properties;

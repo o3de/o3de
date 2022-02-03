@@ -101,7 +101,7 @@ namespace AZ
 
                 if (assetFound)
                 {
-                    properties["textureMap"].m_value = texturePath;
+                    properties["textureMap"] = texturePath;
                 }
                 else if (!texturePath.empty())
                 {
@@ -120,7 +120,7 @@ namespace AZ
             {
                 anyPBRInUse = true;
                 handleTexture("baseColor", SceneAPI::DataTypes::IMaterialData::TextureMapType::BaseColor);
-                sourceData.m_properties["baseColor"]["textureBlendMode"].m_value = AZStd::string("Lerp");
+                sourceData.m_properties["baseColor"]["textureBlendMode"] = AZStd::string("Lerp");
             }
             else
             {
@@ -135,10 +135,10 @@ namespace AZ
             if (baseColor.has_value())
             {
                 anyPBRInUse = true;
-                sourceData.m_properties["baseColor"]["color"].m_value = toColor(baseColor.value());
+                sourceData.m_properties["baseColor"]["color"] = toColor(baseColor.value());
             }
 
-            sourceData.m_properties["opacity"]["factor"].m_value = materialData.GetOpacity();
+            sourceData.m_properties["opacity"]["factor"] = materialData.GetOpacity();
 
             auto applyOptionalPropertiesFunc = [&sourceData, &anyPBRInUse](const auto& propertyGroup, const auto& propertyName, const auto& propertyOptional)
             {
@@ -147,7 +147,7 @@ namespace AZ
                 if (propertyOptional.has_value())
                 {
                     anyPBRInUse = true;
-                    sourceData.m_properties[propertyGroup][propertyName].m_value = propertyOptional.value();
+                    sourceData.m_properties[propertyGroup][propertyName] = propertyOptional.value();
                 }
             };
 
@@ -160,7 +160,7 @@ namespace AZ
             applyOptionalPropertiesFunc("roughness", "useTexture", materialData.GetUseRoughnessMap());
 
             handleTexture("emissive", SceneAPI::DataTypes::IMaterialData::TextureMapType::Emissive);
-            sourceData.m_properties["emissive"]["color"].m_value = toColor(materialData.GetEmissiveColor());
+            sourceData.m_properties["emissive"]["color"] = toColor(materialData.GetEmissiveColor());
             applyOptionalPropertiesFunc("emissive", "intensity", materialData.GetEmissiveIntensity());
             applyOptionalPropertiesFunc("emissive", "useTexture", materialData.GetUseEmissiveMap());
 
@@ -171,7 +171,7 @@ namespace AZ
             {
                 // If it doesn't have the useColorMap property, then it's a non-PBR material and the baseColor
                 // texture needs to be set to the diffuse color.
-                sourceData.m_properties["baseColor"]["color"].m_value = toColor(materialData.GetDiffuseColor());
+                sourceData.m_properties["baseColor"]["color"] = toColor(materialData.GetDiffuseColor());
             }
             return true;
         }

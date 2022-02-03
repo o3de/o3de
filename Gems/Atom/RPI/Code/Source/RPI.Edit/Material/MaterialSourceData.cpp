@@ -44,7 +44,7 @@ namespace AZ
         {
             if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
             {
-                jsonContext->Serializer<JsonMaterialPropertyValueSerializer>()->HandlesType<MaterialSourceData::Property>();
+                jsonContext->Serializer<JsonMaterialPropertyValueSerializer>()->HandlesType<MaterialPropertyValue>();
             }
             else if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
@@ -59,10 +59,6 @@ namespace AZ
 
                 serializeContext->RegisterGenericType<PropertyMap>();
                 serializeContext->RegisterGenericType<PropertyGroupMap>();
-
-                serializeContext->Class<MaterialSourceData::Property>()
-                    ->Version(1)
-                    ;
             }
         }
 
@@ -323,25 +319,25 @@ namespace AZ
                 for (auto& property : group.second)
                 {
                     MaterialPropertyId propertyId{ group.first, property.first };
-                    if (!property.second.m_value.IsValid())
+                    if (!property.second.IsValid())
                     {
                         materialAssetCreator.ReportWarning("Source data for material property value is invalid.");
                     }
                     // If the source value type is a string, there are two possible property types: Image and Enum. If there is a "." in
                     // the string (for the extension) we assume it's an Image and look up the referenced Asset. Otherwise, we can assume
                     // it's an Enum value and just preserve the original string.
-                    else if (property.second.m_value.Is<AZStd::string>() && AzFramework::StringFunc::Contains(property.second.m_value.GetValue<AZStd::string>(), "."))
+                    else if (property.second.Is<AZStd::string>() && AzFramework::StringFunc::Contains(property.second.GetValue<AZStd::string>(), "."))
                     {
                         Data::Asset<ImageAsset> imageAsset;
 
                         MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
-                            imageAsset, materialSourceFilePath, property.second.m_value.GetValue<AZStd::string>());
+                            imageAsset, materialSourceFilePath, property.second.GetValue<AZStd::string>());
                                     
                         if (result == MaterialUtils::GetImageAssetResult::Missing)
                         {
                             materialAssetCreator.ReportWarning(
                                 "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
-                                property.second.m_value.GetValue<AZStd::string>().data());
+                                property.second.GetValue<AZStd::string>().data());
                         }
                                     
                         imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
@@ -349,7 +345,7 @@ namespace AZ
                     }
                     else
                     {
-                        materialAssetCreator.SetPropertyValue(propertyId, property.second.m_value);
+                        materialAssetCreator.SetPropertyValue(propertyId, property.second);
                     }
                 }
             }

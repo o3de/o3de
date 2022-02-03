@@ -150,7 +150,7 @@ namespace AZ
 
                         // TODO: Support populating the Material Editor with nested property groups, not just the top level.
                         const AZStd::string groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->GetName().size() - 1);
-                        exportData.m_properties[groupName][propertyDefinition->GetName()].m_value = propertyValue;
+                        exportData.m_properties[groupName][propertyDefinition->GetName()] = propertyValue;
                         return true;
                     });
 

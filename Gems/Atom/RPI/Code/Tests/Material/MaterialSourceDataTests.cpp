@@ -160,7 +160,7 @@ namespace UnitTest
 
     void AddProperty(MaterialSourceData& material, AZStd::string_view groupName, AZStd::string_view propertyName, const MaterialPropertyValue& anyValue)
     {
-        material.m_properties[groupName][propertyName].m_value = anyValue;
+        material.m_properties[groupName][propertyName] = anyValue;
     }
 
     TEST_F(MaterialSourceDataTests, CreateMaterialAsset_BasicProperties)
@@ -398,33 +398,33 @@ namespace UnitTest
                 
                 // We allow some types like Vector4 and Color or Int and UInt to be interchangeable since they serialize the same and can be converted when the MaterialAsset is finalized.
 
-                if (AreTypesCompatible<bool>(propertyA.m_value, propertyB.m_value))
+                if (AreTypesCompatible<bool>(propertyA, propertyB))
                 {
-                    EXPECT_EQ(propertyA.m_value.GetValue<bool>(), propertyB.m_value.GetValue<bool>()) << propertyReference.c_str();
+                    EXPECT_EQ(propertyA.GetValue<bool>(), propertyB.GetValue<bool>()) << propertyReference.c_str();
                 }
-                else if (AreTypesCompatible<int32_t>(propertyA.m_value, propertyB.m_value))
+                else if (AreTypesCompatible<int32_t>(propertyA, propertyB))
                 {
-                    EXPECT_EQ(GetAsInt(propertyA.m_value), GetAsInt(propertyB.m_value)) << propertyReference.c_str();
+                    EXPECT_EQ(GetAsInt(propertyA), GetAsInt(propertyB)) << propertyReference.c_str();
                 }
-                else if (AreTypesCompatible<float>(propertyA.m_value, propertyB.m_value))
+                else if (AreTypesCompatible<float>(propertyA, propertyB))
                 {
-                    EXPECT_NEAR(propertyA.m_value.GetValue<float>(),     propertyB.m_value.GetValue<float>(), 0.01) << propertyReference.c_str();
+                    EXPECT_NEAR(propertyA.GetValue<float>(),     propertyB.GetValue<float>(), 0.01) << propertyReference.c_str();
                 }
-                else if (AreTypesCompatible<Vector2>(propertyA.m_value, propertyB.m_value))
+                else if (AreTypesCompatible<Vector2>(propertyA, propertyB))
                 {
-                    EXPECT_TRUE(propertyA.m_value.GetValue<Vector2>().IsClose(propertyB.m_value.GetValue<Vector2>())) << propertyReference.c_str();
+                    EXPECT_TRUE(propertyA.GetValue<Vector2>().IsClose(propertyB.GetValue<Vector2>())) << propertyReference.c_str();
                 }
-                else if (AreTypesCompatible<Vector3>(propertyA.m_value, propertyB.m_value))
+                else if (AreTypesCompatible<Vector3>(propertyA, propertyB))
                 {
-                    EXPECT_TRUE(propertyA.m_value.GetValue<Vector3>().IsClose(propertyB.m_value.GetValue<Vector3>())) << propertyReference.c_str();
+                    EXPECT_TRUE(propertyA.GetValue<Vector3>().IsClose(propertyB.GetValue<Vector3>())) << propertyReference.c_str();
                 }
-                else if (AreTypesCompatible<Vector4>(propertyA.m_value, propertyB.m_value))
+                else if (AreTypesCompatible<Vector4>(propertyA, propertyB))
                 {
-                    EXPECT_TRUE(GetAsVector4(propertyA.m_value).IsClose(GetAsVector4(propertyB.m_value))) << propertyReference.c_str();
+                    EXPECT_TRUE(GetAsVector4(propertyA).IsClose(GetAsVector4(propertyB))) << propertyReference.c_str();
                 }
-                else if (AreTypesCompatible<AZStd::string>(propertyA.m_value, propertyB.m_value))
+                else if (AreTypesCompatible<AZStd::string>(propertyA, propertyB))
                 {
-                    EXPECT_STREQ(propertyA.m_value.GetValue<AZStd::string>().c_str(), propertyB.m_value.GetValue<AZStd::string>().c_str()) << propertyReference.c_str();
+                    EXPECT_STREQ(propertyA.GetValue<AZStd::string>().c_str(), propertyB.GetValue<AZStd::string>().c_str()) << propertyReference.c_str();
                 }
                 else
                 {
@@ -513,7 +513,7 @@ namespace UnitTest
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, loadResult.m_jsonResultCode.GetProcessing());
 
-        float testValue = material.m_properties["general"]["testValue"].m_value.GetValue<float>();
+        float testValue = material.m_properties["general"]["testValue"].GetValue<float>();
         EXPECT_FLOAT_EQ(1.2f, testValue);
     }
     
