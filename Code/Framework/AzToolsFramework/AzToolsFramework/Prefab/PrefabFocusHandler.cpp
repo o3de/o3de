@@ -110,11 +110,25 @@ namespace AzToolsFramework::Prefab
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnParentOfFocusedPrefab(
         [[maybe_unused]] AzFramework::EntityContextId entityContextId)
     {
+        // If only one instance is in the hierarchy, this operation is invalid
+        if (m_rootAliasFocusPathLength <= 1)
+        {
+            return AZ::Failure(AZStd::string(
+                "Prefab Focus Handler: Could not complete FocusOnParentOfFocusedPrefab operation while focusing on the root."));
+        }
+
         RootAliasPath parentPath = m_rootAliasFocusPath;
         parentPath.RemoveFilename();
 
         // Retrieve parent of currently focused prefab.
         InstanceOptionalReference parentInstance = GetInstanceReference(parentPath);
+
+        // If only one instance is in the hierarchy, this operation is invalid
+        if (!parentInstance.has_value())
+        {
+            return AZ::Failure(AZStd::string(
+                "Prefab Focus Handler: Could not retrieve parent of current focus in FocusOnParentOfFocusedPrefab."));
+        }
 
         // Use container entity of parent Instance for focus operations.
         AZ::EntityId entityId = parentInstance->get().GetContainerEntityId();
