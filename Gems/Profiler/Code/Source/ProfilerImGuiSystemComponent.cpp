@@ -107,7 +107,7 @@ namespace Profiler
         {
             if (ImGui::MenuItem("CPU", "", &m_showCpuProfiler))
             {
-                CpuProfiler::Get()->SetProfilerEnabled(m_showCpuProfiler);
+                AZ::Debug::ProfilerSystemInterface::Get()->SetActive(m_showCpuProfiler);
             }
             ImGui::EndMenu();
         }

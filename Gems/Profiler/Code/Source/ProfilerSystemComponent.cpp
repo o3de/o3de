@@ -78,7 +78,7 @@ namespace Profiler
         // Disable the profiler again
         if (!wasEnabled)
         {
-            CpuProfiler::Get()->SetProfilerEnabled(false);
+            AZ::Debug::ProfilerSystemInterface::Get()->SetActive(false);
         }
 
         // Notify listeners that the profiler capture has finished.

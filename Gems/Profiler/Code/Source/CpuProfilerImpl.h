@@ -94,7 +94,7 @@ namespace Profiler
         friend class CpuTimingLocalStorage;
 
     public:
-        AZ_TYPE_INFO(CpuProfilerImpl, "{10E9D394-FC83-4B45-B2B8-807C6BF07BF0}");
+        AZ_RTTI(CpuProfilerImpl, "{10E9D394-FC83-4B45-B2B8-807C6BF07BF0}", AZ::Debug::Profiler, CpuProfiler);
         AZ_CLASS_ALLOCATOR(CpuProfilerImpl, AZ::OSAllocator, 0);
 
         CpuProfilerImpl() = default;
