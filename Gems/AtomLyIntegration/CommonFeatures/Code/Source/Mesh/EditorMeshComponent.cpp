@@ -17,7 +17,7 @@
 
 
 
-
+#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/Utils/Utils.h>
@@ -204,29 +204,41 @@ namespace AZ
             AZ::Transform worldTM;
             AZ::TransformBus::EventResult(worldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
-            const Data::Asset<RPI::ModelAsset>& modelAsset = m_controller.GetConfiguration().m_modelAsset;
-            const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[0];
-            RPI::ModelLod& modelLod = *RPI::ModelLod::FindOrCreate(modelLodAsset, modelAsset).get();
-            //const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[0]; // lopp for each mesh
-            //const Data::Instance<RPI::Material>& material = mesh.m_material; // grab my shader
-            //auto& objectSrgLayout = material->GetAsset()->GetObjectSrgLayout();
-            //auto shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
-            //AZ::Data::Instance<RPI::ShaderResourceGroup> meshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
-
-            AZStd::string path = "shaders/postprocessing/editormodemask.azmaterial";
-            auto materialAsset = GetAssetFromPath<RPI::MaterialAsset>(path, Data::AssetLoadBehavior::PreLoad, true);
-            const Data::Instance<RPI::Material>& material = RPI::Material::FindOrCreate(materialAsset);
-            auto& objectSrgLayout = material->GetAsset()->GetObjectSrgLayout();
-            auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
-            auto meshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
-
-            
             // for each mesh, do this
             if (!m_meshDrawPacket.has_value())
             {
+                // LOOK AT MESH COMPONENT BUS FOR GET MODEL, LOD, ETC.
+
+                const Data::Asset<RPI::ModelAsset>& modelAsset = m_controller.GetConfiguration().m_modelAsset;
+                const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[0];
+                RPI::ModelLod& modelLod = *RPI::ModelLod::FindOrCreate(modelLodAsset, modelAsset).get();
+                // const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[0]; // lopp for each mesh
+                // const Data::Instance<RPI::Material>& material = mesh.m_material; // grab my shader
+                // auto& objectSrgLayout = material->GetAsset()->GetObjectSrgLayout();
+                // auto shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+                // AZ::Data::Instance<RPI::ShaderResourceGroup> meshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset,
+                // objectSrgLayout->GetName());
+
+                AZStd::string path = "shaders/postprocessing/editormodemask.azmaterial";
+                auto materialAsset = GetAssetFromPath<RPI::MaterialAsset>(path, Data::AssetLoadBehavior::PreLoad, true);
+                const Data::Instance<RPI::Material>& material = RPI::Material::FindOrCreate(materialAsset);
+                auto& objectSrgLayout = material->GetAsset()->GetObjectSrgLayout();
+                auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+                auto meshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
+                AZ::Render::MeshFeatureProcessorInterface::MeshHandle* meshHandle = &m_controller.m_meshHandle;
+                auto featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(GetEntityId());
+
+                // how to get object id? mesh component bus doesn't have this
+                // alternative: construct obj id from trans and scale from transfromservice feature processor (listen to on transform/scale
+                // update)
+
+                // for mesh changes: mesh component notifications bus listen for OnModelReady
+
+                RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
+                auto objectId = featureProcessor->GetObjectId(*meshHandle).GetIndex();
+                meshObjectSrg->SetConstant(objectIdIndex, objectId);
+
                 m_meshDrawPacket.emplace(modelLod, 0 /*mesh index from loop*/, material, meshObjectSrg);
-                
-                
             }
 
             auto scene = RPI::Scene::GetSceneForEntityId(this->GetEntityId());
