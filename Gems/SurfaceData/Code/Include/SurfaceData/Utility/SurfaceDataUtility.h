@@ -95,7 +95,7 @@ namespace SurfaceData
     }
 
     template<typename SourceContainer, typename SampleContainer>
-    AZ_INLINE bool HasMatchingTags(const SourceContainer& sourceTags, const SampleContainer& sampleTags)
+    AZ_INLINE bool HasAnyMatchingTags(const SourceContainer& sourceTags, const SampleContainer& sampleTags)
     {
         for (const auto& sampleTag : sampleTags)
         {

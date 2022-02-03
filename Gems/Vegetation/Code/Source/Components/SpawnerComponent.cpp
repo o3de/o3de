@@ -418,7 +418,7 @@ namespace Vegetation
         //reject entire spawner if there are inclusion tags to consider that don't exist in the context
         if (context.m_masks.HasValidTags() &&
             SurfaceData::HasValidTags(m_inclusiveTagsToConsider) &&
-            !context.m_masks.HasMatchingTags(m_inclusiveTagsToConsider))
+            !context.m_masks.HasAnyMatchingTags(m_inclusiveTagsToConsider))
         {
             VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::MarkAreaRejectedByMask, GetEntityId()));
             return;

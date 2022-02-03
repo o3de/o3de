@@ -54,7 +54,7 @@ namespace SurfaceData
         //! (This method is intentionally inlined for its performance impact)
         //! @param tag - The surface tag.
         //! @param weight - The surface tag weight.
-        void AddMaxValueForMasks(const AZ::Crc32 tag, const float weight)
+        void AddSurfaceWeightIfGreater(const AZ::Crc32 tag, const float weight)
         {
             const auto maskItr = m_weights.find(tag);
             const float previousValue = maskItr != m_weights.end() ? maskItr->second : 0.0f;
@@ -65,22 +65,22 @@ namespace SurfaceData
         //! (This method is intentionally inlined for its performance impact)
         //! @param tags - The surface tags to replace/add.
         //! @param weight - The surface tag weight to use for each tag.
-        void AddMaxValueForMasks(const SurfaceTagVector& tags, const float weight)
+        void AddSurfaceWeightsIfGreater(const SurfaceTagVector& tags, const float weight)
         {
             for (const auto& tag : tags)
             {
-                AddMaxValueForMasks(tag, weight);
+                AddSurfaceWeightIfGreater(tag, weight);
             }
         }
 
         //! Replace the surface tag weight with the new one if it's higher, or add it if the tag isn't found.
         //! (This method is intentionally inlined for its performance impact)
         //! @param weights - The surface tags and weights to replace/add.
-        void AddMaxValueForMasks(const SurfaceTagWeights& weights)
+        void AddSurfaceWeightsIfGreater(const SurfaceTagWeights& weights)
         {
             for (const auto& [tag, weight] : weights.m_weights)
             {
-                AddMaxValueForMasks(tag, weight);
+                AddSurfaceWeightIfGreater(tag, weight);
             }
         }
 
@@ -138,7 +138,7 @@ namespace SurfaceData
         //! Check to see if the collection contains any of the given tags.
         //! @param sampleTags - The tags to look for.
         //! @return True if any of the tags is found, false if none are found.
-        bool HasMatchingTags(const SurfaceTagVector& sampleTags) const;
+        bool HasAnyMatchingTags(const SurfaceTagVector& sampleTags) const;
 
         //! Check to see if the collection contains the given tag with the given weight range.
         //! The range check is inclusive on both sides of the range: [weightMin, weightMax]
@@ -146,7 +146,7 @@ namespace SurfaceData
         //! @param weightMin - The minimum weight for this tag.
         //! @param weightMax - The maximum weight for this tag.
         //! @return True if any of the tags is found, false if none are found.
-        bool HasMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const;
+        bool HasAnyMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const;
 
     private:
         AZStd::unordered_map<AZ::Crc32, float> m_weights;

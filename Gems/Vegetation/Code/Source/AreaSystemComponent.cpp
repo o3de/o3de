@@ -1137,7 +1137,7 @@ namespace Vegetation
                     claimPoint.m_position = position;
                     claimPoint.m_normal = normal;
                     claimPoint.m_masks = masks;
-                    sectorInfo.m_baseContext.m_masks.AddMaxValueForMasks(masks);
+                    sectorInfo.m_baseContext.m_masks.AddSurfaceWeightsIfGreater(masks);
                     return true;
                 });
         }

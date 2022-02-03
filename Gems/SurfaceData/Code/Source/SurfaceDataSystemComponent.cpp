@@ -178,7 +178,7 @@ namespace SurfaceData
     void SurfaceDataSystemComponent::GetSurfacePoints(const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointList) const
     {
         const bool useTagFilters = HasValidTags(desiredTags);
-        const bool hasModifierTags = useTagFilters && HasMatchingTags(desiredTags, m_registeredModifierTags);
+        const bool hasModifierTags = useTagFilters && HasAnyMatchingTags(desiredTags, m_registeredModifierTags);
 
         AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
 
@@ -192,7 +192,7 @@ namespace SurfaceData
             const SurfaceDataRegistryEntry& entry = entryPair.second;
             if (!entry.m_bounds.IsValid() || AabbContains2D(entry.m_bounds, inPosition))
             {
-                if (!useTagFilters || hasModifierTags || HasMatchingTags(desiredTags, entry.m_tags))
+                if (!useTagFilters || hasModifierTags || HasAnyMatchingTags(desiredTags, entry.m_tags))
                 {
                     SurfaceDataProviderRequestBus::Event(entryAddress, &SurfaceDataProviderRequestBus::Events::GetSurfacePoints, inPosition, surfacePointList);
                 }
@@ -261,7 +261,7 @@ namespace SurfaceData
         }
 
         const bool useTagFilters = HasValidTags(desiredTags);
-        const bool hasModifierTags = useTagFilters && HasMatchingTags(desiredTags, m_registeredModifierTags);
+        const bool hasModifierTags = useTagFilters && HasAnyMatchingTags(desiredTags, m_registeredModifierTags);
 
         // Loop through each data provider, and query all the points for each one.  This allows us to check the tags and the overall
         // AABB bounds just once per provider, instead of once per point.  It also allows for an eventual optimization in which we could
@@ -270,7 +270,7 @@ namespace SurfaceData
         {
             bool hasInfiniteBounds = !provider.m_bounds.IsValid();
 
-            if (!useTagFilters || hasModifierTags || HasMatchingTags(desiredTags, provider.m_tags))
+            if (!useTagFilters || hasModifierTags || HasAnyMatchingTags(desiredTags, provider.m_tags))
             {
                 for (size_t index = 0; index < totalQueryPositions; index++)
                 {

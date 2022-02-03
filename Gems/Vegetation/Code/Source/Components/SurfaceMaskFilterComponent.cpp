@@ -281,14 +281,14 @@ namespace Vegetation
         const float exclusiveWeightMax = AZ::GetMax(m_configuration.m_exclusiveWeightMin, m_configuration.m_exclusiveWeightMax);
 
         if (useCompTags &&
-            instanceData.m_masks.HasMatchingTags(m_configuration.m_exclusiveSurfaceMasks, exclusiveWeightMin, exclusiveWeightMax))
+            instanceData.m_masks.HasAnyMatchingTags(m_configuration.m_exclusiveSurfaceMasks, exclusiveWeightMin, exclusiveWeightMax))
         {
             VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FilterInstance, instanceData.m_id, AZStd::string_view("SurfaceMaskFilter")));
             return false;
         }
 
         if (useDescTags &&
-            instanceData.m_masks.HasMatchingTags(
+            instanceData.m_masks.HasAnyMatchingTags(
                 instanceData.m_descriptorPtr->m_exclusiveSurfaceFilterTags, exclusiveWeightMin, exclusiveWeightMax))
         {
             VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FilterInstance, instanceData.m_id, AZStd::string_view("SurfaceMaskFilter")));
@@ -300,13 +300,13 @@ namespace Vegetation
         const float inclusiveWeightMax = AZ::GetMax(m_configuration.m_inclusiveWeightMin, m_configuration.m_inclusiveWeightMax);
 
         if (useCompTags &&
-            instanceData.m_masks.HasMatchingTags(m_configuration.m_inclusiveSurfaceMasks, inclusiveWeightMin, inclusiveWeightMax))
+            instanceData.m_masks.HasAnyMatchingTags(m_configuration.m_inclusiveSurfaceMasks, inclusiveWeightMin, inclusiveWeightMax))
         {
             return true;
         }
 
         if (useDescTags &&
-            instanceData.m_masks.HasMatchingTags(
+            instanceData.m_masks.HasAnyMatchingTags(
                 instanceData.m_descriptorPtr->m_inclusiveSurfaceFilterTags, inclusiveWeightMin, inclusiveWeightMax))
         {
             return true;

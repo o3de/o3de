@@ -169,7 +169,7 @@ class MockSurfaceProvider
 
                     if (surfacePoints != m_GetSurfacePoints.end())
                     {
-                        weights.AddMaxValueForMasks(m_tags, 1.0f);
+                        weights.AddSurfaceWeightsIfGreater(m_tags, 1.0f);
                     }
                 });
         }

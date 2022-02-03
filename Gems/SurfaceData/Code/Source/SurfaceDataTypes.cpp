@@ -134,7 +134,7 @@ namespace SurfaceData
         return m_weights.find(sampleTag) != m_weights.end();
     }
 
-    bool SurfaceTagWeights::HasMatchingTags(const SurfaceTagVector& sampleTags) const
+    bool SurfaceTagWeights::HasAnyMatchingTags(const SurfaceTagVector& sampleTags) const
     {
         for (const auto& sampleTag : sampleTags)
         {
@@ -153,7 +153,7 @@ namespace SurfaceData
         return maskItr != m_weights.end() && weightMin <= maskItr->second && weightMax >= maskItr->second;
     }
 
-    bool SurfaceTagWeights::HasMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const
+    bool SurfaceTagWeights::HasAnyMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const
     {
         for (const auto& sampleTag : sampleTags)
         {
@@ -192,7 +192,7 @@ namespace SurfaceData
             if (m_surfacePositionList[index].IsClose(position) && m_surfaceNormalList[index].IsClose(normal))
             {
                 // consolidate points with similar attributes by adding masks/weights to the similar point instead of adding a new one.
-                m_surfaceWeightsList[index].AddMaxValueForMasks(masks);
+                m_surfaceWeightsList[index].AddSurfaceWeightsIfGreater(masks);
                 return;
             }
             else if (m_surfacePositionList[index].GetZ() < position.GetZ())
@@ -289,7 +289,7 @@ namespace SurfaceData
         size_t index = 0;
         for (; index < listSize; index++)
         {
-            if (!m_surfaceWeightsList[index].HasMatchingTags(desiredTags))
+            if (!m_surfaceWeightsList[index].HasAnyMatchingTags(desiredTags))
             {
                 break;
             }
@@ -300,7 +300,7 @@ namespace SurfaceData
             size_t next = index + 1;
             for (; next < listSize; ++next)
             {
-                if (m_surfaceWeightsList[index].HasMatchingTags(desiredTags))
+                if (m_surfaceWeightsList[index].HasAnyMatchingTags(desiredTags))
                 {
                     m_surfaceCreatorIdList[index] = m_surfaceCreatorIdList[next];
                     m_surfacePositionList[index] = m_surfacePositionList[next];
