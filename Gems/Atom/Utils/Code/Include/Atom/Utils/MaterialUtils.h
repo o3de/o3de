@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/span.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Matrix3x3.h>
+#include <AzCore/RTTI/TypeInfo.h>
 
 //! This file holds useful material related utility functions.
 
