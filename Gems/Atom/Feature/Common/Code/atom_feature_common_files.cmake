@@ -214,6 +214,8 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
+	Source/PostProcessing/ChromaticAbberationPass.h
+	Source/PostProcessing/ChromaticAbberationPass.cpp
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h
@@ -265,8 +267,6 @@ set(FILES
     Source/PostProcessing/SubsurfaceScatteringPass.h
     Source/PostProcessing/TaaPass.h
     Source/PostProcessing/TaaPass.cpp
-	Source/PostProcessing/ChromaticAbberationPass.h
-	Source/PostProcessing/ChromaticAbberationPass.cpp
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
