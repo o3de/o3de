@@ -14,7 +14,7 @@ import azlmbr.surface_data
 import azlmbr.globals
 
 # Open a level
-editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'auto_test')
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'auto_test.prefab')
 
 def print_result(message, result):
     if result:

@@ -18,7 +18,7 @@ def CompareComponentEntityIdPairs(component1, component2):
     return component1.Equal(component2)
 
 # Open a level (any level should work)
-editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'WaterSample')
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'Base')
 
 # Get Component Types for Mesh and Comment
 typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', ["Mesh", "Comment", "Mesh Collider"], entity.EntityType().Game)

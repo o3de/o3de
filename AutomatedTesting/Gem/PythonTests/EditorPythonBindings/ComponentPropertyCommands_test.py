@@ -15,6 +15,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(__file__))
 from hydra_utils import launch_test_case
+from hydra_utils import launch_test_case_with_args
 
 
 @pytest.mark.SUITE_sandbox
@@ -23,7 +24,7 @@ from hydra_utils import launch_test_case
 @pytest.mark.parametrize('level', ['Simple'])
 class TestGradientRequiresShape(object):
 
-    @pytest.mark.skip  # SPEC-4102
+    #@pytest.mark.skip  # SPEC-4102
     def test_ComponentProperty(self, request, editor, level, launcher_platform):
 
         unexpected_lines=[]
@@ -47,7 +48,7 @@ class TestGradientRequiresShape(object):
         test_case_file = os.path.join(os.path.dirname(__file__), 'ComponentPropertyCommands_test_case.py')
         launch_test_case(editor, test_case_file, expected_lines, unexpected_lines)
 
-    @pytest.mark.skip  # SPEC-4102
+    #@pytest.mark.skip  # SPEC-4102
     def test_SetDistance_Between_FilterBound_Mode(self, request, editor, level, launcher_platform):
 
         unexpected_lines = ['FAILURE', 'script failure']
@@ -62,7 +63,7 @@ class TestGradientRequiresShape(object):
         test_case_file = os.path.join(os.path.dirname(__file__), 'ComponentPropertyCommands_test_enum.py')
         launch_test_case(editor, test_case_file, expected_lines, unexpected_lines)
 
-    @pytest.mark.skip  # LYN-1951
+    #@pytest.mark.skip  # LYN-1951
     def test_PropertyTreeVisibility(self, request, editor, level, launcher_platform):
 
         unexpected_lines = ['FAILURE', 'script failure']
@@ -76,9 +77,9 @@ class TestGradientRequiresShape(object):
         ]
 
         test_case_file = os.path.join(os.path.dirname(__file__), 'ComponentPropertyCommands_test_case_visibility.py')
-        launch_test_case(editor, test_case_file, expected_lines, unexpected_lines)
+        launch_test_case_with_args(editor, test_case_file, expected_lines, unexpected_lines, ['--attach-debugger'])
 
-    @pytest.mark.skip  # SPEC-4102
+    #@pytest.mark.skip  # SPEC-4102
     def test_PropertyContainerOpeartions(self, request, editor, level, launcher_platform):
         unexpected_lines = ['FAILURE', 'script failure']
         expected_lines = [
@@ -103,7 +104,7 @@ class TestGradientRequiresShape(object):
         test_case_file = os.path.join(os.path.dirname(__file__), 'ComponentPropertyCommands_test_containers.py')
         launch_test_case(editor, test_case_file, expected_lines, unexpected_lines)
 
-    @pytest.mark.skip  # LYN-1951
+    #@pytest.mark.skip  # LYN-1951
     def test_PropertyContainerOpeartionWithNone(self, request, editor, level, launcher_platform):
         unexpected_lines = ['FAILURE', 'script failure']
         expected_lines = [

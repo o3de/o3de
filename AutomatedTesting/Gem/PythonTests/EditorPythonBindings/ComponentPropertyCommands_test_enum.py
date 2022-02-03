@@ -13,7 +13,7 @@ import azlmbr.entity as entity
 import azlmbr.math as math
 
 # Open a level
-editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'auto_test')
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'auto_test.prefab')
 
 def print_result(message, result):
     if result:

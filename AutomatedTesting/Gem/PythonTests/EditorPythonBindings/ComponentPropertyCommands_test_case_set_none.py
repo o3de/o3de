@@ -13,7 +13,7 @@ import azlmbr.entity as entity
 import azlmbr.math as math
 
 # Open a level
-editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'ocean_component')
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'ocean_component.prefab')
 
 # toggle the entity system to use visibility enforcement rules
 editor.EditorComponentAPIBus(bus.Broadcast, 'SetVisibleEnforcement', True)

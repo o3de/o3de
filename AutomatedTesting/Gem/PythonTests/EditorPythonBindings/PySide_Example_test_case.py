@@ -15,18 +15,22 @@ import sys
 import os
 import PySide2
 
+from editor_python_test_tools.utils import TestHelper as helper
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
 import azlmbr.bus as bus
 import azlmbr.entity as entity
 import azlmbr.editor as editor
 import azlmbr.legacy.general as general
-import editor_python_test_tools.pyside_component_utils as pysde_component_utils
-
+import editor_python_test_tools.pyside_component_utils as pyside_component_utils
 
 def PySide_Example_test_case():
     # Open level, any level should work
-    editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', os.path.join('WhiteBox', 'EmptyLevel'))
+    helper.init_idle()    
+    helper.open_level("WhiteBox", "EmptyLevel")
+
+    #editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', os.path.join('WhiteBox', 'EmptyLevel'))
 
     entityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())
 
@@ -51,7 +55,7 @@ def PySide_Example_test_case():
     else:
         print('Could not retrieve ComboBox values')
 
-    editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'ExitNoPrompt')
+    #editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'ExitNoPrompt')
 
 
 if __name__ == '__main__':

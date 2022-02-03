@@ -32,7 +32,7 @@ def C28798177_WhiteBox_AddComponentToEntity():
 
     # open level
     helper.init_idle()
-    general.open_level("EmptyLevel")
+    helper.open_level("WhiteBox", "EmptyLevel", no_prompt=False)
 
     # create white box entity and attach component
     white_box_entity = init.create_white_box_entity()
