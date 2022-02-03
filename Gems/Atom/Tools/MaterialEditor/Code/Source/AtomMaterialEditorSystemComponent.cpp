@@ -68,7 +68,7 @@ namespace AtomMaterialEditor
 
         m_materialEditorBrowserInteractions.reset(aznew MaterialEditor::MaterialEditorBrowserInteractions);
 
-        O3DEMaterialEditor::RegisterViewPane<MaterialEditor::MaterialEditorWindow>("Atom");
+        O3DEMaterialEditor::RegisterViewPane<MaterialEditor::MaterialEditorWindow>("Render Materials");
     }
 
 } // namespace MaterialEditor

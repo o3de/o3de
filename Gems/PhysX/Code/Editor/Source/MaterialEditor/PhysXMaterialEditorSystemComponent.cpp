@@ -57,7 +57,7 @@ namespace PhysX
 
     void PhysXMaterialEditorSystemComponent::RegisterAtomWindow()
     {
-        O3DEMaterialEditor::RegisterViewPane<MaterialEditorWindow>("PhysX");
+        O3DEMaterialEditor::RegisterViewPane<MaterialEditorWindow>("PhysX Materials");
     }
 
 } // namespace PhysX
