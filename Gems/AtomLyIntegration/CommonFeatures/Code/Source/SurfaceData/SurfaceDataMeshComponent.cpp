@@ -95,7 +95,7 @@ namespace SurfaceData
         m_refresh = false;
 
         // Update the cached mesh data and bounds, then register the surface data provider
-        AssignSurfaceTagWeights(m_configuration.m_tags, 1.0f, m_newPointWeights);
+        m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_tags, 1.0f);
         UpdateMeshData();
     }
 

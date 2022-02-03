@@ -55,29 +55,12 @@ namespace UnitTest
         }
 
         bool SurfacePointsAreEqual(
-            const AZ::Vector3& lhsPosition, const AZ::Vector3& lhsNormal, const SurfaceData::SurfaceTagWeightMap& lhsWeights,
+            const AZ::Vector3& lhsPosition, const AZ::Vector3& lhsNormal, const SurfaceData::SurfaceTagWeights& lhsWeights,
             const AzFramework::SurfaceData::SurfacePoint& rhs)
         {
-            if ((lhsPosition != rhs.m_position) || (lhsNormal != rhs.m_normal) || (lhsWeights.size() != rhs.m_surfaceTags.size()))
-            {
-                return false;
-            }
-
-            for (auto& mask : lhsWeights)
-            {
-                auto maskEntry = AZStd::find_if(
-                    rhs.m_surfaceTags.begin(), rhs.m_surfaceTags.end(),
-                    [mask](const AzFramework::SurfaceData::SurfaceTagWeight& weight) -> bool
-                    {
-                        return (mask.first == weight.m_surfaceType) && (mask.second == weight.m_weight);
-                    });
-                if (maskEntry == rhs.m_surfaceTags.end())
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return ((lhsPosition == rhs.m_position)
+                && (lhsNormal == rhs.m_normal)
+                && (lhsWeights.SurfaceWeightsAreEqual(rhs.m_surfaceTags)));
         }
 
         void TestGradientSurfaceDataComponent(float gradientValue, float thresholdMin, float thresholdMax, AZStd::vector<AZStd::string> tags, bool usesShape,
@@ -132,7 +115,7 @@ namespace UnitTest
             pointList.EnumeratePoints(
                 [this, expectedOutput](
                     const AZ::Vector3& position, const AZ::Vector3& normal,
-                    const SurfaceData::SurfaceTagWeightMap& masks)
+                    const SurfaceData::SurfaceTagWeights& masks)
                 {
                     EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
                     return true;

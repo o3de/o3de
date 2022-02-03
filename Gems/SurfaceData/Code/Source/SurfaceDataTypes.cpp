@@ -11,23 +11,177 @@
 
 namespace SurfaceData
 {
+    void SurfaceTagWeights::AssignSurfaceTagWeights(const AzFramework::SurfaceData::SurfaceTagWeightList& weights)
+    {
+        m_weights.clear();
+        m_weights.reserve(weights.size());
+        for (auto& weight : weights)
+        {
+            m_weights.emplace(weight.m_surfaceType, weight.m_weight);
+        }
+    }
+
+    void SurfaceTagWeights::AssignSurfaceTagWeights(const SurfaceTagVector& tags, float weight)
+    {
+        m_weights.clear();
+        m_weights.reserve(tags.size());
+        for (auto& tag : tags)
+        {
+            m_weights[tag] = weight;
+        }
+    }
+
+    void SurfaceTagWeights::AddSurfaceTagWeight(const AZ::Crc32 tag, const float value)
+    {
+        m_weights[tag] = value;
+    }
+
+    void SurfaceTagWeights::Clear()
+    {
+        m_weights.clear();
+    }
+
+    size_t SurfaceTagWeights::GetSize() const
+    {
+        return m_weights.size();
+    }
+
+    AzFramework::SurfaceData::SurfaceTagWeightList SurfaceTagWeights::GetSurfaceTagWeightList() const
+    {
+        AzFramework::SurfaceData::SurfaceTagWeightList weights;
+        weights.reserve(m_weights.size());
+        for (auto& weight : m_weights)
+        {
+            weights.emplace_back(weight.first, weight.second);
+        }
+        return weights;
+    }
+
+    bool SurfaceTagWeights::operator==(const SurfaceTagWeights& rhs) const
+    {
+        // If the lists are different sizes, they're not equal.
+        if (m_weights.size() != rhs.m_weights.size())
+        {
+            return false;
+        }
+
+        for (auto& weight : m_weights)
+        {
+            auto rhsWeight = rhs.m_weights.find(weight.first);
+            if ((rhsWeight == rhs.m_weights.end()) || (rhsWeight->second != weight.second))
+            {
+                return false;
+            }
+        }
+
+        // All the entries matched, and the lists are the same size, so they're equal.
+        return true;
+    }
+
+    bool SurfaceTagWeights::SurfaceWeightsAreEqual(const AzFramework::SurfaceData::SurfaceTagWeightList& compareWeights) const
+    {
+        // If the lists are different sizes, they're not equal.
+        if (m_weights.size() != compareWeights.size())
+        {
+            return false;
+        }
+
+        for (auto& weight : m_weights)
+        {
+            auto maskEntry = AZStd::find_if(
+                compareWeights.begin(), compareWeights.end(),
+                [weight](const AzFramework::SurfaceData::SurfaceTagWeight& compareWeight) -> bool
+                {
+                    return (weight.first == compareWeight.m_surfaceType) && (weight.second == compareWeight.m_weight);
+                });
+
+            // If we didn't find a match, they're not equal.
+            if (maskEntry == compareWeights.end())
+            {
+                return false;
+            }
+        }
+
+        // All the entries matched, and the lists are the same size, so they're equal.
+        return true;
+    }
+
+    void SurfaceTagWeights::EnumerateWeights(AZStd::function<bool(AZ::Crc32, float)> weightCallback) const
+    {
+        for (auto& weight : m_weights)
+        {
+            if (!weightCallback(weight.first, weight.second))
+            {
+                break;
+            }
+        }
+    }
+
+    bool SurfaceTagWeights::HasValidTags() const
+    {
+        for (const auto& sourceTag : m_weights)
+        {
+            if (sourceTag.first != Constants::s_unassignedTagCrc)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool SurfaceTagWeights::HasMatchingTag(const AZ::Crc32& sampleTag) const
+    {
+        return m_weights.find(sampleTag) != m_weights.end();
+    }
+
+    bool SurfaceTagWeights::HasMatchingTags(const SurfaceTagVector& sampleTags) const
+    {
+        for (const auto& sampleTag : sampleTags)
+        {
+            if (HasMatchingTag(sampleTag))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool SurfaceTagWeights::HasMatchingTag(const AZ::Crc32& sampleTag, float valueMin, float valueMax) const
+    {
+        auto maskItr = m_weights.find(sampleTag);
+        return maskItr != m_weights.end() && valueMin <= maskItr->second && valueMax >= maskItr->second;
+    }
+
+    bool SurfaceTagWeights::HasMatchingTags(const SurfaceTagVector& sampleTags, float valueMin, float valueMax) const
+    {
+        for (const auto& sampleTag : sampleTags)
+        {
+            if (HasMatchingTag(sampleTag, valueMin, valueMax))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+
     SurfacePointList::SurfacePointList(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
     {
         ReserveSpace(surfacePoints.size());
 
         for (auto& point : surfacePoints)
         {
-            SurfaceTagWeightMap weights;
-            for (auto& weight : point.m_surfaceTags)
-            {
-                weights.emplace(weight.m_surfaceType, weight.m_weight);
-            }
+            SurfaceTagWeights weights(point.m_surfaceTags);
             AddSurfacePoint(AZ::EntityId(), point.m_position, point.m_normal, weights);
         }
     }
 
     void SurfacePointList::AddSurfacePoint(const AZ::EntityId& entityId,
-        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeightMap& masks)
+        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& masks)
     {
         // When adding a surface point, we'll either merge it with a similar existing point, or else add it in order of
         // decreasing Z, so that our final results are sorted.
@@ -38,7 +192,7 @@ namespace SurfaceData
             if (m_surfacePositionList[index].IsClose(position) && m_surfaceNormalList[index].IsClose(normal))
             {
                 // consolidate points with similar attributes by adding masks/weights to the similar point instead of adding a new one.
-                AddMaxValueForMasks(m_surfaceWeightsList[index], masks);
+                m_surfaceWeightsList[index].AddMaxValueForMasks(masks);
                 return;
             }
             else if (m_surfacePositionList[index].GetZ() < position.GetZ())
@@ -91,7 +245,7 @@ namespace SurfaceData
     }
 
     void SurfacePointList::EnumeratePoints(
-        AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceData::SurfaceTagWeightMap&)>
+        AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceData::SurfaceTagWeights&)>
             pointCallback) const
     {
         for (size_t index = 0; index < m_surfacePositionList.size(); index++)
@@ -105,7 +259,7 @@ namespace SurfaceData
 
     void SurfacePointList::ModifySurfaceWeights(
         const AZ::EntityId& currentEntityId,
-        AZStd::function<void(const AZ::Vector3&, SurfaceData::SurfaceTagWeightMap&)> modificationWeightCallback)
+        AZStd::function<void(const AZ::Vector3&, SurfaceData::SurfaceTagWeights&)> modificationWeightCallback)
     {
         for (size_t index = 0; index < m_surfacePositionList.size(); index++)
         {
@@ -121,11 +275,7 @@ namespace SurfaceData
         AzFramework::SurfaceData::SurfacePoint point;
         point.m_position = m_surfacePositionList.front();
         point.m_normal = m_surfaceNormalList.front();
-        const SurfaceTagWeightMap& weights = m_surfaceWeightsList.front();
-        for (auto& weight : weights)
-        {
-            point.m_surfaceTags.emplace_back(weight.first, weight.second);
-        }
+        point.m_surfaceTags = m_surfaceWeightsList.front().GetSurfaceTagWeightList();
 
         return point;
     }
@@ -139,7 +289,7 @@ namespace SurfaceData
         size_t index = 0;
         for (; index < listSize; index++)
         {
-            if (!HasMatchingTags(m_surfaceWeightsList[index], desiredTags))
+            if (!m_surfaceWeightsList[index].HasMatchingTags(desiredTags))
             {
                 break;
             }
@@ -150,7 +300,7 @@ namespace SurfaceData
             size_t next = index + 1;
             for (; next < listSize; ++next)
             {
-                if (HasMatchingTags(m_surfaceWeightsList[index], desiredTags))
+                if (m_surfaceWeightsList[index].HasMatchingTags(desiredTags))
                 {
                     m_surfaceCreatorIdList[index] = m_surfaceCreatorIdList[next];
                     m_surfacePositionList[index] = m_surfacePositionList[next];

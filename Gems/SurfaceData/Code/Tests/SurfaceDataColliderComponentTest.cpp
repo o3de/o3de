@@ -95,31 +95,12 @@ namespace UnitTest
         bool SurfacePointsAreEqual(
             const AZ::Vector3& lhsPosition,
             const AZ::Vector3& lhsNormal,
-            const SurfaceData::SurfaceTagWeightMap& lhsMasks,
+            const SurfaceData::SurfaceTagWeights& lhsMasks,
             const AzFramework::SurfaceData::SurfacePoint& rhs)
         {
-            if ((lhsPosition != rhs.m_position)
-                || (lhsNormal != rhs.m_normal)
-                || (lhsMasks.size() != rhs.m_surfaceTags.size()))
-            {
-                return false;
-            }
-
-            for (auto& mask : lhsMasks)
-            {
-                auto maskEntry = AZStd::find_if(
-                    rhs.m_surfaceTags.begin(), rhs.m_surfaceTags.end(),
-                    [mask](const AzFramework::SurfaceData::SurfaceTagWeight& weight) -> bool
-                    {
-                        return (mask.first == weight.m_surfaceType) && (mask.second == weight.m_weight);
-                    });
-                if (maskEntry == rhs.m_surfaceTags.end())
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return ((lhsPosition == rhs.m_position)
+                && (lhsNormal == rhs.m_normal)
+                && (lhsMasks.SurfaceWeightsAreEqual(rhs.m_surfaceTags)));
         }
 
         // Common test function for testing the "Provider" functionality of the component.
@@ -161,7 +142,7 @@ namespace UnitTest
                 ASSERT_EQ(pointList.GetSize(), 1);
                 pointList.EnumeratePoints(
                     [this, expectedOutput](
-                        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
+                        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                     {
                         EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
                         return true;
@@ -209,7 +190,7 @@ namespace UnitTest
             ASSERT_EQ(pointList.GetSize(), 1);
             pointList.EnumeratePoints(
                 [this, expectedOutput](
-                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
+                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
                     return true;

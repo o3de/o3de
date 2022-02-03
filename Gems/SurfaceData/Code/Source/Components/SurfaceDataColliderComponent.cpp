@@ -132,7 +132,7 @@ namespace SurfaceData
         Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());
 
         // Update the cached collider data and bounds, then register the surface data provider / modifier
-        AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f, m_newPointWeights);
+        m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f);
         UpdateColliderData();
     }
 
@@ -249,7 +249,7 @@ namespace SurfaceData
         {
             surfacePointList.ModifySurfaceWeights(
                 GetEntityId(),
-                [this](const AZ::Vector3& position, SurfaceData::SurfaceTagWeightMap& weights)
+                [this](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
                 {
                     if (m_colliderBounds.Contains(position))
                     {
@@ -259,7 +259,7 @@ namespace SurfaceData
                         if (DoRayTrace(position, queryPointOnly, hitPosition, hitNormal))
                         {
                             // If the query point collides with the volume, add all our modifier tags with a weight of 1.0f.
-                            AddMaxValueForMasks(weights, m_configuration.m_modifierTags, 1.0f);
+                            weights.AddMaxValueForMasks(m_configuration.m_modifierTags, 1.0f);
                         }
                     }
                 });

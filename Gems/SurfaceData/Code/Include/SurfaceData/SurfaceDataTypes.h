@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
@@ -19,9 +20,70 @@
 namespace SurfaceData
 {
     //map of id or crc to contribution factor
-    using SurfaceTagWeightMap = AZStd::unordered_map<AZ::Crc32, float>;
     using SurfaceTagNameSet = AZStd::unordered_set<AZStd::string>;
     using SurfaceTagVector = AZStd::vector<SurfaceTag>;
+
+    class SurfaceTagWeights
+    {
+    public:
+        SurfaceTagWeights() = default;
+
+        SurfaceTagWeights(const AzFramework::SurfaceData::SurfaceTagWeightList& weights)
+        {
+            AssignSurfaceTagWeights(weights);
+        }
+
+        void AssignSurfaceTagWeights(const AzFramework::SurfaceData::SurfaceTagWeightList& weights);
+        void AssignSurfaceTagWeights(const SurfaceTagVector& tags, float weight);
+
+        void AddSurfaceTagWeight(const AZ::Crc32 tag, const float value);
+
+        void AddMaxValueForMasks(const AZ::Crc32 tag, const float value)
+        {
+            const auto maskItr = m_weights.find(tag);
+            const float valueOld = maskItr != m_weights.end() ? maskItr->second : 0.0f;
+            m_weights[tag] = AZ::GetMax(value, valueOld);
+        }
+
+        void AddMaxValueForMasks(const SurfaceTagVector& tags, const float value)
+        {
+            for (const auto& tag : tags)
+            {
+                AddMaxValueForMasks(tag, value);
+            }
+        }
+
+        void AddMaxValueForMasks(const SurfaceTagWeights& inMasks)
+        {
+            for (const auto& inMask : inMasks.m_weights)
+            {
+                AddMaxValueForMasks(inMask.first, inMask.second);
+            }
+        }
+
+        bool operator==(const SurfaceTagWeights& rhs) const;
+        AZ_FORCE_INLINE bool operator!=(const SurfaceTagWeights& rhs) const
+        {
+            return !(*this == rhs);
+        }
+
+        bool SurfaceWeightsAreEqual(const AzFramework::SurfaceData::SurfaceTagWeightList& compareWeights) const;
+
+        void Clear();
+
+        size_t GetSize() const;
+        AzFramework::SurfaceData::SurfaceTagWeightList GetSurfaceTagWeightList() const;
+        void EnumerateWeights(AZStd::function<bool(AZ::Crc32, float)> weightCallback) const;
+
+        bool HasValidTags() const;
+        bool HasMatchingTag(const AZ::Crc32& sampleTag) const;
+        bool HasMatchingTags(const SurfaceTagVector& sampleTags) const;
+        bool HasMatchingTag(const AZ::Crc32& sampleTag, float valueMin, float valueMax) const;
+        bool HasMatchingTags(const SurfaceTagVector& sampleTags, float valueMin, float valueMax) const;
+
+    private:
+        AZStd::unordered_map<AZ::Crc32, float> m_weights;
+    };
 
     class SurfacePointList
     {
@@ -39,7 +101,7 @@ namespace SurfaceData
 
         //! Add a surface point to the list.
         void AddSurfacePoint(const AZ::EntityId& entityId,
-            const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeightMap& weights);
+            const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& weights);
 
         //! Clear the surface point list.
         void Clear();
@@ -56,11 +118,11 @@ namespace SurfaceData
         //! @return - The number of valid points in the list.
         size_t GetSize() const;
 
-        void EnumeratePoints(AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceTagWeightMap&)> pointCallback) const;
+        void EnumeratePoints(AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceTagWeights&)> pointCallback) const;
 
         void ModifySurfaceWeights(
             const AZ::EntityId& currentEntityId,
-            AZStd::function<void(const AZ::Vector3&, SurfaceTagWeightMap&)> modificationWeightCallback);
+            AZStd::function<void(const AZ::Vector3&, SurfaceTagWeights&)> modificationWeightCallback);
 
         AzFramework::SurfaceData::SurfacePoint GetHighestSurfacePoint() const;
 
@@ -74,7 +136,7 @@ namespace SurfaceData
         AZStd::vector<AZ::EntityId> m_surfaceCreatorIdList;
         AZStd::vector<AZ::Vector3> m_surfacePositionList;
         AZStd::vector<AZ::Vector3> m_surfaceNormalList;
-        AZStd::vector<SurfaceTagWeightMap> m_surfaceWeightsList;
+        AZStd::vector<SurfaceTagWeights> m_surfaceWeightsList;
 
         AZ::Aabb m_pointBounds = AZ::Aabb::CreateNull();
     };

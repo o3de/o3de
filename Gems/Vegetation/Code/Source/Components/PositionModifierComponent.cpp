@@ -306,15 +306,17 @@ namespace Vegetation
             m_surfaceTagsToSnapToCombined.clear();
             m_surfaceTagsToSnapToCombined.reserve(
                 m_configuration.m_surfaceTagsToSnapTo.size() +
-                instanceData.m_masks.size());
+                instanceData.m_masks.GetSize());
 
             m_surfaceTagsToSnapToCombined.insert(m_surfaceTagsToSnapToCombined.end(),
                 m_configuration.m_surfaceTagsToSnapTo.begin(), m_configuration.m_surfaceTagsToSnapTo.end());
 
-            for (const auto& maskPair : instanceData.m_masks)
-            {
-                m_surfaceTagsToSnapToCombined.push_back(maskPair.first);
-            }
+            instanceData.m_masks.EnumerateWeights(
+                [this](AZ::Crc32 surfaceType, [[maybe_unused]] float weight)
+                {
+                    m_surfaceTagsToSnapToCombined.push_back(surfaceType);
+                    return true;
+                });
 
             //get the intersection data at the new position
             m_points.Clear();
@@ -326,7 +328,7 @@ namespace Vegetation
             AZ::Vector3 originalInstanceDataPosition = instanceData.m_position;
             m_points.EnumeratePoints(
                 [&instanceData, originalInstanceDataPosition, &closestPointDistanceSq](
-                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
+                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     float distanceSq = position.GetDistanceSq(originalInstanceDataPosition);
                     if (distanceSq < closestPointDistanceSq)

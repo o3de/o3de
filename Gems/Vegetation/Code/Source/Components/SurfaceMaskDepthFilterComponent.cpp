@@ -221,7 +221,7 @@ namespace Vegetation
             m_points.EnumeratePoints(
                 [instanceZ, lowerZDistanceRange, upperZDistanceRange, &passesFilter](
                     const AZ::Vector3& position,
-                    [[maybe_unused]] const AZ::Vector3& normal, [[maybe_unused]] const SurfaceData::SurfaceTagWeightMap& masks) -> bool
+                    [[maybe_unused]] const AZ::Vector3& normal, [[maybe_unused]] const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     float pointZ = position.GetZ();
                     float zDistance = instanceZ - pointZ;

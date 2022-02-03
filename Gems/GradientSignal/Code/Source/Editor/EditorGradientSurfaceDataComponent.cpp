@@ -111,12 +111,14 @@ namespace GradientSignal
             float result = 0.0f;
             pointList.EnumeratePoints([&result](
                     [[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
-                    const SurfaceData::SurfaceTagWeightMap& masks) -> bool
+                    const SurfaceData::SurfaceTagWeights& masks) -> bool
             {
-                for (auto& mask : masks)
-                {
-                    result = AZ::GetMax(result, mask.second);
-                }
+                masks.EnumerateWeights(
+                    [&result]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
+                    {
+                        result = AZ::GetMax(result, weight);
+                        return true;
+                    });
                 return true;
             });
             return result;

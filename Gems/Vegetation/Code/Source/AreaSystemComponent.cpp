@@ -1091,7 +1091,7 @@ namespace Vegetation
         const float vegStep = sectorSizeInMeters / static_cast<float>(sectorDensity);
 
         //build a free list of all points in the sector for areas to consume
-        sectorInfo.m_baseContext.m_masks.clear();
+        sectorInfo.m_baseContext.m_masks.Clear();
         sectorInfo.m_baseContext.m_availablePoints.clear();
         sectorInfo.m_baseContext.m_availablePoints.reserve(sectorDensity * sectorDensity);
 
@@ -1129,7 +1129,7 @@ namespace Vegetation
         {
             availablePoints.EnumeratePoints(
                 [this, &sectorInfo,
-                 &claimIndex](const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeightMap& masks) -> bool
+                 &claimIndex](const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     sectorInfo.m_baseContext.m_availablePoints.push_back();
                     ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();
@@ -1137,7 +1137,7 @@ namespace Vegetation
                     claimPoint.m_position = position;
                     claimPoint.m_normal = normal;
                     claimPoint.m_masks = masks;
-                    SurfaceData::AddMaxValueForMasks(sectorInfo.m_baseContext.m_masks, masks);
+                    sectorInfo.m_baseContext.m_masks.AddMaxValueForMasks(masks);
                     return true;
                 });
         }

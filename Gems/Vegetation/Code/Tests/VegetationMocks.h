@@ -329,7 +329,7 @@ namespace UnitTest
 
         AZ::Vector3 m_outPosition = {};
         AZ::Vector3 m_outNormal = {};
-        SurfaceData::SurfaceTagWeightMap m_outMasks;
+        SurfaceData::SurfaceTagWeights m_outMasks;
         void GetSurfacePoints([[maybe_unused]] const AZ::Vector3& inPosition, [[maybe_unused]] const SurfaceData::SurfaceTagVector& masks, SurfaceData::SurfacePointList& surfacePointList) const override
         {
             ++m_count;

@@ -226,7 +226,7 @@ namespace GradientSignal
 
             surfacePointList.ModifySurfaceWeights(
                 GetEntityId(), 
-                [this, validShapeBounds, shapeConstraintBounds](const AZ::Vector3& position, SurfaceData::SurfaceTagWeightMap& weights)
+                [this, validShapeBounds, shapeConstraintBounds](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
                 {
                     bool inBounds = true;
 
@@ -251,7 +251,7 @@ namespace GradientSignal
                         const float value = m_gradientSampler.GetValue(sampleParams);
                         if (value >= m_configuration.m_thresholdMin && value <= m_configuration.m_thresholdMax)
                         {
-                            AddMaxValueForMasks(weights, m_configuration.m_modifierTags, value);
+                            weights.AddMaxValueForMasks(m_configuration.m_modifierTags, value);
                         }
                     }
                 });

@@ -159,19 +159,11 @@ namespace Terrain
 
         const bool isHole = !isTerrainValidAtPoint;
 
-        SurfaceData::SurfaceTagWeightMap weights;
-        // Preallocate enough space for all of our terrain's surface tags, plus the default "terrain" / "terrainHole" tag.
-        weights.reserve(terrainSurfacePoint.m_surfaceTags.size() + 1);
-
-        // Add all of the surface tags that the terrain has at this point.
-        for (auto& tag : terrainSurfacePoint.m_surfaceTags)
-        {
-            weights[tag.m_surfaceType] = tag.m_weight;
-        }
+        SurfaceData::SurfaceTagWeights weights(terrainSurfacePoint.m_surfaceTags);
 
         // Always add a "terrain" or "terrainHole" tag.
         const AZ::Crc32 terrainTag = isHole ? Constants::s_terrainHoleTagCrc : Constants::s_terrainTagCrc;
-        weights[terrainTag] = 1.0f;
+        weights.AddSurfaceTagWeight(terrainTag, 1.0f);
 
         surfacePointList.AddSurfacePoint(GetEntityId(), terrainSurfacePoint.m_position, terrainSurfacePoint.m_normal, weights);
     }
