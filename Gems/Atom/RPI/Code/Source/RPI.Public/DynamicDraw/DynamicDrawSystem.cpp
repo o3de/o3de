@@ -70,7 +70,7 @@ namespace AZ
         void DynamicDrawSystem::AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawPackets);
-            m_drawPackets[scene].emplace_back(ConstPtr<RHI::DrawPacket>(AZStd::move(drawPacket.get())));
+            m_drawPackets[scene].emplace_back(ConstPtr<RHI::DrawPacket>(drawPacket.release()));
         }
 
         void DynamicDrawSystem::AddDrawPacket(Scene* scene, ConstPtr<RHI::DrawPacket> drawPacket)
