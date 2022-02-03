@@ -535,7 +535,21 @@ namespace ImageProcessingAtom
         m_image->GetCompressOption().rgbWeight = m_input->m_presetSetting.GetColorWeight();
         m_image->GetCompressOption().discardAlpha = m_input->m_presetSetting.m_discardAlpha;
 
-        m_image->ConvertFormat(m_input->m_presetSetting.m_pixelFormat);
+        // Convert to a pixel format based on the desired handling
+        // The default behavior will choose the output format specified by the preset
+        EPixelFormat outputFormat;
+        switch (m_input->m_presetSetting.m_outputTypeHandling)
+        {
+        case PresetSettings::OutputTypeHandling::UseInputFormat:
+            outputFormat = m_input->m_inputImage->GetPixelFormat();
+            break;
+        case PresetSettings::OutputTypeHandling::UseSpecifiedOutputType:
+        default:
+            outputFormat = m_input->m_presetSetting.m_pixelFormat;
+            break;
+        }
+
+        m_image->ConvertFormat(outputFormat);
 
         return true;
     }
