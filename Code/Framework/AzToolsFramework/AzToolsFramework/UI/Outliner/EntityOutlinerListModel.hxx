@@ -156,7 +156,6 @@ namespace AzToolsFramework
         void ProcessEntityUpdates();
 
     Q_SIGNALS:
-        void ExpandEntity(const AZ::EntityId& entityId, bool expand);
         void SelectEntity(const AZ::EntityId& entityId, bool select);
         void EnableSelectionUpdates(bool enable);
         void ResetFilter();
@@ -190,7 +189,6 @@ namespace AzToolsFramework
         void QueueEntityToExpand(AZ::EntityId entityId, bool expand);
         void ProcessEntityInfoResetEnd();
         AZStd::unordered_set<AZ::EntityId> m_entitySelectQueue;
-        AZStd::unordered_set<AZ::EntityId> m_entityExpandQueue;
         AZStd::unordered_set<AZ::EntityId> m_entityChangeQueue;
         bool m_entityChangeQueued;
         bool m_entityLayoutQueued;

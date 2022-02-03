@@ -211,7 +211,12 @@ namespace PhysX
     {
         ClearHeightfield();
         InitHeightfieldShapeConfiguration();
-        InitStaticRigidBody();
+
+        if (!m_shapeConfig->GetSamples().empty())
+        {
+            InitStaticRigidBody();
+        }
+
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 

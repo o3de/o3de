@@ -125,6 +125,9 @@ namespace AZ
             virtual void SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl) = 0;
             virtual void SetMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridMode mode) = 0;
             virtual void SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures) = 0;
+            virtual void SetVisualizationEnabled(const DiffuseProbeGridHandle& probeGrid, bool visualizationEnabled) = 0;
+            virtual void SetVisualizationShowInactiveProbes(const DiffuseProbeGridHandle& probeGrid, bool visualizationShowInactiveProbes) = 0;
+            virtual void SetVisualizationSphereRadius(const DiffuseProbeGridHandle& probeGrid, float visualizationSphereRadius) = 0;
 
             virtual void BakeTextures(
                 const DiffuseProbeGridHandle& probeGrid,

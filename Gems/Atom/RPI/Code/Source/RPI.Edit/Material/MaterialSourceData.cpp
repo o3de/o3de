@@ -217,14 +217,14 @@ namespace AZ
                 return Failure();
             }
 
-            MaterialTypeSourceData materialTypeSourceData;
-            if (!AZ::RPI::JsonUtils::LoadObjectFromFile(materialTypeSourcePath, materialTypeSourceData))
+            auto materialTypeLoadOutcome = MaterialUtils::LoadMaterialTypeSourceData(materialTypeSourcePath);
+            if (!materialTypeLoadOutcome)
             {
                 AZ_Error("MaterialSourceData", false, "Failed to load MaterialTypeSourceData: '%s'.", materialTypeSourcePath.c_str());
                 return Failure();
             }
 
-            materialTypeSourceData.ResolveUvEnums();
+            MaterialTypeSourceData materialTypeSourceData = materialTypeLoadOutcome.TakeValue();
 
             const auto materialTypeAsset =
                 materialTypeSourceData.CreateMaterialTypeAsset(materialTypeAssetId.GetValue(), materialTypeSourcePath, elevateWarnings);

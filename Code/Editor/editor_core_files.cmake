@@ -22,13 +22,6 @@ set(FILES
     Controls/ReflectedPropertyControl/ReflectedVar.h
     Controls/ReflectedPropertyControl/ReflectedVarWrapper.cpp
     Controls/ReflectedPropertyControl/ReflectedVarWrapper.h
-    Controls/QBitmapPreviewDialog.cpp
-    Controls/QBitmapPreviewDialog.h
-    Controls/QBitmapPreviewDialog.ui
-    Controls/QBitmapPreviewDialogImp.cpp
-    Controls/QBitmapPreviewDialogImp.h
-    Controls/QToolTipWidget.h
-    Controls/QToolTipWidget.cpp
     UsedResources.cpp
     LyViewPaneNames.h
     QtViewPaneManager.cpp

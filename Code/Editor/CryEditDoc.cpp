@@ -371,7 +371,7 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
 
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
         if (!usePrefabSystemForLevels)
         {
@@ -636,7 +636,7 @@ bool CCryEditDoc::SaveModified()
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (!usePrefabSystemForLevels)
     {
         QMessageBox saveModifiedMessageBox(AzToolsFramework::GetActiveWindow());
@@ -699,7 +699,7 @@ void CCryEditDoc::OnFileSaveAs()
             CCryEditApp::instance()->AddToRecentFileList(levelFileDialog.GetFileName());
             bool usePrefabSystemForLevels = false;
             AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
             if (usePrefabSystemForLevels)
             {
                 AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId =
@@ -728,7 +728,7 @@ bool CCryEditDoc::BeforeOpenDocument(const QString& lpszPathName, TOpenDocContex
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!usePrefabSystemForLevels)
     {

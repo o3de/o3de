@@ -18,6 +18,7 @@ namespace AZ
         using ShaderOptionIndex = RHI::Handle<uint32_t, class ShaderOptionIndexNamespace>;  //!< ShaderOption index in the group layout
         using ShaderOptionValue = RHI::Handle<uint32_t, class ShaderOptionValueNamespace>;  //!< Numerical representation for a single value in the ShaderOption
         using ShaderOptionValuePair = AZStd::pair<Name/*valueName*/, ShaderOptionValue>;  //!< Provides a string representation for a ShaderOptionValue
+        using ShaderOptionValues = AZStd::vector<ShaderOptionValuePair>; //!< List of possible values for a shader option
 
         enum class ShaderOptionType : uint32_t
         {

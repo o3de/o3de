@@ -23,6 +23,9 @@ namespace AZ
             UnsupportedFormat
         };
 
+        //! Calculates the maximum difference of the rgb channels between two image buffers.
+        int16_t CalcMaxChannelDifference(AZStd::span<const uint8_t> bufferA, AZStd::span<const uint8_t> bufferB, size_t index);
+
         //! Compares two images and returns the RMS (root mean square) of the difference.
         //! @param buffer[A|B] the raw buffer of image data
         //! @param size[A|B] the dimensions of the image in the buffer

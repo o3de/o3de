@@ -348,7 +348,7 @@ namespace UnitTest
             {
                 AZ::SceneAPI::DataTypes::IMeshGroup* meshGroup = reinterpret_cast<AZ::SceneAPI::DataTypes::IMeshGroup*>(scene->GetManifest().GetValue(i).get());
                 AZStd::string groupName = meshGroup->GetName();
-                EXPECT_TRUE(groupName.starts_with("manifest_src_file_xml"));
+                EXPECT_TRUE(groupName.starts_with("default_mock_"));
             }
         }
     }
