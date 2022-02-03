@@ -63,6 +63,10 @@ namespace AZ
             //! Adds pass to list of children
             void AddChild(const Ptr<Pass>& child);
 
+            //! Inserts a pass at specified position
+            //! If the position is invalid, the child pass won't be added, and the function returns false
+            bool InsertChild(const Ptr<Pass>& child, ChildPassIndex position);
+
             //! Searches for a child pass with the given name. Returns the child's index if found, null index otherwise
             ChildPassIndex FindChildPassIndex(const Name& passName) const;
 
