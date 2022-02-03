@@ -719,8 +719,12 @@ namespace AZ {
 
 #endif // DEBUG_ALLOCATOR
 
-        size_t mTotalAllocatedSizeBuckets = 0;
-        size_t mTotalCapacitySizeBuckets = 0;
+        // Bucket-dependent counters need to atomic since the locks that protect bucket allocations are per bucket
+        // So multiple threads could be updating these counters
+        AZStd::atomic<size_t> mTotalAllocatedSizeBuckets = 0;
+        AZStd::atomic<size_t> mTotalCapacitySizeBuckets = 0;
+        // In the case of tree allocations, there is a lock on the tree, so these counters are protected from multiple
+        // threads through that lock
         size_t mTotalAllocatedSizeTree = 0;
         size_t mTotalCapacitySizeTree = 0;
     public:

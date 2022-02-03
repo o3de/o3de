@@ -15,7 +15,6 @@
 
 // Editor
 #include "ReflectedPropertyCtrl.h"
-#include "UIEnumsDatabase.h"
 
 namespace {
 
@@ -253,41 +252,6 @@ void ReflectedVarEnumAdapter::OnVariableChange([[maybe_unused]] IVariable* pVari
         UpdateReflectedVarEnums();
     }
 }
-
-void ReflectedVarDBEnumAdapter::SetVariable(IVariable *pVariable)
-{
-    Prop::Description desc(pVariable);
-    m_pEnumDBItem = desc.m_pEnumDBItem;
-    m_reflectedVar.reset(new CReflectedVarEnum<AZStd::string>(pVariable->GetHumanName().toUtf8().data()));
-    if (m_pEnumDBItem)
-    {
-        for (int i = 0; i < m_pEnumDBItem->strings.size(); i++)
-        {
-            QString name = m_pEnumDBItem->strings[i];
-            m_reflectedVar->addEnum( m_pEnumDBItem->NameToValue(name).toUtf8().data(), name.toUtf8().data() );
-        }
-    }
-}
-
-void ReflectedVarDBEnumAdapter::SyncReflectedVarToIVar(IVariable *pVariable)
-{
-    const AZStd::string valueStr = pVariable->GetDisplayValue().toUtf8().data();
-    const AZStd::string value = m_pEnumDBItem ? AZStd::string(m_pEnumDBItem->ValueToName(valueStr.c_str()).toUtf8().data()) : valueStr;
-    m_reflectedVar->setEnumByName(value);
-
-}
-
-void ReflectedVarDBEnumAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
-{
-    QString iVarVal = m_reflectedVar->m_selectedEnumName.c_str();
-    if (m_pEnumDBItem)
-    {
-        iVarVal = m_pEnumDBItem->NameToValue(iVarVal);
-    }
-    pVariable->SetDisplayValue(iVarVal);
-}
-
-
 
 void ReflectedVarVector2Adapter::SetVariable(IVariable *pVariable)
 {

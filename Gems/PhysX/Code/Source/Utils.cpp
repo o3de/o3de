@@ -133,7 +133,7 @@ namespace PhysX
         {
             physx::PxHeightField* heightfield = nullptr;
 
-            const AZ::Vector2 gridSpacing = heightfieldConfig.GetGridResolution();
+            const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
 
             const int32_t numCols = heightfieldConfig.GetNumColumns();
             const int32_t numRows = heightfieldConfig.GetNumRows();

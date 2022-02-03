@@ -88,7 +88,37 @@ namespace AZ
         {
         }
         
-        MaterialPropertyId::MaterialPropertyId(const AZStd::array_view<AZStd::string> names)
+        MaterialPropertyId::MaterialPropertyId(const AZStd::span<AZStd::string> groupNames, AZStd::string_view propertyName)
+        {
+            for (const auto& name : groupNames)
+            {
+                if (!IsValidName(name))
+                {
+                    AZ_Error("MaterialPropertyId", false, "'%s' is not a valid identifier.", name.c_str());
+                    return;
+                }
+            }
+            
+            if (!IsValidName(propertyName))
+            {
+                AZ_Error("MaterialPropertyId", false, "'%.*s' is not a valid identifier.", AZ_STRING_ARG(propertyName));
+                return;
+            }
+
+            if (groupNames.empty())
+            {
+                m_fullName = propertyName;
+            }
+            else
+            {
+                AZStd::string fullName;
+                AzFramework::StringFunc::Join(fullName, groupNames.begin(), groupNames.end(), ".");
+                fullName = AZStd::string::format("%s.%.*s", fullName.c_str(), AZ_STRING_ARG(propertyName));
+                m_fullName = fullName;
+            }
+        }
+
+        MaterialPropertyId::MaterialPropertyId(const AZStd::span<AZStd::string> names)
         {
             for (const auto& name : names)
             {

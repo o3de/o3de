@@ -246,4 +246,16 @@ namespace UnitTest
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         }
     }
+
+    TEST_F(SpanTestFixture, CanInitializeFixedArrayToDynamicExtentSpan)
+    {
+        constexpr size_t arrayElementCount = 5;
+        static constexpr AZStd::array<int, arrayElementCount> intArray{ 4, 5, 6, 1, 7 };
+
+        constexpr AZStd::span<const int, AZStd::dynamic_extent> arraySpan(intArray);
+        static_assert(intArray.data() == arraySpan.data());
+
+        constexpr AZStd::span<const int, arrayElementCount> arraySpanFixedExtent(intArray);
+        static_assert(intArray.data() == arraySpanFixedExtent.data());
+    }
 }

@@ -712,6 +712,7 @@ namespace ScriptCanvasEditor
         bool rollbackRequired = false;
         nodeEntity->Deactivate();
         RemoveNode(oldNode->GetEntityId());
+
         nodeEntity->RemoveComponent(oldNode);
 
         nodeEntity->AddComponent(newNode);

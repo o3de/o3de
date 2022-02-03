@@ -256,8 +256,6 @@ public:
 
     //! Returns true if object hidden.
     bool IsHidden() const;
-    //! Check against min spec.
-    bool IsHiddenBySpec() const;
     //! Returns true if object frozen.
     virtual bool IsFrozen() const;
     //! Returns true if object is shared between missions.
@@ -465,12 +463,6 @@ public:
     //! Check if specified object is very similar to this one.
     virtual bool IsSimilarObject(CBaseObject* pObject);
 
-    //////////////////////////////////////////////////////////////////////////
-    // Object minimal usage spec (All/Low/Medium/High)
-    //////////////////////////////////////////////////////////////////////////
-    uint32 GetMinSpec() const { return m_nMinSpec; }
-    virtual void SetMinSpec(uint32 nSpec, bool bSetChildren = true);
-
     //! In This function variables of the object must be initialized.
     virtual void InitVariables() {};
 
@@ -668,7 +660,6 @@ private:
     mutable uint32 m_bMatrixValid : 1;
     mutable uint32 m_bWorldBoxValid : 1;
     uint32 m_bInSelectionBox : 1;
-    uint32 m_nMinSpec : 8;
 
     Vec3 m_vDrawIconPos;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING

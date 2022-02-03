@@ -24,6 +24,8 @@ namespace ProjectSettingsTool
 
         // Returns true if valid cross platform file or directory name
         FunctorValidator::ReturnType FileName(const QString& name);
+        // Returns true if valid iOS file or directory name
+        FunctorValidator::ReturnType IOSFileName(const QString& name);
         // Returns true if valid cross platform file or directory name or empty
         FunctorValidator::ReturnType FileNameOrEmpty(const QString& name);
         // Returns true if string isn't empty
