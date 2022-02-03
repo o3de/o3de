@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
     class LabelButton
         : public QLabel
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit LabelButton(QWidget* parent = nullptr);

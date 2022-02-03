@@ -146,7 +146,11 @@
             // decal
             "_decal": [ "Decal_AlbedoWithOpacity" ],
             // ui
-            "_ui": [ "UserInterface_Compressed","UserInterface_Lossless" ]
+            "_ui": [ "UserInterface_Compressed","UserInterface_Lossless" ],
+            "_gsi": [ "GSI" ],
+            "_gsi8": [ "GSI8" ],
+            "_gsi16": [ "GSI16" ],
+            "_gsi32": [ "GSI32" ]
         },
         "DefaultPreset": "Albedo",
         "DefaultPresetAlpha": "AlbedoWithGenericAlpha"
