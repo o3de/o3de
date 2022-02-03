@@ -7,6 +7,7 @@
  */
 
 
+#include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -223,9 +224,9 @@ namespace ImageProcessingAtom
     {
         AZStd::string targetExtension = entry->GetExtension();
 
-        for (int i = 0; i < s_TotalSupportedImageExtensions; i++)
+        for (int i = 0; i < AZ::RPI::s_TotalSupportedImageExtensions; i++)
         {
-            if (AZStd::wildcard_match(s_SupportedImageExtensions[i], targetExtension.c_str()))
+            if (AZStd::wildcard_match(AZ::RPI::s_SupportedImageExtensions[i], targetExtension.c_str()))
             {
                 return true;
             }

@@ -49,20 +49,6 @@ namespace ImageProcessingAtom
     static const unsigned int s_MinReduceLevel = 0;
     static const unsigned int s_MaxReduceLevel = 5;
 
-    static const int s_TotalSupportedImageExtensions = 10;
-    static const char* s_SupportedImageExtensions[s_TotalSupportedImageExtensions] = {
-        "*.tif",
-        "*.tiff",
-        "*.png",
-        "*.bmp",
-        "*.jpg",
-        "*.jpeg",
-        "*.tga",
-        "*.gif",
-        "*.dds",
-        "*.exr"
-    };
-
     enum class RGBWeight : AZ::u32
     {
         uniform,        // uniform weights (1.0, 1.0, 1.0) (default)

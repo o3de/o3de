@@ -133,7 +133,8 @@ namespace AZ
                 case AZ::RHI::Format::R16G16_UNORM:
                 case AZ::RHI::Format::R16G16B16A16_UNORM:
                 {
-                    return mem[index] / static_cast<float>(std::numeric_limits<AZ::u16>::max());
+                    auto actualMem = reinterpret_cast<const AZ::u16*>(mem);
+                    return actualMem[index] / static_cast<float>(std::numeric_limits<AZ::u16>::max());
                 }
                 case AZ::RHI::Format::R16_SNORM:
                 case AZ::RHI::Format::R16G16_SNORM:
@@ -480,14 +481,13 @@ namespace AZ
             const AZ::RHI::ImageDescriptor imageDescriptor = imageAsset->GetImageDescriptor();
             auto width = imageDescriptor.m_size.m_width;
             const uint32_t numComponents = AZ::RHI::GetFormatComponentCount(imageDescriptor.m_format);
-            const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format) / numComponents;
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
-                    size_t imageDataIndex = (y * width + x) * pixelSize + componentIndex;
+                    size_t imageDataIndex = (y * width + x) * numComponents + componentIndex;
 
                     auto& outValue = outValues[outValuesIndex++];
                     outValue = Internal::RetrieveFloatValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
@@ -513,14 +513,13 @@ namespace AZ
             const AZ::RHI::ImageDescriptor imageDescriptor = imageAsset->GetImageDescriptor();
             auto width = imageDescriptor.m_size.m_width;
             const uint32_t numComponents = AZ::RHI::GetFormatComponentCount(imageDescriptor.m_format);
-            const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format) / numComponents;
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
-                    size_t imageDataIndex = (y * width + x) * pixelSize + componentIndex;
+                    size_t imageDataIndex = (y * width + x) * numComponents + componentIndex;
 
                     auto& outValue = outValues[outValuesIndex++];
                     outValue = Internal::RetrieveUintValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
@@ -546,14 +545,13 @@ namespace AZ
             const AZ::RHI::ImageDescriptor imageDescriptor = imageAsset->GetImageDescriptor();
             auto width = imageDescriptor.m_size.m_width;
             const uint32_t numComponents = AZ::RHI::GetFormatComponentCount(imageDescriptor.m_format);
-            const uint32_t pixelSize = AZ::RHI::GetFormatSize(imageDescriptor.m_format) / numComponents;
 
             size_t outValuesIndex = 0;
             for (uint32_t y = topLeft.second; y < bottomRight.second; ++y)
             {
                 for (uint32_t x = topLeft.first; x < bottomRight.first; ++x)
                 {
-                    size_t imageDataIndex = (y * width + x) * pixelSize + componentIndex;
+                    size_t imageDataIndex = (y * width + x) * numComponents + componentIndex;
 
                     auto& outValue = outValues[outValuesIndex++];
                     outValue = Internal::RetrieveIntValue(imageData.data(), imageDataIndex, imageDescriptor.m_format);
