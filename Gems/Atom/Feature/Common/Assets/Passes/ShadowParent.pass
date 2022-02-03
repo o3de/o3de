@@ -12,6 +12,10 @@
                     "Name": "SkinnedMeshes",
                     "SlotType": "Input"
                 },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input"
+                },                
                 // Outputs...
                 {
                     "Name": "DirectionalShadowmap",
@@ -157,7 +161,14 @@
                                 "Pass": "CascadedShadowmapsPass",
                                 "Attachment": "Shadowmap"
                             }
-                        }   
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        }                          
                                                                    
                     ]                    
                 }                

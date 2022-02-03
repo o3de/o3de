@@ -14,7 +14,8 @@
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 #include <viewsrg.srgi>
-
+#include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
+#include <Atom/Features/Shadow/NormalOffsetShadows.azsli>
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
@@ -34,20 +35,117 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };    
     
     Constants m_constantData;
-    Texture2DArray<float> m_directionalLightShadowmap;    
+    Texture2DArray<float> m_directionalLightShadowmap;   
+    Texture2D<float> m_depth;
 }
 
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
+class DirectionalLightShadow
+{
+    // This outputs the coordinate in shadowmap Texture space of the given point.
+    void GetShadowCoords(
+        uint lightIndex,
+        float3 worldPosition,
+        float3 worldNormal,
+        out float3 shadowCoords[ViewSrg::MaxCascadeCount])
+    {
+        const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
+
+        const float4x4 lightViewToShadowmapMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_lightViewToShadowmapMatrices;
+        const float4x4 worldToLightViewMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_worldToLightViewMatrices;
+
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[lightIndex].m_cascadeCount;
+        const float3 shadowOffset = ComputeNormalShadowOffset(ViewSrg::m_directionalLightShadows[lightIndex].m_normalShadowBias, worldNormal, ViewSrg::m_directionalLightShadows[lightIndex].m_shadowmapSize);
+
+        for (uint index = 0; index < cascadeCount; ++index)
+        {        
+            float4 lightSpacePos = mul(worldToLightViewMatrices[index], float4(worldPosition + shadowOffset, 1.));
+            lightSpacePos.z += shadowBias;
+            
+            const float4 clipSpacePos = mul(lightViewToShadowmapMatrices[index], lightSpacePos);                
+            shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
+        }
+    }
+
+
+
+    bool2 IsShadowed(float3 shadowCoord, uint indexOfCascade)
+    {
+        static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
+        static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
+
+        // size is the shadowap's width and height.
+        const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
+
+        [branch]
+        if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
+            shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin)
+        {
+            const float3 coord = float3(shadowCoord.xy, indexOfCascade);
+            const float depthInShadowmap = shadowmap.Sample(PassSrg::LinearSampler, coord).r;
+            // Test the case where the shadowed pixel is nearer than the maximal depth
+            // of the cascade.  Otherwise, escalate the next cascade.
+            if (shadowCoord.z < 1. - DepthMargin)
+            {
+                const float depthDiff = shadowCoord.z - depthInShadowmap;
+                return bool2(true, (depthDiff > m_slopeBias[indexOfCascade]));
+            }
+        }
+        return bool2(false, false);
+    }
+    
+    float GetVisibilityFromLightNoFilter(float2 screenUv)
+    {       
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+        {
+            const bool2 checkedShadowed = IsShadowed(
+                m_shadowCoords[indexOfCascade],
+                indexOfCascade);
+            if (checkedShadowed.x)
+            {
+                // m_debugInfo.m_cascadeIndex = indexOfCascade;
+                return checkedShadowed.y ? 0. : 1.;
+            }
+        }
+        // m_debugInfo.m_cascadeIndex = cascadeCount;
+        return 1.;
+    }    
+    
+    
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount];
+    float m_slopeBias[ViewSrg::MaxCascadeCount];
+    uint m_lightIndex;
+};
+
+
+
+
+
 PSOutput MainPS(VSOutput IN)
 {
-    const int lightIndex = 0;
+    DirectionalLightShadow directionalLightShadow;
+
+    const uint lightIndex = 0;
     float3 coord = 0;
     float v = PassSrg::m_directionalLightShadowmap.Sample(PassSrg::LinearSampler, coord);
     const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
-                  
+    const float zDepth = PassSrg::m_depth.Sample(PassSrg::LinearSampler, IN.m_texCoord);
+
+    float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_constantData.m_screenSize, zDepth, IN.m_position.xy).xyz;
+    
+    const float distanceFromOrigin = length(surfacePosWS);
+    const float3 worldNormal = float3(0,0,1);
+    
+    directionalLightShadow.GetShadowCoords(lightIndex, surfacePosWS, worldNormal, directionalLightShadow.m_shadowCoords);
+    float shadow = directionalLightShadow.GetVisibilityFromLightNoFilter(IN.m_position.xy);
+    
     PSOutput OUT;
-    OUT.m_color.rgb = shadowBias;//PassSrg::m_constantData.m_screenSize.x + v *0.001; 
+    OUT.m_color.rgb = shadow;
 
     return OUT; 
 }

@@ -12,7 +12,13 @@
                     "SlotType": "Input",
                     "ShaderInputName": "m_directionalLightShadowmap",
                     "ScopeAttachmentUsage": "Shader"      
-                },                            
+                },      
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depth",
+                    "ScopeAttachmentUsage": "Shader"      
+                },                           
                 {
                     "Name": "Output",
                     "SlotType": "Output",
