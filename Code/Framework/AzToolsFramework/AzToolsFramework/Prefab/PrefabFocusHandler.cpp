@@ -212,7 +212,7 @@ namespace AzToolsFramework::Prefab
 
         m_rootAliasFocusPath = focusedInstance->get().GetAbsoluteInstanceAliasPath();
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
-        m_rootAliasFocusPathLength = AZStd::distance(m_rootAliasFocusPath.begin(), m_rootAliasFocusPath.end());
+        m_rootAliasFocusPathLength = aznumeric_cast<int>(AZStd::distance(m_rootAliasFocusPath.begin(), m_rootAliasFocusPath.end()));
 
         // Focus on the descendants of the container entity in the Editor, if the interface is initialized.
         if (m_focusModeInterface)
