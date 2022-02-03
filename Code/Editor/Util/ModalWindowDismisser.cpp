@@ -14,7 +14,7 @@
 
 // Qt
 #include <QDialog>
-
+#pragma optimize("", off)
 ModalWindowDismisser::ModalWindowDismisser()
 {
     qApp->installEventFilter(this);
@@ -27,6 +27,7 @@ ModalWindowDismisser::~ModalWindowDismisser()
         qApp->removeEventFilter(this);
     }
 }
+static std::vector<QEvent::Type> types;
 
 bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
 {
@@ -34,9 +35,10 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
     {
         if (dialog->isModal())
         {
-            // if we wait until a Polish event arrives, we can be sure the dialog is fully open
+            // if we wait until a Paint event arrives, we can be sure the dialog is fully open
             // and that close() will work correctly.
-            if (event->type() == QEvent::Polish)
+            types.push_back(event->type());
+            if (event->type() == QEvent::PolishRequest)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
                 if (it == m_windows.end())
