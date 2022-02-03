@@ -16,7 +16,6 @@
 #include <ScriptCanvas/Core/SlotNames.h>
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
-#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Utils/VersionConverters.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 #include <ScriptCanvas/Variable/VariableBus.h>

@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
     class GemsSubWidget
         : public QWidget
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         GemsSubWidget(QWidget* parent = nullptr);

@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QAction>
 #include <QToolBar>
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
+#include <Viewport/MaterialViewportNotificationBus.h>
 #endif
 
 namespace MaterialEditor

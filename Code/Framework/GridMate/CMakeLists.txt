@@ -18,7 +18,6 @@ ly_add_target(
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-        ${common_dir}/gridmate_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .

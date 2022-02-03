@@ -162,6 +162,7 @@ namespace AZ
             RHI::DrawListTag GetDrawListTag();
 
             //! Create a draw srg
+            //! Note: the draw srg can only be used in the current frame. It can't be cached and used for following frames.
             Data::Instance<ShaderResourceGroup> NewDrawSrg();
 
             //! Get per context srg

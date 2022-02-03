@@ -12,6 +12,6 @@ namespace Platform
 {
     AzQtComponents::WindowDecorationWrapper::Option GetWindowDecorationWrapperOption()
     {
-        return AzQtComponents::WindowDecorationWrapper::OptionDisabled;
+        return AzQtComponents::WindowDecorationWrapper::OptionNone;
     }
 }

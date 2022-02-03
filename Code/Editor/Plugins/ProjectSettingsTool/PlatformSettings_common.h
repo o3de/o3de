@@ -22,7 +22,6 @@ namespace ProjectSettingsTool
         static const AZ::Crc32 Obfuscated = AZ_CRC("ObfuscatedText");
         // Used as a tooltip and for distinguising linked properties
         static const AZ::Crc32 PropertyIdentfier = AZ_CRC("PropertyIdentfier");
-        static const AZ::Crc32 LinkedProperty = AZ_CRC("LinkedProperty");
         static const AZ::Crc32 DefaultPath = AZ_CRC("DefaultPath");
         static const AZ::Crc32 DefaultImagePreview = AZ_CRC("DefaultImagePreview");
         static const AZ::Crc32 ObfuscatedText = AZ_CRC("ObfuscatedText");

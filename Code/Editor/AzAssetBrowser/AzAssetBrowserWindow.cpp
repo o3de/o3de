@@ -32,6 +32,15 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
 
+namespace AzToolsFramework
+{
+    namespace AssetBrowser
+    {
+        static constexpr const char* CollapseAllIcon = "Assets/Editor/Icons/AssetBrowser/Collapse_All.svg";
+        static constexpr const char* MenuIcon = ":/Menu/menu.svg";
+    } // namespace AssetBrowser
+} // namespace AzToolsFramework
+
 class ListenerForShowAssetEditorEvent
     : public QObject
     , private AzToolsFramework::EditorEvents::Bus::Handler
@@ -87,10 +96,21 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_assetBrowserModel->SetFilterModel(m_filterModel.data());
 
+    m_ui->m_collapseAllButton->setAutoRaise(true); // hover highlight
+    m_ui->m_collapseAllButton->setIcon(QIcon(AzAssetBrowser::CollapseAllIcon));
+
+    connect(
+        m_ui->m_collapseAllButton, &QToolButton::clicked, this,
+        [this]()
+        {
+            m_ui->m_assetBrowserTreeViewWidget->collapseAll();
+        });
+
     if (ed_useNewAssetBrowserTableView)
     {
         m_ui->m_toggleDisplayViewBtn->setVisible(true);
-        m_ui->m_toggleDisplayViewBtn->setIcon(QIcon(":/Menu/menu.svg"));
+        m_ui->m_toggleDisplayViewBtn->setAutoRaise(true);
+        m_ui->m_toggleDisplayViewBtn->setIcon(QIcon(AzAssetBrowser::MenuIcon));
 
         m_tableModel->setFilterRole(Qt::DisplayRole);
         m_tableModel->setSourceModel(m_filterModel.data());

@@ -24,7 +24,7 @@ AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
-    //! AtomToolsDocumentSystemComponent is the central component of the Material Editor Core gem
+    //! AtomToolsDocumentSystemComponent is the central component for managing documents
     class AtomToolsDocumentSystemComponent
         : public AZ::Component
         , private AtomToolsDocumentNotificationBus::Handler
@@ -74,6 +74,7 @@ namespace AtomToolsFramework
         bool SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath) override;
         bool SaveDocumentAsChild(const AZ::Uuid& documentId, AZStd::string_view targetPath) override;
         bool SaveAllDocuments() override;
+        AZ::u32 GetDocumentCount() const override;
         ////////////////////////////////////////////////////////////////////////
 
         AZ::Uuid OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen);

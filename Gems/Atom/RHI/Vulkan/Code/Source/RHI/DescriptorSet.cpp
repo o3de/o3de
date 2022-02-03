@@ -39,7 +39,7 @@ namespace AZ
             }            
         }
 
-        void DescriptorSet::UpdateBufferViews(uint32_t layoutIndex, const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufViews)
+        void DescriptorSet::UpdateBufferViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufViews)
         {
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
             VkDescriptorType type = layout.GetDescriptorType(layoutIndex);
@@ -119,7 +119,7 @@ namespace AZ
             m_updateData.push_back(AZStd::move(data));
         }
 
-        void DescriptorSet::UpdateImageViews(uint32_t layoutIndex, const AZStd::array_view<RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType)
+        void DescriptorSet::UpdateImageViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType)
         {
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
 
@@ -169,7 +169,7 @@ namespace AZ
             m_updateData.push_back(AZStd::move(data));
         }
 
-        void DescriptorSet::UpdateSamplers(uint32_t layoutIndex, const AZStd::array_view<RHI::SamplerState>& samplers)
+        void DescriptorSet::UpdateSamplers(uint32_t layoutIndex, const AZStd::span<const RHI::SamplerState>& samplers)
         {
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -189,7 +189,7 @@ namespace AZ
             m_updateData.push_back(AZStd::move(data));
         }
 
-        void DescriptorSet::UpdateConstantData(AZStd::array_view<uint8_t> rawData)
+        void DescriptorSet::UpdateConstantData(AZStd::span<const uint8_t> rawData)
         {
             AZ_Assert(m_constantDataBuffer, "Null constant buffer");
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;

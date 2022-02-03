@@ -477,6 +477,22 @@
                 "Path": "Passes/DiffuseComposite.pass"
             },
             {
+                "Name": "DiffuseProbeGridVisualizationPreparePassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationPrepare.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridVisualizationAccelerationStructurePassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationAccelerationStructure.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridVisualizationRayTracingPassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationRayTracing.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridVisualizationCompositePassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationComposite.pass"
+            },
+            {
                 "Name": "DiffuseGlobalFullscreenPassTemplate",
                 "Path": "Passes/DiffuseGlobalFullscreen.pass"
             },

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#if ENABLE_TRANSMISSION
+
 class TransmissionSurfaceData
 {
     float3 tint;
@@ -23,3 +25,5 @@ void TransmissionSurfaceData::InitializeToZero()
     thickness = 0.0f;
     transmissionParams = float4(0.0f, 0.0f, 0.0f, 0.0f);
 }
+
+#endif

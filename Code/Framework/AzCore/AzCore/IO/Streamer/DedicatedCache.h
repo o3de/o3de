@@ -11,15 +11,21 @@
 #include <AzCore/IO/Streamer/BlockCache.h>
 #include <AzCore/IO/Streamer/FileRange.h>
 #include <AzCore/IO/Streamer/Statistics.h>
-#include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
+#include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/std/limits.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/limits.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ::IO
 {
+    namespace Requests
+    {
+        struct CreateDedicatedCacheData;
+        struct DestroyDedicatedCacheData;
+    } // namespace Requests
+
     struct DedicatedCacheConfig final :
         public IStreamerStackConfig
     {
@@ -56,16 +62,19 @@ namespace AZ::IO
 
         void UpdateStatus(Status& status) const override;
 
-        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
-            StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
+        void UpdateCompletionEstimates(
+            AZStd::chrono::system_clock::time_point now,
+            AZStd::vector<FileRequest*>& internalPending,
+            StreamerContext::PreparedQueue::iterator pendingBegin,
+            StreamerContext::PreparedQueue::iterator pendingEnd) override;
 
         void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
 
     private:
-        void CreateDedicatedCache(FileRequest* request, FileRequest::CreateDedicatedCacheData& data);
-        void DestroyDedicatedCache(FileRequest* request, FileRequest::DestroyDedicatedCacheData& data);
+        void CreateDedicatedCache(FileRequest* request, Requests::CreateDedicatedCacheData& data);
+        void DestroyDedicatedCache(FileRequest* request, Requests::DestroyDedicatedCacheData& data);
 
-        void ReadFile(FileRequest* request, FileRequest::ReadData& data);
+        void ReadFile(FileRequest* request, Requests::ReadData& data);
         size_t FindCache(const RequestPath& filename, FileRange range);
         size_t FindCache(const RequestPath& filename, u64 offset);
 

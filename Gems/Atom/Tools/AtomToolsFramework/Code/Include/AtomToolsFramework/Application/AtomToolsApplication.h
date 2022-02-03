@@ -16,7 +16,6 @@
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 
 #include <AzFramework/Application/Application.h>
-#include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <AzQtComponents/Application/AzQtApplication.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -34,7 +33,6 @@ namespace AtomToolsFramework
         : public AzFramework::Application
         , public AzQtComponents::AzQtApplication
         , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
-        , protected AzFramework::AssetSystemStatusBus::Handler
         , protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
         , protected AZ::UserSettingsOwnerRequestBus::Handler
         , protected AtomToolsMainWindowNotificationBus::Handler
@@ -78,11 +76,6 @@ namespace AtomToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        // AzFramework::AssetSystemStatusBus::Handler overrides...
-        void AssetSystemAvailable() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
         // AZ::ComponentApplication overrides...
         void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
         //////////////////////////////////////////////////////////////////////////
@@ -107,16 +100,18 @@ namespace AtomToolsFramework
 
         virtual void LoadSettings();
         virtual void UnloadSettings();
+        virtual void ConnectToAssetProcessor();
         virtual void CompileCriticalAssets();
         virtual void ProcessCommandLine(const AZ::CommandLine& commandLine);
 
         static void PyIdleWaitFrames(uint32_t frames);
+        static void PyExit();
 
         AzToolsFramework::TraceLogger m_traceLogger;
 
         AZStd::unique_ptr<AzQtComponents::StyleManager> m_styleManager;
 
-        //! Local user settings are used to store material browser tree expansion state
+        //! Local user settings are used to store asset browser tree expansion state
         AZ::UserSettingsProvider m_localUserSettings;
 
         //! Are local settings loaded

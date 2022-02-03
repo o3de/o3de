@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/EnhancedPBR.materialtype",
     "parentMaterial": "TestData/Materials/StandardPbrTestCases/104_DetailMaps_Normal.material",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "detailLayerGroup": {
             "blendDetailMask": "TestData/Textures/checker8x8_gray_512.png",

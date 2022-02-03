@@ -15,7 +15,7 @@
 #include <ILocalizationManager.h>
 #include "CryPath.h"
 
-#include <LoadScreenBus.h>
+#include <CryCommon/LoadScreenBus.h>
 #include <CryCommon/StaticInstance.h>
 
 #include <AzCore/Time/ITime.h>
@@ -41,7 +41,7 @@ bool CLevelInfo::OpenLevelPak()
 {
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     // The prefab system doesn't use level.pak
     if (usePrefabSystemForLevels)
@@ -62,7 +62,7 @@ void CLevelInfo::CloseLevelPak()
 {
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     // The prefab system doesn't use level.pak
     if (usePrefabSystemForLevels)
@@ -82,7 +82,7 @@ bool CLevelInfo::ReadInfo()
 {
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     // Set up a default game type for legacy code.
     m_defaultGameTypeName = "mission0";

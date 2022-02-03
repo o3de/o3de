@@ -51,6 +51,9 @@ namespace AZ
             virtual void SetVisibility(bool visible) = 0;
             virtual bool GetVisibility() const = 0;
 
+            virtual void SetRayTracingEnabled(bool enabled) = 0;
+            virtual bool GetRayTracingEnabled() const = 0;
+
             virtual AZ::Aabb GetWorldBounds() = 0;
 
             virtual AZ::Aabb GetLocalBounds() = 0;

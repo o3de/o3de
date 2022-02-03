@@ -68,6 +68,7 @@ namespace UnitTest
         AZStd::unique_ptr<NiceMock<UnitTest::MockBoxShapeComponentRequests>> m_boxShapeRequests;
         AZStd::unique_ptr<NiceMock<UnitTest::MockShapeComponentRequests>> m_shapeRequests;
         AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaHeightRequests>> m_terrainAreaHeightRequests;
+        AZStd::unique_ptr<NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus>> m_terrainAreaSurfaceRequests;
 
         void SetUp() override
         {
@@ -84,6 +85,7 @@ namespace UnitTest
             m_boxShapeRequests.reset();
             m_shapeRequests.reset();
             m_terrainAreaHeightRequests.reset();
+            m_terrainAreaSurfaceRequests.reset();
             m_app.Destroy();
         }
 
@@ -118,7 +120,7 @@ namespace UnitTest
         // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
         // on a test-by-test basis.
         AZStd::unique_ptr<Terrain::TerrainSystem> CreateAndActivateTerrainSystem(
-            AZ::Vector2 queryResolution = AZ::Vector2(1.0f),
+            float queryResolution = 1.0f,
             AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-128.0f), AZ::Vector3(128.0f)))
         {
             // Create the terrain system and give it one tick to fully initialize itself.
@@ -159,6 +161,49 @@ namespace UnitTest
 
             ActivateEntity(entity.get());
             return entity;
+        }
+
+        void SetupSurfaceWeightMocks(AZ::Entity* entity, AzFramework::SurfaceData::SurfaceTagWeightList& expectedTags)
+        {
+            const SurfaceData::SurfaceTag tag1 = SurfaceData::SurfaceTag("tag1");
+            const SurfaceData::SurfaceTag tag2 = SurfaceData::SurfaceTag("tag2");
+            const SurfaceData::SurfaceTag tag3 = SurfaceData::SurfaceTag("tag3");
+
+            AzFramework::SurfaceData::SurfaceTagWeight tagWeight1;
+            tagWeight1.m_surfaceType = tag1;
+            tagWeight1.m_weight = 1.0f;
+            expectedTags.push_back(tagWeight1);
+
+            AzFramework::SurfaceData::SurfaceTagWeight tagWeight2;
+            tagWeight2.m_surfaceType = tag2;
+            tagWeight2.m_weight = 0.7f;
+            expectedTags.push_back(tagWeight2);
+
+            AzFramework::SurfaceData::SurfaceTagWeight tagWeight3;
+            tagWeight3.m_surfaceType = tag3;
+            tagWeight3.m_weight = 0.3f;
+            expectedTags.push_back(tagWeight3);
+
+            m_terrainAreaSurfaceRequests = AZStd::make_unique<NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus>>(entity->GetId());
+            ON_CALL(*m_terrainAreaSurfaceRequests, GetSurfaceWeights).WillByDefault(
+                [tagWeight1, tagWeight2, tagWeight3](const AZ::Vector3& position, AzFramework::SurfaceData::SurfaceTagWeightList& surfaceWeights)
+                {
+                    surfaceWeights.clear();
+                    float absYPos = fabsf(position.GetY());
+                    if (absYPos < 1.0f)
+                    {
+                        surfaceWeights.push_back(tagWeight1);
+                    }
+                    else if(absYPos < 2.0f)
+                    {
+                        surfaceWeights.push_back(tagWeight2);
+                    }
+                    else
+                    {
+                        surfaceWeights.push_back(tagWeight3);
+                    }
+                }
+            );
         }
     };
 
@@ -318,8 +363,7 @@ namespace UnitTest
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution that exactly matches
         // the frequency of our sine wave.  If our height queries rely on the query resolution, we should always get a value of 0.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         // Test an arbitrary set of points that should all produce non-zero heights with the EXACT sampler.  They're not aligned with the
         // query resolution, or with the 0 points on the sine wave.
@@ -369,7 +413,7 @@ namespace UnitTest
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 0.25 meter
         // intervals.
-        const AZ::Vector2 queryResolution(0.25f);
+        const float queryResolution = 0.25f;
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
         // Test some points and verify that the results always go "downward", whether they're in positive or negative space.
@@ -431,8 +475,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         // Test some points and verify that the results are the expected bilinear filtered result,
         // whether they're in positive or negative space.
@@ -619,8 +662,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         // Test some points and verify that the results are the expected bilinear filtered result,
         // whether they're in positive or negative space.
@@ -717,8 +759,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const NormalTestPoint testPoints[] = {
 
@@ -807,8 +848,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
         const AZ::Vector2 stepSize(1.0f);
@@ -866,8 +906,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
         const AZ::Vector2 stepSize(1.0f);
@@ -901,5 +940,101 @@ namespace UnitTest
         };
 
         terrainSystem->ProcessNormalsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainProcessSurfaceWeightsFromRegion)
+    {
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(
+            spawnerBox,
+            [](AZ::Vector3& position, bool& terrainExists)
+            {
+                position.SetZ(1.0f);
+                terrainExists = true;
+            });
+
+        // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
+        const float queryResolution = 1.0f;
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+        const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
+        const AZ::Vector2 stepSize(1.0f);
+
+        AzFramework::SurfaceData::SurfaceTagWeightList expectedTags;
+        SetupSurfaceWeightMocks(entity.get(), expectedTags);
+
+        auto perPositionCallback = [&expectedTags]([[maybe_unused]]  size_t xIndex, [[maybe_unused]] size_t yIndex,
+            const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        {
+            constexpr float epsilon = 0.0001f;
+            float absYPos = fabsf(surfacePoint.m_position.GetY());
+            if (absYPos < 1.0f)
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[0].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[0].m_weight, epsilon);
+            }
+            else if(absYPos < 2.0f)
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[1].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[1].m_weight, epsilon);
+            }
+            else
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[2].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[2].m_weight, epsilon);
+            }
+        };
+
+        terrainSystem->ProcessSurfaceWeightsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainProcessSurfacePointsFromRegion)
+    {
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-10.0f, -10.0f, -5.0f, 10.0f, 10.0f, 15.0f);
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(
+            spawnerBox,
+            [](AZ::Vector3& position, bool& terrainExists)
+            {
+                position.SetZ(position.GetX() + position.GetY());
+                terrainExists = true;
+            });
+
+        // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
+        const float queryResolution = 1.0f;
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+        const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
+        const AZ::Vector2 stepSize(1.0f);
+
+        AzFramework::SurfaceData::SurfaceTagWeightList expectedTags;
+        SetupSurfaceWeightMocks(entity.get(), expectedTags);
+
+        auto perPositionCallback = [&expectedTags]([[maybe_unused]] size_t xIndex, [[maybe_unused]] size_t yIndex,
+            const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        {
+            constexpr float epsilon = 0.0001f;
+            float expectedHeight = surfacePoint.m_position.GetX() + surfacePoint.m_position.GetY();
+
+            EXPECT_NEAR(surfacePoint.m_position.GetZ(), expectedHeight, epsilon);
+
+            float absYPos = fabsf(surfacePoint.m_position.GetY());
+            if (absYPos < 1.0f)
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[0].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[0].m_weight, epsilon);
+            }
+            else if(absYPos < 2.0f)
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[1].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[1].m_weight, epsilon);
+            }
+            else
+            {
+                EXPECT_EQ(surfacePoint.m_surfaceTags[0].m_surfaceType, expectedTags[2].m_surfaceType);
+                EXPECT_NEAR(surfacePoint.m_surfaceTags[0].m_weight, expectedTags[2].m_weight, epsilon);
+            }
+        };
+
+        terrainSystem->ProcessSurfacePointsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
     }
 } // namespace UnitTest

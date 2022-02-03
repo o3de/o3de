@@ -51,49 +51,21 @@ function(o3de_read_manifest o3de_manifest_json_data)
     endif()
 endfunction()
 
-#! o3de_recurse_gems: returns the gem paths
-#
-# \arg:object json path
-# \arg:gems returns the gems from the external subdirectory elements from the manifest
-function(o3de_recurse_gems object_json_path gems)
-    get_filename_component(object_json_parent_path ${object_json_path} DIRECTORY)
-    ly_file_read(${object_json_path} json_data)
-    string(JSON external_subdirectories_count ERROR_VARIABLE json_error LENGTH ${json_data} "external_subdirectories")
-    if(NOT json_error)
-        if(external_subdirectories_count GREATER 0)
-            math(EXPR external_subdirectories_range "${external_subdirectories_count}-1")
-            foreach(external_subdirectories_index RANGE ${external_subdirectories_range})
-                string(JSON external_subdirectories_entry ERROR_VARIABLE json_error GET ${json_data} "external_subdirectories" "${external_subdirectories_index}")
-                cmake_path(IS_RELATIVE external_subdirectories_entry is_relative)
-                if(${is_relative})
-                    cmake_path(ABSOLUTE_PATH external_subdirectories_entry BASE_DIRECTORY ${object_json_parent_path} NORMALIZE OUTPUT_VARIABLE external_subdirectories_entry)
-                endif()
-                if(EXISTS ${external_subdirectories_entry}/gem.json)
-                    list(APPEND gem_entries ${external_subdirectories_entry})
-                    o3de_recurse_gems(${external_subdirectories_entry}/gem.json gem_entries)
-                endif()
-            endforeach()
-        endif()
-    endif()
-    set(${gems} ${gem_entries} PARENT_SCOPE)
-endfunction()
 
 #! o3de_find_gem: returns the gem path
 #
 # \arg:gem_name the gem name to find
 # \arg:the path of the gem
 function(o3de_find_gem gem_name gem_path)
-    o3de_get_manifest_path(manifest_path)
-    if(EXISTS ${manifest_path})
-        o3de_recurse_gems(${manifest_path} gems)
-    endif()
-    o3de_recurse_gems(${LY_ROOT_FOLDER}/engine.json gems)
-    foreach(gem ${gems})
-        ly_file_read(${gem}/gem.json json_data)
-        string(JSON gem_json_name ERROR_VARIABLE json_error GET ${json_data} "gem_name")
-        if(gem_json_name STREQUAL gem_name)
-            set(${gem_path} ${gem} PARENT_SCOPE)
-            return()
+    get_all_external_subdirectories(all_external_subdirs)
+    foreach(external_subdir IN LISTS all_external_subdirs)
+        set(candidate_gem_path ${external_subdir}/gem.json)
+        if(EXISTS ${candidate_gem_path})
+            o3de_read_json_key(gem_json_name ${candidate_gem_path} "gem_name")
+            if(gem_json_name STREQUAL gem_name)
+                set(${gem_path} ${external_subdir} PARENT_SCOPE)
+                return()
+            endif()
         endif()
     endforeach()
 endfunction()
@@ -298,27 +270,33 @@ function(ly_get_absolute_pal_filename out_name in_name)
 
     # parent relative path is optional
     if(${ARGC} GREATER 4)
-        set(parent_relative_path ${ARGV4})
+        if(ARGV4)
+            set(parent_relative_path ${ARGV4})
+        endif()
     endif()
 
     # The Default object path for path is the LY_ROOT_FOLDER
     cmake_path(SET object_path NORMALIZE "${LY_ROOT_FOLDER}")
     if(${ARGC} GREATER 3)
-        # The user has supplied an object restricted path, the object path for consideration
-        cmake_path(SET object_path NORMALIZE ${ARGV3})
+        if(ARGV3)
+            # The user has supplied an object restricted path, the object path for consideration
+            cmake_path(SET object_path NORMALIZE ${ARGV3})
+        endif()
     endif()
 
     # The default restricted object path is O3DE_ENGINE_RESTRICTED_PATH
     cmake_path(SET object_restricted_path NORMALIZE "${O3DE_ENGINE_RESTRICTED_PATH}")
     if(${ARGC} GREATER 2)
-        # The user has supplied an object restricted path
-        cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        if(ARGV3)
+            # The user has supplied an object restricted path
+            cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        endif()
     endif()
 
     if(${ARGC} GREATER 4)
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path} ${parent_relative_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}" "${parent_relative_path}")
     else()
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}")
     endif()
     set(${out_name} ${abs_name} PARENT_SCOPE)
 endfunction()
@@ -394,34 +372,40 @@ function(ly_get_list_relative_pal_filename out_name in_name)
 
     # parent relative path is optional
     if(${ARGC} GREATER 4)
-        set(parent_relative_path ${ARGV4})
+        if(ARGV4)
+            set(parent_relative_path ${ARGV4})
+        endif()
     endif()
 
     # The Default object path for path is the LY_ROOT_FOLDER
     cmake_path(SET object_path NORMALIZE "${LY_ROOT_FOLDER}")
     if(${ARGC} GREATER 3)
-        # The user has supplied an object restricted path, the object path for consideration
-        cmake_path(SET object_path NORMALIZE ${ARGV3})
+        if(ARGV3)
+            # The user has supplied an object restricted path, the object path for consideration
+            cmake_path(SET object_path NORMALIZE ${ARGV3})
+        endif()
     endif()
 
     # The default restricted object path is O3DE_ENGINE_RESTRICTED_PATH
     cmake_path(SET object_restricted_path NORMALIZE "${O3DE_ENGINE_RESTRICTED_PATH}")
     if(${ARGC} GREATER 2)
-        # The user has supplied an object restricted path
-        cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        if(ARGV2)
+            # The user has supplied an object restricted path
+            cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+        endif()
     endif()
 
     if(${ARGC} GREATER 4)
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path} ${parent_relative_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}" "${parent_relative_path}")
     else()
-        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path})
+        o3de_pal_dir(abs_name ${in_name} "${object_restricted_path}" "${object_path}")
     endif()
 
     cmake_path(RELATIVE_PATH abs_name BASE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} OUTPUT_VARIABLE relative_name)
     set(${out_name} ${relative_name} PARENT_SCOPE)
 endfunction()
 
-o3de_pal_dir(pal_cmake_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+o3de_pal_dir(pal_cmake_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 
 ly_include_cmake_file_list(${pal_cmake_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
 

@@ -48,7 +48,7 @@ class CLyShine
 public:
 
     //! Create the LyShine object, the given system pointer is stored internally
-    CLyShine(ISystem* system);
+    CLyShine();
 
     // ILyShine
 

@@ -60,9 +60,8 @@ namespace AWSMetrics
 
         //! Update the global stats and add qualified failed metrics events back to the buffer for retry.
         //! @param metricsEventsInRequest Metrics events in the original request.
-        //! @param responseRecords Response records from the call. Each record in the list contains the result for sending the corresponding metrics event.
-        void OnResponseReceived(const MetricsQueue& metricsEventsInRequest, const ServiceAPI::MetricsEventSuccessResponsePropertyEvents& responseRecords =
-                ServiceAPI::MetricsEventSuccessResponsePropertyEvents());
+        //! @param responseEntries Response list for all the processed metrics events.
+        void OnResponseReceived(const MetricsQueue& metricsEventsInRequest, const ServiceAPI::PostMetricsEventsResponseEntries& responseEntries = ServiceAPI::PostMetricsEventsResponseEntries());
 
         //! Implementation for flush all metrics buffered in memory.
         void FlushMetricsAsync();

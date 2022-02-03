@@ -191,7 +191,7 @@ namespace UnitTests
 
             m_data->m_perforceComponent = AZStd::make_unique<MockPerforceComponent>();
             m_data->m_perforceComponent->Activate();
-            m_data->m_perforceComponent->SetConnection(new UnitTest::MockPerforceConnection(m_command));
+            m_data->m_perforceComponent->SetConnection(new ::UnitTest::MockPerforceConnection(m_command));
         }
 
         void TearDown() override
@@ -876,7 +876,7 @@ namespace UnitTests
         QDir tempPath(m_tempDir.path());
 
         auto filePath = QDir(tempPath.absoluteFilePath(m_data->m_scanFolder1.m_scanFolder.c_str())).absoluteFilePath("duplicate/file1.tif");
-        
+
         ASSERT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
 
         auto result = m_data->m_reporter->Delete(filePath.toUtf8().constData(), false);

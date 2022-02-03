@@ -33,12 +33,12 @@ namespace AZ
             //! Set the command list that the group will use.
             void SetPrimaryCommandList(CommandList& commandList);
             //! Set the list of renderpasses that the group will use.
-            void SetRenderPasscontexts(AZStd::array_view<RenderPassContext> renderPassContexts);
+            void SetRenderPasscontexts(AZStd::span<const RenderPassContext> renderPassContexts);
 
             //////////////////////////////////////////////////////////////////////////
             // FrameGraphExecuteGroupBase
-            AZStd::array_view<const Scope*> GetScopes() const override;
-            AZStd::array_view<RHI::Ptr<CommandList>> GetCommandLists() const override;
+            AZStd::span<const Scope* const> GetScopes() const override;
+            AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
@@ -60,7 +60,7 @@ namespace AZ
             // Primary command list used to record the work.
             RHI::Ptr<CommandList> m_commandList;
             // List of renderpasses and framebuffers used by the scopes in the group.
-            AZStd::array_view<RenderPassContext> m_renderPassContexts;
+            AZStd::span<const RenderPassContext> m_renderPassContexts;
         };
     }
 }

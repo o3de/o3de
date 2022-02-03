@@ -14,17 +14,13 @@ set(FILES
     Source/DockWidgetPlugin.cpp
     Source/DockWidgetPlugin.h
     Source/EMStudioConfig.h
-    Source/EMStudioCore.h
     Source/EMStudioManager.cpp
     Source/EMStudioManager.h
-    Source/EMStudioPlugin.cpp
     Source/EMStudioPlugin.h
     Source/FileManager.cpp
     Source/FileManager.h
     Source/GUIOptions.cpp
     Source/GUIOptions.h
-    Source/InvisiblePlugin.cpp
-    Source/InvisiblePlugin.h
     Source/KeyboardShortcutsWindow.cpp
     Source/KeyboardShortcutsWindow.h
     Source/LayoutManager.cpp
@@ -36,7 +32,6 @@ set(FILES
     Source/MotionEventPresetManager.h
     Source/PluginManager.cpp
     Source/PluginManager.h
-    Source/PluginOptions.cpp
     Source/PluginOptions.h
     Source/PluginOptionsBus.h
     Source/PreferencesWindow.cpp
