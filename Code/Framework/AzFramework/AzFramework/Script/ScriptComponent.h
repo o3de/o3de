@@ -107,7 +107,7 @@ namespace AzFramework
         // Methods used for unit tests
         AZ::ScriptProperty* GetScriptProperty(const char* propertyName);
 
-    public:
+    protected:
         ScriptComponent(const ScriptComponent&) = delete;
         //////////////////////////////////////////////////////////////////////////
         // Component base

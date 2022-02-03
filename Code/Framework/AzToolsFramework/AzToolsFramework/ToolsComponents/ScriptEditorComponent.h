@@ -34,7 +34,7 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
             static bool DoComponentsMatch(const ScriptEditorComponent* thisComponent, const ScriptEditorComponent* otherComponent);
 
-            ScriptEditorComponent();
+            ScriptEditorComponent() = default;
             ~ScriptEditorComponent() override;
 
             //////////////////////////////////////////////////////////////////////////
