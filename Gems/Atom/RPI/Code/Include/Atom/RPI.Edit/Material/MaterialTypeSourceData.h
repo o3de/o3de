@@ -285,7 +285,8 @@ namespace AZ
             //! Return false to terminate the traversal.
             using EnumeratePropertyGroupsCallback = AZStd::function<bool(
                 const PropertyGroup*, // the next property group in the tree
-                const MaterialNameContext& // The PropertyGroup's name context, used to scope properties and shader connections (i.e. "levelA.levelB.")
+                const MaterialNameContext&, // The name context defined by the PropertyGroup, used to scope the contents of the property group
+                const MaterialNameContext&  // The name context that the PropertyGroup is in, used to scope the property group name
                 )>;
 
             //! Recursively traverses all of the property groups contained in the material type, executing a callback function for each.
@@ -296,7 +297,7 @@ namespace AZ
             //! Return false to terminate the traversal.
             using EnumeratePropertiesCallback = AZStd::function<bool(
                 const PropertyDefinition*, // the property definition object 
-                const MaterialNameContext& // The property's name context, used to scope properties and shader connections (i.e. "levelA.levelB.")
+                const MaterialNameContext& // The name context that the property is in, used to scope properties and shader connections (i.e. "levelA.levelB.")
                 )>;
             
             //! Recursively traverses all of the properties contained in the material type, executing a callback function for each.
@@ -318,8 +319,8 @@ namespace AZ
             PropertyDefinition* FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList);
             
             // Function overloads for recursion, returns false to indicate that recursion should end.
-            bool EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, MaterialNameContext materialNameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
-            bool EnumerateProperties(const EnumeratePropertiesCallback& callback, MaterialNameContext materialNameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
+            bool EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, MaterialNameContext nameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
+            bool EnumerateProperties(const EnumeratePropertiesCallback& callback, MaterialNameContext nameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
             
             static MaterialNameContext ExtendNameContext(MaterialNameContext nameContext, const MaterialTypeSourceData::PropertyGroup& propertyGroup);
 

@@ -487,24 +487,30 @@ namespace UnitTest
         struct EnumeratePropertyGroupsResult
         {
             const MaterialTypeSourceData::PropertyGroup* m_propertyGroup;
-            MaterialNameContext m_materialNameContext;
+            MaterialNameContext m_groupNameContext;
+            MaterialNameContext m_parentNameContext;
 
             void Check(AZStd::string expectedIdContext, const MaterialTypeSourceData::PropertyGroup* expectedPropertyGroup)
             {
                 Name groupFullId{m_propertyGroup->GetName()};
-                m_materialNameContext.ContextualizeProperty(groupFullId);
+                m_parentNameContext.ContextualizeProperty(groupFullId);
 
                 AZStd::string expectedPropertyId = expectedIdContext + expectedPropertyGroup->GetName();
 
                 EXPECT_EQ(expectedPropertyId, groupFullId.GetStringView());
                 EXPECT_EQ(expectedPropertyGroup, m_propertyGroup);
+
+                Name imaginaryPropertyName{"someChildProperty"};
+                m_groupNameContext.ContextualizeProperty(imaginaryPropertyName);
+                EXPECT_EQ(AZStd::string(groupFullId.GetStringView()) + ".someChildProperty", imaginaryPropertyName.GetStringView());
             }
         };
         AZStd::vector<EnumeratePropertyGroupsResult> enumeratePropertyGroupsResults;
 
-        sourceData.EnumeratePropertyGroups([&enumeratePropertyGroupsResults](const MaterialTypeSourceData::PropertyGroup* propertyGroup, const MaterialNameContext& nameContext)
+        sourceData.EnumeratePropertyGroups([&enumeratePropertyGroupsResults](
+            const MaterialTypeSourceData::PropertyGroup* propertyGroup, const MaterialNameContext& groupNameContext, const MaterialNameContext& parentNameContext)
             {
-                enumeratePropertyGroupsResults.push_back(EnumeratePropertyGroupsResult{propertyGroup, nameContext});
+                enumeratePropertyGroupsResults.push_back(EnumeratePropertyGroupsResult{propertyGroup, groupNameContext, parentNameContext});
                 return true;
             });
 

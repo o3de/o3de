@@ -377,18 +377,18 @@ namespace AZ
             return parts;
         }
 
-        bool MaterialTypeSourceData::EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, MaterialNameContext materialNameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
+        bool MaterialTypeSourceData::EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, MaterialNameContext nameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
         {
             for (auto& propertyGroup : inPropertyGroupList)
             {
-                MaterialNameContext materialNameContext2 = ExtendNameContext(materialNameContext, *propertyGroup);
+                MaterialNameContext groupNameContext = ExtendNameContext(nameContext, *propertyGroup);
 
-                if (!callback(propertyGroup.get(), materialNameContext2))
+                if (!callback(propertyGroup.get(), groupNameContext, nameContext))
                 {
-                    return false; // Stop processing
+                    return false;  // Stop processing
                 }
                 
-                if (!EnumeratePropertyGroups(callback, materialNameContext2, propertyGroup->m_propertyGroups))
+                if (!EnumeratePropertyGroups(callback, groupNameContext, propertyGroup->m_propertyGroups))
                 {
                     return false; // Stop processing
                 }
@@ -407,21 +407,21 @@ namespace AZ
             return EnumeratePropertyGroups(callback, {}, m_propertyLayout.m_propertyGroups);
         }
 
-        bool MaterialTypeSourceData::EnumerateProperties(const EnumeratePropertiesCallback& callback, MaterialNameContext materialNameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
+        bool MaterialTypeSourceData::EnumerateProperties(const EnumeratePropertiesCallback& callback, MaterialNameContext nameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
         {
             for (auto& propertyGroup : inPropertyGroupList)
             {
-                MaterialNameContext materialNameContext2 = ExtendNameContext(materialNameContext, *propertyGroup);
+                MaterialNameContext groupNameContext = ExtendNameContext(nameContext, *propertyGroup);
 
                 for (auto& property : propertyGroup->m_properties)
                 {
-                    if (!callback(property.get(), materialNameContext2))
+                    if (!callback(property.get(), groupNameContext))
                     {
                         return false; // Stop processing
                     }
                 }
 
-                if (!EnumerateProperties(callback, materialNameContext2, propertyGroup->m_propertyGroups))
+                if (!EnumerateProperties(callback, groupNameContext, propertyGroup->m_propertyGroups))
                 {
                     return false; // Stop processing
                 }

@@ -783,7 +783,8 @@ namespace MaterialEditor
         // Populate the property map from a combination of source data and assets
         // Assets must still be used for now because they contain the final accumulated value after all other materials
         // in the hierarchy are applied
-        m_materialTypeSourceData.EnumeratePropertyGroups([this, &parentPropertyValues](const MaterialTypeSourceData::PropertyGroup* propertyGroup, const MaterialNameContext& nameContext)
+        m_materialTypeSourceData.EnumeratePropertyGroups([this, &parentPropertyValues](
+            const MaterialTypeSourceData::PropertyGroup* propertyGroup, const MaterialNameContext& groupNameContext, const MaterialNameContext& /*parentNameContext*/)
             {
                 AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
@@ -791,7 +792,7 @@ namespace MaterialEditor
                 {
                     // Assign id before conversion so it can be used in dynamic description
                     propertyConfig.m_id = propertyDefinition->GetName();
-                    nameContext.ContextualizeProperty(propertyConfig.m_id);
+                    groupNameContext.ContextualizeProperty(propertyConfig.m_id);
 
                     const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                     const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
@@ -905,10 +906,10 @@ namespace MaterialEditor
         
         // Add any material functors that are located inside each property group.
         bool enumerateResult = m_materialTypeSourceData.EnumeratePropertyGroups(
-            [this](const MaterialTypeSourceData::PropertyGroup* propertyGroup, const MaterialNameContext& nameContext)
+            [this](const MaterialTypeSourceData::PropertyGroup* propertyGroup, const MaterialNameContext& groupNameContext, const MaterialNameContext& /*parentNameContext*/)
             {
                 const MaterialFunctorSourceData::EditorContext editorContext = MaterialFunctorSourceData::EditorContext(
-                    m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout(), &nameContext);
+                    m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout(), &groupNameContext);
 
                 for (Ptr<MaterialFunctorSourceDataHolder> functorData : propertyGroup->GetFunctors())
                 {
