@@ -55,17 +55,6 @@ ly_append_configurations_options(
 
     COMPILATION_RELEASE
         -O2
-    LINK_NON_STATIC
-        -Wl,-undefined,error
-
-        -fpie
-        -Wl,-z,relro,-z,now
-        -Wl,-z,noexecstack
-    LINK_EXE
-        -pie
-        -fpie
-        -Wl,-z,relro,-z,now
-        -Wl,-z,noexecstack
 )
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
