@@ -27,7 +27,6 @@
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
-#include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
 
 namespace ImageProcessingAtom
@@ -67,9 +66,9 @@ namespace ImageProcessingAtom
         AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
         builderDescriptor.m_name = "Atom Image Builder";
 
-        for (int i = 0; i < AZ::RPI::s_TotalSupportedImageExtensions; i++)
+        for (int i = 0; i < s_TotalSupportedImageExtensions; i++)
         {
-            builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZ::RPI::s_SupportedImageExtensions[i], AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+            builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(s_SupportedImageExtensions[i], AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
         }
 
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();

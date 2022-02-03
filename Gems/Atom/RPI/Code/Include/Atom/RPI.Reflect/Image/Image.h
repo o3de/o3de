@@ -22,20 +22,6 @@ namespace AZ
     {
         class ImageAsset;
 
-        static const int s_TotalSupportedImageExtensions = 10;
-        static const char* s_SupportedImageExtensions[s_TotalSupportedImageExtensions] = {
-            "*.tif",
-            "*.tiff",
-            "*.png",
-            "*.bmp",
-            "*.jpg",
-            "*.jpeg",
-            "*.tga",
-            "*.gif",
-            "*.dds",
-            "*.exr"
-        };
-
         //! A base class for images providing access to common image information.
         class Image
             : public Data::InstanceData

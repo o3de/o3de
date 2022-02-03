@@ -7,7 +7,7 @@
  */
 
 #include <GradientSignal/Components/ImageGradientComponent.h>
-#include <Atom/RPI.Reflect/Image/Image.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Debug/Profiler.h>
@@ -52,9 +52,9 @@ namespace GradientSignal
                     // We don't know what image format the original source was, so we need to loop through
                     // all the supported image extensions to check if they have a valid corresponding
                     // streaming image asset
-                    for (int i = 0; i < AZ::RPI::s_TotalSupportedImageExtensions; i++)
+                    for (int i = 0; i < ImageProcessingAtom::s_TotalSupportedImageExtensions; i++)
                     {
-                        AZStd::string imageExtension(AZ::RPI::s_SupportedImageExtensions[i]);
+                        AZStd::string imageExtension(ImageProcessingAtom::s_SupportedImageExtensions[i]);
 
                         // The image extensions are stored with a wildcard (e.g. *.png) so we need to strip that off first
                         AZ::StringFunc::Replace(imageExtension, "*", "");
