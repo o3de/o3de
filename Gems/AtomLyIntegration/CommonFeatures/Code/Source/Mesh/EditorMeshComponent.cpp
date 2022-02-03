@@ -240,6 +240,7 @@ namespace AZ
                 RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
                 auto objectId = featureProcessor->GetObjectId(*meshHandle).GetIndex();
                 meshObjectSrg->SetConstant(objectIdIndex, objectId);
+                meshObjectSrg->Compile();
 
                 m_meshDrawPacket.emplace(modelLod, 0 /*mesh index from loop*/, material, meshObjectSrg);
             }
