@@ -19,6 +19,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportInteractionHelpers.h>
 #include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
+#include <Editor/EditorViewportSettings.h>
 
 #include <QApplication>
 
@@ -70,14 +71,16 @@ namespace SandboxEditor
             // Cache the ray trace results when doing manipulator interaction checks, no need to recalculate after
             if (event.m_priority == ManipulatorPriority)
             {
-
                 const auto* position = event.m_inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
                 AZ_Assert(position, "Expected PositionData2D but found nullptr");
 
-                if(m_captureStart) {
+                if (m_captureStart)
+                {
                     m_virtualPosition = position->m_normalizedPosition;
                     m_captureStart = false;
-                } else {
+                }
+                else
+                {
                     m_virtualPosition += position->m_normalizedPositionDelta;
                 }
 
@@ -126,10 +129,14 @@ namespace SandboxEditor
                     }
                     eventType = MouseEvent::Down;
                 }
+
                 m_captureStart = true;
-                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                    GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
-                    AzToolsFramework::CursorInputMode::CursorModeWrapped);
+                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
+                {
+                    AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                        GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
+                        AzToolsFramework::CursorInputMode::CursorModeWrapped);
+                }
             }
             else if (state == InputChannel::State::Ended)
             {
