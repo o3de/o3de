@@ -28,6 +28,6 @@ namespace UnitTests
     protected:
         QTemporaryDir m_temporaryDir;
         QDir m_temporarySourceDir;
-        AZStd::unique_ptr<FileStateBase> m_fileStateCache;
+        AZStd::unique_ptr<AssetProcessor::FileStateBase> m_fileStateCache;
     };
 }
