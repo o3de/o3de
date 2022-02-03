@@ -459,7 +459,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
             const bool isCacheRoot = path.startsWith(cachePath);
             if (!isCacheRoot)
             {
-                bool result = QMetaObject::invokeMethod(m_assetProcessorManager, "AssessAddedFile", Q_ARG(QString, path));
+                [[maybe_unused]] bool result = QMetaObject::invokeMethod(m_assetProcessorManager, "AssessAddedFile", Q_ARG(QString, path));
                 AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessAddedFile");
 
                 result = QMetaObject::invokeMethod(m_fileProcessor.get(), "AssessAddedFile", Q_ARG(QString, path));
@@ -488,7 +488,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
                 m_fileStateCache->UpdateFile(path);
             }
 
-            bool result = QMetaObject::invokeMethod(m_assetProcessorManager, "AssessModifiedFile", Q_ARG(QString, path));
+            [[maybe_unused]] bool result = QMetaObject::invokeMethod(m_assetProcessorManager, "AssessModifiedFile", Q_ARG(QString, path));
 
             AZ_Assert(result, "Failed to invoke m_assetProcessorManager::AssessModifiedFile");
             m_assetProcessorManager->AssessModifiedFile(path);
@@ -496,7 +496,7 @@ void ApplicationManagerBase::InitFileMonitor(AZStd::unique_ptr<FileWatcher> file
 
         const auto OnFileRemoved = [this, cachePath](QString path)
         {
-            bool result = false;
+            [[maybe_unused]] bool result = false;
             const bool isCacheRoot = path.startsWith(cachePath);
             if (!isCacheRoot)
             {
