@@ -1,0 +1,276 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#ifdef HAVE_BENCHMARK
+
+#include <AzTest/AzTest.h>
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/UnitTest/TestTypes.h>
+
+#include <AzFramework/Components/TransformComponent.h>
+#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+#include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
+#include <SurfaceDataSystemComponent.h>
+#include <Components/SurfaceDataShapeComponent.h>
+
+namespace UnitTest
+{
+    class SurfaceDataBenchmark : public ::benchmark::Fixture
+    {
+    public:
+        void internalSetUp()
+        {
+            m_surfaceDataSystemEntity = AZStd::make_unique<AZ::Entity>();
+            m_surfaceDataSystemEntity->CreateComponent<SurfaceData::SurfaceDataSystemComponent>();
+            m_surfaceDataSystemEntity->Init();
+            m_surfaceDataSystemEntity->Activate();
+        }
+
+        void internalTearDown()
+        {
+            m_surfaceDataSystemEntity.reset();
+        }
+
+        // Create an entity with a Transform component and a SurfaceDataShape component at the given position with the given tags.
+        AZStd::unique_ptr<AZ::Entity> CreateBenchmarkEntity(
+            AZ::Vector3 worldPos, AZStd::span<const char* const> providerTags, AZStd::span<const char* const> modifierTags)
+        {
+            AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>();
+
+            auto transform = entity->CreateComponent<AzFramework::TransformComponent>();
+            transform->SetLocalTM(AZ::Transform::CreateTranslation(worldPos));
+            transform->SetWorldTM(AZ::Transform::CreateTranslation(worldPos));
+
+            SurfaceData::SurfaceDataShapeConfig surfaceConfig;
+            for (auto& providerTag : providerTags)
+            {
+                surfaceConfig.m_providerTags.push_back(SurfaceData::SurfaceTag(providerTag));
+            }
+            for (auto& modifierTag : modifierTags)
+            {
+                surfaceConfig.m_modifierTags.push_back(SurfaceData::SurfaceTag(modifierTag));
+            }
+            entity->CreateComponent<SurfaceData::SurfaceDataShapeComponent>(surfaceConfig);
+
+            return entity;
+        }
+
+        /* Create a set of shape surfaces in the world that we can use for benchmarking.
+           Each shape is centered in XY and is the XY size of the world, but with different Z heights and placements.
+           There are two boxes and one cylinder, layered like this:
+
+           Top:
+           ---
+           |O| <- two boxes of equal XY size with a cylinder face-up in the center
+           ---
+
+           Side:
+           |-----------|
+           |           |<- entity 3, box that contains the other shapes
+           | |-------| | <- entity 2, cylinder inside entity 3 and intersecting entity 1
+           | |       | | 
+           |-----------|<- entity 1, thin box
+           | |-------| |
+           |           |
+           |-----------|
+
+           This will give us either 2 or 3 generated surface points at every query point. The entity 1 surface will get the entity 2 and 3
+           modifier tags added to it. The entity 2 surface will get the entity 3 modifier tag added to it. The entity 3 surface won't get
+           modified.
+        */
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> CreateBenchmarkEntities(float worldSize)
+        {
+            AZStd::vector<AZStd::unique_ptr<AZ::Entity>> testEntities;
+            float halfWorldSize = worldSize / 2.0f;
+
+            // Create a large flat box with 1 provider tag.
+            AZStd::unique_ptr<AZ::Entity> surface1 = CreateBenchmarkEntity(
+                AZ::Vector3(halfWorldSize, halfWorldSize, 10.0f), AZStd::array{ "surface1" }, {});
+            {
+                LmbrCentral::BoxShapeConfig boxConfig(AZ::Vector3(worldSize, worldSize, 1.0f));
+                auto shapeComponent = surface1->CreateComponent(LmbrCentral::BoxShapeComponentTypeId);
+                shapeComponent->SetConfiguration(boxConfig);
+
+                surface1->Init();
+                surface1->Activate();
+            }
+            testEntities.push_back(AZStd::move(surface1));
+
+            // Create a large cylinder with 1 provider tag and 1 modifier tag.
+            AZStd::unique_ptr<AZ::Entity> surface2 = CreateBenchmarkEntity(
+                AZ::Vector3(halfWorldSize, halfWorldSize, 20.0f), AZStd::array{ "surface2" }, AZStd::array{ "modifier2" });
+            {
+                LmbrCentral::CylinderShapeConfig cylinderConfig;
+                cylinderConfig.m_height = 30.0f;
+                cylinderConfig.m_radius = halfWorldSize;
+                auto shapeComponent = surface2->CreateComponent(LmbrCentral::CylinderShapeComponentTypeId);
+                shapeComponent->SetConfiguration(cylinderConfig);
+
+                surface2->Init();
+                surface2->Activate();
+            }
+            testEntities.push_back(AZStd::move(surface2));
+
+            // Create a large box with 1 provider tag and 1 modifier tag.
+            AZStd::unique_ptr<AZ::Entity> surface3 = CreateBenchmarkEntity(
+                AZ::Vector3(halfWorldSize, halfWorldSize, 30.0f), AZStd::array{ "surface3" }, AZStd::array{ "modifier3" });
+            {
+                LmbrCentral::BoxShapeConfig boxConfig(AZ::Vector3(worldSize, worldSize, 100.0f));
+                auto shapeComponent = surface3->CreateComponent(LmbrCentral::BoxShapeComponentTypeId);
+                shapeComponent->SetConfiguration(boxConfig);
+
+                surface3->Init();
+                surface3->Activate();
+            }
+            testEntities.push_back(AZStd::move(surface3));
+
+            return testEntities;
+        }
+
+        SurfaceData::SurfaceTagVector CreateBenchmarkTagFilterList()
+        {
+            SurfaceData::SurfaceTagVector tagFilterList;
+            tagFilterList.emplace_back("surface1");
+            tagFilterList.emplace_back("surface2");
+            tagFilterList.emplace_back("surface3");
+            tagFilterList.emplace_back("modifier2");
+            tagFilterList.emplace_back("modifier3");
+            return tagFilterList;
+        }
+
+    protected:
+        void SetUp([[maybe_unused]] const benchmark::State& state) override
+        {
+            internalSetUp();
+        }
+        void SetUp([[maybe_unused]] benchmark::State& state) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown([[maybe_unused]] const benchmark::State& state) override
+        {
+            internalTearDown();
+        }
+        void TearDown([[maybe_unused]] benchmark::State& state) override
+        {
+            internalTearDown();
+        }
+
+        AZStd::unique_ptr<AZ::Entity> m_surfaceDataSystemEntity;
+    };
+
+    BENCHMARK_DEFINE_F(SurfaceDataBenchmark, BM_GetSurfacePoints)(benchmark::State& state)
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        // Create our benchmark world
+        const float worldSize = aznumeric_cast<float>(state.range(0));
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> benchmarkEntities = CreateBenchmarkEntities(worldSize);
+        SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
+
+        // Query every point in our world at 1 meter intervals.
+        for (auto _ : state)
+        {
+            // This is declared outside the loop so that the list of points doesn't fully reallocate on every query.
+            SurfaceData::SurfacePointList points;
+
+            for (float y = 0.0f; y < worldSize; y += 1.0f)
+            {
+                for (float x = 0.0f; x < worldSize; x += 1.0f)
+                {
+                    AZ::Vector3 queryPosition(x, y, 0.0f);
+                    points.clear();
+
+                    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+                        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, filterTags, points);
+                    benchmark::DoNotOptimize(points);
+                }
+            }
+        }
+    }
+
+    BENCHMARK_DEFINE_F(SurfaceDataBenchmark, BM_GetSurfacePointsFromRegion)(benchmark::State& state)
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        // Create our benchmark world
+        float worldSize = aznumeric_cast<float>(state.range(0));
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> benchmarkEntities = CreateBenchmarkEntities(worldSize);
+        SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
+
+        // Query every point in our world at 1 meter intervals.
+        for (auto _ : state)
+        {
+            SurfaceData::SurfacePointLists points;
+
+            AZ::Aabb inRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(worldSize));
+            AZ::Vector2 stepSize(1.0f);
+            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion, inRegion, stepSize, filterTags,
+                points);
+            benchmark::DoNotOptimize(points);
+        }
+    }
+
+    BENCHMARK_DEFINE_F(SurfaceDataBenchmark, BM_GetSurfacePointsFromList)(benchmark::State& state)
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        // Create our benchmark world
+        const float worldSize = aznumeric_cast<float>(state.range(0));
+        const int64_t worldSizeInt = state.range(0);
+        AZStd::vector<AZStd::unique_ptr<AZ::Entity>> benchmarkEntities = CreateBenchmarkEntities(worldSize);
+        SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
+
+        // Query every point in our world at 1 meter intervals.
+        for (auto _ : state)
+        {
+            AZStd::vector<AZ::Vector3> queryPositions;
+            queryPositions.reserve(worldSizeInt * worldSizeInt);
+
+            for (float y = 0.0f; y < worldSize; y += 1.0f)
+            {
+                for (float x = 0.0f; x < worldSize; x += 1.0f)
+                {
+                    queryPositions.emplace_back(x, y, 0.0f);
+                }
+            }
+
+            SurfaceData::SurfacePointLists points;
+
+            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, queryPositions, filterTags, points);
+            benchmark::DoNotOptimize(points);
+        }
+    }
+
+    BENCHMARK_REGISTER_F(SurfaceDataBenchmark, BM_GetSurfacePoints)
+        ->Arg( 1024 )
+        ->Arg( 2048 )
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_REGISTER_F(SurfaceDataBenchmark, BM_GetSurfacePointsFromRegion)
+        ->Arg( 1024 )
+        ->Arg( 2048 )
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_REGISTER_F(SurfaceDataBenchmark, BM_GetSurfacePointsFromList)
+        ->Arg( 1024 )
+        ->Arg( 2048 )
+        ->Unit(::benchmark::kMillisecond);
+
+#endif
+}
+
+

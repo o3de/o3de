@@ -41,6 +41,11 @@ namespace UnitTest
                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded,
                 AzToolsFramework::EntityList{ m_entityMap[Passenger1EntityName], m_entityMap[Passenger2EntityName], m_entityMap[CityEntityName] });
 
+            // Initialize Prefab EOS Interface
+            AzToolsFramework::PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            ASSERT_TRUE(prefabEditorEntityOwnershipInterface);
+
             // Create a car prefab from the passenger1 entity. The container entity will be created as part of the process.
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> carInstance =
                 m_prefabSystemComponent->CreatePrefab({ m_entityMap[Passenger1EntityName] }, {}, "test/car");
@@ -59,11 +64,14 @@ namespace UnitTest
             ASSERT_TRUE(streetInstance);
             m_instanceMap[StreetEntityName] = streetInstance.get();
 
-            // Create a city prefab that nests the street instances created above and the city entity. The container entity will be created as part of the process.
-            m_rootInstance =
-                m_prefabSystemComponent->CreatePrefab({ m_entityMap[CityEntityName] }, MakeInstanceList(AZStd::move(streetInstance)), "test/city");
-            ASSERT_TRUE(m_rootInstance);
-            m_instanceMap[CityEntityName] = m_rootInstance.get();
+            // Use the Prefab EOS root instance as the City instance. This will ensure functions that go through the EOS work in these tests too.
+            m_rootInstance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+            ASSERT_TRUE(m_rootInstance.has_value());
+
+            m_rootInstance->get().AddEntity(*m_entityMap[CityEntityName]);
+            m_rootInstance->get().AddInstance(AZStd::move(streetInstance));
+
+            m_instanceMap[CityEntityName] = &m_rootInstance->get();
         }
 
         void SetUpEditorFixtureImpl() override
@@ -84,7 +92,7 @@ namespace UnitTest
 
         void TearDownEditorFixtureImpl() override
         {
-            m_rootInstance.release();
+            m_rootInstance->get().Reset();
 
             PrefabTestFixture::TearDownEditorFixtureImpl();
         }
@@ -92,7 +100,7 @@ namespace UnitTest
         AZStd::unordered_map<AZStd::string, AZ::Entity*> m_entityMap;
         AZStd::unordered_map<AZStd::string, Instance*> m_instanceMap;
 
-        AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> m_rootInstance;
+        InstanceOptionalReference m_rootInstance;
 
         PrefabFocusInterface* m_prefabFocusInterface = nullptr;
         PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
