@@ -10,8 +10,6 @@ set(FILES
     Tests/Buffer/BufferTests.cpp
     Tests/Common/AssetManagerTestFixture.cpp
     Tests/Common/AssetManagerTestFixture.h
-    Tests/Common/AssetSystemStub.cpp
-    Tests/Common/AssetSystemStub.h
     Tests/Common/ErrorMessageFinder.cpp
     Tests/Common/ErrorMessageFinder.h
     Tests/Common/ErrorMessageFinderTests.cpp
@@ -39,6 +37,7 @@ set(FILES
     Tests/Material/MaterialSourceDataTests.cpp
     Tests/Material/MaterialFunctorTests.cpp
     Tests/Material/MaterialFunctorSourceDataSerializerTests.cpp
+    Tests/Material/MaterialPropertyIdTests.cpp
     Tests/Material/MaterialPropertyValueSourceDataTests.cpp
     Tests/Material/MaterialTests.cpp
     Tests/Model/ModelTests.cpp

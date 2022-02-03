@@ -13,7 +13,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/shared_spin_mutex.h>
-#include <AzCore/Debug/TraceMessagesDrillerBus.h>
+#include <AzCore/Debug/TraceMessageBus.h>
 
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
@@ -468,28 +468,29 @@ namespace UnitTest
     /** Trace message handler to track messages during tests
 */
     struct MyTraceMessageSink final
-        : public AZ::Debug::TraceMessageDrillerBus::Handler
+        : public AZ::Debug::TraceMessageBus::Handler
     {
         MyTraceMessageSink()
         {
-            AZ::Debug::TraceMessageDrillerBus::Handler::BusConnect();
+            AZ::Debug::TraceMessageBus::Handler::BusConnect();
         }
 
         ~MyTraceMessageSink()
         {
-            AZ::Debug::TraceMessageDrillerBus::Handler::BusDisconnect();
+            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         }
 
         //////////////////////////////////////////////////////////////////////////
-        // TraceMessageDrillerBus
-        void OnPrintf(const char* window, const char* message) override
+        // TraceMessageBus
+        bool OnPrintf(const char* window, const char* message) override
         {
-            OnOutput(window, message);
+            return OnOutput(window, message);
         }
 
-        void OnOutput(const char* window, const char* message) override
+        bool OnOutput(const char* window, const char* message) override
         {
             printf("%s: %s\n", window, message);
+            return false;
         }
     }; //struct MyTraceMessageSink
 

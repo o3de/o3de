@@ -485,10 +485,11 @@ namespace AZ
             //! CalculateBranchToken
             /*! Calculate the branch token that is used for asset processor connection negotiations
             *
-            * \param appRootPath - The absolute path of the app root to base the token calculation on
+            * \param engineRootPath - The absolute path to the engine root to base the token calculation on
             * \param token       - The result of the branch token calculation
             */
-            void CalculateBranchToken(const AZStd::string& appRootPath, AZStd::string& token);
+            void CalculateBranchToken(AZStd::string_view engineRootPath, AZStd::string& token);
+            void CalculateBranchToken(AZStd::string_view engineRootPath, AZ::IO::FixedMaxPathString& token);
         }
 
         //////////////////////////////////////////////////////////////////////////

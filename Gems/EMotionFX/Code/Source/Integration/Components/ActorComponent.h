@@ -116,7 +116,6 @@ namespace EMotionFX
             ActorInstance* GetActorInstance() override { return m_actorInstance.get(); }
             void AttachToEntity(AZ::EntityId targetEntityId, AttachmentType attachmentType) override;
             void DetachFromEntity() override;
-            void DebugDrawRoot(bool enable) override;
             bool GetRenderCharacter() const override;
             void SetRenderCharacter(bool enable) override;
             bool GetRenderActorVisible() const override;
@@ -181,6 +180,8 @@ namespace EMotionFX
             bool IsPhysicsSceneSimulationFinishEventConnected() const;
             AZ::Data::Asset<ActorAsset> GetActorAsset() const { return m_configuration.m_actorAsset; }
 
+            void SetRenderFlag(ActorRenderFlagBitset renderFlags);
+
         private:
             // AZ::TransformNotificationBus::MultiHandler
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -201,7 +202,7 @@ namespace EMotionFX
             AZStd::vector<AZ::EntityId>                     m_attachments;
 
             AZStd::unique_ptr<RenderActorInstance>          m_renderActorInstance;
-            bool                                            m_debugDrawRoot;            ///< Enables drawing of actor root and facing.
+            ActorRenderFlagBitset                             m_debugRenderFlags;         ///< Actor debug render flag
 
             AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
         };

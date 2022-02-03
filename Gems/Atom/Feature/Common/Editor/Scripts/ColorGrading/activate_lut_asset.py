@@ -60,6 +60,11 @@ def activate_look_modification_lut(look_modification_component, asset_relative_p
         LOOK_MODIFICATION_ENABLE_PROPERTY_PATH, 
         True
     )
+    azlmbr.editor.EditorComponentAPIBus(
+        azlmbr.bus.Broadcast,
+        "EnableComponents",
+        [look_modification_component]
+    )
 
 def activate_lut_asset(entity_id, asset_relative_path):
     disable_hdr_color_grading_component(entity_id)

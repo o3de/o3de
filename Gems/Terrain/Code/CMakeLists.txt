@@ -26,8 +26,6 @@ ly_add_target(
             Gem::GradientSignal
             Gem::SurfaceData
             Gem::LmbrCentral
-            
-            
 )
 
 ly_add_target(
@@ -49,14 +47,14 @@ ly_add_target(
 )
 
 # the above module is for use in all client/server types
-ly_create_alias(NAME Terrain.Servers  NAMESPACE Gem TARGETS Gem::Terrain)
-ly_create_alias(NAME Terrain.Clients  NAMESPACE Gem TARGETS Gem::Terrain)
+ly_create_alias(NAME Terrain.Servers  NAMESPACE Gem TARGETS Gem::Terrain Gem::SurfaceData.Servers Gem::GradientSignal.Servers)
+ly_create_alias(NAME Terrain.Clients  NAMESPACE Gem TARGETS Gem::Terrain Gem::SurfaceData.Clients Gem::GradientSignal.Clients)
 
 # If we are on a host platform, we want to add the host tools targets like the Terrain.Editor target which
 # will also depend on Terrain.Static
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Terrain.Editor MODULE
+        NAME Terrain.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
@@ -78,8 +76,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     # the above module is for use in dev tool situations
-    ly_create_alias(NAME Terrain.Builders NAMESPACE Gem TARGETS Gem::Terrain.Editor)
-    ly_create_alias(NAME Terrain.Tools    NAMESPACE Gem TARGETS Gem::Terrain.Editor)
+    ly_create_alias(NAME Terrain.Builders NAMESPACE Gem TARGETS Gem::Terrain.Editor Gem::SurfaceData.Builders Gem::GradientSignal.Builders)
+    ly_create_alias(NAME Terrain.Tools    NAMESPACE Gem TARGETS Gem::Terrain.Editor Gem::SurfaceData.Tools Gem::GradientSignal.Tools)
 endif()
 
 ################################################################################
@@ -100,7 +98,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME Terrain.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
-            terrain_files.cmake
             terrain_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
@@ -111,6 +108,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 Gem::LmbrCentral.Mocks
+                Gem::GradientSignal.Mocks
                 Gem::Terrain.Mocks
                 Gem::Terrain.Static
     )
@@ -118,6 +116,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Add Terrain.Tests to googletest
     ly_add_googletest(
         NAME Gem::Terrain.Tests
+    )
+
+    ly_add_googlebenchmark(
+        NAME Gem::Terrain.Benchmarks
+        TARGET Gem::Terrain.Tests
     )
 
     # If we are a host platform we want to add tools test like editor tests here

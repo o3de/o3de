@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Session/SessionRequests.h>
+#include <Multiplayer/Session/SessionRequests.h>
 
 namespace AWSGameLift
 {
@@ -16,22 +16,22 @@ namespace AWSGameLift
     //! GameLift search sessions request which corresponds to Amazon GameLift
     //! SearchSessionsRequest
     struct AWSGameLiftSearchSessionsRequest
-        : public AzFramework::SearchSessionsRequest
+        : public Multiplayer::SearchSessionsRequest
     {
     public:
-        AZ_RTTI(AWSGameLiftSearchSessionsRequest, "{864C91C0-CA53-4585-BF07-066C0DF3E198}", AzFramework::SearchSessionsRequest);
+        AZ_RTTI(AWSGameLiftSearchSessionsRequest, "{864C91C0-CA53-4585-BF07-066C0DF3E198}", Multiplayer::SearchSessionsRequest);
         static void Reflect(AZ::ReflectContext* context);
 
         AWSGameLiftSearchSessionsRequest() = default;
         virtual ~AWSGameLiftSearchSessionsRequest() = default;
 
-        // A unique identifier for the alias associated with the fleet to search for active game sessions.
+        //! A unique identifier for the alias associated with the fleet to search for active game sessions.
         AZStd::string m_aliasId;
 
-        // A unique identifier for the fleet to search for active game sessions.
+        //! A unique identifier for the fleet to search for active game sessions.
         AZStd::string m_fleetId;
 
-        // A fleet location to search for game sessions.
+        //! A fleet location to search for game sessions.
         AZStd::string m_location;
     };
 } // namespace AWSGameLift

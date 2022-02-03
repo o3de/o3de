@@ -31,7 +31,7 @@ set(FILES
     Include/Atom/Feature/PostProcessing/PostProcessingConstants.h
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
-    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h
+    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyboxConstants.h
     Include/Atom/Feature/SkyBox/SkyBoxLUT.h
@@ -46,9 +46,6 @@ set(FILES
     Include/Atom/Feature/Utils/MultiSparseVector.h
     Include/Atom/Feature/Utils/ProfilingCaptureBus.h
     Include/Atom/Feature/Utils/SparseVector.h
-    Include/Atom/Feature/LuxCore/LuxCoreBus.h
-    Include/Atom/Feature/LuxCore/LuxCoreTexturePass.h
-    Include/Atom/Feature/LuxCore/RenderTexturePass.h
     Source/CommonModule.cpp
     Source/CommonSystemComponent.cpp
     Source/FrameCaptureSystemComponent.cpp
@@ -133,6 +130,8 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGrid.cpp
@@ -141,6 +140,14 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.cpp
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
@@ -243,6 +250,8 @@ set(FILES
     Source/PostProcessing/LookModificationTransformPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.h
     Source/PostProcessing/PostProcessingShaderOptionBase.cpp
     Source/PostProcessing/PostProcessingShaderOptionBase.h
     Source/PostProcessing/SMAABasePass.cpp
@@ -271,8 +280,12 @@ set(FILES
     Source/RayTracing/RayTracingPass.cpp
     Source/RayTracing/RayTracingPass.h
     Source/RayTracing/RayTracingPassData.h
+    Source/ReflectionProbe/ReflectionProbeFeatureProcessor.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
+    Source/ReflectionProbe/ReflectionProbe.h
     Source/ReflectionProbe/ReflectionProbe.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp
@@ -311,18 +324,6 @@ set(FILES
     Source/SkyBox/SkyBoxFogSettings.cpp
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
-    Source/LuxCore/LuxCoreTexturePass.cpp
-    Source/LuxCore/RenderTexturePass.cpp
-    Source/LuxCore/LuxCoreMaterial.cpp
-    Source/LuxCore/LuxCoreMaterial.h
-    Source/LuxCore/LuxCoreMesh.cpp
-    Source/LuxCore/LuxCoreMesh.h
-    Source/LuxCore/LuxCoreObject.cpp
-    Source/LuxCore/LuxCoreObject.h
-    Source/LuxCore/LuxCoreRenderer.cpp
-    Source/LuxCore/LuxCoreRenderer.h
-    Source/LuxCore/LuxCoreTexture.cpp
-    Source/LuxCore/LuxCoreTexture.h
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

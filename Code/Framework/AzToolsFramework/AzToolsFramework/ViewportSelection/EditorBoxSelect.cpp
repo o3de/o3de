@@ -64,7 +64,8 @@ namespace AzToolsFramework
                 }
             }
 
-            if (clickOutcome == AzFramework::ClickDetector::ClickOutcome::Release)
+            if (clickOutcome == AzFramework::ClickDetector::ClickOutcome::Release ||
+                clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click)
             {
                 if (m_leftMouseUp)
                 {

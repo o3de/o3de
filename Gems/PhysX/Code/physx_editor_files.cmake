@@ -27,6 +27,8 @@ set(FILES
     Source/EditorFixedJointComponent.h
     Source/EditorHingeJointComponent.cpp
     Source/EditorHingeJointComponent.h
+    Source/EditorHeightfieldColliderComponent.cpp
+    Source/EditorHeightfieldColliderComponent.h
     Source/EditorJointComponent.cpp
     Source/EditorJointComponent.h
     Source/Pipeline/MeshExporter.cpp

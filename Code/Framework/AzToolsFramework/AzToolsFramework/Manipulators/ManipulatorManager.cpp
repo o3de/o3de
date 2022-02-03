@@ -146,7 +146,7 @@ namespace AzToolsFramework
 
         for (const auto& pair : m_manipulatorIdToPtrMap)
         {
-            pair.second->Draw({ Interacting() }, debugDisplay, cameraState, mouseInteraction);
+            pair.second->Draw(ManipulatorManagerState{ Interacting() }, debugDisplay, cameraState, mouseInteraction);
         }
 
         RefreshMouseOverState(mouseInteraction.m_mousePick);

@@ -40,12 +40,12 @@ CAnimSequence::CAnimSequence(IMovieSystem* pMovieSystem, uint32 id, SequenceType
     m_nextGenId = 1;
     m_pMovieSystem = pMovieSystem;
     m_flags = 0;
-    m_pParentSequence = NULL;
+    m_pParentSequence = nullptr;
     m_timeRange.Set(0, 10);
     m_bPaused = false;
     m_bActive = false;
     m_legacySequenceObject = nullptr;
-    m_activeDirector = NULL;
+    m_activeDirector = nullptr;
     m_activeDirectorNodeId = -1;
     m_precached = false;
     m_bResetting = false;
@@ -271,7 +271,7 @@ IAnimNode* CAnimSequence::CreateNodeInternal(AnimNodeType nodeType, uint32 nNode
         return nullptr;   // should never happen, null pointer guard
     }
 
-    CAnimNode* animNode = NULL;
+    CAnimNode* animNode = nullptr;
 
     if (nNodeId == -1)
     {
@@ -331,7 +331,7 @@ IAnimNode* CAnimSequence::CreateNodeInternal(AnimNodeType nodeType, uint32 nNode
         if (AddNode(animNode))
         {
             // If there isn't an active director, set it now.
-            if (m_activeDirector == NULL && animNode->GetType() == AnimNodeType::Director)
+            if (m_activeDirector == nullptr && animNode->GetType() == AnimNodeType::Director)
             {
                 SetActiveDirector(animNode);
             }
@@ -352,7 +352,7 @@ IAnimNode* CAnimSequence::CreateNode(XmlNodeRef node)
 {
     if (!GetMovieSystem())
     {
-        return 0;   // should never happen, null pointer guard
+        return nullptr;   // should never happen, null pointer guard
     }
 
     AnimNodeType type;
@@ -361,13 +361,13 @@ IAnimNode* CAnimSequence::CreateNode(XmlNodeRef node)
     XmlString name;
     if (!node->getAttr("Name", name))
     {
-        return 0;
+        return nullptr;
     }
 
     IAnimNode* pNewNode = CreateNode(type);
     if (!pNewNode)
     {
-        return 0;
+        return nullptr;
     }
 
     pNewNode->SetName(name);
@@ -377,7 +377,7 @@ IAnimNode* CAnimSequence::CreateNode(XmlNodeRef node)
 
     // Make sure de-serializing this node didn't just create an id conflict. This can happen sometimes
     // when copy/pasting nodes from a different sequence to this one. 
-    for (auto curNode : m_nodes)
+    for (const auto& curNode : m_nodes)
     {
         CAnimNode* animNode = static_cast<CAnimNode*>(curNode.get());
         if (animNode->GetId() == newAnimNode->GetId() && animNode != newAnimNode)
@@ -413,7 +413,7 @@ void CAnimSequence::RemoveNode(IAnimNode* node, bool removeChildRelationships)
         }
         if (removeChildRelationships && m_nodes[i]->GetParent() == node)
         {
-            m_nodes[i]->SetParent(0);
+            m_nodes[i]->SetParent(nullptr);
         }
 
         i++;
@@ -423,7 +423,7 @@ void CAnimSequence::RemoveNode(IAnimNode* node, bool removeChildRelationships)
     if (m_activeDirector == node)
     {
         // Clear the active one.
-        m_activeDirector = NULL;
+        m_activeDirector = nullptr;
         m_activeDirectorNodeId = -1;
 
         // If there is another director node, set it as active.
@@ -445,7 +445,7 @@ void CAnimSequence::RemoveAll()
     stl::free_container(m_nodes);
     stl::free_container(m_events);
     stl::free_container(m_nodesNeedToRender);
-    m_activeDirector = NULL;
+    m_activeDirector = nullptr;
     m_activeDirectorNodeId = -1;
 }
 
@@ -462,9 +462,9 @@ void CAnimSequence::Reset(bool bSeekToStart)
 
     if (!bSeekToStart)
     {
-        for (AnimNodes::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
+        for (const auto& it :m_nodes)
         {
-            IAnimNode* animNode = it->get();
+            IAnimNode* animNode = it.get();
             static_cast<CAnimNode*>(animNode)->OnReset();
         }
         m_bResetting = false;
@@ -1091,7 +1091,7 @@ int CAnimSequence::GetTrackEventsCount() const
 //////////////////////////////////////////////////////////////////////////
 char const* CAnimSequence::GetTrackEvent(int iIndex) const
 {
-    char const* szResult = NULL;
+    char const* szResult = nullptr;
     const bool bValid = (iIndex >= 0 && iIndex < GetTrackEventsCount());
     CRY_ASSERT(bValid);
 
@@ -1153,7 +1153,7 @@ IAnimNode* CAnimSequence::FindNodeById(int nNodeId)
             return animNode;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1172,7 +1172,7 @@ IAnimNode* CAnimSequence::FindNodeByName(const char* sNodeName, const IAnimNode*
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1352,9 +1352,9 @@ bool CAnimSequence::IsAncestorOf(const IAnimSequence* sequence) const
         return false;   // should never happen, null pointer guard
     }
 
-    for (AnimNodes::const_iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
+    for (const auto& it :m_nodes)
     {
-        IAnimNode* pNode = it->get();
+        IAnimNode* pNode = it.get();
         if (pNode->GetType() == AnimNodeType::Director)
         {
             IAnimTrack* pSequenceTrack = pNode->GetTrackForParameter(AnimParamType::Sequence);

@@ -8,7 +8,7 @@
     OverrideInclude="Multiplayer/Components/NetworkHierarchyRootComponent.h"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <Include File="Source/NetworkInput/NetworkInputChild.h"/>
+    <Include File="Multiplayer/NetworkInput/NetworkInputChild.h"/>
   
     <ComponentRelation Constraint="Required" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
   

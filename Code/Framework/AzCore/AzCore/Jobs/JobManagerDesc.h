@@ -51,6 +51,8 @@ namespace AZ
     {
         JobManagerDesc() {}
 
+        const char* m_jobManagerName = "";
+
         using DescList = AZStd::fixed_vector<JobManagerThreadDesc, 64>;
         DescList m_workerThreads; ///< List of worker threads to create
     };

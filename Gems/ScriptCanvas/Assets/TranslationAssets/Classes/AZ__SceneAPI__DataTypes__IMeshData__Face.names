@@ -1,0 +1,52 @@
+{
+    "entries": [
+        {
+            "base": "AZ::SceneAPI::DataTypes::IMeshData::Face",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Mesh Data Face",
+                "category": "Scene Graph"
+            },
+            "methods": [
+                {
+                    "base": "GetVertexIndex",
+                    "context": "AZ::SceneAPI::DataTypes::IMeshData::Face",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Vertex Index"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Vertex Index is invoked"
+                    },
+                    "details": {
+                        "name": "Get Vertex Index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F9F49C1A-014F-46F5-A46F-B56D8CB46C2B}",
+                            "details": {
+                                "name": "Mesh Data Face"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Face Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Index"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

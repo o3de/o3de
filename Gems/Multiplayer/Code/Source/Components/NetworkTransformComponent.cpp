@@ -44,7 +44,7 @@ namespace Multiplayer
         GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
         ParentEntityIdAddEvent(m_parentChangedEventHandler);
 
-        if (!HasController())
+        if (!GetNetBindComponent()->IsNetEntityRoleAuthority())
         {
             OnParentChanged(GetParentEntityId());
         }

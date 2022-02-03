@@ -68,7 +68,6 @@ protected slots:
     void CreateSwitchViewMenu();
     void SetExpandedAssetBrowserMode();
     void SetDefaultAssetBrowserMode();
-    void UpdateTableModelAfterFilter();
     void SetTableViewVisibleAfterFilter();
 
 private:

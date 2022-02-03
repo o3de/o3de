@@ -48,14 +48,6 @@ namespace AZ
         // Callback function to modify values of a ShaderResourceGroup
         using ShaderResourceGroupCallback = AZStd::function<void(ShaderResourceGroup*)>;
 
-        //! A structure for ticks which contains system time and game time.
-        struct TickTimeInfo
-        {
-            float m_currentGameTime;
-            float m_gameDeltaTime = 0;
-        };
-
-
         class Scene final
             : public SceneRequestBus::Handler
         {
@@ -80,6 +72,9 @@ namespace AZ
             //! Gets the RPI::Scene for a given entityContextId.
             //! May return nullptr if there is no RPI::Scene created for that entityContext.
             static Scene* GetSceneForEntityContextId(AzFramework::EntityContextId entityContextId);
+            
+            //! Gets the RPI::Scene for a given entityId.
+            static Scene* GetSceneForEntityId(AZ::EntityId entityId);
 
             ~Scene();
 
@@ -135,6 +130,8 @@ namespace AZ
 
             const SceneId& GetId() const;
 
+            AZ::Name GetName() const;
+
             //! Set default pipeline by render pipeline ID.
             //! It returns true if the default render pipeline was set from the input ID.
             //! If the specified render pipeline doesn't exist in this scene then it won't do anything and returns false.
@@ -174,12 +171,14 @@ namespace AZ
                         
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
             // @param jobPolicy if it's JobPolicy::Parallel, the function will spawn a job thread for each FeatureProcessor's simulation.
-            void Simulate(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy);
+            // @param simulationTime the number of seconds since the application started
+            void Simulate(RHI::JobPolicy jobPolicy, float simulationTime);
 
             // Collect DrawPackets from FeatureProcessors
             // @param jobPolicy if it's JobPolicy::Parallel, the function will spawn a job thread for each FeatureProcessor's
             // PrepareRender.
-            void PrepareRender(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy);
+            // @param simulationTime the number of seconds since the application started; this is the same time value that was passed to Simulate()
+            void PrepareRender(RHI::JobPolicy jobPolicy, float simulationTime);
 
             // Function called when the current frame is finished rendering.
             void OnFrameEnd();
@@ -195,8 +194,8 @@ namespace AZ
             // This function is called every time scene's render pipelines change.
             void RebuildPipelineStatesLookup();
 
-            // Helper function to wait for end of TaskGraph
-            void WaitTGEvent(AZ::TaskGraphEvent& completionTGEvent, AZStd::atomic_bool* workToWaitOn = nullptr);
+            // Helper function to wait for end of TaskGraph and then delete the TaskGraphEvent
+            void WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&& completionTGEvent);
 
             // Helper function for wait and clean up a completion job
             void WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob);
@@ -225,8 +224,7 @@ namespace AZ
             AZStd::vector<RenderPipelinePtr> m_pipelines;
 
             // CPU simulation TaskGraphEvent to wait for completion of all the simulation tasks
-            AZ::TaskGraphEvent m_simulationFinishedTGEvent;
-            AZStd::atomic_bool m_simulationFinishedWorkActive = false;
+            AZStd::unique_ptr<AZ::TaskGraphEvent> m_simulationFinishedTGEvent;
 
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;
@@ -245,6 +243,9 @@ namespace AZ
             // The uuid to identify this scene.
             SceneId m_id;
 
+            // Scene's name which is set at initialization. Can be empty
+            AZ::Name m_name;
+
             bool m_activated = false;
             bool m_taskGraphActive = false; // update during tick, to ensure it only changes on frame boundaries
 
@@ -259,6 +260,7 @@ namespace AZ
             // Registry which allocates draw filter tag for RenderPipeline
             RHI::Ptr<RHI::DrawFilterTagRegistry> m_drawFilterTagRegistry;
 
+            RHI::ShaderInputConstantIndex m_timeInputIndex;
             float m_simulationTime;
         };
 
@@ -286,13 +288,10 @@ namespace AZ
         template<typename FeatureProcessorType>
         FeatureProcessorType* Scene::GetFeatureProcessorForEntity(AZ::EntityId entityId)
         {
-            // Find the entity context for the entity ID.
-            AzFramework::EntityContextId entityContextId = AzFramework::EntityContextId::CreateNull();
-            AzFramework::EntityIdContextQueryBus::EventResult(entityContextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
-
-            if (!entityContextId.IsNull())
+            RPI::Scene* renderScene = GetSceneForEntityId(entityId);            
+            if (renderScene)
             {
-                return GetFeatureProcessorForEntityContextId<FeatureProcessorType>(entityContextId);
+                return renderScene->GetFeatureProcessor<FeatureProcessorType>();
             }
             return nullptr;
         };

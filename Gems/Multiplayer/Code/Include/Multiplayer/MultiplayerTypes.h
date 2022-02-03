@@ -29,7 +29,7 @@ namespace Multiplayer
     using HostId = AzNetworking::IpAddress;
     static const HostId InvalidHostId = HostId();
 
-    AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint32_t);
+    AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint64_t);
     static constexpr NetEntityId InvalidNetEntityId = static_cast<NetEntityId>(-1);
 
     AZ_TYPE_SAFE_INTEGRAL(NetComponentId, uint16_t);
@@ -68,6 +68,7 @@ namespace Multiplayer
         Server,      // A simulated proxy on a server
         Authority    // An authoritative proxy on a server (full authority)
     };
+    const char* GetEnumString(NetEntityRole value);
 
     enum class ComponentSerializationType : uint8_t
     {
@@ -112,6 +113,24 @@ namespace Multiplayer
         bool operator!=(const EntityMigrationMessage& rhs) const;
         bool Serialize(AzNetworking::ISerializer& serializer);
     };
+
+    inline const char* GetEnumString(NetEntityRole value)
+    {
+        switch (value)
+        {
+        case NetEntityRole::InvalidRole:
+            return "InvalidRole";
+        case NetEntityRole::Client:
+            return "Client";
+        case NetEntityRole::Autonomous:
+            return "Autonomous";
+        case NetEntityRole::Server:
+            return "Server";
+        case NetEntityRole::Authority:
+            return "Authority";
+        }
+        return "Unknown";
+    }
 
     inline PrefabEntityId::PrefabEntityId(AZ::Name name, uint32_t entityOffset)
         : m_prefabName(name)

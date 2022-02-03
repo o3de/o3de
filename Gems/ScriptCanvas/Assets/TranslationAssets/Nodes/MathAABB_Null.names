@@ -1,0 +1,34 @@
+{
+    "entries": [
+        {
+            "base": "{783E6976-E519-5BC0-BD33-049847564F5E}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Null",
+                "category": "Math/AABB",
+                "tooltip": "returns an invalid AABB (min > max), adding any point to it will make it valid"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

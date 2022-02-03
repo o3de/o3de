@@ -29,13 +29,13 @@
             <Component Id="DesktopShortcuts" Guid="{2600B54A-65FB-4507-A7CD-3CE4817C7173}">
 
                 <Shortcut Id="DesktopShortcut_Editor"
-                    Target="[root.bin.Windows.profile]Editor.exe"
-                    WorkingDirectory="root.bin.Windows.profile"
+                    Target="[root.bin.Windows.profile.Default]Editor.exe"
+                    WorkingDirectory="root.bin.Windows.profile.Default"
                     Name="$(var.CPACK_PACKAGE_NAME) Editor" />
 
                 <Shortcut Id="DesktopShortcut_ProjectManager"
-                    Target="[root.bin.Windows.profile]o3de.exe"
-                    WorkingDirectory="root.bin.Windows.profile"
+                    Target="[root.bin.Windows.profile.Default]o3de.exe"
+                    WorkingDirectory="root.bin.Windows.profile.Default"
                     Name="$(var.CPACK_PACKAGE_NAME) Project Manager" />
 
                 <RemoveFolder Id="DesktopFolder" On="uninstall"/>

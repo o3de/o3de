@@ -10,7 +10,7 @@
 
 #include <AzCore/Module/Module.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
-#include <Components/PerlinGradientComponent.h>
+#include <GradientSignal/Components/PerlinGradientComponent.h>
 
 namespace GradientSignal
 {

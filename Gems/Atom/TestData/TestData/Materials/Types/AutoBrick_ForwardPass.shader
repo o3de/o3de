@@ -24,7 +24,7 @@
     },
 
     "CompilerHints" : { 
-        "DxcDisableOptimizations" : false
+        "DisableOptimizations" : false
     },
 
     "ProgramSettings":

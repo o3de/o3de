@@ -78,8 +78,6 @@ namespace AZ
             // Recursively collect all the passes from the root pass.
             AZStd::vector<const RPI::Pass*> CollectPassesRecursively(const RPI::Pass* root) const;
 
-            AZStd::vector<AZ::RPI::Pass*> FindPasses(AZStd::vector<AZStd::string>&& passHierarchy) const;
-
             DelayedQueryCaptureHelper m_timestampCapture;
             DelayedQueryCaptureHelper m_cpuFrameTimeStatisticsCapture;
             DelayedQueryCaptureHelper m_pipelineStatisticsCapture;

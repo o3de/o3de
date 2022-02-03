@@ -32,6 +32,7 @@ namespace LmbrCentral
                 editContext->Class<EditorNavigationSeedComponent>("Navigation Seed", "Determines reachable navigation nodes")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AddableByUser, false)
                         ->Attribute(AZ::Edit::Attributes::Category, "AI")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NavigationSeed.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NavigationSeed.svg")

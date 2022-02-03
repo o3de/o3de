@@ -39,6 +39,10 @@ namespace AzManipulatorTestFramework
         DerivedDispatcherT* MouseLButtonDown();
         //! Set the left mouse button up.
         DerivedDispatcherT* MouseLButtonUp();
+        //! Set the middle mouse button down.
+        DerivedDispatcherT* MouseMButtonDown();
+        //! Set the middle mouse button up.
+        DerivedDispatcherT* MouseMButtonUp();
         //! Send a double click event.
         DerivedDispatcherT* MouseLButtonDoubleClick();
         //! Set the keyboard modifier button down.
@@ -73,6 +77,8 @@ namespace AzManipulatorTestFramework
         virtual void CameraStateImpl(const AzFramework::CameraState& cameraState) = 0;
         virtual void MouseLButtonDownImpl() = 0;
         virtual void MouseLButtonUpImpl() = 0;
+        virtual void MouseMButtonDownImpl() = 0;
+        virtual void MouseMButtonUpImpl() = 0;
         virtual void MouseLButtonDoubleClickImpl() = 0;
         virtual void MousePositionImpl(const AzFramework::ScreenPoint& position) = 0;
         virtual void KeyboardModifierDownImpl(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier) = 0;
@@ -180,6 +186,22 @@ namespace AzManipulatorTestFramework
     {
         Log("Mouse left button up");
         MouseLButtonUpImpl();
+        return static_cast<DerivedDispatcherT*>(this);
+    }
+
+    template<typename DerivedDispatcherT>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseMButtonDown()
+    {
+        Log("Mouse middle button down");
+        MouseMButtonDownImpl();
+        return static_cast<DerivedDispatcherT*>(this);
+    }
+
+    template<typename DerivedDispatcherT>
+    DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::MouseMButtonUp()
+    {
+        Log("Mouse middle button up");
+        MouseMButtonUpImpl();
         return static_cast<DerivedDispatcherT*>(this);
     }
 

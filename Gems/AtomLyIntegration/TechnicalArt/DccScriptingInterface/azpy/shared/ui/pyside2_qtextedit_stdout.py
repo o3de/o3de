@@ -32,7 +32,7 @@ from PySide2.QtCore import QTimer
 
 # -------------------------------------------------------------------------
 #  global space debug flag
-_G_DEBUG = os.getenv('DCCSI_GDEBUG', False)
+_DCCSI_GDEBUG = os.getenv('DCCSI_GDEBUG', False)
 
 #  global space debug flag
 _DCCSI_DEV_MODE = os.getenv('DCCSI_DEV_MODE', False)
@@ -48,7 +48,7 @@ _MODULENAME = __name__
 if _MODULENAME is '__main__':
     _MODULENAME = _TOOL_TAG
 
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     _LOGGER = initialize_logger(_MODULENAME, log_to_file=True)
     _LOGGER.debug('Something invoked :: {0}.'.format({_MODULENAME}))
 else:
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     _TOOL_TAG = 'azpy.shared.ui.pyside2_qtextedit_stdout'
     _TYPE_TAG = 'test'
 
-    if _G_DEBUG:
+    if _DCCSI_GDEBUG:
         _LOGGER = initialize_logger('{0}-TEST'.format(_TOOL_TAG), log_to_file=True)
         _LOGGER.debug('Something invoked :: {0}.'.format({_MODULENAME}))
 
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     _READER.start('python', ['-u', _TEST_PY_FILE])  # start the process
 
     # after that starts, this will show the console
-    # LY_QSS = Path(_MODULE_PATH.parent, 'resources', 'stylesheets', 'LYstyle.qss')
+    # O3DE_QSS = Path(_MODULE_PATH.parent, 'resources', 'stylesheets', 'LYstyle.qss')
     _DARK_STYLE = Path(_MODULE_PATH.parent, 'resources', 'qdarkstyle', 'style.qss')
     _CONSOLE.qapp.setStyleSheet(_DARK_STYLE.read_file())
     _CONSOLE.show()  # make the console visible

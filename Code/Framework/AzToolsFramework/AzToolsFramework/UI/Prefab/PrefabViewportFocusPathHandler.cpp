@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 
+#include <QTimer>
+
 namespace AzToolsFramework::Prefab
 {
     PrefabViewportFocusPathHandler::PrefabViewportFocusPathHandler()
@@ -42,11 +44,17 @@ namespace AzToolsFramework::Prefab
         m_breadcrumbsWidget = breadcrumbsWidget;
         m_backButton = backButton;
 
+        // Add icons to the widget
+        m_breadcrumbsWidget->setDefaultIcon(QString(":/Entity/prefab_edit.svg"));
+
         // If a part of the path is clicked, focus on that instance
         connect(m_breadcrumbsWidget, &AzQtComponents::BreadCrumbs::linkClicked, this,
             [&](const QString&, int linkIndex)
             {
                 m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, linkIndex);
+
+                // Manually refresh path
+                QTimer::singleShot(0, [&]() { OnPrefabFocusChanged(); });
             }
         );
 
@@ -54,18 +62,26 @@ namespace AzToolsFramework::Prefab
         connect(m_backButton, &QToolButton::clicked, this,
             [&]()
             {
-                if (int length = m_prefabFocusPublicInterface->GetPrefabFocusPathLength(m_editorEntityContextId); length > 1)
-                {
-                    m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, length - 2);
-                }
+                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(m_editorEntityContextId);
             }
         );
+
+        m_backButton->setToolTip("Up one level (-)");
+
+        // Currently hide this button until we can correctly disable/enable it based on context.
+        m_backButton->hide();
     }
 
     void PrefabViewportFocusPathHandler::OnPrefabFocusChanged()
     {
         // Push new Path
         m_breadcrumbsWidget->pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
+
+        // Set root icon
+        m_breadcrumbsWidget->setIconAt(0, QString(":/Level/level.svg"));
+
+        // If root instance is focused, disable the back button; else enable it.
+        m_backButton->setEnabled(m_prefabFocusPublicInterface->GetPrefabFocusPathLength(m_editorEntityContextId) > 1);
     }
 
 } // namespace AzToolsFramework::Prefab

@@ -198,7 +198,6 @@ void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* seque
 
     m_wndProps->setEnabled(false);
     m_wndTrackProps->setEnabled(false);
-    bool bAssigned = false;
     if (selectedKeys.GetKeyCount() > 0 && selectedKeys.AreAllKeysOfSameType())
     {
         CTrackViewTrack* pTrack = selectedKeys.GetKey(0).GetTrack();
@@ -215,12 +214,6 @@ void CTrackViewKeyPropertiesDlg::OnKeySelectionChanged(CTrackViewSequence* seque
                 {
                     AddVars(m_keyControls[i]);
                 }
-
-                if (m_keyControls[i]->OnKeySelectionChange(selectedKeys))
-                {
-                    bAssigned = true;
-                }
-
                 break;
             }
         }

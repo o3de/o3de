@@ -518,7 +518,7 @@ namespace ScriptCanvas
                 {
                     const AZ::BehaviorParameter& argument(event.m_parameters[AZ::eBehaviorBusForwarderEventIndices::Result]);
                     Data::Type inputType(AZ::BehaviorContextHelper::IsStringParameter(argument) ? Data::Type::String() : Data::FromAZType(argument.m_typeId));
-                    const AZStd::string argName(AZStd::string::format("Result: %s", Data::GetName(inputType).data()).data());
+                    const AZStd::string argName(Data::GetName(inputType));
 
                     DataSlotConfiguration resultConfiguration;
 

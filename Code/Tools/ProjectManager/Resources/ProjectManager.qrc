@@ -40,5 +40,7 @@
         <file>Delete.svg</file>
         <file>Download.svg</file>
         <file>in_progress.gif</file>
+        <file>gem.svg</file>
+        <file>checkmark.svg</file>
     </qresource>
 </RCC>

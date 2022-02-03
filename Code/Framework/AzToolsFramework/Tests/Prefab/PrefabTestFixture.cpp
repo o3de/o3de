@@ -11,6 +11,8 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <Prefab/PrefabTestComponent.h>
 #include <Prefab/PrefabTestDomUtils.h>
 
@@ -50,6 +52,15 @@ namespace UnitTest
 
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponent::CreateDescriptor());
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponentWithUnReflectedTypeMember::CreateDescriptor());
+
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            m_undoStack, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetUndoStack);
+        AZ_Assert(m_undoStack, "Failed to look up undo stack from tools application");
+    }
+
+    void PrefabTestFixture::TearDownEditorFixtureImpl()
+    {
+        m_undoStack = nullptr;
     }
 
     AZStd::unique_ptr<ToolsTestApplication> PrefabTestFixture::CreateTestApplication()
@@ -57,7 +68,25 @@ namespace UnitTest
         return AZStd::make_unique<PrefabTestToolsApplication>("PrefabTestApplication");
     }
 
-    AZ::Entity* PrefabTestFixture::CreateEntity(const char* entityName, const bool shouldActivate)
+    void PrefabTestFixture::CreateRootPrefab()
+    {
+        auto entityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        ASSERT_TRUE(entityOwnershipService != nullptr);
+        entityOwnershipService->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
+        auto rootEntityReference = entityOwnershipService->GetRootPrefabInstance()->get().GetContainerEntity();
+        ASSERT_TRUE(rootEntityReference.has_value());
+        auto& rootEntity = rootEntityReference->get();
+        rootEntity.Deactivate();
+        rootEntity.CreateComponent<AzToolsFramework::Components::TransformComponent>();
+        rootEntity.Activate();
+    }
+
+    void PrefabTestFixture::PropagateAllTemplateChanges()
+    {
+        m_prefabSystemComponent->OnSystemTick();
+    }
+
+    AZ::Entity* PrefabTestFixture::CreateEntity(AZStd::string entityName, const bool shouldActivate)
     {
         // Circumvent the EntityContext system and generate a new entity with a transformcomponent
         AZ::Entity* newEntity = aznew AZ::Entity(entityName);
@@ -71,8 +100,43 @@ namespace UnitTest
         return newEntity;
     }
 
+    AZ::EntityId PrefabTestFixture::CreateEntityUnderRootPrefab(AZStd::string name, AZ::EntityId parentId)
+    {
+        auto createResult = m_prefabPublicInterface->CreateEntity(parentId, AZ::Vector3());
+        AZ_Assert(createResult.IsSuccess(), "Failed to create entity: %s", createResult.GetError().c_str());
+        AZ::EntityId entityId = createResult.GetValue();
+
+        AZ::Entity* entity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+
+        entity->Deactivate();
+
+        entity->SetName(name);
+
+        // Normally, in invalid parent ID should automatically parent us to the root prefab, but currently in the unit test
+        // environment entities aren't created with a default transform component, so CreateEntity won't correctly parent.
+        // We get the actual target parent ID here, then create our missing transform component.
+        if (!parentId.IsValid())
+        {
+            auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            parentId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
+        }
+
+        auto transform = aznew AzToolsFramework::Components::TransformComponent;
+        transform->SetParent(parentId);
+        entity->AddComponent(transform);
+
+        entity->Activate();
+
+        // Update our undo cache entry to include the rename / reparent as one atomic operation.
+        m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityId, m_undoStack->GetTop());
+        m_prefabSystemComponent->OnSystemTick();
+
+        return entityId;
+    }
+
     void PrefabTestFixture::CompareInstances(const AzToolsFramework::Prefab::Instance& instanceA,
-        const AzToolsFramework::Prefab::Instance& instanceB, bool shouldCompareLinkIds, bool shouldCompareContainerEntities)
+                                             const AzToolsFramework::Prefab::Instance& instanceB, bool shouldCompareLinkIds, bool shouldCompareContainerEntities)
     {
         AzToolsFramework::Prefab::TemplateId templateAId = instanceA.GetTemplateId();
         AzToolsFramework::Prefab::TemplateId templateBId = instanceB.GetTemplateId();
@@ -124,5 +188,32 @@ namespace UnitTest
             ASSERT_TRUE(entityInInstance);
             EXPECT_EQ(entityInInstance->GetState(), AZ::Entity::State::Active);
         }
+    }
+
+    void PrefabTestFixture::ProcessDeferredUpdates()
+    {
+        // Force a prefab propagation for updates that are deferred to the next tick.
+        m_prefabSystemComponent->OnSystemTick();
+    }
+
+    void PrefabTestFixture::Undo()
+    {
+        m_undoStack->Undo();
+        ProcessDeferredUpdates();
+    }
+
+    void PrefabTestFixture::Redo()
+    {
+        m_undoStack->Redo();
+        ProcessDeferredUpdates();
+    }
+
+    void PrefabTestFixture::AddRequiredEditorComponents(AZ::Entity* entity)
+    {
+        ASSERT_TRUE(entity != nullptr);
+        entity->Deactivate();
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::AddRequiredComponents, *entity);
+        entity->Activate();
     }
 }

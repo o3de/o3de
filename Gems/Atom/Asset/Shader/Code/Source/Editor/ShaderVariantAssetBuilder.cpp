@@ -241,7 +241,7 @@ namespace AZ
         {
             // Need to get the name of the shader file from the template so that we can preprocess the shader data and setup
             // source file dependencies.
-            if (!RPI::JsonUtils::LoadObjectFromFile(variantListFullPath, shaderVariantList))
+            if (!RPI::JsonUtils::LoadObjectFromFile(variantListFullPath, shaderVariantList, AZStd::numeric_limits<size_t>::max()))
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to parse Shader Variant List Descriptor JSON from [%s]", variantListFullPath.c_str());
                 return LoadResult{LoadResult::Code::Error};
@@ -561,7 +561,7 @@ namespace AZ
             // Access the root constants reflection
             if (!azslCompiler.ParseSrgPopulateRootConstantData(
                     jsonOutcome.GetValue(),
-                    rootConstantData)) // consuming data from --srg ("InlineConstantBuffer" subjson section)
+                    rootConstantData)) // consuming data from --srg ("RootConstantBuffer" subjson section)
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to obtain root constant data reflection");
                 return false;
@@ -635,7 +635,7 @@ namespace AZ
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), variantListFullPath, true);
 
             RPI::ShaderVariantListSourceData shaderVariantListDescriptor;
-            if (!RPI::JsonUtils::LoadObjectFromFile(variantListFullPath, shaderVariantListDescriptor))
+            if (!RPI::JsonUtils::LoadObjectFromFile(variantListFullPath, shaderVariantListDescriptor, AZStd::numeric_limits<size_t>::max()))
             {
                 AZ_Assert(false, "Failed to parse Shader Variant List Descriptor JSON [%s]", variantListFullPath.c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -765,7 +765,7 @@ namespace AZ
                 return;
             }
             
-            const AZStd::sys_time_t shaderVariantAssetBuildTimestamp = AZStd::GetTimeNowMicroSecond();
+            const AZ::u64 shaderVariantAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceDescriptor);
 

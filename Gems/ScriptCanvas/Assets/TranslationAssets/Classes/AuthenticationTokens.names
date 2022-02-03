@@ -1,0 +1,145 @@
+{
+    "entries": [
+        {
+            "base": "AuthenticationTokens",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Authentication Tokens",
+                "category": "AWS Client Auth"
+            },
+            "methods": [
+                {
+                    "base": "GetAccessToken",
+                    "details": {
+                        "name": "Get Access Token"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "Authentication Tokens"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Access Token"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAccessToken",
+                    "details": {
+                        "name": "Set Access Token"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "Authentication Tokens"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Access Token"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOpenIdToken",
+                    "context": "getter",
+                    "details": {
+                        "name": "Get OpenId Token"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "Authentication Token"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "OpenId Token"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOpenIdToken",
+                    "context": "setter",
+                    "details": {
+                        "name": "Set OpenId Token"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "Authentication Token"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "OpenId Token"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRefreshToken",
+                    "context": "getter",
+                    "details": {
+                        "name": "Get Refresh Token"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "Authentication Token"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Refresh Token"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRefreshToken",
+                    "context": "setter",
+                    "details": {
+                        "name": "Set Refresh Token"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "Authentication Token"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Refresh Token"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -230,7 +230,7 @@ float3 CalculateLighting(
     return lightingData.diffuseLighting + lightingData.specularLighting;
 }
 
-float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, float thickness, int shaderParamIndex)
+float3 TressFXShading(float2 pixelCoord, float depth, float3 tangent, float3 baseColor, float thickness, int shaderParamIndex)
 {
     float3 vNDC;    // normalized device / screen coordinates: [-1..1, -1..1, 0..1]
     float3 vPositionWS = ScreenPosToWorldPos(PassSrg::m_linearDepth, pixelCoord, depth, vNDC);
@@ -240,9 +240,6 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     float4 screenCoords = float4( _BIG_HACK_FOR_TESTING_ * pixelCoord, depth, depth);   // screen space position - XY in pixels - ZW are depth 0..1
 
     float3 vViewDirWS = g_vEye - vPositionWS;
-
-    // Need to expand the tangent that was compressed to store in the buffer
-    float3 vTangent = normalize(vTangentCoverage.xyz * 2.f - 1.f);
 
     //---- TressFX original lighting params setting ----
     HairShadeParams params;
@@ -266,11 +263,19 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     if (o_hairLightingModel == HairLightingModel::Kajiya)
     {   // This option should be removed and the Kajiya-Kay model should be operated from within 
         // the Atom lighting loop.
-        accumulatedLight = SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
+        accumulatedLight = SimplifiedHairLighting(tangent, vPositionWS, vViewDirWS, params, vNDC);    
     }
     else
     {
-        accumulatedLight = CalculateLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, thickness, params);
+        accumulatedLight = CalculateLighting(screenCoords, vPositionWS, vViewDirWS, tangent, thickness, params);
     }
     return accumulatedLight;
+}
+
+float3 TressFXShadingFullScreen(float2 pixelCoord, float depth, float3 compressedTangent, float3 baseColor, float thickness, int shaderParamIndex)
+{
+    // The tangent that was compressed to store in the PPLL structure
+    float3 tangent = normalize(compressedTangent.xyz * 2.f - 1.f);
+
+    return TressFXShading(pixelCoord, depth, tangent, baseColor, thickness, shaderParamIndex);
 }

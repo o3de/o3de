@@ -40,6 +40,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float m_whiteBalanceWeight;
     float m_whiteBalanceKelvin;
     float m_whiteBalanceTint;
+    float m_whiteBalanceLuminancePreservation;
 
     float m_splitToneBalance;
     float m_splitToneWeight;

@@ -33,17 +33,17 @@ namespace AZ
                 RegisterEnumerators<MatrixOrder>(serializeContext);
 
                 serializeContext->Class<ShaderCompilerArguments>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("AzslcWarningLevel", &ShaderCompilerArguments::m_azslcWarningLevel)
                     ->Field("AzslcWarningAsError", &ShaderCompilerArguments::m_azslcWarningAsError)
                     ->Field("AzslcAdditionalFreeArguments", &ShaderCompilerArguments::m_azslcAdditionalFreeArguments)
-                    ->Field("DxcDisableWarnings", &ShaderCompilerArguments::m_dxcDisableWarnings)
-                    ->Field("DxcWarningAsError", &ShaderCompilerArguments::m_dxcWarningAsError)
-                    ->Field("DxcDisableOptimizations", &ShaderCompilerArguments::m_dxcDisableOptimizations)
-                    ->Field("DxcGenerateDebugInfo", &ShaderCompilerArguments::m_dxcGenerateDebugInfo)
-                    ->Field("DxcOptimizationLevel", &ShaderCompilerArguments::m_dxcOptimizationLevel)
-                    ->Field("DxcAdditionalFreeArguments", &ShaderCompilerArguments::m_dxcAdditionalFreeArguments)
+                    ->Field("DisableWarnings", &ShaderCompilerArguments::m_disableWarnings)
+                    ->Field("WarningAsError", &ShaderCompilerArguments::m_warningAsError)
+                    ->Field("DisableOptimizations", &ShaderCompilerArguments::m_disableOptimizations)
+                    ->Field("GenerateDebugInfo", &ShaderCompilerArguments::m_generateDebugInfo)
+                    ->Field("OptimizationLevel", &ShaderCompilerArguments::m_optimizationLevel)
                     ->Field("DefaultMatrixOrder", &ShaderCompilerArguments::m_defaultMatrixOrder)
+                    ->Field("DxcAdditionalFreeArguments", &ShaderCompilerArguments::m_dxcAdditionalFreeArguments)
                     ;
             }
         }
@@ -62,13 +62,13 @@ namespace AZ
             }
             m_azslcWarningAsError = m_azslcWarningAsError || right.m_azslcWarningAsError;
             m_azslcAdditionalFreeArguments = CommandLineArgumentUtils::MergeCommandLineArguments(m_azslcAdditionalFreeArguments, right.m_azslcAdditionalFreeArguments);
-            m_dxcDisableWarnings = m_dxcDisableWarnings || right.m_dxcDisableWarnings;
-            m_dxcWarningAsError = m_dxcWarningAsError || right.m_dxcWarningAsError;
-            m_dxcDisableOptimizations = m_dxcDisableOptimizations || right.m_dxcDisableOptimizations;
-            m_dxcGenerateDebugInfo = m_dxcGenerateDebugInfo || right.m_dxcGenerateDebugInfo;
-            if (right.m_dxcOptimizationLevel != LevelUnset)
+            m_disableWarnings = m_disableWarnings || right.m_disableWarnings;
+            m_warningAsError = m_warningAsError || right.m_warningAsError;
+            m_disableOptimizations = m_disableOptimizations || right.m_disableOptimizations;
+            m_generateDebugInfo = m_generateDebugInfo || right.m_generateDebugInfo;
+            if (right.m_optimizationLevel != LevelUnset)
             {
-                m_dxcOptimizationLevel = right.m_dxcOptimizationLevel;
+                m_optimizationLevel = right.m_optimizationLevel;
             }
             m_dxcAdditionalFreeArguments = CommandLineArgumentUtils::MergeCommandLineArguments(m_dxcAdditionalFreeArguments, right.m_dxcAdditionalFreeArguments);
             if (right.m_defaultMatrixOrder != MatrixOrder::Default)
@@ -131,21 +131,21 @@ namespace AZ
         AZStd::string ShaderCompilerArguments::MakeAdditionalDxcCommandLineString() const
         {
             AZStd::string arguments;
-            if (m_dxcDisableWarnings)
+            if (m_disableWarnings)
             {
                 arguments += " -no-warnings";
             }
-            else if (m_dxcWarningAsError)
+            else if (m_warningAsError)
             {
                 arguments += " -WX";
             }
-            if (m_dxcDisableOptimizations)
+            if (m_disableOptimizations)
             {
                 arguments += " -Od";
             }
-            else if (m_dxcOptimizationLevel <= 3)
+            else if (m_optimizationLevel <= 3)
             {
-                arguments = " -O" + AZStd::to_string(m_dxcOptimizationLevel);
+                arguments = " -O" + AZStd::to_string(m_optimizationLevel);
             }
             if (m_defaultMatrixOrder == MatrixOrder::Column)
             {

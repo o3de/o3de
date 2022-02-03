@@ -140,8 +140,8 @@ namespace AZ {
         class const_iterator;
         class iterator
         {
-            typedef T& reference;
-            typedef T* pointer;
+            using reference = T&;
+            using pointer = T*;
             friend class const_iterator;
             T* mPtr;
         public:
@@ -171,8 +171,8 @@ namespace AZ {
 
         class const_iterator
         {
-            typedef const T& reference;
-            typedef const T* pointer;
+            using reference = const T &;
+            using pointer = const T *;
             const T* mPtr;
         public:
             const_iterator()
@@ -327,7 +327,7 @@ namespace AZ {
             uint64_t mSizeAndFlags;
 
         public:
-            typedef block_header* block_ptr;
+            using block_ptr = block_header *;
             size_t size() const { return mSizeAndFlags & ~BL_FLAG_MASK; }
             block_ptr next() const {return (block_ptr)((char*)mem() + size()); }
             block_ptr prev() const {return mPrev; }
@@ -415,7 +415,7 @@ namespace AZ {
             void dec_ref()                          { HPPA_ASSERT(mUseCount > 0); mUseCount--; }
             bool check_marker(size_t marker) const  { return mMarker == (marker ^ ((size_t)this)); }
         };
-        typedef intrusive_list<page> page_list;
+        using page_list = intrusive_list<page>;
         class bucket
         {
             page_list mPageList;
@@ -719,8 +719,12 @@ namespace AZ {
 
 #endif // DEBUG_ALLOCATOR
 
-        size_t mTotalAllocatedSizeBuckets = 0;
-        size_t mTotalCapacitySizeBuckets = 0;
+        // Bucket-dependent counters need to atomic since the locks that protect bucket allocations are per bucket
+        // So multiple threads could be updating these counters
+        AZStd::atomic<size_t> mTotalAllocatedSizeBuckets = 0;
+        AZStd::atomic<size_t> mTotalCapacitySizeBuckets = 0;
+        // In the case of tree allocations, there is a lock on the tree, so these counters are protected from multiple
+        // threads through that lock
         size_t mTotalAllocatedSizeTree = 0;
         size_t mTotalCapacitySizeTree = 0;
     public:
@@ -1081,7 +1085,7 @@ namespace AZ {
         const size_t m_treePageAlignment;
         const size_t m_poolPageSize;
         bool         m_isPoolAllocations;
-        IAllocatorAllocate* m_subAllocator;
+        IAllocatorSchema* m_subAllocator;
 
 #if !defined (USE_MUTEX_PER_BUCKET)
         mutable AZStd::mutex m_mutex;

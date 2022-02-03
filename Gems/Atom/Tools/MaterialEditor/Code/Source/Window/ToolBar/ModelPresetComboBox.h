@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QComboBox>
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
+#include <Viewport/MaterialViewportNotificationBus.h>
 #endif
 
 namespace MaterialEditor

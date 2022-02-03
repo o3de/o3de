@@ -86,6 +86,8 @@ namespace AZ
             void SetFilteringSampleCount(uint32_t count) override;
             float GetEsmExponent() const override;
             void SetEsmExponent(float exponent) override;
+            float GetNormalShadowBias() const override;
+            void SetNormalShadowBias(float bias) override;
 
             void HandleDisplayEntityViewport(
                 const AzFramework::ViewportInfo& viewportInfo,

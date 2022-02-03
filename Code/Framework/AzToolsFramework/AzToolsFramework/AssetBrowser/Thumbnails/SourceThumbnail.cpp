@@ -9,11 +9,11 @@
 #include <AzCore/EBus/Results.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <QString>
 
 namespace AzToolsFramework
@@ -113,11 +113,9 @@ namespace AzToolsFramework
 
             if (iconPathToUse.isEmpty())
             {
-                const char* engineRoot = nullptr;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-                AZ_Assert(engineRoot, "Engine Root not initialized");
-                AZStd::string iconPath = AZStd::string::format("%s%s", engineRoot, DefaultFileIconPath);
-                iconPathToUse = iconPath.c_str();
+                AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+                AZ_Assert(!engineRoot.empty(), "Engine Root not initialized");
+                iconPathToUse = (engineRoot / DefaultFileIconPath).c_str();
             }
 
             m_pixmap.load(iconPathToUse);

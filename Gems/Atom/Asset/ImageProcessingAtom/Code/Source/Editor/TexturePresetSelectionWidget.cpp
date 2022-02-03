@@ -18,6 +18,27 @@
 namespace ImageProcessingAtomEditor
 {
     using namespace ImageProcessingAtom;
+
+    AZStd::string GetImageFileMask(const AZStd::string& imageFilePath)
+    {
+        const char FileMaskDelimiter = '_';
+
+        //get file name
+        AZStd::string fileName;
+        QString lowerFileName = imageFilePath.data();
+        lowerFileName = lowerFileName.toLower();
+        AzFramework::StringFunc::Path::GetFileName(lowerFileName.toUtf8().constData(), fileName);
+
+        //get the substring from last '_'
+        size_t lastUnderScore = fileName.find_last_of(FileMaskDelimiter);
+        if (lastUnderScore != AZStd::string::npos)
+        {
+            return fileName.substr(lastUnderScore);
+        }
+
+        return AZStd::string();
+    }
+
     TexturePresetSelectionWidget::TexturePresetSelectionWidget(EditorTextureSetting& textureSetting, QWidget* parent /*= nullptr*/)
         : QWidget(parent)
         , m_ui(new Ui::TexturePresetSelectionWidget)
@@ -29,33 +50,31 @@ namespace ImageProcessingAtomEditor
         m_presetList.clear();
         auto& presetFilterMap = BuilderSettingManager::Instance()->GetPresetFilterMap();
 
-        AZStd::unordered_set<ImageProcessingAtom::PresetName> noFilterPresetList;
-
-        // Check if there is any filtered preset list first
-        for(auto& presetFilter : presetFilterMap)
+        if (m_listAllPresets)
         {
-            if (presetFilter.first.empty())
+            m_presetList = BuilderSettingManager::Instance()->GetFullPresetList();
+        }
+        else
+        {
+            auto fileMask = GetImageFileMask(m_textureSetting->m_textureName);
+            auto itr = presetFilterMap.find(fileMask);
+            if (itr != presetFilterMap.end())
             {
-                noFilterPresetList = presetFilter.second;
+                m_presetList = itr->second;
             }
-            else if (IsMatchingWithFileMask(m_textureSetting->m_textureName, presetFilter.first))
+            else
             {
-                for(const auto& presetName : presetFilter.second)
-                {
-                    m_presetList.insert(presetName);
-                }
+                m_presetList = BuilderSettingManager::Instance()->GetFullPresetList();
             }
         }
-        // If no filtered preset list available or should list all presets, use non-filter list
-        if (m_presetList.size() == 0 || m_listAllPresets)
-        {
-            m_presetList = noFilterPresetList;
-        }
 
+        QStringList stringList;
         foreach (const auto& presetName, m_presetList)
         {
-            m_ui->presetComboBox->addItem(QString(presetName.GetCStr()));
+            stringList.append(QString(presetName.GetCStr()));
         }
+        stringList.sort();
+        m_ui->presetComboBox->addItems(stringList);
 
         // Set current preset
         const auto& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
@@ -173,8 +192,9 @@ namespace ImageProcessingAtomEditor
         AZStd::string conventionText = "";
         if (presetSettings)
         {
+            auto fileMasks = BuilderSettingManager::Instance()->GetFileMasksForPreset(presetSettings->m_name);
             int i = 0;
-            for (const PlatformName& filemask : presetSettings->m_fileMasks)
+            for (const auto& filemask : fileMasks)
             {
                 conventionText +=  i > 0 ? " " + filemask : filemask;
                 i++;

@@ -2,7 +2,9 @@
     "gem_name": "Multiplayer",
     "display_name": "Multiplayer",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "The Multiplayer Gem provides a public API for multiplayer functionality such as connecting and hosting.",
     "canonical_tags": [
@@ -15,6 +17,7 @@
     ],
     "icon_path": "preview.png",
     "requirements": "",
+    "documentation_url": "",
     "dependencies": [
         "CertificateManager",
         "Atom_Feature_Common",

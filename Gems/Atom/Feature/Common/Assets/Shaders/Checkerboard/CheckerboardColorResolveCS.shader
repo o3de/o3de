@@ -1,5 +1,5 @@
 {
-    "Source": "CheckerboardColorResolveCS",
+    "Source": "CheckerboardColorResolveCS.azsl",
    
     "CompilerHints":
     {

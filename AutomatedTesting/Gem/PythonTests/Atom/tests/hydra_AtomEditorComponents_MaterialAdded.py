@@ -96,24 +96,24 @@ def AtomEditorComponents_Material_AddedToEntity():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
+    from Atom.atom_utils.atom_constants import AtomComponentProperties
 
     with Tracer() as error_tracer:
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a Material entity with no components.
-        material_name = "Material"
-        material_entity = EditorEntity.create_editor_entity(material_name)
+        material_entity = EditorEntity.create_editor_entity(AtomComponentProperties.material())
         Report.critical_result(Tests.material_creation, material_entity.exists())
 
         # 2. Add a Material component to Material entity.
-        material_component = material_entity.add_component(material_name)
+        material_component = material_entity.add_component(AtomComponentProperties.material())
         Report.critical_result(
             Tests.material_component,
-            material_entity.has_component(material_name))
+            material_entity.has_component(AtomComponentProperties.material()))
 
         # 3. UNDO the entity creation and component addition.
         # -> UNDO component addition.
@@ -143,9 +143,8 @@ def AtomEditorComponents_Material_AddedToEntity():
         Report.result(Tests.material_disabled, not material_component.is_enabled())
 
         # 6. Add Actor component since it is required by the Material component.
-        actor_name = "Actor"
-        material_entity.add_component(actor_name)
-        Report.result(Tests.actor_component, material_entity.has_component(actor_name))
+        material_entity.add_component(AtomComponentProperties.actor())
+        Report.result(Tests.actor_component, material_entity.has_component(AtomComponentProperties.actor()))
 
         # 7. Verify Material component is enabled.
         Report.result(Tests.material_enabled, material_component.is_enabled())
@@ -153,15 +152,14 @@ def AtomEditorComponents_Material_AddedToEntity():
         # 8. UNDO component addition.
         general.undo()
         general.idle_wait_frames(1)
-        Report.result(Tests.actor_undo, not material_entity.has_component(actor_name))
+        Report.result(Tests.actor_undo, not material_entity.has_component(AtomComponentProperties.actor()))
 
         # 9. Verify Material component not enabled.
         Report.result(Tests.material_disabled, not material_component.is_enabled())
 
         # 10. Add Mesh component since it is required by the Material component.
-        mesh_name = "Mesh"
-        material_entity.add_component(mesh_name)
-        Report.result(Tests.mesh_component, material_entity.has_component(mesh_name))
+        material_entity.add_component(AtomComponentProperties.mesh())
+        Report.result(Tests.mesh_component, material_entity.has_component(AtomComponentProperties.mesh()))
 
         # 11. Verify Material component is enabled.
         Report.result(Tests.material_enabled, material_component.is_enabled())
@@ -186,10 +184,12 @@ def AtomEditorComponents_Material_AddedToEntity():
 
         # 16. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, material_entity.exists())
 
         # 17. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not material_entity.exists())
 
         # 18. Look for errors or asserts.

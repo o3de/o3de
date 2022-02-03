@@ -252,6 +252,22 @@ namespace PhysX
         return convex;
     }
 
+    physx::PxHeightField* SystemComponent::CreateHeightField(const physx::PxHeightFieldSample* samples, AZ::u32 numRows, AZ::u32 numColumns)
+    {
+        physx::PxHeightFieldDesc desc;
+        desc.format = physx::PxHeightFieldFormat::eS16_TM;
+        desc.nbColumns = numColumns;
+        desc.nbRows = numRows;
+        desc.samples.data = samples;
+        desc.samples.stride = sizeof(physx::PxHeightFieldSample);
+
+        physx::PxHeightField* heightfield =
+            m_physXSystem->GetPxCooking()->createHeightField(desc, m_physXSystem->GetPxPhysics()->getPhysicsInsertionCallback());
+        AZ_Error("PhysX", heightfield, "Error. Unable to create heightfield");
+
+        return heightfield;
+    }
+
     bool SystemComponent::CookConvexMeshToFile(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount)
     {
         AZStd::vector<AZ::u8> physxData;
@@ -340,6 +356,14 @@ namespace PhysX
     AZStd::shared_ptr<Physics::Material> SystemComponent::CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration)
     {
         return AZStd::make_shared<PhysX::Material>(materialConfiguration);
+    }
+
+    void SystemComponent::ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject)
+    {
+        if (nativeHeightfieldObject)
+        {
+            static_cast<physx::PxBase*>(nativeHeightfieldObject)->release();
+        }
     }
 
     void SystemComponent::ReleaseNativeMeshObject(void* nativeMeshObject)

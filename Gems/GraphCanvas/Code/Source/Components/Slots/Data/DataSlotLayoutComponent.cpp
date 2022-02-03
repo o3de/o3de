@@ -337,12 +337,9 @@ namespace GraphCanvas
         {
             m_connectionType = slotRequests->GetConnectionType();
 
-            TranslationKeyedString slotName = slotRequests->GetTranslationKeyedName();
+            m_slotText->SetLabel(slotRequests->GetName());
 
-            m_slotText->SetLabel(slotName);
-
-            TranslationKeyedString toolTip = slotRequests->GetTranslationKeyedTooltip();
-            OnTooltipChanged(toolTip);
+            OnTooltipChanged(slotRequests->GetTooltip());
 
             const SlotConfiguration& configuration = slotRequests->GetSlotConfiguration();
 
@@ -393,12 +390,12 @@ namespace GraphCanvas
         AZ::SystemTickBus::Handler::BusConnect();
     }
 
-    void DataSlotLayout::OnNameChanged(const TranslationKeyedString& name)
+    void DataSlotLayout::OnNameChanged(const AZStd::string& name)
     {
         m_slotText->SetLabel(name);
     }
 
-    void DataSlotLayout::OnTooltipChanged(const TranslationKeyedString& tooltip)
+    void DataSlotLayout::OnTooltipChanged(const AZStd::string& tooltip)
     {
         AZ::Uuid dataType;
         DataSlotRequestBus::EventResult(dataType, m_owner.GetEntityId(), &DataSlotRequests::GetDataTypeId);
@@ -406,7 +403,7 @@ namespace GraphCanvas
         AZStd::string typeString;
         GraphModelRequestBus::EventResult(typeString, GetSceneId(), &GraphModelRequests::GetDataTypeString, dataType);
 
-        AZStd::string displayText = tooltip.GetDisplayString();
+        AZStd::string displayText = tooltip;
 
         if (!typeString.empty())
         {
@@ -486,7 +483,7 @@ namespace GraphCanvas
         if (!iconPath.empty())
         {
             m_textDecoration = new GraphCanvasLabel();
-            m_textDecoration->SetLabel(iconPath, "", "");
+            m_textDecoration->SetLabel(iconPath);
             m_textDecoration->setToolTip(toolTip.c_str());
 
             ApplyTextStyle(m_textDecoration);

@@ -31,6 +31,13 @@ namespace AZ
         static constexpr const char UvGroupName[] = "uvSets";
 
         class MaterialAsset;
+        class MaterialAssetCreator;
+
+        enum class MaterialAssetProcessingMode
+        {
+            PreBake,      //!< all material asset processing is done in the Asset Processor, producing a finalized material asset
+            DeferredBake  //!< some material asset processing is deferred, and the material asset is finalized at runtime after loading
+        };
 
         //! This is a simple data structure for serializing in/out material source files.
         class MaterialSourceData final
@@ -50,7 +57,7 @@ namespace AZ
             
             AZStd::string m_parentMaterial; //!< The immediate parent of this material
 
-            uint32_t m_propertyLayoutVersion = 0; //!< The version of the property layout, defined in the material type, which was used to configure this material
+            uint32_t m_materialTypeVersion = 0; //!< The version of the material type that was used to configure this material
 
             struct Property
             {
@@ -64,17 +71,40 @@ namespace AZ
 
             PropertyGroupMap m_properties;
 
+            enum class ApplyVersionUpdatesResult
+            {
+                Failed,
+                NoUpdates,
+                UpdatesApplied
+            };
+
             //! Creates a MaterialAsset from the MaterialSourceData content.
             //! @param assetId ID for the MaterialAsset
-            //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for resolving file-relative paths.
+            //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for
+            //! resolving file-relative paths.
+            //! @param processingMode Indicates whether to finalize the material asset using data from the MaterialTypeAsset.
             //! @param elevateWarnings Indicates whether to treat warnings as errors
-            //! @param includeMaterialPropertyNames Indicates whether to save material property names into the material asset file
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAsset(
+                Data::AssetId assetId,
+                AZStd::string_view materialSourceFilePath,
+                MaterialAssetProcessingMode processingMode,
+                bool elevateWarnings = true) const;
+
+            //! Creates a MaterialAsset from the MaterialSourceData content.
+            //! @param assetId ID for the MaterialAsset
+            //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for
+            //! resolving file-relative paths.
+            //! @param elevateWarnings Indicates whether to treat warnings as errors
+            //! @param sourceDependencies if not null, will be populated with a set of all of the loaded material and material type paths
+            Outcome<Data::Asset<MaterialAsset>> CreateMaterialAssetFromSourceData(
                 Data::AssetId assetId,
                 AZStd::string_view materialSourceFilePath = "",
                 bool elevateWarnings = true,
-                bool includeMaterialPropertyNames = true
-            ) const;
+                AZStd::unordered_set<AZStd::string>* sourceDependencies = nullptr) const;
+
+        private:
+            void ApplyPropertiesToAssetCreator(
+                AZ::RPI::MaterialAssetCreator& materialAssetCreator, const AZStd::string_view& materialSourceFilePath) const;
         };
     } // namespace RPI
 } // namespace AZ

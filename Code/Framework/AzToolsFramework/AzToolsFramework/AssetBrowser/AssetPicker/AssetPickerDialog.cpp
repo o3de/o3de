@@ -31,7 +31,10 @@ AZ_POP_DISABLE_WARNING
 AZ_CVAR(
     bool, ed_hideAssetPickerPathColumn, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Hide AssetPicker path column for a clearer view.");
-AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
+
+AZ_CVAR(
+    bool, ed_useNewAssetPickerView, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Uses the new Asset Picker View.");
 
 namespace AzToolsFramework
 {
@@ -96,6 +99,18 @@ namespace AzToolsFramework
                 }
             }
 
+            if (selection.GetSelectedAssetIds().empty())
+            {
+                for (auto& filePath : selection.GetSelectedFilePaths())
+                {
+                    if (!filePath.empty())
+                    {
+                        selectedAsset = true;
+                        m_ui->m_assetBrowserTreeViewWidget->SelectFileAtPath(filePath);
+                    }
+                }
+            }
+
             if (!selectedAsset)
             {
                 m_ui->m_assetBrowserTreeViewWidget->SelectFolder(selection.GetDefaultDirectory());
@@ -106,7 +121,7 @@ namespace AzToolsFramework
             m_persistentState = AZ::UserSettings::CreateFind<AzToolsFramework::QWidgetSavedState>(AZ::Crc32(("AssetBrowserTreeView_Dialog_" + name).toUtf8().data()), AZ::UserSettings::CT_GLOBAL);
 
             m_ui->m_assetBrowserTableViewWidget->setVisible(false);
-            if (ed_useNewAssetBrowserTableView)
+            if (ed_useNewAssetPickerView)
             {
                 m_ui->m_assetBrowserTreeViewWidget->setVisible(false);
                 m_ui->m_assetBrowserTableViewWidget->setVisible(true);

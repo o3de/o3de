@@ -59,7 +59,7 @@ namespace AZ::Utils
         {
             // Fix the size value of the fixed string by calculating the c-string length using char traits
             absolutePath.resize_no_construct(AZStd::char_traits<char>::length(absolutePath.data()));
-            return srcPath;
+            return absolutePath;
         }
 
         return AZStd::nullopt;
@@ -120,7 +120,7 @@ namespace AZ::Utils
     AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath)
     {
         AZ::IO::FixedMaxPath filePathFixed = filePath; // Because FileIOStream requires a null-terminated string
-        AZ::IO::FileIOStream stream(filePathFixed.c_str(), AZ::IO::OpenMode::ModeWrite);
+        AZ::IO::FileIOStream stream(filePathFixed.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
 
         bool success = false;
 
@@ -165,13 +165,12 @@ namespace AZ::Utils
         }
 
         Container fileContent;
-        fileContent.resize(length);
+        fileContent.resize_no_construct(length);
         AZ::IO::SizeType bytesRead = file.Read(length, fileContent.data());
         file.Close();
 
         // Resize again just in case bytesRead is less than length for some reason
-        fileContent.resize(bytesRead);
-
+        fileContent.resize_no_construct(bytesRead);
         return AZ::Success(AZStd::move(fileContent));
     }
 

@@ -482,16 +482,6 @@ namespace EMStudio
         QMenu menu(this);
         menu.setToolTipsVisible(true);
 
-        bool actorSelected = false;
-        for (const QTreeWidgetItem* item : items)
-        {
-            if (item->parent() == nullptr)
-            {
-                actorSelected = true;
-                break;
-            }
-        }
-
         bool instanceSelected = false;
         const int selectedItemCount = items.count();
         for (int i = 0; i < selectedItemCount; ++i)

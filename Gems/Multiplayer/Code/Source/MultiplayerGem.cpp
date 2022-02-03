@@ -6,10 +6,9 @@
  *
  */
 
+#include <MultiplayerToolsSystemComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <Multiplayer/Components/NetBindComponent.h>
-#include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
-#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
@@ -20,25 +19,32 @@ namespace Multiplayer
     MultiplayerModule::MultiplayerModule()
         : AZ::Module()
     {
-        m_descriptors.insert(m_descriptors.end(), {
-            AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
-            MultiplayerSystemComponent::CreateDescriptor(),
-            NetBindComponent::CreateDescriptor(),
-            NetworkSpawnableHolderComponent::CreateDescriptor(),
-        });
+        m_descriptors.insert(
+            m_descriptors.end(),
+            {
+                AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
+                MultiplayerSystemComponent::CreateDescriptor(),
+                NetBindComponent::CreateDescriptor(),
+                NetworkSpawnableHolderComponent::CreateDescriptor(),
+#ifdef MULTIPLAYER_EDITOR
+                MultiplayerToolsSystemComponent::CreateDescriptor(),
+#endif
+            });
 
         CreateComponentDescriptors(m_descriptors);
     }
 
     AZ::ComponentTypeList MultiplayerModule::GetRequiredSystemComponents() const
     {
-        return AZ::ComponentTypeList
-        {
+        return AZ::ComponentTypeList{
             azrtti_typeid<AzNetworking::NetworkingSystemComponent>(),
             azrtti_typeid<MultiplayerSystemComponent>(),
+#ifdef MULTIPLAYER_EDITOR
+            azrtti_typeid<MultiplayerToolsSystemComponent>(),
+#endif
         };
     }
-}
+} // namespace Multiplayer
 
 #if !defined(MULTIPLAYER_EDITOR)
 AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);

@@ -760,7 +760,7 @@ namespace PhysX
         if (asset == m_shapeConfiguration.m_physicsAsset.m_pxAsset)
         {
             m_shapeConfiguration.m_physicsAsset.m_pxAsset = asset;
-            m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset = m_shapeConfiguration.m_physicsAsset.m_pxAsset;
+            m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset = asset;
 
             UpdateMaterialSlotsFromMeshAsset();
             CreateStaticEditorCollider();
@@ -785,7 +785,9 @@ namespace PhysX
     {
         const PhysX::EditorRigidBodyComponent* entityRigidbody = m_entity->FindComponent<PhysX::EditorRigidBodyComponent>();
 
-        if (m_shapeConfiguration.m_physicsAsset.m_pxAsset && (m_shapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset) && entityRigidbody)
+        if (entityRigidbody &&
+            m_shapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset &&
+            m_shapeConfiguration.m_physicsAsset.m_pxAsset.IsReady())
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
             Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, m_hasNonUniformScale,

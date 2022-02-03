@@ -5,6 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import platform
 from typing import List
 from unittest import TestCase
 from unittest.mock import (ANY, call, MagicMock, patch)
@@ -27,14 +28,24 @@ class TestEnvironmentUtils(TestCase):
         self.addCleanup(os_pathsep_patcher.stop)
         self._mock_os_pathsep: MagicMock = os_pathsep_patcher.start()
 
-    def test_setup_qt_environment_global_flag_is_set(self) -> None:
+    @patch('os.path.exists')
+    @patch('ctypes.CDLL')
+    def test_setup_qt_environment_global_flag_is_set(self, mock_os_path_exists, mock_ctype_cdll) -> None:
+        mock_os_path_exists.return_value = True
         environment_utils.setup_qt_environment("dummy")
         self._mock_os_environ.copy.assert_called_once()
         self._mock_os_pathsep.join.assert_called_once()
         assert environment_utils.is_qt_linked() is True
+        if platform.system() == 'Linux':
+            mock_os_path_exists.assert_called()
 
-    def test_cleanup_qt_environment_global_flag_is_set(self) -> None:
+    @patch('os.path.exists')
+    @patch('ctypes.CDLL')
+    def test_cleanup_qt_environment_global_flag_is_set(self, mock_os_path_exists, mock_ctype_cdll) -> None:
+        mock_os_path_exists.return_value = True
         environment_utils.setup_qt_environment("dummy")
         assert environment_utils.is_qt_linked() is True
         environment_utils.cleanup_qt_environment()
         assert environment_utils.is_qt_linked() is False
+        if platform.system() == 'Linux':
+            mock_os_path_exists.assert_called()

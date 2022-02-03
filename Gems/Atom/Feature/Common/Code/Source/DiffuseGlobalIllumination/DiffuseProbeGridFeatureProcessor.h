@@ -9,6 +9,9 @@
 #pragma once
 
 #include <Atom/Feature/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessorInterface.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RPI.Public/Model/Model.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGrid.h>
 
 namespace AZ
@@ -39,20 +42,23 @@ namespace AZ
             void SetProbeSpacing(const DiffuseProbeGridHandle& probeGrid, const AZ::Vector3& probeSpacing) override;
             void SetViewBias(const DiffuseProbeGridHandle& probeGrid, float viewBias) override;
             void SetNormalBias(const DiffuseProbeGridHandle& probeGrid, float normalBias) override;
+            void SetNumRaysPerProbe(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe) override;
             void SetAmbientMultiplier(const DiffuseProbeGridHandle& probeGrid, float ambientMultiplier) override;
             void Enable(const DiffuseProbeGridHandle& probeGrid, bool enable) override;
             void SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows) override;
             void SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl) override;
             void SetMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridMode mode) override;
             void SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures) override;
+            void SetVisualizationEnabled(const DiffuseProbeGridHandle& probeGrid, bool visualizationEnabled) override;
+            void SetVisualizationShowInactiveProbes(const DiffuseProbeGridHandle& probeGrid, bool visualizationShowInactiveProbes) override;
+            void SetVisualizationSphereRadius(const DiffuseProbeGridHandle& probeGrid, float visualizationSphereRadius) override;
 
             void BakeTextures(
                 const DiffuseProbeGridHandle& probeGrid,
                 DiffuseProbeGridBakeTexturesCallback callback,
                 const AZStd::string& irradianceTextureRelativePath,
                 const AZStd::string& distanceTextureRelativePath,
-                const AZStd::string& relocationTextureRelativePath,
-                const AZStd::string& classificationTextureRelativePath) override;
+                const AZStd::string& probeDataTextureRelativePath) override;
 
             bool CheckTextureAssetNotification(
                 const AZStd::string& relativePath,
@@ -62,8 +68,7 @@ namespace AZ
             bool AreBakedTexturesReferenced(
                 const AZStd::string& irradianceTextureRelativePath,
                 const AZStd::string& distanceTextureRelativePath,
-                const AZStd::string& relocationTextureRelativePath,
-                const AZStd::string& classificationTextureRelativePath) override;
+                const AZStd::string& probeDataTextureRelativePath) override;
 
             // FeatureProcessor overrides
             void Activate() override;
@@ -77,8 +82,18 @@ namespace AZ
             // retrieve the side list of probe grids that are using real-time (raytraced) mode
             DiffuseProbeGridVector& GetRealTimeProbeGrids() { return m_realTimeDiffuseProbeGrids; }
 
-            // retrieve the side list of probe grids that are using  real-time (raytraced) mode and visible (on screen)
+            // retrieve the side list of probe grids that are visible (on screen), both real-time (raytraced) and baked
+            DiffuseProbeGridVector& GetVisibleProbeGrids() { return m_visibleDiffuseProbeGrids; }
+
+            // retrieve the side list of probe grids that are real-time (raytraced) and visible (on screen)
             DiffuseProbeGridVector& GetVisibleRealTimeProbeGrids() { return m_visibleRealTimeDiffuseProbeGrids; }
+
+            // returns the RayTracingBufferPool used for the DiffuseProbeGrid visualization
+            RHI::RayTracingBufferPools& GetVisualizationBufferPools() { return *m_visualizationBufferPools; }
+
+            // returns the RayTracingBlas for the visualization model
+            const RHI::Ptr<RHI::RayTracingBlas>& GetVisualizationBlas() const { return m_visualizationBlas; }
+            RHI::Ptr<RHI::RayTracingBlas>& GetVisualizationBlas() { return m_visualizationBlas; }
 
         private:
             AZ_DISABLE_COPY_MOVE(DiffuseProbeGridFeatureProcessor);
@@ -109,12 +124,18 @@ namespace AZ
             void UpdatePipelineStates();
             void UpdatePasses();
 
+            // loads the probe visualization model and creates the BLAS
+            void OnVisualizationModelAssetReady(Data::Asset<Data::AssetData> asset);
+
             // list of all diffuse probe grids
             const size_t InitialProbeGridAllocationSize = 64;
             DiffuseProbeGridVector m_diffuseProbeGrids;
 
             // side list of diffuse probe grids that are in real-time mode (subset of m_diffuseProbeGrids)
             DiffuseProbeGridVector m_realTimeDiffuseProbeGrids;
+
+            // side list of diffuse probe grids that are visible, both real-time and baked modes (subset of m_diffuseProbeGrids)
+            DiffuseProbeGridVector m_visibleDiffuseProbeGrids;
 
             // side list of diffuse probe grids that are in real-time mode and visible (subset of m_realTimeDiffuseProbeGrids)
             DiffuseProbeGridVector m_visibleRealTimeDiffuseProbeGrids;
@@ -158,6 +179,14 @@ namespace AZ
             };
             typedef AZStd::vector<NotifyTextureAssetEntry> NotifyTextureAssetVector;
             NotifyTextureAssetVector m_notifyTextureAssets;
+
+            // visualization
+            RHI::Ptr<RHI::RayTracingBufferPools> m_visualizationBufferPools;
+            Data::Asset<RPI::ModelAsset> m_visualizationModelAsset;
+            RHI::Ptr<RHI::RayTracingBlas> m_visualizationBlas;
+            Data::Instance<RPI::Model> m_visualizationModel;
+            RHI::StreamBufferView m_visualizationVB;
+            RHI::IndexBufferView m_visualizationIB;
         };
     } // namespace Render
 } // namespace AZ

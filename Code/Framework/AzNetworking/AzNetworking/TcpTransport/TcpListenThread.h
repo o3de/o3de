@@ -67,6 +67,6 @@ namespace AzNetworking
         uint32_t m_listenPortCount = 0;
         TcpSocketManager m_tcpSocketManager;
         AZ::ThreadSafeDeque<ListenPort> m_listenPorts;
-        AZ::TimeMs m_updateTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_updateTimeMs = AZ::Time::ZeroTimeMs;
     };
 }

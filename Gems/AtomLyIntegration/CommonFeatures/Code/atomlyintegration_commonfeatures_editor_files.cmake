@@ -10,7 +10,6 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h
     Include/AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h
     Include/AtomLyIntegration/CommonFeatures/ReflectionProbe/EditorReflectionProbeBus.h
-    Source/Module.cpp
     Source/Animation/EditorAttachmentComponent.h
     Source/Animation/EditorAttachmentComponent.cpp
     Source/EditorCommonFeaturesSystemComponent.h
@@ -31,6 +30,8 @@ set(FILES
     Source/ImageBasedLights/EditorImageBasedLightComponent.cpp
     Source/Material/EditorMaterialComponent.cpp
     Source/Material/EditorMaterialComponent.h
+    Source/Material/EditorMaterialComponentSerializer.cpp
+    Source/Material/EditorMaterialComponentSerializer.h
     Source/Material/EditorMaterialComponentUtil.cpp
     Source/Material/EditorMaterialComponentUtil.h
     Source/Material/EditorMaterialComponentSlot.cpp

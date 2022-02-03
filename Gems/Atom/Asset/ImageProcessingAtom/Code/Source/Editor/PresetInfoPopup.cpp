@@ -82,10 +82,7 @@ namespace ImageProcessingAtomEditor
         presetInfoText += "\n";
         presetInfoText += QString("Suppress Engine Reduce: %1\n").arg(presetSettings->m_suppressEngineReduce ? "True" : "False");
         presetInfoText += QString("Discard Alpha: %1\n").arg(presetSettings->m_discardAlpha ? "True" : "False");
-        presetInfoText += QString("Is Color Chart: %1\n").arg(presetSettings->m_isColorChart ? "True" : "False");
-        presetInfoText += QString("High Pass Mip: %1\n").arg(presetSettings->m_highPassMip);
         presetInfoText += QString("Gloss From Normal: %1\n").arg(presetSettings->m_glossFromNormals);
-        presetInfoText += QString("Use Legacy Gloss: %1\n").arg(presetSettings->m_isLegacyGloss ? "True" : "False");
         presetInfoText += QString("Mip Re-normalize: %1\n").arg(presetSettings->m_isMipRenormalize ? "True" : "False");
         presetInfoText += QString("Resident Mips Number: %1\n").arg(presetSettings->m_numResidentMips);
         presetInfoText += QString("Swizzle: %1\n").arg(presetSettings->m_swizzle.c_str());

@@ -8,7 +8,6 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/Casting/numeric_cast.h>
 
 #include <AzCore/PlatformIncl.h>
@@ -61,7 +60,6 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
     }
     else
     {
-        EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, 0);
         return false;
     }
 
@@ -88,7 +86,6 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
 
     if (m_handle == PlatformSpecificInvalidHandle)
     {
-        EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, errno);
         return false;
     }
     else
@@ -119,11 +116,7 @@ namespace Platform
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
-            int result = lseek(handle, offset, mode);
-            if (result == -1)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
-            }
+            lseek(handle, offset, mode);
         }
     }
 
@@ -132,10 +125,6 @@ namespace Platform
         if (handle != PlatformSpecificInvalidHandle)
         {
             off_t result = lseek(handle, 0, SEEK_CUR);
-            if (result == (off_t)-1)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
-            }
             return aznumeric_cast<SizeType>(result);
         }
 
@@ -149,14 +138,12 @@ namespace Platform
             off_t current = lseek(handle, 0, SEEK_CUR);
             if (current == (off_t)-1)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, current);
                 return false;
             }
 
             off_t end = lseek(handle, 0, SEEK_END);
             if (end == (off_t)-1)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, end);
                 return false;
             }
 
@@ -191,7 +178,6 @@ namespace Platform
             ssize_t bytesRead = read(handle, buffer, byteSize);
             if (bytesRead == -1)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
                 return 0;
             }
             return bytesRead;
@@ -207,7 +193,6 @@ namespace Platform
             ssize_t result = write(handle, buffer, byteSize);
             if (result == -1)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
                 return 0;
             }
             return result;
@@ -221,10 +206,7 @@ namespace Platform
         if (handle != PlatformSpecificInvalidHandle)
         {
         #if AZ_TRAIT_SYSTEMFILE_FSYNC_IS_DEFINED
-            if (fsync(handle) != 0)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
-            }
+            fsync(handle);
         #endif
         }
     }
@@ -236,7 +218,6 @@ namespace Platform
             struct stat stat;
             if (fstat(handle, &stat) < 0)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, 0);
                 return 0;
             }
             return stat.st_size;

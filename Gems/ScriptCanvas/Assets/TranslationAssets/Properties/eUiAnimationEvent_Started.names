@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "eUiAnimationEvent_Started",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Started",
+                "category": "Constants/UI/Animation Event"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiAnimationEvent_Started",
+                    "details": {
+                        "name": "Get Started"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

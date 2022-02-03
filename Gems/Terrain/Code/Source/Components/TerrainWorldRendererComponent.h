@@ -46,7 +46,7 @@ namespace Terrain
             WorldSizeCount,
         };
 
-        WorldSize m_worldSize;
+        WorldSize m_worldSize = WorldSize::_1024Meters;
     };
 
 

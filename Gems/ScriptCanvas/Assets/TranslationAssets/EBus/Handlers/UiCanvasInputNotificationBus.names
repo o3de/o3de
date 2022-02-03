@@ -1,0 +1,157 @@
+{
+    "entries": [
+        {
+            "base": "UiCanvasInputNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Canvas Input",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "OnCanvasPrimaryPressed",
+                    "details": {
+                        "name": "On Canvas Primary Pressed",
+                        "tooltip": "Executes on a positional input press"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Pressed EntityID",
+                                "tooltip": "The element that was pressed or an invalid entityID if no element was pressed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnCanvasPrimaryReleased",
+                    "details": {
+                        "name": "On Canvas Primary Released",
+                        "tooltip": "Executes on a positional input release"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Released EntityID",
+                                "tooltip": "The element that was released or an invalid EntityID if no element was released"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnCanvasMultiTouchPressed",
+                    "details": {
+                        "name": "On Canvas Multi-touch Pressed",
+                        "tooltip": "Executes on a positional input press"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Pressed EntityID",
+                                "tooltip": "The element that was pressed or an invalid entityID if no element was pressed"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Multi-touch Index",
+                                "tooltip": "The multi-touch index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnCanvasMultiTouchReleased",
+                    "details": {
+                        "name": "On Canvas Multi-touch Released",
+                        "tooltip": "Executes on a positional input release"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Released EntityID",
+                                "tooltip": "The element that was released or an invalid EntityID if no element was released"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Multi-touch Index",
+                                "tooltip": "The multi-touch index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnCanvasHoverStart",
+                    "details": {
+                        "name": "On Canvas Hover Start",
+                        "tooltip": "Executes when an element starts being hovered"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element that has started being hovered"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnCanvasHoverEnd",
+                    "details": {
+                        "name": "On Canvas Hover End",
+                        "tooltip": "Executes when an element ends being hovered"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element that ended being hovered"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnCanvasEnterPressed",
+                    "details": {
+                        "name": "On Canvas Enter Pressed",
+                        "tooltip": "Executes when the “enter” key is pressed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Pressed EntityID",
+                                "tooltip": "The element that was pressed or an invalid entityID if no element was pressed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnCanvasEnterReleased",
+                    "details": {
+                        "name": "On Canvas Enter Released",
+                        "tooltip": "Executes when the enter key is released"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Released EntityID",
+                                "tooltip": "The element that was released or an invalid entityID if no element was released"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

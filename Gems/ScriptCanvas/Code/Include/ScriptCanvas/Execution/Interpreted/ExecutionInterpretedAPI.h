@@ -43,7 +43,7 @@ namespace ScriptCanvas
 
         void InterpretedUnloadData(RuntimeData& runtimeData);
 
-        void InitializeInterpretedStatics(const RuntimeData& runtimeData);
+        void InitializeInterpretedStatics(RuntimeData& runtimeData);
 
         int InitializeNodeableOutKeys(lua_State* lua);
 

@@ -237,7 +237,7 @@ namespace AZ
             behaviorContext->Class<Color>()->
                 Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)->
                 Attribute(AZ::Script::Attributes::Module, "math")->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
+                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)->
                 Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)->
                 Constructor<float>()->
                 Constructor<float, float, float, float>()->

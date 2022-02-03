@@ -29,6 +29,7 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzQtComponents/Components/O3DEStylesheet.h>
@@ -62,6 +63,7 @@ namespace AzToolsFramework
     class ComponentPaletteWidget;
     class ComponentModeCollectionInterface;
     struct SourceControlFileInfo;
+    class ReadOnlyEntityPublicInterface;
 
     namespace AssetBrowser
     {
@@ -116,6 +118,7 @@ namespace AzToolsFramework
         , public AZ::EntitySystemBus::Handler
         , public AZ::TickBus::Handler
         , private EditorWindowUIRequestBus::Handler
+        , private ReadOnlyEntityPublicNotificationBus::Handler
     {
         Q_OBJECT;
     public:
@@ -253,6 +256,9 @@ namespace AzToolsFramework
         // EditorWindowRequestBus overrides
         void SetEditorUiEnabled(bool enable) override;
 
+        // ReadOnlyEntityPublicNotificationBus overrides ...
+        void OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, bool readOnly) override;
+
         bool IsEntitySelected(const AZ::EntityId& id) const;
         bool IsSingleEntitySelected(const AZ::EntityId& id) const;
 
@@ -354,7 +360,8 @@ namespace AzToolsFramework
             OnlyLayerEntities,
             OnlyPrefabEntities,
             Mixed,
-            LevelEntity
+            LevelEntity,
+            ContainerEntityOfFocusedPrefab
         };
         /**
          * Returns what kinds of entities are in the current selection. This is used because mixed selection
@@ -364,7 +371,7 @@ namespace AzToolsFramework
         SelectionEntityTypeInfo GetSelectionEntityTypeInfo(const EntityIdList& selection) const;
 
         /**
-         * Returns true if a selection matching the passed in selection informatation allows components to be added.
+         * Returns true if a selection matching the passed in selection information allows components to be added.
          */
         bool CanAddComponentsToSelection(const SelectionEntityTypeInfo& selectionEntityTypeInfo) const;
 
@@ -581,9 +588,10 @@ namespace AzToolsFramework
 
         enum class InspectorLayout
         {
-            ENTITY = 0,     // All selected entities are regular entities
-            LEVEL,          // The selected entity is the level prefab container entity
-            INVALID         // Other entities are selected alongside the level prefab container entity
+            Entity = 0,                     // All selected entities are regular entities.
+            Level,                          // The selected entity is the prefab container entity for the level prefab, or the slice level entity.
+            ContainerEntityOfFocusedPrefab, // The selected entity is the prefab container entity for the focused prefab.
+            Invalid                         // Other entities are selected alongside the level prefab container entity.
         };
 
         InspectorLayout GetCurrentInspectorLayout() const;
@@ -620,6 +628,9 @@ namespace AzToolsFramework
 
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         bool m_prefabsAreEnabled = false;
+
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+        bool m_selectionContainsReadOnlyEntity = false;
 
         // Reordering row widgets within the RPE.
         static constexpr float MoveFadeSeconds = 0.5f;

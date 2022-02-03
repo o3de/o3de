@@ -31,7 +31,8 @@ namespace UnitTest
         {
             AllocatorsFixture::SetUp();
 
-            m_testImageFolder = AZ::IO::Path(AZ::Test::GetEngineRootPath()) / AZ::IO::Path("Gems/Atom/Utils/Code/Tests/PngTestImages", '/');
+            m_testImageFolder =
+                AZ::IO::Path(AZ::Test::GetEngineRootPath(), '/') / AZ::IO::Path("Gems/Atom/Utils/Code/Tests/PngTestImages");
             
             m_tempPngFilePath = m_testImageFolder / "temp.png";
                         
@@ -310,4 +311,66 @@ namespace UnitTest
         EXPECT_TRUE(gotErrorMessage.find("PngFile is invalid") != AZStd::string::npos);
         EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(m_tempPngFilePath.c_str()));
     }
-}
+
+    TEST_F(PngFileTests, LoadRgbFromMemoryBuffer)
+    {
+        // This is an in-memory copy of the ColorChart_rgb.png test file.
+        AZStd::fixed_vector<uint8_t, 126> pngBuffer =
+        {
+            0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+            0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+
+            0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x02,
+            0x08, 0x02, 0x00, 0x00, 0x00, 0x12, 0x16, 0xf1,
+
+            0x4d, 0x00, 0x00, 0x00, 0x01, 0x73, 0x52, 0x47,
+            0x42, 0x00, 0xae, 0xce, 0x1c, 0xe9, 0x00, 0x00,
+
+            0x00, 0x04, 0x67, 0x41, 0x4d, 0x41, 0x00, 0x00,
+            0xb1, 0x8f, 0x0b, 0xfc, 0x61, 0x05, 0x00, 0x00,
+
+            0x00, 0x09, 0x70, 0x48, 0x59, 0x73, 0x00, 0x00,
+            0x0e, 0xc3, 0x00, 0x00, 0x0e, 0xc3, 0x01, 0xc7,
+
+            0x6f, 0xa8, 0x64, 0x00, 0x00, 0x00, 0x13, 0x49,
+            0x44, 0x41, 0x54, 0x18, 0x57, 0x63, 0xf8, 0xcf,
+
+            0xc0, 0x00, 0xc1, 0x4c, 0x10, 0xea, 0x3f, 0x03,
+            0x03, 0x00, 0x3b, 0xec, 0x05, 0xfd, 0x6a, 0x50,
+
+            0x07, 0x1f, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45,
+            0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
+        };
+
+        PngFile image = PngFile::LoadFromBuffer(pngBuffer);
+        EXPECT_TRUE(image.IsValid());
+        EXPECT_EQ(image.GetBufferFormat(), PngFile::Format::RGB);
+        EXPECT_EQ(image.GetWidth(), 3);
+        EXPECT_EQ(image.GetHeight(), 2);
+        EXPECT_EQ(image.GetBuffer().size(), 18);
+        EXPECT_EQ(Color3(image.GetBuffer().begin() + 0), Color3(255u, 0u, 0u));
+        EXPECT_EQ(Color3(image.GetBuffer().begin() + 3), Color3(0u, 255u, 0u));
+        EXPECT_EQ(Color3(image.GetBuffer().begin() + 6), Color3(0u, 0u, 255u));
+        EXPECT_EQ(Color3(image.GetBuffer().begin() + 9), Color3(255u, 255u, 0u));
+        EXPECT_EQ(Color3(image.GetBuffer().begin() + 12), Color3(0u, 255u, 255u));
+        EXPECT_EQ(Color3(image.GetBuffer().begin() + 15), Color3(255u, 0u, 255u));
+    }
+
+    TEST_F(PngFileTests, ErrorCannotLoadEmptyMemoryBuffer)
+    {
+        AZStd::vector<uint8_t> pngBuffer;
+
+        AZStd::string gotErrorMessage;
+
+        PngFile::LoadSettings loadSettings;
+        loadSettings.m_errorHandler = [&gotErrorMessage](const char* errorMessage)
+        {
+            gotErrorMessage = errorMessage;
+        };
+
+        PngFile image = PngFile::LoadFromBuffer(pngBuffer, loadSettings);
+        EXPECT_FALSE(image.IsValid());
+        EXPECT_TRUE(gotErrorMessage.find("Buffer is empty") != AZStd::string::npos);
+    }
+
+} // namespace UnitTest

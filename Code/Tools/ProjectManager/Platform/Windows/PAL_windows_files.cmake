@@ -11,4 +11,6 @@ set(FILES
     ProjectBuilderWorker_windows.cpp
     ProjectUtils_windows.cpp
     ProjectManagerDefs_windows.cpp
+    ProjectManager_Traits_Platform.h
+    ProjectManager_Traits_Windows.h
 )

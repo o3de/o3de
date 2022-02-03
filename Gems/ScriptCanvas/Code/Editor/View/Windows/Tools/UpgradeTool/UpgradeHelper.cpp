@@ -24,7 +24,6 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Settings.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h>
@@ -55,26 +54,25 @@ namespace ScriptCanvasEditor
 
             for (auto& failedUpdate : result->m_failures)
             {
-                auto& assetInfo = failedUpdate.assetInfo;
-                auto assetId = assetInfo.m_assetId;
-
+                auto asset = failedUpdate.asset;
+                
                 m_ui->tableWidget->insertRow(rows);
 
                 connect(m_ui->closeButton, &QPushButton::pressed, this, &QDialog::accept);
-                connect(m_ui->tableWidget, &QTableWidget::itemDoubleClicked, this, [this, rows, assetId](QTableWidgetItem* item)
+                connect(m_ui->tableWidget, &QTableWidget::itemDoubleClicked, this, [this, rows, asset](QTableWidgetItem* item)
                     {
                         if (item && item->data(Qt::UserRole).toInt() == rows)
                         {
-                            OpenGraph(assetId);
+                            OpenGraph(asset);
                         }
                     }
                 );
 
-                auto openGraph = [this, assetId] {
-                    OpenGraph(assetId);
+                auto openGraph = [this, asset] {
+                    OpenGraph(asset);
                 };
 
-                QTableWidgetItem* rowName = new QTableWidgetItem(tr(assetInfo.m_relativePath.c_str()));
+                QTableWidgetItem* rowName = new QTableWidgetItem(tr(asset.Path().c_str()));
                 rowName->setData(Qt::UserRole, rows);
                 m_ui->tableWidget->setItem(rows, 0, rowName);
 
@@ -91,15 +89,15 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void UpgradeHelper::OpenGraph(AZ::Data::AssetId assetId)
+    void UpgradeHelper::OpenGraph(const SourceHandle& asset)
     {
         // Open the graph in SC editor
         AzToolsFramework::OpenViewPane(/*LyViewPane::ScriptCanvas*/"Script Canvas");
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
 
-        if (assetId.IsValid())
+        if (!asset.Path().empty())
         {
-            GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, assetId, -1);
+            GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, asset, Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
         }
 
         if (!openOutcome)

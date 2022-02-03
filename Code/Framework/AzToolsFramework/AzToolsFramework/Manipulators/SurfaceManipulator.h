@@ -11,6 +11,7 @@
 #include "BaseManipulator.h"
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
@@ -58,10 +59,12 @@ namespace AzToolsFramework
             Start m_start;
             Current m_current;
             ViewportInteraction::KeyboardModifiers m_modifiers;
+
             AZ::Vector3 LocalPosition() const
             {
                 return m_start.m_localPosition + m_current.m_localOffset;
             }
+
             AZ::Vector3 LocalPositionOffset() const
             {
                 return m_current.m_localOffset;
@@ -105,6 +108,9 @@ namespace AzToolsFramework
         MouseActionCallback m_onLeftMouseDownCallback = nullptr;
         MouseActionCallback m_onLeftMouseUpCallback = nullptr;
         MouseActionCallback m_onMouseMoveCallback = nullptr;
+
+        //! Cached ray request initialized at mouse down and updated during mouse move.
+        AzFramework::RenderGeometry::RayRequest m_rayRequest;
 
         static StartInternal CalculateManipulationDataStart(
             const AZ::Transform& worldFromLocal,

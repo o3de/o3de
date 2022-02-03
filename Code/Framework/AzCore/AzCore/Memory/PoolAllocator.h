@@ -12,9 +12,6 @@
 #include <AzCore/Memory/PoolSchema.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
-#include <AzCore/Memory/MemoryDrillerBus.h>
-
-
 namespace AZ
 {
     template<class Allocator>
@@ -105,7 +102,7 @@ namespace AZ
             }
 
             //////////////////////////////////////////////////////////////////////////
-            // IAllocatorAllocate
+            // IAllocatorSchema
             pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
             {
                 (void)ptr;

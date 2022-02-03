@@ -70,28 +70,28 @@ def AtomEditorComponents_postfx_layer_AddedToEntity():
     :return: None
     """
 
-    import os
-
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
+    from Atom.atom_utils.atom_constants import AtomComponentProperties
 
     with Tracer() as error_tracer:
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a PostFX Layer entity with no components.
-        postfx_layer_name = "PostFX Layer"
-        postfx_layer_entity = EditorEntity.create_editor_entity(postfx_layer_name)
+        postfx_layer_entity = EditorEntity.create_editor_entity(AtomComponentProperties.postfx_layer())
         Report.critical_result(Tests.postfx_layer_entity_creation, postfx_layer_entity.exists())
 
         # 2. Add a PostFX Layer component to PostFX Layer entity.
-        postfx_layer_component = postfx_layer_entity.add_component(postfx_layer_name)
-        Report.critical_result(Tests.postfx_layer_component_added, postfx_layer_entity.has_component(postfx_layer_name))
+        postfx_layer_component = postfx_layer_entity.add_component(AtomComponentProperties.postfx_layer())
+        Report.critical_result(
+            Tests.postfx_layer_component_added,
+            postfx_layer_entity.has_component(AtomComponentProperties.postfx_layer()))
 
         # 3. UNDO the entity creation and component addition.
         # -> UNDO component addition.
@@ -137,10 +137,12 @@ def AtomEditorComponents_postfx_layer_AddedToEntity():
 
         # 9. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, postfx_layer_entity.exists())
 
         # 10. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not postfx_layer_entity.exists())
 
         # 11. Look for errors or asserts.

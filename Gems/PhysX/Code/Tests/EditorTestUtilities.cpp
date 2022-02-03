@@ -52,14 +52,10 @@ namespace PhysXEditorTests
             m_defaultScene = physicsSystem->GetScene(m_defaultSceneHandle);
         }
         Physics::DefaultWorldBus::Handler::BusConnect();
-        m_dummyTerrainComponentDescriptor = PhysX::DummyTestTerrainComponent::CreateDescriptor();
     }
 
     void PhysXEditorFixture::TearDown()
     {
-        m_dummyTerrainComponentDescriptor->ReleaseDescriptor();
-        m_dummyTerrainComponentDescriptor = nullptr;
-
         Physics::DefaultWorldBus::Handler::BusDisconnect();
 
         // prevents warnings from the undo cache on subsequent tests
@@ -71,6 +67,24 @@ namespace PhysXEditorTests
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             physicsSystem->RemoveScene(m_defaultSceneHandle);
+        }
+    }
+
+    void PhysXEditorFixture::ConnectToPVD()
+    {
+        auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
+        if (debug)
+        {
+            debug->ConnectToPvd();
+        }
+    }
+
+    void PhysXEditorFixture::DisconnectFromPVD()
+    {
+        auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
+        if (debug)
+        {
+            debug->DisconnectFromPvd();
         }
     }
 

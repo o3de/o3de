@@ -108,18 +108,15 @@ void CSoundKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selec
         {
             ISoundKey soundKey;
             keyHandle.GetKey(&soundKey);
-            bool bChangedSoundFile = false;
 
             if (pVar == mv_startTrigger.GetVar())
             {
                 QString sFilename = mv_startTrigger;
-                bChangedSoundFile = sFilename != soundKey.sStartTrigger.c_str();
                 soundKey.sStartTrigger = sFilename.toUtf8().data();
             }
             else if (pVar == mv_stopTrigger.GetVar())
             {
                 QString sFilename = mv_stopTrigger;
-                bChangedSoundFile = sFilename != soundKey.sStopTrigger.c_str();
                 soundKey.sStopTrigger = sFilename.toUtf8().data();
             }
 
@@ -130,5 +127,3 @@ void CSoundKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selec
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CSoundKeyUIControls, "TrackView.KeyUI.Sound", "TrackViewKeyUI");

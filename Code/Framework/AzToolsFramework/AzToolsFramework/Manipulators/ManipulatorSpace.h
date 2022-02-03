@@ -17,6 +17,8 @@ namespace AZ
 
 namespace AzToolsFramework
 {
+    AZ::Transform ApplySpace(const AZ::Transform& localTransform, const AZ::Transform& space, const AZ::Vector3& nonUniformScale);
+
     //! Handles location for manipulators which have a global space but no local transformation.
     class ManipulatorSpace
     {

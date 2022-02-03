@@ -18,21 +18,13 @@ namespace Multiplayer
 {
     ConstNetworkEntityHandle::ConstNetworkEntityHandle(AZ::Entity* entity, const NetworkEntityTracker* networkEntityTracker)
         : m_entity(entity)
-        , m_networkEntityTracker(networkEntityTracker)
+        , m_networkEntityTracker((networkEntityTracker != nullptr) ? networkEntityTracker : GetNetworkEntityTracker())
     {
-        if (m_networkEntityTracker == nullptr)
-        {
-            m_networkEntityTracker = GetNetworkEntityTracker();
-        }
-
-        if (m_networkEntityTracker)
-        {
-            m_changeDirty = m_networkEntityTracker->GetChangeDirty(m_entity);
-        }
+        AZ_Assert(m_networkEntityTracker, "NetworkEntityTracker is not valid");
+        m_changeDirty = m_networkEntityTracker->GetChangeDirty(m_entity);
 
         if (entity)
         {
-            AZ_Assert(m_networkEntityTracker, "NetworkEntityTracker is not valid");
             m_netBindComponent = m_networkEntityTracker->GetNetBindComponent(entity);
             if (m_netBindComponent != nullptr)
             {

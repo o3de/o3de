@@ -11,7 +11,7 @@
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
-#include <AzCore/Time/TimeSystemComponent.h>
+#include <AzCore/Time/TimeSystem.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
@@ -26,22 +26,22 @@ namespace UnitTest
             SetupAllocator();
             AZ::NameDictionary::Create();
 
-            m_loggerComponent = new AZ::LoggerSystemComponent;
-            m_timeComponent = new AZ::TimeSystemComponent;
-            m_eventSchedulerComponent = new AZ::EventSchedulerSystemComponent;
+            m_loggerComponent = AZStd::make_unique<AZ::LoggerSystemComponent>();
+            m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
+            m_eventSchedulerComponent = AZStd::make_unique<AZ::EventSchedulerSystemComponent>();
 
-            m_testEvent = new AZ::ScheduledEvent([this] { TestBasicEvent(); }, AZ::Name("UnitTestEvent fire once event"));
-            m_testRequeue = new AZ::ScheduledEvent([this] { TestAutoRequeuedEvent(); }, AZ::Name("UnitTestEvent auto Requeue"));
+            m_testEvent = AZStd::make_unique<AZ::ScheduledEvent>([this] { TestBasicEvent(); }, AZ::Name("UnitTestEvent fire once event"));
+            m_testRequeue = AZStd::make_unique<AZ::ScheduledEvent>([this] { TestAutoRequeuedEvent(); }, AZ::Name("UnitTestEvent auto Requeue"));
         }
 
         void TearDown() override
         {
-            delete m_testEvent;
-            delete m_testRequeue;
+            m_testEvent.reset();
+            m_testRequeue.reset();
 
-            delete m_eventSchedulerComponent;
-            delete m_timeComponent;
-            delete m_loggerComponent;
+            m_eventSchedulerComponent.reset();
+            m_timeSystem.reset();
+            m_loggerComponent.reset();
 
             AZ::NameDictionary::Destroy();
             TeardownAllocator();
@@ -60,12 +60,12 @@ namespace UnitTest
         uint32_t m_basicEventTriggerCount = 0;
         uint32_t m_requeuedEventTriggerCount = 0;
 
-        AZ::ScheduledEvent* m_testEvent = nullptr;
-        AZ::ScheduledEvent* m_testRequeue = nullptr;
+        AZStd::unique_ptr<AZ::ScheduledEvent> m_testEvent;
+        AZStd::unique_ptr<AZ::ScheduledEvent> m_testRequeue;
 
-        AZ::LoggerSystemComponent* m_loggerComponent = nullptr;
-        AZ::TimeSystemComponent* m_timeComponent = nullptr;
-        AZ::EventSchedulerSystemComponent* m_eventSchedulerComponent = nullptr;
+        AZStd::unique_ptr<AZ::LoggerSystemComponent> m_loggerComponent;
+        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
+        AZStd::unique_ptr<AZ::EventSchedulerSystemComponent> m_eventSchedulerComponent;
     };
 
     TEST_F(ScheduledEventTests, TestFireOnce)

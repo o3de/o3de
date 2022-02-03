@@ -6,9 +6,8 @@
  *
  */
 
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Debug/StackTracer.h>
-#include <AzCore/Debug/TraceMessagesDrillerBus.h>
+#include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/Math/Crc.h>
@@ -105,7 +104,7 @@ namespace UnitTest
     }
 
     class TraceTest
-        : public AZ::Debug::TraceMessageDrillerBus::Handler
+        : public AZ::Debug::TraceMessageBus::Handler
         , public ::testing::Test
     {
         int m_numTracePrintfs;
@@ -114,12 +113,13 @@ namespace UnitTest
             : m_numTracePrintfs(0) {}
 
         //////////////////////////////////////////////////////////////////////////
-        // TraceMessagesDrillerBus
-        void OnPrintf(const char* windowName, const char* message) override
+        // TraceMessageBus
+        bool OnPrintf(const char* windowName, const char* message) override
         {
             (void)windowName;
             (void)message;
             ++m_numTracePrintfs;
+            return false;
         }
         //////////////////////////////////////////////////////////////////////////
 

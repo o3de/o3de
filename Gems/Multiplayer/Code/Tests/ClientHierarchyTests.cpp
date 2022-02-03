@@ -16,7 +16,7 @@
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
-#include <Source/NetworkInput/NetworkInputArray.h>
+#include <Multiplayer/NetworkInput/NetworkInputArray.h>
 #include <Source/NetworkEntity/NetworkEntityManager.h>
 
 namespace Multiplayer
@@ -213,9 +213,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(value),
-                "hierarchyRoot", /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(value, "hierarchyRoot"); // Derived from NetworkHierarchyChildComponent.AutoComponent.xml
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
@@ -301,6 +300,36 @@ namespace Multiplayer
         // simulate server detaching a child entity
         SetParentIdOnNetworkTransform(m_child->m_entity, InvalidNetEntityId);
         SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
+    }
+
+    TEST_F(ClientSimpleHierarchyTests, ChildHasOwningConnectionIdOfParent)
+    {
+        // disconnect and assign new connection ids
+        SetParentIdOnNetworkTransform(m_child->m_entity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
+
+        m_root->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 1 });
+        m_child->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 2 });
+
+        const ConnectionId previousConnectionId = m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId();
+
+        // re-attach, child's owning connection id should then be root's connection id
+        SetParentIdOnNetworkTransform(m_child->m_entity, RootNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, RootNetEntityId);
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            m_root->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId()
+        );
+
+        // detach, the child should roll back to his previous owning connection id
+        SetParentIdOnNetworkTransform(m_child->m_entity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            previousConnectionId
+        );
     }
 
     /*
@@ -397,7 +426,7 @@ namespace Multiplayer
         using MultiplayerTest::TestMultiplayerComponentNetworkInput;
 
         auto* rootNetBind = m_root->m_entity->FindComponent<NetBindComponent>();
-        
+
         NetworkInputArray inputArray(rootNetBind->GetEntityHandle());
         NetworkInput& input = inputArray[0];
 

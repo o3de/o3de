@@ -17,5 +17,6 @@ set(FILES
     XcbBaseTestFixture.cpp
     XcbBaseTestFixture.h
     XcbInputDeviceKeyboardTests.cpp
+    XcbInputDeviceMouseTests.cpp
     XcbTestApplication.h
 )

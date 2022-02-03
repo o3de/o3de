@@ -954,25 +954,6 @@ namespace AZStd
             return true;
         }
         /// Validates an iter iterator. Returns a combination of \ref iterator_status_flag.
-        AZ_FORCE_INLINE int     validate_iterator(const iterator& iter) const
-        {
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            AZ_Assert(iter.m_container == this, "Iterator doesn't belong to this container");
-            pointer iterPtr = iter.m_iter;
-#else
-            pointer iterPtr = iter;
-#endif
-            if (iterPtr < m_start || iterPtr > m_last)
-            {
-                return isf_none;
-            }
-            else if (iterPtr == m_last)
-            {
-                return isf_valid;
-            }
-
-            return isf_valid | isf_can_dereference;
-        }
         AZ_FORCE_INLINE int     validate_iterator(const const_iterator& iter) const
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -992,7 +973,6 @@ namespace AZStd
 
             return isf_valid | isf_can_dereference;
         }
-        AZ_FORCE_INLINE int     validate_iterator(const reverse_iterator& iter) const       { return validate_iterator(iter.base()); }
         AZ_FORCE_INLINE int     validate_iterator(const const_reverse_iterator& iter) const { return validate_iterator(iter.base()); }
 
         /**
@@ -1387,6 +1367,14 @@ namespace AZStd
     }
     //#pragma endregion
 
+    template<class T, class Allocator, class U>
+    decltype(auto) erase(vector<T, Allocator>& container, const U& value)
+    {
+        auto iter = AZStd::remove(container.begin(), container.end(), value);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
     template<class T, class Allocator, class Predicate>
     decltype(auto) erase_if(vector<T, Allocator>& container, Predicate predicate)
     {

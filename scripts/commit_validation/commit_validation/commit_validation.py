@@ -173,16 +173,14 @@ EXCLUDED_VALIDATION_PATTERNS = [
     '*/3rdParty/*',
     '*/__pycache__/*',
     '*/External/*',
-    'build',
-    'Cache',
-    '*/Code/Framework/AzCore/azgnmx/azgnmx/*',
-    'Code/Tools/CryFXC',
-    'Code/Tools/HLSLCrossCompiler',
-    'Code/Tools/HLSLCrossCompilerMETAL',
-    'Docs',
+    'build', # build artifacts
+    '*/Cache/*', # Asset processing artifacts
+    'install', # install layout artifacts
     'python/runtime',
+    'restricted/*/Code/Framework/AzCore/azgnmx/azgnmx/*',
     'restricted/*/Tools/*RemoteControl',
-    'Tools/3dsmax',
     '*/user/Cache/*',
     '*/user/log/*',
+    '*/user/log_test_1/*',
+    '*/user/log_test_2/*',
 ]

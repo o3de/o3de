@@ -20,7 +20,6 @@
 #include <GridMate/Replica/Replica.h>
 #include <GridMate/Replica/ReplicaFunctions.h>
 #include <GridMate/Replica/ReplicaMgr.h>
-#include <GridMate/Replica/ReplicaDrillerEvents.h>
 #include <GridMate/Replica/BasicHostChunkDescriptor.h>
 
 #include <GridMate/Serialize/DataMarshal.h>
@@ -525,22 +524,6 @@ public:
     int m_deactivates;
 };
 
-class DrillerTestChunk
-    : public ReplicaChunk
-{
-public:
-    GM_CLASS_ALLOCATOR(DrillerTestChunk);
-    typedef AZStd::intrusive_ptr<DrillerTestChunk> Ptr;
-    static const char* GetChunkName() { return "DrillerTestChunk"; }
-
-    DrillerTestChunk() { }
-
-    bool IsReplicaMigratable() override
-    {
-        return true;
-    }
-};
-
 class NonConstMarshaler
 {
 public:
@@ -743,10 +726,6 @@ public:
         if (!ReplicaChunkDescriptorTable::Get().FindReplicaChunkDescriptor(ReplicaChunkClassId(AllEventChunk::GetChunkName())))
         {
             ReplicaChunkDescriptorTable::Get().RegisterChunkType<AllEventChunk>();
-        }
-        if (!ReplicaChunkDescriptorTable::Get().FindReplicaChunkDescriptor(ReplicaChunkClassId(DrillerTestChunk::GetChunkName())))
-        {
-            ReplicaChunkDescriptorTable::Get().RegisterChunkType<DrillerTestChunk>();
         }
         if (!ReplicaChunkDescriptorTable::Get().FindReplicaChunkDescriptor(ReplicaChunkClassId(NonConstMarshalerChunk::GetChunkName())))
         {
@@ -1648,440 +1627,6 @@ TEST_F(ReplicaChunkEventsDeactivate, DISABLED_ReplicaChunkEventsDeactivate)
     });
 }
 
-
-class ReplicaDriller
-    : public SimpleTest
-{
-public:
-    ReplicaDriller()
-        : m_replicaId(InvalidReplicaId)
-    {
-    }
-
-    enum
-    {
-        sHost,
-        s2,
-        nSessions
-    };
-
-    class ReplicaDrillerHook
-        : public Debug::ReplicaDrillerBus::Handler
-    {
-    public:
-        ReplicaDrillerHook()
-            : m_createdReplicas(0)
-            , m_destroyedReplicas(0)
-            , m_activatedReplicas(0)
-            , m_deactivatedReplicas(0)
-            , m_attachedChunks(0)
-            , m_detachedChunks(0)
-            , m_numReplicaBytesSent(0)
-            , m_numReplicaBytesReceived(0)
-            , m_numRequestChangeOwnership(0)
-            , m_numChangedOwnership(0)
-            , m_createdChunks(0)
-            , m_destroyedChunks(0)
-            , m_activatedChunks(0)
-            , m_deactivatedChunks(0)
-            , m_numChunkBytesSent(0)
-            , m_numChunkBytesReceived(0)
-            , m_numOutgoingDatasets(0)
-            , m_numIncomingDatasets(0)
-            , m_numRpcRequests(0)
-            , m_numRpcInvokes(0)
-            , m_outgoingRpcDataSize(0)
-            , m_incomingRpcDataSize(0)
-            , m_totalOutgoingBytes(0)
-            , m_totalIncomingBytes(0)
-            , m_curReplicaSend(nullptr)
-            , m_curReplicaChunkSend(nullptr)
-            , m_curReplicaChunkIndexSend(GM_MAX_CHUNKS_PER_REPLICA)
-            , m_curReplicaReceive(nullptr)
-            , m_curReplicaChunkReceive(nullptr)
-            , m_curReplicaChunkIndexReceive(GM_MAX_CHUNKS_PER_REPLICA)
-        {
-        }
-
-        AZStd::size_t m_createdReplicas;
-        AZStd::size_t m_destroyedReplicas;
-        AZStd::size_t m_activatedReplicas;
-        AZStd::size_t m_deactivatedReplicas;
-        AZStd::size_t m_attachedChunks;
-        AZStd::size_t m_detachedChunks;
-        AZStd::size_t m_numReplicaBytesSent;
-        AZStd::size_t m_numReplicaBytesReceived;
-        AZStd::size_t m_numRequestChangeOwnership;
-        AZStd::size_t m_numChangedOwnership;
-
-        AZStd::size_t m_createdChunks;
-        AZStd::size_t m_destroyedChunks;
-        AZStd::size_t m_activatedChunks;
-        AZStd::size_t m_deactivatedChunks;
-        AZStd::size_t m_numChunkBytesSent;
-        AZStd::size_t m_numChunkBytesReceived;
-
-        AZStd::size_t m_numOutgoingDatasets;
-        AZStd::size_t m_numIncomingDatasets;
-
-        AZStd::size_t m_numRpcRequests;
-        AZStd::size_t m_numRpcInvokes;
-        AZStd::size_t m_outgoingRpcDataSize;
-        AZStd::size_t m_incomingRpcDataSize;
-
-        AZStd::size_t m_totalOutgoingBytes;
-        AZStd::size_t m_totalIncomingBytes;
-
-        Replica* m_curReplicaSend;
-        ReplicaChunkBase* m_curReplicaChunkSend;
-        size_t m_curReplicaChunkIndexSend;
-        Replica* m_curReplicaReceive;
-        ReplicaChunkBase* m_curReplicaChunkReceive;
-        AZ::u32 m_curReplicaChunkIndexReceive;
-
-        void OnCreateReplica(Replica* replica) override
-        {
-            AZ_TEST_ASSERT(replica);
-            ++m_createdReplicas;
-        }
-
-        void OnDestroyReplica(Replica* replica) override
-        {
-            AZ_TEST_ASSERT(replica);
-            ++m_destroyedReplicas;
-        }
-
-        void OnActivateReplica(Replica* replica) override
-        {
-            AZ_TEST_ASSERT(replica);
-            ++m_activatedReplicas;
-        }
-
-        void OnDeactivateReplica(Replica* replica) override
-        {
-            AZ_TEST_ASSERT(replica);
-            ++m_deactivatedReplicas;
-        }
-
-        void OnAttachReplicaChunk(ReplicaChunkBase* chunk) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            ++m_attachedChunks;
-        }
-
-        void OnDetachReplicaChunk(ReplicaChunkBase* chunk) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            ++m_detachedChunks;
-        }
-
-        void OnSendReplicaBegin(Replica* replica) override
-        {
-            AZ_TEST_ASSERT(replica);
-            AZ_TEST_ASSERT(m_curReplicaSend == nullptr);
-            m_curReplicaSend = replica;
-        }
-
-        void OnSendReplicaEnd(Replica* replica, const void* data, size_t len) override
-        {
-            AZ_TEST_ASSERT(replica);
-            AZ_TEST_ASSERT(replica == m_curReplicaSend);
-            AZ_TEST_ASSERT(data);
-            AZ_TEST_ASSERT(len > 0);
-            m_numReplicaBytesSent += len;
-            m_curReplicaSend = nullptr;
-        }
-
-        void OnReceiveReplicaBegin(Replica* replica, const void* data, size_t len) override
-        {
-            AZ_TEST_ASSERT(replica);
-            AZ_TEST_ASSERT(m_curReplicaReceive == nullptr);
-            AZ_TEST_ASSERT(data);
-            AZ_TEST_ASSERT(len > 0);
-            m_curReplicaReceive = replica;
-            m_numReplicaBytesReceived += len;
-        }
-
-        void OnReceiveReplicaEnd(Replica* replica) override
-        {
-            AZ_TEST_ASSERT(replica);
-            AZ_TEST_ASSERT(replica == m_curReplicaReceive);
-            m_curReplicaReceive = nullptr;
-        }
-
-        void OnRequestReplicaChangeOwnership(Replica* replica, PeerId requestor) override
-        {
-            AZ_TEST_ASSERT(replica);
-            AZ_TEST_ASSERT(requestor == (s2 + 1));
-            ++m_numRequestChangeOwnership;
-        }
-
-        void OnReplicaChangeOwnership(Replica* replica, bool wasPrimary) override
-        {
-            AZ_TEST_ASSERT(replica);
-            switch (m_numChangedOwnership)
-            {
-            case 0: // host loses ownership
-                AZ_TEST_ASSERT(replica->IsProxy() && wasPrimary == true);
-                break;
-            case 1: // peer acquires ownership
-                AZ_TEST_ASSERT(replica->IsPrimary() && wasPrimary == false);
-                break;
-            default:
-                AZ_TEST_ASSERT(0);
-            }
-
-            ++m_numChangedOwnership;
-        }
-
-        void OnCreateReplicaChunk(ReplicaChunkBase* chunk) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            ++m_createdChunks;
-        }
-
-        void OnDestroyReplicaChunk(ReplicaChunkBase* chunk) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            ++m_destroyedChunks;
-        }
-
-        void OnActivateReplicaChunk(ReplicaChunkBase* chunk) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            ++m_activatedChunks;
-        }
-
-        void OnDeactivateReplicaChunk(ReplicaChunkBase* chunk) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            ++m_deactivatedChunks;
-        }
-
-        void OnSendReplicaChunkBegin(ReplicaChunkBase* chunk, AZ::u32 chunkIndex, PeerId from, PeerId to) override
-        {
-            (void)from;
-            (void)to;
-
-            AZ_TEST_ASSERT(chunk);
-            AZ_TEST_ASSERT(m_curReplicaSend == chunk->GetReplica());
-            AZ_TEST_ASSERT(m_curReplicaChunkSend == nullptr);
-            AZ_TEST_ASSERT(m_curReplicaChunkIndexSend == GM_MAX_CHUNKS_PER_REPLICA);
-            m_curReplicaChunkSend = chunk;
-            m_curReplicaChunkIndexSend = chunkIndex;
-        }
-
-        void OnSendReplicaChunkEnd(ReplicaChunkBase* chunk, AZ::u32 chunkIndex, const void* data, size_t len) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            AZ_TEST_ASSERT(m_curReplicaSend == chunk->GetReplica());
-            AZ_TEST_ASSERT(m_curReplicaChunkSend == chunk);
-            AZ_TEST_ASSERT(m_curReplicaChunkIndexSend == chunkIndex);
-            AZ_TEST_ASSERT(data);
-            AZ_TEST_ASSERT(len > 0);
-            m_numChunkBytesSent += len;
-            m_curReplicaChunkSend = nullptr;
-            m_curReplicaChunkIndexSend = GM_MAX_CHUNKS_PER_REPLICA;
-
-        }
-
-        void OnReceiveReplicaChunkBegin(ReplicaChunkBase* chunk, AZ::u32 chunkIndex, PeerId from, PeerId to, const void* data, size_t len) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            AZ_TEST_ASSERT(m_curReplicaReceive == chunk->GetReplica());
-            AZ_TEST_ASSERT(m_curReplicaChunkReceive == nullptr);
-            AZ_TEST_ASSERT(m_curReplicaChunkIndexReceive == GM_MAX_CHUNKS_PER_REPLICA);
-            AZ_TEST_ASSERT(from);
-            AZ_TEST_ASSERT(to);
-            AZ_TEST_ASSERT(data);
-            AZ_TEST_ASSERT(len > 0);
-            m_curReplicaChunkReceive = chunk;
-            m_curReplicaChunkIndexReceive = chunkIndex;
-            m_numChunkBytesReceived += len;
-        }
-
-        void OnReceiveReplicaChunkEnd(ReplicaChunkBase* chunk, AZ::u32 chunkIndex) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            AZ_TEST_ASSERT(m_curReplicaReceive == chunk->GetReplica());
-            AZ_TEST_ASSERT(m_curReplicaChunkReceive == chunk);
-            AZ_TEST_ASSERT(m_curReplicaChunkIndexReceive == chunkIndex);
-            m_curReplicaChunkReceive = nullptr;
-            m_curReplicaChunkIndexReceive = GM_MAX_CHUNKS_PER_REPLICA;
-        }
-
-        void OnSendDataSet(ReplicaChunkBase* chunk, AZ::u32 chunkIndex, DataSetBase* dataSet, PeerId from, PeerId to, const void* data, size_t len) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            AZ_TEST_ASSERT(m_curReplicaChunkSend == chunk);
-            AZ_TEST_ASSERT(m_curReplicaChunkIndexSend == chunkIndex);
-            AZ_TEST_ASSERT(dataSet);
-            AZ_TEST_ASSERT(from);
-            AZ_TEST_ASSERT(to);
-            AZ_TEST_ASSERT(data);
-            AZ_TEST_ASSERT(len > 0);
-
-            ++m_numOutgoingDatasets;
-        }
-
-        void OnReceiveDataSet(ReplicaChunkBase* chunk, AZ::u32 chunkIndex, DataSetBase* dataSet, PeerId from, PeerId to, const void* data, size_t len) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            AZ_TEST_ASSERT(m_curReplicaChunkReceive == chunk);
-            AZ_TEST_ASSERT(m_curReplicaChunkIndexReceive == chunkIndex);
-            AZ_TEST_ASSERT(dataSet);
-            AZ_TEST_ASSERT(from);
-            AZ_TEST_ASSERT(to);
-            AZ_TEST_ASSERT(data);
-            AZ_TEST_ASSERT(len > 0);
-
-            ++m_numIncomingDatasets;
-        }
-
-        void OnRequestRpc(ReplicaChunkBase* chunk, Internal::RpcRequest* rpc) override
-        {
-            (void)chunk;
-            (void)rpc;
-            ++m_numRpcRequests;
-        }
-
-        void OnInvokeRpc(ReplicaChunkBase* chunk, Internal::RpcRequest* rpc) override
-        {
-            (void)chunk;
-            (void)rpc;
-            ++m_numRpcInvokes;
-        }
-
-        void OnSendRpc(ReplicaChunkBase* chunk, AZ::u32 chunkIndex, Internal::RpcRequest* rpc, PeerId from, PeerId to, const void* data, size_t len) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            AZ_TEST_ASSERT(m_curReplicaChunkSend == chunk);
-            AZ_TEST_ASSERT(m_curReplicaChunkIndexSend == chunkIndex);
-            AZ_TEST_ASSERT(rpc);
-            AZ_TEST_ASSERT(from);
-            AZ_TEST_ASSERT(to);
-            AZ_TEST_ASSERT(data);
-            AZ_TEST_ASSERT(len > 0);
-            m_outgoingRpcDataSize += len;
-        }
-
-        void OnReceiveRpc(ReplicaChunkBase* chunk, AZ::u32 chunkIndex, Internal::RpcRequest* rpc, PeerId from, PeerId to, const void* data, size_t len) override
-        {
-            AZ_TEST_ASSERT(chunk);
-            AZ_TEST_ASSERT(m_curReplicaChunkReceive == chunk);
-            AZ_TEST_ASSERT(m_curReplicaChunkIndexReceive == chunkIndex);
-            AZ_TEST_ASSERT(rpc);
-            AZ_TEST_ASSERT(from);
-            AZ_TEST_ASSERT(to);
-            AZ_TEST_ASSERT(data);
-            AZ_TEST_ASSERT(len > 0);
-            m_incomingRpcDataSize += len;
-        }
-
-        void OnSend(PeerId to, const void* data, size_t len, bool isReliable) override
-        {
-            (void)to; // peerId might not be valid at this point, e.g. handshake (Cmd_Greetings) did not accomplish yet
-            (void)isReliable;
-            AZ_TEST_ASSERT(data);
-            AZ_TEST_ASSERT(len > 0);
-            m_totalOutgoingBytes += len;
-        }
-
-        void OnReceive(PeerId from, const void* data, size_t len) override
-        {
-            (void)from; // peerId might not be valid at this point, e.g. handshake (Cmd_Greetings) did not accomplish yet
-            AZ_TEST_ASSERT(data);
-            AZ_TEST_ASSERT(len > 0);
-            m_totalIncomingBytes += len;
-        }
-    };
-
-    int GetNumSessions() override { return nSessions; }
-
-    void PreConnect() override
-    {
-        m_driller.BusConnect();
-
-        ReplicaPtr replica = Replica::CreateReplica(nullptr);
-        CreateAndAttachReplicaChunk<DrillerTestChunk>(replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
-    }
-
-    ~ReplicaDriller() override
-    {
-        m_driller.BusDisconnect();
-    }
-
-    ReplicaDrillerHook m_driller;
-    ReplicaId m_replicaId;
-};
-
-TEST_F(ReplicaDriller, DISABLED_ReplicaDriller)
-{
-    RunTickLoop([this](int tick)-> TestStatus
-    {
-        switch (tick)
-        {
-        case 10:
-        {
-            auto rep = m_sessions[s2].GetReplicaMgr().FindReplica(m_replicaId);
-            AZ_TEST_ASSERT(rep);
-            AZ_TEST_ASSERT(rep->IsProxy());
-            rep->RequestChangeOwnership();
-            break;
-        }
-        case 30:
-        {
-            auto rep = m_sessions[s2].GetReplicaMgr().FindReplica(m_replicaId);
-            AZ_TEST_ASSERT(rep);
-            AZ_TEST_ASSERT(rep->IsPrimary());
-            rep->Destroy();
-            break;
-        }
-        case 40:
-            // replicas
-            AZ_TEST_ASSERT(m_driller.m_createdReplicas > 0);
-            AZ_TEST_ASSERT(m_driller.m_destroyedReplicas > 0);
-            AZ_TEST_ASSERT(m_driller.m_activatedReplicas > 0);
-            AZ_TEST_ASSERT(m_driller.m_deactivatedReplicas > 0);
-            AZ_TEST_ASSERT(m_driller.m_numReplicaBytesSent > 0);
-            AZ_TEST_ASSERT(m_driller.m_numReplicaBytesReceived > 0);
-            AZ_TEST_ASSERT(m_driller.m_numRequestChangeOwnership == 1);
-            AZ_TEST_ASSERT(m_driller.m_numChangedOwnership == 2); // two because one call for host & one for peer
-
-                                                                  // chunks
-            AZ_TEST_ASSERT(m_driller.m_createdChunks >= m_driller.m_createdReplicas);
-            AZ_TEST_ASSERT(m_driller.m_destroyedChunks >= m_driller.m_destroyedReplicas);
-            AZ_TEST_ASSERT(m_driller.m_activatedChunks >= m_driller.m_activatedReplicas);
-            AZ_TEST_ASSERT(m_driller.m_deactivatedChunks >= m_driller.m_deactivatedReplicas);
-            AZ_TEST_ASSERT(m_driller.m_attachedChunks > 0);
-            AZ_TEST_ASSERT(m_driller.m_detachedChunks > 0);
-            AZ_TEST_ASSERT(m_driller.m_numChunkBytesReceived > 0);
-
-            AZ_TEST_ASSERT(m_driller.m_numChunkBytesSent > 0);
-            AZ_TEST_ASSERT(m_driller.m_numChunkBytesReceived > 0);
-
-            // datasets
-            AZ_TEST_ASSERT(m_driller.m_numOutgoingDatasets > 0);
-            AZ_TEST_ASSERT(m_driller.m_numIncomingDatasets > 0);
-
-            // rpcs
-            AZ_TEST_ASSERT(m_driller.m_numRpcRequests > 0);
-            AZ_TEST_ASSERT(m_driller.m_numRpcInvokes > 0);
-            AZ_TEST_ASSERT(m_driller.m_outgoingRpcDataSize > 0);
-            AZ_TEST_ASSERT(m_driller.m_incomingRpcDataSize > 0);
-
-            // data
-            AZ_TEST_ASSERT(m_driller.m_totalOutgoingBytes > 0);
-            AZ_TEST_ASSERT(m_driller.m_totalIncomingBytes > 0);
-            return TestStatus::Completed;
-        default: break;
-        }
-        return TestStatus::Running;
-    });
-}
-
-
 class DataSetChangedTest
     : public SimpleTest
 {
@@ -2403,114 +1948,6 @@ TEST_F(SourcePeerTest, DISABLED_SourcePeerTest)
     });
 }
 
-
-class SendWithPriority
-    : public SimpleTest
-{
-public:
-    enum
-    {
-        sHost,
-        s2,
-        nSessions
-    };
-
-    class PriorityChunk
-        : public ReplicaChunk
-    {
-    public:
-        GM_CLASS_ALLOCATOR(PriorityChunk);
-        typedef AZStd::intrusive_ptr<PriorityChunk> Ptr;
-        static const char* GetChunkName() { return "PriorityChunk"; }
-
-        PriorityChunk()
-            : m_value("Value")
-        {
-        }
-
-        bool IsReplicaMigratable() override { return false; }
-
-        DataSet<int> m_value;
-    };
-
-    class ReplicaDrillerHook
-        : public Debug::ReplicaDrillerBus::Handler
-    {
-    public:
-        ReplicaDrillerHook()
-            : m_expectedSendValue(SendWithPriority::kNumReplicas)
-            , m_expectedRecvValue(SendWithPriority::kNumReplicas)
-        {
-        }
-
-        void OnReceiveReplicaEnd(Replica* replica) override
-        {
-            auto chunk = replica->FindReplicaChunk<PriorityChunk>();
-            if (chunk && m_expectedRecvValue > 0)
-            {
-                AZ_TEST_ASSERT(chunk->m_value.Get() == m_expectedRecvValue); // checking reverse order
-                --m_expectedRecvValue;
-            }
-        }
-
-        void OnSendReplicaEnd(Replica* replica, const void* data, size_t len) override
-        {
-            (void)data;
-            (void)len;
-
-            auto chunk = replica->FindReplicaChunk<PriorityChunk>();
-            if (chunk && m_expectedSendValue > 0)
-            {
-                AZ_TEST_ASSERT(chunk->m_value.Get() == m_expectedSendValue); // checking reverse order
-                --m_expectedSendValue;
-            }
-        }
-
-        int m_expectedSendValue;
-        int m_expectedRecvValue;
-    };
-
-    int GetNumSessions() override { return nSessions; }
-
-    void PreConnect() override
-    {
-        ReplicaChunkDescriptorTable::Get().RegisterChunkType<PriorityChunk>();
-
-        m_driller.BusConnect();
-
-        for (unsigned i = 0; i < kNumReplicas; ++i)
-        {
-            ReplicaPtr replica = Replica::CreateReplica(nullptr);
-            m_chunks[i] = CreateAndAttachReplicaChunk<PriorityChunk>(replica);
-            m_chunks[i]->m_value.Set(i + 1); // setting dataset values to 1..kNumReplicas
-            m_chunks[i]->SetPriority(k_replicaPriorityNormal + static_cast<ReplicaPriority>(i)); // the later created - the higher priorities, so should be sent in reverse order
-            m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
-        }
-    }
-
-
-    static const size_t kNumReplicas = 5;
-
-    ReplicaDrillerHook m_driller;
-    PriorityChunk::Ptr m_chunks[kNumReplicas];
-};
-
-TEST_F(SendWithPriority, DISABLED_SendWithPriority)
-{
-    RunTickLoop([this](int tick)-> TestStatus
-    {
-        if (tick == 20)
-        {
-            AZ_TEST_ASSERT(m_driller.m_expectedSendValue == 0); // sent all the replicas in the right order
-            AZ_TEST_ASSERT(m_driller.m_expectedRecvValue == 0); // received all the replicas in the right order
-            return TestStatus::Completed;
-        }
-
-        return TestStatus::Running;
-    });
-}
-
-
 class SuspendUpdatesTest
     : public SimpleTest
 {
@@ -2788,75 +2225,6 @@ TEST_F(BasicHostChunkDescriptorTest, DISABLED_BasicHostChunkDescriptorTest)
 }
 
 /*
- * Create and immedietly destroy primary replica
- * Test that it does not result in any network sync
-*/
-class CreateDestroyPrimary
-    : public SimpleTest
-    , public Debug::ReplicaDrillerBus::Handler
-{
-public:
-    enum
-    {
-        sHost,
-        s2,
-        nSessions
-    };
-
-    int GetNumSessions() override { return nSessions; }
-
-
-    // ReplicaDrillerBus
-    void OnReceive(PeerId from, const void* data, size_t len) override
-    {
-        (void)from;
-        (void)data;
-        (void)len;
-
-        AZ_TEST_ASSERT(false); // should not receive any replica data
-    }
-
-    void ConnectDriller()
-    {
-        Debug::ReplicaDrillerBus::Handler::BusConnect();
-    }
-
-    void DisconnectDriller()
-    {
-        Debug::ReplicaDrillerBus::Handler::BusDisconnect();
-    }
-};
-
-TEST_F(CreateDestroyPrimary, DISABLED_CreateDestroyPrimary)
-{
-    RunTickLoop([this](int tick)-> TestStatus
-    {
-        switch (tick)
-        {
-
-        case 10:
-        {
-            ConnectDriller();
-            auto replica = Replica::CreateReplica(nullptr);
-            CreateAndAttachReplicaChunk<DataSetChunk>(replica);
-            m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
-
-            // Destroying replica right away
-            replica->Destroy();
-            break;
-        }
-
-        case 20:
-            DisconnectDriller();
-            return TestStatus::Completed;
-        default: break;
-        }
-
-        return TestStatus::Running;
-    });
-}
-
-/*
 * This test checks that when the carrier ACKs a message it feeds back to the ReplicaTarget.
 * The ReplicaTarget will prevent sending more updates.
 */
@@ -2884,8 +2252,6 @@ public:
 
     void PreConnect() override
     {
-        m_driller.BusConnect();
-
         ReplicaPtr replica = Replica::CreateReplica("ReplicaACKfeedbackTest");
         LargeChunkWithDefaultsMedium* chunk = CreateAndAttachReplicaChunk<LargeChunkWithDefaultsMedium>(replica);
         AZ_TEST_ASSERT(chunk);
@@ -2895,12 +2261,9 @@ public:
 
     ~ReplicaACKfeedbackTestFixture() override
     {
-        m_driller.BusDisconnect();
     }
 
-    size_t                              m_replicaBytesSentPrev = 0;
     ReplicaId                           m_replicaId;
-    ReplicaDriller::ReplicaDrillerHook  m_driller;
 };
 
 TEST_F(ReplicaACKfeedbackTestFixture, ReplicaACKfeedbackTest)
@@ -2912,7 +2275,6 @@ TEST_F(ReplicaACKfeedbackTestFixture, ReplicaACKfeedbackTest)
             return TestStatus::Completed;
         }
 
-        //AZ_Printf("GridMateTests", "%d %d\n", tick, m_driller.m_numReplicaBytesSent);
         // Tests the Revision stamp with Carrier ACK feedback
         // result is true on the immediate tick after changing, but false on the next and stays false until next change
         auto CheckHostReplicaChanged = [this](bool result)
@@ -2963,12 +2325,10 @@ TEST_F(ReplicaACKfeedbackTestFixture, ReplicaACKfeedbackTest)
 
             updateDataSets(chunk, NonDefaultValue);
 
-            m_replicaBytesSentPrev = m_driller.m_numReplicaBytesSent;
             CheckHostReplicaChanged(false);  //Changed now, but wont know until next prepareData()
         }break;
         case 16:
         {
-            AZ_TEST_ASSERT(m_driller.m_numReplicaBytesSent - m_replicaBytesSentPrev == k_updateBytes);
             CheckHostReplicaChanged(true);  //Detected change. ACK feedback on next tick returns to false.
         }break;
         case 20:
@@ -2978,12 +2338,10 @@ TEST_F(ReplicaACKfeedbackTestFixture, ReplicaACKfeedbackTest)
 
             updateDataSets(chunk, NonDefaultValue + 1);
 
-            m_replicaBytesSentPrev = m_driller.m_numReplicaBytesSent;
             CheckHostReplicaChanged(false);  //Changed now, but wont know until next prepareData()
         }break;
         case 21:
         {
-            AZ_TEST_ASSERT(m_driller.m_numReplicaBytesSent - m_replicaBytesSentPrev == k_updateBytes);
             CheckHostReplicaChanged(true);  //Detected change. ACK feedback on next tick returns to false.
         }break;
         case 25:

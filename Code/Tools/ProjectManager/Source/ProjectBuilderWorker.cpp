@@ -117,18 +117,16 @@ namespace O3DE::ProjectManager
         // Show some kind of progress with very approximate estimates
         UpdateProgress(++m_progressEstimate);
 
-        auto currentEnvironmentRequest = ProjectUtils::GetCommandLineProcessEnvironment();
+        auto currentEnvironmentRequest = ProjectUtils::SetupCommandLineProcessEnvironment();
         if (!currentEnvironmentRequest.IsSuccess())
         {
             QStringToAZTracePrint(currentEnvironmentRequest.GetError());
             return AZ::Failure(currentEnvironmentRequest.GetError());
         }
-        QProcessEnvironment currentEnvironment = currentEnvironmentRequest.GetValue();
 
         m_configProjectProcess = new QProcess(this);
         m_configProjectProcess->setProcessChannelMode(QProcess::MergedChannels);
         m_configProjectProcess->setWorkingDirectory(m_projectInfo.m_path);
-        m_configProjectProcess->setProcessEnvironment(currentEnvironment);
 
         auto cmakeGenerateArgumentsResult = ConstructCmakeGenerateProjectArguments(engineInfo.m_thirdPartyPath);
         if (!cmakeGenerateArgumentsResult.IsSuccess())
@@ -181,7 +179,6 @@ namespace O3DE::ProjectManager
         m_buildProjectProcess = new QProcess(this);
         m_buildProjectProcess->setProcessChannelMode(QProcess::MergedChannels);
         m_buildProjectProcess->setWorkingDirectory(m_projectInfo.m_path);
-        m_buildProjectProcess->setProcessEnvironment(currentEnvironment);
 
         auto cmakeBuildArgumentsResult = ConstructCmakeBuildCommandArguments();
         if (!cmakeBuildArgumentsResult.IsSuccess())

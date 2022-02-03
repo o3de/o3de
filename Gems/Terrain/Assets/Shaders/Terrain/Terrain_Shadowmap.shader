@@ -1,5 +1,5 @@
 {
-    "Source" : "Terrain_DepthPass",
+    "Source" : "Terrain_DepthPass.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }

@@ -2,7 +2,9 @@
     "gem_name": "MultiplayerCompression",
     "display_name": "Multiplayer Compression",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
     "summary": "The Multiplayer Compression Gem provides an open source Compressor for use with AzNetworking's transport layer.",
     "canonical_tags": [

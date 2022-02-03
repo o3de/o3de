@@ -107,12 +107,13 @@ namespace AssetProcessorMessagesTests
                 AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey
             };
             constexpr AZ::SettingsRegistryInterface::FixedValueString projectPathKey{ bootstrapKey + "/project_path" };
-            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             // Force the branch token into settings registry before starting the application manager.
             // This avoids writing the asset_processor.setreg file which can cause fileIO errors.
-            const AZ::IO::FixedMaxPathString enginePath = AZ::Utils::GetEnginePath();
             constexpr AZ::SettingsRegistryInterface::FixedValueString branchTokenKey{ bootstrapKey + "/assetProcessor_branch_token" };
             AZStd::string token;
             AZ::StringFunc::AssetPath::CalculateBranchToken(enginePath.c_str(), token);

@@ -1,0 +1,178 @@
+{
+    "entries": [
+        {
+            "base": "InAppPurchasesRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "In App Purchases"
+            },
+            "methods": [
+                {
+                    "base": "FinishTransaction",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Finish Transaction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Finish Transaction is invoked"
+                    },
+                    "details": {
+                        "name": "Finish Transaction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "QueryPurchasedProducts",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Query Purchased Products"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Query Purchased Products is invoked"
+                    },
+                    "details": {
+                        "name": "Query Purchased Products"
+                    }
+                },
+                {
+                    "base": "PurchaseProductWithDeveloperPayload",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Purchase Product With Developer Payload"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Purchase Product With Developer Payload is invoked"
+                    },
+                    "details": {
+                        "name": "Purchase Product With Developer Payload"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "QueryProductInfoFromJson",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Query Product Info From Json"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Query Product Info From Json is invoked"
+                    },
+                    "details": {
+                        "name": "Query Product Info From Json"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PurchaseProduct",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Purchase Product"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Purchase Product is invoked"
+                    },
+                    "details": {
+                        "name": "Purchase Product"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "QueryProductInfo",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Query Product Info"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Query Product Info is invoked"
+                    },
+                    "details": {
+                        "name": "Query Product Info"
+                    }
+                },
+                {
+                    "base": "ConsumePurchase",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Consume Purchase"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Consume Purchase is invoked"
+                    },
+                    "details": {
+                        "name": "Consume Purchase"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Initialize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Initialize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Initialize is invoked"
+                    },
+                    "details": {
+                        "name": "Initialize"
+                    }
+                }
+            ]
+        }
+    ]
+}

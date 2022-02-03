@@ -10,6 +10,7 @@
 #include <IMultiplayerConnectionMock.h>
 #include <MockInterfaces.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/EBus/EventSchedulerSystemComponent.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Name/Name.h>
@@ -17,6 +18,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/UnitTest/Mocks/MockITime.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
@@ -116,8 +118,9 @@ namespace Multiplayer
             ON_CALL(*m_mockNetworkEntityManager, GetEntity(_)).WillByDefault(Invoke(this, &HierarchyTests::GetEntity));
             ON_CALL(*m_mockNetworkEntityManager, GetNetEntityIdById(_)).WillByDefault(Invoke(this, &HierarchyTests::GetNetEntityIdById));
 
-            m_mockTime = AZStd::make_unique<NiceMock<MockTime>>();
-            AZ::Interface<AZ::ITime>::Register(m_mockTime.get());
+            m_mockTime = AZStd::make_unique<AZ::NiceTimeSystemMock>();
+
+            m_eventScheduler = AZStd::make_unique<AZ::EventSchedulerSystemComponent>();
 
             m_mockNetworkTime = AZStd::make_unique<NiceMock<MockNetworkTime>>();
             AZ::Interface<INetworkTime>::Register(m_mockNetworkTime.get());
@@ -165,11 +168,11 @@ namespace Multiplayer
             m_networkEntityAuthorityTracker.reset();
 
             AZ::Interface<INetworkTime>::Unregister(m_mockNetworkTime.get());
-            AZ::Interface<AZ::ITime>::Unregister(m_mockTime.get());
             AZ::Interface<INetworkEntityManager>::Unregister(m_mockNetworkEntityManager.get());
             AZ::Interface<IMultiplayer>::Unregister(m_mockMultiplayer.get());
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
 
+            m_eventScheduler.reset();
             m_mockTime.reset();
 
             m_mockNetworkEntityManager.reset();
@@ -203,7 +206,8 @@ namespace Multiplayer
 
         AZStd::unique_ptr<NiceMock<MockMultiplayer>> m_mockMultiplayer;
         AZStd::unique_ptr<MockNetworkEntityManager> m_mockNetworkEntityManager;
-        AZStd::unique_ptr<NiceMock<MockTime>> m_mockTime;
+        AZStd::unique_ptr<AZ::EventSchedulerSystemComponent> m_eventScheduler;
+        AZStd::unique_ptr<AZ::NiceTimeSystemMock> m_mockTime;
         AZStd::unique_ptr<NiceMock<MockNetworkTime>> m_mockNetworkTime;
 
         AZStd::unique_ptr<NiceMock<IMultiplayerConnectionMock>> m_mockConnection;
@@ -317,9 +321,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(netParentId),
-                "parentEntityId", /* Derived from NetworkTransformComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(netParentId, "parentEntityId"); // Derived from NetworkTransformComponent.AutoComponent.xml
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
@@ -365,9 +368,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(value),
-                "hierarchyRoot", /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(value, "hierarchyRoot"); // Derived from NetworkHierarchyChildComponent.AutoComponent.xml
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 

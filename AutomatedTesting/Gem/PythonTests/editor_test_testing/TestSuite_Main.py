@@ -15,6 +15,7 @@ import sys
 import importlib
 import re
 
+import ly_test_tools
 from ly_test_tools import LAUNCHERS
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -25,8 +26,15 @@ import ly_test_tools.environment.process_utils as process_utils
 
 import argparse, sys
 
-@pytest.mark.SUITE_main
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+def get_editor_launcher_platform():
+    if ly_test_tools.WINDOWS:
+        return "windows_editor"
+    elif ly_test_tools.LINUX:
+        return "linux_editor"
+    else:
+        return None
+
+@pytest.mark.parametrize("launcher_platform", [get_editor_launcher_platform()])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestEditorTest:
     
@@ -35,10 +43,11 @@ class TestEditorTest:
     @classmethod
     def setup_class(cls):
         TestEditorTest.args = sys.argv.copy()
-        build_dir_arg_index = TestEditorTest.args.index("--build-directory")
-        if build_dir_arg_index < 0:
-            print("Error: Must pass --build-directory argument in order to run this test")
-            sys.exit(-2)
+        build_dir_arg_index = -1
+        try:
+            build_dir_arg_index = TestEditorTest.args.index("--build-directory")
+        except ValueError as ex:
+            raise ValueError("Must pass --build-directory argument in order to run this test")
 
         TestEditorTest.args[build_dir_arg_index+1] = os.path.abspath(TestEditorTest.args[build_dir_arg_index+1])
         TestEditorTest.args.append("-s")
@@ -68,7 +77,7 @@ class TestEditorTest:
             from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorTestSuite
 
             @pytest.mark.SUITE_main
-            @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+            @pytest.mark.parametrize("launcher_platform", [{get_editor_launcher_platform()}])
             @pytest.mark.parametrize("project", ["AutomatedTesting"])
             class TestAutomation(EditorTestSuite):
                 class test_single(EditorSingleTest):
@@ -122,7 +131,7 @@ class TestEditorTest:
             from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorTestSuite
 
             @pytest.mark.SUITE_main
-            @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+            @pytest.mark.parametrize("launcher_platform", [{get_editor_launcher_platform()}])
             @pytest.mark.parametrize("project", ["AutomatedTesting"])
             class TestAutomation(EditorTestSuite):
             {module_class_code}

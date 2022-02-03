@@ -43,6 +43,8 @@ namespace AzToolsFramework
     class EntityOutlinerListModel;
     class EntityOutlinerContainerProxyModel;
     class EntityOutlinerSortFilterProxyModel;
+    class FocusModeInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace EntityOutliner
     {
@@ -153,7 +155,6 @@ namespace AzToolsFramework
         void OnTreeItemDoubleClicked(const QModelIndex& index);
         void OnTreeItemExpanded(const QModelIndex& index);
         void OnTreeItemCollapsed(const QModelIndex& index);
-        void OnExpandEntity(const AZ::EntityId& entityId, bool expand);
         void OnSelectEntity(const AZ::EntityId& entityId, bool selected);
         void OnEnableSelectionUpdates(bool enable);
         void OnDropEvent();
@@ -203,7 +204,11 @@ namespace AzToolsFramework
         EntityOutliner::DisplaySortMode m_sortMode;
         bool m_sortContentQueued;
 
+        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
+        FocusModeInterface* m_focusModeInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

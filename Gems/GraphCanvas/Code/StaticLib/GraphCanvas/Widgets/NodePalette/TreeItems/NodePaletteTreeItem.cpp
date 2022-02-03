@@ -9,6 +9,10 @@
 
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 
+AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option")
+#include <QIcon>
+AZ_POP_DISABLE_WARNING
+
 namespace GraphCanvas
 {
     ////////////////////////
@@ -19,7 +23,6 @@ namespace GraphCanvas
 
     NodePaletteTreeItem::NodePaletteTreeItem(AZStd::string_view name, EditorId editorId)
         : GraphCanvas::GraphCanvasTreeItem()
-        , m_errorIcon(":/GraphCanvasEditorResources/toast_error_icon.png")
         , m_editorId(editorId)
         , m_name(QString::fromUtf8(name.data(), static_cast<int>(name.size())))
         , m_selected(false)
@@ -88,7 +91,7 @@ namespace GraphCanvas
             case Qt::DecorationRole:
                 if (HasError())
                 {
-                    return m_errorIcon;
+                    return QIcon(":/GraphCanvasEditorResources/toast_error_icon.png");
                 }
                 break;
             default:

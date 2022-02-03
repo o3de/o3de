@@ -53,6 +53,7 @@
 #include <AzToolsFramework/ToolsComponents/SelectionComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include  <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 #include "OutlinerDisplayOptionsMenu.h"
 #include "OutlinerSortFilterProxyModel.hxx"
@@ -252,17 +253,7 @@ QVariant OutlinerListModel::dataForName(const QModelIndex& index, int role) cons
         if (s_paintingName && !m_filterString.empty())
         {
             // highlight characters in filter
-            int highlightTextIndex = 0;
-            do
-            {
-                highlightTextIndex = label.lastIndexOf(QString(m_filterString.c_str()), highlightTextIndex - 1, Qt::CaseInsensitive);
-                if (highlightTextIndex >= 0)
-                {
-                    const QString BACKGROUND_COLOR{ "#707070" };
-                    label.insert(static_cast<int>(highlightTextIndex + m_filterString.length()), "</span>");
-                    label.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
-                }
-            } while(highlightTextIndex > 0);
+            label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
         }
         return label;
     }
@@ -2608,17 +2599,13 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         optionV4.text.clear();
         optionV4.widget->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
-        // Now we setup a Text Document so it can draw the rich text
-        QTextDocument textDoc;
-        textDoc.setDefaultFont(optionV4.font);
-        textDoc.setDefaultStyleSheet("body {color: white}");
-        textDoc.setHtml("<body>" + entityNameRichText + "</body>");
         int verticalOffset = GetEntityNameVerticalOffset(entityId);
-        painter->translate(textRect.topLeft() + QPoint(0, verticalOffset));
-        textDoc.setTextWidth(textRect.width());
-        textDoc.drawContents(painter, QRectF(0, 0, textRect.width(), textRect.height()));
+
+        AzToolsFramework::RichTextHighlighter::PaintHighlightedRichText(
+            entityNameRichText, painter, optionV4, textRect, QPoint(0, verticalOffset));
 
         painter->restore();
+
         OutlinerListModel::s_paintingName = false;
     }
     else
@@ -2640,7 +2627,7 @@ QSize OutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const Q
             m_cachedBoundingRectOfTallCharacter = QRect(); 
         };
 
-        QTimer::singleShot(0, resetFunction);
+        QTimer::singleShot(0, this, resetFunction);
     }
   
     // And add 8 to it gives the outliner roughly the visible spacing we're looking for.

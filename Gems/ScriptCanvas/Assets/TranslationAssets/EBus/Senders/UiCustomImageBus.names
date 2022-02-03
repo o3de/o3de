@@ -1,0 +1,203 @@
+{
+    "entries": [
+        {
+            "base": "UiCustomImageBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UI Custom Image",
+                "category": "UI/LyShine Examples"
+            },
+            "methods": [
+                {
+                    "base": "GetClamp",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Clamp"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Clamp is invoked"
+                    },
+                    "details": {
+                        "name": "Get Clamp",
+                        "tooltip": "Returns whether the image is clamped"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetUVs",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set UVs"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set UVs is invoked"
+                    },
+                    "details": {
+                        "name": "Set UVs",
+                        "tooltip": "Sets the UV coordinates of the rectangle for rendering the texture"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Coords",
+                                "tooltip": "The UV coordinates of the rectangle for rendering the texture"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetClamp",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Clamp"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Clamp is invoked"
+                    },
+                    "details": {
+                        "name": "Set Clamp",
+                        "tooltip": "Sets whether the image should be clamped"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Clamp",
+                                "tooltip": "Indicates whether the image should be clamped"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSpritePathname",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sprite Pathname"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sprite Pathname is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sprite Pathname",
+                        "tooltip": "Sets the sprite pathname"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pathname",
+                                "tooltip": "The sprite pathname"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSpritePathname",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sprite Pathname"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sprite Pathname is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sprite Pathname",
+                        "tooltip": "Gets the sprite pathname"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUVs",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get UVs"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get UVs is invoked"
+                    },
+                    "details": {
+                        "name": "Get UVs",
+                        "tooltip": "Gets the UV coordinates of the rectangle for rendering the texture"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UVRect"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Color is invoked"
+                    },
+                    "details": {
+                        "name": "Set Color",
+                        "tooltip": "Sets the color tint for the image"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color",
+                                "tooltip": "The color tint for the image"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Color",
+                        "tooltip": "Gets the color tint for the image"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

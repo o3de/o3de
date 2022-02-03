@@ -8,14 +8,9 @@
 
 
 // Description : Export geometry interfaces
-
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_IEXPORTMANAGER_H
-#define CRYINCLUDE_EDITOR_INCLUDE_IEXPORTMANAGER_H
 #pragma once
 
 #define EXP_NAMESIZE 32
-struct IStatObj;
 enum class AnimParamType;
 
 namespace Export
@@ -178,18 +173,10 @@ struct IExporter
     virtual void Release() = 0;
 };
 
-
-
 // IExportManager: interface to export manager
 struct IExportManager
 {
     //! Register exporter
     //! return true if succeed, otherwise false
     virtual bool RegisterExporter(IExporter* pExporter) = 0;
-
-    virtual bool ExportSingleStatObj(IStatObj* pStatObj, const char* filename) = 0;
 };
-
-
-
-#endif // CRYINCLUDE_EDITOR_INCLUDE_IEXPORTMANAGER_H

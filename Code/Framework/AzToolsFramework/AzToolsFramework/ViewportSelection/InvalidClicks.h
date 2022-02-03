@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 
 namespace AzFramework
@@ -80,8 +81,9 @@ namespace AzToolsFramework
 
     private:
         AZStd::string m_message; //!< Message to display for fading text.
-        float m_opacity = 1.0f; //!< The opacity of the invalid click message.
-        AzFramework::ScreenPoint m_invalidClickPosition; //!< The position to display the invalid click message.
+        float m_opacity = 0.0f; //!< The opacity of the invalid click message.
+        //! The position to display the invalid click message.
+        AzFramework::ScreenPoint m_invalidClickPosition = AzFramework::ScreenPoint(0, 0);
     };
 
     //! Interface to begin invalid click feedback (will run all added InvalidClick behaviors).

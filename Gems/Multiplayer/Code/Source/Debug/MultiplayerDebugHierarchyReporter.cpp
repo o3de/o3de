@@ -27,7 +27,7 @@ namespace Multiplayer
         CollectHierarchyRoots();
 
         AZ::EntitySystemBus::Handler::BusConnect();
-        m_updateDebugOverlay.Enqueue(AZ::TimeMs{ 0 }, true);
+        m_updateDebugOverlay.Enqueue(AZ::Time::ZeroTimeMs, true);
     }
 
     MultiplayerDebugHierarchyReporter::~MultiplayerDebugHierarchyReporter()
@@ -74,7 +74,7 @@ namespace Multiplayer
                         {
                             ImGui::Text("%s", entity->GetId().ToString().c_str());
                             ImGui::NextColumn();
-                            ImGui::Text("%u", GetMultiplayer()->GetNetworkEntityManager()->GetNetEntityIdById(entity->GetId()));
+                            ImGui::Text("%llu", static_cast<AZ::u64>(GetMultiplayer()->GetNetworkEntityManager()->GetNetEntityIdById(entity->GetId())));
                             ImGui::NextColumn();
                             ImGui::Text("%s", entity->GetName().c_str());
                             ImGui::NextColumn();

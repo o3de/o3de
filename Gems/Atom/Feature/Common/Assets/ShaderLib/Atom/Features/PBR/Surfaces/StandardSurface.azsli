@@ -15,12 +15,14 @@
 
 class Surface
 {
+
+#if ENABLE_CLEAR_COAT
     ClearCoatSurfaceData clearCoat;
-    TransmissionSurfaceData transmission; // This is not actually used for Standard PBR, but must be present for common lighting code to compile
+#endif
 
     // ------- BasePbrSurfaceData -------
     
-    float3 position;            //!< Position in world-space
+    precise float3 position;    //!< Position in world-space
     float3 normal;              //!< Normal in world-space
     float3 vertexNormal;        //!< Vertex normal in world-space
     float3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
@@ -37,7 +39,6 @@ class Surface
 
     //! Sets albedo and specularF0 using metallic workflow
     void SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic);
-
 };
 
 // Specular Anti-Aliasing technique from this paper:

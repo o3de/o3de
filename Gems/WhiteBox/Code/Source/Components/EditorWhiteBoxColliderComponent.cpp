@@ -73,6 +73,7 @@ namespace WhiteBox
     void EditorWhiteBoxColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+        incompatible.push_back(AZ_CRC_CE("WhiteBoxColliderService"));
     }
 
     void EditorWhiteBoxColliderComponent::Activate()
@@ -180,11 +181,11 @@ namespace WhiteBox
         // fill vertex position array
         size_t index = 0;
         const auto faceHandles = Api::MeshFaceHandles(whiteBox);
-        for (const auto faceHandle : faceHandles)
+        for (const auto& faceHandle : faceHandles)
         {
             const auto faceHalfedgeHandles = Api::FaceHalfedgeHandles(whiteBox, faceHandle);
 
-            for (const auto halfEdgeHandle : faceHalfedgeHandles)
+            for (const auto& halfEdgeHandle : faceHalfedgeHandles)
             {
                 const auto vh = Api::HalfedgeVertexHandleAtTip(whiteBox, halfEdgeHandle);
                 vertices[index] = Api::VertexPosition(whiteBox, vh);

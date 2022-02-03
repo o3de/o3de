@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/EventTrace.h>
-
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -215,6 +213,8 @@ namespace AZ
                 Data::Instance<RPI::Shader> rasterShader,
                 uint32_t vertexCount, uint32_t strandsCount )
             {
+                m_initialized = false;
+
                 AZ_Assert(vertexCount <= std::numeric_limits<uint32_t>().max(), "Hair vertex count exceeds uint32_t size.");
 
                 // Create the dynamic shared buffers Srg.
@@ -610,8 +610,16 @@ namespace AZ
                 // First, Directly loading from the asset stored in the render settings.
                 if (pRenderSettings)
                 {
-                    m_baseAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_baseAlbedoAsset);
-                    m_strandAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_strandAlbedoAsset);
+                    if (pRenderSettings->m_baseAlbedoAsset)
+                    {
+                        pRenderSettings->m_baseAlbedoAsset.BlockUntilLoadComplete();
+                        m_baseAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_baseAlbedoAsset);
+                    }
+                    if (pRenderSettings->m_strandAlbedoAsset)
+                    {
+                        pRenderSettings->m_strandAlbedoAsset.BlockUntilLoadComplete();
+                        m_strandAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_strandAlbedoAsset);
+                    }
                 }
 
                 // Fallback using the texture name stored in the render settings. 
@@ -958,7 +966,7 @@ namespace AZ
                 const char* assetName, AMD::TressFXAsset* asset,
                 AMD::TressFXSimulationSettings* simSettings, AMD::TressFXRenderingSettings* renderSettings)
             {
-                AZ_TRACE_METHOD();
+                AZ_PROFILE_FUNCTION(AzRender);
 
                 ++s_objectCounter;
 
@@ -993,7 +1001,7 @@ namespace AZ
                 //-------------------------------------
                 // Dynamic buffers, data and Srg creation - shared between passes and changed on the GPU
                 if (!m_dynamicHairData.CreateDynamicGPUResources(
-                    m_skinningShader, m_PPLLFillShader,
+                    m_skinningShader, m_geometryRasterShader,
                     m_NumTotalVertices, m_NumTotalStrands))
                 {
                     AZ_Error("Hair Gem", false, "Hair - Error creating dynamic resources [%s]", assetName );
@@ -1028,7 +1036,7 @@ namespace AZ
 
                 // Rendering setup
                 bool renderResourcesSuccess;
-                renderResourcesSuccess = CreateRenderingGPUResources(m_PPLLFillShader, *asset, assetName);
+                renderResourcesSuccess = CreateRenderingGPUResources(m_geometryRasterShader, *asset, assetName);
                 renderResourcesSuccess &= PopulateDrawStrandsBindSet(renderSettings);   
                 renderResourcesSuccess &= UploadRenderingGPUResources(*asset);
 
@@ -1057,17 +1065,10 @@ namespace AZ
                 }
 
                 {
-                    Data::Instance<HairPPLLRasterPass> rasterPass = m_featureProcessor->GetHairPPLLRasterPass();
-                    if (!rasterPass.get())
+                    m_geometryRasterShader = m_featureProcessor->GetGeometryRasterShader();
+                    if (!m_geometryRasterShader)
                     {
-                        AZ_Error("Hair Gem", false, "Failed to get PPLL raster fill Pass.");
-                        return false;
-                    }
-
-                    m_PPLLFillShader = rasterPass->GetShader();
-                    if (!m_PPLLFillShader)
-                    {
-                        AZ_Error("Hair Gem", false, "Failed to get hair raster fill shader from raster pass");
+                        AZ_Error("Hair Gem", false, "Failed to get hair geometry raster shader");
                         return false;
                     }
                 }
@@ -1116,7 +1117,7 @@ namespace AZ
                 return updatedCB;
             }
 
-            bool HairRenderObject::BuildPPLLDrawPacket(RHI::DrawPacketBuilder::DrawRequest& drawRequest)
+            bool HairRenderObject::BuildDrawPacket(RPI::Shader* geometryShader, RHI::DrawPacketBuilder::DrawRequest& drawRequest)
             {
                 RHI::DrawPacketBuilder drawPacketBuilder;
                 RHI::DrawIndexed drawIndexed;
@@ -1151,7 +1152,7 @@ namespace AZ
 
                 if (!renderMaterialSrg || !simSrg)
                 {
-                    AZ_Error("Hair Gem", false, "Failed to get thre hair material Srg for the raster pass.");
+                    AZ_Error("Hair Gem", false, "Failed to get the hair material Srg for the raster pass.");
                     return false;
                 }
                 // No need to compile the simSrg since it was compiled already by the Compute pass this frame
@@ -1159,19 +1160,36 @@ namespace AZ
                 drawPacketBuilder.AddShaderResourceGroup(simSrg->GetRHIShaderResourceGroup());
                 drawPacketBuilder.AddDrawItem(drawRequest);
 
-                if (m_fillDrawPacket)
-                {
-                    delete m_fillDrawPacket;
-                }
-                m_fillDrawPacket = drawPacketBuilder.End();
-
-                if (!m_fillDrawPacket)
+                const RHI::DrawPacket* drawPacket = drawPacketBuilder.End();
+                if (!drawPacket)
                 {
                     AZ_Error("Hair Gem", false, "Failed to build the hair DrawPacket.");
                     return false;
                 }
 
+                // Insert the newly created draw packet to the map based on its shader
+                auto iter = m_geometryDrawPackets.find(geometryShader);
+                if (iter != m_geometryDrawPackets.end())
+                {
+                    delete iter->second;
+                    iter->second = drawPacket;
+                }
+                else
+                {
+                    m_geometryDrawPackets[geometryShader] = drawPacket;
+                }
+
                 return true;
+            }
+
+            const RHI::DrawPacket* HairRenderObject::GetGeometrylDrawPacket(RPI::Shader* geometryShader)
+            {
+                auto iter = m_geometryDrawPackets.find(geometryShader);
+                if (iter == m_geometryDrawPackets.end())
+                {
+                    return nullptr;
+                }
+                return iter->second;
             }
 
             const RHI::DispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
@@ -1210,4 +1228,3 @@ namespace AZ
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
-

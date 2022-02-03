@@ -1,5 +1,5 @@
 {
-    "Source": "LightCulling",
+    "Source": "LightCulling.azsl",
    
     "CompilerHints":
     {

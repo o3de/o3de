@@ -753,7 +753,7 @@ namespace UnitTest
 
     TEST_F(Arrays, FixedVectorCanCopyAndMoveWithDifferentCapacity)
     {
-        constexpr AZStd::fixed_vector<int, 32> sourceVector{ 1,2,3,4,5 };
+        AZStd::fixed_vector<int, 32> sourceVector{ 1,2,3,4,5 };
 
         AZStd::fixed_vector<int, 8> copyConstructVector{ sourceVector };
         EXPECT_EQ(sourceVector, copyConstructVector);
@@ -768,32 +768,63 @@ namespace UnitTest
 
         AZStd::fixed_vector<int, 16> moveAssignVector = AZStd::move(moveConstructVector);
 
-        constexpr AZStd::fixed_vector expectedVector{ 1,2,3,4,5,6 };
+        AZStd::fixed_vector expectedVector{ 1,2,3,4,5,6 };
         EXPECT_EQ(expectedVector, moveAssignVector);
     }
 
     TEST_F(Arrays, FixedVectorComparisonOperatorsSucceedAsExpected)
     {
-        constexpr AZStd::fixed_vector<int, 32> testVector{ 1,2,3,4,5 };
-        constexpr AZStd::fixed_vector<int, 32> equalVector{ 1,2,3,4,5 };
-        constexpr AZStd::fixed_vector<int, 32> notEqualVectorDifferentSize{ 1,2,3,4,5,6 };
-        constexpr AZStd::fixed_vector<int, 32> lessVector{ 1,2,3,4,4 };
-        constexpr AZStd::fixed_vector<int, 32> greaterVectorDifferentSize{ 1,2,3,4,5, 1 };
+        AZStd::fixed_vector<int, 32> testVector{ 1,2,3,4,5 };
+        AZStd::fixed_vector<int, 32> equalVector{ 1,2,3,4,5 };
+        AZStd::fixed_vector<int, 32> notEqualVectorDifferentSize{ 1,2,3,4,5,6 };
+        AZStd::fixed_vector<int, 32> lessVector{ 1,2,3,4,4 };
+        AZStd::fixed_vector<int, 32> greaterVectorDifferentSize{ 1,2,3,4,5, 1 };
 
-        static_assert(testVector == equalVector);
-        static_assert(testVector != notEqualVectorDifferentSize);
-        static_assert(testVector != lessVector);
-        static_assert(lessVector < testVector);
-        static_assert(lessVector < greaterVectorDifferentSize);
-        static_assert(lessVector <= lessVector);
-        static_assert(lessVector <= testVector);
-        static_assert(lessVector <= greaterVectorDifferentSize);
-        static_assert(testVector > lessVector);
-        static_assert(testVector > lessVector);
-        static_assert(notEqualVectorDifferentSize > testVector);
-        static_assert(testVector >= testVector);
-        static_assert(testVector >= lessVector);
-        static_assert(greaterVectorDifferentSize > lessVector);
+        EXPECT_EQ(testVector, equalVector);
+        EXPECT_NE(testVector, notEqualVectorDifferentSize);
+        EXPECT_NE(testVector, lessVector);
+        EXPECT_LT(lessVector, testVector);
+        EXPECT_LT(lessVector, greaterVectorDifferentSize);
+        EXPECT_LE(lessVector, lessVector);
+        EXPECT_LE(lessVector, testVector);
+        EXPECT_LE(lessVector, greaterVectorDifferentSize);
+        EXPECT_GT(testVector, lessVector);
+        EXPECT_GT(testVector, lessVector);
+        EXPECT_GT(notEqualVectorDifferentSize, testVector);
+        EXPECT_GE(testVector, testVector);
+        EXPECT_GE(testVector, lessVector);
+        EXPECT_GT(greaterVectorDifferentSize, lessVector);
+    }
+
+    TEST_F(Arrays, FixedVectorCXX20Erase_Succeeds)
+    {
+        // Erase 'l' from the phrase "Hello" World"
+        auto eraseTest = [](AZStd::initializer_list<char> testInit)
+        {
+            AZStd::fixed_vector<char, 16> testResult{ testInit };
+            AZStd::erase(testResult, 'l');
+            return testResult;
+        }({ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' });
+
+        constexpr AZStd::string_view expectedEraseString = "HeoWord";
+        AZStd::string_view testEraseString{ eraseTest.begin(), eraseTest.end() };
+        EXPECT_EQ(expectedEraseString, testEraseString);
+
+        // Use erase_if to erase both 'H' and 'e' from the remaining eraseTest string
+        auto eraseIfTest = [](const AZStd::fixed_vector<char, 16>& testVector)
+        {
+            AZStd::fixed_vector<char, 16> testResult{ testVector };
+            auto erasePredicate = [](char ch)
+            {
+                return ch == 'H' || ch == 'e';
+            };
+            AZStd::erase_if(testResult, erasePredicate);
+            return testResult;
+        }(testEraseString);
+
+        constexpr AZStd::string_view expectedEraseIfString = "oWord";
+        AZStd::string_view testEraseIfString{ eraseIfTest.begin(), eraseIfTest.end() };
+        EXPECT_EQ(expectedEraseIfString, testEraseIfString);
     }
 
     TEST_F(Arrays, VectorSwap)

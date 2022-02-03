@@ -1,0 +1,342 @@
+{
+    "entries": [
+        {
+            "base": "AuthenticationProviderRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AWS Authentication Provider",
+                "category": "AWS Client Auth"
+            },
+            "methods": [
+                {
+                    "base": "SignOut",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SignOut"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SignOut is invoked"
+                    },
+                    "details": {
+                        "name": "Sign Out"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Provider name",
+                                "tooltip": "The identity provider name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Signed Out",
+                                "tooltip": "True: Successfully sign out"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DeviceCodeGrantConfirmSignInAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Device Code Grant Confirm Sign In Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Device Code Grant Confirm Sign In Async is invoked"
+                    },
+                    "details": {
+                        "name": "Device Code Grant Confirm Sign In Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Provider name",
+                                "tooltip": "The identity provider name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DeviceCodeGrantSignInAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Device Code Grant Sign In Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Device Code Grant Sign In Async is invoked"
+                    },
+                    "details": {
+                        "name": "Device Code Grant Sign In Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Provider name",
+                                "tooltip": "The identity provider name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PasswordGrantMultiFactorSignInAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Password Grant Multi Factor Sign In Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Password Grant Multi Factor Sign In Async is invoked"
+                    },
+                    "details": {
+                        "name": "Password Grant Multi Factor Sign In Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Provider name",
+                                "tooltip": "The identity provider name"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Username",
+                                "tooltip": "The client's username"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Password",
+                                "tooltip": "The client's password"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAuthenticationTokens",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Authentication Tokens"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Authentication Tokens is invoked"
+                    },
+                    "details": {
+                        "name": "Get Authentication Tokens"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Provider name",
+                                "tooltip": "The identity provider name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "AuthenticationTokens"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTokensWithRefreshAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tokens With Refresh Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tokens With Refresh Async is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tokens With Refresh Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Provider name",
+                                "tooltip": "The identity provider name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsSignedIn",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Signed In"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Signed In is invoked"
+                    },
+                    "details": {
+                        "name": "Is Signed In"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Provider name",
+                                "tooltip": "The identity provider name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Signed In"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PasswordGrantSingleFactorSignInAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Password GrantSingle Factor Sign In Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Password GrantSingle Factor Sign In Async is invoked"
+                    },
+                    "details": {
+                        "name": "Password GrantSingle Factor Sign In Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Provider name",
+                                "tooltip": "The identity provider"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Username",
+                                "tooltip": "The client's username"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Password",
+                                "tooltip": "The client's password"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RefreshTokensAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Refresh Tokens Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Refresh Tokens Async is invoked"
+                    },
+                    "details": {
+                        "name": "Refresh Tokens Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Provider name",
+                                "tooltip": "The identity provider name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Initialize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Initialize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Initialize is invoked"
+                    },
+                    "details": {
+                        "name": "Initialize"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "Provider Names"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Initialized"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PasswordGrantMultiFactorConfirmSignInAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Password Grant Multi Factor Confirm Sign In Async"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Password Grant Multi Factor Confirm Sign In Async is invoked"
+                    },
+                    "details": {
+                        "name": "Password Grant Multi Factor Confirm Sign In Async"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Provider name",
+                                "tooltip": "The identity provider name"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Username",
+                                "tooltip": "The client's username"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Confirmation code",
+                                "tooltip": "The client's confirmation code"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

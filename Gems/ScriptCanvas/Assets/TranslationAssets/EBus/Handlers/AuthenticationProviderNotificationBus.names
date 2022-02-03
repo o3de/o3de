@@ -1,0 +1,187 @@
+{
+    "entries": [
+        {
+            "base": "AuthenticationProviderNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "AWS Authentication Provider",
+                "category": "AWS Client Auth"
+            },
+            "methods": [
+                {
+                    "base": "OnPasswordGrantSingleFactorSignInSuccess",
+                    "details": {
+                        "name": "On Password Grant Single Factor Sign In Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "Authentication Tokens"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnPasswordGrantSingleFactorSignInFail",
+                    "details": {
+                        "name": "On Password Grant Single Factor Sign In Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnPasswordGrantMultiFactorSignInSuccess",
+                    "details": {
+                        "name": "On Password Grant Multi Factor Sign In Success"
+                    }
+                },
+                {
+                    "base": "OnPasswordGrantMultiFactorSignInFail",
+                    "details": {
+                        "name": "On Password Grant Multi Factor Sign In Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnPasswordGrantMultiFactorConfirmSignInSuccess",
+                    "details": {
+                        "name": "On Password Grant Multi Factor Confirm Sign In Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "AuthenticationTokens"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnPasswordGrantMultiFactorConfirmSignInFail",
+                    "details": {
+                        "name": "On Password Grant Multi Factor Confirm Sign In Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnDeviceCodeGrantSignInSuccess",
+                    "details": {
+                        "name": "On Device Code Grant Sign In Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "User Code"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Verification URL"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Code Expiration (Seconds)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnDeviceCodeGrantSignInFail",
+                    "details": {
+                        "name": "On Device Code Grant Sign In Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnDeviceCodeGrantConfirmSignInSuccess",
+                    "details": {
+                        "name": "On Device Code Grant Confirm Sign In Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "Authentication Tokens"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnDeviceCodeGrantConfirmSignInFail",
+                    "details": {
+                        "name": "On Device Code Grant Confirm Sign In Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnRefreshTokensSuccess",
+                    "details": {
+                        "name": "On Refresh Tokens Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "Authentication Tokens"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnRefreshTokensFail",
+                    "details": {
+                        "name": "On Refresh Tokens Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

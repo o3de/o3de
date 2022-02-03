@@ -8,3 +8,5 @@
 #pragma once
 
 #define AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED 0
+#define AWSCORE_EDITOR_PYTHON_DEBUG_ARGUMENT         ""
+#define AWSCORE_EDITOR_PYTHON_COMMAND                "python/python.sh"

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererSystemRequestBus.h>
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Application/Application.h>
 #include <PreviewRenderer/PreviewRenderer.h>
@@ -19,7 +18,6 @@ namespace AtomToolsFramework
     //! System component that manages a global PreviewRenderer.
     class PreviewRendererSystemComponent final
         : public AZ::Component
-        , public AzFramework::AssetCatalogEventBus::Handler
         , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
         , public PreviewRendererSystemRequestBus::Handler
     {
@@ -38,9 +36,6 @@ namespace AtomToolsFramework
         void Deactivate() override;
 
     private:
-        // AzFramework::AssetCatalogEventBus::Handler overrides ...
-        void OnCatalogLoaded(const char* catalogFile) override;
-
         // AzFramework::ApplicationLifecycleEvents overrides...
         void OnApplicationAboutToStop() override;
 

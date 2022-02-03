@@ -19,7 +19,6 @@
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/StyleBus.h>
 
@@ -34,7 +33,7 @@
 #include <Editor/QtMetaTypes.h>
 
 #include <ScriptCanvas/Data/DataRegistry.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManager.h>

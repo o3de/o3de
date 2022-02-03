@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    ../../Core/QtEditorApplication_linux.cpp
+    Editor/Core/QtEditorApplication_linux.cpp
     ../Common/Unimplemented/Util/Mailer_Unimplemented.cpp
 )

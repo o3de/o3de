@@ -17,9 +17,7 @@
 class CGizmo;
 class CBaseObject;
 struct IDisplayViewport;
-class CDeepSelection;
 struct AABB;
-class CCamera;
 
 #include <QRect>
 #include <platform.h>
@@ -68,8 +66,6 @@ struct HitContext
     QRect rect;
     //! Optional limiting bounding box for hit testing.
     AABB* bounds;
-    //! Optional camera for culling perspective viewports.
-    CCamera* camera;
 
     //! Testing performed in 2D viewport.
     bool b2DViewport;
@@ -108,8 +104,6 @@ struct HitContext
     CBaseObject* object;
     //! gizmo object that have been hit.
     CGizmo* gizmo;
-    //! for deep selection mode
-    CDeepSelection* pDeepSelection;
     //! For linking tool
     const char* name;
     //! true if this hit was from the object icon
@@ -120,7 +114,6 @@ struct HitContext
         rect = QRect();
         b2DViewport = false;
         view = 0;
-        camera = 0;
         point2d = QPoint();
         axis = 0;
         distanceTolerance = 0;
@@ -135,7 +128,6 @@ struct HitContext
         bIgnoreAxis = false;
         bOnlyGizmo = false;
         bUseSelectionHelpers = false;
-        pDeepSelection = 0;
         name = nullptr;
         iconHit = false;
     }

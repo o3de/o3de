@@ -60,9 +60,6 @@ public:
         return *this;
     }
 
-    bool Load(const QString& file);
-    void Save(const QString& file);
-
     //! Save XML Archive to pak file.
     //! @return true if saved.
     bool SaveToPak(const QString& levelPath, CPakFile& pakFile);

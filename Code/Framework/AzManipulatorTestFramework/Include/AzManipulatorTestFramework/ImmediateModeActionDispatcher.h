@@ -25,7 +25,7 @@ namespace AzManipulatorTestFramework
         using MouseInteractionEvent = AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
 
     public:
-        explicit ImmediateModeActionDispatcher(ManipulatorViewportInteraction& viewportManipulatorInteraction);
+        explicit ImmediateModeActionDispatcher(ManipulatorViewportInteraction& manipulatorViewportInteraction);
         ~ImmediateModeActionDispatcher();
 
         //! Clear the current event state.
@@ -55,13 +55,15 @@ namespace AzManipulatorTestFramework
         AZStd::chrono::milliseconds EditorViewportInputTimeNow() override;
 
     protected:
-        // ActionDispatcher ...
+        // ActionDispatcher overrides ...
         void SetSnapToGridImpl(bool enabled) override;
         void SetStickySelectImpl(bool enabled) override;
         void GridSizeImpl(float size) override;
         void CameraStateImpl(const AzFramework::CameraState& cameraState) override;
         void MouseLButtonDownImpl() override;
         void MouseLButtonUpImpl() override;
+        void MouseMButtonDownImpl() override;
+        void MouseMButtonUpImpl() override;
         void MouseLButtonDoubleClickImpl() override;
         void MousePositionImpl(const AzFramework::ScreenPoint& position) override;
         void KeyboardModifierDownImpl(const KeyboardModifier& keyModifier) override;
@@ -82,7 +84,7 @@ namespace AzManipulatorTestFramework
         const MouseInteractionEvent* GetMouseInteractionEvent() const;
 
         mutable AZStd::unique_ptr<MouseInteractionEvent> m_event;
-        ManipulatorViewportInteraction& m_viewportManipulatorInteraction;
+        ManipulatorViewportInteraction& m_manipulatorViewportInteraction;
 
         //! Current time that ticks up after each call to EditorViewportInputTimeNow.
         AZStd::chrono::milliseconds m_timeNow = AZStd::chrono::milliseconds(0);

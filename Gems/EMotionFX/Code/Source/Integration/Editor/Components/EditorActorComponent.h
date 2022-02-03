@@ -104,6 +104,8 @@ namespace EMotionFX
                 ActorComponent::GetRequiredServices(required);
             }
 
+            void SetRenderFlag(ActorRenderFlagBitset renderFlags);
+
             static void Reflect(AZ::ReflectContext* context);
 
         private:
@@ -162,6 +164,7 @@ namespace EMotionFX
             size_t                              m_lodLevel;
             ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
+            ActorRenderFlagBitset                 m_debugRenderFlags;         ///< Actor debug render flag
             // \todo attachmentTarget node nr
 
             // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.

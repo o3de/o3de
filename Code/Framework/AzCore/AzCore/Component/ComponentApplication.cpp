@@ -14,6 +14,7 @@
 #include <AzCore/Casting/lossy_cast.h>
 
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/TickBus.h>
 
 #include <AzCore/Debug/LocalFileEventLogger.h>
@@ -44,14 +45,9 @@
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManager.h>
 
-#include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/IO/Path/PathReflect.h>
 #include <AzCore/IO/SystemFile.h>
 
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
-#include <AzCore/Debug/TraceMessagesDriller.h>
-#include <AzCore/Debug/EventTraceDriller.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 
@@ -73,6 +69,7 @@
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Time/TimeSystem.h>
 
 static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
 {
@@ -155,9 +152,6 @@ namespace AZ
         m_reservedDebug = 0;
         m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
         m_stackRecordLevels = 5;
-        m_enableDrilling = false;
-        m_useOverrunDetection = false;
-        m_useMalloc = false;
     }
 
     bool AppDescriptorConverter(SerializeContext& serialize, SerializeContext::DataElementNode& node)
@@ -214,12 +208,6 @@ namespace AZ
             {
                 // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
                 m_oldProjectPath = newProjectPath;
-
-                // Merge the project.json file into settings registry under ProjectSettingsRootKey path.
-                AZ::IO::FixedMaxPath projectMetadataFile{ AZ::SettingsRegistryMergeUtils::FindEngineRoot(m_registry) / newProjectPath };
-                projectMetadataFile /= "project.json";
-                m_registry.MergeSettingsFile(projectMetadataFile.Native(),
-                    AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
 
                 // Update all the runtime file paths based on the new "project_path" value.
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
@@ -333,10 +321,6 @@ namespace AZ
                 ->Field("blockSize", &Descriptor::m_memoryBlocksByteSize)
                 ->Field("reservedOS", &Descriptor::m_reservedOS)
                 ->Field("reservedDebug", &Descriptor::m_reservedDebug)
-                ->Field("enableDrilling", &Descriptor::m_enableDrilling)
-                ->Field("useOverrunDetection", &Descriptor::m_useOverrunDetection)
-                ->Field("useMalloc", &Descriptor::m_useMalloc)
-                ->Field("allocatorRemappings", &Descriptor::m_allocatorRemappings)
                 ->Field("modules", &Descriptor::m_modules)
                 ;
 
@@ -372,9 +356,6 @@ namespace AZ
                         ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedOS, "OS reserved memory", "System memory reserved for OS (used only when 'Allocate all memory at startup' is true)")
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedDebug, "Memory reserved for debugger", "System memory reserved for Debug allocator, like memory tracking (used only when 'Allocate all memory at startup' is true)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_enableDrilling, "Enable Driller", "Enable Drilling support for the application (ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_useOverrunDetection, "Use Overrun Detection", "Use the overrun detection memory manager (only available on some platforms, ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_useMalloc, "Use Malloc", "Use malloc for memory allocations (for memory debugging only, ignored in Release builds)")
                     ;
             }
         }
@@ -423,6 +404,7 @@ namespace AZ
 
     ComponentApplication::ComponentApplication(int argC, char** argV)
         : m_eventLogger{}
+        , m_timeSystem(AZStd::make_unique<TimeSystem>())
     {
         if (Interface<ComponentApplicationRequests>::Get() == nullptr)
         {
@@ -490,21 +472,23 @@ namespace AZ
 
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
 
-        // Query for the Executable Path using OS specific functions
-        CalculateExecutablePath();
-
-        // Determine the path to the engine
-        CalculateEngineRoot();
-
-        // If the current platform returns an engaged optional from Utils::GetDefaultAppRootPath(), that is used
-        // for the application root.
-        CalculateAppRoot();
-
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
+        // Skip over merging the User Registry in non-debug and profile configurations
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+#endif
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
+
+        // The /O3DE/Application/LifecycleEvents array contains a valid set of lifecycle events
+        // Those lifecycle events are normally read from the <engine-root>/Registry
+        // which isn't merged until ComponentApplication::Create invokes MergeSettingsToRegistry
+        // So pre-populate the valid lifecycle even entries
+        ComponentApplicationLifecycle::RegisterEvent(*m_settingsRegistry, "SystemAllocatorCreated");
+        ComponentApplicationLifecycle::RegisterEvent(*m_settingsRegistry, "SettingsRegistryAvailable");
+        ComponentApplicationLifecycle::RegisterEvent(*m_settingsRegistry, "ConsoleAvailable");
+        ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SystemAllocatorCreated", R"({})");
+        ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SettingsRegistryAvailable", R"({})");
 
         // Create the Module Manager
         m_moduleManager = AZStd::make_unique<ModuleManager>();
@@ -520,6 +504,7 @@ namespace AZ
             m_ownsConsole = true;
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
             m_settingsRegistryConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistry, *m_console);
+            ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "ConsoleAvailable", R"({})");
         }
     }
 
@@ -551,6 +536,7 @@ namespace AZ
         {
             AZ::Interface<AZ::IConsole>::Unregister(m_console);
             delete m_console;
+            ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "ConsoleUnavailable", R"({})");
         }
 
         m_moduleManager.reset();
@@ -558,6 +544,8 @@ namespace AZ
         if (AZ::SettingsRegistry::Get() == m_settingsRegistry.get())
         {
             SettingsRegistry::Unregister(m_settingsRegistry.get());
+            ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SettingsRegistryUnavailable", R"({})");
+            ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SystemAllocatorPendingDestruction", R"({})");
         }
         m_settingsRegistry.reset();
 
@@ -570,13 +558,8 @@ namespace AZ
         m_entityActivatedEvent.DisconnectAllHandlers();
         m_entityDeactivatedEvent.DisconnectAllHandlers();
 
-#if !defined(_RELEASE)
-        m_budgetTracker.Reset();
-#endif
-
         DestroyAllocator();
     }
-
 
     void ReportBadEngineRoot()
     {
@@ -607,7 +590,8 @@ namespace AZ
     {
         AZ_Assert(!m_isStarted, "Component application already started!");
 
-        if (m_engineRoot.empty())
+        using Type = AZ::SettingsRegistryInterface::Type;
+        if (m_settingsRegistry->GetType(SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder) == Type::NoType)
         {
             ReportBadEngineRoot();
             return nullptr;
@@ -672,12 +656,13 @@ namespace AZ
         ReflectionEnvironment::GetReflectionManager()->Reflect(azrtti_typeid(this), [this](ReflectContext* context) {Reflect(context); });
 
         RegisterCoreComponents();
+        ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "ReflectionManagerAvailable", R"({})");
+
         TickBus::AllowFunctionQueuing(true);
         SystemTickBus::AllowFunctionQueuing(true);
 
         ComponentApplicationBus::Handler::BusConnect();
 
-        m_currentTime = AZStd::chrono::system_clock::now();
         TickRequestBus::Handler::BusConnect();
 
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
@@ -691,6 +676,7 @@ namespace AZ
 
         // Load the actual modules
         LoadModules();
+        ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "GemsLoaded", R"({})");
 
         // Execute user.cfg after modules have been loaded but before processing any command-line overrides
         AZ::IO::FixedMaxPath platformCachePath;
@@ -756,12 +742,20 @@ namespace AZ
         m_entities.rehash(0); // force free all memory
 
         DestroyReflectionManager();
+        ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "ReflectionManagerUnavailable", R"({})");
 
         static_cast<SettingsRegistryImpl*>(m_settingsRegistry.get())->ClearNotifiers();
         static_cast<SettingsRegistryImpl*>(m_settingsRegistry.get())->ClearMergeEvents();
 
+#if !defined(_RELEASE)
+        // the budget tracker must be cleaned up prior to module unloading to ensure
+        // budgets initialized cross boundary are freed properly
+        m_budgetTracker.Reset();
+#endif
+
         // Uninit and unload any dynamic modules.
         m_moduleManager->UnloadModules();
+        ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "GemsUnloaded", R"({})");
 
         NameDictionary::Destroy();
 
@@ -880,7 +874,7 @@ namespace AZ
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create(desc);
             AZ::Debug::Trace::Instance().Init();
 
-            AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::GetAllocator().GetRecords();
+            AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::Get().GetRecords();
             if (records)
             {
                 records->SetMode(m_descriptor.m_recordingMode);
@@ -892,35 +886,6 @@ namespace AZ
 
             m_isSystemAllocatorOwner = true;
         }
-
-#ifndef RELEASE
-        if (m_descriptor.m_useOverrunDetection)
-        {
-            OverrunDetectionSchema::Descriptor overrunDesc(false);
-            s_overrunDetectionSchema = Environment::CreateVariable<OverrunDetectionSchema>(AzTypeInfo<OverrunDetectionSchema>::Name(), overrunDesc);
-            OverrunDetectionSchema* schemaPtr = &s_overrunDetectionSchema.Get();
-
-            AZ::AllocatorManager::Instance().SetOverrideAllocatorSource(schemaPtr);
-        }
-
-        if (m_descriptor.m_useMalloc)
-        {
-            AZ_Printf("Malloc", "WARNING: Malloc override is enabled. Registered allocators will use malloc instead of their normal allocation schemas.");
-            s_mallocSchema = Environment::CreateVariable<MallocSchema>(AzTypeInfo<MallocSchema>::Name());
-            MallocSchema* schemaPtr = &s_mallocSchema.Get();
-
-            AZ::AllocatorManager::Instance().SetOverrideAllocatorSource(schemaPtr);
-        }
-#endif
-
-        AllocatorManager& allocatorManager = AZ::AllocatorManager::Instance();
-
-        for (const auto& remapping : m_descriptor.m_allocatorRemappings)
-        {
-            allocatorManager.AddAllocatorRemapping(remapping.m_from.c_str(), remapping.m_to.c_str());
-        }
-
-        allocatorManager.FinalizeConfiguration();
     }
 
     void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
@@ -1168,6 +1133,24 @@ namespace AZ
         return ReflectionEnvironment::GetReflectionManager() ? ReflectionEnvironment::GetReflectionManager()->GetReflectContext<JsonRegistrationContext>() : nullptr;
     }
 
+    /// Returns the path to the engine.
+
+    const char* ComponentApplication::GetEngineRoot() const
+    {
+        static IO::FixedMaxPathString engineRoot;
+        engineRoot.clear();
+        m_settingsRegistry->Get(engineRoot, SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        return engineRoot.c_str();
+    }
+
+    const char* ComponentApplication::GetExecutableFolder() const
+    {
+        static IO::FixedMaxPathString exeFolder;
+        exeFolder.clear();
+        m_settingsRegistry->Get(exeFolder, SettingsRegistryMergeUtils::FilePathKey_BinaryFolder);
+        return exeFolder.c_str();
+    }
+
     //=========================================================================
     // CreateReflectionManager
     //=========================================================================
@@ -1392,31 +1375,23 @@ namespace AZ
 #endif
     }
 
-    void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
+    void ComponentApplication::Tick()
     {
+        AZ_PROFILE_SCOPE(System, "Component application simulation tick");
+
         {
-            AZ_PROFILE_SCOPE(System, "Component application simulation tick");
-
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-
-            m_deltaTime = 0.0f;
-
-            if (now >= m_currentTime)
-            {
-                AZStd::chrono::duration<float> delta = now - m_currentTime;
-                m_deltaTime = deltaOverride >= 0.f ? deltaOverride : delta.count();
-            }
-
-            {
-                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
-                TickBus::ExecuteQueuedEvents();
-            }
-            m_currentTime = now;
-            {
-                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
-                EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
-            }
+            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
+            TickBus::ExecuteQueuedEvents();
         }
+
+        {
+            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
+            const AZ::TimeUs deltaTimeUs = m_timeSystem->AdvanceTickDeltaTimes();
+            const float deltaTimeSeconds = AZ::TimeUsToSeconds(deltaTimeUs);
+            AZ::TickBus::Broadcast(&TickEvents::OnTick, deltaTimeSeconds, GetTimeAtCurrentTick());
+        }
+
+        m_timeSystem->ApplyTickRateLimiterIfNeeded();
     }
 
     void ComponentApplication::TickSystem()
@@ -1473,27 +1448,6 @@ namespace AZ
         }
     }
 
-    //=========================================================================
-    // CalculateExecutablePath
-    //=========================================================================
-    void ComponentApplication::CalculateExecutablePath()
-    {
-        m_exeDirectory = Utils::GetExecutableDirectory();
-    }
-
-    void ComponentApplication::CalculateAppRoot()
-    {
-        if (AZStd::optional<AZ::StringFunc::Path::FixedString> appRootPath = Utils::GetDefaultAppRootPath(); appRootPath)
-        {
-            m_appRoot = AZStd::move(*appRootPath);
-        }
-    }
-
-    void ComponentApplication::CalculateEngineRoot()
-    {
-        m_engineRoot = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*m_settingsRegistry).Native();
-    }
-
     void ComponentApplication::ResolveModulePath([[maybe_unused]] AZ::OSString& modulePath)
     {
         // No special parsing of the Module Path is done by the Component Application anymore
@@ -1519,13 +1473,10 @@ namespace AZ
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Invalid;
     }
 
-    //=========================================================================
-    // GetFrameTime
-    // [1/22/2016]
-    //=========================================================================
     float ComponentApplication::GetTickDeltaTime()
     {
-        return m_deltaTime;
+        const AZ::TimeUs gameTickTime = m_timeSystem->GetSimulationTickDeltaTimeUs();
+        return AZ::TimeUsToSeconds(gameTickTime);
     }
 
     //=========================================================================
@@ -1534,7 +1485,8 @@ namespace AZ
     //=========================================================================
     ScriptTimePoint ComponentApplication::GetTimeAtCurrentTick()
     {
-        return ScriptTimePoint(m_currentTime);
+        const AZ::TimeUs lastGameTickTime = m_timeSystem->GetLastSimulationTickTime();
+        return ScriptTimePoint(AZ::TimeUsToChrono(lastGameTickTime));
     }
 
     //=========================================================================
@@ -1557,7 +1509,7 @@ namespace AZ
         // reflect name dictionary.
         Name::Reflect(context);
         // reflect path
-        IO::PathReflection::Reflect(context);
+        IO::PathReflect(context);
 
         // reflect the SettingsRegistryInterface, SettignsRegistryImpl and the global Settings Registry
         // instance (AZ::SettingsRegistry::Get()) into the Behavior Context

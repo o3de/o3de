@@ -1201,8 +1201,6 @@ namespace AzToolsFramework
                     .arg((item->parent() == nullptr) ? item->m_entity->GetName().c_str() : GetNodeDisplayName(*item->m_node).c_str()));
             }
 
-            SliceTargetTreeItem* parent = nullptr;
-
             AZStd::vector<SliceAssetPtr> validSliceAssets = GetValidTargetAssetsForField(*item);
 
             // For the selected item populate the tree of all valid slice targets.
@@ -1274,7 +1272,6 @@ namespace AzToolsFramework
                     selectButton->setChecked(true);
                 }
 
-                parent = sliceItem;
                 ++level;
             }
         }

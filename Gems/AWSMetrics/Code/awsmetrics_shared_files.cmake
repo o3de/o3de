@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    Include/Private/AWSMetricsModule.h
     Source/AWSMetricsModule.cpp
+    Source/AWSMetricsModule.h
 )

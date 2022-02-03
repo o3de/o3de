@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    Include/Private/AWSCoreModule.h
     Source/AWSCoreModule.cpp
+    Source/AWSCoreModule.h   
 )

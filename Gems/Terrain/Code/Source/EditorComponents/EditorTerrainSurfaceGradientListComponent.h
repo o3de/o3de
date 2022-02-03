@@ -25,8 +25,8 @@ namespace Terrain
         static constexpr const char* const s_categoryName = "Terrain";
         static constexpr const char* const s_componentName = "Terrain Surface Gradient List";
         static constexpr const char* const s_componentDescription = "Provides a mapping between gradients and surface tags for use by the terrain system.";
-        static constexpr const char* const s_icon = "Editor/Icons/Components/TerrainLayerSpawner.svg";
-        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainLayerSpawner.svg";
-        static constexpr const char* const s_helpUrl = "";
+        static constexpr const char* const s_icon = "Editor/Icons/Components/TerrainSurfaceGradientList.svg";
+        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainSurfaceGradientList.svg";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/terrain/surface-gradient-list/";
     };
 }

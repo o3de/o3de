@@ -56,7 +56,7 @@ namespace AZ
             ImGuiPass* GetDefaultImGuiPass() override;
 
             bool PushActiveContextFromDefaultPass() override;
-            bool PushActiveContextFromPass(const RPI::PassHierarchyFilter& passHierarchy) override;
+            bool PushActiveContextFromPass(const AZStd::vector<AZStd::string>& passHierarchy) override;
             bool PopActiveContext() override;
             ImGuiContext* GetActiveContext() override;
 

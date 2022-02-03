@@ -46,6 +46,7 @@ namespace Terrain
                         ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_4096Meters, "4 Kilometers")
                         ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_8192Meters, "8 Kilometers")
                         ->EnumAttribute(TerrainWorldRendererConfig::WorldSize::_16384Meters, "16 Kilometers")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, false) // Keeping invisible until it's hooked up under the hood
                         ;
             }
         }

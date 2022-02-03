@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "{856DB72A-48CB-4142-A032-1253D3AB8BEC}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Expect Equal",
+                "category": "Utilities/Unit Testing",
+                "tooltip": "Expects lhs equal to rhs"
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Report_0",
+                    "details": {
+                        "name": "Report"
+                    }
+                },
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Candidate_1",
+                    "details": {
+                        "name": "Candidate"
+                    }
+                },
+                {
+                    "base": "DataInput_Reference_2",
+                    "details": {
+                        "name": "Reference"
+                    }
+                }
+            ]
+        }
+    ]
+}

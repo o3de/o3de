@@ -14,6 +14,7 @@
 #include <AzCore/IO/Streamer/BlockCache.h>
 #include <AzCore/IO/Streamer/DedicatedCache.h>
 #include <AzCore/IO/Streamer/FullFileDecompressor.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/Scheduler.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -156,7 +157,10 @@ namespace AZ
     void StreamerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         bool isEnabled = false;
-        AZ::Debug::ProfilerRequestBus::BroadcastResult(isEnabled, &AZ::Debug::ProfilerRequests::IsActive);
+        if (auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get(); profilerSystem)
+        {
+            isEnabled = profilerSystem->IsActive();
+        }
 
         if (isEnabled)
         {
@@ -204,7 +208,7 @@ namespace AZ
     {
         if (m_streamer)
         {
-            m_streamer->QueueRequest(m_streamer->Report(AZ::IO::FileRequest::ReportData::ReportType::FileLocks));
+            m_streamer->QueueRequest(m_streamer->Report(AZ::IO::Requests::ReportType::FileLocks));
         }
     }
 

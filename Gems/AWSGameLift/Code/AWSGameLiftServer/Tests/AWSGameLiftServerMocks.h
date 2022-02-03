@@ -95,7 +95,7 @@ namespace UnitTest
             UpdateGameSessionData(m_testGameSession);
         }
 
-        bool AddConnectedTestPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig)
+        bool AddConnectedTestPlayer(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig)
         {
             return AddConnectedPlayer(playerConnectionConfig);
         }

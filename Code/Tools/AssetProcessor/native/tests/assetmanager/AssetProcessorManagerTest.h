@@ -23,6 +23,8 @@
 
 #include <QTemporaryDir>
 #include <QMetaObject>
+#include <AzCore/Jobs/JobContext.h>
+#include <AzCore/Jobs/JobManager.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include "resourcecompiler/rccontroller.h"
@@ -35,11 +37,119 @@ public:
     MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
 };
 
+class AssetProcessorManager_Test : public AssetProcessor::AssetProcessorManager
+{
+public:
+    friend class GTEST_TEST_CLASS_NAME_(
+        AssetProcessorManagerTest, AssetProcessedImpl_DifferentProductDependenciesPerProduct_SavesCorrectlyToDatabase);
+
+    friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies);
+    friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_DeferredResolution);
+    friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, SameFilenameForAllPlatforms);
+
+    friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
+
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, DeleteFolder_SignalsDeleteOfContainedFiles);
+
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTest);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_WithDifferentTypes_BasicTest);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_Reverse_BasicTest);
+    friend class GTEST_TEST_CLASS_NAME_(
+        AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_MissingFiles_ReturnsNoPathWithPlaceholders);
+
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_BeforeComputingDirtiness_AllDirty);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_EmptyDatabase_AllDirty);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_SameAsLastTime_NoneDirty);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_MoreThanLastTime_NewOneIsDirty);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_FewerThanLastTime_Dirty);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_ChangedPattern_CountsAsNew);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_ChangedPatternType_CountsAsNew);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_NewPattern_CountsAsNewBuilder);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_NewVersionNumber_IsNotANewBuilder);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, BuilderDirtiness_NewAnalysisFingerprint_IsNotANewBuilder);
+
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_BasicTest);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_UpdateTest);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByUuid);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByName);
+    friend class GTEST_TEST_CLASS_NAME_(
+        AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByUuid_UpdatesWhenTheyAppear);
+    friend class GTEST_TEST_CLASS_NAME_(
+        AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_MissingFiles_ByName_UpdatesWhenTheyAppear);
+    friend class GTEST_TEST_CLASS_NAME_(
+        AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardMissingFiles_ByName_UpdatesWhenTheyAppear);
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK);
+
+    friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, SourceFileProcessFailure_ClearsFingerprint);
+
+    friend class GTEST_TEST_CLASS_NAME_(
+        AbsolutePathProductDependencyTest, UnresolvedProductPathDependency_AssetProcessedTwice_DoesNotDuplicateDependency);
+    friend class GTEST_TEST_CLASS_NAME_(
+        AbsolutePathProductDependencyTest, AbsolutePathProductDependency_RetryDeferredDependenciesWithMatchingSource_DependencyResolves);
+    friend class GTEST_TEST_CLASS_NAME_(
+        AbsolutePathProductDependencyTest, UnresolvedProductPathDependency_AssetProcessedTwice_ValidatePathDependenciesMap);
+    friend class GTEST_TEST_CLASS_NAME_(
+        AbsolutePathProductDependencyTest,
+        UnresolvedSourceFileTypeProductPathDependency_DependencyHasNoProductOutput_ValidatePathDependenciesMap);
+
+    friend class GTEST_TEST_CLASS_NAME_(DeleteTest, DeleteFolderSharedAcrossTwoScanFolders_CorrectFileAndFolderAreDeletedFromCache);
+    friend class GTEST_TEST_CLASS_NAME_(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase);
+
+    friend class AssetProcessorManagerTest;
+    friend struct JobDependencyTest;
+    friend struct ChainJobDependencyTest;
+    friend struct DeleteTest;
+    friend struct PathDependencyTest;
+    friend struct DuplicateProductsTest;
+    friend struct DuplicateProcessTest;
+    friend struct AbsolutePathProductDependencyTest;
+    friend struct WildcardSourceDependencyTest;
+
+    explicit AssetProcessorManager_Test(AssetProcessor::PlatformConfiguration* config, QObject* parent = nullptr);
+    ~AssetProcessorManager_Test() override;
+
+    bool CheckJobKeyToJobRunKeyMap(AZStd::string jobKey);
+
+    int CountDirtyBuilders() const
+    {
+        int numDirty = 0;
+        for (const auto& element : m_builderDataCache)
+        {
+            if (element.second.m_isDirty)
+            {
+                ++numDirty;
+            }
+        }
+        return numDirty;
+    }
+
+    bool IsBuilderDirty(const AZ::Uuid& builderBusId) const
+    {
+        auto finder = m_builderDataCache.find(builderBusId);
+        if (finder == m_builderDataCache.end())
+        {
+            return true;
+        }
+        return finder->second.m_isDirty;
+    }
+
+    void RecomputeDirtyBuilders()
+    {
+        // Run this twice so the test builder doesn't get counted as a "new" builder and bypass the modtime skipping
+        ComputeBuilderDirty();
+        ComputeBuilderDirty();
+    }
+
+    using AssetProcessorManager::m_stateData;
+    using AssetProcessorManager::ComputeBuilderDirty;
+};
+
+
 class AssetProcessorManagerTest
     : public AssetProcessor::AssetProcessorTest
 {
 public:
-    
+
 
     AssetProcessorManagerTest();
     virtual ~AssetProcessorManagerTest()
@@ -58,7 +168,6 @@ protected:
     AZStd::unique_ptr<AssetProcessorManager_Test> m_assetProcessorManager;
     AZStd::unique_ptr<AssetProcessor::MockApplicationManager> m_mockApplicationManager;
     AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;
-    UnitTestUtils::AssertAbsorber m_assertAbsorber; // absorb asserts/warnings/errors so that the unit test output is not cluttered
     QString m_gameName;
     QDir m_normalizedCacheRootDir;
     AZStd::atomic_bool m_isIdling;
@@ -68,16 +177,19 @@ protected:
     {
         AZStd::string m_databaseLocation;
         ::testing::NiceMock<MockDatabaseLocationListener> m_databaseLocationListener;
+        AZ::Entity* m_jobManagerEntity{};
+        AZ::ComponentDescriptor* m_descriptor{};
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
     };
 
     AZStd::unique_ptr<StaticData> m_data;
-    
+
 private:
     int         m_argc;
     char**      m_argv;
     AZStd::unique_ptr<UnitTestUtils::ScopedDir> m_scopeDir;
 
-    AZStd::unique_ptr<QCoreApplication> m_qApp;    
+    AZStd::unique_ptr<QCoreApplication> m_qApp;
 };
 
 struct AbsolutePathProductDependencyTest
@@ -131,6 +243,15 @@ struct MultiplatformPathDependencyTest
     void SetUp() override;
 };
 
+struct WildcardSourceDependencyTest
+    :  AssetProcessorManagerTest
+{
+    bool Test(const AZStd::string& dependencyPath, AZStd::vector<AZStd::string>& resolvedPaths);
+    AZStd::vector<AZStd::string> FileAddedTest(const QString& path);
+
+    void SetUp() override;
+};
+
 struct MockBuilderInfoHandler
     : public AssetProcessor::AssetBuilderInfoBus::Handler
 {
@@ -150,33 +271,6 @@ struct MockBuilderInfoHandler
     QString m_dependencyFilePath;
     QString m_jobDependencyFilePath;
     int m_createJobsCount = 0;
-};
-
-struct ModtimeScanningTest
-    : public AssetProcessorManagerTest
-{
-    void SetUp() override;
-    void TearDown() override;
-
-    void ProcessAssetJobs();
-    void SimulateAssetScanner(QSet<AssetProcessor::AssetFileInfo> filePaths);
-    QSet<AssetProcessor::AssetFileInfo> BuildFileSet();
-    void ExpectWork(int createJobs, int processJobs);
-    void ExpectNoWork();
-    void SetFileContents(QString filePath, QString contents);
-
-    struct StaticData
-    {
-        QString m_relativePathFromWatchFolder[3];
-        AZStd::vector<QString> m_absolutePath;
-        AZStd::vector<AssetProcessor::JobDetails> m_processResults;
-        AZStd::unordered_multimap<AZStd::string, QString> m_productPaths;
-        AZStd::vector<QString> m_deletedSources;
-        AZStd::shared_ptr<AssetProcessor::InternalMockBuilder> m_builderTxtBuilder;
-        MockBuilderInfoHandler m_mockBuilderInfoHandler;
-    };
-
-    AZStd::unique_ptr<StaticData> m_data;
 };
 
 
@@ -260,10 +354,4 @@ struct DuplicateProductsTest
     : public AssetProcessorManagerTest
 {
     void SetupDuplicateProductsTest(QString& sourceFile, QDir& tempPath, QString& productFile, AZStd::vector<AssetProcessor::JobDetails>& jobDetails, AssetBuilderSDK::ProcessJobResponse& response, bool multipleOutputs, QString extension);
-};
-
-struct DeleteTest
-    : public ModtimeScanningTest
-{
-    void SetUp() override;
 };

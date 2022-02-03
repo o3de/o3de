@@ -40,6 +40,8 @@
 #include "AssetRequestHandler.h"
 #include "native/utilities/JobDiagnosticTracker.h"
 #include "SourceFileRelocator.h"
+
+#include <AssetManager/ExcludedFolderCache.h>
 #endif
 
 class FileWatcher;
@@ -341,7 +343,8 @@ namespace AssetProcessor
         void CleanEmptyFolder(QString folder, QString root);
 
         void ProcessBuilders(QString normalizedPath, QString relativePathToFile, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList);
-        
+        AZStd::vector<AZStd::string> GetExcludedFolders();
+
         struct SourceInfo
         {
             QString m_watchFolder;
@@ -482,6 +485,7 @@ namespace AssetProcessor
         };
 
         void ComputeBuilderDirty();
+        AZStd::string ComputeRecursiveDependenciesFingerprint(const AZStd::string& fileAbsolutePath, const AZStd::string& fileDatabaseName);
         AZStd::unordered_map<AZ::Uuid, BuilderData>  m_builderDataCache;
         bool m_buildersAddedOrRemoved = true; //< true if any new builders exist.  If this happens we actually need to re-analyze everything.
         bool m_anyBuilderChange = true;
@@ -551,6 +555,8 @@ namespace AssetProcessor
 
         // when true, a flag will be sent to builders process job indicating debug output/mode should be used
         bool m_builderDebugFlag = false;
+
+        AZStd::unique_ptr<ExcludedFolderCache> m_excludedFolderCache{};
 
 protected Q_SLOTS:
         void FinishAnalysis(AZStd::string fileToCheck);

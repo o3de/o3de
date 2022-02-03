@@ -377,14 +377,7 @@ namespace AZ
 
         bool ProfilingCaptureSystemComponent::CapturePassTimestamp(const AZStd::string& outputFilePath)
         {
-            // Find the root pass.
-            AZStd::vector<RPI::Pass*> passes = FindPasses({ "Root" });
-            if (passes.empty())
-            {
-                return false;
-            }
-
-            RPI::Pass* root = passes[0];
+            RPI::Pass* root = AZ::RPI::PassSystemInterface::Get()->GetRootPass().get();
 
             // Enable all the Timestamp queries in passes.
             root->SetTimestampQueryEnabled(true);
@@ -465,14 +458,7 @@ namespace AZ
 
         bool ProfilingCaptureSystemComponent::CapturePassPipelineStatistics(const AZStd::string& outputFilePath)
         {
-            // Find the root pass.
-            AZStd::vector<RPI::Pass*> passes = FindPasses({ "Root" });
-            if (passes.empty())
-            {
-                return false;
-            }
-
-            RPI::Pass* root = passes[0];
+            RPI::Pass* root = AZ::RPI::PassSystemInterface::Get()->GetRootPass().get();
 
             // Enable all the PipelineStatistics queries in passes.
             root->SetPipelineStatisticsQueryEnabled(true);
@@ -570,19 +556,6 @@ namespace AZ
             collectPass(root);
 
             return passes;
-        }
-
-        AZStd::vector<RPI::Pass*> ProfilingCaptureSystemComponent::FindPasses(AZStd::vector<AZStd::string>&& passHierarchy) const
-        {
-            // Find the pass first.
-            RPI::PassHierarchyFilter passFilter(passHierarchy);
-            AZStd::vector<AZ::RPI::Pass*> foundPasses = AZ::RPI::PassSystemInterface::Get()->FindPasses(passFilter);
-            if (foundPasses.size() == 0)
-            {
-                AZ_Warning("ProfilingCaptureSystemComponent", false, "Failed to find pass from %s", passFilter.ToString().c_str());
-            }
-
-            return foundPasses;
         }
 
         void ProfilingCaptureSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] ScriptTimePoint time)

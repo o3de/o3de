@@ -81,7 +81,11 @@ namespace AZ
             bool GetShadowReceiverPlaneBiasEnabled() const override;
             void SetShadowReceiverPlaneBiasEnabled(bool enable) override;
             float GetShadowBias() const override;
-            void SetShadowBias(float width) override;
+            void SetShadowBias(float bias) override;
+            float GetNormalShadowBias() const override;
+            void SetNormalShadowBias(float bias) override;            
+            bool GetCascadeBlendingEnabled() const override;
+            void SetCascadeBlendingEnabled(bool enable) override;
 
         private:
             friend class EditorDirectionalLightComponent;

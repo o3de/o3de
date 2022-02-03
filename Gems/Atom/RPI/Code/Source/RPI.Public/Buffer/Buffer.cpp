@@ -17,7 +17,8 @@
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/EventTrace.h>
+
+AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
@@ -90,7 +91,7 @@ namespace AZ
 
         RHI::ResultCode Buffer::Init(BufferAsset& bufferAsset)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             RHI::ResultCode resultCode = RHI::ResultCode::Fail;
 
@@ -140,7 +141,7 @@ namespace AZ
                 
                 if (bufferAsset.GetBuffer().size() > 0 && !initWithData)
                 {
-                    AZ_TRACE_METHOD_NAME("Stream Upload");
+                    AZ_PROFILE_SCOPE(RPI, "Stream Upload");
                     m_streamFence = RHI::Factory::Get().CreateFence();
                     if (m_streamFence)
                     {

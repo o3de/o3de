@@ -29,6 +29,8 @@
 #include <SceneAPI/SceneData/GraphData/AnimationData.h>
 #include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
 #include <SceneAPI/SceneData/GraphData/MaterialData.h>
+#include <SceneAPI/SceneData/GraphData/BoneData.h>
+#include <SceneAPI/SceneData/GraphData/RootBoneData.h>
 
 namespace AZ
 {
@@ -178,7 +180,18 @@ namespace AZ
                         materialDataData->SetTexture(AZ::SceneAPI::DataTypes::IMaterialData::TextureMapType::Specular, "specular");
                         return true;
                     }
-
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::BoneData>())
+                    {
+                        auto* boneData = AZStd::any_cast<AZ::SceneData::GraphData::BoneData>(&data);
+                        boneData->SetWorldTransform(SceneAPI::DataTypes::MatrixType::CreateDiagonal({1.0, 2.0, 3.0}));
+                        return true;
+                    }
+                    else if (data.get_type_info().m_id == azrtti_typeid<AZ::SceneData::GraphData::RootBoneData>())
+                    {
+                        auto* boneData = AZStd::any_cast<AZ::SceneData::GraphData::RootBoneData>(&data);
+                        boneData->SetWorldTransform(SceneAPI::DataTypes::MatrixType::CreateDiagonal({2.0, 3.0, 4.0}));
+                        return true;
+                    }
                     return false;
                 }
 
@@ -525,6 +538,44 @@ namespace AZ
                 ExpectExecute("TestExpectTrue(materialData:GetTexture(MaterialData.Normal) == 'normal')");
                 ExpectExecute("TestExpectTrue(materialData:GetTexture(MaterialData.Roughness) == 'roughness')");
                 ExpectExecute("TestExpectTrue(materialData:GetTexture(MaterialData.Specular) == 'specular')");
+            }
+
+            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_BoneData_AccessWorks)
+            {
+                ExpectExecute("boneData = BoneData()");
+                ExpectExecute("TestExpectTrue(boneData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(boneData)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(0).x, 1.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(0).y, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(0).z, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(0).w, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(1).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(1).y, 2.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(1).z, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(1).w, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(2).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(2).y, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(2).z, 3.0)");
+                ExpectExecute("TestExpectFloatEquals(boneData:GetWorldTransform():GetRow(2).w, 0.0)");
+            }
+
+            TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_RootBoneData_AccessWorks)
+            {
+                ExpectExecute("rootBoneData = RootBoneData()");
+                ExpectExecute("TestExpectTrue(rootBoneData ~= nil)");
+                ExpectExecute("MockGraphData.FillData(rootBoneData)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(0).x, 2.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(0).y, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(0).z, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(0).w, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(1).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(1).y, 3.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(1).z, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(1).w, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).x, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).y, 0.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).z, 4.0)");
+                ExpectExecute("TestExpectFloatEquals(rootBoneData:GetWorldTransform():GetRow(2).w, 0.0)");
             }
         }
     }

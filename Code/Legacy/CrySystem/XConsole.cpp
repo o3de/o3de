@@ -16,7 +16,6 @@
 #include "System.h"
 #include "ConsoleBatchFile.h"
 
-#include <ITimer.h>
 #include <IRenderer.h>
 #include <ISystem.h>
 #include <ILog.h>
@@ -28,8 +27,8 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Time/ITime.h>
 
-#include <LyShine/Bus/UiCursorBus.h>
 //#define DEFENCE_CVAR_HASH_LOGGING
 
 // s should point to a buffer at least 65 chars long
@@ -105,7 +104,8 @@ void Command_SetWaitSeconds(IConsoleCmdArgs* pCmd)
     if (pCmd->GetArgCount() > 1)
     {
         pConsole->m_waitSeconds.SetSeconds(atof(pCmd->GetArg(1)));
-        pConsole->m_waitSeconds += gEnv->pTimer->GetFrameStartTime();
+        const AZ::TimeMs elaspedTimeMs = AZ::GetRealElapsedTimeMs();
+        pConsole->m_waitSeconds += CTimeValue(AZ::TimeMsToSecondsDouble(elaspedTimeMs));
     }
 }
 
@@ -305,7 +305,6 @@ void CXConsole::Init(ISystem* pSystem)
     {
         m_pFont = pSystem->GetICryFont()->GetFont("default");
     }
-    m_pTimer = pSystem->GetITimer();
 
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
@@ -332,11 +331,6 @@ void CXConsole::Init(ISystem* pSystem)
     }
 
     m_nLoadingBackTexID = -1;
-
-    if (gEnv->IsDedicated())
-    {
-        m_bConsoleActive = true;
-    }
 
     REGISTER_COMMAND("ConsoleShow", &ConsoleShow, VF_NULL, "Opens the console");
     REGISTER_COMMAND("ConsoleHide", &ConsoleHide, VF_NULL, "Closes the console");
@@ -754,8 +748,6 @@ void    CXConsole::ShowConsole(bool show, const int iRequestScrollMax)
 
     if (show && !m_bConsoleActive)
     {
-        UiCursorBus::Broadcast(&UiCursorBus::Events::IncrementVisibleCounter);
-
         AzFramework::InputSystemCursorRequestBus::EventResult(m_previousSystemCursorState,
             AzFramework::InputDeviceMouse::Id,
             &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
@@ -765,8 +757,6 @@ void    CXConsole::ShowConsole(bool show, const int iRequestScrollMax)
     }
     else if (!show && m_bConsoleActive)
     {
-        UiCursorBus::Broadcast(&UiCursorBus::Events::DecrementVisibleCounter);
-
         AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
             &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
             m_previousSystemCursorState);
@@ -939,8 +929,8 @@ void CXConsole::Update()
         const float fRepeatDelay = 1.0f / 40.0f;          // in sec (similar to Windows default but might differ from actual setting)
         const float fHitchDelay = 1.0f / 10.0f;               // in sec. Very low, but still reasonable frame-rate (debug builds)
 
-        m_fRepeatTimer -= gEnv->pTimer->GetRealFrameTime();                                         // works even when time is manipulated
-        //      m_fRepeatTimer -= gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI);            // can be used once ETIMER_UI works even with t_FixedTime
+        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs(); // works even when time is manipulated
+        m_fRepeatTimer -= AZ::TimeUsToSeconds(delta); 
 
         if (m_fRepeatTimer <= 0.0f)
         {
@@ -1966,7 +1956,9 @@ void CXConsole::ExecuteDeferredCommands()
 
     if (m_waitSeconds.GetValue())
     {
-        if (m_waitSeconds > gEnv->pTimer->GetFrameStartTime())
+        const AZ::TimeMs elaspsedTimeMs = AZ::GetRealElapsedTimeMs();
+        const double elaspedTimeSec = AZ::TimeMsToSecondsDouble(elaspsedTimeMs);
+        if (m_waitSeconds > CTimeValue(elaspedTimeSec))
         {
             return;
         }

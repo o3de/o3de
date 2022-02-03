@@ -12,8 +12,6 @@
 
 #include <ScriptEvents/ScriptEventsGem.h>
 
-#include <ScriptEvents/Components/ScriptEventReferencesComponent.h>
-
 namespace ScriptEvents
 {
     ScriptEventsModule::ScriptEventsModule()
@@ -23,8 +21,7 @@ namespace ScriptEvents
         ScriptEventModuleConfigurationRequestBus::Handler::BusConnect();
 
         m_descriptors.insert(m_descriptors.end(), {
-            ScriptEvents::ScriptEventsSystemComponent::CreateDescriptor(),
-            ScriptEvents::Components::ScriptEventReferencesComponent::CreateDescriptor(),
+            ScriptEvents::ScriptEventsSystemComponent::CreateDescriptor()
         });
     }
 

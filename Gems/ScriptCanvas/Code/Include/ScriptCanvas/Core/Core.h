@@ -9,20 +9,22 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Component/EntityUtils.h>
+#include <AzCore/Component/NamedEntityId.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/hash.h>
-#include <AzCore/Component/EntityUtils.h>
-#include <AzCore/Component/NamedEntityId.h>
-
 #include <Core/NamedId.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
+#include <AzCore/Console/IConsole.h>
 
 #define OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED
 
@@ -41,6 +43,9 @@ namespace AZ
 
 namespace ScriptCanvas
 {
+    AZ_CVAR_EXTERNED(bool, g_saveRuntimeAssetsAsPlainTextForDebug);
+    AZ_CVAR_EXTERNED(bool, g_saveEditorAssetsAsPlainTextForDebug);
+
     // A place holder identifier for the AZ::Entity that owns the graph.
     // The actual value in each location initialized to GraphOwnerId is populated with the owning entity at editor-time, Asset Processor-time, or runtime, as soon as the owning entity is known.
     using GraphOwnerIdType = AZ::EntityId;
@@ -61,6 +66,10 @@ namespace ScriptCanvas
 
     class Node;
     class Edge;
+    class Graph;
+
+    using GraphPtr = Graph*;
+    using GraphPtrConst = const Graph*;
 
     using ID = AZ::EntityId;
 
@@ -297,6 +306,123 @@ namespace ScriptCanvas
     void ReflectEventTypeOnDemand(const AZ::TypeId& typeId, AZStd::string_view name, AZ::IRttiHelper* rttiHelper = nullptr);
 }
 
+namespace ScriptCanvas
+{
+    class ScriptCanvasData;
+
+    using DataPtr = AZStd::intrusive_ptr<ScriptCanvasData>;
+    using DataPtrConst = AZStd::intrusive_ptr<const ScriptCanvasData>;
+}
+
+namespace ScriptCanvasEditor
+{
+    class EditorGraph;
+    
+    using GraphPtr = EditorGraph*;
+    using GraphPtrConst = const EditorGraph*;
+
+    class SourceDescription
+    {
+    public:
+        inline static constexpr const char* GetAssetGroup() { return "ScriptCanvas"; }
+        inline static constexpr const char* GetType() { return "{FA10C3DA-0717-4B72-8944-CD67D13DFA2B}"; }
+        inline static constexpr const char* GetName() { return "Script Canvas"; }
+        inline static constexpr const char* GetDescription() { return "Script Canvas Graph File"; }
+        inline static constexpr const char* GetSuggestedSavePath() { return "@projectroot@/scriptcanvas"; }
+        inline static constexpr const char* GetFileExtension() { return ".scriptcanvas"; }
+        inline static constexpr const char* GetGroup() { return "Script Canvas"; }
+        inline static constexpr const char* GetAssetNamePattern() { return "Untitled-%i"; }
+        inline static constexpr const char* GetFileFilter() { return "Script Canvas Files (*.scriptcanvas)"; }
+        inline static constexpr const char* GetAssetTypeDisplayName() { return "Script Canvas"; }
+        inline static constexpr const char* GetEntityName() { return "Script Canvas"; }
+        inline static constexpr const char* GetIconPath() { return "Icons/ScriptCanvas/Viewport/ScriptCanvas.png"; }
+        inline static AZ::Color GetDisplayColor() { return AZ::Color(0.5f, 0.5f, 0.5f, 0.5f); };
+    };
+
+    class SourceHandle
+    {
+    public:
+        AZ_TYPE_INFO(SourceHandle, "{65855A98-AE2F-427F-BFC8-69D45265E312}");
+        AZ_CLASS_ALLOCATOR(SourceHandle, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        SourceHandle();
+
+        SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        SourceHandle(const SourceHandle& data, const AZ::IO::Path& path);
+
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
+
+        bool AnyEquals(const SourceHandle& other) const;
+
+        void Clear();
+
+        // return a SourceHandle with only the Id and Path, but without a pointer to the data
+        SourceHandle Describe() const;
+
+        GraphPtrConst Get() const;
+
+        const AZ::Uuid& Id() const;
+
+        bool IsDescriptionValid() const;
+
+        bool IsGraphValid() const;
+
+        GraphPtr Mod() const;
+
+        bool operator==(const SourceHandle& other) const;
+
+        bool operator!=(const SourceHandle& other) const;
+
+        const AZ::IO::Path& Path() const;
+
+        bool PathEquals(const SourceHandle& other) const;
+
+        AZStd::string ToString() const;
+
+    private:
+        ScriptCanvas::DataPtr m_data;
+        AZ::Uuid m_id = AZ::Uuid::CreateNull();
+        AZ::IO::Path m_path;
+    };
+}
+
+namespace ScriptCanvas
+{
+    class ScriptCanvasData
+        : public AZStd::intrusive_refcount<AZStd::atomic_uint, AZStd::intrusive_default_delete>
+    {
+    public:
+
+        AZ_RTTI(ScriptCanvasData, "{1072E894-0C67-4091-8B64-F7DB324AD13C}");
+        AZ_CLASS_ALLOCATOR(ScriptCanvasData, AZ::SystemAllocator, 0);
+        ScriptCanvasData() = default;
+        virtual ~ScriptCanvasData() = default;
+        ScriptCanvasData(ScriptCanvasData&& other);
+        ScriptCanvasData& operator=(ScriptCanvasData&& other);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        AZ::Entity* GetScriptCanvasEntity() const { return m_scriptCanvasEntity.get(); }
+
+        const Graph* GetGraph() const;
+
+        const ScriptCanvasEditor::EditorGraph* GetEditorGraph() const;
+
+        Graph* ModGraph();
+
+        ScriptCanvasEditor::EditorGraph* ModEditorGraph();
+
+        AZStd::unique_ptr<AZ::Entity> m_scriptCanvasEntity;
+    private:
+        ScriptCanvasData(const ScriptCanvasData&) = delete;
+    };
+}
+
 namespace AZStd
 {
     template<>
@@ -304,9 +430,26 @@ namespace AZStd
     {
         using argument_type = ScriptCanvas::SlotId;
         using result_type = AZStd::size_t;
-        AZ_FORCE_INLINE size_t operator()(const argument_type& ref) const
+
+        inline size_t operator()(const argument_type& ref) const
         {
             return AZStd::hash<AZ::Uuid>()(ref.m_id);
+        }
+    };
+
+    template<>
+    struct hash<ScriptCanvasEditor::SourceHandle>
+    {
+        using argument_type = ScriptCanvasEditor::SourceHandle;
+        using result_type = AZStd::size_t;
+
+        inline size_t operator()(const argument_type& handle) const
+        {
+            size_t h = 0;
+            hash_combine(h, handle.Id());
+            hash_combine(h, handle.Path());
+            hash_combine(h, handle.Get());
+            return h;
         }
     };
 }

@@ -6,10 +6,16 @@
  *
  */
 
-#include <AzFramework/Session/SessionConfig.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <Multiplayer/Session/SessionConfig.h>
 
 #include <Activity/AWSGameLiftSearchSessionsActivity.h>
 #include <AWSGameLiftSessionConstants.h>
+#include <Request/IAWSGameLiftInternalRequests.h>
+
+#include <aws/core/utils/Outcome.h>
+#include <aws/gamelift/model/SearchGameSessionsRequest.h>
 
 namespace AWSGameLift
 {
@@ -61,15 +67,22 @@ namespace AWSGameLift
             return request;
         }
 
-        AzFramework::SearchSessionsResponse SearchSessions(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
+        Multiplayer::SearchSessionsResponse SearchSessions(
             const AWSGameLiftSearchSessionsRequest& searchSessionsRequest)
         {
+            Multiplayer::SearchSessionsResponse response;
+
+            auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
+            if (!gameliftClient)
+            {
+                AZ_Error(AWSGameLiftSearchSessionsActivityName, false, AWSGameLiftClientMissingErrorMessage);
+                return response;
+            }
+
             AZ_TracePrintf(AWSGameLiftSearchSessionsActivityName, "Requesting SearchGameSessions against Amazon GameLift service ...");
 
-            AzFramework::SearchSessionsResponse response;
             Aws::GameLift::Model::SearchGameSessionsRequest request = BuildAWSGameLiftSearchGameSessionsRequest(searchSessionsRequest);
-            Aws::GameLift::Model::SearchGameSessionsOutcome outcome = gameliftClient.SearchGameSessions(request);
+            Aws::GameLift::Model::SearchGameSessionsOutcome outcome = gameliftClient->SearchGameSessions(request);
             AZ_TracePrintf(AWSGameLiftSearchSessionsActivityName, "SearchGameSessions request against Amazon GameLift service is complete");
 
             if (outcome.IsSuccess())
@@ -85,15 +98,15 @@ namespace AWSGameLift
             return response;
         }
 
-        AzFramework::SearchSessionsResponse ParseResponse(
+        Multiplayer::SearchSessionsResponse ParseResponse(
             const Aws::GameLift::Model::SearchGameSessionsResult& gameLiftSearchSessionsResult)
         {
-            AzFramework::SearchSessionsResponse response;
+            Multiplayer::SearchSessionsResponse response;
             response.m_nextToken = gameLiftSearchSessionsResult.GetNextToken().c_str();
 
             for (const Aws::GameLift::Model::GameSession& gameSession : gameLiftSearchSessionsResult.GetGameSessions())
             {
-                AzFramework::SessionConfig session;
+                Multiplayer::SessionConfig session;
                 session.m_creationTime = gameSession.GetCreationTime().Millis();
                 session.m_creatorId = gameSession.GetCreatorId().c_str();
                 session.m_currentPlayer = gameSession.GetCurrentPlayerSessionCount();
@@ -120,7 +133,7 @@ namespace AWSGameLift
             return response;
         };
 
-        bool ValidateSearchSessionsRequest(const AzFramework::SearchSessionsRequest& searchSessionsRequest)
+        bool ValidateSearchSessionsRequest(const Multiplayer::SearchSessionsRequest& searchSessionsRequest)
         {
             auto gameliftSearchSessionsRequest = azrtti_cast<const AWSGameLiftSearchSessionsRequest*>(&searchSessionsRequest);
             if (gameliftSearchSessionsRequest &&

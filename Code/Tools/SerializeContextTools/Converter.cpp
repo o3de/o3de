@@ -202,8 +202,6 @@ namespace AZ
             bool skipSystem = commandLine->HasSwitch("skipsystem");
             bool isDryRun = commandLine->HasSwitch("dryrun");
 
-            const char* appRoot = const_cast<const Application&>(application).GetAppRoot();
-
             PathDocumentContainer documents;
             bool result = true;
             const AZStd::string& filePath = application.GetConfigFilePath();
@@ -230,7 +228,7 @@ namespace AZ
             }
             
             auto callback = 
-                [&result, skipGems, skipSystem, &configurationName, sourceGameFolder, &appRoot, &documents, &convertSettings, &verifySettings]
+                [&result, skipGems, skipSystem, &configurationName, sourceGameFolder, &documents, &convertSettings, &verifySettings]
                 (void* classPtr, const Uuid& classId, SerializeContext* context)
             {
                 if (classId == azrtti_typeid<AZ::ComponentApplication::Descriptor>())
@@ -238,7 +236,7 @@ namespace AZ
                     if (!skipSystem)
                     {
                         result = ConvertSystemSettings(documents, *reinterpret_cast<AZ::ComponentApplication::Descriptor*>(classPtr), 
-                            configurationName, sourceGameFolder, appRoot) && result;
+                            configurationName, sourceGameFolder) && result;
                     }
 
                     // Cleanup the Serialized Element to allow any classes within the element's hierarchy to delete
@@ -443,7 +441,7 @@ namespace AZ
         }
 
         bool Converter::ConvertSystemSettings(PathDocumentContainer& documents, const ComponentApplication::Descriptor& descriptor, 
-            const AZStd::string& configurationName, const AZ::IO::PathView& projectFolder, [[maybe_unused]] const AZStd::string& applicationRoot)
+            const AZStd::string& configurationName, const AZ::IO::PathView& projectFolder)
         {
             AZ::IO::FixedMaxPath memoryFilePath{ projectFolder };
             memoryFilePath /= "Registry";
@@ -555,8 +553,6 @@ namespace AZ
                 rapidjson::Value(descriptor.m_reservedOS), memoryDoc.GetAllocator());
             memoryDoc.AddMember(rapidjson::StringRef("reservedDebug"),
                 rapidjson::Value(descriptor.m_reservedDebug), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("enableDrilling"),
-                rapidjson::Value(descriptor.m_enableDrilling), memoryDoc.GetAllocator());
             documents.emplace_back(AZStd::move(memoryFilePath.Native()), AZStd::move(memoryDoc));
             
             return true;

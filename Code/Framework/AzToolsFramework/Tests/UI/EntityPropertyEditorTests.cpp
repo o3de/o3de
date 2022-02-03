@@ -36,11 +36,6 @@ namespace UnitTest
         : public ComponentApplication
     {
     public:
-        void SetExecutableFolder(const char* path)
-        {
-            m_exeDirectory = path;
-        }
-
         void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations) override
         {
             ComponentApplication::SetSettingsRegistrySpecializations(specializations);
@@ -58,7 +53,6 @@ namespace UnitTest
 
         ToolsApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        desc.m_enableDrilling = false;
         ToolsApplication::StartupParameters startupParams;
         startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
 
@@ -249,7 +243,6 @@ namespace UnitTest
         // These are required by implementing the EditorRequestBus
         void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) override {}
         int GetIconTextureIdFromEntityIconPath([[maybe_unused]] const AZStd::string& entityIconPath) override { return 0; }
-        bool DisplayHelpersVisible() override { return false; }
 
     public:
         EntityPropertyEditor* m_levelEditor;

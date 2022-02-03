@@ -1,5 +1,5 @@
 { 
-    "Source" : "ReflectionProbeStencil",
+    "Source" : "ReflectionProbeStencil.azsl",
 
     "RasterState" :
     {

@@ -143,7 +143,7 @@ namespace AZ
                 arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
             }
 
-            AtomToolsFramework::LaunchTool("MaterialEditor", AZ_TRAIT_OS_EXECUTABLE_EXTENSION, arguments);
+            AtomToolsFramework::LaunchTool("MaterialEditor", arguments);
         }
 
         void EditorMaterialSystemComponent::OpenMaterialInspector(
@@ -194,6 +194,9 @@ namespace AZ
                           AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath), propertyOverrides),
                       [entityId, materialAssignmentId]()
                       {
+                          AZ_UNUSED(entityId);
+                          AZ_UNUSED(materialAssignmentId);
+
                           AZ_Warning(
                               "EditorMaterialSystemComponent", false, "RenderMaterialPreview capture failed for entity %s slot %s.",
                               entityId.ToString().c_str(), materialAssignmentId.ToString().c_str());

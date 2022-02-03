@@ -76,6 +76,7 @@ namespace AzToolsFramework
 {
     class EditorEntityAPI;
     class EditorEntityUiInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace AssetBrowser
     {
@@ -164,7 +165,6 @@ private:
     void InstantiateSliceFromAssetId(const AZ::Data::AssetId& assetId) override;
     void ClearRedoStack() override;
     int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override;
-    bool DisplayHelpersVisible() override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -233,6 +233,7 @@ private:
     }
 
     AZStd::string GetComponentEditorIcon(const AZ::Uuid& componentType, AZ::Component* component) override;
+    AZStd::string GetComponentTypeEditorIcon(const AZ::Uuid& componentType) override;
     AZStd::string GetComponentIconPath(const AZ::Uuid& componentType, AZ::Crc32 componentIconAttrib, AZ::Component* component) override;
 
     //////////////////////////////////////////////////////////////////////////
@@ -294,6 +295,7 @@ private:
     AzToolsFramework::EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
     AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
     AzToolsFramework::EditorEntityAPI* m_editorEntityAPI = nullptr;
+    AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 
     // Overrides UI styling and behavior for Layer Entities
     AzToolsFramework::LayerUiHandler m_layerUiOverrideHandler;
@@ -305,19 +307,13 @@ class CToolsApplicationUndoLink
 {
 public:
 
-    CToolsApplicationUndoLink(const char* description)
-        : m_description(description)
+    CToolsApplicationUndoLink()
     {
     }
 
     int GetSize() override
     {
         return 0;
-    }
-
-    QString GetDescription() override
-    {
-        return m_description.c_str();
     }
 
     void Undo(bool bUndo = true) override
@@ -353,8 +349,6 @@ public:
             w->setFocus(Qt::OtherFocusReason);
         }
     }
-
-    AZStd::string m_description;
 };
 
 #endif // CRYINCLUDE_COMPONENTENTITYEDITORPLUGIN_SANDBOXINTEGRATION_H

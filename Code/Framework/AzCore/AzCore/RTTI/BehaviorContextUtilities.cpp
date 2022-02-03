@@ -117,9 +117,9 @@ namespace AZ
 
         if (!explicitOverloads.m_overloads.empty())
         {
-            for (auto methodAndClass : explicitOverloads.m_overloads)
+            for (const auto& methodAndClass : explicitOverloads.m_overloads)
             {
-                overloads.push_back({ methodAndClass.first, methodAndClass.second });
+                overloads.emplace_back(methodAndClass.first, methodAndClass.second);
             }
         }
         else
@@ -128,7 +128,7 @@ namespace AZ
 
             do
             {
-                overloads.push_back({ overload, behaviorClass });
+                overloads.emplace_back(overload, behaviorClass);
                 overload = overload->m_overload;
             }
             while (overload);

@@ -107,4 +107,13 @@ namespace AZ::Render
             GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), esmExponent);
         }
     }
+
+    void SphereLightDelegate::SetNormalShadowBias(float bias)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetNormalShadowBias(GetLightHandle(), bias);
+        }
+    }
+
 } // namespace AZ::Render

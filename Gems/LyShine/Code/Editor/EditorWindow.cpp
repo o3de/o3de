@@ -8,6 +8,7 @@
 #include "EditorCommon.h"
 #include "CanvasHelpers.h"
 #include "AssetDropHelpers.h"
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -314,7 +315,7 @@ EditorWindow::~EditorWindow()
     // unload the preview mode canvas if it exists (e.g. if we close the editor window while in preview mode)
     if (m_previewModeCanvasEntityId.IsValid())
     {
-        gEnv->pLyShine->ReleaseCanvas(m_previewModeCanvasEntityId, false);
+        AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_previewModeCanvasEntityId, false);
     }
 
     delete m_sliceLibraryTree;
@@ -563,7 +564,7 @@ bool EditorWindow::OnPreWarning(const char* /*window*/, const char* /*fileName*/
 
 void EditorWindow::DestroyCanvas(const UiCanvasMetadata& canvasMetadata)
 {
-    gEnv->pLyShine->ReleaseCanvas(canvasMetadata.m_canvasEntityId, true);
+    AZ::Interface<ILyShine>::Get()->ReleaseCanvas(canvasMetadata.m_canvasEntityId, true);
 }
 
 bool EditorWindow::IsCanvasTabMetadataValidForTabIndex(int index)
@@ -697,14 +698,35 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
         else if (recentFiles.size() > 0)
         {
             dir = Path::GetPath(recentFiles.front());
-            dir.append(canvasMetadata.m_canvasDisplayName.c_str());
         }
         // Else go to the default canvas directory
         else
         {
             dir = FileHelpers::GetAbsoluteDir(UICANVASEDITOR_CANVAS_DIRECTORY);
-            dir.append(canvasMetadata.m_canvasDisplayName.c_str());
         }
+
+        // Make sure the directory exists. If not, walk up the directory path until we find one that does
+        // so that we will have a consistent 'starting folder' in the 'AzQtComponents::FileDialog::GetSaveFileName' call
+        // across different platforms. 
+        AZ::IO::FixedMaxPath dirPath(dir.toUtf8().constData());
+
+        while (!AZ::IO::SystemFile::IsDirectory(dirPath.c_str()))
+        {
+            AZ::IO::PathView parentPath = dirPath.ParentPath();
+            if (parentPath == dirPath)
+            {
+                // We've reach the root path, need to break out whether or not
+                // the root path exists
+                break;
+            }
+            else
+            {
+                dirPath = parentPath;
+            }
+        }
+        // Append the default filename
+        dirPath /= canvasMetadata.m_canvasDisplayName;
+        dir = QString::fromUtf8(dirPath.c_str(), static_cast<int>(dirPath.Native().size()));
 
         QString filename = AzQtComponents::FileDialog::GetSaveFileName(nullptr,
             QString(),
@@ -928,14 +950,14 @@ bool EditorWindow::LoadCanvas(const QString& canvasFilename, bool autoLoad, bool
     bool errorsOnLoad = false;
     if (canvasFilename.isEmpty())
     {
-        canvasEntityId = gEnv->pLyShine->CreateCanvasInEditor(entityContext);
+        canvasEntityId = AZ::Interface<ILyShine>::Get()->CreateCanvasInEditor(entityContext);
     }
     else
     {
         // Collect errors and warnings during the canvas load
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
-        canvasEntityId = gEnv->pLyShine->LoadCanvasInEditor(assetIdPathname.c_str(), sourceAssetPathName.c_str(), entityContext);
+        canvasEntityId = AZ::Interface<ILyShine>::Get()->LoadCanvasInEditor(assetIdPathname.c_str(), sourceAssetPathName.c_str(), entityContext);
 
         // Stop receiving error and warning events
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
@@ -1581,7 +1603,7 @@ void EditorWindow::ToggleEditorMode()
             EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_previewModeCanvasEntityId);
             if (entity)
             {
-                gEnv->pLyShine->ReleaseCanvas(m_previewModeCanvasEntityId, false);
+                AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_previewModeCanvasEntityId, false);
             }
             m_previewModeCanvasEntityId.SetInvalid();
         }

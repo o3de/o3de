@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionComposite",
+    "Source" : "ReflectionComposite.azsl",
 
     "RasterState" :
     {

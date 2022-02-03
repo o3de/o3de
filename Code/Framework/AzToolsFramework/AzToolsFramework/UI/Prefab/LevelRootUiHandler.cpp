@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
 
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 
@@ -91,5 +92,17 @@ namespace AzToolsFramework
         // Draw border at the bottom
         painter->drawLine(rect.bottomLeft(), rect.bottomRight());
         painter->restore();
+    }
+
+    bool LevelRootUiHandler::OnEntityDoubleClick(AZ::EntityId entityId) const
+    {
+        if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+            !prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+        }
+
+        // Don't propagate event.
+        return true;
     }
 }

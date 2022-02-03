@@ -1,0 +1,752 @@
+{
+    "entries": [
+        {
+            "base": "PythonEditorBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Python Editor"
+            },
+            "methods": [
+                {
+                    "base": "ExecuteCommand",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ExecuteCommand"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ExecuteCommand is invoked"
+                    },
+                    "details": {
+                        "name": "ExecuteCommand"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCVar",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCVar"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCVar is invoked"
+                    },
+                    "details": {
+                        "name": "GetCVar"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsInSimulationMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsInSimulationMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsInSimulationMode is invoked"
+                    },
+                    "details": {
+                        "name": "IsInSimulationMode"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAxisConstraint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAxisConstraint"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAxisConstraint is invoked"
+                    },
+                    "details": {
+                        "name": "SetAxisConstraint"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsInGameMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsInGameMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsInGameMode is invoked"
+                    },
+                    "details": {
+                        "name": "IsInGameMode"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetCVarFromFloat",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCVarFromFloat"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCVarFromFloat is invoked"
+                    },
+                    "details": {
+                        "name": "SetCVarFromFloat"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MessageBoxYesNo",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MessageBoxYesNo"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MessageBoxYesNo is invoked"
+                    },
+                    "details": {
+                        "name": "MessageBoxYesNo"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Redo",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Redo"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Redo is invoked"
+                    },
+                    "details": {
+                        "name": "Redo"
+                    }
+                },
+                {
+                    "base": "SetCVarFromInteger",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCVarFromInteger"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCVarFromInteger is invoked"
+                    },
+                    "details": {
+                        "name": "SetCVarFromInteger"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DrawLabel",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DrawLabel"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DrawLabel is invoked"
+                    },
+                    "details": {
+                        "name": "DrawLabel"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Undo",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Undo"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Undo is invoked"
+                    },
+                    "details": {
+                        "name": "Undo"
+                    }
+                },
+                {
+                    "base": "Log",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Log"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Log is invoked"
+                    },
+                    "details": {
+                        "name": "Log"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ComboBox",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ComboBox"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ComboBox is invoked"
+                    },
+                    "details": {
+                        "name": "ComboBox"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExitGameMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ExitGameMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ExitGameMode is invoked"
+                    },
+                    "details": {
+                        "name": "ExitGameMode"
+                    }
+                },
+                {
+                    "base": "OpenFileBox",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke OpenFileBox"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after OpenFileBox is invoked"
+                    },
+                    "details": {
+                        "name": "OpenFileBox"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MessageBoxOk",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MessageBoxOk"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MessageBoxOk is invoked"
+                    },
+                    "details": {
+                        "name": "MessageBoxOk"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RunFile",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RunFile"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RunFile is invoked"
+                    },
+                    "details": {
+                        "name": "RunFile"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "EditBoxCheckDataType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke EditBoxCheckDataType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after EditBoxCheckDataType is invoked"
+                    },
+                    "details": {
+                        "name": "EditBoxCheckDataType"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "any"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetCVarFromString",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCVarFromString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCVarFromString is invoked"
+                    },
+                    "details": {
+                        "name": "SetCVarFromString"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RunConsole",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RunConsole"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RunConsole is invoked"
+                    },
+                    "details": {
+                        "name": "RunConsole"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExitSimulationMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ExitSimulationMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ExitSimulationMode is invoked"
+                    },
+                    "details": {
+                        "name": "ExitSimulationMode"
+                    }
+                },
+                {
+                    "base": "SetCVar",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCVar"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCVar is invoked"
+                    },
+                    "details": {
+                        "name": "SetCVar"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "any"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPakFromFile",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPakFromFile"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPakFromFile is invoked"
+                    },
+                    "details": {
+                        "name": "GetPakFromFile"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{88E0A40F-3085-4CAB-8B11-EF5A2659C71A}",
+                            "details": {
+                                "name": "AZ::IO::Path"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RunFileParameters",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RunFileParameters"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RunFileParameters is invoked"
+                    },
+                    "details": {
+                        "name": "RunFileParameters"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "EnterSimulationMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke EnterSimulationMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after EnterSimulationMode is invoked"
+                    },
+                    "details": {
+                        "name": "EnterSimulationMode"
+                    }
+                },
+                {
+                    "base": "GetAxisConstraint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAxisConstraint"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAxisConstraint is invoked"
+                    },
+                    "details": {
+                        "name": "GetAxisConstraint"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "EnterGameMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke EnterGameMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after EnterGameMode is invoked"
+                    },
+                    "details": {
+                        "name": "EnterGameMode"
+                    }
+                },
+                {
+                    "base": "MessageBoxOkCancel",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MessageBoxOkCancel"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MessageBoxOkCancel is invoked"
+                    },
+                    "details": {
+                        "name": "MessageBoxOkCancel"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "EditBox",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke EditBox"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after EditBox is invoked"
+                    },
+                    "details": {
+                        "name": "EditBox"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

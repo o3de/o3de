@@ -356,7 +356,6 @@ namespace Vegetation
         AreaSystemRequestBus::Handler::BusConnect();
         GradientSignal::SectorDataRequestBus::Handler::BusConnect();
         SystemConfigurationRequestBus::Handler::BusConnect();
-        InstanceStatObjEventBus::Handler::BusConnect();
         CrySystemEventBus::Handler::BusConnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
@@ -378,7 +377,6 @@ namespace Vegetation
         AreaSystemRequestBus::Handler::BusDisconnect();
         GradientSignal::SectorDataRequestBus::Handler::BusDisconnect();
         SystemConfigurationRequestBus::Handler::BusDisconnect();
-        InstanceStatObjEventBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
@@ -1101,7 +1099,7 @@ namespace Vegetation
         // 0 = lower left corner, 0.5 = center
         const float texelOffset = (sectorPointSnapMode == SnapMode::Center) ? 0.5f : 0.0f;
 
-        SurfaceData::SurfacePointListPerPosition availablePointsPerPosition;
+        SurfaceData::SurfacePointLists availablePointsPerPosition;
         AZ::Vector2 stepSize(vegStep, vegStep);
         AZ::Vector3 regionOffset(texelOffset * vegStep, texelOffset * vegStep, 0.0f);
         AZ::Aabb regionBounds = sectorInfo.m_bounds;
@@ -1129,7 +1127,7 @@ namespace Vegetation
         uint claimIndex = 0;
         for (auto& availablePoints : availablePointsPerPosition)
         {
-            for (auto& surfacePoint : availablePoints.second)
+            for (auto& surfacePoint : availablePoints)
             {
                 sectorInfo.m_baseContext.m_availablePoints.push_back();
                 ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();

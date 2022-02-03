@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "SPHERE",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Sphere",
+                "category": "Constants/White Box"
+            },
+            "methods": [
+                {
+                    "base": "GetSPHERE",
+                    "details": {
+                        "name": "Sphere"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -32,7 +32,6 @@ namespace AZ
     namespace RPI
     {
         class Scene;
-        struct TickTimeInfo;
         class ShaderResourceGroup;
         class AnyAsset;
         class WindowContext;
@@ -203,7 +202,7 @@ namespace AZ
             void OnRemovedFromScene(Scene* scene);
 
             // Called when this pipeline is about to be rendered
-            void OnStartFrame(const TickTimeInfo& tick);
+            void OnStartFrame(float time);
 
             // Called when the rendering of current frame is finished.
             void OnFrameEnd();

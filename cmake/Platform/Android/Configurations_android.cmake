@@ -12,6 +12,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     include(cmake/Platform/Common/Configurations_common.cmake)
     include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
 
+    set(_android_api_define)
+    if(${LY_TOOLCHAIN_NDK_PKG_MAJOR} VERSION_LESS "23")
+        set(_android_api_define __ANDROID_API__=${LY_TOOLCHAIN_NDK_API_LEVEL})
+    endif()
+
     ly_append_configurations_options(
         DEFINES
             LINUX64
@@ -22,9 +27,9 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             MOBILE
             _HAS_C9X
             ENABLE_TYPE_INFO
-            __ANDROID_API__=${LY_TOOLCHAIN_NDK_API_LEVEL}
             NDK_REV_MAJOR=${LY_TOOLCHAIN_NDK_PKG_MAJOR}
             NDK_REV_MINOR=${LY_TOOLCHAIN_NDK_PKG_MINOR}
+            ${_android_api_define}
 
         COMPILATION
             -femulated-tls           # All accesses to TLS variables are converted to calls to __emutls_get_address in the runtime library

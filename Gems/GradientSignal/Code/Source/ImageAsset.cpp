@@ -24,6 +24,7 @@ namespace
     float RetrieveValue(const AZ::u8* mem,  size_t index)
     {
         AZ_Assert(false, "Unimplemented!");
+        return 0.0f;
     }
 
     template <>
@@ -153,8 +154,6 @@ namespace GradientSignal
 
     float GetValueFromImageAsset(const AZ::Data::Asset<ImageAsset>& imageAsset, const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue)
     {
-        AZ_PROFILE_FUNCTION(Entity);
-
         if (imageAsset.IsReady())
         {
             const auto& image = imageAsset.Get();

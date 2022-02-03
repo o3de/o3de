@@ -1,0 +1,1015 @@
+<ObjectStream version="3">
+	<Class name="DebugSceneGraph" type="{375F6558-5709-409F-881E-8ED575D56C92}">
+		<Class name="int" field="Version" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+		<Class name="AZStd::string" field="ProductName" value="multiple_mesh_one_material.dbgsg" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		<Class name="AZStd::string" field="SceneName" value="multiple_mesh_one_material" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+		<Class name="AZStd::vector" field="Nodes" type="{B4EFFB02-9EAA-546C-AF53-D5F3D2D771FF}">
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="RootNode" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="RootBoneData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="Cube_1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Positions - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Positions - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="8661923109306356285" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Normals - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Normals - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="5807525742165000561" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceList - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="12" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceList - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="9888799799190757436" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceMaterialIds - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="12" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceMaterialIds - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="7110546404675862471" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="Cube_2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="BoneData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="100.0000000 0.0000000 0.0000000 0.0000000 -0.0000163 100.0000000 0.0000000 -100.0000000 -0.0000163 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="Cube_1_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Positions - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Positions - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="8661923109306356285" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Normals - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Normals - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="5807525742165000561" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceList - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="12" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceList - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="9888799799190757436" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceMaterialIds - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="12" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceMaterialIds - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="7110546404675862471" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="Cylinder_1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Positions - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Positions - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="1283526254311745349" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Normals - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Normals - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="1873340970602844856" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceList - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="124" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceList - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="3728991722746136013" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceMaterialIds - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="124" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceMaterialIds - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="2372486708814455910" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="Cylinder_2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_2" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="BoneData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="WorldTransform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="100.0000000 0.0000000 0.0000000 0.0000000 -0.0000163 100.0000000 0.0000000 -100.0000000 -0.0000163 -4.3884821 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="Cylinder_1_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1_optimized" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Positions - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Positions - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="7921557352486854444" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Normals - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Normals - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="1873340970602844856" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceList - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="124" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceList - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="18311637590974204568" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceMaterialIds - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="124" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="FaceMaterialIds - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="2372486708814455910" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="100.0000000 0.0000000 0.0000000 0.0000000 -0.0000163 100.0000000 0.0000000 -100.0000000 -0.0000163 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="1622169145591646736" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1.SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="MaterialName" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZStd::string" field="m_data" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UniqueId" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="14432700632681398127" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="IsNoDraw" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="DiffuseColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="SpecularColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="EmissiveColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Opacity" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="1.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexTangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Tangents - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Tangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="13438447437797057049" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="SetIndex" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexBitangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Bitangents - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Bitangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="11372562338897179017" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_2.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="100.0000000 0.0000000 0.0000000 0.0000000 -0.0000163 100.0000000 0.0000000 -100.0000000 -0.0000163 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_2.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="1622169145591646736" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_2.SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="MaterialName" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZStd::string" field="m_data" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UniqueId" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="14432700632681398127" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="IsNoDraw" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="DiffuseColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="SpecularColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="EmissiveColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Opacity" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="1.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1_optimized.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="1622169145591646736" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1_optimized.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexTangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Tangents - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Tangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="13438447437797057049" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="SetIndex" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1_optimized.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexBitangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Bitangents - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="24" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Bitangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="11372562338897179017" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="100.0000000 0.0000000 0.0000000 0.0000000 -0.0000163 100.0000000 0.0000000 -100.0000000 -0.0000163 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cube.Cube_1_optimized.SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="MaterialName" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZStd::string" field="m_data" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UniqueId" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="14432700632681398127" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="IsNoDraw" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="DiffuseColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="SpecularColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="EmissiveColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Opacity" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="1.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="100.0000000 0.0000000 0.0000000 0.0000000 -0.0000163 100.0000000 0.0000000 -100.0000000 -0.0000163 -4.3884821 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="27253578623892681" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1.SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="MaterialName" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZStd::string" field="m_data" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UniqueId" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="14432700632681398127" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="IsNoDraw" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="DiffuseColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="SpecularColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="EmissiveColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Opacity" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="1.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexTangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Tangents - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Tangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="11165448242141781141" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="SetIndex" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexBitangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Bitangents - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Bitangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="7987814487334449536" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_2.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="100.0000000 0.0000000 0.0000000 0.0000000 -0.0000163 100.0000000 0.0000000 -100.0000000 -0.0000163 -4.3884821 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_2.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="27253578623892681" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_2.SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="MaterialName" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZStd::string" field="m_data" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UniqueId" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="14432700632681398127" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="IsNoDraw" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="DiffuseColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="SpecularColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="EmissiveColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Opacity" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="1.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1_optimized.UVMap" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexUVData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UVs - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="13790301632763350589" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1_optimized.TangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexTangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Tangents - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Tangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="7293001660047850407" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="SetIndex" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1_optimized.BitangentSet_0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MeshVertexBitangentData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Bitangents - Count" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="192" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Bitangents - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="2874689498270494796" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="100.0000000 0.0000000 0.0000000 0.0000000 -0.0000163 100.0000000 0.0000000 -100.0000000 -0.0000163 -4.3884821 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.Cylinder.Cylinder_1_optimized.SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="MaterialData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="MaterialName" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZStd::string" field="m_data" value="SingleMaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="UniqueId" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::u64" field="m_data" value="14432700632681398127" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="IsNoDraw" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="DiffuseColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="SpecularColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.8140485 0.8140485 0.8140485" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="EmissiveColor" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Vector3" field="m_data" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Opacity" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="1.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="double" field="m_data" value="25.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

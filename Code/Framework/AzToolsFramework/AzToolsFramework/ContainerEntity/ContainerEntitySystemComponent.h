@@ -47,6 +47,7 @@ namespace AzToolsFramework
         ContainerEntityOperationResult SetContainerOpen(AZ::EntityId entityId, bool open) override;
         bool IsContainerOpen(AZ::EntityId entityId) const override;
         AZ::EntityId FindHighestSelectableEntity(AZ::EntityId entityId) const override;
+        void RefreshAllContainerEntities(AzFramework::EntityContextId entityContextId) const override;
         ContainerEntityOperationResult Clear(AzFramework::EntityContextId entityContextId) override;
         bool IsUnderClosedContainerEntity(AZ::EntityId entityId) const override;
 

@@ -1,0 +1,317 @@
+{
+    "entries": [
+        {
+            "base": "AWSGameLiftSearchSessionsRequest",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Search Sessions Request",
+                "category": "AWS Game Lift"
+            },
+            "methods": [
+                {
+                    "base": "GetLocation",
+                    "details": {
+                        "name": "Get Location"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{864C91C0-CA53-4585-BF07-066C0DF3E198}",
+                            "details": {
+                                "name": "AWS Game Lift Search Sessions Request"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Location"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLocation",
+                    "details": {
+                        "name": "Set Location"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{864C91C0-CA53-4585-BF07-066C0DF3E198}",
+                            "details": {
+                                "name": "AWS Game Lift Search Sessions Request"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Location"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFleetId",
+                    "details": {
+                        "name": "Get Fleet Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{864C91C0-CA53-4585-BF07-066C0DF3E198}",
+                            "details": {
+                                "name": "AWS Game Lift Search Sessions Request"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Fleet Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFleetId",
+                    "details": {
+                        "name": "Set Fleet Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{864C91C0-CA53-4585-BF07-066C0DF3E198}",
+                            "details": {
+                                "name": "AWS Game Lift Search Sessions Request"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Fleet Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNextToken",
+                    "details": {
+                        "name": "Get Next Token"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B49207A8-8549-4ADB-B7D9-D7A4932F9B4B}",
+                            "details": {
+                                "name": "Search Sessions Request",
+                                "tooltip": "The container for SearchSessions request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Next Token"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNextToken",
+                    "details": {
+                        "name": "Set Next Token"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B49207A8-8549-4ADB-B7D9-D7A4932F9B4B}",
+                            "details": {
+                                "name": "Search Sessions Request",
+                                "tooltip": "The container for SearchSessions request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Next Token"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSortExpression",
+                    "details": {
+                        "name": "Get Sort Expression"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B49207A8-8549-4ADB-B7D9-D7A4932F9B4B}",
+                            "details": {
+                                "name": "Search Sessions Request",
+                                "tooltip": "The container for SearchSessions request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sort Expression"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSortExpression",
+                    "details": {
+                        "name": "Set Sort Expression"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B49207A8-8549-4ADB-B7D9-D7A4932F9B4B}",
+                            "details": {
+                                "name": "Search Sessions Request",
+                                "tooltip": "The container for SearchSessions request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sort Expression"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAliasId",
+                    "details": {
+                        "name": "Get Alias Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{864C91C0-CA53-4585-BF07-066C0DF3E198}",
+                            "details": {
+                                "name": "AWS Game Lift Search Sessions Request"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Alias Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAliasId",
+                    "details": {
+                        "name": "Set Alias Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{864C91C0-CA53-4585-BF07-066C0DF3E198}",
+                            "details": {
+                                "name": "AWS Game Lift Search Sessions Request"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Alias Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFilterExpression",
+                    "details": {
+                        "name": "Get Filter Expression"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B49207A8-8549-4ADB-B7D9-D7A4932F9B4B}",
+                            "details": {
+                                "name": "Search Sessions Request",
+                                "tooltip": "The container for SearchSessions request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Filter Expression"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFilterExpression",
+                    "details": {
+                        "name": "Set Filter Expression"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B49207A8-8549-4ADB-B7D9-D7A4932F9B4B}",
+                            "details": {
+                                "name": "Search Sessions Request",
+                                "tooltip": "The container for SearchSessions request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Filter Expression"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaxResult",
+                    "details": {
+                        "name": "Get Max Result"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B49207A8-8549-4ADB-B7D9-D7A4932F9B4B}",
+                            "details": {
+                                "name": "Search Sessions Request",
+                                "tooltip": "The container for SearchSessions request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "Max Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetMaxResult",
+                    "details": {
+                        "name": "Set Max Result"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B49207A8-8549-4ADB-B7D9-D7A4932F9B4B}",
+                            "details": {
+                                "name": "Search Sessions Request",
+                                "tooltip": "The container for SearchSessions request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "Max Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

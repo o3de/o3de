@@ -112,6 +112,9 @@ namespace AZ
             //! Returns true if Pix dll is loaded
             static bool IsPixModuleLoaded();
 
+            //! Returns true if Pix GPU events should be emitted
+            static bool PixGpuEventsEnabled();
+
             //! Returns true if Warp is enabled
             static bool UsingWarpDevice();
 

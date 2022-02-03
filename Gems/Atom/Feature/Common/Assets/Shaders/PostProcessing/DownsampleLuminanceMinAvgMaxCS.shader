@@ -1,5 +1,5 @@
 {
-    "Source": "DownsampleLuminanceMinAvgMaxCS",
+    "Source": "DownsampleLuminanceMinAvgMaxCS.azsl",
 
     "ProgramSettings":
     {

@@ -12,8 +12,6 @@
 #include <RHI/Image.h>
 #include <RHI/ResourcePoolResolver.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 // NOTE: Tiled resources are currently disabled, because RenderDoc does not support them.
 // #define AZ_RHI_USE_TILED_RESOURCES
 
@@ -121,7 +119,7 @@ namespace AZ
 
         D3D12_RESOURCE_ALLOCATION_INFO StreamingImagePool::GetAllocationInfo(const RHI::ImageDescriptor& imageDescriptor, uint32_t residentMipLevel)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             uint32_t alignment = GetFormatDimensionAlignment(imageDescriptor.m_format);
 
@@ -138,9 +136,7 @@ namespace AZ
 
         RHI::ResultCode StreamingImagePool::InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
         {
-            AZ_TRACE_METHOD();
-
-
+            AZ_PROFILE_FUNCTION(RHI);
 
 #ifdef AZ_RHI_USE_TILED_RESOURCES
             {
@@ -232,7 +228,7 @@ namespace AZ
 
         void StreamingImagePool::AllocatePackedImageTiles(Image& image)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             AZ_Assert(image.IsTiled(), "This method is only valid for tiled resources.");
             AZ_Assert(image.GetDescriptor().m_arraySize == 1, "Not implemented for image arrays.");
@@ -305,7 +301,7 @@ namespace AZ
 
         RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             Image& image = static_cast<Image&>(*request.m_image);
 

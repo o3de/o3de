@@ -16,7 +16,6 @@
 #include "SerializeXMLReader.h"
 #include "SerializeXMLWriter.h"
 
-#include "XMLBinaryWriter.h"
 #include "XMLBinaryReader.h"
 
 #include <md5.h>
@@ -79,22 +78,16 @@ void GetMD5(const char* pSrcBuffer, int nSrcSize, char signatureMD5[16])
 }
 
 //////////////////////////////////////////////////////////////////////////
-class CXmlSerializer
-    : public IXmlSerializer
+class CXmlSerializer final : public IXmlSerializer
 {
 public:
-    CXmlSerializer()
-        : m_nRefCount(0)
-        , m_pReaderImpl(nullptr)
-        , m_pReaderSer(nullptr)
-        , m_pWriterSer(nullptr)
-        , m_pWriterImpl(nullptr)
-    {
-    }
+    CXmlSerializer() = default;
+
     ~CXmlSerializer()
     {
         ClearAll();
     }
+
     void ClearAll()
     {
         SAFE_DELETE(m_pReaderSer);
@@ -104,7 +97,11 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////
-    void AddRef() override { ++m_nRefCount; }
+    void AddRef() override
+    {
+        ++m_nRefCount;
+    }
+
     void Release() override
     {
         if (--m_nRefCount <= 0)
@@ -120,6 +117,7 @@ public:
         m_pWriterSer = new CSimpleSerializeWithDefaults<CSerializeXMLWriterImpl>(*m_pWriterImpl);
         return m_pWriterSer;
     }
+
     ISerialize* GetReader(XmlNodeRef& node) override
     {
         ClearAll();
@@ -130,12 +128,12 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
 private:
-    int m_nRefCount;
-    CSerializeXMLReaderImpl* m_pReaderImpl;
-    CSimpleSerializeWithDefaults<CSerializeXMLReaderImpl>* m_pReaderSer;
+    int m_nRefCount = 0;
+    CSerializeXMLReaderImpl* m_pReaderImpl = nullptr;
+    CSimpleSerializeWithDefaults<CSerializeXMLReaderImpl>* m_pReaderSer = nullptr;
 
-    CSerializeXMLWriterImpl* m_pWriterImpl;
-    CSimpleSerializeWithDefaults<CSerializeXMLWriterImpl>* m_pWriterSer;
+    CSerializeXMLWriterImpl* m_pWriterImpl = nullptr;
+    CSimpleSerializeWithDefaults<CSerializeXMLWriterImpl>* m_pWriterSer = nullptr;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -145,8 +143,7 @@ IXmlSerializer* CXmlUtils::CreateXmlSerializer()
 }
 
 //////////////////////////////////////////////////////////////////////////
-class CXmlBinaryDataWriterFile
-    : public XMLBinary::IDataWriter
+class CXmlBinaryDataWriterFile final : public XMLBinary::IDataWriter
 {
 public:
     CXmlBinaryDataWriterFile(const char* file)
@@ -177,8 +174,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-class CXmlTableReader
-    : public IXmlTableReader
+class CXmlTableReader final : public IXmlTableReader
 {
 public:
     CXmlTableReader();

@@ -209,7 +209,6 @@ namespace EMotionFX
                     ->Event("GetJointTransform", &ActorComponentRequestBus::Events::GetJointTransform)
                     ->Event("AttachToEntity", &ActorComponentRequestBus::Events::AttachToEntity)
                     ->Event("DetachFromEntity", &ActorComponentRequestBus::Events::DetachFromEntity)
-                    ->Event("DebugDrawRoot", &ActorComponentRequestBus::Events::DebugDrawRoot)
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
                     ->Event("SetRenderCharacter", &ActorComponentRequestBus::Events::SetRenderCharacter)
                     ->Event("GetRenderActorVisible", &ActorComponentRequestBus::Events::GetRenderActorVisible)
@@ -238,8 +237,7 @@ namespace EMotionFX
 
         //////////////////////////////////////////////////////////////////////////
         ActorComponent::ActorComponent(const Configuration* configuration)
-            : m_debugDrawRoot(false)
-            , m_sceneFinishSimHandler([this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+            : m_sceneFinishSimHandler([this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
                 float fixedDeltatime)
                 {
                     if (m_actorInstance)
@@ -252,6 +250,8 @@ namespace EMotionFX
             {
                 m_configuration = *configuration;
             }
+
+            m_debugRenderFlags[RENDER_SOLID] = true;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -342,12 +342,6 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void ActorComponent::DebugDrawRoot(bool enable)
-        {
-            m_debugDrawRoot = enable;
-        }
-
-        //////////////////////////////////////////////////////////////////////////
         bool ActorComponent::GetRenderCharacter() const
         {
             return m_configuration.m_renderCharacter;
@@ -398,6 +392,11 @@ namespace EMotionFX
         bool ActorComponent::IsPhysicsSceneSimulationFinishEventConnected() const
         {
             return m_sceneFinishSimHandler.IsConnected();
+        }
+
+        void ActorComponent::SetRenderFlag(ActorRenderFlagBitset renderFlags)
+        {
+            m_debugRenderFlags = renderFlags;
         }
 
         void ActorComponent::CheckActorCreation()
@@ -573,13 +572,13 @@ namespace EMotionFX
                     m_actorInstance->SetIsVisible(isInCameraFrustum && m_configuration.m_renderCharacter);
                 }
 
-                RenderActorInstance::DebugOptions debugOptions;
-                debugOptions.m_drawAABB = m_configuration.m_renderBounds;
-                debugOptions.m_drawSkeleton = m_configuration.m_renderSkeleton;
-                debugOptions.m_drawRootTransform = m_debugDrawRoot;
-                debugOptions.m_rootWorldTransform = GetEntity()->GetTransform()->GetWorldTM();
-                debugOptions.m_emfxDebugDraw = true;
-                m_renderActorInstance->DebugDraw(debugOptions);
+                m_renderActorInstance->SetIsVisible(m_debugRenderFlags[RENDER_SOLID]);
+
+                // The configuration stores some debug option. When that is enabled, we override it on top of the render flags.
+                m_debugRenderFlags[RENDER_AABB] = m_debugRenderFlags[RENDER_AABB] || m_configuration.m_renderBounds;
+                m_debugRenderFlags[RENDER_LINESKELETON] = m_debugRenderFlags[RENDER_LINESKELETON] || m_configuration.m_renderSkeleton;
+                m_debugRenderFlags[RENDER_EMFX_DEBUG] = true;
+                m_renderActorInstance->DebugDraw(m_debugRenderFlags);
             }
         }
 

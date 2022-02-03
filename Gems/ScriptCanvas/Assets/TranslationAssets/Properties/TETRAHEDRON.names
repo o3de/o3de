@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "TETRAHEDRON",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Tetrahedron",
+                "category": "Constants/White Box"
+            },
+            "methods": [
+                {
+                    "base": "GetTETRAHEDRON",
+                    "details": {
+                        "name": "Tetrahedron"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

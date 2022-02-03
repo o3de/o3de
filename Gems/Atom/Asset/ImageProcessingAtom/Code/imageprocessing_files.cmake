@@ -103,8 +103,6 @@ set(FILES
     Source/Converters/ConvertPixelFormat.cpp
     Source/Converters/Cubemap.h
     Source/Converters/Cubemap.cpp
-    Source/Converters/ColorChart.cpp
-    Source/Converters/HighPass.cpp
     Source/Converters/Histogram.cpp
     Source/Converters/Histogram.h
     ../External/CubeMapGen/CBBoxInt32.cpp

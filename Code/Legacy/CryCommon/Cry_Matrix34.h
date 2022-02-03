@@ -799,11 +799,6 @@ struct Matrix34_tpl
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef Matrix34_tpl<f32>  Matrix34; //always 32 bit
-#if AZ_COMPILER_MSVC
-    typedef __declspec(align(16)) Matrix34_tpl<f32> Matrix34A;
-#elif AZ_COMPILER_CLANG
-    typedef Matrix34_tpl<f32> __attribute__((aligned(16))) Matrix34A;
-#endif
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

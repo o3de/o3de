@@ -81,10 +81,10 @@ partial ShaderResourceGroup ViewSrg
         uint m_shadowmapArraySlice; // array slice who has shadowmap in the atlas.
         uint m_shadowFilterMethod; 
         float m_boundaryScale;
-        uint m_predictionSampleCount;
         uint m_filteringSampleCount;
         float2 m_unprojectConstants;
         float m_bias;
+        float m_normalShadowBias;
         float m_esmExponent;
         float3 m_padding;
     };
@@ -109,7 +109,7 @@ partial ShaderResourceGroup ViewSrg
         uint m_shadowmapSize; // width and height of shadowmap
         uint m_cascadeCount;
         float m_shadowBias; 
-        uint m_predictionSampleCount;
+        float m_normalShadowBias; 
         uint m_filteringSampleCount;
         uint m_debugFlags;
         uint m_shadowFilterMethod;

@@ -308,9 +308,11 @@ class TestAndroidLauncher:
     def test_Kill_HappyPath_KillCommandSuccess(self, mock_config, mock_call):
         mock_config.return_value = VALID_ANDROID_CONFIG
         mock_workspace = MockedWorkspace()
-
         launcher = ly_test_tools.launchers.AndroidLauncher(mock_workspace, ["dummy"])
-        launcher.kill()
+
+        # This is a direct call to a protected method, but the point of the test is to ensure functionality of this
+        # protected method, so we will allow this exception
+        launcher._kill()
 
         mock_call.assert_called_once_with(
             ['adb', '-s', VALID_ANDROID_CONFIG['android']['id'], 'shell', 'am', 'force-stop', PACKAGE_NAME])

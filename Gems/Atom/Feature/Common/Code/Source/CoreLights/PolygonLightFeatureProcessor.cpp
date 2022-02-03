@@ -9,8 +9,6 @@
 #include <CoreLights/PolygonLightFeatureProcessor.h>
 #include <CoreLights/LtcCommon.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 

@@ -57,7 +57,6 @@ namespace Multiplayer
         EntityReplicationManager(AzNetworking::IConnection& connection, AzNetworking::IConnectionListener& connectionListener, Mode mode);
         ~EntityReplicationManager() = default;
 
-        void SetRemoteHostId(const HostId& hostId);
         const HostId& GetRemoteHostId() const;
 
         void ActivatePendingEntities();
@@ -151,7 +150,6 @@ namespace Multiplayer
         void ClearRemovedReplicators();
 
         class OrphanedEntityRpcs
-            : public AzNetworking::ITimeoutHandler
         {
         public:
             OrphanedEntityRpcs(EntityReplicationManager& replicationManager);
@@ -160,7 +158,6 @@ namespace Multiplayer
             void AddOrphanedRpc(NetEntityId entityId, NetworkEntityRpcMessage& entityRpcMessage);
             AZStd::size_t Size() const { return m_entityRpcMap.size(); }
         private:
-            AzNetworking::TimeoutResult HandleTimeout(AzNetworking::TimeoutQueue::TimeoutItem& item) override;
             struct OrphanedRpcs
             {
                 OrphanedRpcs() = default;
@@ -204,9 +201,9 @@ namespace Multiplayer
         AZStd::unique_ptr<IReplicationWindow> m_replicationWindow;
         AZStd::unique_ptr<IEntityDomain> m_remoteEntityDomain;
 
-        AZ::TimeMs m_entityActivationTimeSliceMs = AZ::TimeMs{ 0 };
-        AZ::TimeMs m_entityPendingRemovalMs = AZ::TimeMs{ 0 };
-        AZ::TimeMs m_frameTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_entityActivationTimeSliceMs = AZ::Time::ZeroTimeMs;
+        AZ::TimeMs m_entityPendingRemovalMs = AZ::Time::ZeroTimeMs;
+        AZ::TimeMs m_frameTimeMs = AZ::Time::ZeroTimeMs;
         HostId m_remoteHostId = InvalidHostId;
         uint32_t m_maxRemoteEntitiesPendingCreationCount = AZStd::numeric_limits<uint32_t>::max();
         uint32_t m_maxPayloadSize = 0;

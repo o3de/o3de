@@ -43,9 +43,9 @@ namespace AZ::IO
     public:
         using string_view_type = AZStd::string_view;
         using value_type = char;
-        using const_iterator = const PathIterator<PathView>;
+        using const_iterator = PathIterator<const PathView>;
         using iterator = const_iterator;
-        friend PathIterator<PathView>;
+        friend const_iterator;
 
         // constructors and destructor
         constexpr PathView() = default;
@@ -78,7 +78,8 @@ namespace AZ::IO
 
         // native format observers
         //! Returns string_view stored within the PathView
-        constexpr AZStd::string_view Native() const noexcept;
+        constexpr const AZStd::string_view& Native() const noexcept;
+        constexpr AZStd::string_view& Native() noexcept;
         //! Conversion operator to retrieve string_view stored within the PathView
         constexpr explicit operator AZStd::string_view() const noexcept;
 
@@ -318,10 +319,9 @@ namespace AZ::IO
         using value_type = typename StringType::value_type;
         using traits_type = typename StringType::traits_type;
         using string_view_type = AZStd::string_view;
-        using const_iterator = const PathIterator<BasicPath>;
+        using const_iterator = PathIterator<const BasicPath>;
         using iterator = const_iterator;
-        friend PathIterator<BasicPath>;
-        friend struct PathReflection;
+        friend const_iterator;
 
         // constructors and destructor
         constexpr BasicPath() = default;
@@ -484,6 +484,7 @@ namespace AZ::IO
         // as_posix
         //! Replicates the behavior of the Python pathlib as_posix method
         //! by replacing the Windows Path Separator with the Posix Path Seperator
+        constexpr string_type AsPosix() const;
         AZStd::string StringAsPosix() const;
         constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsPosix() const noexcept;
 
@@ -665,6 +666,7 @@ namespace AZ::IO
 namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AZ::IO::Path, "{88E0A40F-3085-4CAB-8B11-EF5A2659C71A}");
+    AZ_TYPE_INFO_SPECIALIZE(AZ::IO::FixedMaxPath, "{FA6CA49F-376A-417C-9767-DD50744DF203}");
 }
 
 namespace AZ::IO
@@ -690,7 +692,7 @@ namespace AZ::IO
         friend PathType;
 
         using iterator_category = AZStd::bidirectional_iterator_tag;
-        using value_type = PathType;
+        using value_type = AZStd::remove_cv_t<PathType>;
         using difference_type = ptrdiff_t;
         using pointer = const value_type*;
         using reference = const value_type&;
@@ -701,8 +703,9 @@ namespace AZ::IO
 
         constexpr PathIterator() = default;
         constexpr PathIterator(const PathIterator&) = default;
-
+        constexpr PathIterator(PathIterator&&) noexcept = default;
         constexpr PathIterator& operator=(const PathIterator&) = default;
+        constexpr PathIterator& operator=(PathIterator&&) noexcept = default;
 
         constexpr reference operator*() const;
 
@@ -731,10 +734,10 @@ namespace AZ::IO
         ParserState m_state{ Singular };
     };
 
-    template <typename PathType1>
-    constexpr bool operator==(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
-    template <typename PathType1>
-    constexpr bool operator!=(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
+    template <typename PathType>
+    constexpr bool operator==(const PathIterator<PathType>& lhs, const PathIterator<PathType>& rhs);
+    template <typename PathType>
+    constexpr bool operator!=(const PathIterator<PathType>& lhs, const PathIterator<PathType>& rhs);
 }
 
 #include <AzCore/IO/Path/Path.inl>

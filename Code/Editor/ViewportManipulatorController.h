@@ -35,12 +35,16 @@ namespace SandboxEditor
     private:
         bool IsDoubleClick(AzToolsFramework::ViewportInteraction::MouseButton) const;
 
-        static AzToolsFramework::ViewportInteraction::MouseButton GetMouseButton(const AzFramework::InputChannel& inputChannel);
-        static bool IsMouseMove(const AzFramework::InputChannel& inputChannel);
-        static AzToolsFramework::ViewportInteraction::KeyboardModifier GetKeyboardModifier(const AzFramework::InputChannel& inputChannel);
+        //! Represents the time and location of a click.
+        struct ClickEvent
+        {
+            AZ::ScriptTimePoint m_time;
+            AzFramework::ScreenPoint m_position;
+        };
 
         AzToolsFramework::ViewportInteraction::MouseInteraction m_mouseInteraction;
-        AZStd::unordered_map<AzToolsFramework::ViewportInteraction::MouseButton, AZ::ScriptTimePoint> m_pendingDoubleClicks;
-        AZ::ScriptTimePoint m_curTime;
+        AZStd::unordered_map<AzToolsFramework::ViewportInteraction::MouseButton, ClickEvent> m_pendingDoubleClicks;
+
+        AZ::ScriptTimePoint m_currentTime;
     };
 } // namespace SandboxEditor

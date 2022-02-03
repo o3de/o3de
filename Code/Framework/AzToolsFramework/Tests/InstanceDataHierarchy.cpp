@@ -710,7 +710,7 @@ namespace UnitTest
 
             auto getEnumData = [&ec](const AzToolsFramework::InstanceDataNode& node) -> Uuid
             {
-                Uuid id;
+                Uuid id = Uuid::CreateNull();
                 auto attribute = node.GetElementMetadata()->FindAttribute(AZ_CRC("EnumType"));
                 auto attributeData = azrtti_cast<AttributeData<AZ::TypeId>*>(attribute);
                 if (attributeData)

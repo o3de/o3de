@@ -11,6 +11,9 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <Atom/RPI.Public/ViewportContextManager.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Base.h>
 
 namespace AZ
 {
@@ -100,9 +103,13 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_whiteBalanceKelvin, "Temperature", "Temperature in Kelvin")
                             ->Attribute(Edit::Attributes::Min, 1000.0f)
                             ->Attribute(Edit::Attributes::Max, 40000.0f)
+                            ->Attribute(AZ::Edit::Attributes::SliderCurveMidpoint, 0.165f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_whiteBalanceTint, "Tint", "Tint Value")
                             ->Attribute(Edit::Attributes::Min, -100.0f)
                             ->Attribute(Edit::Attributes::Max, 100.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_whiteBalanceLuminancePreservation, "Luminance Preservation", "Modulate the preservation of luminance")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 1.0f)
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Split Toning")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -131,16 +138,20 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_smhShadowsStart, "Shadows Start", "SMH Shadows Start Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
-                            ->Attribute(Edit::Attributes::Max, 1.0f)
+                            ->Attribute(Edit::Attributes::Max, 16.0f)
+                            ->Attribute(Edit::Attributes::SoftMax, 2.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_smhShadowsEnd, "Shadows End", "SMH Shadows End Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
-                            ->Attribute(Edit::Attributes::Max, 1.0f)
+                            ->Attribute(Edit::Attributes::Max, 16.0f)
+                            ->Attribute(Edit::Attributes::SoftMax, 2.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_smhHighlightsStart, "Highlights Start", "SMH Highlights Start Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
-                            ->Attribute(Edit::Attributes::Max, 1.0f)
+                            ->Attribute(Edit::Attributes::Max, 16.0f)
+                            ->Attribute(Edit::Attributes::SoftMax, 2.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_smhHighlightsEnd, "Highlights End", "SMH Highlights End Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
-                            ->Attribute(Edit::Attributes::Max, 1.0f)
+                            ->Attribute(Edit::Attributes::Max, 16.0f)
+                            ->Attribute(Edit::Attributes::SoftMax, 2.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &HDRColorGradingComponentConfig::m_smhShadowsColor, "Shadows Color", "SMH Shadows Color")
                         ->DataElement(AZ::Edit::UIHandlers::Color, &HDRColorGradingComponentConfig::m_smhMidtonesColor, "Midtones Color", "SMH Midtones Color")
                         ->DataElement(AZ::Edit::UIHandlers::Color, &HDRColorGradingComponentConfig::m_smhHighlightsColor, "Highlights Color", "SMH Highlights Color")
@@ -191,7 +202,14 @@ namespace AZ
             }
 
             const char* LutAttachment = "LutOutput";
-            const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{ "LutGenerationPass" };
+            auto renderPipelineName = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()
+                                            ->GetDefaultViewportContext()
+                                            ->GetCurrentPipeline()
+                                            ->GetId();
+            const AZStd::vector<AZStd::string> LutGenerationPassHierarchy{
+                renderPipelineName.GetCStr(),
+                "LutGenerationPass"
+            };
 
             char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };
             AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedOutputFilePath, AZ_MAX_PATH_LEN);

@@ -103,6 +103,7 @@ namespace AZ
             pipeline->m_originalRenderSettings = desc.m_renderSettings;
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_rootPass->SetRenderPipeline(pipeline);
+            pipeline->m_rootPass->m_flags.m_isPipelineRoot = true;
             pipeline->m_rootPass->ManualPipelineBuildAndInitialize();
         }
 
@@ -178,6 +179,10 @@ namespace AZ
                     pipelineViews.m_views.resize(1);
                 }
                 ViewPtr previousView = pipelineViews.m_views[0];
+                if (view)
+                {
+                    view->OnAddToRenderPipeline();
+                }
                 pipelineViews.m_views[0] = view;
 
                 if (previousView)
@@ -238,6 +243,7 @@ namespace AZ
                     pipelineViews.m_type = PipelineViewType::Transient;
                 }
                 view->SetPassesByDrawList(&pipelineViews.m_passesByDrawList);
+                view->OnAddToRenderPipeline();
                 pipelineViews.m_views.push_back(view);
             }
         }
@@ -315,8 +321,7 @@ namespace AZ
                 // Attempt to re-create hierarchy under root pass
                 Ptr<ParentPass> newRoot = m_rootPass->Recreate();
                 newRoot->SetRenderPipeline(this);
-
-                // Manually build the pipeline
+                newRoot->m_flags.m_isPipelineRoot = true;
                 newRoot->ManualPipelineBuildAndInitialize();
 
                 // Validate the new root
@@ -375,7 +380,7 @@ namespace AZ
             m_scene->RemoveRenderPipeline(m_nameId);
         }
 
-        void RenderPipeline::OnStartFrame([[maybe_unused]] const TickTimeInfo& tick)
+        void RenderPipeline::OnStartFrame([[maybe_unused]] float time)
         {
             AZ_PROFILE_SCOPE(RPI, "RenderPipeline: OnStartFrame");
 
@@ -477,20 +482,17 @@ namespace AZ
 
         void RenderPipeline::AddToRenderTickOnce()
         {
-            m_rootPass->SetEnabled(true);
             m_renderMode = RenderMode::RenderOnce;
         }
 
         void RenderPipeline::AddToRenderTick()
         {
-            m_rootPass->SetEnabled(true);
             m_renderMode = RenderMode::RenderEveryTick;
         }
 
         void RenderPipeline::RemoveFromRenderTick()
         {
             m_renderMode = RenderMode::NoRender;
-            m_rootPass->SetEnabled(false);
         }
 
         RenderPipeline::RenderMode RenderPipeline::GetRenderMode() const

@@ -563,7 +563,7 @@ namespace UnitTest
         const auto polygonHandle = Api::InitializeAsUnitQuad(*m_whiteBox);
         const auto edgeHandles = Api::PolygonBorderEdgeHandlesFlattened(*m_whiteBox, polygonHandle);
 
-        for (const auto edgeHandle : edgeHandles)
+        for (const auto& edgeHandle : edgeHandles)
         {
             // when
             const auto tail = Api::HalfedgeVertexPositionAtTail(
@@ -702,7 +702,7 @@ namespace UnitTest
 
         // given
         const auto edgeHandles = Api::MeshEdgeHandles(*m_whiteBox);
-        for (const auto edgeHandle : edgeHandles)
+        for (const auto& edgeHandle : edgeHandles)
         {
             const auto firstHalfedgeHandle = Api::EdgeHalfedgeHandle(*m_whiteBox, edgeHandle, Api::EdgeHalfedge::First);
             const auto secondHalfedgeHandle =
@@ -992,7 +992,7 @@ namespace UnitTest
         const auto polygonHandles = Api::InitializeAsUnitCube(*m_whiteBox);
 
         // hide all 'logical'/'visible' edges (those that define the bounds of a polygon)
-        for (const auto edgeHandle :
+        for (const auto& edgeHandle :
              {Api::EdgeHandle{1}, Api::EdgeHandle{3}, Api::EdgeHandle{4}, Api::EdgeHandle{0}, Api::EdgeHandle{6}})
         {
             Api::HideEdge(*m_whiteBox, edgeHandle);
@@ -1024,7 +1024,7 @@ namespace UnitTest
             *m_whiteBox, Api::PolygonHandle{Api::FaceHandles{{Api::FaceHandle{4}, Api::FaceHandle{5}}}}, -0.25f);
 
         // hide all 'logical'/'visible' edges for scale appended face
-        for (const auto edgeHandle : {Api::EdgeHandle{25}, Api::EdgeHandle{27}, Api::EdgeHandle{24}})
+        for (const auto& edgeHandle : {Api::EdgeHandle{25}, Api::EdgeHandle{27}, Api::EdgeHandle{24}})
         {
             Api::HideEdge(*m_whiteBox, edgeHandle);
         }
@@ -1065,7 +1065,7 @@ namespace UnitTest
         Api::InitializeAsUnitCube(*m_whiteBox);
 
         // hide all vertical 'logical'/'visible' edges
-        for (const auto edgeHandle : {Api::EdgeHandle{13}, Api::EdgeHandle{15}, Api::EdgeHandle{12}})
+        for (const auto& edgeHandle : {Api::EdgeHandle{13}, Api::EdgeHandle{15}, Api::EdgeHandle{12}})
         {
             Api::HideEdge(*m_whiteBox, edgeHandle);
         }
@@ -1138,7 +1138,7 @@ namespace UnitTest
         int restoreCount = 0;
         Api::EdgeHandles restoringEdgeHandles; // inout param
         AZStd::optional<AZStd::array<Api::PolygonHandle, 2>> splitPolygons;
-        for (const Api::EdgeHandle edgeHandleToRestore : edgeHandlesToRestore)
+        for (const Api::EdgeHandle& edgeHandleToRestore : edgeHandlesToRestore)
         {
             splitPolygons = Api::RestoreEdge(*m_whiteBox, edgeHandleToRestore, restoringEdgeHandles);
             restoreCount++;
@@ -1792,14 +1792,14 @@ namespace UnitTest
         Api::InitializeAsUnitCube(*m_whiteBox);
 
         // hide all top vertices
-        for (const auto vertexHandle :
+        for (const auto& vertexHandle :
              {Api::VertexHandle{0}, Api::VertexHandle{1}, Api::VertexHandle{2}, Api::VertexHandle{3}})
         {
             Api::HideVertex(*m_whiteBox, vertexHandle);
         }
 
         // hide all vertical edges
-        for (const auto edgeHandle :
+        for (const auto& edgeHandle :
              {Api::EdgeHandle{15}, Api::EdgeHandle{13}, Api::EdgeHandle{12}, Api::EdgeHandle{10}})
         {
             Api::HideEdge(*m_whiteBox, edgeHandle);
@@ -2116,7 +2116,7 @@ namespace UnitTest
 
         bool edgeRestored = false;
         Api::EdgeHandles restoringEdgeHandles; // inout param
-        for (const Api::EdgeHandle edgeHandleToRestore : edgeHandlesToRestore)
+        for (const Api::EdgeHandle& edgeHandleToRestore : edgeHandlesToRestore)
         {
             if (Api::RestoreEdge(*m_whiteBox, edgeHandleToRestore, restoringEdgeHandles))
             {

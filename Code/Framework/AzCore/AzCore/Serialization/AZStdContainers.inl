@@ -54,12 +54,8 @@ namespace AZStd
 
 namespace AZ
 {
-    //template<class T>
-    //class ScriptProperty;
-
     namespace Internal
     {
-
         template <class ValueType>
         void SetupClassElementFromType(SerializeContext::ClassElement& classElement)
         {
@@ -78,7 +74,7 @@ namespace AZ
              * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
              * created within then this will return this .dll/.exe module allocator
              */
-            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); }));
+            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
 
             // Flag the field with the EnumType attribute if we're an enumeration type aliased by RemoveEnum
             const bool isSpecializedEnum = AZStd::is_enum<ValueType>::value && !AzTypeInfo<ValueType>::Uuid().IsNull();
@@ -86,15 +82,14 @@ namespace AZ
             {
                 auto uuid = AzTypeInfo<ValueType>::Uuid();
 
-                using ContainerType = AttributeContainerType<AZ::TypeId>;
-                classElement.m_attributes.emplace_back(AZ_CRC("EnumType", 0xb177e1b5), CreateModuleAttribute<ContainerType>(AZStd::move(uuid)));
+                classElement.m_attributes.emplace_back(AZ_CRC("EnumType", 0xb177e1b5), CreateModuleAttribute(AZStd::move(uuid)));
             }
         }
 
         template <class T>
         AZStd::enable_if_t<std::is_pod<T>::value> InitializeDefaultIfPodType(T& t)
         {
-            t = {};
+            t = T{};
         }
 
         template <class T>
@@ -648,7 +643,6 @@ namespace AZ
 
                 // Register our key type within an lvalue to rvalue wrapper as an attribute
                 AZ::TypeId uuid = azrtti_typeid<WrappedKeyType>();
-                using ContainerType = AttributeContainerType<AZ::TypeId>;
 
                /**
                 * This should technically bind the reference value from the GetCurrentSerializeContextModule() call 
@@ -656,9 +650,9 @@ namespace AZ
                 * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
                 * created within then this will return this .dll/.exe module allocator
                 */
-                m_classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); }));
+                m_classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
 
-                m_classElement.m_attributes.emplace_back(AZ_CRC("KeyType", 0x15bc5303), CreateModuleAttribute<ContainerType>(AZStd::move(uuid)));
+                m_classElement.m_attributes.emplace_back(AZ_CRC("KeyType", 0x15bc5303), CreateModuleAttribute(AZStd::move(uuid)));
             }
 
             // Reflect our wrapped key and value types to serializeContext so that may later be used

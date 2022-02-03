@@ -11,14 +11,30 @@
 #if !defined(Q_MOC_RUN)
 #include <QAction>
 #include <QToolBar>
+#include <QMenu>
 #endif
+
+#include <Integration/Rendering/RenderFlag.h>
 
 namespace EMStudio
 {
+    class AnimRenderPlugin;
+
     class AnimViewportToolBar : public QToolBar
     {
     public:
-        AnimViewportToolBar(QWidget* parent = nullptr);
-        ~AnimViewportToolBar() = default;
+        AnimViewportToolBar(AtomRenderPlugin* plugin, QWidget* parent);
+        ~AnimViewportToolBar();
+
+        void LoadSettings();
+
+    private:
+        void CreateViewOptionEntry(
+            QMenu* menu, const char* menuEntryName, uint32_t actionIndex, bool visible = true, const char* iconFileName = nullptr);
+
+        AtomRenderPlugin* m_plugin = nullptr;
+        QAction* m_manipulatorActions[RenderOptions::ManipulatorMode::NUM_MODES] = { nullptr };
+        QAction* m_renderActions[EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS] = { nullptr };
+        QAction* m_followCharacterAction = nullptr;
     };
 }

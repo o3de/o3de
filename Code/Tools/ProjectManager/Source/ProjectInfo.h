@@ -9,7 +9,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Math/Uuid.h>
 #include <QUrl>
 #include <QString>
 #include <QStringList>
@@ -26,6 +25,7 @@ namespace O3DE::ProjectManager
             const QString& path,
             const QString& projectName,
             const QString& displayName,
+            const QString& id,
             const QString& origin,
             const QString& summary,
             const QString& iconPath,
@@ -45,6 +45,7 @@ namespace O3DE::ProjectManager
         // From project.json
         QString m_projectName;
         QString m_displayName;
+        QString m_id;
         QString m_origin;
         QString m_summary;
         QString m_iconPath;

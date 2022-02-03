@@ -23,28 +23,28 @@ from base import TestAutomationBase
 class TestAutomation(TestAutomationBase):
     def test_ActorSplitsAfterCollision(self, request, workspace, editor, launcher_platform):
         from .tests import Blast_ActorSplitsAfterCollision as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_ActorSplitsAfterRadialDamage(self, request, workspace, editor, launcher_platform):
         from .tests import Blast_ActorSplitsAfterRadialDamage as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_ActorSplitsAfterCapsuleDamage(self, request, workspace, editor, launcher_platform):
         from .tests import Blast_ActorSplitsAfterCapsuleDamage as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_ActorSplitsAfterImpactSpreadDamage(self, request, workspace, editor, launcher_platform):
         from .tests import Blast_ActorSplitsAfterImpactSpreadDamage as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_ActorSplitsAfterShearDamage(self, request, workspace, editor, launcher_platform):
         from .tests import Blast_ActorSplitsAfterShearDamage as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_ActorSplitsAfterTriangleDamage(self, request, workspace, editor, launcher_platform):
         from .tests import Blast_ActorSplitsAfterTriangleDamage as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_ActorSplitsAfterStressDamage(self, request, workspace, editor, launcher_platform):
         from .tests import Blast_ActorSplitsAfterStressDamage as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)

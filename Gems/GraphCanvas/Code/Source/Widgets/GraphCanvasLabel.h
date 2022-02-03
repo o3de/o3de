@@ -16,7 +16,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 
 #include <GraphCanvas/Styling/StyleHelper.h>
-#include <GraphCanvas/Types/TranslationTypes.h>
 
 namespace GraphCanvas
 {
@@ -51,9 +50,8 @@ namespace GraphCanvas
         const QBrush& GetBorderColorOverride() const;
         void ClearBorderColorOverride();
 
-        void SetLabel(const AZStd::string& label, const AZStd::string& translationContext = AZStd::string(), const AZStd::string& translationKey = AZStd::string());
-        void SetLabel(const TranslationKeyedString& value);
-        AZStd::string GetLabel() const { return AZStd::string(m_labelText.toStdString().c_str()); }        
+        void SetLabel(const AZStd::string& value);
+        AZStd::string GetLabel() const { return AZStd::string(m_labelText.toUtf8().data()); }
 
         void SetSceneStyle(const AZ::EntityId& sceneId, const char* style);
         void SetStyle(const AZ::EntityId& entityId, const char* styleElement);

@@ -76,7 +76,7 @@ class TestMacResourceLocator(object):
                                                                                                   mock_project)
         expected = os.path.join(
             mac_resource_locator.project_log(),
-            'editor.log')
+            'Editor.log')
 
         assert mac_resource_locator.editor_log() == expected
 

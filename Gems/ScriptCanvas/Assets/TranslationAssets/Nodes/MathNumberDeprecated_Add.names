@@ -1,0 +1,48 @@
+{
+    "entries": [
+        {
+            "base": "{6C52B2D1-3526-4855-A217-5106D54F6B90}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Add",
+                "category": "Math/Number/Deprecated",
+                "tooltip": "Add"
+            },
+            "slots": [
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Signal to perform the evaluation when desired."
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled after the arithmetic operation is done."
+                    }
+                },
+                {
+                    "base": "DataInput_Value A_0",
+                    "details": {
+                        "name": "Value A"
+                    }
+                },
+                {
+                    "base": "DataInput_Value B_1",
+                    "details": {
+                        "name": "Value B"
+                    }
+                }
+            ]
+        }
+    ]
+}

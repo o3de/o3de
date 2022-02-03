@@ -10,9 +10,14 @@
 
 #include <BuilderSettings/ImageProcessingDefines.h>
 #include <BuilderSettings/BuilderSettings.h>
-#include <AzCore/std/containers/set.h>
 #include <AzCore/base.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/containers/set.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+
+#include <QDateTime>
+#include <QFileSystemWatcher>
+#include <QScopedPointer>
 
 class QSettings;
 class QString;
@@ -36,6 +41,7 @@ namespace ImageProcessingAtom
      * Each preset setting may have different values on different platform, but they are using same uuid.
      */
     class BuilderSettingManager
+        : public QObject // required for using QFileSystemWatcher
     {
         friend class ImageProcessingTest;
 
@@ -49,17 +55,21 @@ namespace ImageProcessingAtom
         static void DestroyInstance();
         static void Reflect(AZ::ReflectContext* context);
         
-        const PresetSettings* GetPreset(const PresetName& presetName, const PlatformName& platform = "", AZStd::string_view* settingsFilePathOut = nullptr);
+        const PresetSettings* GetPreset(const PresetName& presetName, const PlatformName& platform = "", AZStd::string_view* settingsFilePathOut = nullptr) const;
 
-        const BuilderSettings* GetBuilderSetting(const PlatformName& platform);
+        AZStd::vector<AZStd::string> GetFileMasksForPreset(const PresetName& presetName) const;
+
+        const BuilderSettings* GetBuilderSetting(const PlatformName& platform) const;
                 
         //! Return A list of platform supported
-        const PlatformNameList GetPlatformList();
+        const PlatformNameList GetPlatformList() const;
 
         //! Return A map of preset settings based on their filemasks.
         //!      @key filemask string, empty string means no filemask
         //!      @value set of preset setting names supporting the specified filemask
-        const AZStd::map<FileMask, AZStd::unordered_set<PresetName>>& GetPresetFilterMap();
+        const AZStd::map<FileMask, AZStd::unordered_set<PresetName>>& GetPresetFilterMap() const;
+
+        const AZStd::unordered_set<PresetName>& GetFullPresetList() const;
 
         //! Find preset name based on the preset id.
         const PresetName GetPresetNameFromId(const AZ::Uuid& presetId);
@@ -68,7 +78,11 @@ namespace ImageProcessingAtom
         StringOutcome LoadConfig();
         
         //! Load configurations files from a folder which includes builder settings and presets
-        StringOutcome LoadConfigFromFolder(AZStd::string_view configFolder);
+        //! Note: this is only used for unit test. Use LoadConfig() for editor or game launcher
+         StringOutcome LoadConfigFromFolder(AZStd::string_view configFolder);
+
+        //! Reload preset from config folders
+        void ReloadPreset(const PresetName& presetName);
                 
         const AZStd::string& GetAnalysisFingerprint() const;
 
@@ -81,7 +95,12 @@ namespace ImageProcessingAtom
         //! @param imageFilePath: Filepath string of the image file. The function may load the image from the path for better detection
         //! @param image: an optional image object which can be used for preset selection if there is no match based file mask.
         //! @return suggested preset name.
-        PresetName GetSuggestedPreset(AZStd::string_view imageFilePath, IImageObjectPtr image = nullptr);
+        PresetName GetSuggestedPreset(AZStd::string_view imageFilePath) const;
+
+        //! Get the possible preset config's full file paths
+        //! This function is only used for setting up image's source dependency if a preset file is missing
+        //! Otherwise, the preset's file path can be retrieved in GetPreset() function
+        AZStd::vector<AZStd::string> GetPossiblePresetPaths(const PresetName& presetName) const;
 
         bool IsValidPreset(PresetName presetName) const;
 
@@ -105,18 +124,33 @@ namespace ImageProcessingAtom
     private: // functions
         AZ_DISABLE_COPY_MOVE(BuilderSettingManager);
 
+        // Write image builder setting to the file specified by filepath
         StringOutcome WriteSettings(AZStd::string_view filepath);
+        // Load image builder settings from the file specified by filepath
         StringOutcome LoadSettings(AZStd::string_view filepath);
+
+        // Load merge image builder settings (project and default)
+        StringOutcome LoadSettings();
+
+        // report warnings for the deprecated properties in image builder setting data
+        void ReportDeprecatedSettings();
 
         // Clear Builder Settings and any cached maps/lists
         void ClearSettings();
 
-        // Regenerate Builder Settings and any cached maps/lists
-        void RegenerateMappings();
+        // collect file masks 
+        void CollectFileMasksFromPresets();
 
         // Functions to save/load preset from a folder
         void SavePresets(AZStd::string_view outputFolder);
         void LoadPresets(AZStd::string_view presetFolder);
+
+        // Load a preset to m_presets and return true if success
+        bool LoadPreset(const AZStd::string& filePath);
+
+        // handle preset files changes
+        void OnFileChanged(const QString &path);
+        void OnFolderChanged(const QString &path);
 
     private: // variables
 
@@ -124,6 +158,7 @@ namespace ImageProcessingAtom
         {
             MultiplatformPresetSettings m_multiPreset;
             AZStd::string m_presetFilePath; // Can be used for debug output
+            QDateTime m_lastModifiedTime;
         };
 
         // Builder settings for each platform
@@ -131,13 +166,13 @@ namespace ImageProcessingAtom
 
         AZStd::unordered_map<PresetName, PresetEntry> m_presets;
 
-        // Cached list of presets mapped by their file masks.
+        // a list of presets mapped by their file masks.
         // @Key file mask, use empty string to indicate all presets without filtering
         // @Value set of preset names that matches the file mask
         AZStd::map <FileMask, AZStd::unordered_set<PresetName>> m_presetFilterMap;
 
-        // A mutex to protect when modifying any map in this manager        
-        AZStd::recursive_mutex m_presetMapLock;
+        // A mutex to protect when modifying any map in this manager
+        mutable AZStd::recursive_mutex m_presetMapLock;
 
         // Default presets for certain file masks
         AZStd::map <FileMask, PresetName > m_defaultPresetByFileMask;
@@ -153,5 +188,14 @@ namespace ImageProcessingAtom
 
         // Image builder's version
         AZStd::string m_analysisFingerprint;
+
+        // default config folder
+        AZ::IO::FixedMaxPath m_defaultConfigFolder;
+
+        // project config folder
+        AZ::IO::FixedMaxPath m_projectConfigFolder;
+
+        // File system watcher to detect preset file changes
+        QScopedPointer<QFileSystemWatcher> m_fileWatcher;
     };
 } // namespace ImageProcessingAtom

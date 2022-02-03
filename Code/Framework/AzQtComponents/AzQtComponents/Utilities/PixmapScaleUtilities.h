@@ -11,9 +11,11 @@
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QPixmap>
+#include <QRect>
 #include <QScreen>
 
 namespace AzQtComponents
 {
     AZ_QT_COMPONENTS_API QPixmap ScalePixmapForScreenDpi(QPixmap pixmap, QScreen* screen, QSize size, Qt::AspectRatioMode aspectRatioMode, Qt::TransformationMode transformationMode);
+    AZ_QT_COMPONENTS_API QPixmap CropPixmapForScreenDpi(QPixmap pixmap, QScreen* screen, QRect rect);
 }; // namespace AzQtComponents

@@ -10,9 +10,10 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Sha1.h>
 
-#include "native/utilities/PlatformConfiguration.h"
-#include "native/AssetManager/FileStateCache.h"
-#include "native/AssetDatabase/AssetDatabase.h"
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/utilities/StatsCapture.h>
+#include <native/AssetManager/FileStateCache.h>
+#include <native/AssetDatabase/AssetDatabase.h>
 #include <utilities/ThreadHelper.h>
 #include <QCoreApplication>
 #include <QElapsedTimer>
@@ -130,7 +131,7 @@ namespace AssetUtilsInternal
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
-        
+
         // once we're done, regardless of success or failure, we 'unlock' those files for further process.
         // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
         QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
@@ -869,23 +870,27 @@ namespace AssetUtilities
         return true;
     }
 
-    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    AZStd::string_view StripAssetPlatformNoCopy(AZStd::string_view relativeProductPath)
     {
         // Skip over the assetPlatform path segment if it is matches one of the platform defaults
         // Otherwise return the path unchanged
-        AZStd::string_view strippedProductPath{ relativeProductPath };
-        if (AZStd::optional pathSegment = AZ::StringFunc::TokenizeNext(strippedProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
-            pathSegment.has_value())
+
+        AZStd::string_view originalPath = relativeProductPath;
+        AZStd::optional firstPathSegment = AZ::StringFunc::TokenizeNext(relativeProductPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+
+        if (firstPathSegment && AzFramework::PlatformHelper::GetPlatformIdFromName(*firstPathSegment) != AzFramework::PlatformId::Invalid)
         {
-            AZ::IO::FixedMaxPathString assetPlatformSegmentLower{ *pathSegment };
-            AZStd::to_lower(assetPlatformSegmentLower.begin(), assetPlatformSegmentLower.end());
-            if (AzFramework::PlatformHelper::GetPlatformIdFromName(assetPlatformSegmentLower) != AzFramework::PlatformId::Invalid)
-            {
-                return QString::fromUtf8(strippedProductPath.data(), aznumeric_cast<int>(strippedProductPath.size()));
-            }
+            return relativeProductPath;
         }
 
-        return QString::fromUtf8(relativeProductPath.data(), aznumeric_cast<int>(relativeProductPath.size()));
+        return originalPath;
+    }
+
+    QString StripAssetPlatform(AZStd::string_view relativeProductPath)
+    {
+        AZStd::string_view result = StripAssetPlatformNoCopy(relativeProductPath);
+
+        return QString::fromUtf8(result.data(), aznumeric_cast<int>(result.size()));
     }
 
     QString NormalizeFilePath(const QString& filePath)
@@ -1161,7 +1166,7 @@ namespace AssetUtilities
     {
 #ifndef AZ_TESTS_ENABLED
         // Only used for unit tests, speed is critical for GetFileHash.
-        AZ_UNUSED(hashMsDelay);
+        hashMsDelay = 0;
 #endif
         bool useFileHashing = ShouldUseFileHashing();
 
@@ -1170,10 +1175,10 @@ namespace AssetUtilities
             return 0;
         }
 
+        AZ::u64 hash = 0;
         if(!force)
         {
             auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
-            AZ::u64 hash = 0;
 
             if (fileStateInterface && fileStateInterface->GetHash(filePath, &hash))
             {
@@ -1181,64 +1186,12 @@ namespace AssetUtilities
             }
         }
 
-        char buffer[FileHashBufferSize];
-
-        constexpr bool ErrorOnReadFailure = true;
-        AZ::IO::FileIOStream readStream(filePath, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, ErrorOnReadFailure);
-
-        if(readStream.IsOpen() && readStream.CanRead())
-        {
-            AZ::IO::SizeType bytesRead;
-
-            auto* state = XXH64_createState();
-
-            if(state == nullptr)
-            {
-                AZ_Assert(false, "Failed to create hash state");
-                return 0;
-            }
-
-            if (XXH64_reset(state, 0) == XXH_ERROR)
-            {
-                AZ_Assert(false, "Failed to reset hash state");
-                return 0;
-            }
-
-            do
-            {
-                // In edge cases where another process is writing to this file while this hashing is occuring and that file wasn't locked,
-                // the following read check can fail because it performs an end of file check, and asserts and shuts down if the read size
-                // was smaller than the buffer and the read is not at the end of the file. The logic used to check end of file internal to read
-                // will be out of date in the edge cases where another process is actively writing to this file while this hash is running.
-                // The stream's length ends up more accurate in this case, preventing this assert and shut down.
-                // One area this occurs is the navigation mesh file (mnmnavmission0.bai) that's temporarily created when exporting a level,
-                // the navigation system can still be writing to this file when hashing begins, causing the EoF marker to change.
-                AZ::IO::SizeType remainingToRead = AZStd::min(readStream.GetLength() - readStream.GetCurPos(), aznumeric_cast<AZ::IO::SizeType>(AZ_ARRAY_SIZE(buffer)));
-                bytesRead = readStream.Read(remainingToRead, buffer);
-
-                if(bytesReadOut)
-                {
-                    *bytesReadOut += bytesRead;
-                }
-
-                XXH64_update(state, buffer, bytesRead);
-#ifdef AZ_TESTS_ENABLED
-                // Used by unit tests to force the race condition mentioned above, to verify the crash fix.
-                if(hashMsDelay > 0)
-                {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(hashMsDelay));
-                }
-#endif
-
-            } while (bytesRead > 0);
-
-            auto hash = XXH64_digest(state);
-
-            XXH64_freeState(state);
-
-            return hash;
-        }
-        return 0;
+        // keep track of how much time we spend actually hashing files.
+        AZStd::string statName = AZStd::string::format("HashFile,%s", filePath);
+        AssetProcessor::StatsCapture::BeginCaptureStat(statName.c_str());
+        hash = AssetBuilderSDK::GetFileHash(filePath, bytesReadOut, hashMsDelay);
+        AssetProcessor::StatsCapture::EndCaptureStat(statName.c_str());
+        return hash;
     }
 
     AZ::u64 AdjustTimestamp(QDateTime timestamp)

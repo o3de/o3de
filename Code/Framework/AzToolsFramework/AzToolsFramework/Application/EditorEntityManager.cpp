@@ -9,9 +9,27 @@
 #include <AzToolsFramework/Application/EditorEntityManager.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 namespace AzToolsFramework
 {
+    static bool AreEntitiesValidForDuplication(const EntityIdList& entityIds)
+    {
+        for (AZ::EntityId entityId : entityIds)
+        {
+            if (GetEntityById(entityId) == nullptr)
+            {
+                AZ_Error(
+                    "Entity", false,
+                    "Entity with id '%llu' is not found. This can happen when you try to duplicate the entity before it is created. Please "
+                    "ensure entities are created before trying to duplicate them.",
+                    static_cast<AZ::u64>(entityId));
+                return false;
+            }
+        }
+        return true;
+    }
+
     void EditorEntityManager::Start()
     {
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
@@ -62,7 +80,11 @@ namespace AzToolsFramework
         EntityIdList selectedEntities;
         ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
 
-        m_prefabPublicInterface->DuplicateEntitiesInInstance(selectedEntities);
+        if (AreEntitiesValidForDuplication(selectedEntities))
+        {
+            m_prefabPublicInterface->DuplicateEntitiesInInstance(selectedEntities);
+        }
+
     }
 
     void EditorEntityManager::DuplicateEntityById(AZ::EntityId entityId)
@@ -72,7 +94,10 @@ namespace AzToolsFramework
 
     void EditorEntityManager::DuplicateEntities(const EntityIdList& entities)
     {
-        m_prefabPublicInterface->DuplicateEntitiesInInstance(entities);
+        if (AreEntitiesValidForDuplication(entities))
+        {
+            m_prefabPublicInterface->DuplicateEntitiesInInstance(entities);
+        }
     }
 }
 

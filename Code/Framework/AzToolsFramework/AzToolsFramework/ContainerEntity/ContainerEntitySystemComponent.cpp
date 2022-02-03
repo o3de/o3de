@@ -26,8 +26,12 @@ namespace AzToolsFramework
         AZ::Interface<ContainerEntityInterface>::Unregister(this);
     }
 
-    void ContainerEntitySystemComponent::Reflect([[maybe_unused]] AZ::ReflectContext* context)
+    void ContainerEntitySystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ContainerEntitySystemComponent, AZ::Component>()->Version(1);
+        }
     }
 
     void ContainerEntitySystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -136,6 +140,15 @@ namespace AzToolsFramework
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
         Clear(editorEntityContextId);
+    }
+
+    void ContainerEntitySystemComponent::RefreshAllContainerEntities([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
+    {
+        for (AZ::EntityId containerEntityId : m_containers)
+        {
+            ContainerEntityNotificationBus::Broadcast(
+                &ContainerEntityNotificationBus::Events::OnContainerEntityStatusChanged, containerEntityId, m_openContainers.contains(containerEntityId));
+        }
     }
 
     ContainerEntityOperationResult ContainerEntitySystemComponent::Clear(AzFramework::EntityContextId entityContextId)

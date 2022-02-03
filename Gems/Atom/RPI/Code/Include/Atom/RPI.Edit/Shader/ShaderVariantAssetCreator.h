@@ -40,7 +40,7 @@ namespace AZ
             //! Set the timestamp value when the ProcessJob() started.
             //! This is needed to synchronize between the ShaderAsset and ShaderVariantAsset when hot-reloading shaders.
             //! The idea is that this timestamp must be greater or equal than the ShaderAsset. 
-            void SetBuildTimestamp(AZStd::sys_time_t buildTimestamp);
+            void SetBuildTimestamp(AZ::u64 buildTimestamp);
 
             //! Assigns a shaderStageFunction, which contains the byte code, to the slot dictated by the shader stage.
             void SetShaderFunction(RHI::ShaderStage shaderStage, RHI::Ptr<RHI::ShaderStageFunction> shaderStageFunction);

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Session/SessionRequests.h>
+#include <Multiplayer/Session/SessionRequests.h>
 
 namespace AWSGameLift
 {
@@ -16,23 +16,23 @@ namespace AWSGameLift
     //! GameLift create session on fleet request which corresponds to Amazon GameLift
     //! CreateGameSessionRequest
     struct AWSGameLiftCreateSessionRequest
-        : public AzFramework::CreateSessionRequest
+        : public Multiplayer::CreateSessionRequest
     {
     public:
-        AZ_RTTI(AWSGameLiftCreateSessionRequest, "{69612D5D-F899-4DEB-AD63-4C497ABC5C0D}", AzFramework::CreateSessionRequest);
+        AZ_RTTI(AWSGameLiftCreateSessionRequest, "{69612D5D-F899-4DEB-AD63-4C497ABC5C0D}", Multiplayer::CreateSessionRequest);
         static void Reflect(AZ::ReflectContext* context);
 
         AWSGameLiftCreateSessionRequest() = default;
         virtual ~AWSGameLiftCreateSessionRequest() = default;
 
-        // A unique identifier for the alias associated with the fleet to create a game session in.
+        //! A unique identifier for the alias associated with the fleet to create a game session in.
         AZStd::string m_aliasId;
 
-        // A unique identifier for the fleet to create a game session in.
+        //! A unique identifier for the fleet to create a game session in.
         AZStd::string m_fleetId;
 
-        // Custom string that uniquely identifies the new game session request.
-        // This is useful for ensuring that game session requests with the same idempotency token are processed only once. 
+        //! Custom string that uniquely identifies the new game session request.
+        //! This is useful for ensuring that game session requests with the same idempotency token are processed only once. 
         AZStd::string m_idempotencyToken;
     };
 } // namespace AWSGameLift

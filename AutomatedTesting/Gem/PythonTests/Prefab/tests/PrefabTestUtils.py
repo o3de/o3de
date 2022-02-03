@@ -18,20 +18,6 @@ import azlmbr.components as components
 import azlmbr.entity as entity
 import azlmbr.legacy.general as general
 
-def check_entity_at_position(entity_id, expected_entity_position):
-    entity_at_expected_position_result = (
-        "entity is at expected position",
-        "entity is *not* at expected position")
-
-    actual_entity_position = components.TransformBus(bus.Event, "GetWorldTranslation", entity_id)
-    is_at_position = actual_entity_position.IsClose(expected_entity_position)
-    Report.result(entity_at_expected_position_result, is_at_position)
-
-    if not is_at_position:
-        Report.info(f"Entity '{entity_id.ToString()}'\'s expected position: {expected_entity_position.ToString()}, actual position: {actual_entity_position.ToString()}")
-    
-    return is_at_position
-
 def check_entity_children_count(entity_id, expected_children_count):
     entity_children_count_matched_result = (
         "Entity with a unique name found",
@@ -46,19 +32,6 @@ def check_entity_children_count(entity_id, expected_children_count):
         Report.info(f"Entity '{entity_id.ToString()}' actual children count: {len(children_entity_ids)}. Expected children count: {expected_children_count}")
 
     return entity_children_count_matched
-
-def get_children_ids_by_name(entity_id, entity_name):
-    entity = EditorEntity(entity_id)
-    children_entity_ids = entity.get_children_ids()
-    
-    result = []
-    for child_entity_id in children_entity_ids:
-        child_entity = EditorEntity(child_entity_id)
-        child_entity_name = child_entity.get_name()
-        if child_entity_name == entity_name:
-            result.append(child_entity_id)
-
-    return result
 
 def open_base_tests_level():
     helper.init_idle()

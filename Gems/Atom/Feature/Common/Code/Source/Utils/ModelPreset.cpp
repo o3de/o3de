@@ -24,10 +24,9 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ModelPreset>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("displayName", &ModelPreset::m_displayName)
                     ->Field("modelAsset", &ModelPreset::m_modelAsset)
-                    ->Field("previewImageAsset", &ModelPreset::m_previewImageAsset)
                     ;
             }
 
@@ -41,7 +40,6 @@ namespace AZ
                     ->Constructor<const ModelPreset&>()
                     ->Property("displayName", BehaviorValueProperty(&ModelPreset::m_displayName))
                     ->Property("modelAsset", BehaviorValueProperty(&ModelPreset::m_modelAsset))
-                    ->Property("previewImageAsset", BehaviorValueProperty(&ModelPreset::m_previewImageAsset))
                     ;
             }
         }

@@ -12,8 +12,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzCore/Debug/EventTrace.h>
-
 #if defined(USE_NSIGHT_AFTERMATH)
 GpuCrashTracker::~GpuCrashTracker()
 {

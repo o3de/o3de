@@ -165,6 +165,15 @@ namespace AZ
                 return true;
             }
 
+            Data::Instance<RPI::Shader> HairGeometryRasterPass::GetShader()
+            {
+                if (!m_initialized || !m_shader)
+                {
+                    AZ_Error("Hair Gem", LoadShaderAndPipelineState(), "HairGeometryRasterPass could not initialize pipeline or shader");
+                }
+                return m_shader;
+            }
+
             void HairGeometryRasterPass::SchedulePacketBuild(HairRenderObject* hairObject)
             {
                 m_newRenderObjects.insert(hairObject);
@@ -188,7 +197,7 @@ namespace AZ
                 // The PerPass is gathered through the RasterPass::m_shaderResourceGroup
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
-                return hairObject->BuildPPLLDrawPacket(drawRequest);
+                return hairObject->BuildDrawPacket(m_shader.get(), drawRequest);
             }
 
             bool HairGeometryRasterPass::AddDrawPackets(AZStd::list<Data::Instance<HairRenderObject>>& hairRenderObjects)
@@ -205,7 +214,7 @@ namespace AZ
 
                 for (auto& renderObject : hairRenderObjects)
                 {
-                    const RHI::DrawPacket* drawPacket = renderObject->GetFillDrawPacket();
+                    const RHI::DrawPacket* drawPacket = renderObject->GetGeometrylDrawPacket(m_shader.get());
                     if (!drawPacket)
                     {   // might not be an error - the object might have just been added and the DrawPacket is
                         // scheduled to be built when the render frame begins

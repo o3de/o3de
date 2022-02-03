@@ -26,9 +26,12 @@ namespace ScriptCanvasTesting
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Alpha>("ALPHA");
-            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Bravo>("BRAVO");
-            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Charlie>("CHARLIE");
+            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Alpha>("ALPHA")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
+            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Bravo>("BRAVO")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
+            behaviorContext->EnumProperty<(AZ::u32)TestEnum::Charlie>("CHARLIE")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
         }
     }
 
@@ -111,6 +114,7 @@ namespace ScriptCanvasTesting
             modVoidDesc.m_eventName = "OnEvent-ZeroParam";
 
             behaviorContext->EBus<GlobalEBus>("GlobalEBus")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Handler<GlobalEBusHandler>()
                 ->Event("AppendSweet", &GlobalEBus::Events::AppendSweet)
@@ -193,6 +197,7 @@ namespace ScriptCanvasTesting
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<PerformanceStressEBus>("PerformanceStressEBus")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Handler<PerformanceStressEBusHandler>()
                 ->Event("ForceStringCompare0", &PerformanceStressEBus::Events::ForceStringCompare0)
                 ->Event("ForceStringCompare1", &PerformanceStressEBus::Events::ForceStringCompare1)
@@ -248,6 +253,7 @@ namespace ScriptCanvasTesting
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<LocalEBus>("LocalEBus")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Handler<LocalEBusHandler>()
                 ->Event("AppendSweet", &LocalEBus::Events::AppendSweet)
@@ -262,6 +268,7 @@ namespace ScriptCanvasTesting
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<NativeHandlingOnlyEBus>("NativeHandlingOnlyEBus")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Event("AppendSweet", &NativeHandlingOnlyEBus::Events::AppendSweet)
                 ->Event("Increment", &NativeHandlingOnlyEBus::Events::Increment)

@@ -258,10 +258,17 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void XcbNativeWindow::SetWindowTitle(const AZStd::string& title)
     {
+        // Set the title of both the window and the task bar by using
+        // a buffer to hold the title twice, separated by a null-terminator
+        auto doubleTitleSize = (title.size() + 1) * 2;
+        AZStd::string doubleTitle(doubleTitleSize, '\0');
+        azstrncpy(doubleTitle.data(), doubleTitleSize, title.c_str(), title.size());
+        azstrncpy(&doubleTitle.data()[title.size() + 1], title.size(), title.c_str(), title.size());
+
         xcb_void_cookie_t xcbCheckResult;
         xcbCheckResult = xcb_change_property(
-            m_xcbConnection, XCB_PROP_MODE_REPLACE, m_xcbWindow, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8, static_cast<uint32_t>(title.size()),
-            title.c_str());
+            m_xcbConnection, XCB_PROP_MODE_REPLACE, m_xcbWindow, XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, 8, static_cast<uint32_t>(doubleTitle.size()),
+            doubleTitle.c_str());
         AZ_Assert(ValidateXcbResult(xcbCheckResult), "Failed to set window title.");
     }
 
@@ -308,7 +315,7 @@ namespace AzFramework
         event.data.data32[2] = 0;
         event.data.data32[3] = 1;
         event.data.data32[4] = 0;
-        xcb_void_cookie_t xcbCheckResult = xcb_send_event(
+        [[maybe_unused]] xcb_void_cookie_t xcbCheckResult = xcb_send_event(
             m_xcbConnection, 1, m_xcbRootScreen->root, XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
             (const char*)&event);
         AZ_Assert(ValidateXcbResult(xcbCheckResult), "Failed to set _NET_WM_STATE_FULLSCREEN");
@@ -333,7 +340,7 @@ namespace AzFramework
                 event.data.data32[2] = 0;
                 event.data.data32[3] = 0;
                 event.data.data32[4] = 0;
-                xcb_void_cookie_t xcbCheckResult = xcb_send_event(
+                [[maybe_unused]] xcb_void_cookie_t xcbCheckResult = xcb_send_event(
                     m_xcbConnection, 1, m_xcbRootScreen->root, XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
                     (const char*)&event);
                 AZ_Assert(

@@ -293,35 +293,39 @@ namespace AZ
             void MaterialPropertyInspector::AddPropertiesGroup()
             {
                 // Copy all of the properties from the material asset to the source data that will be exported
-                for (const auto& groupDefinition : m_editData.m_materialTypeSourceData.GetGroupDefinitionsInDisplayOrder())
+                // TODO: Support populating the Material Editor with nested property groups, not just the top level.
+                for (const AZStd::unique_ptr<AZ::RPI::MaterialTypeSourceData::PropertyGroup>& propertyGroup : m_editData.m_materialTypeSourceData.GetPropertyLayout().m_propertyGroups)
                 {
-                    const AZStd::string& groupName = groupDefinition.m_name;
-                    const AZStd::string& groupDisplayName = !groupDefinition.m_displayName.empty() ? groupDefinition.m_displayName : groupName;
-                    const AZStd::string& groupDescription = !groupDefinition.m_description.empty() ? groupDefinition.m_description : groupDisplayName;
+                    const AZStd::string& groupName = propertyGroup->GetName();
+                    const AZStd::string& groupDisplayName = !propertyGroup->GetDisplayName().empty() ? propertyGroup->GetDisplayName() : groupName;
+                    const AZStd::string& groupDescription = !propertyGroup->GetDescription().empty() ? propertyGroup->GetDescription() : groupDisplayName;
                     auto& group = m_groups[groupName];
-
-                    const auto& propertyLayout = m_editData.m_materialTypeSourceData.m_propertyLayout;
-                    const auto& propertyListItr = propertyLayout.m_properties.find(groupName);
-                    if (propertyListItr != propertyLayout.m_properties.end())
+                    
+                    group.m_properties.reserve(propertyGroup->GetProperties().size());
+                    for (const auto& propertyDefinition : propertyGroup->GetProperties())
                     {
-                        group.m_properties.reserve(propertyListItr->second.size());
-                        for (const auto& propertyDefinition : propertyListItr->second)
-                        {
-                            AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+                        AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
-                            // Assign id before conversion so it can be used in dynamic description
-                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, propertyDefinition.m_name).GetFullName();
+                        // Assign id before conversion so it can be used in dynamic description
+                        propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, propertyDefinition->GetName());
 
-                            AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
+                        AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition.get());
 
-                            propertyConfig.m_groupName = groupDisplayName;
-                            const auto& propertyIndex = m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
-                            propertyConfig.m_showThumbnail = true;
-                            propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
-                            propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
-                            propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
-                            group.m_properties.emplace_back(propertyConfig);
-                        }
+                        const auto& propertyIndex = 
+                            m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+                        
+                        propertyConfig.m_groupName = groupDisplayName;
+                        propertyConfig.m_showThumbnail = true;
+                        propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(
+                            m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
+                        
+                        // There is no explicit parent material here. Material instance property overrides replace the values from the
+                        // assigned material asset. Its values should be treated as parent, for comparison, in this case.
+                        propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(
+                            m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
+                        propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(
+                            m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
+                        group.m_properties.emplace_back(propertyConfig);
                     }
 
                     // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
@@ -351,6 +355,25 @@ namespace AZ
                 MaterialComponentRequestBus::EventResult(
                     m_editData.m_materialPropertyOverrideMap, m_entityId, &MaterialComponentRequestBus::Events::GetPropertyOverrides,
                     m_materialAssignmentId);
+
+                // Apply any automatic property renames so that the material inspector will be properly initialized with the right values
+                // for properties that have new names.
+                {
+                    AZStd::vector<AZStd::pair<Name, Name>> renamedProperties;
+                    for (auto& propertyOverridePair : m_editData.m_materialPropertyOverrideMap)
+                    {
+                        Name name = propertyOverridePair.first;
+                        if (m_materialInstance->GetAsset()->GetMaterialTypeAsset()->ApplyPropertyRenames(name))
+                        {
+                            renamedProperties.emplace_back(propertyOverridePair.first, name);
+                        }
+                    }
+                    for (const auto& [oldName, newName] : renamedProperties)
+                    {
+                        m_editData.m_materialPropertyOverrideMap[newName] = m_editData.m_materialPropertyOverrideMap[oldName];
+                        m_editData.m_materialPropertyOverrideMap.erase(oldName);
+                    }
+                }
 
                 for (auto& group : m_groups)
                 {

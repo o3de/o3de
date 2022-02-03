@@ -30,7 +30,6 @@ namespace AZ
 
             AZStd::string m_displayName;
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
-            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_previewImageAsset;
         };
 
         using ModelPresetPtr = AZStd::shared_ptr<ModelPreset>;

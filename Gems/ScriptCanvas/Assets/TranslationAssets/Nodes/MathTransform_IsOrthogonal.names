@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "base": "{D6B704EB-62A7-5CEB-B715-4CD402E1BAF9}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Is Orthogonal",
+                "category": "Math/Transform",
+                "tooltip": "returns true if the upper 3x3 matrix of Source is within Tolerance of orthogonal, else false"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Source_0",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "base": "DataInput_Tolerance_1",
+                    "details": {
+                        "name": "Tolerance"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

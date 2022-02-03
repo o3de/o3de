@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "SearchFilter",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SearchFilter"
+            }
+        }
+    ]
+}

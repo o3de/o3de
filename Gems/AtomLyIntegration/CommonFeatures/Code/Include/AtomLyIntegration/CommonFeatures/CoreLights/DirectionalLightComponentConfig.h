@@ -101,6 +101,9 @@ namespace AZ
             //! Method of shadow's filtering.
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
 
+            // Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            float m_normalShadowBias = 0.0f;
+
             //! Sample Count for filtering (from 4 to 64)
             //! It is used only when the pixel is predicted as on the boundary.
             uint16_t m_filteringSampleCount = 32;
@@ -111,6 +114,9 @@ namespace AZ
 
             //! Reduces shadow acne by applying a small amount of offset along shadow-space z.
             float m_shadowBias = 0.0f;
+
+            // If true, sample between two adjacent shadow map cascades in a small boundary area to smooth out the transition.
+            bool m_cascadeBlendingEnabled = false;
 
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;

@@ -195,6 +195,49 @@ namespace Multiplayer
         m_child->m_entity.reset();
     }
 
+    TEST_F(ServerSimpleHierarchyTests, ChildPointsToRootAfterReattachment)
+    {
+        m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
+            InvalidNetEntityId
+        );
+
+        m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
+            m_root->m_entity->FindComponent<NetBindComponent>()->GetNetEntityId()
+        );
+    }
+
+    TEST_F(ServerSimpleHierarchyTests, ChildHasOwningConnectionIdOfParent)
+    {
+        // disconnect and assign new connection ids
+        m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
+        m_root->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 1 });
+        m_child->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 2 });
+
+        const ConnectionId previousConnectionId = m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId();
+
+        // re-attach, child's owning connection id should then be root's connection id
+        m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            m_root->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId()
+        );
+
+        // detach, the child should roll back to his previous owning connection id
+        m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            previousConnectionId
+        );
+    }
+
     /*
      * Parent -> Child -> ChildOfChild
      */
@@ -410,7 +453,7 @@ namespace Multiplayer
     {
         MockNetworkHierarchyCallbackHandler mock;
         EXPECT_CALL(mock, OnNetworkHierarchyUpdated(m_root->m_entity->GetId())).Times(2);
-        
+
         m_root->m_entity->FindComponent<NetworkHierarchyRootComponent>()->BindNetworkHierarchyChangedEventHandler(mock.m_changedHandler);
 
         m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
@@ -822,6 +865,22 @@ namespace Multiplayer
         }
     }
 
+    TEST_F(ServerHierarchyOfHierarchyTests, InnerChildrenPointToInnerRootAfterDetachmentFromTopRoot)
+    {
+        m_root2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_root->m_entity->GetId());
+        // detach
+        m_root2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
+
+        EXPECT_EQ(
+            m_child2->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
+            m_root2->m_entity->FindComponent<NetBindComponent>()->GetNetEntityId()
+        );
+        EXPECT_EQ(
+            m_childOfChild2->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchyRoot(),
+            m_root2->m_entity->FindComponent<NetBindComponent>()->GetNetEntityId()
+        );
+    }
+
     TEST_F(ServerHierarchyOfHierarchyTests, Inner_Root_Has_Child_References_After_Detachment_From_Child_Of_Child)
     {
         m_root2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childOfChild->m_entity->GetId());
@@ -1003,6 +1062,59 @@ namespace Multiplayer
 
         m_console->PerformCommand((AZStd::string("bg_hierarchyEntityMaxLimit ") + AZStd::to_string(currentMaxLimit)).c_str());
         m_console->GetCvarValue<uint32_t>("bg_hierarchyEntityMaxLimit", currentMaxLimit);
+    }
+
+    TEST_F(ServerHierarchyOfHierarchyTests, InnerRootAndItsChildrenHaveOwningConnectionIdOfTopRoot)
+    {
+        // Assign new connection ids.
+        m_root->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 1 });
+        m_root2->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 2 });
+
+        // Attach then inner hierarchy's owning connection id should then be top root's connection id.
+        m_root2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childOfChild->m_entity->GetId());
+
+        EXPECT_EQ(
+            m_root2->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            m_root->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId()
+        );
+
+        EXPECT_EQ(
+            m_child2->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            m_root->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId()
+        );
+
+        EXPECT_EQ(
+            m_childOfChild2->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            m_root->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId()
+        );
+    }
+
+    TEST_F(ServerHierarchyOfHierarchyTests, InnerRootAndItsChildrenHaveTheirOriginalOwningConnectionIdAfterDetachingFromTopRoot)
+    {
+        // Assign new connection ids.
+        m_root->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 1 });
+        m_root2->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 2 });
+
+        // Attach then inner hierarchy's owning connection id should then be top root's connection id.
+        m_root2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childOfChild->m_entity->GetId());
+
+        // detach, inner hierarchy should roll back to his previous owning connection id
+        m_root2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
+
+        EXPECT_EQ(
+            m_root2->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            ConnectionId{ 2 }
+        );
+
+        EXPECT_EQ(
+            m_child2->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            m_root2->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId()
+        );
+
+        EXPECT_EQ(
+            m_childOfChild2->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            m_root2->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId()
+        );
     }
 
     /*
@@ -1242,15 +1354,15 @@ namespace Multiplayer
         );
     }
 
-    TEST_F(ServerHierarchyWithThreeRoots, ReattachMiddleChildWhileLastChildGetsLeaveEventOnce)
+    TEST_F(ServerHierarchyWithThreeRoots, InnerRootLeftTopRootThenLastChildGetsJoinedEventOnce)
     {
         m_root2->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childOfChild->m_entity->GetId());
         m_root3->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(m_childOfChild->m_entity->GetId());
 
         MockNetworkHierarchyCallbackHandler mock;
-        EXPECT_CALL(mock, OnNetworkHierarchyLeave());
-        
-        m_childOfChild3->m_entity->FindComponent<NetworkHierarchyChildComponent>()->BindNetworkHierarchyLeaveEventHandler(mock.m_leaveHandler);
+        EXPECT_CALL(mock, OnNetworkHierarchyUpdated(m_root3->m_entity->GetId()));
+
+        m_childOfChild3->m_entity->FindComponent<NetworkHierarchyChildComponent>()->BindNetworkHierarchyChangedEventHandler(mock.m_changedHandler);
 
         m_child->m_entity->FindComponent<AzFramework::TransformComponent>()->SetParent(AZ::EntityId());
     }

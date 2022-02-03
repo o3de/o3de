@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
+#include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
 
 namespace AzToolsFramework
 {
@@ -52,7 +53,7 @@ namespace AzToolsFramework
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
 
-        void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, bool immediate, InstanceOptionalReference instanceToExclude)
+        void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude)
         {
             auto findInstancesResult =
                 m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId);
@@ -66,7 +67,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            Instance* instanceToExcludePtr = nullptr;
+            const Instance* instanceToExcludePtr = nullptr;
             if (instanceToExclude.has_value())
             {
                 instanceToExcludePtr = &(instanceToExclude->get());
@@ -78,11 +79,6 @@ namespace AzToolsFramework
                 {
                     m_instancesUpdateQueue.emplace_back(instance);
                 }
-            }
-
-            if (immediate)
-            {
-                UpdateTemplateInstancesInQueue();
             }
         }
 
@@ -249,10 +245,10 @@ namespace AzToolsFramework
                             selectedEntityIds.erase(entityIdIterator--);
                         }
                     }
-                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
 
-                    // Notify Propagation has ended
+                    // Notify Propagation has ended, then update selection (which is frozen during propagation, so this order matters)
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
+                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
                 }
 
                 m_updatingTemplateInstancesInQueue = false;

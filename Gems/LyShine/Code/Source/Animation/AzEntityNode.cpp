@@ -16,8 +16,6 @@
 #include "PNoise3.h"
 #include "AnimSequence.h"
 
-#include <Cry_Camera.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <LyShine/Bus/UiAnimateEntityBus.h>

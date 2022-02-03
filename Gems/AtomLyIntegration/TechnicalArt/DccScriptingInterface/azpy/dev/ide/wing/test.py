@@ -73,7 +73,7 @@ dccsi_test_script.contexts = [
 if __name__ == '__main__':
     # there are not really tests to run here due to this being a list of
     # constants for shared use.
-    _G_DEBUG = True
+    _DCCSI_GDEBUG = True
     _DCCSI_DEV_MODE = True
     _LOGGER.setLevel(_logging.DEBUG)  # force debugging
     

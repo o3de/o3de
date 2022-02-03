@@ -46,4 +46,4 @@ namespace Profiler
     };
 }// namespace Profiler
 
-AZ_DECLARE_MODULE_CLASS(Gem_Profiler, Profiler::ProfilerImGuiModule)
+AZ_DECLARE_MODULE_CLASS(Gem_ProfilerImGui, Profiler::ProfilerImGuiModule)
