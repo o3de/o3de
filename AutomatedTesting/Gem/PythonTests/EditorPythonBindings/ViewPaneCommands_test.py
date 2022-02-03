@@ -15,7 +15,6 @@ import sys
 import os
 sys.path.append(os.path.dirname(__file__))
 from hydra_utils import launch_test_case
-from hydra_utils import launch_test_case_with_args
 
 
 @pytest.mark.SUITE_sandbox
@@ -40,4 +39,4 @@ class TestViewPaneAutomation(object):
             ]
         
         test_case_file = os.path.join(os.path.dirname(__file__), 'ViewPaneCommands_test_case.py')
-        launch_test_case_with_args(editor, test_case_file, expected_lines, unexpected_lines, ['--attach-debugger'])
+        launch_test_case(editor, test_case_file, expected_lines, unexpected_lines)

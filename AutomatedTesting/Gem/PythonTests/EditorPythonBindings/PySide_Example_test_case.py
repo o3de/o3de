@@ -27,10 +27,7 @@ import editor_python_test_tools.pyside_component_utils as pyside_component_utils
 
 def PySide_Example_test_case():
     # Open level, any level should work
-    helper.init_idle()    
-    helper.open_level("WhiteBox", "EmptyLevel")
-
-    #editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', os.path.join('WhiteBox', 'EmptyLevel'))
+    editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', os.path.join('WhiteBox', 'EmptyLevel'))
 
     entityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())
 
@@ -55,7 +52,7 @@ def PySide_Example_test_case():
     else:
         print('Could not retrieve ComboBox values')
 
-    #editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'ExitNoPrompt')
+    editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'ExitNoPrompt')
 
 
 if __name__ == '__main__':

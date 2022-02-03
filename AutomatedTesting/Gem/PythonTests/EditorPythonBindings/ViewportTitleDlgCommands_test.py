@@ -29,9 +29,9 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.SUITE_sandbox
-#@pytest.mark.parametrize("platform,configuration,project,spec", [
-#    pytest.param("win_x64_vs2017", "profile", "AutomatedTesting", "all", marks=pytest.mark.skipif(not WINDOWS_LAUNCHER, reason="Only supported on Windows hosts")),
-#])
+@pytest.mark.parametrize("platform,configuration,project,spec", [
+    pytest.param("win_x64_vs2017", "profile", "AutomatedTesting", "all", marks=pytest.mark.skipif(not WINDOWS_LAUNCHER, reason="Only supported on Windows hosts")),
+])
 class TestViewportTitleDlgAutomation(object):
 
     def test_ViewportTitleDlg_API(self, request, editor, project):

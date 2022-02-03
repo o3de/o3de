@@ -13,9 +13,7 @@ import azlmbr.entity as entity
 from editor_python_test_tools.utils import TestHelper as helper
 
 # Open a level
-
-helper.open_level("", "ocean_component")
-#editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'ocean_component')
+editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'ocean_component')
 
 def print_result(result, message):
     if result:
