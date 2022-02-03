@@ -100,8 +100,6 @@ namespace AZ
                 return;
             }
 
-            const uint32_t baseSize = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());
-
             const size_t shadowmapCount = m_sizes.size();
             SetChildrenCount(shadowmapCount);
             AZStd::vector<bool> sliceIsCleared(m_atlas.GetArraySliceCount());
