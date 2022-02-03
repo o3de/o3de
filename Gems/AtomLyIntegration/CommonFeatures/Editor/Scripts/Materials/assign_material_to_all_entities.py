@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     
     # Get the material we want to assign
-    material_asset_path = os.path.join("materials", "types", "debug", "debugvertexstreams.azmaterial")
+    material_asset_path = os.path.join("materials", "special", "debugvertexstreams.azmaterial")
     material_asset_id = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)
     general.log(f"Assigning {material_asset_path} to all mesh and actor components in the level.")
