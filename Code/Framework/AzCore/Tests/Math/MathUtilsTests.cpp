@@ -59,54 +59,127 @@ namespace UnitTest
         EXPECT_NEAR(1.0, AZ::LerpInverse(1.0, 1.0 + 5.0 * epsilonD, 1.0 + 5.0 * epsilonD), epsilonD);
     }
 
-    class RoundUpToMultipleTestsFixture
-        : public ScopedAllocatorSetupFixture
-        , public ::testing::WithParamInterface<uint32_t>
-    {
-    };
-
     template <typename T>
-    void TestRoundUpToMultipleIsCorrect(T alignment)
+    void TestRoundUpToMultipleIsCorrect()
     {
         // Example: alignment: 4
         // inputValue:     0 1 2 3 4 5 6 7 8 ...
         // expectedOutput: 0 4 4 4 4 8 8 8 8 ...
-        AZStd::vector<T> expectedOutput;
-        constexpr T iterations = 4;
-        expectedOutput.reserve(iterations * alignment + 1);
-        expectedOutput.push_back(0);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(0) , static_cast<T>(1)) , 0);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(1) , static_cast<T>(1)) , 1);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(2) , static_cast<T>(1)) , 2);
 
-        for (T i = 1; i <= iterations; ++i)
-        {
-            for (T j = 0; j < alignment; ++j)
-            {
-                expectedOutput.push_back(i * alignment);
-            }
-        }
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(0) , static_cast<T>(2)) , 0);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(1) , static_cast<T>(2)) , 2);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(2) , static_cast<T>(2)) , 2);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(3) , static_cast<T>(2)) , 4);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(4) , static_cast<T>(2)) , 4);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(5) , static_cast<T>(2)) , 6);
 
-        for (T inputValue = 0; inputValue < expectedOutput.size(); ++inputValue)
-        {
-            T result = RoundUpToMultiple(inputValue, alignment);
-            EXPECT_EQ(result, expectedOutput[inputValue]);
-        }
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(0) , static_cast<T>(8)) , 0);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(1) , static_cast<T>(8)) , 8);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(7) , static_cast<T>(8)) , 8);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(8) , static_cast<T>(8)) , 8);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(9) , static_cast<T>(8)) , 16);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(15), static_cast<T>(8)) , 16);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(16), static_cast<T>(8)) , 16);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(17), static_cast<T>(8)) , 24);
+
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(0) , static_cast<T>(13)), 0);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(1) , static_cast<T>(13)), 13);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(9) , static_cast<T>(13)), 13);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(12), static_cast<T>(13)), 13);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(13), static_cast<T>(13)), 13);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(14), static_cast<T>(13)), 26);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(25), static_cast<T>(13)), 26);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(26), static_cast<T>(13)), 26);
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(27), static_cast<T>(13)), 39);
+
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(0), std::numeric_limits<T>::max()), 0);
+
+        T aVeryLargeNumberThatStillWontOverflow = std::numeric_limits<T>::max() - 4;
+        EXPECT_EQ(RoundUpToMultiple(static_cast<T>(1), aVeryLargeNumberThatStillWontOverflow), aVeryLargeNumberThatStillWontOverflow);
+        EXPECT_EQ(RoundUpToMultiple(aVeryLargeNumberThatStillWontOverflow, static_cast<T>(1)), aVeryLargeNumberThatStillWontOverflow);
     }
 
-    TEST_P(RoundUpToMultipleTestsFixture, RoundUpToMultipleUInt32_ValidInput_IsCorrect)
+    TEST(RoundUpToMultipleTest, RoundUpToMultipleUInt32_ValidInput_IsCorrect)
     {
-        uint32_t alignment = GetParam();
-        TestRoundUpToMultipleIsCorrect(alignment);
+        TestRoundUpToMultipleIsCorrect<uint32_t>();
     }
 
-    TEST_P(RoundUpToMultipleTestsFixture, RoundUpToMultipleUInt64_ValidInput_IsCorrect)
+    TEST(RoundUpToMultipleTest, RoundUpToMultipleUInt64_ValidInput_IsCorrect)
     {
-        uint64_t alignment = GetParam();
-        TestRoundUpToMultipleIsCorrect(alignment);
+        TestRoundUpToMultipleIsCorrect<uint64_t>();
     }
+
+    template<typename T>
+    void TestDivideAndRoundUpIsCorrect()
+    {
+        //! Example: alignment: 3
+        //! Value:  0 1 2 3 4 5 6 7 8
+        //! Result: 0 1 1 1 2 2 2 3 3
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(0), static_cast<T>(3)), 0);
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(1), static_cast<T>(3)), 1);
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(2), static_cast<T>(3)), 1);
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(3), static_cast<T>(3)), 1);
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(4), static_cast<T>(3)), 2);
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(5), static_cast<T>(3)), 2);
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(6), static_cast<T>(3)), 2);
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(7), static_cast<T>(3)), 3);
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(8), static_cast<T>(3)), 3);
+
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(0), std::numeric_limits<T>::max()), 0);
+
+        T aVeryLargeNumberThatStillWontOverflow = std::numeric_limits<T>::max() - 4;
+        EXPECT_EQ(DivideAndRoundUp(static_cast<T>(1), aVeryLargeNumberThatStillWontOverflow), static_cast<T>(1));
+        EXPECT_EQ(DivideAndRoundUp(aVeryLargeNumberThatStillWontOverflow, static_cast<T>(1)), aVeryLargeNumberThatStillWontOverflow);
+
+    }
+
+    TEST(DivideAndRoundUpTest, DivideAndRoundUpUInt32_ValidInput_IsCorrect)
+    {
+        TestDivideAndRoundUpIsCorrect<uint32_t>();
+    }
+
+    TEST(DivideAndRoundUpTest, DivideAndRoundUpUInt64_ValidInput_IsCorrect)
+    {
+        TestDivideAndRoundUpIsCorrect<uint64_t>();
+    }
+
     
-    INSTANTIATE_TEST_CASE_P(
-        MATH_RoundUpToMultiple,
-        RoundUpToMultipleTestsFixture,
-        // Multiples that we're going to test rounding up to
-        // Test with some low numbers, prime numbers, power of two numbers, and non-prime non-power-of-two numbers
-        ::testing::ValuesIn({1u,2u,3u,4u,5u,8u,9u,12u,13u}));
+    class RoundUpInvalidInputTestsFixture : public ScopedAllocatorSetupFixture
+    {
+    };
+
+    TEST_F(RoundUpInvalidInputTestsFixture, DividAndRoundUp_AlignmentZeroUint32_Assert)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        DivideAndRoundUp(static_cast<uint32_t>(0), static_cast<uint32_t>(0));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
+    TEST_F(RoundUpInvalidInputTestsFixture, DividAndRoundUp_AlignmentZeroUint64_Assert)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        DivideAndRoundUp(static_cast<uint64_t>(0), static_cast<uint64_t>(0));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
+    TEST_F(RoundUpInvalidInputTestsFixture, DividAndRoundUp_OverflowUint32_Assert)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        DivideAndRoundUp(
+            static_cast<uint32_t>((std::numeric_limits<uint32_t>::max() / 2) + 1),
+            static_cast<uint32_t>((std::numeric_limits<uint32_t>::max() / 2) + 1));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
+    TEST_F(RoundUpInvalidInputTestsFixture, DividAndRoundUp_OverflowUint64_Assert)
+    {
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        DivideAndRoundUp(
+            static_cast<uint64_t>((std::numeric_limits<uint64_t>::max() / 2) + 1),
+            static_cast<uint64_t>((std::numeric_limits<uint64_t>::max() / 2) + 1));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
 }

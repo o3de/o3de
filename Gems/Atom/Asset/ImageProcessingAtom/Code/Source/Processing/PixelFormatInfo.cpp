@@ -390,7 +390,7 @@ namespace ImageProcessingAtom
             return 0;
         }
 
-        // get number of blocks (divide image size by block size, then round up if there is a remainder to get block count) and multiply with bits per block. Divided by 8 to get
+        // get number of blocks and multiply with bits per block. Divided by 8 to get
         // final byte size
         return (DivideAndRoundUp(imageWidth, pFormatInfo->blockWidth) *
                 DivideAndRoundUp(imageHeight, pFormatInfo->blockHeight) *

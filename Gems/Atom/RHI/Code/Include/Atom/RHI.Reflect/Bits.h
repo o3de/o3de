@@ -238,11 +238,12 @@ namespace AZ
         }
 
         /**
+        * O3DE_DEPRECATION_NOTICE(GHI-7407)
         * Returns the value divided by alignment, where the result is rounded up if the remainder is non-zero.
         */
         template <typename T> inline T DivideByMultiple(T value, size_t alignment)
         {
-            return AZ::DivideAndRoundUp(value, alignment);
+            return (T)((value + alignment - 1) / alignment);
         }
 
         template <size_t S>

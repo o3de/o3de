@@ -20,6 +20,7 @@
 #include <limits>
 #include <math.h>
 #include <utility>
+#include <inttypes.h>
 
 // We have a separate inline define for math functions.
 // The performance of these functions is very sensitive to inlining, and some compilers don't deal well with this.
@@ -468,16 +469,22 @@ namespace AZ
     constexpr uint32_t DivideAndRoundUp(uint32_t value, uint32_t alignment)
     {
         AZ_Assert(alignment != 0, "0 is an invalid multiple to round to.");
-        return ((value + alignment - 1) / alignment);
+        AZ_Assert(
+            std::numeric_limits<uint32_t>::max() - value >= alignment,
+            "value '%" PRIu32 "' and alignment '%" PRIu32 "' will overflow when added together during DivideAndRoundUp.");
+        return (value + alignment - 1) / alignment;
     }
 
     constexpr uint64_t DivideAndRoundUp(uint64_t value, uint64_t alignment)
     {
         AZ_Assert(alignment != 0, "0 is an invalid multiple to round to.");
-        return ((value + alignment - 1) / alignment);
+        AZ_Assert(
+            std::numeric_limits<uint64_t>::max() - value >= alignment,
+            "value '%" PRIu64 "' and alignment '%" PRIu64 "' will overflow when added together during DivideAndRoundUp.");
+        return (value + alignment - 1) / alignment;
     }
     
-    //! Returns the value rounded up to a multiple of alignment
+    //! Returns the value rounded up to a multiple of alignment.
     //! Example: roundTo: 4
     //! Value:  0 1 2 3 4 5 6 7 8
     //! Result: 0 4 4 4 4 8 8 8 8
