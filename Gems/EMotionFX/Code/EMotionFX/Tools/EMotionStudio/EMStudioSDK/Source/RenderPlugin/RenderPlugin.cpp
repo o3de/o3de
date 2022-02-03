@@ -429,6 +429,7 @@ namespace EMStudio
 
         // 3. Relink the actor instances with the emstudio actors
         const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        size_t numActorInstancesInRenderPlugin = 0;
         for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance*   actorInstance   = EMotionFX::GetActorManager().GetActorInstance(i);
@@ -440,6 +441,12 @@ namespace EMStudio
                 continue;
             }
 
+            if (actorInstance->GetEntity())
+            {
+                continue;
+            }
+
+            numActorInstancesInRenderPlugin++;
             if (!emstudioActor)
             {
                 for (EMStudioRenderActor* currentEMStudioActor : m_actors)
@@ -485,6 +492,7 @@ namespace EMStudio
                 if (found == false)
                 {
                     emstudioActor->m_actorInstances.erase(AZStd::next(begin(emstudioActor->m_actorInstances), j));
+                    numActorInstancesInRenderPlugin--;
                 }
                 else
                 {
@@ -497,7 +505,7 @@ namespace EMStudio
         m_reinitRequested = false;
 
         // zoom the camera to the available character only in case we're dealing with a single instance
-        if (resetViewCloseup && numActorInstances == 1)
+        if (resetViewCloseup && numActorInstancesInRenderPlugin == 1)
         {
             ViewCloseup(false);
         }
@@ -701,8 +709,10 @@ namespace EMStudio
         renderOptionsFilename += "EMStudioRenderOptions.cfg";
         QSettings settings(renderOptionsFilename.c_str(), QSettings::IniFormat, this);
 
-        // save the general render options
-        m_renderOptions.Save(&settings);
+        // Deprecation of renderPlugin.
+        // Since we are using the same render option save file for atom render plugin, do not save the render options in the RenderPlugin to
+        // prevent double save.
+        // m_renderOptions.Save(&settings);
 
         AZStd::string groupName;
         if (m_currentLayout)

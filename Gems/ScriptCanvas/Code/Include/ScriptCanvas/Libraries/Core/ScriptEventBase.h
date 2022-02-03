@@ -103,7 +103,7 @@ namespace ScriptCanvas
                     const AZ::Data::AssetId GetAssetId() const { return m_scriptEventAssetId; }
                     ScriptEvents::ScriptEventsAssetRef& GetAssetRef() { return m_scriptEventAsset; }
                     const ScriptEvents::ScriptEvent& GetScriptEvent() const { return m_definition; }
-                    ScriptEvents::ScriptEventsAssetPtr GetAsset() const { return m_asset; }
+                    ScriptEvents::ScriptEventsAssetPtr GetAsset() const { return ScriptEvents::ScriptEventsAssetPtr{ m_asset.Get(), AZ::Data::AssetLoadBehavior::PreLoad }; }
 
                     AZStd::pair<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>, bool> IsAssetOutOfDate() const;
 

@@ -9,7 +9,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Math/Uuid.h>
 #include <QString>
 #include <QStringList>
 #include <QVector>

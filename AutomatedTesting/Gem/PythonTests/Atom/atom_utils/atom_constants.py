@@ -32,6 +32,8 @@ GLOBAL_ILLUMINATION_QUALITY = {
     'High': 2,
 }
 
+# Level list used in Editor Level Load Test
+LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest", "Sponza"]
 
 class AtomComponentProperties:
     """
@@ -85,12 +87,18 @@ class AtomComponentProperties:
     def decal(property: str = 'name') -> str:
         """
         Decal component properties.
+          - 'Attenuation Angle' controls how much the angle between geometry and decal impacts opacity. 0-1 Radians
+          - 'Opacity' where one is opaque and zero is transparent
+          - 'Sort Key' 0-255 stacking z-sort like key to define which decal is on top of another
           - 'Material' the material Asset.id of the decal.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Decal',
+            'Attenuation Angle': 'Controller|Configuration|Attenuation Angle',
+            'Opacity': 'Controller|Configuration|Opacity',
+            'Sort Key': 'Controller|Configuration|Sort Key',
             'Material': 'Controller|Configuration|Material',
         }
         return properties[property]
@@ -195,11 +203,13 @@ class AtomComponentProperties:
     def entity_reference(property: str = 'name') -> str:
         """
         Entity Reference component properties.
+          - 'EntityIdReferences' component container of entityId references. Initially empty.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Entity Reference',
+            'EntityIdReferences': 'Controller|Configuration|EntityIdReferences',
         }
         return properties[property]
 

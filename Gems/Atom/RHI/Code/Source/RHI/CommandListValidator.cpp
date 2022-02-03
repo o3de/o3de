@@ -56,7 +56,6 @@ namespace AZ
             {
                 return true;
             }
-            AZ_PROFILE_FUNCTION(RHI);
             ValidateViewContext context;
             context.m_scopeName = m_scope->GetId().GetCStr();
             context.m_srgName = shaderResourceGroup.GetName().GetCStr();

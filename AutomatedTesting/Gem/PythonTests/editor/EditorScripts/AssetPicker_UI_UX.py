@@ -215,8 +215,7 @@ def AssetPicker_UI_UX():
                     QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
 
         # 1) Open an existing simple level
-        helper.init_idle()
-        helper.open_level("Physics", "Base")
+        hydra.open_base_level()
 
         # 2) Create entity and add Mesh component
         entity_position = math.Vector3(125.0, 136.0, 32.0)

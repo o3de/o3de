@@ -42,39 +42,39 @@ echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
 :: shared location for 64bit python 3.7 DEV location
 :: this defines a DCCsi sandbox for lib site-packages by version
 :: <O3DE>\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib
-set DCCSI_PYTHON_PATH=%DCCSIG_PATH%\3rdParty\Python
-echo     DCCSI_PYTHON_PATH = %DCCSI_PYTHON_PATH%
+set PATH_DCCSI_PYTHON=%PATH_DCCSIG%\3rdParty\Python
+echo     PATH_DCCSI_PYTHON = %PATH_DCCSI_PYTHON%
 
 :: add access to a Lib location that matches the py version (example: 3.7.x)
 :: switch this for other python versions like maya (2.7.x)
-IF "%DCCSI_PYTHON_LIB_PATH%"=="" (set DCCSI_PYTHON_LIB_PATH=%DCCSI_PYTHON_PATH%\Lib\%DCCSI_PY_VERSION_MAJOR%.x\%DCCSI_PY_VERSION_MAJOR%.%DCCSI_PY_VERSION_MINOR%.x\site-packages)
-echo     DCCSI_PYTHON_LIB_PATH = %DCCSI_PYTHON_LIB_PATH%
+IF "%PATH_DCCSI_PYTHON_LIB%"=="" (set PATH_DCCSI_PYTHON_LIB=%PATH_DCCSI_PYTHON%\Lib\%DCCSI_PY_VERSION_MAJOR%.x\%DCCSI_PY_VERSION_MAJOR%.%DCCSI_PY_VERSION_MINOR%.x\site-packages)
+echo     PATH_DCCSI_PYTHON_LIB = %PATH_DCCSI_PYTHON_LIB%
 
 :: add to the PATH
-SET PATH=%DCCSI_PYTHON_LIB_PATH%;%PATH%
+SET PATH=%PATH_DCCSI_PYTHON_LIB%;%PATH%
 
 :: shared location for default O3DE python location
-set O3DE_PYTHON_INSTALL=%O3DE_DEV%\python
-echo     O3DE_PYTHON_INSTALL = %O3DE_PYTHON_INSTALL%
+set PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\python
+echo    PATH_O3DE_PYTHON_INSTALL = %PATH_O3DE_PYTHON_INSTALL%
 
 :: location for O3DE python 3.7 location 
 :: Note, many DCC tools (like Maya) include thier own python interpretter
 :: Some DCC apps may not operate correctly if PYTHONHOME is set (this is definitely the case with Maya)
 :: Be aware the python.cmd below does set PYTHONHOME
-set DCCSI_PY_BASE=%O3DE_PYTHON_INSTALL%\python.cmd
+set DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.cmd
 echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 
-CALL %O3DE_PYTHON_INSTALL%\get_python_path.bat
+CALL %PATH_O3DE_PYTHON_INSTALL%\get_python_path.bat
 
 :: Some IDEs like Wing, may in some cases need acess directly to the exe to operate correctly
 IF "%DCCSI_PY_IDE%"=="" (set DCCSI_PY_IDE=%O3DE_PYTHONHOME%\python.exe)
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 :: add to the PATH
-SET PATH=%O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
+SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%DCCSIG_PATH%;%DCCSI_PYTHON_LIB_PATH%;%O3DE_BUILD_PATH%;%PYTHONPATH%
+set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
 echo     PYTHONPATH = %PYTHONPATH%
 
 :: Set flag so we don't initialize dccsi environment twice

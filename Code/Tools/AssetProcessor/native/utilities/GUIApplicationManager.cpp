@@ -12,8 +12,6 @@
 #include "native/resourcecompiler/rccontroller.h"
 #include "native/FileServer/fileServer.h"
 #include "native/AssetManager/assetScanner.h"
-#include "native/shadercompiler/shadercompilerManager.h"
-#include "native/shadercompiler/shadercompilerModel.h"
 
 #include <QApplication>
 #include <QDialogButtonBox>
@@ -165,8 +163,6 @@ void GUIApplicationManager::Destroy()
 
     DestroyIniConfiguration();
     DestroyFileServer();
-    DestroyShaderCompilerManager();
-    DestroyShaderCompilerModel();
 }
 
 
@@ -342,16 +338,8 @@ bool GUIApplicationManager::Run()
 
     qApp->setQuitOnLastWindowClosed(false);
 
-    QTimer::singleShot(0, this, [this]()
-    {
-        if (!PostActivate())
-        {
-            QuitRequested();
-            m_startedSuccessfully = false;
-        }
-    });
-
     m_duringStartup = false;
+    m_startedSuccessfully = true;
 
     int resultCode =  qApp->exec(); // this blocks until the last window is closed.
 
@@ -508,9 +496,6 @@ bool GUIApplicationManager::Activate()
         return false;
     }
 
-    InitShaderCompilerModel();
-    InitShaderCompilerManager();
-
     return true;
 }
 
@@ -519,6 +504,7 @@ bool GUIApplicationManager::PostActivate()
     if (!ApplicationManagerBase::PostActivate())
     {
         m_startupErrorCollector = nullptr;
+        m_startedSuccessfully = false;
         return false;
     }
 
@@ -691,40 +677,6 @@ void GUIApplicationManager::DestroyFileServer()
     }
 }
 
-void GUIApplicationManager::InitShaderCompilerManager()
-{
-    m_shaderCompilerManager = new ShaderCompilerManager();
-
-    //Shader compiler stuff
-    m_connectionManager->RegisterService(AssetUtilities::ComputeCRC32Lowercase("ShaderCompilerProxyRequest"), std::bind(&ShaderCompilerManager::process, m_shaderCompilerManager, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
-    QObject::connect(m_shaderCompilerManager, SIGNAL(sendErrorMessageFromShaderJob(QString, QString, QString, QString)), m_shaderCompilerModel, SLOT(addShaderErrorInfoEntry(QString, QString, QString, QString)));
-
-
-}
-
-void GUIApplicationManager::DestroyShaderCompilerManager()
-{
-    if (m_shaderCompilerManager)
-    {
-        delete m_shaderCompilerManager;
-        m_shaderCompilerManager = nullptr;
-    }
-}
-
-void GUIApplicationManager::InitShaderCompilerModel()
-{
-    m_shaderCompilerModel = new ShaderCompilerModel();
-}
-
-void GUIApplicationManager::DestroyShaderCompilerModel()
-{
-    if (m_shaderCompilerModel)
-    {
-        delete m_shaderCompilerModel;
-        m_shaderCompilerModel = nullptr;
-    }
-}
-
 IniConfiguration* GUIApplicationManager::GetIniConfiguration() const
 {
     return m_iniConfiguration;
@@ -733,14 +685,6 @@ IniConfiguration* GUIApplicationManager::GetIniConfiguration() const
 FileServer* GUIApplicationManager::GetFileServer() const
 {
     return m_fileServer;
-}
-ShaderCompilerManager* GUIApplicationManager::GetShaderCompilerManager() const
-{
-    return m_shaderCompilerManager;
-}
-ShaderCompilerModel* GUIApplicationManager::GetShaderCompilerModel() const
-{
-    return m_shaderCompilerModel;
 }
 
 void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)

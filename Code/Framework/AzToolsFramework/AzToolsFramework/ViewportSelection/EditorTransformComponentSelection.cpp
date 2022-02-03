@@ -381,7 +381,7 @@ namespace AzToolsFramework
         EntityIdContainer& selectedEntityIdsBeforeBoxSelect,
         EntityIdContainer& potentialSelectedEntityIds,
         EntityIdContainer& potentialDeselectedEntityIds,
-        const EditorVisibleEntityDataCache& entityDataCache,
+        const EditorVisibleEntityDataCacheInterface& entityDataCache,
         const int viewportId,
         const ViewportInteraction::KeyboardModifiers currentKeyboardModifiers,
         const ViewportInteraction::KeyboardModifiers& previousKeyboardModifiers)
@@ -958,7 +958,7 @@ namespace AzToolsFramework
     // (useful in the context of drawing when we only care about entities we can see)
     // note: return the index if it is selectable, nullopt otherwise
     static AZStd::optional<size_t> SelectableInVisibleViewportCache(
-        const EditorVisibleEntityDataCache& entityDataCache, const AZ::EntityId entityId)
+        const EditorVisibleEntityDataCacheInterface& entityDataCache, const AZ::EntityId entityId)
     {
         if (auto entityIndex = entityDataCache.GetVisibleEntityIndexFromId(entityId))
         {
@@ -1002,7 +1002,7 @@ namespace AzToolsFramework
         }
     }
 
-    EditorTransformComponentSelection::EditorTransformComponentSelection(const EditorVisibleEntityDataCache* entityDataCache)
+    EditorTransformComponentSelection::EditorTransformComponentSelection(const EditorVisibleEntityDataCacheInterface* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
         const AzFramework::EntityContextId entityContextId = GetEntityContextId();
@@ -2521,10 +2521,9 @@ namespace AzToolsFramework
             AZStd::erase_if(
                 m_selectedEntityIds,
                 [readOnlyEntityPublicInterface](auto entityId)
-            {
-                return readOnlyEntityPublicInterface->IsReadOnly(entityId);
-            }
-            );
+                {
+                    return readOnlyEntityPublicInterface->IsReadOnly(entityId);
+                });
         }
 
         // note: create/destroy pattern to be addressed
@@ -3285,9 +3284,9 @@ namespace AzToolsFramework
             QObject::connect(
                 action, &QAction::triggered, action,
                 [this]
-            {
-                ToggleCenterPivotSelection();
-            });
+                {
+                    ToggleCenterPivotSelection();
+                });
         }
     }
 

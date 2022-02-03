@@ -61,7 +61,7 @@ namespace AZ
             {
                 const auto& [first, second, third] = triangleIndices;
 
-                const AZStd::array_view<float>& positionBuffer = m_meshes[nObjIndex].m_vertexData;
+                const AZStd::span<const float>& positionBuffer = m_meshes[nObjIndex].m_vertexData;
 
                 if (positionBuffer.empty())
                 {
@@ -114,7 +114,7 @@ namespace AZ
 
             for (AZ::u8 meshIndex = 0, meshCount = aznumeric_caster(m_meshes.size()); meshIndex < meshCount; ++meshIndex)
             {
-                const AZStd::array_view<float> positionBuffer = m_meshes[meshIndex].m_vertexData;
+                const AZStd::span<const float> positionBuffer = m_meshes[meshIndex].m_vertexData;
                 for (size_t positionIndex = 0; positionIndex < positionBuffer.size(); positionIndex += 3)
                 {
                     entireBoundBox.AddPoint({positionBuffer[positionIndex], positionBuffer[positionIndex + 1], positionBuffer[positionIndex + 2]});
@@ -137,14 +137,14 @@ namespace AZ
             return true;
         }
 
-        AZStd::array_view<float> ModelKdTree::GetPositionsBuffer(const ModelLodAsset::Mesh& mesh)
+        AZStd::span<const float> ModelKdTree::GetPositionsBuffer(const ModelLodAsset::Mesh& mesh)
         {
-            AZStd::array_view<float> positionBuffer = mesh.GetSemanticBufferTyped<float>(AZ::Name{"POSITION"});
+            AZStd::span<const float> positionBuffer = mesh.GetSemanticBufferTyped<float>(AZ::Name{"POSITION"});
             AZ_Warning("ModelKdTree", !positionBuffer.empty(), "Could not find position buffers in a mesh");
             return positionBuffer;
         }
 
-        AZStd::array_view<ModelKdTree::TriangleIndices> ModelKdTree::GetIndexBuffer(const ModelLodAsset::Mesh& mesh)
+        AZStd::span<const ModelKdTree::TriangleIndices> ModelKdTree::GetIndexBuffer(const ModelLodAsset::Mesh& mesh)
         {
             return mesh.GetIndexBufferTyped<ModelKdTree::TriangleIndices>();
         }
@@ -264,7 +264,7 @@ namespace AZ
                     const auto& [first, second, third] = pNode->GetVertexIndex(i);
                     const AZ::u32 nObjIndex = pNode->GetObjIndex(i);
 
-                    const AZStd::array_view<float> positionBuffer = m_meshes[nObjIndex].m_vertexData;
+                    const AZStd::span<const float> positionBuffer = m_meshes[nObjIndex].m_vertexData;
 
                     if (positionBuffer.empty())
                     {

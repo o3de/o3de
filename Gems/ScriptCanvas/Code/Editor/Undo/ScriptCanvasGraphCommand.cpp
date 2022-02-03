@@ -19,7 +19,6 @@
 #include <Editor/Undo/ScriptCanvasGraphCommand.h>
 
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
-#include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
 
 namespace ScriptCanvasEditor
 {
@@ -36,7 +35,7 @@ namespace ScriptCanvasEditor
     {
     }
 
-    void GraphItemCommand::Capture(Graph*, bool)
+    void GraphItemCommand::Capture(EditorGraph*, bool)
     {
     }
 
@@ -105,7 +104,7 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemChangeCommand::Capture(Graph* graph, bool captureUndo)
+    void GraphItemChangeCommand::Capture(EditorGraph* graph, bool captureUndo)
     {
         m_scriptCanvasId = graph->GetScriptCanvasId();
         m_graphCanvasGraphId = graph->GetGraphCanvasGraphId();
@@ -204,7 +203,7 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemAddCommand::Capture(Graph* graph, bool)
+    void GraphItemAddCommand::Capture(EditorGraph* graph, bool)
     {
         GraphItemChangeCommand::Capture(graph, false);
     }
@@ -225,7 +224,7 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemRemovalCommand::Capture(Graph* graph, bool)
+    void GraphItemRemovalCommand::Capture(EditorGraph* graph, bool)
     {
         GraphItemChangeCommand::Capture(graph, true);
     }

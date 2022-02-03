@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceSlopeGradientComponent.h"
+#include <GradientSignal/Components/SurfaceSlopeGradientComponent.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -209,35 +209,49 @@ namespace GradientSignal
         SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
             sampleParams.m_position, m_configuration.m_surfaceTagsToSample, points);
 
-        if (points.empty())
-        {
-            return 0.0f;
-        }
-
-        // Assuming our surface normal vector is actually normalized, we can get the slope
-        // by just grabbing the Z value.  It's the same thing as normal.Dot(AZ::Vector3::CreateAxisZ()).
-        AZ_Assert(points.front().m_normal.GetNormalized().IsClose(points.front().m_normal), "Surface normals are expected to be normalized");
-        const float slope = points.front().m_normal.GetZ();
-        // Convert slope back to an angle so that we can lerp in "angular space", not "slope value space".
-        // (We want our 0-1 range to be linear across the range of angles)
-        const float slopeAngle = acosf(slope);
-
         const float angleMin = AZ::DegToRad(AZ::GetClamp(m_configuration.m_slopeMin, 0.0f, 90.0f));
         const float angleMax = AZ::DegToRad(AZ::GetClamp(m_configuration.m_slopeMax, 0.0f, 90.0f));
 
-        switch (m_configuration.m_rampType)
+        return GetSlopeRatio(points, angleMin, angleMax);
+    }
+
+    void SurfaceSlopeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
         {
-            case SurfaceSlopeGradientConfig::RampType::SMOOTH_STEP:
-                return m_configuration.m_smoothStep.GetSmoothedValue(GetRatio(angleMin, angleMax, slopeAngle));
-            case SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_UP:
-                // For ramp up, linearly interpolate from min to max.
-                return GetRatio(angleMin, angleMax, slopeAngle);
-            case SurfaceSlopeGradientConfig::RampType::LINEAR_RAMP_DOWN:
-            default:
-                // For ramp down, linearly interpolate from max to min.
-                return GetRatio(angleMax, angleMin, slopeAngle);
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        bool valuesFound = false;
+
+        // Rather than calling GetSurfacePoints on the EBus repeatedly in a loop, we instead pass a lambda into the EBus that contains
+        // the loop within it so that we can avoid the repeated EBus-calling overhead.
+        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+            [this, positions, &outValues, &valuesFound](SurfaceData::SurfaceDataSystemRequestBus::Events* surfaceDataRequests)
+            {
+                // It's possible that there's nothing connected to the EBus, so keep track of the fact that we have valid results.
+                valuesFound = true;
+                SurfaceData::SurfacePointList points;
+
+                const float angleMin = AZ::DegToRad(AZ::GetClamp(m_configuration.m_slopeMin, 0.0f, 90.0f));
+                const float angleMax = AZ::DegToRad(AZ::GetClamp(m_configuration.m_slopeMax, 0.0f, 90.0f));
+
+                for (size_t index = 0; index < positions.size(); index++)
+                {
+                    points.clear();
+                    surfaceDataRequests->GetSurfacePoints(positions[index], m_configuration.m_surfaceTagsToSample, points);
+                    outValues[index] = GetSlopeRatio(points, angleMin, angleMax);
+                }
+            });
+
+        if (!valuesFound)
+        {
+            // No surface tags, so no output values.
+            AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
         }
     }
+
 
     float SurfaceSlopeGradientComponent::GetSlopeMin() const
     {

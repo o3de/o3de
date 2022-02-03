@@ -9,8 +9,8 @@
 
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Viewport/SingleViewportController.h>
-#include <Atom/Viewport/InputController/MaterialEditorViewportInputControllerBus.h>
-#include <Source/Viewport/InputController/Behavior.h>
+#include <Viewport/InputController/Behavior.h>
+#include <Viewport/InputController/MaterialEditorViewportInputControllerBus.h>
 
 namespace MaterialEditor
 {

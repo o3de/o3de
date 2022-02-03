@@ -12,7 +12,6 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TransformBus.h>
 
 #include <Source/Components/SurfaceDataColliderComponent.h>
@@ -23,23 +22,6 @@
 
 namespace UnitTest
 {
-    // Mock out a generic Physics Collider Component, which is a required dependency for adding a SurfaceDataColliderComponent.
-    struct MockPhysicsColliderComponent
-        : public AZ::Component
-    {
-    public:
-        AZ_COMPONENT(MockPhysicsColliderComponent, "{4F7C36DE-6475-4E0A-96A7-BFAF21C07C95}", AZ::Component);
-
-        void Activate() override {}
-        void Deactivate() override {}
-
-        static void Reflect(AZ::ReflectContext* reflect) { AZ_UNUSED(reflect); }
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-        }
-    };
-
     class MockPhysicsWorldBusProvider
         : public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
@@ -111,10 +93,28 @@ namespace UnitTest
         // Compare two surface points.
         bool SurfacePointsAreEqual(const SurfaceData::SurfacePoint& lhs, const SurfaceData::SurfacePoint& rhs)
         {
-            return (lhs.m_entityId == rhs.m_entityId)
-                && (lhs.m_position == rhs.m_position)
-                && (lhs.m_normal == rhs.m_normal)
-                && (lhs.m_masks == rhs.m_masks);
+            if ((lhs.m_entityId != rhs.m_entityId)
+                || (lhs.m_position != rhs.m_position)
+                || (lhs.m_normal != rhs.m_normal)
+                || (lhs.m_masks.size() != rhs.m_masks.size()))
+            {
+                return false;
+            }
+
+            for (auto& mask : lhs.m_masks)
+            {
+                auto maskEntry = rhs.m_masks.find(mask.first);
+                if (maskEntry == rhs.m_masks.end())
+                {
+                    return false;
+                }
+                if (maskEntry->second != mask.second)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         // Common test function for testing the "Provider" functionality of the component.

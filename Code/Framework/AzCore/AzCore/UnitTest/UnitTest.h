@@ -69,6 +69,15 @@ namespace UnitTest
             return numAssertsFailed;
         }
 
+        void ResetSuppressionSettingsToDefault()
+        {
+            m_suppressErrors = true;
+            m_suppressWarnings = true;
+            m_suppressAsserts = true;
+            m_suppressOutput = true;
+            m_suppressPrintf = true;
+        }
+
         bool m_isAssertTest;
         bool m_suppressErrors = true;
         bool m_suppressWarnings = true;

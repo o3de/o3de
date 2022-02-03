@@ -80,7 +80,7 @@ struct VSInput
 struct VSOutput
 {
     // Base fields (required by the template azsli file)...
-    float4 m_position : SV_Position;
+    precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
@@ -428,7 +428,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     Surface surface;
     surface.position = IN.m_worldPosition;
-    surface.transmission.InitializeToZero();
 
     // ------- Combine Normals ---------
 
@@ -523,7 +522,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     ApplyIBL(surface, lightingData);
 
     // Finalize Lighting
-    lightingData.FinalizeLighting(0);
+    lightingData.FinalizeLighting();
 
 
     const float alpha = 1.0;

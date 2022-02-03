@@ -26,7 +26,6 @@
 #include "Util/Image.h"
 #include "ObjectManagerLegacyUndo.h"
 #include "Include/HitContext.h"
-#include "EditMode/DeepSelection.h"
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
 #include <AzCore/Console/Console.h>

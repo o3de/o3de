@@ -23,7 +23,7 @@
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/UiSerializeHelpers.h>
 #include <LyShine/IRenderGraph.h>
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <ILocalizationManager.h>
 
@@ -1105,7 +1105,7 @@ UiTextComponent::InlineImage::InlineImage(const AZStd::string& texturePathname,
     else
     {
         // Load the texture
-        m_texture = CDraw2d::LoadTexture(m_filepath);
+        m_texture = Draw2dHelper::LoadTexture(m_filepath);
         if (m_texture)
         {
             AZ::RHI::Size size = m_texture->GetDescriptor().m_size;
@@ -1157,7 +1157,7 @@ bool UiTextComponent::InlineImage::OnAtlasUnloaded(const TextureAtlasNamespace::
         else
         {
             // Load the texture
-            m_texture = CDraw2d::LoadTexture(m_filepath);
+            m_texture = Draw2dHelper::LoadTexture(m_filepath);
         }
         return true;
     }
@@ -1843,11 +1843,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             LyShine::UiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
             primitive->m_next = nullptr;
 
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                lyRenderGraph->AddPrimitiveAtom(primitive, systemImage, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            renderGraph->AddPrimitive(primitive, systemImage, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 
@@ -1869,12 +1865,8 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             }
 
             bool isClampTextureMode = true;
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                lyRenderGraph->AddPrimitiveAtom(&batch->m_cachedPrimitive, texture,
-                    isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            renderGraph->AddPrimitive(&batch->m_cachedPrimitive, texture,
+                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 
@@ -1884,7 +1876,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     for (RenderCacheBatch* batch : m_renderCache.m_batches)
     {
-        AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
+        AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - move IFont.h out of CryCommon/engine code
         AZ::Data::Instance<AZ::RPI::Image> fontImage = font->GetFontImage();
         if (fontImage)
         {
@@ -1907,12 +1899,8 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             // because there is no padding on the left of the glyphs.
             bool isClampTextureMode = false;
 
-            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-            if (lyRenderGraph)
-            {
-                lyRenderGraph->AddPrimitiveAtom(&batch->m_cachedPrimitive, fontImage,
-                    isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-            }
+            renderGraph->AddPrimitive(&batch->m_cachedPrimitive, fontImage,
+                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
         }
     }
 }
@@ -2687,7 +2675,7 @@ void UiTextComponent::GetClickableTextRects(UiClickableTextInterface::ClickableT
         }
         else
         {
-            alignedPosition = CDraw2d::Align(pos, drawBatchLine.lineSize, m_textHAlignment, IDraw2d::VAlign::Top); // y is already aligned
+            alignedPosition = Draw2dHelper::Align(pos, drawBatchLine.lineSize, m_textHAlignment, IDraw2d::VAlign::Top); // y is already aligned
         }
 
         alignedPosition.SetY(alignedPosition.GetY() + newlinePosYIncrement);
@@ -4055,7 +4043,7 @@ void UiTextComponent::RenderDrawBatchLines(
         }
         else
         {
-            alignedPosition = CDraw2d::Align(pos, drawBatchLine.lineSize, m_textHAlignment, IDraw2d::VAlign::Top); // y is already aligned
+            alignedPosition = Draw2dHelper::Align(pos, drawBatchLine.lineSize, m_textHAlignment, IDraw2d::VAlign::Top); // y is already aligned
         }
 
         alignedPosition.SetY(alignedPosition.GetY() + newlinePosYIncrement);

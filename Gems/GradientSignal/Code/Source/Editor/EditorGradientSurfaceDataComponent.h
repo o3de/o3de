@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Components/GradientSurfaceDataComponent.h>
+#include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
 

@@ -9,7 +9,7 @@
 #include "Sprite.h"
 #include "RenderGraph.h"
 
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 #include <LyShine/ISprite.h>
 #include <LyShine/IRenderGraph.h>
 #include <LyShine/Bus/UiElementBus.h>
@@ -52,7 +52,7 @@ namespace
         spriteList.reserve(imageList.size());
         for (auto& textureAssetRef : imageList)
         {
-            ISprite* sprite = gEnv->pLyShine->LoadSprite(textureAssetRef.GetAssetPath().c_str());
+            ISprite* sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(textureAssetRef.GetAssetPath().c_str());
             if (sprite)
             {
                 spriteList.push_back(sprite);
@@ -97,7 +97,7 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
         return;
     }
 
-    CSprite* sprite = static_cast<CSprite*>(m_spriteList[m_sequenceIndex]); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
+    ISprite* sprite = m_spriteList[m_sequenceIndex];
 
     // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
     float fade = renderGraph->GetAlphaFade();
@@ -165,12 +165,8 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
         LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
 
         // Add the quad to the render graph
-        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-        if (lyRenderGraph)
-        {
-            lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image,
-                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
-        }
+        renderGraph->AddPrimitive(&m_cachedPrimitive, image,
+            isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
     }
 }
 
@@ -387,7 +383,7 @@ void UiImageSequenceComponent::Init()
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }

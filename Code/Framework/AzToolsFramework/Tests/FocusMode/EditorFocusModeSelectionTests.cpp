@@ -8,9 +8,9 @@
 
 #include <Tests/FocusMode/EditorFocusModeSelectionFixture.h>
 
-namespace AzToolsFramework
+namespace UnitTest
 {
-    TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnLevel)
+    TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionSelectEntityWithFocusOnLevel)
     {
         // Click on Car Entity
         ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
@@ -21,7 +21,7 @@ namespace AzToolsFramework
         EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
     }
 
-    TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnAncestor)
+    TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionSelectEntityWithFocusOnAncestor)
     {
         // Set the focus on the Street Entity (parent of the test entity)
         m_focusModeInterface->SetFocusRoot(m_entityMap[StreetEntityName]);
@@ -35,7 +35,7 @@ namespace AzToolsFramework
         EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
     }
 
-    TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnItself)
+    TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionSelectEntityWithFocusOnItself)
     {
         // Set the focus on the Car Entity (test entity)
         m_focusModeInterface->SetFocusRoot(m_entityMap[CarEntityName]);
@@ -49,7 +49,7 @@ namespace AzToolsFramework
         EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
     }
 
-    TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnSibling)
+    TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionSelectEntityWithFocusOnSibling)
     {
         // Set the focus on the SportsCar Entity (sibling of the test entity)
         m_focusModeInterface->SetFocusRoot(m_entityMap[SportsCarEntityName]);
@@ -62,7 +62,7 @@ namespace AzToolsFramework
         EXPECT_EQ(selectedEntitiesAfter.size(), 0);
     }
 
-    TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnDescendant)
+    TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionSelectEntityWithFocusOnDescendant)
     {
         // Set the focus on the Passenger1 Entity (child of the entity)
         m_focusModeInterface->SetFocusRoot(m_entityMap[Passenger1EntityName]);
@@ -74,4 +74,4 @@ namespace AzToolsFramework
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 0);
     }
-}
+} // namespace UnitTest

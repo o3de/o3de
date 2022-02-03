@@ -346,7 +346,11 @@ namespace LUAEditor
             {
                 auto selectedAsset = selectedAssets.front();
                 const AZStd::string filePath = selectedAsset->GetFullPath();
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, filePath, true);
+                auto entryType = selectedAsset->GetEntryType();
+                if (entryType == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
+                {
+                    EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, filePath, true);
+                }                    
             }
         });
     }
@@ -372,9 +376,17 @@ namespace LUAEditor
         StringFilter* stringFilter = new StringFilter();
         stringFilter->SetFilterPropagation(AssetTypeFilter::PropagateDirection::Up);
 
-        connect(m_gui->m_assetBrowserSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, [stringFilter](const QString& newString)
+        connect(m_gui->m_assetBrowserSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, [&, stringFilter](const QString& newString)
         {
             stringFilter->SetFilterString(newString);
+            if (newString.isEmpty())
+            {
+                m_gui->m_assetBrowserTreeView->collapseAll();
+            }
+            else
+            {
+                m_gui->m_assetBrowserTreeView->expandAll();
+            }
         });
 
         // Construct the final filter where they are all and'd together
@@ -1280,7 +1292,7 @@ namespace LUAEditor
             // go to that line of the selected file.
             lineNumber = dlg.getLineNumber();
 
-            currentView->SetCursorPosition(lineNumber - 1, 0);
+            currentView->SetCursorPosition(lineNumber, 0);
         }
     }
 
@@ -2141,24 +2153,7 @@ namespace LUAEditor
         if (event->type() == QEvent::KeyPress)
         {
             QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-            if (keyEvent->key() == Qt::Key_Control)
-            {
-                TrackedLUACtrlTabOrder::iterator tabIter = m_CtrlTabOrder.begin();
-                while (tabIter != m_CtrlTabOrder.end())
-                {
-                    if (*tabIter == m_lastFocusedAssetId)
-                    {
-                        // store the visible top window and make it the list's topmost
-                        m_StoredTabAssetId = m_lastFocusedAssetId;
-                        m_CtrlTabOrder.erase(tabIter);
-                        m_CtrlTabOrder.push_front(m_lastFocusedAssetId);
-                        break;
-                    }
-
-                    ++tabIter;
-                }
-            }
-            else if (keyEvent->key() == Qt::Key_C && (keyEvent->modifiers() & Qt::ControlModifier))
+            if (keyEvent->key() == Qt::Key_C && (keyEvent->modifiers() & Qt::ControlModifier))
             {
                 OnEditMenuCopy();
                 return true;
@@ -2174,32 +2169,6 @@ namespace LUAEditor
             QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
             if (keyEvent->key() == Qt::Key_Control)
             {
-                // reconfigure the ctrl+tab stack to set the next document to be the stored guid
-                // which was recorded when Ctrl was first pressed
-                TrackedLUACtrlTabOrder::iterator tabIter = m_CtrlTabOrder.begin();
-                while (tabIter != m_CtrlTabOrder.end())
-                {
-                    if (*tabIter == m_StoredTabAssetId)
-                    {
-                        m_CtrlTabOrder.erase(tabIter);
-
-                        tabIter = m_CtrlTabOrder.begin();
-                        ++tabIter;
-                        if (tabIter != m_CtrlTabOrder.end())
-                        {
-                            m_CtrlTabOrder.insert(tabIter, m_StoredTabAssetId);
-                        }
-                        else
-                        {
-                            m_CtrlTabOrder.push_back(m_StoredTabAssetId);
-                        }
-
-                        break;
-                    }
-
-                    ++tabIter;
-                }
-
                 m_StoredTabAssetId = "";
             }
         }
@@ -2210,46 +2179,67 @@ namespace LUAEditor
 
     void LUAEditorMainWindow::OnTabForwards()
     {
-        // pop the first entry and push it to the last spot
         TrackedLUACtrlTabOrder::iterator tabIter = m_CtrlTabOrder.begin();
-        if (tabIter != m_CtrlTabOrder.end())
-        {
-            AZStd::string assetId = *tabIter;
-            m_CtrlTabOrder.pop_front();
-            m_CtrlTabOrder.push_back(assetId);
-            // then grab the new first entry and pass it on to the widgetry
-            tabIter = m_CtrlTabOrder.begin();
-
-            TrackedLUAViewMap::iterator viewInfoIter = m_dOpenLUAView.find(*tabIter);
-            if (viewInfoIter != m_dOpenLUAView.end())
+        while (tabIter != m_CtrlTabOrder.end())
+        {            
+            if (*tabIter == m_lastFocusedAssetId)
             {
-                viewInfoIter->second.luaDockWidget()->show();
-                viewInfoIter->second.luaDockWidget()->raise();
-                viewInfoIter->second.luaViewWidget()->setFocus();
+                break;
             }
+            tabIter++;
+        }
+
+        if (tabIter == m_CtrlTabOrder.begin())
+        {
+            tabIter = m_CtrlTabOrder.end();
+            --tabIter;
+        }
+        else
+        {
+            --tabIter;
+        }
+
+        TrackedLUAViewMap::iterator viewInfoIter = m_dOpenLUAView.find(*tabIter);
+        if (viewInfoIter != m_dOpenLUAView.end())
+        {
+            viewInfoIter->second.luaDockWidget()->show();
+            viewInfoIter->second.luaDockWidget()->raise();
+            viewInfoIter->second.luaViewWidget()->setFocus();
+            m_lastFocusedAssetId = *tabIter;
         }
     }
 
     void LUAEditorMainWindow::OnTabBackwards()
-    {
-        // pop the last entry and push it to the first spot
-        TrackedLUACtrlTabOrder::iterator tabIter = m_CtrlTabOrder.end();
-        --tabIter;
-        if (tabIter != m_CtrlTabOrder.end())
+    {        
+        TrackedLUACtrlTabOrder::iterator tabIter = m_CtrlTabOrder.begin();
+        while (tabIter != m_CtrlTabOrder.end())
         {
-            AZStd::string assetId = *tabIter;
-            m_CtrlTabOrder.pop_back();
-            m_CtrlTabOrder.push_front(assetId);
-            // then grab the new first entry and pass it on to the widgetry
-            tabIter = m_CtrlTabOrder.begin();
-
-            TrackedLUAViewMap::iterator viewInfoIter = m_dOpenLUAView.find(*tabIter);
-            if (viewInfoIter != m_dOpenLUAView.end())
+            if (*tabIter == m_lastFocusedAssetId)
             {
-                viewInfoIter->second.luaDockWidget()->show();
-                viewInfoIter->second.luaDockWidget()->raise();
-                viewInfoIter->second.luaViewWidget()->setFocus();
+                break;
             }
+            tabIter++;
+        }
+
+        if (tabIter == m_CtrlTabOrder.end())
+        {
+            return;
+        }
+
+        tabIter++;
+        if (tabIter == m_CtrlTabOrder.end())
+        {
+            tabIter = m_CtrlTabOrder.begin();
+            
+        }
+      
+        TrackedLUAViewMap::iterator viewInfoIter = m_dOpenLUAView.find(*tabIter);
+        if (viewInfoIter != m_dOpenLUAView.end())
+        {
+            viewInfoIter->second.luaDockWidget()->show();
+            viewInfoIter->second.luaDockWidget()->raise();
+            viewInfoIter->second.luaViewWidget()->setFocus();
+            m_lastFocusedAssetId = *tabIter;
         }
     }
 

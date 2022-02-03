@@ -41,7 +41,7 @@ namespace ScriptCanvas
     {
         ActivationData::ActivationData(const RuntimeDataOverrides& variableOverrides, ActivationInputArray& storage)
             : variableOverrides(variableOverrides)
-            , runtimeData(variableOverrides.m_runtimeAsset->GetData())
+            , runtimeData(variableOverrides.m_runtimeAsset->m_runtimeData)
             , storage(storage)
         {}
 

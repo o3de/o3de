@@ -71,7 +71,7 @@ namespace SceneBuilder
                 context->EnumerateDerived(callback, azrtti_typeid<AZ::SceneAPI::SceneCore::GenerationComponent>(), azrtti_typeid<AZ::SceneAPI::SceneCore::GenerationComponent>());
                 context->EnumerateDerived(callback, azrtti_typeid<AZ::SceneAPI::SceneCore::LoadingComponent>(), azrtti_typeid<AZ::SceneAPI::SceneCore::LoadingComponent>());
             }
-            
+
             AZ::SceneAPI::SceneBuilderDependencyBus::Broadcast(&AZ::SceneAPI::SceneBuilderDependencyRequests::AddFingerprintInfo, fragments);
 
             for (const AZStd::string& element : fragments)
@@ -79,7 +79,7 @@ namespace SceneBuilder
                 m_cachedFingerprint.append(element);
             }
             // A general catch all version fingerprint. Update this to force all FBX files to recompile.
-            m_cachedFingerprint.append("Version 1");
+            m_cachedFingerprint.append("Version 2");
         }
 
         return m_cachedFingerprint.c_str();
@@ -223,7 +223,7 @@ namespace SceneBuilder
 
         // Only used during processing to redirect trace printfs with an warning or error window to the appropriate reporting function.
         TraceMessageHook messageHook;
-        
+
         // Load Scene graph and manifest from the provided path and then initialize them.
         if (m_isShuttingDown)
         {
@@ -282,9 +282,9 @@ namespace SceneBuilder
         }
         for (const AZStd::string& pathDependency : exportProduct.m_legacyPathDependencies)
         {
-            // SceneCore doesn't have access to AssetBuilderSDK, so it doesn't have access to the 
+            // SceneCore doesn't have access to AssetBuilderSDK, so it doesn't have access to the
             //  ProductPathDependency type or the ProductPathDependencyType enum. Exporters registered with the
-            //  Scene Builder should report path dependencies on source files as absolute paths, while dependencies 
+            //  Scene Builder should report path dependencies on source files as absolute paths, while dependencies
             //  on product files should be reported as relative paths.
             if (AzFramework::StringFunc::Path::IsRelative(pathDependency.c_str()))
             {
@@ -314,7 +314,7 @@ namespace SceneBuilder
         using namespace AZ::SceneAPI;
         using namespace AZ::SceneAPI::Containers;
         using namespace AZ::SceneAPI::Events;
-        
+
         AZ_TracePrintf(Utilities::LogWindow, "Loading scene.\n");
 
         SceneSerializationBus::BroadcastResult(result, &SceneSerializationBus::Events::LoadScene, request.m_fullPath, request.m_sourceFileUUID);
@@ -331,7 +331,7 @@ namespace SceneBuilder
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
             return false; // Still return false as there's no work so should exit.
         }
-        
+
         return true;
     }
 
@@ -379,7 +379,7 @@ namespace SceneBuilder
         using namespace AZ::SceneAPI::SceneCore;
 
         AZ_Assert(scene, "Invalid scene passed for exporting.");
-        
+
         const AZStd::string& outputFolder = request.m_tempDirPath;
         const char* platformIdentifier = request.m_jobDescription.GetPlatformIdentifier().c_str();
         AZ_TraceContext("Output folder", outputFolder.c_str());

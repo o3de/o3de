@@ -66,15 +66,15 @@ namespace UnitTest
 
     TEST_F(AtomToolsFrameworkTest, GetExteralReferencePath_Succeeds)
     {
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("", "", 2), "");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/materials/condor.material", "", 2), "");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/materials/talisman.material", "", 2), "");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/materials/talisman.material", "d:/project/assets/textures/gold.png", 2), "../textures/gold.png");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/materials/talisman.material", "d:/project/assets/textures/gold.png", 0), "textures/gold.png");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", 3), "../../../materials/condor.material");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", 2), "materials/condor.material");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", 1), "materials/condor.material");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", 0), "materials/condor.material");
+        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("", "", true), "");
+        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/materials/condor.material", "", true), "");
+        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/materials/talisman.material", "", false), "");
+        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/materials/talisman.material", "d:/project/assets/textures/gold.png", true), "../textures/gold.png");
+        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/materials/talisman.material", "d:/project/assets/textures/gold.png", false), "textures/gold.png");
+        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", true), "../../../materials/condor.material");
+        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", false), "materials/condor.material");
+        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", false), "materials/condor.material");
+        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("d:/project/assets/objects/upgrades/materials/supercondor.material", "d:/project/assets/materials/condor.material", false), "materials/condor.material");
     }
 
     AZ_UNIT_TEST_HOOK(new AtomToolsFrameworkTestEnvironment);

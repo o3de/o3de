@@ -786,11 +786,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     AZ::Data::Instance<AZ::RPI::Image> image;
     if (m_sprite)
     {
-        CSprite* sprite = static_cast<CSprite*>(m_sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-        if (sprite)
-        {
-            image = sprite->GetImage();
-        }
+        image = m_sprite->GetImage();
     }
 
     bool isClampTextureMode = true;
@@ -844,11 +840,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     m_cachedPrimitive.m_numVertices = totalVerticesInserted;
     m_cachedPrimitive.m_numIndices = totalParticlesInserted * indicesPerParticle;
-    LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
-    if (lyRenderGraph)
-    {
-        lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-    }
+    renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1437,14 +1429,14 @@ void UiParticleEmitterComponent::Init()
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }
 
     if (!m_sprite && !m_spritePathname.GetAssetPath().empty())
     {
-        m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     m_currentAspectRatio = m_particleSize.GetX() / m_particleSize.GetY();
@@ -1935,7 +1927,7 @@ void UiParticleEmitterComponent::OnSpritePathnameChange()
     if (!m_spritePathname.GetAssetPath().empty())
     {
         // Load the new texture.
-        newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     SAFE_RELEASE(m_sprite);

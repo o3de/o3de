@@ -69,7 +69,6 @@
 #include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
 
-#include <LmbrCentral/Rendering/EditorLightComponentBus.h>
 #include <LmbrCentral/Scripting/TagComponentBus.h>
 #include <LmbrCentral/Scripting/EditorTagComponentBus.h>
 
@@ -1985,9 +1984,4 @@ void SandboxIntegrationManager::CloseViewPane(const char* paneName)
 void SandboxIntegrationManager::BrowseForAssets(AssetSelectionModel& selection)
 {
     AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, GetMainWindow());
-}
-
-bool SandboxIntegrationManager::DisplayHelpersVisible()
-{
-    return GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
 }

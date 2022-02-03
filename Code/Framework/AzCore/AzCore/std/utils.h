@@ -22,22 +22,15 @@
 #include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/is_lvalue_reference.h>
 #include <AzCore/std/typetraits/void_t.h>
+#include <AzCore/std/utility/declval.h>
+#include <AzCore/std/utility/move.h>
 
 #include <utility>
 
 namespace AZStd
 {
     //////////////////////////////////////////////////////////////////////////
-    // rvalue
-    // rvalue move
-    template<class T>
-    constexpr AZStd::remove_reference_t<T>&& move(T && t)
-    {
-        return static_cast<AZStd::remove_reference_t<T>&&>(t);
-    }
-
     using std::forward;
-    using std::declval;
     using std::exchange;
 
     template <class T>

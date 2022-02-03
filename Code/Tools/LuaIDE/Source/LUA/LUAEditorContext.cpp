@@ -1433,7 +1433,8 @@ namespace LUAEditor
             return;
         }
 
-        AZStd::to_lower(const_cast<AZStd::string&>(assetId).begin(), const_cast<AZStd::string&>(assetId).end());
+        AZStd::string assetIdLower(assetId);
+        AZStd::to_lower(assetIdLower.begin(), assetIdLower.end());
 
         ShowLUAEditorView();
 
@@ -1446,11 +1447,11 @@ namespace LUAEditor
         // * we need to load that lua panel with the document's data, initializing it.
 
         // are we already tracking it?
-        auto it = m_documentInfoMap.find(assetId);
+        auto it = m_documentInfoMap.find(assetIdLower);
         if (it != m_documentInfoMap.end())
         {
             // tell the view that it needs to focus that document!
-            mostRecentlyOpenedDocumentView = assetId;
+            mostRecentlyOpenedDocumentView = assetIdLower;
             if (m_queuedOpenRecent)
             {
                 return;
@@ -1482,14 +1483,14 @@ namespace LUAEditor
         // Register the script into the asset catalog
         AZ::Data::AssetType assetType = AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid();
         AZ::Data::AssetId catalogAssetId;
-        EBUS_EVENT_RESULT(catalogAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, assetId.c_str(), assetType, true);
+        EBUS_EVENT_RESULT(catalogAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, assetIdLower.c_str(), assetType, true);
 
         uint64_t modTime = m_fileIO->ModificationTime(assetId.c_str());
 
         DocumentInfo info;
-        info.m_assetName = assetId;
+        info.m_assetName = assetIdLower;
         AzFramework::StringFunc::Path::GetFullFileName(assetId.c_str(), info.m_displayName);
-        info.m_assetId = assetId;
+        info.m_assetId = assetIdLower;
         info.m_bSourceControl_BusyGettingStats = true;
         info.m_bSourceControl_BusyGettingStats = false;
         info.m_bSourceControl_CanWrite = true;
@@ -1532,7 +1533,7 @@ namespace LUAEditor
             luaFile.Close();
         }
 
-        DataLoadDoneCallback(isLoaded, assetId);
+        DataLoadDoneCallback(isLoaded, assetIdLower);
         //////////////////////////////////////////////////////////////////////////
 
         if (m_queuedOpenRecent)
@@ -1545,7 +1546,7 @@ namespace LUAEditor
             m_pLUAEditorMainWindow->IgnoreFocusEvents(false);
         }
 
-        mostRecentlyOpenedDocumentView = assetId;
+        mostRecentlyOpenedDocumentView = assetIdLower;
         EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &Context::OpenMostRecentDocumentView, this);
     }
 

@@ -1668,9 +1668,23 @@ namespace AZ
                     SerializeContext::ENUM_ACCESS_FOR_READ,
                     &m_errorLogger
                 );
-                if (objectStreamWriteOverrideCB.Invoke<void>(callContext, objectPtr, *classData, classElement))
+                if (ObjectStreamWriteOverrideResponse writeResponse;
+                    objectStreamWriteOverrideCB.Read<ObjectStreamWriteOverrideResponse>(writeResponse, callContext, objectPtr, *classData, classElement))
                 {
-                    return false;
+                    switch (writeResponse)
+                    {
+                    case ObjectStreamWriteOverrideResponse::FallbackToDefaultWrite:
+                        break;
+                    case ObjectStreamWriteOverrideResponse::AbortWrite:
+                        m_errorLogger.ReportError(AZStd::string::format("ObjectStream Write Element Override callback has aborted the write for class data %s",
+                            classData->m_name).c_str());
+                        [[fallthrough]];
+                    case ObjectStreamWriteOverrideResponse::CompletedWrite:
+                        return false;
+                    default:
+                        AZ_Error("Serialize", false, "Invalid Response %d returned from the ObjectStream Write Element Override callback", static_cast<int>(writeResponse));
+                        return false;
+                    }
                 }
                 else
                 {

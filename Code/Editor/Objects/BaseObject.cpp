@@ -36,12 +36,6 @@
 // To use the Andrew's algorithm in order to make convex hull from the points, this header is needed.
 #include "Util/GeometryUtil.h"
 
-namespace {
-    QColor kLinkColorParent = QColor(0, 255, 255);
-    QColor kLinkColorChild = QColor(0, 0, 255);
-    QColor kLinkColorGray = QColor(128, 128, 128);
-}
-
 extern CObjectManager* g_pObjectManager;
 
 //////////////////////////////////////////////////////////////////////////
@@ -68,7 +62,7 @@ protected:
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-//! Undo object for CBaseObject that only stores its transform, color, area and minSpec
+//! Undo object for CBaseObject that only stores its transform, color, area
 class CUndoBaseObjectMinimal
     : public IUndoObject
 {
@@ -90,7 +84,6 @@ private:
         Vec3 scale;
         QColor color;
         float area;
-        int minSpec;
     };
 
     void SetTransformsFromState(CBaseObject* pObject, const StateStruct& state, bool bUndo);
@@ -259,7 +252,6 @@ CUndoBaseObjectMinimal::CUndoBaseObjectMinimal(CBaseObject* pObj, [[maybe_unused
     m_undoState.scale = pObj->GetScale();
     m_undoState.color = pObj->GetColor();
     m_undoState.area = pObj->GetArea();
-    m_undoState.minSpec = pObj->GetMinSpec();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -290,14 +282,12 @@ void CUndoBaseObjectMinimal::Undo(bool bUndo)
         m_redoState.rotate = pObject->GetRotation();
         m_redoState.color = pObject->GetColor();
         m_redoState.area = pObject->GetArea();
-        m_redoState.minSpec = pObject->GetMinSpec();
     }
 
     SetTransformsFromState(pObject, m_undoState, bUndo);
 
     pObject->ChangeColor(m_undoState.color);
     pObject->SetArea(m_undoState.area);
-    pObject->SetMinSpec(m_undoState.minSpec, false);
 
     using namespace AzToolsFramework;
     ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
@@ -316,7 +306,6 @@ void CUndoBaseObjectMinimal::Redo()
 
     pObject->ChangeColor(m_redoState.color);
     pObject->SetArea(m_redoState.area);
-    pObject->SetMinSpec(m_redoState.minSpec, false);
 
     using namespace AzToolsFramework;
     ComponentEntityObjectRequestBus::Event(pObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
@@ -388,7 +377,6 @@ CBaseObject::CBaseObject()
     , m_bMatrixInWorldSpace(false)
     , m_bMatrixValid(false)
     , m_bWorldBoxValid(false)
-    , m_nMinSpec(0)
     , m_vDrawIconPos(0, 0, 0)
     , m_nIconFlags(0)
 {
@@ -419,7 +407,6 @@ bool CBaseObject::Init([[maybe_unused]] IEditor* ie, CBaseObject* prev, [[maybe_
         SetLocalTM(prev->GetPos(), prev->GetRotation(), prev->GetScale());
         SetArea(prev->GetArea());
         SetColor(prev->GetColor());
-        SetMinSpec(prev->GetMinSpec(), false);
 
         // Copy all basic variables.
         EnableUpdateCallbacks(false);
@@ -761,72 +748,6 @@ void CBaseObject::SetModified(bool)
 {
 }
 
-void CBaseObject::DrawDefault(DisplayContext& dc, const QColor& labelColor)
-{
-    Vec3 wp = GetWorldPos();
-
-    bool bDisplaySelectionHelper = false;
-    if (!CanBeDrawn(dc, bDisplaySelectionHelper))
-    {
-        return;
-    }
-
-    // Draw link between parent and child.
-    if (dc.flags & DISPLAY_LINKS)
-    {
-        if (GetParent())
-        {
-            dc.DrawLine(GetParentAttachPointWorldTM().GetTranslation(), wp, IsFrozen() ? kLinkColorGray : kLinkColorParent, IsFrozen() ? kLinkColorGray : kLinkColorChild);
-        }
-        size_t nChildCount = GetChildCount();
-        for (size_t i = 0; i < nChildCount; ++i)
-        {
-            const CBaseObject* pChild = GetChild(i);
-            dc.DrawLine(pChild->GetParentAttachPointWorldTM().GetTranslation(), pChild->GetWorldPos(), pChild->IsFrozen() ? kLinkColorGray : kLinkColorParent, pChild->IsFrozen() ? kLinkColorGray : kLinkColorChild);
-        }
-    }
-
-    // Draw Bounding box
-    if (dc.flags & DISPLAY_BBOX)
-    {
-        AABB box;
-        GetBoundBox(box);
-        dc.SetColor(Vec3(1, 1, 1));
-        dc.DrawWireBox(box.min, box.max);
-    }
-
-    if (IsHighlighted())
-    {
-        DrawHighlight(dc);
-    }
-
-    if (IsSelected())
-    {
-        DrawArea(dc);
-
-        CSelectionGroup* pSelection = GetObjectManager()->GetSelection();
-
-        // If the number of selected object is over 2, the merged boundbox should be used to render the measurement axis.
-        if (!pSelection || (pSelection && pSelection->GetCount() == 1))
-        {
-            DrawDimensions(dc);
-        }
-    }
-
-    if (bDisplaySelectionHelper)
-    {
-        DrawSelectionHelper(dc, wp, labelColor, 1.0f);
-    }
-    else if (!(dc.flags & DISPLAY_HIDENAMES))
-    {
-        DrawLabel(dc, wp, labelColor);
-    }
-
-    SetDrawTextureIconProperties(dc, wp);
-    DrawTextureIcon(dc, wp);
-    DrawWarningIcons(dc, wp);
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::DrawDimensions(DisplayContext&, AABB*)
 {
@@ -848,91 +769,6 @@ void CBaseObject::DrawSelectionHelper(DisplayContext& dc, const Vec3& pos, const
     float r = dc.view->GetScreenScaleFactor(pos) * 0.006f;
     dc.DrawWireBox(pos - Vec3(r, r, r), pos + Vec3(r, r, r));
     dc.SetState(nPrevState);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetDrawTextureIconProperties(DisplayContext& dc, const Vec3& pos, float alpha, int texIconFlags)
-{
-    if (gSettings.viewports.bShowIcons || gSettings.viewports.bShowSizeBasedIcons)
-    {
-        if (IsHighlighted())
-        {
-            dc.SetColor(QColor(255, 120, 0), 0.8f * alpha);
-        }
-        else if (IsSelected())
-        {
-            dc.SetSelectedColor(alpha);
-        }
-        else if (IsFrozen())
-        {
-            dc.SetFreezeColor();
-        }
-        else
-        {
-            dc.SetColor(QColor(255, 255, 255), alpha);
-        }
-
-        m_vDrawIconPos = pos;
-
-        int nIconFlags = texIconFlags;
-        if (CheckFlags(OBJFLAG_SHOW_ICONONTOP))
-        {
-            Vec3 objectPos = GetWorldPos();
-
-            AABB box;
-            GetBoundBox(box);
-            m_vDrawIconPos.z = (m_vDrawIconPos.z - objectPos.z) + box.max.z;
-            nIconFlags |= DisplayContext::TEXICON_ALIGN_BOTTOM;
-        }
-        m_nIconFlags = nIconFlags;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::DrawTextureIcon(DisplayContext& dc, [[maybe_unused]] const Vec3& pos, [[maybe_unused]] float alpha)
-{
-    if (m_nTextureIcon && (gSettings.viewports.bShowIcons || gSettings.viewports.bShowSizeBasedIcons))
-    {
-        dc.DrawTextureLabel(GetTextureIconDrawPos(), OBJECT_TEXTURE_ICON_SIZEX, OBJECT_TEXTURE_ICON_SIZEY, GetTextureIcon(), GetTextureIconFlags());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::DrawWarningIcons(DisplayContext& dc, const Vec3&)
-{
-    if (gSettings.viewports.bShowIcons || gSettings.viewports.bShowSizeBasedIcons)
-    {
-        const int warningIconSizeX = OBJECT_TEXTURE_ICON_SIZEX / 2;
-        const int warningIconSizeY = OBJECT_TEXTURE_ICON_SIZEY / 2;
-
-        const int iconOffsetX = m_nTextureIcon ? (-OBJECT_TEXTURE_ICON_SIZEX / 2) : 0;
-        const int iconOffsetY = m_nTextureIcon ? (-OBJECT_TEXTURE_ICON_SIZEY / 2) : 0;
-
-        if (gSettings.viewports.bShowScaleWarnings)
-        {
-            const EScaleWarningLevel scaleWarningLevel = GetScaleWarningLevel();
-
-            if (scaleWarningLevel != eScaleWarningLevel_None)
-            {
-                dc.SetColor(QColor(255, scaleWarningLevel == eScaleWarningLevel_RescaledNonUniform ? 50 : 255, 50), 1.0f);
-                dc.DrawTextureLabel(GetTextureIconDrawPos(), warningIconSizeX, warningIconSizeY,
-                    GetIEditor()->GetIconManager()->GetIconTexture(eIcon_ScaleWarning), GetTextureIconFlags(),
-                    -warningIconSizeX / 2, iconOffsetX - (warningIconSizeY / 2));
-            }
-        }
-
-        if (gSettings.viewports.bShowRotationWarnings)
-        {
-            const ERotationWarningLevel rotationWarningLevel = GetRotationWarningLevel();
-            if (rotationWarningLevel != eRotationWarningLevel_None)
-            {
-                dc.SetColor(QColor(255, rotationWarningLevel == eRotationWarningLevel_RotatedNonRectangular ? 50 : 255, 50), 1.0f);
-                dc.DrawTextureLabel(GetTextureIconDrawPos(), warningIconSizeX, warningIconSizeY,
-                    GetIEditor()->GetIconManager()->GetIconTexture(eIcon_RotationWarning), GetTextureIconFlags(),
-                    warningIconSizeX / 2, iconOffsetY - (warningIconSizeY / 2));
-            }
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1211,17 +1047,6 @@ void CBaseObject::SetSelected(bool bSelect)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsHiddenBySpec() const
-{
-    if (!gSettings.bApplyConfigSpecInEditor)
-    {
-        return false;
-    }
-
-    return (m_nMinSpec != 0 && gSettings.editorConfigSpec != 0 && m_nMinSpec > static_cast<uint32>(gSettings.editorConfigSpec));
-}
-
-//////////////////////////////////////////////////////////////////////////
 //! Returns true if object hidden.
 bool CBaseObject::IsHidden() const
 {
@@ -1264,7 +1089,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         Vec3 scale = m_scale;
         Quat quat = m_rotate;
         Ang3 angles(0, 0, 0);
-        uint32 nMinSpec = m_nMinSpec;
 
         QColor color = m_color;
         float flattenArea = m_flattenArea;
@@ -1292,12 +1116,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         xmlNode->getAttr("Parent", parentId);
         xmlNode->getAttr("LookAt", lookatId);
         xmlNode->getAttr("Material", mtlName);
-        xmlNode->getAttr("MinSpec", nMinSpec);
-
-        if (nMinSpec <= CONFIG_VERYHIGH_SPEC) // Ignore invalid values.
-        {
-            m_nMinSpec = nMinSpec;
-        }
 
         bool bHidden = flags & OBJFLAG_HIDDEN;
         bool bFrozen = flags & OBJFLAG_FROZEN;
@@ -1402,11 +1220,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         {
             xmlNode->setAttr("Flags", flags);
         }
-
-        if (m_nMinSpec != 0)
-        {
-            xmlNode->setAttr("MinSpec", (uint32)m_nMinSpec);
-        }
     }
 
     // Serialize variables after default entity parameters.
@@ -1455,11 +1268,6 @@ XmlNodeRef CBaseObject::Export([[maybe_unused]] const QString& levelPath, XmlNod
     if (!IsEquivalent(scale, Vec3(0, 0, 0), 0))
     {
         objNode->setAttr("Scale", scale);
-    }
-
-    if (m_nMinSpec != 0)
-    {
-        objNode->setAttr("MinSpec", (uint32)m_nMinSpec);
     }
 
     // Save variables.
@@ -2289,22 +2097,6 @@ bool CBaseObject::IsSimilarObject(CBaseObject* pObject)
         return true;
     }
     return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetMinSpec(uint32 nSpec, bool bSetChildren)
-{
-    m_nMinSpec = nSpec;
-    UpdateVisibility(!IsHidden());
-
-    // Set min spec for all childs.
-    if (bSetChildren)
-    {
-        for (int i = static_cast<int>(m_childs.size()) - 1; i >= 0; --i)
-        {
-            m_childs[i]->SetMinSpec(nSpec, true);
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

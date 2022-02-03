@@ -31,16 +31,16 @@ echo.
 
 : Substance Designer
 :: maya sdk path
-set DCCSI_SUBSTANCE_PATH=%DCCSI_TOOLS_PATH%\Substance
-echo     DCCSI_SUBSTANCE_PATH = %DCCSI_SUBSTANCE_PATH%
+set PATH_DCCSI_SUBSTANCE=%PATH_DCCSI_TOOLS%\Substance
+echo     PATH_DCCSI_SUBSTANCE = %PATH_DCCSI_SUBSTANCE%
 :: https://docs.substance3d.com/sddoc/project-preferences-107118596.html#ProjectPreferences-ConfigurationFile
 :: Path to .exe, "C:\Program Files\Allegorithmic\Substance Designer\Substance Designer.exe"
-set SUBSTANCE_PATH="%ProgramFiles%\Allegorithmic\Substance Designer"
-echo     SUBSTANCE_PATH = %SUBSTANCE_PATH%
+set PATH_SUBSTANCE_DESIGNER="%ProgramFiles%\Allegorithmic\Substance Designer"
+echo     PATH_SUBSTANCE_DESIGNER = %PATH_SUBSTANCE_DESIGNER%
 
 :: default config
-set SUBSTANCE_CFG_PATH=%O3DE_PROJECT_PATH%\DCCsi_default.sbscfg
-echo     SUBSTANCE_CFG_PATH = %SUBSTANCE_CFG_PATH%
+IF "%PATH_SUBSTANCE_DESIGNER_CFG%"=="" (set PATH_SUBSTANCE_DESIGNER_CFG=%PATH_O3DE_PROJECT%\DCCsi_default.sbscfg)
+echo     PATH_SUBSTANCE_DESIGNER_CFG = %PATH_SUBSTANCE_DESIGNER_CFG%
 
 ::ENDLOCAL
 

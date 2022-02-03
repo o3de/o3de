@@ -46,6 +46,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
@@ -88,6 +89,7 @@
 #include <LmbrCentral/Rendering/EditorCameraCorrectionBus.h>
 
 // Atom
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
@@ -453,9 +455,6 @@ void EditorViewportWidget::Update()
 
     // Render
     {
-        // TODO: Move out this logic to a controller and refactor to work with Atom
-        ProcessRenderLisneters(m_displayContext);
-
         m_displayContext.Flush2D();
 
         // Post Render Callback
@@ -584,11 +583,12 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
     case eNotify_OnCloseScene:
         m_renderViewport->SetScene(nullptr);
-        SetDefaultCamera();
         break;
 
-    case eNotify_OnEndSceneOpen:
+    case eNotify_OnEndLoad:
+    case eNotify_OnEndCreate:
         UpdateScene();
+        SetDefaultCamera();
         break;
 
     case eNotify_OnBeginNewScene:
@@ -665,13 +665,7 @@ void EditorViewportWidget::OnBeginPrepareRender()
     RenderAll();
 
     // Draw 2D helpers.
-#ifdef LYSHINE_ATOM_TODO
-    TransformationMatrices backupSceneMatrices;
-#endif
     m_debugDisplay->DepthTestOff();
-#ifdef LYSHINE_ATOM_TODO
-    m_renderer->Set2DMode(m_rcClient.right(), m_rcClient.bottom(), backupSceneMatrices);
-#endif
     auto prevState = m_debugDisplay->GetState();
     m_debugDisplay->SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
 
@@ -1035,8 +1029,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Safe Frame"), &gSettings.viewports.bShowSafeFrame);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Construction Plane"), &gSettings.snap.constructPlaneDisplay);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Trigger Bounds"), &gSettings.viewports.bShowTriggerBounds);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Icons"), &gSettings.viewports.bShowIcons, &gSettings.viewports.bShowSizeBasedIcons);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Size-based Icons"), &gSettings.viewports.bShowSizeBasedIcons, &gSettings.viewports.bShowIcons);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Helpers of Frozen Objects"), &gSettings.viewports.nShowFrozenHelpers);
 
     if (!m_predefinedAspectRatios.IsEmpty())
@@ -1627,14 +1619,14 @@ Vec3 EditorViewportWidget::ViewToWorld(
     auto ray = m_renderViewport->ViewportScreenToWorldRay(AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(vp));
 
     const float maxDistance = 10000.f;
-    Vec3 v = AZVec3ToLYVec3(ray.direction) * maxDistance;
+    Vec3 v = AZVec3ToLYVec3(ray.m_direction) * maxDistance;
 
     if (!_finite(v.x) || !_finite(v.y) || !_finite(v.z))
     {
         return Vec3(0, 0, 0);
     }
 
-    Vec3 colp = AZVec3ToLYVec3(ray.origin) + 0.002f * v;
+    Vec3 colp = AZVec3ToLYVec3(ray.m_origin) + 0.002f * v;
 
     return colp;
 }
@@ -2334,7 +2326,26 @@ void EditorViewportWidget::UpdateScene()
         {
             AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
             m_renderViewport->SetScene(mainScene);
-            AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
+            auto viewportContext = m_renderViewport->GetViewportContext();
+            AZ::RPI::SceneNotificationBus::Handler::BusConnect(viewportContext->GetRenderScene()->GetId());
+
+            // Don't enable the render pipeline until a level has been loaded
+            // Also show/hide the RenderViewportWidget accordingly so that we get the
+            // expected gradient background when no level is loaded
+            auto renderPipeline = viewportContext->GetCurrentPipeline();
+            if (renderPipeline)
+            {
+                if (GetIEditor()->IsLevelLoaded())
+                {
+                    m_renderViewport->show();
+                    renderPipeline->AddToRenderTick();
+                }
+                else
+                {
+                    m_renderViewport->hide();
+                    renderPipeline->RemoveFromRenderTick();
+                }
+            }
         }
     }
 }
@@ -2424,6 +2435,16 @@ bool EditorViewportSettings::StickySelectEnabled() const
 AZ::Vector3 EditorViewportSettings::DefaultEditorCameraPosition() const
 {
     return SandboxEditor::CameraDefaultEditorPosition();
+}
+
+bool EditorViewportSettings::IconsVisible() const
+{
+    return AzToolsFramework::IconsVisible();
+}
+
+bool EditorViewportSettings::HelpersVisible() const
+{
+    return AzToolsFramework::HelpersVisible();
 }
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);

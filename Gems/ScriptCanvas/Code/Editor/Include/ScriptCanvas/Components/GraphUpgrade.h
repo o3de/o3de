@@ -20,7 +20,7 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    class Graph;
+    class EditorGraph;
     class StateMachine;
 
     //! StateTraits provides each state the ability to provide its own compile time ID
@@ -158,7 +158,7 @@ namespace ScriptCanvasEditor
     public:
         AZ_RTTI(EditorGraphUpgradeMachine, "{C7EABC22-A3DD-4ABE-8303-418EA3CD1246}", StateMachine);
 
-        EditorGraphUpgradeMachine(Graph* graph);
+        EditorGraphUpgradeMachine(EditorGraph* graph);
 
         AZStd::unordered_set<ScriptCanvas::Node*> m_allNodes;
         AZStd::unordered_set<ScriptCanvas::Node*> m_outOfDateNodes;
@@ -180,7 +180,7 @@ namespace ScriptCanvasEditor
 
         bool m_graphNeedsDirtying = false;
 
-        Graph* m_graph = nullptr;
+        EditorGraph* m_graph = nullptr;
         SourceHandle m_asset;
 
         void SetAsset(SourceHandle& assetasset);

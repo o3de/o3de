@@ -182,7 +182,7 @@ class TestAutomationBase:
     @staticmethod
     def _kill_ly_processes(include_asset_processor=True):
         LY_PROCESSES = [
-            'Editor', 'Profiler', 'RemoteConsole', 'AutomatedTesting.ServerLauncher'
+            'Editor', 'Profiler', 'RemoteConsole', 'AutomatedTesting.ServerLauncher', 'o3de'
         ]
         AP_PROCESSES = [
             'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder', 'CrySCompileServer',
