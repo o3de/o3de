@@ -79,24 +79,24 @@ namespace AzToolsFramework
             return;
         }
 
-        if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
-        {
-            if (!m_focusRoot.IsValid() && entityId.IsValid())
-            {
-                tracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
-            }
-            else if (m_focusRoot.IsValid() && !entityId.IsValid())
-            {
-                tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
-            }
-        }
-
         AZ::EntityId previousFocusEntityId = m_focusRoot;
         m_focusRoot = entityId;
 
         RefreshFocusedEntityIdList();
 
         FocusModeNotificationBus::Broadcast(&FocusModeNotifications::OnEditorFocusChanged, previousFocusEntityId, m_focusRoot);
+
+        if (auto tracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
+        {
+            if (!previousFocusEntityId.IsValid() && entityId.IsValid())
+            {
+                tracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+            }
+            else if (previousFocusEntityId.IsValid() && !entityId.IsValid())
+            {
+                tracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Focus);
+            }
+        }
     }
 
     void FocusModeSystemComponent::ClearFocusRoot([[maybe_unused]] AzFramework::EntityContextId entityContextId)

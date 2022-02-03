@@ -10,6 +10,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 namespace AZ
 {
@@ -56,7 +58,7 @@ namespace AZ
 
         bool EditorEditorModeFeedbackSystemComponent::Enabled() const
         {
-            return true;//m_enabled;
+            return m_enabled;
         }
 
         void EditorEditorModeFeedbackSystemComponent::OnEditorModeActivated(
@@ -65,6 +67,38 @@ namespace AZ
         {
             if (mode == AzToolsFramework::ViewportEditorMode::Focus)
             {
+                if (auto focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get())
+                {
+                    const auto focusedEntityIds = focusModeInterface->GetFocusedEntities(AzToolsFramework::GetEntityContextId());
+
+                    AZStd::string debugOutput;
+
+                    debugOutput = AZStd::string::format("I have entered Focus Mode and have %zu entities:\n", focusedEntityIds.size());
+                    for (const auto& focusedEntityId : focusedEntityIds)
+                    {
+                        debugOutput += "\t" +  focusedEntityId.ToString() + "\n";
+                        const auto* focusedEntity = AzToolsFramework::GetEntityById(focusedEntityId);
+
+                        if (focusedEntity)
+                        {
+                            const auto components = focusedEntity->GetComponents();
+
+                            debugOutput += "\tName: " + focusedEntity->GetName() + "\n";
+
+                            for (const auto& component : components)
+                            {
+                                AZStd::string componentName;
+                                AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(
+                                    componentName, &AzToolsFramework::EntityCompositionRequests::GetComponentName, component);
+
+                                debugOutput += "\t\t" + componentName + "\n";
+                            }
+                        }
+                    }
+
+                    AZ_Printf("\n", debugOutput.c_str());
+                }
+
                 m_enabled = true;
             }
         }
