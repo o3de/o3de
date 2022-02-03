@@ -12,44 +12,13 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ::Vector3 SampleFunction(TrajectoryQuery::EMode mode, float offset, float radius, float phase)
+    AZ::Vector3 SampleFunction(float offset, float radius, float phase)
     {
-        switch (mode)
-        {
-        case TrajectoryQuery::MODE_TWO:
-        {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            displacement.SetX(radius * sinf(phase + offset) );
-            displacement.SetY(cosf(phase + offset));
-            return displacement;
-        }
-
-        case TrajectoryQuery::MODE_THREE:
-        {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            const float rad = radius * cosf(radius + phase*0.2f);
-            displacement.SetX(rad * sinf(phase + offset));
-            displacement.SetY(rad * cosf(phase + offset));
-            return displacement;
-        }
-
-        case TrajectoryQuery::MODE_FOUR:
-        {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            displacement.SetX(radius * sinf(phase + offset));
-            displacement.SetY(radius*2.0f * cosf(phase + offset));
-            return displacement;
-        }
-
-        // MODE_ONE and default
-        default:
-        {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            displacement.SetX(radius * sinf(phase * 0.7f + offset) + radius * 0.75f * cosf(phase * 2.0f + offset * 2.0f));
-            displacement.SetY(radius * cosf(phase * 0.4f + offset));
-            return displacement;
-        }
-        }
+        phase += 10.7;
+        AZ::Vector3 displacement = AZ::Vector3::CreateZero();
+        displacement.SetX(radius * sinf(phase * 0.7f + offset) + radius * 0.75f * cosf(phase * 2.0f + offset * 2.0f));
+        displacement.SetY(radius * cosf(phase * 0.4f + offset));
+        return displacement;
     }
 
     void TrajectoryQuery::Update(const ActorInstance* actorInstance,
@@ -88,19 +57,18 @@ namespace EMotionFX::MotionMatching
         }
         else
         {
-            static float phase = 0.0f;
-            phase += timeDelta * pathSpeed;
-            AZ::Vector3 base = SampleFunction(mode, 0.0f, pathRadius, phase);
+            m_automaticModePhase += timeDelta * pathSpeed;
+            AZ::Vector3 base = SampleFunction(0.0f, pathRadius, m_automaticModePhase);
             for (size_t i = 0; i < numFutureSamples; ++i)
             {
                 const float offset = i * 0.1f;
-                const AZ::Vector3 curSample = SampleFunction(mode, offset, pathRadius, phase);
+                const AZ::Vector3 curSample = SampleFunction(offset, pathRadius, m_automaticModePhase);
                 AZ::Vector3 displacement = curSample - base;
                 m_futureControlPoints[i].m_position = actorInstance->GetWorldSpaceTransform().m_position + displacement;
 
                 // Evaluate a control point slightly further into the future than the actual
                 // one and use the position difference as the facing direction.
-                const AZ::Vector3 deltaSample = SampleFunction(mode, offset + 0.01f, pathRadius, phase);
+                const AZ::Vector3 deltaSample = SampleFunction(offset + 0.01f, pathRadius, m_automaticModePhase);
                 const AZ::Vector3 dir = deltaSample - curSample;
                 m_futureControlPoints[i].m_facingDirection = dir.GetNormalizedSafe();
             }

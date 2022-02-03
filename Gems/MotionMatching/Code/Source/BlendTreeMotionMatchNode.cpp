@@ -191,7 +191,11 @@ namespace EMotionFX::MotionMatching
 
         // set the current time to the new calculated time
         uniqueData->ClearInheritFlags();
-        uniqueData->SetPreSyncTime(instance->GetMotionInstance()->GetCurrentTime());
+
+        if (instance->GetMotionInstance())
+        {
+            uniqueData->SetPreSyncTime(instance->GetMotionInstance()->GetCurrentTime());
+        }
         uniqueData->SetCurrentPlayTime(instance->GetNewMotionTime());
 
         if (uniqueData->GetPreSyncTime() > uniqueData->GetCurrentPlayTime())
@@ -230,9 +234,12 @@ namespace EMotionFX::MotionMatching
         }
 
         MotionInstance* motionInstance = instance->GetMotionInstance();
-        motionInstance->UpdateByTimeValues(uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), &data->GetEventBuffer());
+        if (motionInstance)
+        {
+            motionInstance->UpdateByTimeValues(uniqueData->GetPreSyncTime(), uniqueData->GetCurrentPlayTime(), &data->GetEventBuffer());
+            uniqueData->SetCurrentPlayTime(motionInstance->GetCurrentTime());
+        }
 
-        uniqueData->SetCurrentPlayTime(motionInstance->GetCurrentTime());
         data->GetEventBuffer().UpdateEmitters(this);
 
         instance->PostUpdate(timePassedInSeconds);
@@ -240,7 +247,6 @@ namespace EMotionFX::MotionMatching
         const Transform& trajectoryDelta = instance->GetMotionExtractionDelta();
         data->SetTrajectoryDelta(trajectoryDelta);
         data->SetTrajectoryDeltaMirrored(trajectoryDelta); // TODO: use a real mirrored version here.
-
         m_postUpdateTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
     }
 
@@ -251,12 +257,10 @@ namespace EMotionFX::MotionMatching
         AZ_UNUSED(animGraphInstance);
         m_timer.Stamp();
 
-        AnimGraphPose* outputPose;
-
         // Initialize to bind pose.
         ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
         RequestPoses(animGraphInstance);
-        outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
+        AnimGraphPose* outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
         outputPose->InitFromBindPose(actorInstance);
 
         if (m_disabled)
@@ -287,7 +291,6 @@ namespace EMotionFX::MotionMatching
         // Performance metrics
         m_outputTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
         {
-            //AZ_Printf("MotionMatch", "Update = %.2f, PostUpdate = %.2f, Output = %.2f", m_updateTime, m_postUpdateTime, m_outputTime);
 #ifdef IMGUI_ENABLED
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Update", m_updateTimeInMs);
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Post Update", m_postUpdateTimeInMs);
@@ -296,6 +299,16 @@ namespace EMotionFX::MotionMatching
         }
 
         instance->DebugDraw();
+    }
+
+    AZ::Crc32 BlendTreeMotionMatchNode::GetTrajectoryPathSettingsVisibility() const
+    {
+        if (m_trajectoryQueryMode == TrajectoryQuery::MODE_TARGETDRIVEN)
+        {
+            return AZ::Edit::PropertyVisibility::Hide;
+        }
+
+        return AZ::Edit::PropertyVisibility::Show;
     }
 
     void BlendTreeMotionMatchNode::Reflect(AZ::ReflectContext* context)
@@ -339,32 +352,32 @@ namespace EMotionFX::MotionMatching
                 ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                 ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_maxKdTreeDepth, "Max kdTree depth", "The maximum number of hierarchy levels in the kdTree.")
-            ->Attribute(AZ::Edit::Attributes::Min, 1)
-            ->Attribute(AZ::Edit::Attributes::Max, 20)
-            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+                ->Attribute(AZ::Edit::Attributes::Min, 1)
+                ->Attribute(AZ::Edit::Attributes::Max, 20)
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode, "Min kdTree node size", "The minimum number of frames to store per kdTree node.")
-            ->Attribute(AZ::Edit::Attributes::Min, 1)
-            ->Attribute(AZ::Edit::Attributes::Max, 100000)
-            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+                ->Attribute(AZ::Edit::Attributes::Min, 1)
+                ->Attribute(AZ::Edit::Attributes::Max, 100000)
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_trajectoryQueryMode, "Trajectory Prediction", "Desired future trajectory generation mode.")
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                ->EnumAttribute(TrajectoryQuery::MODE_TARGETDRIVEN, "Target-driven")
+                ->EnumAttribute(TrajectoryQuery::MODE_AUTOMATIC, "Automatic (Demo)")
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_pathRadius, "Path radius", "")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
-            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
+                ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetTrajectoryPathSettingsVisibility)
+                ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
+                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
+                ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_pathSpeed, "Path speed", "")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
-            ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-            ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_trajectoryQueryMode, "Trajectory mode", "Desired future trajectory generation mode.")
-                ->EnumAttribute(TrajectoryQuery::MODE_TARGETDRIVEN, "Target driven")
-                ->EnumAttribute(TrajectoryQuery::MODE_ONE, "Mode one")
-                ->EnumAttribute(TrajectoryQuery::MODE_TWO, "Mode two")
-                ->EnumAttribute(TrajectoryQuery::MODE_THREE, "Mode three")
-                ->EnumAttribute(TrajectoryQuery::MODE_FOUR, "Mode four")
+                ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetTrajectoryPathSettingsVisibility)
+                ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
+                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
+                ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureSchema, "FeatureSchema", "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-            ->DataElement(AZ_CRC("MotionSetMotionIds", 0x8695c0fa), &BlendTreeMotionMatchNode::m_motionIds, "Motions", "")
+            ->DataElement(AZ_CRC_CE("MotionSetMotionIds"), &BlendTreeMotionMatchNode::m_motionIds, "Motions", "")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
