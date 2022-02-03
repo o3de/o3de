@@ -1,5 +1,5 @@
 {
-    "Source": "ChromaticAbberation.azsl",
+    "Source": "ChromaticAberration.azsl",
     "ProgramSettings": {
         "EntryPoints": [
             {

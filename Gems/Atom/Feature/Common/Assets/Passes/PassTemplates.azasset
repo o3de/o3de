@@ -553,8 +553,8 @@
                 "Path": "Passes/LutGeneration.pass"
             },
             {
-                "Name": "ChromaticAbberationTemplate",
-                "Path": "Passes/ChromaticAbberation.pass"
+                "Name": "ChromaticAberrationTemplate",
+                "Path": "Passes/ChromaticAberration.pass"
             }
         ]
     }

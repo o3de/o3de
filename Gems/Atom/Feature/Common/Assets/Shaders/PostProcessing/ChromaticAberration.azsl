@@ -18,7 +18,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     {
         uint2 m_outputSize; // texture size of output
         float2 m_outputCenter; // center of image in pixel coords
-        float m_strength; // strength of effect (0 to 1)
+        float m_strength; // strength of effect (0 to 1), i.e. displacement of channels
+        float m_blend; // blend factor between original and aberration
+        float m_blendRemainder; // 1-m_blend
     };
     Constants m_constants;
 }
@@ -32,15 +34,12 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
     }
 
     float2 disp = dispatchThreadID.xy - PassSrg::m_constants.m_outputCenter;
-    //float2 offset = trunc(disp * PassSrg::m_constants.m_strength);
     float2 offset = disp * PassSrg::m_constants.m_strength;
 
-    //float r = (PassSrg::m_inputColor[dispatchThreadID.xy] + PassSrg::m_inputColor[dispatchThreadID.xy - offset].r) * 0.5;
-    float r = PassSrg::m_inputColor[dispatchThreadID.xy].r;
-    //float r = PassSrg::m_inputColor[dispatchThreadID.xy + offset].r;
-    //float g = PassSrg::m_inputColor[dispatchThreadID.xy].g;
-    float g = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 0.5)].g;
-    float b = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)].b;
+    float go = PassSrg::m_inputColor[dispatchThreadID.xy].g * PassSrg::m_constants.m_blend;
+    float bo = PassSrg::m_inputColor[dispatchThreadID.xy].b * PassSrg::m_constants.m_blend;
+    float ga = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset * 0.5)].g * PassSrg::m_constants.m_blendRemainder;
+    float ba = PassSrg::m_inputColor[dispatchThreadID.xy - trunc(offset)].b * PassSrg::m_constants.m_blendRemainder;
 
-    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(r, g, b, 1.0);
+    PassSrg::m_outputColor[dispatchThreadID.xy] = float4(PassSrg::m_inputColor[dispatchThreadID.xy].r, go + ga, bo + ba, 1.0);
 }

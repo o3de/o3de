@@ -86,7 +86,7 @@ set(FILES
     Passes/CascadedShadowmaps.pass
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
-	Passes/ChromaticAbberation.pass
+	Passes/ChromaticAberration.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -391,8 +391,8 @@ set(FILES
     Shaders/PostProcessing/BloomCompositeCS.shader
     Shaders/PostProcessing/BloomDownsampleCS.azsl
     Shaders/PostProcessing/BloomDownsampleCS.shader
-	Shaders/PostProcessing/ChromaticAbberation.azsl
-	Shaders/PostProcessing/ChromaticAbberation.shader
+	Shaders/PostProcessing/ChromaticAberration.azsl
+	Shaders/PostProcessing/ChromaticAberration.shader
     Shaders/PostProcessing/ContrastAdaptiveSharpening.azsl
     Shaders/PostProcessing/ContrastAdaptiveSharpening.shader
     Shaders/PostProcessing/ConvertToAcescg.azsl
