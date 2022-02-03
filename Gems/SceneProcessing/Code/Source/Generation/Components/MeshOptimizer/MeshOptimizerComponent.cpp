@@ -349,7 +349,10 @@ namespace AZ::SceneGenerationComponents
                 }
 
                 const AZStd::string name =
-                    AZStd::string(graph.GetNodeName(nodeIndex).GetName(), graph.GetNodeName(nodeIndex).GetNameLength()).append(SceneAPI::Utilities::OptimizedMeshSuffix);
+                    AZStd::string(graph.GetNodeName(nodeIndex).GetName(), graph.GetNodeName(nodeIndex).GetNameLength())
+                        .append("_")
+                        .append(meshGroup.GetName())
+                        .append(SceneAPI::Utilities::OptimizedMeshSuffix);
                 if (graph.Find(name).IsValid())
                 {
                     AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Optimized mesh already exists at '%s', there must be multiple mesh groups that have selected this mesh. Skipping the additional ones.", name.c_str());
