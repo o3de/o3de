@@ -14,7 +14,9 @@
 
 // Qt
 #include <QDialog>
-#pragma optimize("", off)
+#include <QEvent>
+#include <qmetaobject.h>
+
 ModalWindowDismisser::ModalWindowDismisser()
 {
     qApp->installEventFilter(this);
@@ -29,6 +31,20 @@ ModalWindowDismisser::~ModalWindowDismisser()
 }
 static std::vector<QEvent::Type> types;
 
+template<typename EnumType>
+QString ToString(const EnumType& enumValue)
+{
+    const char* enumName = qt_getEnumName(enumValue);
+    const QMetaObject* metaObject = qt_getEnumMetaObject(enumValue);
+    if (metaObject)
+    {
+        const int enumIndex = metaObject->indexOfEnumerator(enumName);
+        return QString("%1::%2::%3").arg(metaObject->className(), enumName, metaObject->enumerator(enumIndex).valueToKey(enumValue));
+    }
+
+    return QString("%1::%2").arg(enumName).arg(static_cast<int>(enumValue));
+}
+
 bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
 {
     if (QDialog* dialog = qobject_cast<QDialog*>(object))
@@ -38,6 +54,8 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
             // if we wait until a Paint event arrives, we can be sure the dialog is fully open
             // and that close() will work correctly.
             types.push_back(event->type());
+            QString enumName = ToString(event->type());
+            AZ::Debug::Trace::Output("Testing", enumName.toStdString().c_str());
             if (event->type() == QEvent::PolishRequest)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
