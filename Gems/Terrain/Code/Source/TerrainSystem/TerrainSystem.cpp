@@ -177,44 +177,9 @@ bool TerrainSystem::InWorldBounds(float x, float y) const
     return false;
 }
 
-void TerrainSystem::MapPositionToArea(float x, float y,
-    AZStd::unordered_map<AZ::EntityId, TerrainHeightDataLists>& areaIdToPos,
-    AZStd::vector<TerrainHeightDataIterators>& outPositions,
-    size_t outIndex) const
-{
-    AZ::Aabb bounds;
-    AZ::EntityId areaId = FindBestAreaEntityAtPosition(x, y, bounds);
-    auto it = areaIdToPos.find(areaId);
-    if (it == areaIdToPos.end())
-    {
-        auto insertResult = areaIdToPos.insert(AZStd::pair<AZ::EntityId, TerrainHeightDataLists>(areaId, {}));
-        it = insertResult.first;
-        
-        // We maintain iterators to the positions to correspond to the input positions list.
-        // We resize these to the max expected size because we don't want any reallocations happening later.
-        // Reallocations will invalidate our iterators.
-        (*it).second.m_positions.resize(outPositions.size());
-        (*it).second.m_terrainExists.resize(outPositions.size());
-        (*it).second.m_count = 0;
-    }
-    (*it).second.m_positions[(*it).second.m_count].Set(x, y, 0.0f);
-    (*it).second.m_terrainExists[(*it).second.m_count] = false;
-
-    // We take the iterator to each element from the lists we're generating and storing them in (input)sequence.
-    // This will be used to store or, in the case of the bilinear sampler, compute the height value for the input positions.
-    outPositions[outIndex].m_positionIterator = ((*it).second.m_positions.begin() + (*it).second.m_count);
-    outPositions[outIndex].m_terrainExistsIterator = ((*it).second.m_terrainExists.begin() + (*it).second.m_count);
-    (*it).second.m_count++;
-}
-
-// Given a list of positions, this function generates positions based on the sampler type
-// and then maps the generated positions to the corresponding area's entity id. When this 
-// function returns, it would have generated positions based on sampler type and then sorted
-// those points into lists based on the area entity id. These lists will then be used to make 
-// bulk queries to the TerrainAreaHeightRequestBus.
-void TerrainSystem::MapPositionsToAreas(const AZStd::span<AZ::Vector3>& inPositions,
-    AZStd::unordered_map<AZ::EntityId, TerrainHeightDataLists>& areaIdToPos,
-    AZStd::vector<TerrainHeightDataIterators>& outPositions,
+// Generate positions to be queried based on the sampler type.
+void TerrainSystem::GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPositions,
+    AZStd::vector<AZ::Vector3>& outPositions,
     Sampler sampler, size_t indexStepSize) const
 {
     for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++)
@@ -233,10 +198,10 @@ void TerrainSystem::MapPositionsToAreas(const AZStd::span<AZ::Vector3>& inPositi
                 AZ::Vector2 pos0;
                 ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), pos0, normalizedDelta);
                 const AZ::Vector2 pos1 = pos0 + m_currentSettings.m_heightQueryResolution;
-                MapPositionToArea(pos0.GetX(), pos0.GetY(), areaIdToPos, outPositions, iteratorIndex);
-                MapPositionToArea(pos1.GetX(), pos0.GetY(), areaIdToPos, outPositions, iteratorIndex + 1);
-                MapPositionToArea(pos0.GetX(), pos1.GetY(), areaIdToPos, outPositions, iteratorIndex + 2);
-                MapPositionToArea(pos1.GetX(), pos1.GetY(), areaIdToPos, outPositions, iteratorIndex + 3);
+                outPositions[iteratorIndex].Set(pos0.GetX(), pos0.GetY(), 0.0f);
+                outPositions[iteratorIndex + 1].Set(pos1.GetX(), pos0.GetY(), 0.0f);
+                outPositions[iteratorIndex + 2].Set(pos0.GetX(), pos1.GetY(), 0.0f);
+                outPositions[iteratorIndex + 3].Set(pos1.GetX(), pos1.GetY(), 0.0f);
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
@@ -244,13 +209,13 @@ void TerrainSystem::MapPositionsToAreas(const AZStd::span<AZ::Vector3>& inPositi
                 AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
                 ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), clampedPosition, normalizedDelta);
-                MapPositionToArea(clampedPosition.GetX(), clampedPosition.GetY(), areaIdToPos, outPositions, iteratorIndex);
+                outPositions[iteratorIndex].Set(clampedPosition.GetX(), clampedPosition.GetY(), 0.0f);
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
             [[fallthrough]];
         default:
-            MapPositionToArea(inPositions[i].GetX(), inPositions[i].GetY(), areaIdToPos, outPositions, iteratorIndex);
+            outPositions[iteratorIndex].Set(inPositions[i].GetX(), inPositions[i].GetY(), 0.0f);
             break;
         }
         
@@ -265,8 +230,8 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
-    AZStd::unordered_map<AZ::EntityId, TerrainHeightDataLists> areaIdToPos;
-    AZStd::vector<TerrainHeightDataIterators> outPositions;
+    AZStd::vector<AZ::Vector3> outPositions;
+    AZStd::vector<bool> outTerrainExists;
 
     size_t indexStepSize = 1;
     if (sampler == AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR)
@@ -275,22 +240,61 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
         // In the case of the bilinear sampler, we'll be making 4 queries per
         // input position.
         outPositions.resize(inPositions.size() * 4);
+        outTerrainExists.resize(inPositions.size() * 4);
         indexStepSize = 4;
     }
     else
     {
         outPositions.resize(inPositions.size());
+        outTerrainExists.resize(inPositions.size());
     }
 
-    MapPositionsToAreas(inPositions, areaIdToPos, outPositions, sampler, indexStepSize);
+    GenerateQueryPositions(inPositions, outPositions, sampler, indexStepSize);
 
-    // Now that we've mapped the positions to the area ids, we make the bulk queries to each area id.
-    for(auto& [areaId, terrainHeightDataLists] : areaIdToPos)
+    AZ::Aabb bounds;
+    AZ::EntityId prevAreaId = FindBestAreaEntityAtPosition(outPositions[0].GetX(), outPositions[0].GetY(), bounds);
+    
+    // We use a sliding window here and update the window end for each
+    // position that falls in the same area as the previous positions. This consumes lesser memory
+    // than sorting the points into separate lists and handling putting them back together.
+    // This may be sub optimal if the points are randomly distributed in the list as opposed
+    // to points in the same area id being close to each other.
+    size_t windowStart = 0;
+    size_t windowEnd = 0;
+    const size_t numPositions = outPositions.size();
+    for(int i = 1; i < numPositions; i++)
     {
-        Terrain::TerrainAreaHeightRequestBus::Event(
-            areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights, terrainHeightDataLists.m_positions, terrainHeightDataLists.m_terrainExists);
+        AZ::EntityId areaId = FindBestAreaEntityAtPosition(outPositions[i].GetX(), outPositions[i].GetY(), bounds);
+        bool queryHeights = false;
+        if (areaId == prevAreaId)
+        {
+            // Update window end to current position.
+            // If it's the last position, submit the query.
+            windowEnd = i;
+            if (windowEnd == numPositions - 1)
+            {
+                queryHeights = true;
+            }
+        }
+        else
+        {
+            queryHeights = true;
+        }
+
+        if (queryHeights)
+        {
+            Terrain::TerrainAreaHeightRequestBus::Event(prevAreaId,
+                &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights,
+                AZStd::span<AZ::Vector3>(outPositions.begin(), numPositions), AZStd::span<bool>(outTerrainExists.begin(), numPositions));
+            
+            // Reset the window to start at the current position.
+            // Set the new area id on which to run the next query.
+            windowStart = windowEnd = i;
+            prevAreaId = areaId;
+        }
     }
 
+    // Compute/store the final result
     for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++)
     {
         if (!InWorldBounds(inPositions[i].GetX(), inPositions[i].GetY()))
@@ -309,14 +313,14 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
                 AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
                 ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), clampedPosition, normalizedDelta);
-                const float heightX0Y0 = (outPositions[iteratorIndex].m_positionIterator)->GetZ();
-                const float heightX1Y0 = (outPositions[iteratorIndex + 1].m_positionIterator)->GetZ();
-                const float heightX0Y1 = (outPositions[iteratorIndex + 2].m_positionIterator)->GetZ();
-                const float heightX1Y1 = (outPositions[iteratorIndex + 3].m_positionIterator)->GetZ();
+                const float heightX0Y0 = outPositions[iteratorIndex].GetZ();
+                const float heightX1Y0 = outPositions[iteratorIndex + 1].GetZ();
+                const float heightX0Y1 = outPositions[iteratorIndex + 2].GetZ();
+                const float heightX1Y1 = outPositions[iteratorIndex + 3].GetZ();
                 const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, normalizedDelta.GetX());
                 const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, normalizedDelta.GetX());
                 heights[i] = AZ::Lerp(heightXY0, heightXY1, normalizedDelta.GetY());
-                terrainExists[i] = *(outPositions[iteratorIndex].m_terrainExistsIterator);
+                terrainExists[i] = outTerrainExists[iteratorIndex];
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
@@ -325,8 +329,8 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
             [[fallthrough]];
         default:
             // For clamp and exact, we just need to store the results of the bulk query.
-            heights[i] = (outPositions[iteratorIndex].m_positionIterator)->GetZ();
-            terrainExists[i] = *(outPositions[iteratorIndex].m_terrainExistsIterator);
+            heights[i] = outPositions[iteratorIndex].GetZ();
+            terrainExists[i] = outTerrainExists[iteratorIndex];
             break;
         }
 
