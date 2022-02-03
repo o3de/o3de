@@ -90,12 +90,14 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
              
             // Use backShadowRatio to carry thickness from shadow map for thick mode
             backShadowRatio = 1.0 - litRatio;
+#if ENABLE_TRANSMISSION            
             if (o_transmission_mode == TransmissionMode::ThickObject)
             {
                 backShadowRatio = ProjectedShadow::GetThickness(
                     light.m_shadowIndex,
                     surface.position);
             }
+#endif
         }
 
         if (useConeAngle && dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
@@ -209,15 +211,21 @@ void ApplyDiskLights(Surface surface, inout LightingData lightingData)
         uint currLightIndex = lightingData.tileIterator.GetValue();
         lightingData.tileIterator.LoadAdvance();
         
+#if ENABLE_DISK_LIGHTS
+
         ViewSrg::DiskLight light = ViewSrg::m_diskLights[currLightIndex];
         
+    #if ENABLE_AREA_LIGHT_VALIDATION
         if (o_area_light_validation)
         {
             ValidateDiskLight(light, surface, lightingData);
         }
         else
+    #endif
         {
             ApplyDiskLight(light, surface, lightingData);
         }
+
+#endif
     }
 }
