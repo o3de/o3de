@@ -21,7 +21,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        //! The RootAliasPath class stores an alias path that starts from the Prefab EOS root instance.
+        //! A RootAliasPath can be used to store an alias path that starts from the Prefab EOS root instance.
         //! The root instance itself is included in the path. These can be used as Instance handles across systems
         //! that do not have visibility over InstanceOptionalReferences, or that need to store Instance handles
         //! for longer than just the span of a function without the risk of them going out of scope.
@@ -71,9 +71,6 @@ namespace AzToolsFramework
 
         virtual bool LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) = 0;
         virtual bool SaveToStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) = 0;
-
-        //! Returns whether a RootAliasPath is valid.
-        virtual bool IsValidRootAliasPath(Prefab::RootAliasPath rootAliasPath) const = 0;
 
         //! Returns the reference to the instance corresponding to the RootAliasPath provided.
         //! /param rootAliasPath The RootAliasPath to be queried.

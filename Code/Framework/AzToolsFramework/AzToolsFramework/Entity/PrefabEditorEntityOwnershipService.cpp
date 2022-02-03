@@ -512,30 +512,7 @@ namespace AzToolsFramework
 
     bool PrefabEditorEntityOwnershipService::IsValidRootAliasPath(Prefab::RootAliasPath rootAliasPath) const
     {
-        Prefab::InstanceOptionalReference instance = *m_rootInstance;
-
-        for (const auto& pathElement : rootAliasPath)
-        {
-            if (pathElement.Native() == rootAliasPath.begin()->Native())
-            {
-                // If the root is not the root Instance, the rootAliasPath is invalid.
-                if (pathElement.Native() != instance->get().GetInstanceAlias())
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                // If the instance alias can't be found, the rootAliasPath is invalid.
-                instance = instance->get().FindNestedInstance(pathElement.Native());
-                if (!instance.has_value())
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return GetInstanceReferenceFromRootAliasPath(rootAliasPath) == AZStd::nullopt;
     }
 
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::GetInstanceReferenceFromRootAliasPath(
