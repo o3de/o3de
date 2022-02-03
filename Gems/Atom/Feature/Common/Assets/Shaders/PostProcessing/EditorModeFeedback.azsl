@@ -48,11 +48,10 @@ float2 normalizedUV(float2 uv)
 }
  
 // Entity outliner effect
-float selectedEntityOutliner(float2 unormalizedUv)
+float selectedEntityOutliner(float2 unormalizedUv, float lineThickness)
 {
     float r = 0.;
-    float lineThickness = 10.;
-     
+
     // Selected entity mask value
     float S = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv)).a;
      
@@ -98,9 +97,18 @@ PSOutput MainPS(VSOutput IN)
     OUT.m_color.rgb = lerp(unmasked.rgb, color.rgb, mask.a);
     OUT.m_color.a = 1.0;
 
-    float outline = selectedEntityOutliner(unnormalizedUV);
+    float depth = PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r * 10.;
+    float depthT = clamp(depth, 0., 1.);
+
+    float minLineThickness = 3.;
+    float maxLineThickness = 10.;
+    float lineThickness = lerp(minLineThickness, maxLineThickness, depthT);
+    float outline = selectedEntityOutliner(unnormalizedUV, lineThickness);
     float3 outlineColor = float3(.96, 0.65, 0.13);
     OUT.m_color.rgb = lerp(OUT.m_color.rgb, outlineColor, outline);
+
+    //OUT.m_color.rgb = mask.rgb;
+    //OUT.m_color.rgb = float3(depthT, depthT, depthT);
 
     return OUT;
 }
