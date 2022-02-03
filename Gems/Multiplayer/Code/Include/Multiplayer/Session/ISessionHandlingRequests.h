@@ -12,7 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
 
-namespace AzFramework
+namespace Multiplayer
 {
     //! SessionConnectionConfig
     //! The properties for handling join session request.
@@ -91,4 +91,4 @@ namespace AzFramework
         //!         empty string.
         virtual AZ::IO::Path GetInternalSessionCertificate() = 0;
     };
-} // namespace AzFramework
+} // namespace Multiplayer
