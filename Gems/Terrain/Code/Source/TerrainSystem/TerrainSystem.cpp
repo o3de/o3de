@@ -283,9 +283,10 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
 
         if (queryHeights)
         {
+            size_t spanLength = (windowEnd - windowStart) + 1;
             Terrain::TerrainAreaHeightRequestBus::Event(prevAreaId,
                 &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights,
-                AZStd::span<AZ::Vector3>(outPositions.begin(), numPositions), AZStd::span<bool>(outTerrainExists.begin(), numPositions));
+                AZStd::span<AZ::Vector3>(outPositions.begin(), spanLength), AZStd::span<bool>(outTerrainExists.begin(), spanLength));
             
             // Reset the window to start at the current position.
             // Set the new area id on which to run the next query.
