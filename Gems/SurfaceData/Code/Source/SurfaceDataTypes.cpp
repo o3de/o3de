@@ -106,11 +106,11 @@ namespace SurfaceData
         return true;
     }
 
-    void SurfaceTagWeights::EnumerateWeights(AZStd::function<bool(AZ::Crc32, float)> weightCallback) const
+    void SurfaceTagWeights::EnumerateWeights(AZStd::function<bool(AZ::Crc32 tag, float weight)> weightCallback) const
     {
-        for (auto& weight : m_weights)
+        for (auto& [tag, weight] : m_weights)
         {
-            if (!weightCallback(weight.first, weight.second))
+            if (!weightCallback(tag, weight))
             {
                 break;
             }
@@ -147,17 +147,17 @@ namespace SurfaceData
         return false;
     }
 
-    bool SurfaceTagWeights::HasMatchingTag(const AZ::Crc32& sampleTag, float valueMin, float valueMax) const
+    bool SurfaceTagWeights::HasMatchingTag(const AZ::Crc32& sampleTag, float weightMin, float weightMax) const
     {
         auto maskItr = m_weights.find(sampleTag);
-        return maskItr != m_weights.end() && valueMin <= maskItr->second && valueMax >= maskItr->second;
+        return maskItr != m_weights.end() && weightMin <= maskItr->second && weightMax >= maskItr->second;
     }
 
-    bool SurfaceTagWeights::HasMatchingTags(const SurfaceTagVector& sampleTags, float valueMin, float valueMax) const
+    bool SurfaceTagWeights::HasMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const
     {
         for (const auto& sampleTag : sampleTags)
         {
-            if (HasMatchingTag(sampleTag, valueMin, valueMax))
+            if (HasMatchingTag(sampleTag, weightMin, weightMax))
             {
                 return true;
             }
@@ -259,7 +259,7 @@ namespace SurfaceData
 
     void SurfacePointList::ModifySurfaceWeights(
         const AZ::EntityId& currentEntityId,
-        AZStd::function<void(const AZ::Vector3&, SurfaceData::SurfaceTagWeights&)> modificationWeightCallback)
+        AZStd::function<void(const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& surfaceWeights)> modificationWeightCallback)
     {
         for (size_t index = 0; index < m_surfacePositionList.size(); index++)
         {
