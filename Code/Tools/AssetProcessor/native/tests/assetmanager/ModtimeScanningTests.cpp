@@ -516,6 +516,79 @@ namespace UnitTests
         ASSERT_EQ(m_data->m_processResults.size(), 2);
     }
 
+     TEST_F(ModtimeScanningTest, AssetProcessorIsRestartedBeforeDependencyIsProcessed_DependencyIsProcessedOnStart)
+    {
+        using namespace AzToolsFramework::AssetSystem;
+        auto theFile = m_data->m_absolutePath[1].toUtf8();
+        const char* theFileString = theFile.constData();
+
+        SetFileContents(theFileString, "hello world");
+
+        // Enable the features we're testing
+        m_assetProcessorManager->SetEnableModtimeSkippingFeature(true);
+        AssetUtilities::SetUseFileHashOverride(true, true);
+
+        QSet<AssetFileInfo> filePaths = BuildFileSet();
+        SimulateAssetScanner(filePaths);
+
+        // Even though we're only updating one file, we're expecting 2 createJob calls because our test file is a dependency that triggers
+        // the other test file to process as well
+        ExpectWork(2, 2);
+
+        // Sort the results and process the first one, which should always be the modtimeTestDependency.txt file
+        // which is the same file we modified above.  modtimeTestFile.txt depends on this file but we're not going to process it yet.
+        {
+            std::sort(
+                m_data->m_processResults.begin(), m_data->m_processResults.end(),
+                [](decltype(m_data->m_processResults[0])& left, decltype(left)& right)
+                {
+                    return left.m_jobEntry.m_databaseSourceName < right.m_jobEntry.m_databaseSourceName;
+                });
+
+            const auto& processResult = m_data->m_processResults[0];
+            auto file =
+                QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName.toLower() + ".arc1");
+            m_data->m_productPaths.emplace(
+                QDir(processResult.m_jobEntry.m_watchFolderPath)
+                    .absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName)
+                    .toUtf8()
+                    .constData(),
+                file);
+
+            // Create the file on disk
+            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(file, "products."));
+
+            AssetBuilderSDK::ProcessJobResponse response;
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+            response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(file.toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
+
+            using JobEntry = AssetProcessor::JobEntry;
+
+            QMetaObject::invokeMethod(
+                m_assetProcessorManager.get(), "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResult.m_jobEntry),
+                Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
+        }
+
+        ASSERT_TRUE(BlockUntilIdle(5000));
+
+        // Shutdown and restart the APM
+        m_assetProcessorManager.reset();
+        m_assetProcessorManager = AZStd::make_unique<AssetProcessorManager_Test>(m_config.get());
+
+        SetUpAssetProcessorManager();
+
+        m_data->m_mockBuilderInfoHandler.m_createJobsCount = 0;
+        m_data->m_processResults.clear();
+        m_data->m_deletedSources.clear();
+
+        // Re-run the scanner on our files
+        filePaths = BuildFileSet();
+        SimulateAssetScanner(filePaths);
+
+        // Expect processing to resume on the job we didn't process before
+        ExpectWork(1, 1);
+    }
+
     void DeleteTest::SetUp()
     {
         AssetProcessorManagerTest::SetUp();
