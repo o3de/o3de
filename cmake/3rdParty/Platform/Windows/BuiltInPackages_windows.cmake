@@ -47,5 +47,5 @@ ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-windows               
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev2-windows                         TARGETS astc-encoder                PACKAGE_HASH 17249bfa438afb34e21449865d9c9297471174ae0cea9b2f9def2ee206038295)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows                      TARGETS ISPCTexComp                 PACKAGE_HASH b6fa6ea28a2808a9a5524c72c37789c525925e435770f2d94eb2d387360fa2d0)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-windows                          TARGETS lz4                         PACKAGE_HASH 4ea457b833cd8cfaf8e8e06ed6df601d3e6783b606bdbc44a677f77e19e0db16)
-ly_associate_package(PACKAGE_NAME azslc-1.7.34-rev1-windows                             TARGETS azslc                       PACKAGE_HASH 44eb2e0fc4b0f1c75d0fb6f24c93a5753655b84dbc3e6ad45389ed3b9cf7a4b0)
+ly_associate_package(PACKAGE_NAME azslc-1.7.35-rev1-windows                             TARGETS azslc                       PACKAGE_HASH 606aea611f2f20afcd8467ddabeecd3661e946eac3c843756c7df2871c1fb8a0)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-windows        	                TARGETS SQLite                      PACKAGE_HASH c1658c8ed5cf0e45d4a5da940c6a6d770b76e0f4f57313b70d0fd306885f015e)
