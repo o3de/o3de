@@ -55,7 +55,7 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
             // and that close() will work correctly.
             types.push_back(event->type());
             QString enumName = ToString(event->type());
-            AZ::Debug::Trace::Output("Testing", enumName.toStdString().c_str());
+            AZ::Debug::Trace::Output("ModalWindowDismisser", enumName.toStdString().c_str());
             if (event->type() == QEvent::PolishRequest)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);

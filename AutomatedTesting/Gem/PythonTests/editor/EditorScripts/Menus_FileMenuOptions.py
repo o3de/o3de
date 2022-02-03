@@ -33,7 +33,7 @@ def Menus_FileMenuOptions_Work():
     file_menu_options = [
         ("New Level",),
         ("Open Level",),
-        ("Import",),
+        #("Import",),
         ("Save",),
         ("Save As",),
         ("Save Level Statistics",),
