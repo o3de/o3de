@@ -44,6 +44,7 @@ namespace Profiler
         bool CaptureFrame(const AZStd::string& outputFilePath) override;
         bool StartCapture(AZStd::string outputFilePath) override;
         bool EndCapture() override;
+        bool IsCaptureInProgress() const override;
 
 
         AZStd::thread m_cpuDataSerializationThread;

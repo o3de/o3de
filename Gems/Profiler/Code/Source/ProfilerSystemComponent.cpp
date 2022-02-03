@@ -245,4 +245,9 @@ namespace Profiler
 
         return true;
     }
+
+    bool ProfilerSystemComponent::IsCaptureInProgress() const
+    {
+        return m_cpuProfiler.IsContinuousCaptureInProgress();
+    }
 } // namespace Profiler
