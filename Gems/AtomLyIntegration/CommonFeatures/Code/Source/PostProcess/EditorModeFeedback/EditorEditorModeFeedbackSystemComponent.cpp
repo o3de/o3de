@@ -56,7 +56,7 @@ namespace AZ
 
         bool EditorEditorModeFeedbackSystemComponent::Enabled() const
         {
-            return m_enabled;
+            return true;//m_enabled;
         }
 
         void EditorEditorModeFeedbackSystemComponent::OnEditorModeActivated(
