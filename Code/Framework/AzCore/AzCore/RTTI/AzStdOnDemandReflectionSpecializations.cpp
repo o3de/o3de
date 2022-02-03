@@ -126,7 +126,7 @@ namespace AZ::CommonOnDemandReflections
     void ReflectCommonStringView(ReflectContext* context)
     {
         using ContainerType = AZStd::string_view;
-        
+
         if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
         {
             behaviorContext->Class<ContainerType>()
