@@ -12,7 +12,7 @@
 
 namespace UnitTests
 {
-    using AssetFileInfo = AssetFileInfo;
+    using AssetFileInfo = AssetProcessor::AssetFileInfo;
 
     void FileStateCacheTests::SetUp()
     {
