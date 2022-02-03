@@ -23,7 +23,7 @@ namespace AZ
             virtual ~EditorModeFeedbackInterface() = default;
 
             //! Returns true if the editor mode feedback effect is enabled, otherwise false.
-            virtual bool Enabled() const = 0;
+            virtual bool IsEnabled() const = 0;
         };
     } // namespace Render
 } // namespace AZ

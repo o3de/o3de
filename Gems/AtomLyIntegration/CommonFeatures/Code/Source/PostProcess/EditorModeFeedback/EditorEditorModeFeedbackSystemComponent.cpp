@@ -56,7 +56,7 @@ namespace AZ
             AzToolsFramework::Components::EditorComponentBase::Deactivate();
         }
 
-        bool EditorEditorModeFeedbackSystemComponent::Enabled() const
+        bool EditorEditorModeFeedbackSystemComponent::IsEnabled() const
         {
             return m_enabled;
         }

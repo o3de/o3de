@@ -48,7 +48,7 @@
             // move this to parent
             if (const auto editorModeFeedback = AZ::Interface<EditorModeFeedbackInterface>::Get())
             {
-                return editorModeFeedback->Enabled();
+                return editorModeFeedback->IsEnabled();
             }
 
             return false;

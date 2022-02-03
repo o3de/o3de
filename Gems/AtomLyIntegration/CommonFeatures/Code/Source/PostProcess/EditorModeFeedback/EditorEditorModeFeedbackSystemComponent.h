@@ -33,7 +33,7 @@ namespace AZ
             void Deactivate() override;
 
             // EditorModeFeedbackInterface overrides ...
-            bool Enabled() const override;
+            bool IsEnabled() const override;
 
         private:
             // ViewportEditorModeNotificationsBus overrides ...
