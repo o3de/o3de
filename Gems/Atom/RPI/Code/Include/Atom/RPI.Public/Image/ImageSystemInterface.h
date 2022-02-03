@@ -14,6 +14,8 @@
 
 namespace AZ
 {
+    class Name;
+
     namespace RPI
     {
         class Image;
