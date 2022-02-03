@@ -43,3 +43,4 @@ ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac                  
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-mac                          TARGETS lz4                         PACKAGE_HASH 891ff630bf34f7ab1d8eaee2ea0a8f1fca89dbdc63fca41ee592703dd488a73b)
 ly_associate_package(PACKAGE_NAME azslc-1.7.34-rev1-mac                             TARGETS azslc                       PACKAGE_HASH a9d81946b42ffa55c0d14d6a9249b3340e59a8fb8835e7a96c31df80f14723bc)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-mac                            TARGETS SQLite                      PACKAGE_HASH f9101023f99cf32fc5867284ceb28c0761c23d2c5a4b1748349c69f976a2fbea)
+ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev2-mac                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 4854edb7b88fa6437b4e69e87d0ee111a25313ac2a2db5bb2f8b674ba0974f95)
