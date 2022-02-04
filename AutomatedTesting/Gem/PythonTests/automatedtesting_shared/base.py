@@ -54,7 +54,7 @@ class TestAutomationBase:
         cls._kill_ly_processes()
 
     def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[], batch_mode=True,
-                  autotest_mode=True, use_null_renderer=True, enable_prefab_system=True):
+                  autotest_mode=True, use_null_renderer=True, enable_prefab_system=True, timeout_override=None):
         test_starttime = time.time()
         self.logger = logging.getLogger(__name__)
         errors = []
@@ -109,10 +109,12 @@ class TestAutomationBase:
         pycmd += extra_cmdline_args
         editor.args.extend(pycmd) # args are added to the WinLauncher start command
         editor.start(backupFiles = False, launch_ap = False)
+
+        timeout = timeout_override or TestAutomationBase.MAX_TIMEOUT
         try:
-            editor.wait(TestAutomationBase.MAX_TIMEOUT)
+            editor.wait(timeout)
         except WaitTimeoutError:
-            errors.append(TestRunError("TIMEOUT", f"Editor did not close after {TestAutomationBase.MAX_TIMEOUT} seconds, verify the test is ending and the application didn't freeze"))
+            errors.append(TestRunError("TIMEOUT", f"Editor did not close after {timeout} seconds, verify the test is ending and the application didn't freeze"))
             editor.stop()
             
         output = editor.get_output()
