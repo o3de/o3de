@@ -85,13 +85,13 @@ namespace AZ
 
             functor->m_transformOrder = m_transformOrder;
 
-            AZStd::set<Transform2DFunctor::TransformType> transformSet{m_transformOrder.begin(), m_transformOrder.end()};
+            AZStd::set<TransformType> transformSet{m_transformOrder.begin(), m_transformOrder.end()};
             if (m_transformOrder.size() != transformSet.size())
             {
                 AZ_Warning("Transform2DFunctor", false, "transformOrder field contains duplicate entries");
             }
 
-            if (transformSet.find(Transform2DFunctor::TransformType::Invalid) != transformSet.end())
+            if (transformSet.find(TransformType::Invalid) != transformSet.end())
             {
                 AZ_Warning("Transform2DFunctor", false, "transformOrder contains invalid entries");
             }
