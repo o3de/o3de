@@ -182,14 +182,9 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPos
     AZStd::vector<AZ::Vector3>& outPositions,
     Sampler sampler, size_t indexStepSize) const
 {
-    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++)
+    const float minHeight = m_currentSettings.m_worldBounds.GetMin().GetZ();
+    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
     {
-        if (!InWorldBounds(inPositions[i].GetX(), inPositions[i].GetY()))
-        {
-            // Defaults will be stored to results later.
-            continue;
-        }
-
         switch(sampler)
         {
         case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
@@ -198,10 +193,10 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPos
                 AZ::Vector2 pos0;
                 ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), pos0, normalizedDelta);
                 const AZ::Vector2 pos1 = pos0 + m_currentSettings.m_heightQueryResolution;
-                outPositions[iteratorIndex].Set(pos0.GetX(), pos0.GetY(), 0.0f);
-                outPositions[iteratorIndex + 1].Set(pos1.GetX(), pos0.GetY(), 0.0f);
-                outPositions[iteratorIndex + 2].Set(pos0.GetX(), pos1.GetY(), 0.0f);
-                outPositions[iteratorIndex + 3].Set(pos1.GetX(), pos1.GetY(), 0.0f);
+                outPositions[iteratorIndex].Set(pos0.GetX(), pos0.GetY(), minHeight);
+                outPositions[iteratorIndex + 1].Set(pos1.GetX(), pos0.GetY(), minHeight);
+                outPositions[iteratorIndex + 2].Set(pos0.GetX(), pos1.GetY(), minHeight);
+                outPositions[iteratorIndex + 3].Set(pos1.GetX(), pos1.GetY(), minHeight);
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
@@ -209,25 +204,21 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPos
                 AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
                 ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), clampedPosition, normalizedDelta);
-                outPositions[iteratorIndex].Set(clampedPosition.GetX(), clampedPosition.GetY(), 0.0f);
+                outPositions[iteratorIndex].Set(clampedPosition.GetX(), clampedPosition.GetY(), minHeight);
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
             [[fallthrough]];
         default:
-            outPositions[iteratorIndex].Set(inPositions[i].GetX(), inPositions[i].GetY(), 0.0f);
+            outPositions[iteratorIndex].Set(inPositions[i].GetX(), inPositions[i].GetY(), minHeight);
             break;
         }
-        
-        iteratorIndex += indexStepSize;
     }
 }
 
 void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
 {
-    float minHeight = m_currentSettings.m_worldBounds.GetMin().GetZ();
-
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     AZStd::vector<AZ::Vector3> outPositions;
@@ -283,47 +274,24 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
 
         if (queryHeights)
         {
-            size_t spanLength = (windowEnd - windowStart) + 1;
-            Terrain::TerrainAreaHeightRequestBus::Event(prevAreaId,
-                &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights,
-                AZStd::span<AZ::Vector3>(outPositions.begin() + windowStart, spanLength), AZStd::span<bool>(outTerrainExists.begin() + windowStart, spanLength));
-            
-            // Sometimes, a position generated for a bilinear sample may be outside
-            // of all areas. This won't be caught by our world bounds check since we
-            // only do them on input positions and not the generated ones.
-            while (areaId == AZ::EntityId())
+            if (prevAreaId != AZ::EntityId())
             {
-                // Out of bounds. Set height to world min.
-                outPositions[i].SetZ(minHeight);
-                i++;
-                if (i < numPositions)
-                {
-                    areaId = FindBestAreaEntityAtPosition(outPositions[i].GetX(), outPositions[i].GetY(), bounds);
-                }
-                else
-                {
-                    break;
-                }
+                size_t spanLength = (windowEnd - windowStart) + 1;
+                Terrain::TerrainAreaHeightRequestBus::Event(prevAreaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights,
+                    AZStd::span<AZ::Vector3>(outPositions.begin() + windowStart, spanLength),
+                    AZStd::span<bool>(outTerrainExists.begin() + windowStart, spanLength));
             }
-            
+
             // Reset the window to start at the current position. Set the new area
             // id on which to run the next query.
             windowStart = windowEnd = i;
             prevAreaId = areaId;
-        }
+        }   
     }
 
     // Compute/store the final result
-    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++)
+    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
     {
-        if (!InWorldBounds(inPositions[i].GetX(), inPositions[i].GetY()))
-        {
-            // Not in world bounds. Store defaults and move on.
-            heights[i] = minHeight;
-            terrainExists[i] = false;
-            continue;
-        }
-
         switch(sampler)
         {
         case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
@@ -352,8 +320,6 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
             terrainExists[i] = outTerrainExists[iteratorIndex];
             break;
         }
-
-        iteratorIndex += indexStepSize;
     }
 }
 
