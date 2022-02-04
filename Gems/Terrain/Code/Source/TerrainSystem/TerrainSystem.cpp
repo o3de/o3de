@@ -461,6 +461,38 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
     return !terrainExists;
 }
 
+void TerrainSystem::GetNormalsSynchronous(const AZStd::span<AZ::Vector3>& inPositions, Sampler sampler, 
+    AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
+{
+    AZStd::vector<AZ::Vector3> directionVectors(inPositions.size() * 4);
+    const AZ::Vector2 range = (m_currentSettings.m_heightQueryResolution / 2.0f);
+    size_t indexStepSize = 4;
+    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
+    {
+        directionVectors[iteratorIndex].Set(inPositions[i].GetX(), inPositions[i].GetY() - range.GetY(), 0.0f);
+        directionVectors[iteratorIndex + 1].Set(inPositions[i].GetX() - range.GetX(), inPositions[i].GetY(), 0.0f);
+        directionVectors[iteratorIndex + 2].Set(inPositions[i].GetX() + range.GetX(), inPositions[i].GetY(), 0.0f);
+        directionVectors[iteratorIndex + 3].Set(inPositions[i].GetX(), inPositions[i].GetY() + range.GetY(), 0.0f);
+    }
+
+    AZStd::vector<float> heights(directionVectors.size());
+    AZStd::vector<bool> exists(directionVectors.size());
+    GetHeightsSynchronous(directionVectors, sampler, heights, exists);
+
+    for (int i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
+    {
+        directionVectors[iteratorIndex].SetZ(heights[iteratorIndex]);
+        directionVectors[iteratorIndex + 1].SetZ(heights[iteratorIndex + 1]);
+        directionVectors[iteratorIndex + 2].SetZ(heights[iteratorIndex + 2]);
+        directionVectors[iteratorIndex + 3].SetZ(heights[iteratorIndex + 3]);
+
+        normals[i] = (directionVectors[iteratorIndex + 2] - directionVectors[iteratorIndex + 1]).
+                         Cross(directionVectors[iteratorIndex + 3] - directionVectors[iteratorIndex]).GetNormalized();
+        
+        terrainExists[i] = exists[iteratorIndex];
+    }
+}
+
 AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
@@ -720,13 +752,17 @@ void TerrainSystem::ProcessNormalsFromList(
         return;
     }
 
+    AZStd::vector<bool> terrainExists(inPositions.size());
+    AZStd::vector<AZ::Vector3> normals(inPositions.size());
+
+    GetNormalsSynchronous(inPositions, sampleFilter, normals, terrainExists);
+
     AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
+    for (size_t i = 0; i < inPositions.size(); i++)
     {
-        bool terrainExists = false;
-        surfacePoint.m_position = position;
-        surfacePoint.m_normal = GetNormal(position, sampleFilter, &terrainExists);
-        perPositionCallback(surfacePoint, terrainExists);
+        surfacePoint.m_position = inPositions[i];
+        surfacePoint.m_normal = normals[i];
+        perPositionCallback(surfacePoint, terrainExists[i]);
     }
 }
 

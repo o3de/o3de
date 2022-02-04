@@ -210,6 +210,9 @@ namespace Terrain
         void GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPositions,
             Sampler sampler, AZStd::span<float> heights,
             AZStd::span<bool> terrainExists) const;
+        void GetNormalsSynchronous(const AZStd::span<AZ::Vector3>& inPositions,
+            Sampler sampler, AZStd::span<AZ::Vector3> normals,
+            AZStd::span<bool> terrainExists) const;
         void GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPositions, 
             AZStd::vector<AZ::Vector3>& outPositions,
             Sampler sampler, size_t indexStepSize) const;
