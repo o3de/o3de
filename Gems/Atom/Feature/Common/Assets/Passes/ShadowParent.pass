@@ -163,6 +163,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "ExponentialShadowmapDirectional",
+                            "AttachmentRef": {
+                                "Pass": "EsmShadowmapsPassDirectional",
+                                "Attachment": "EsmShadowmaps"
+                            }
+                        },                        
+                        {
                             "LocalSlot": "Depth",
                             "AttachmentRef": {
                                 "Pass": "Parent",

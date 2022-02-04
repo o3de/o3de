@@ -12,7 +12,16 @@
                     "SlotType": "Input",
                     "ShaderInputName": "m_directionalLightShadowmap",
                     "ScopeAttachmentUsage": "Shader"      
-                },      
+                },    
+                {
+                    "Name": "ExponentialShadowmapDirectional",
+                    "ShaderInputName": "m_directionalLightExponentialShadowmap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },               
                 {
                     "Name": "Depth",
                     "SlotType": "Input",

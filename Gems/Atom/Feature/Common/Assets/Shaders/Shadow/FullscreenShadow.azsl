@@ -13,11 +13,11 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
-#include <viewsrg.srgi>
 #include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
 #include <Atom/Features/Shadow/NormalOffsetShadows.azsli>
 #include <Atom/Features/Shadow/BicubicPcfFilters.azsli>
 #include <Atom/Features/Shadow/Shadow.azsli>
+#include <viewsrg.srgi>
 
 
 ShaderResourceGroup PassSrg : SRG_PerPass
@@ -282,6 +282,7 @@ PSOutput MainPS(VSOutput IN)
     
     directionalLightShadow.GetShadowCoords(lightIndex, surfacePosWS, worldNormal, directionalLightShadow.m_shadowCoords);
     float shadow = directionalLightShadow.GetVisibilityFromLightPcf(); // GetVisibilityFromLightNoFilter
+    shadow = directionalLightShadow.GetVisibilityFromLightEsm();
     
     PSOutput OUT;
     OUT.m_color.rgb = shadow;
