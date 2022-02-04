@@ -78,6 +78,28 @@ namespace ShaderManagementConsole
         return m_invalidDescriptor;
     }
 
+    AZStd::vector<AtomToolsFramework::DocumentObjectInfo> ShaderManagementConsoleDocument::GetObjectInfo() const
+    {
+        if (!IsOpen())
+        {
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document is not open.");
+            return {};
+        }
+
+        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> objects;
+
+        AtomToolsFramework::DocumentObjectInfo objectInfo;
+        objectInfo.m_visible = true;
+        objectInfo.m_name = "Shader Variant List";
+        objectInfo.m_displayName = "Shader Variant List";
+        objectInfo.m_description = "Shader Variant List";
+        objectInfo.m_objectType = azrtti_typeid<AZ::RPI::ShaderVariantListSourceData>();
+        objectInfo.m_objectPtr = const_cast<AZ::RPI::ShaderVariantListSourceData*>(&m_shaderVariantListSourceData);
+        objects.push_back(AZStd::move(objectInfo));
+
+        return objects;
+    }
+
     bool ShaderManagementConsoleDocument::Open(AZStd::string_view loadPath)
     {
         if (!AtomToolsDocument::Open(loadPath))

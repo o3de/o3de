@@ -165,6 +165,11 @@ namespace AZ
             //! User should use this event to update the part scene srg they know of
             void ConnectEvent(PrepareSceneSrgEvent::Handler& handler);
 
+            //! Rebuild pipeline states lookup table.
+            //! This function is called every time scene's render pipelines change.
+            //! User may call this function explicitly if render pipelines were changed
+            void RebuildPipelineStatesLookup();
+
         protected:
             // SceneFinder overrides...
             void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
@@ -190,9 +195,6 @@ namespace AZ
         private:
             Scene();
 
-            // Rebuild pipeline states lookup table.
-            // This function is called every time scene's render pipelines change.
-            void RebuildPipelineStatesLookup();
 
             // Helper function to wait for end of TaskGraph and then delete the TaskGraphEvent
             void WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&& completionTGEvent);

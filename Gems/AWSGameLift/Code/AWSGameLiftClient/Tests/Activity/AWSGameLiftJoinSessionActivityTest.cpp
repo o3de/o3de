@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <Multiplayer/Session/ISessionHandlingRequests.h>
 
 #include <AWSGameLiftClientFixture.h>
 #include <Activity/AWSGameLiftJoinSessionActivity.h>
@@ -47,7 +47,7 @@ TEST_F(AWSGameLiftJoinSessionActivityTest, BuildSessionConnectionConfig_Call_Get
 TEST_F(AWSGameLiftJoinSessionActivityTest, ValidateJoinSessionRequest_CallWithBaseType_GetFalseResult)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
-    auto result = JoinSessionActivity::ValidateJoinSessionRequest(AzFramework::JoinSessionRequest());
+    auto result = JoinSessionActivity::ValidateJoinSessionRequest(Multiplayer::JoinSessionRequest());
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message 
     EXPECT_FALSE(result);
 }

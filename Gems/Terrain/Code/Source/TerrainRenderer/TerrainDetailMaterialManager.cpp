@@ -15,6 +15,8 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 
+#include <Atom/Utils/MaterialUtils.h>
+
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
 namespace Terrain
@@ -56,6 +58,13 @@ namespace Terrain
         static const char* const HeightFactor("parallax.factor");
         static const char* const HeightOffset("parallax.offset");
         static const char* const HeightBlendFactor("parallax.blendFactor");
+        static const char* const UvCenter("uv.center");
+        static const char* const UvScale("uv.scale");
+        static const char* const UvTileU("uv.tileU");
+        static const char* const UvTileV("uv.tileV");
+        static const char* const UvOffsetU("uv.offsetU");
+        static const char* const UvOffsetV("uv.offsetV");
+        static const char* const UvRotateDegrees("uv.rotateDegrees");
     }
     
     namespace TerrainSrgInputs
@@ -547,6 +556,36 @@ namespace Terrain
         applyProperty(HeightFactor, shaderData.m_heightFactor);
         applyProperty(HeightOffset, shaderData.m_heightOffset);
         applyProperty(HeightBlendFactor, shaderData.m_heightBlendFactor);
+
+        AZ::Render::UvTransformDescriptor transformDescriptor;
+        applyProperty(UvCenter, transformDescriptor.m_center);
+        applyProperty(UvScale, transformDescriptor.m_scale);
+        applyProperty(UvTileU, transformDescriptor.m_scaleX);
+        applyProperty(UvTileV, transformDescriptor.m_scaleY);
+        applyProperty(UvOffsetU, transformDescriptor.m_translateX);
+        applyProperty(UvOffsetV, transformDescriptor.m_translateY);
+        applyProperty(UvRotateDegrees, transformDescriptor.m_rotateDegrees);
+
+        AZStd::array<AZ::Render::TransformType, 3> order =
+        {
+            AZ::Render::TransformType::Rotate,
+            AZ::Render::TransformType::Translate,
+            AZ::Render::TransformType::Scale,
+        };
+
+        AZ::Matrix3x3 uvTransformMatrix = AZ::Render::CreateUvTransformMatrix(transformDescriptor, order);
+        uvTransformMatrix.GetRow(0).StoreToFloat3(&shaderData.m_uvTransform[0]);
+        uvTransformMatrix.GetRow(1).StoreToFloat3(&shaderData.m_uvTransform[4]);
+        uvTransformMatrix.GetRow(2).StoreToFloat3(&shaderData.m_uvTransform[8]);
+
+        // Store a hash of the matrix in element in an unused portion for quick comparisons in the shader
+        size_t hash64 = 0;
+        for (float value : shaderData.m_uvTransform)
+        {
+            AZStd::hash_combine(hash64, value);
+        }
+        uint32_t hash32 = uint32_t((hash64 ^ (hash64 >> 32)) & 0xFFFFFFFF);
+        shaderData.m_uvTransform[3] = *reinterpret_cast<float*>(&hash32);
 
         m_detailMaterialBufferNeedsUpdate = true;
     }
