@@ -31,11 +31,16 @@ namespace AzToolsFramework
         //! because a collider may have an additional translation/orientation offset from
         //! the Entity transform.
         virtual AZ::Transform GetCurrentTransform() = 0;
+        //!
+        //!
+        virtual AZ::Transform GetCurrentLocalTransform() = 0;
         //! Get the scale currently applied to the box.
         //! With the Box Shape, the largest x/y/z component is taken
         //! so scale is always uniform, with colliders the scale may
         //! be different per component.
         virtual AZ::Vector3 GetBoxScale() = 0;
+
+        virtual AZ::Vector3 GetCurrentNonUniformScale() { return AZ::Vector3::CreateOne(); }
 
     protected:
         ~BoxManipulatorRequests() = default;

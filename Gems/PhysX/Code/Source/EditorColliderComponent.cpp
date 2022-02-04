@@ -581,9 +581,8 @@ namespace PhysX
 
     AZ::Transform EditorColliderComponent::GetColliderLocalTransform() const
     {
-        const AZ::Vector3 nonUniformScale = Utils::GetTransformScale(GetEntityId());
         return AZ::Transform::CreateFromQuaternionAndTranslation(
-            m_configuration.m_rotation, m_configuration.m_position * nonUniformScale);
+            m_configuration.m_rotation, m_configuration.m_position);
     }
 
     void EditorColliderComponent::UpdateMeshAsset()
@@ -1053,12 +1052,22 @@ namespace PhysX
 
     AZ::Transform EditorColliderComponent::GetCurrentTransform()
     {
-        return GetColliderWorldTransform();
+        return GetWorldTM();
+    }
+
+    AZ::Transform EditorColliderComponent::GetCurrentLocalTransform()
+    {
+        return GetColliderLocalTransform();
     }
 
     AZ::Vector3 EditorColliderComponent::GetBoxScale()
     {
-        return AZ::Vector3(GetWorldTM().GetUniformScale());
+        return AZ::Vector3::CreateOne();
+    }
+
+    AZ::Vector3 EditorColliderComponent::GetCurrentNonUniformScale()
+    {
+        return m_cachedNonUniformScale;
     }
 
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
@@ -1202,7 +1211,7 @@ namespace PhysX
 
     AZ::Transform EditorColliderComponent::GetColliderWorldTransform()
     {
-        return AzToolsFramework::TransformNormalizedScale(GetWorldTM()) * GetColliderLocalTransform();
+        return GetWorldTM() * GetColliderLocalTransform();
     }
 
     bool EditorColliderComponent::ShouldUpdateCollisionMeshFromRender() const

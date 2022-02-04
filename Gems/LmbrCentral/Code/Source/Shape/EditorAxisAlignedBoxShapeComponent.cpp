@@ -161,6 +161,11 @@ namespace LmbrCentral
         return AzToolsFramework::TransformNormalizedScale(m_aaboxShape.GetCurrentTransform());
     }
 
+    AZ::Transform EditorAxisAlignedBoxShapeComponent::GetCurrentLocalTransform()
+    {
+        return AZ::Transform::CreateIdentity();
+    }
+
     AZ::Vector3 EditorAxisAlignedBoxShapeComponent::GetBoxScale()
     {
         return AZ::Vector3(m_aaboxShape.GetCurrentTransform().GetUniformScale() * m_aaboxShape.GetCurrentNonUniformScale());

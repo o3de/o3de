@@ -10,6 +10,7 @@
 #include <PhysX/EditorColliderComponentRequestBus.h>
 
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/ComponentBus.h>
 
@@ -28,10 +29,14 @@ namespace PhysX
         AZ::Transform worldTransform;
         AZ::TransformBus::EventResult(worldTransform, idPair.GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
+        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, idPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+
         AZ::Vector3 colliderOffset;
         PhysX::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &PhysX::EditorColliderComponentRequests::GetColliderOffset);
 
         m_translationManipulators.SetSpace(worldTransform);
+        m_translationManipulators.SetNonUniformScale(nonUniformScale);
         m_translationManipulators.SetLocalPosition(colliderOffset);
         m_translationManipulators.AddEntityComponentIdPair(idPair);
         m_translationManipulators.Register(AzToolsFramework::g_mainManipulatorManagerId);
