@@ -8,7 +8,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzFramework/Session/SessionConfig.h>
+#include <Multiplayer/Session/SessionConfig.h>
 
 #include <Activity/AWSGameLiftSearchSessionsActivity.h>
 #include <AWSGameLiftSessionConstants.h>
@@ -67,10 +67,10 @@ namespace AWSGameLift
             return request;
         }
 
-        AzFramework::SearchSessionsResponse SearchSessions(
+        Multiplayer::SearchSessionsResponse SearchSessions(
             const AWSGameLiftSearchSessionsRequest& searchSessionsRequest)
         {
-            AzFramework::SearchSessionsResponse response;
+            Multiplayer::SearchSessionsResponse response;
 
             auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
             if (!gameliftClient)
@@ -98,15 +98,15 @@ namespace AWSGameLift
             return response;
         }
 
-        AzFramework::SearchSessionsResponse ParseResponse(
+        Multiplayer::SearchSessionsResponse ParseResponse(
             const Aws::GameLift::Model::SearchGameSessionsResult& gameLiftSearchSessionsResult)
         {
-            AzFramework::SearchSessionsResponse response;
+            Multiplayer::SearchSessionsResponse response;
             response.m_nextToken = gameLiftSearchSessionsResult.GetNextToken().c_str();
 
             for (const Aws::GameLift::Model::GameSession& gameSession : gameLiftSearchSessionsResult.GetGameSessions())
             {
-                AzFramework::SessionConfig session;
+                Multiplayer::SessionConfig session;
                 session.m_creationTime = gameSession.GetCreationTime().Millis();
                 session.m_creatorId = gameSession.GetCreatorId().c_str();
                 session.m_currentPlayer = gameSession.GetCurrentPlayerSessionCount();
@@ -133,7 +133,7 @@ namespace AWSGameLift
             return response;
         };
 
-        bool ValidateSearchSessionsRequest(const AzFramework::SearchSessionsRequest& searchSessionsRequest)
+        bool ValidateSearchSessionsRequest(const Multiplayer::SearchSessionsRequest& searchSessionsRequest)
         {
             auto gameliftSearchSessionsRequest = azrtti_cast<const AWSGameLiftSearchSessionsRequest*>(&searchSessionsRequest);
             if (gameliftSearchSessionsRequest &&
