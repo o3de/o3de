@@ -237,7 +237,7 @@ namespace SurfaceData
 
         if (DoRayTrace(inPosition, queryPointOnly, hitPosition, hitNormal))
         {
-            surfacePointList.AddSurfacePoint(GetEntityId(), hitPosition, hitNormal, m_newPointWeights);
+            surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, hitPosition, hitNormal, m_newPointWeights);
         }
     }
 

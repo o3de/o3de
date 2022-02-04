@@ -152,7 +152,7 @@ class MockSurfaceProvider
                 for (auto& point : surfacePoints->second)
                 {
                     SurfaceData::SurfaceTagWeights weights(point.m_surfaceTags);
-                    surfacePointList.AddSurfacePoint(m_id, point.m_position, point.m_normal, weights);
+                    surfacePointList.AddSurfacePoint(m_id, inPosition, point.m_position, point.m_normal, weights);
                 }
             }
         }

@@ -178,11 +178,12 @@ namespace SurfaceData
         for (auto& point : surfacePoints)
         {
             SurfaceTagWeights weights(point.m_surfaceTags);
-            AddSurfacePoint(AZ::EntityId(), point.m_position, point.m_normal, weights);
+            AddSurfacePoint(AZ::EntityId(), point.m_position, point.m_position, point.m_normal, weights);
         }
     }
 
-    void SurfacePointList::AddSurfacePoint(const AZ::EntityId& entityId,
+    void SurfacePointList::AddSurfacePoint(
+        const AZ::EntityId& entityId, [[maybe_unused]] const AZ::Vector3& inPosition,
         const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& masks)
     {
         // When adding a surface point, we'll either merge it with a similar existing point, or else add it in order of

@@ -165,7 +165,7 @@ namespace Terrain
         const AZ::Crc32 terrainTag = isHole ? Constants::s_terrainHoleTagCrc : Constants::s_terrainTagCrc;
         weights.AddSurfaceTagWeight(terrainTag, 1.0f);
 
-        surfacePointList.AddSurfacePoint(GetEntityId(), terrainSurfacePoint.m_position, terrainSurfacePoint.m_normal, weights);
+        surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, terrainSurfacePoint.m_position, terrainSurfacePoint.m_normal, weights);
     }
 
     AZ::Aabb TerrainSurfaceDataSystemComponent::GetSurfaceAabb() const

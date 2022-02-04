@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
 #include <SurfaceData/SurfaceTag.h>
@@ -208,10 +209,11 @@ namespace SurfaceData
 
         //! Add a surface point to the list.
         //! @param entityId - The entity creating the surface point.
+        //! @param inPosition - The input position used to query for the point.
         //! @param position - The position of the surface point.
         //! @param normal - The normal for the surface point.
         //! @param weights - The surface tags and weights for this surface point.
-        void AddSurfacePoint(const AZ::EntityId& entityId,
+        void AddSurfacePoint(const AZ::EntityId& entityId, const AZ::Vector3& inPosition,
             const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& weights);
 
         //! Clear the surface point list.

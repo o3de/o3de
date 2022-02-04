@@ -178,7 +178,7 @@ namespace SurfaceData
         AZ::Vector3 hitNormal;
         if (DoRayTrace(inPosition, hitPosition, hitNormal))
         {
-            surfacePointList.AddSurfacePoint(GetEntityId(), hitPosition, hitNormal, m_newPointWeights);
+            surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, hitPosition, hitNormal, m_newPointWeights);
         }
     }
 

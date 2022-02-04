@@ -156,7 +156,7 @@ namespace SurfaceData
             if (hitShape)
             {
                 AZ::Vector3 position = rayOrigin + intersectionDistance * rayDirection;
-                surfacePointList.AddSurfacePoint(GetEntityId(), position, AZ::Vector3::CreateAxisZ(), m_newPointWeights);
+                surfacePointList.AddSurfacePoint(GetEntityId(), inPosition, position, AZ::Vector3::CreateAxisZ(), m_newPointWeights);
             }
         }
     }
