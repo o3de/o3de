@@ -59,7 +59,7 @@ namespace AWSGameLift
             }
         }
 
-        bool ValidateStopMatchmakingRequest(const AzFramework::StopMatchmakingRequest& StopMatchmakingRequest)
+        bool ValidateStopMatchmakingRequest(const Multiplayer::StopMatchmakingRequest& StopMatchmakingRequest)
         {
             auto gameliftStopMatchmakingRequest = azrtti_cast<const AWSGameLiftStopMatchmakingRequest*>(&StopMatchmakingRequest);
             bool isValid = gameliftStopMatchmakingRequest && (!gameliftStopMatchmakingRequest->m_ticketId.empty());

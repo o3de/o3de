@@ -45,31 +45,25 @@ namespace MaterialEditor
         bool IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const;
         const char* GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const;
 
-        void AddOverviewGroup();
-        void AddUvNamesGroup();
-        void AddPropertiesGroup();
-
         // AtomToolsDocumentNotificationBus::Handler implementation
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
-        void OnDocumentPropertyValueModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property) override;
-        void OnDocumentPropertyConfigModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property) override;
-        void OnDocumentPropertyGroupVisibilityChanged(const AZ::Uuid& documentId, const AZ::Name& groupId, bool visible) override;
+        void OnDocumentObjectInfoChanged(
+            const AZ::Uuid& documentId, const AtomToolsFramework::DocumentObjectInfo& objectInfo, bool rebuilt) override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
         void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
-        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
+        void AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override {}
         void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override {}
         void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode) override;
         void SealUndoStack() override {}
-        void RequestPropertyContextMenu(AzToolsFramework::InstanceDataNode*, const QPoint&) override {}
-        void PropertySelectionChanged(AzToolsFramework::InstanceDataNode*, bool) override {}
+        void RequestPropertyContextMenu([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode, const QPoint&) override {}
+        void PropertySelectionChanged([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode, bool) override {}
 
         // Tracking the property that is activiley being edited in the inspector
-        const AtomToolsFramework::DynamicProperty* m_activeProperty = nullptr;
+        const AtomToolsFramework::DynamicProperty* m_activeProperty = {};
 
         AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
         AZStd::string m_documentPath;
-        AZStd::unordered_map<AZStd::string, AtomToolsFramework::DynamicPropertyGroup> m_groups;
         AZStd::intrusive_ptr<MaterialEditorWindowSettings> m_windowSettings;
     };
 } // namespace MaterialEditor

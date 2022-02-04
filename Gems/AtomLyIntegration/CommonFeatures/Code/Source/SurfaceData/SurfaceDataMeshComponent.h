@@ -103,6 +103,6 @@ namespace SurfaceData
         AZ::Transform m_meshWorldTMInverse = AZ::Transform::CreateIdentity();
         AZ::Vector3 m_meshNonUniformScale = AZ::Vector3::CreateOne();
         AZ::Aabb m_meshBounds = AZ::Aabb::CreateNull();
-        SurfaceTagWeightMap m_newPointWeights;
+        SurfaceTagWeights m_newPointWeights;
     };
 }
