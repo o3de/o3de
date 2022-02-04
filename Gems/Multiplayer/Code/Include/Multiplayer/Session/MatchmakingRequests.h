@@ -17,7 +17,7 @@ namespace AZ
     class ReflectContext;
 }
 
-namespace AzFramework
+namespace Multiplayer
 {
     //! AcceptMatchRequest
     //! The container for AcceptMatch request parameters.
@@ -64,4 +64,4 @@ namespace AzFramework
         //! A unique identifier for a matchmaking ticket
         AZStd::string m_ticketId;
     };
-} // namespace AzFramework
+} // namespace Multiplayer

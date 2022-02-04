@@ -36,10 +36,7 @@ namespace EMotionFX::MotionMatching
         enum EMode : AZ::u8
         {
             MODE_TARGETDRIVEN = 0,
-            MODE_ONE = 1,
-            MODE_TWO = 2,
-            MODE_THREE = 3,
-            MODE_FOUR = 4
+            MODE_AUTOMATIC = 1
         };
 
         void Update(const ActorInstance* actorInstance,
@@ -64,5 +61,7 @@ namespace EMotionFX::MotionMatching
 
         AZStd::vector<ControlPoint> m_pastControlPoints;
         AZStd::vector<ControlPoint> m_futureControlPoints;
+
+        float m_automaticModePhase = 0.0f; //< Current phase for the automatic demo mode. Not needed by the target-driven mode.
     };
 } // namespace EMotionFX::MotionMatching

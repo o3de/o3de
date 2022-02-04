@@ -47,8 +47,8 @@ def Terrain_World_ConfigurationWorks():
      12) Check terrain does not exist at a known position outside the world
      13) Check height value is the expected one when query resolution is changed
     """
-    from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import TestHelper as helper, Report
+
+    from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report, Tracer
     import editor_python_test_tools.hydra_editor_utils as hydra
     import azlmbr.math as azmath
@@ -62,14 +62,11 @@ def Terrain_World_ConfigurationWorks():
     SET_BOX_Y_SIZE = 2048.0
     SET_BOX_Z_SIZE = 100.0
     CLAMP = 1
-    
-    helper.init_idle()
-    
+
     # 1) Start the Tracer to catch any errors and warnings
     with Tracer() as section_tracer:
         # 2) Load the level
-        helper.open_level("", "Base")
-        helper.wait_for_condition(lambda: general.get_current_level_name() == "Base", 2.0)
+        hydra.open_base_level()
         
         # 3) Load the level components
         terrain_world_component = hydra.add_level_component("Terrain World")

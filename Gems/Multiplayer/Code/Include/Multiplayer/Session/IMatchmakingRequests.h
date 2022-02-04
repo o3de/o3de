@@ -10,9 +10,9 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/string.h>
-#include <AzFramework/Matchmaking/MatchmakingRequests.h>
+#include <Multiplayer/Session/MatchmakingRequests.h>
 
-namespace AzFramework
+namespace Multiplayer
 {
     //! IMatchmakingRequests
     //! Pure virtual session interface class to abstract the details of session handling from application code.
@@ -87,4 +87,4 @@ namespace AzFramework
         virtual void OnStopMatchmakingAsyncComplete() = 0;
     };
     using MatchmakingAsyncRequestNotificationBus = AZ::EBus<MatchmakingAsyncRequestNotifications>;
-} // namespace AzFramework
+} // namespace Multiplayer

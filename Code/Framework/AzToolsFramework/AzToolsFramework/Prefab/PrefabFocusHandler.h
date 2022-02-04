@@ -12,6 +12,7 @@
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
@@ -28,6 +29,7 @@ namespace AzToolsFramework
 namespace AzToolsFramework::Prefab
 {
     class InstanceEntityMapperInterface;
+    class PrefabSystemComponentInterface;
 
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
     class PrefabFocusHandler final
@@ -73,22 +75,20 @@ namespace AzToolsFramework::Prefab
         
     private:
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
-        void RefreshInstanceFocusList();
         void RefreshInstanceFocusPath();
 
-        void SetInstanceContainersOpenState(const AZStd::vector<RootAliasPath>& instances, bool openState) const;
+        void SetInstanceContainersOpenState(const RootAliasPath& rootAliasPath, bool openState) const;
 
-        InstanceOptionalReference GetInstanceReferenceFromRootAliasPath(RootAliasPath rootAliasPath) const;
+        InstanceOptionalReference GetInstanceReference(RootAliasPath rootAliasPath) const;
 
         //! The alias path for the instance the editor is currently focusing on, starting from the root instance.
-        RootAliasPath m_focusedInstanceRootAliasPath = RootAliasPath();
+        RootAliasPath m_rootAliasFocusPath = RootAliasPath();
         //! The templateId of the focused instance.
         TemplateId m_focusedTemplateId;
-        //! The list of instances going from the root (index 0) to the focused instance,
-        //! referenced by their alias path from the root instance.
-        AZStd::vector<RootAliasPath> m_instanceFocusHierarchy;
         //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
-        AZ::IO::Path m_instanceFocusPath;
+        AZ::IO::Path m_filenameFocusPath;
+        //! The length of the current focus path. Stored to simplify internal checks.
+        int m_rootAliasFocusPathLength = 0;
 
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
