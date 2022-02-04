@@ -22,7 +22,7 @@ from base import TestAutomationBase
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
 
-    use_null_renderer = False  # Use default renderer (needs gpu)
+    use_null_renderer = False  # needs renderer to validate test
     cmdline_args = ['-rhi=dx12']
 
     def test_EditorLevelLoading_10KEntityCpuPerfTest(self, request, workspace, editor, launcher_platform):
