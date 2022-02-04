@@ -59,6 +59,12 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
 class DirectionalLightShadow
 {
+    struct DebugInfo
+    {
+        uint m_cascadeIndex; // cascade index where lit ratio determined.
+        bool m_usePcfFallback;
+    };
+
     // This outputs the coordinate in shadowmap Texture space of the given point.
     void GetShadowCoords(
         uint lightIndex,
@@ -124,11 +130,11 @@ class DirectionalLightShadow
                 indexOfCascade);
             if (checkedShadowed.x)
             {
-                // m_debugInfo.m_cascadeIndex = indexOfCascade;
+                m_debugInfo.m_cascadeIndex = indexOfCascade;
                 return checkedShadowed.y ? 0. : 1.;
             }
         }
-        // m_debugInfo.m_cascadeIndex = cascadeCount;
+        m_debugInfo.m_cascadeIndex = cascadeCount;
         return 1.;
     }    
 
@@ -182,8 +188,8 @@ class DirectionalLightShadow
                 shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
                 shadowCoord.z < 1. - DepthMargin)
             {
-//                currentCascadeIndex = m_debugInfo.m_cascadeIndex = indexOfCascade;
-                currentCascadeIndex = indexOfCascade;
+                currentCascadeIndex = m_debugInfo.m_cascadeIndex = indexOfCascade;
+      //          currentCascadeIndex = indexOfCascade;
                 cascadeFound = true;
                 break;
             }
@@ -210,13 +216,14 @@ class DirectionalLightShadow
             return lit;
         }
 
-   //     m_debugInfo.m_cascadeIndex = cascadeCount;
+        m_debugInfo.m_cascadeIndex = cascadeCount;
         return 1.;
     } 
         
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount];
     float m_slopeBias[ViewSrg::MaxCascadeCount];
     uint m_lightIndex;
+    DebugInfo m_debugInfo;    
 };
 
 
