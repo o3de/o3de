@@ -17,7 +17,7 @@ namespace SurfaceData
         m_weights.reserve(weights.size());
         for (auto& weight : weights)
         {
-            m_weights.emplace(weight.m_surfaceType, weight.m_weight);
+            AddSurfaceTagWeight(weight.m_surfaceType, weight.m_weight);
         }
     }
 
@@ -27,13 +27,8 @@ namespace SurfaceData
         m_weights.reserve(tags.size());
         for (auto& tag : tags)
         {
-            m_weights[tag] = weight;
+            AddSurfaceTagWeight(tag, weight);
         }
-    }
-
-    void SurfaceTagWeights::AddSurfaceTagWeight(const AZ::Crc32 tag, const float value)
-    {
-        m_weights[tag] = value;
     }
 
     void SurfaceTagWeights::Clear()
@@ -192,7 +187,7 @@ namespace SurfaceData
             if (m_surfacePositionList[index].IsClose(position) && m_surfaceNormalList[index].IsClose(normal))
             {
                 // consolidate points with similar attributes by adding masks/weights to the similar point instead of adding a new one.
-                m_surfaceWeightsList[index].AddSurfaceWeightsIfGreater(masks);
+                m_surfaceWeightsList[index].AddSurfaceTagWeights(masks);
                 return;
             }
             else if (m_surfacePositionList[index].GetZ() < position.GetZ())

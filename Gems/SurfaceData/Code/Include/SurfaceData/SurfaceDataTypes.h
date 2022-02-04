@@ -54,7 +54,7 @@ namespace SurfaceData
         //! (This method is intentionally inlined for its performance impact)
         //! @param tag - The surface tag.
         //! @param weight - The surface tag weight.
-        void AddSurfaceWeightIfGreater(const AZ::Crc32 tag, const float weight)
+        void AddSurfaceTagWeight(const AZ::Crc32 tag, const float weight)
         {
             const auto maskItr = m_weights.find(tag);
             const float previousValue = maskItr != m_weights.end() ? maskItr->second : 0.0f;
@@ -65,22 +65,22 @@ namespace SurfaceData
         //! (This method is intentionally inlined for its performance impact)
         //! @param tags - The surface tags to replace/add.
         //! @param weight - The surface tag weight to use for each tag.
-        void AddSurfaceWeightsIfGreater(const SurfaceTagVector& tags, const float weight)
+        void AddSurfaceTagWeights(const SurfaceTagVector& tags, const float weight)
         {
             for (const auto& tag : tags)
             {
-                AddSurfaceWeightIfGreater(tag, weight);
+                AddSurfaceTagWeight(tag, weight);
             }
         }
 
         //! Replace the surface tag weight with the new one if it's higher, or add it if the tag isn't found.
         //! (This method is intentionally inlined for its performance impact)
         //! @param weights - The surface tags and weights to replace/add.
-        void AddSurfaceWeightsIfGreater(const SurfaceTagWeights& weights)
+        void AddSurfaceTagWeights(const SurfaceTagWeights& weights)
         {
             for (const auto& [tag, weight] : weights.m_weights)
             {
-                AddSurfaceWeightIfGreater(tag, weight);
+                AddSurfaceTagWeight(tag, weight);
             }
         }
 
