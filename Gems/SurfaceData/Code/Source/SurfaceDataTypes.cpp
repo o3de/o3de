@@ -14,7 +14,6 @@ namespace SurfaceData
     void SurfaceTagWeights::AssignSurfaceTagWeights(const AzFramework::SurfaceData::SurfaceTagWeightList& weights)
     {
         m_weights.clear();
-        m_weights.reserve(weights.size());
         for (auto& weight : weights)
         {
             AddSurfaceTagWeight(weight.m_surfaceType, weight.m_weight);
@@ -24,10 +23,9 @@ namespace SurfaceData
     void SurfaceTagWeights::AssignSurfaceTagWeights(const SurfaceTagVector& tags, float weight)
     {
         m_weights.clear();
-        m_weights.reserve(tags.size());
         for (auto& tag : tags)
         {
-            AddSurfaceTagWeight(tag, weight);
+            AddSurfaceTagWeight(tag.operator AZ::Crc32(), weight);
         }
     }
 
@@ -47,7 +45,7 @@ namespace SurfaceData
         weights.reserve(m_weights.size());
         for (auto& weight : m_weights)
         {
-            weights.emplace_back(weight.first, weight.second);
+            weights.emplace_back(weight);
         }
         return weights;
     }
@@ -60,17 +58,8 @@ namespace SurfaceData
             return false;
         }
 
-        for (auto& weight : m_weights)
-        {
-            auto rhsWeight = rhs.m_weights.find(weight.first);
-            if ((rhsWeight == rhs.m_weights.end()) || (rhsWeight->second != weight.second))
-            {
-                return false;
-            }
-        }
-
-        // All the entries matched, and the lists are the same size, so they're equal.
-        return true;
+        // The lists are stored in sorted order, so we can compare every entry in order for equivalence.
+        return (m_weights == rhs.m_weights);
     }
 
     bool SurfaceTagWeights::SurfaceWeightsAreEqual(const AzFramework::SurfaceData::SurfaceTagWeightList& compareWeights) const
@@ -87,7 +76,7 @@ namespace SurfaceData
                 compareWeights.begin(), compareWeights.end(),
                 [weight](const AzFramework::SurfaceData::SurfaceTagWeight& compareWeight) -> bool
                 {
-                    return (weight.first == compareWeight.m_surfaceType) && (weight.second == compareWeight.m_weight);
+                    return (weight == compareWeight);
                 });
 
             // If we didn't find a match, they're not equal.
@@ -114,9 +103,9 @@ namespace SurfaceData
 
     bool SurfaceTagWeights::HasValidTags() const
     {
-        for (const auto& sourceTag : m_weights)
+        for (const auto& weight : m_weights)
         {
-            if (sourceTag.first != Constants::s_unassignedTagCrc)
+            if (weight.m_surfaceType != Constants::s_unassignedTagCrc)
             {
                 return true;
             }
@@ -124,9 +113,9 @@ namespace SurfaceData
         return false;
     }
 
-    bool SurfaceTagWeights::HasMatchingTag(const AZ::Crc32& sampleTag) const
+    bool SurfaceTagWeights::HasMatchingTag(AZ::Crc32 sampleTag) const
     {
-        return m_weights.find(sampleTag) != m_weights.end();
+        return FindTag(sampleTag) != m_weights.end();
     }
 
     bool SurfaceTagWeights::HasAnyMatchingTags(const SurfaceTagVector& sampleTags) const
@@ -142,10 +131,10 @@ namespace SurfaceData
         return false;
     }
 
-    bool SurfaceTagWeights::HasMatchingTag(const AZ::Crc32& sampleTag, float weightMin, float weightMax) const
+    bool SurfaceTagWeights::HasMatchingTag(AZ::Crc32 sampleTag, float weightMin, float weightMax) const
     {
-        auto maskItr = m_weights.find(sampleTag);
-        return maskItr != m_weights.end() && weightMin <= maskItr->second && weightMax >= maskItr->second;
+        auto weightEntry = FindTag(sampleTag);
+        return weightEntry != m_weights.end() && weightMin <= weightEntry->m_weight && weightMax >= weightEntry->m_weight;
     }
 
     bool SurfaceTagWeights::HasAnyMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const
@@ -161,7 +150,25 @@ namespace SurfaceData
         return false;
     }
 
+    const AzFramework::SurfaceData::SurfaceTagWeight* SurfaceTagWeights::FindTag(AZ::Crc32 tag) const
+    {
+        for (auto weightItr = m_weights.begin(); weightItr != m_weights.end(); ++weightItr)
+        {
+            if (weightItr->m_surfaceType == tag)
+            {
+                // Found the tag, return a pointer to the entry.
+                return weightItr;
+            }
+            else if (weightItr->m_surfaceType > tag)
+            {
+                // Our list is stored in sorted order by surfaceType, so early-out if our values get too high.
+                break;
+            }
+        }
 
+        // The tag wasn't found, so return end().
+        return m_weights.end();
+    }
 
 
     SurfacePointList::SurfacePointList(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)

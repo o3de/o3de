@@ -24,6 +24,8 @@ namespace SurfaceData
     using SurfaceTagVector = AZStd::vector<SurfaceTag>;
 
     //! SurfaceTagWeights stores a collection of surface tags and weights.
+    //! A surface tag can only appear once in the collection. Attempting to add it multiple times will always preserve the
+    //! highest weight value.
     class SurfaceTagWeights
     {
     public:
@@ -51,18 +53,49 @@ namespace SurfaceData
         //! @param weight - The weight to assign to each tag.
         void AssignSurfaceTagWeights(const SurfaceTagVector& tags, float weight);
 
-        //! Replace the surface tag weight with the new one if it's higher, or add it if the tag isn't found.
+        //! Add a surface tag weight to this collection. If the tag already exists, the higher weight will be preserved.
         //! (This method is intentionally inlined for its performance impact)
         //! @param tag - The surface tag.
         //! @param weight - The surface tag weight.
         void AddSurfaceTagWeight(const AZ::Crc32 tag, const float weight)
         {
-            const auto maskItr = m_weights.find(tag);
-            const float previousValue = maskItr != m_weights.end() ? maskItr->second : 0.0f;
-            m_weights[tag] = AZ::GetMax(weight, previousValue);
+            for (auto weightItr = m_weights.begin(); weightItr != m_weights.end(); ++weightItr)
+            {
+                // Since we need to scan for duplicate surface types, store the entries sorted by surface type so that we can
+                // early-out once we pass the location for the entry instead of always searching every entry.
+                if (weightItr->m_surfaceType > tag)
+                {
+                    if (m_weights.size() != MaxSurfaceWeights)
+                    {
+                        // We didn't find the surface type, so add the new entry in sorted order.
+                        m_weights.insert(weightItr, { tag, weight });
+                    }
+                    else
+                    {
+                        AZ_Assert(false, "SurfaceTagWeights has reached max capacity, it cannot add a new tag / weight.");
+                    }
+                    return;
+                }
+                else if (weightItr->m_surfaceType == tag)
+                {
+                    // We found the surface type, so just keep the higher of the two weights.
+                    weightItr->m_weight = AZ::GetMax(weight, weightItr->m_weight);
+                    return;
+                }
+            }
+
+            // We didn't find the surface weight, and the sort order for it is at the end, so add it to the back of the list.
+            if (m_weights.size() != MaxSurfaceWeights)
+            {
+                m_weights.emplace_back(tag, weight);
+            }
+            else
+            {
+                AZ_Assert(false, "SurfaceTagWeights has reached max capacity, it cannot add a new tag / weight.");
+            }
         }
 
-        //! Replace the surface tag weight with the new one if it's higher, or add it if the tag isn't found.
+        //! Add surface tags and weights to this collection. If a tag already exists, the higher weight will be preserved.
         //! (This method is intentionally inlined for its performance impact)
         //! @param tags - The surface tags to replace/add.
         //! @param weight - The surface tag weight to use for each tag.
@@ -74,7 +107,7 @@ namespace SurfaceData
             }
         }
 
-        //! Replace the surface tag weight with the new one if it's higher, or add it if the tag isn't found.
+        //! Add surface tags and weights to this collection. If a tag already exists, the higher weight will be preserved.
         //! (This method is intentionally inlined for its performance impact)
         //! @param weights - The surface tags and weights to replace/add.
         void AddSurfaceTagWeights(const SurfaceTagWeights& weights)
@@ -126,7 +159,7 @@ namespace SurfaceData
         //! Check to see if the collection contains the given tag.
         //! @param sampleTag - The tag to look for.
         //! @return True if the tag is found, false if it isn't.
-        bool HasMatchingTag(const AZ::Crc32& sampleTag) const;
+        bool HasMatchingTag(AZ::Crc32 sampleTag) const;
 
         //! Check to see if the collection contains the given tag with the given weight range.
         //! The range check is inclusive on both sides of the range: [weightMin, weightMax]
@@ -134,7 +167,7 @@ namespace SurfaceData
         //! @param weightMin - The minimum weight for this tag.
         //! @param weightMax - The maximum weight for this tag.
         //! @return True if the tag is found, false if it isn't.
-        bool HasMatchingTag(const AZ::Crc32& sampleTag, float weightMin, float weightMax) const;
+        bool HasMatchingTag(AZ::Crc32 sampleTag, float weightMin, float weightMax) const;
 
         //! Check to see if the collection contains any of the given tags.
         //! @param sampleTags - The tags to look for.
@@ -150,7 +183,12 @@ namespace SurfaceData
         bool HasAnyMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const;
 
     private:
-        AZStd::unordered_map<AZ::Crc32, float> m_weights;
+        //! Search for the given tag entry.
+        //! @param tag - The tag to search for.
+        //! @return The pointer to the tag that's found, or end() if it wasn't found.
+        const AzFramework::SurfaceData::SurfaceTagWeight* FindTag(AZ::Crc32 tag) const;
+
+        AZStd::fixed_vector<AzFramework::SurfaceData::SurfaceTagWeight, MaxSurfaceWeights> m_weights;
     };
 
     //! SurfacePointList stores a collection of surface point data, which consists of positions, normals, and surface tag weights.
