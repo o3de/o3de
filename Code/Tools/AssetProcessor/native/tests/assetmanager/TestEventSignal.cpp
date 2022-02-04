@@ -22,7 +22,7 @@ namespace UnitTests
     {
         constexpr int MaxWaitTimeMilliseconds = 10;
 
-        ASSERT_TRUE(m_event.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitTimeMilliseconds)));
-        ASSERT_NE(m_threadId, AZStd::this_thread::get_id());
+        EXPECT_TRUE(m_event.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitTimeMilliseconds)));
+        EXPECT_NE(m_threadId, AZStd::this_thread::get_id());
     }
 }
