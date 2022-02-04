@@ -362,8 +362,8 @@ namespace MaterialEditor
                     }
                     
                     // TODO: Support populating the Material Editor with nested property groups, not just the top level.
-                    const AZStd::string groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->GetName().size() - 1);
-                    sourceData.m_properties[groupName][propertyDefinition->GetName()] = propertyValue;
+                    AZStd::string_view groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->GetName().size() - 1);
+                    sourceData.SetPropertyValue(AZ::RPI::MaterialPropertyId{groupName, propertyDefinition->GetName()}, propertyValue);
                 }
             }
             return true;
@@ -395,11 +395,14 @@ namespace MaterialEditor
         if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
         {
             // Load the material source data so that we can check properties and create a material asset from it
-            if (!AZ::RPI::JsonUtils::LoadObjectFromFile(m_absolutePath, m_materialSourceData))
+            auto loadResult = AZ::RPI::MaterialUtils::LoadMaterialSourceData(m_absolutePath);
+            if (!loadResult)
             {
                 AZ_Error("MaterialDocument", false, "Material source data could not be loaded: '%s'.", m_absolutePath.c_str());
                 return OpenFailed();
             }
+
+            m_materialSourceData = loadResult.TakeValue();
 
             // We always need the absolute path for the material type and parent material to load source data and resolving
             // relative paths when saving. This will convert and store them as absolute paths for use within the document.
@@ -482,11 +485,14 @@ namespace MaterialEditor
         if (!m_materialSourceData.m_parentMaterial.empty())
         {
             AZ::RPI::MaterialSourceData parentMaterialSourceData;
-            if (!AZ::RPI::JsonUtils::LoadObjectFromFile(m_materialSourceData.m_parentMaterial, parentMaterialSourceData))
+            auto loadResult = AZ::RPI::MaterialUtils::LoadMaterialSourceData(m_materialSourceData.m_parentMaterial);
+            if (!loadResult)
             {
                 AZ_Error("MaterialDocument", false, "Material parent source data could not be loaded for: '%s'.", m_materialSourceData.m_parentMaterial.c_str());
                 return OpenFailed();
             }
+
+            parentMaterialSourceData = loadResult.TakeValue();
 
             const auto parentMaterialAssetIdResult = AZ::RPI::AssetUtils::MakeAssetId(m_materialSourceData.m_parentMaterial, 0);
             if (!parentMaterialAssetIdResult)
