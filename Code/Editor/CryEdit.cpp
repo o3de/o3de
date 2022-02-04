@@ -706,7 +706,7 @@ void CCryEditApp::OnFileSave()
     
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!usePrefabSystemForLevels)
     {
@@ -2364,7 +2364,7 @@ void CCryEditApp::ExportLevel(bool bExportToGame, bool bExportTexture, bool bAut
 {
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (usePrefabSystemForLevels)
     {
         AZ_Assert(false, "Prefab system doesn't require level exports.");
@@ -2405,7 +2405,7 @@ bool CCryEditApp::UserExportToGame(bool bNoMsgBox)
 {
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (usePrefabSystemForLevels)
     {
         AZ_Assert(false, "Export Level should no longer exist.");
@@ -2453,7 +2453,7 @@ void CCryEditApp::ExportToGame(bool bNoMsgBox)
 {
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (usePrefabSystemForLevels)
     {
         AZ_Assert(false, "Prefab system no longer exports levels.");
@@ -2961,7 +2961,7 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
 {
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     // If we are creating a new level and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())
@@ -3107,7 +3107,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     {
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
         if (!usePrefabSystemForLevels)
         {
             QString str = QObject::tr("Level %1 has been changed. Save Level?").arg(GetIEditor()->GetGameEngine()->GetLevelName());
@@ -3321,7 +3321,7 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     // If we are loading and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())

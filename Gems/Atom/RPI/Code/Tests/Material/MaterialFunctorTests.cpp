@@ -127,9 +127,7 @@ namespace UnitTest
     {
         using namespace AZ::RPI;
 
-        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues;
-        boolOptionValues.push_back({Name("False"),  RPI::ShaderOptionValue(0)});
-        boolOptionValues.push_back({Name("True"), RPI::ShaderOptionValue(1)});
+        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
 
         AZ::RPI::Ptr<AZ::RPI::ShaderOptionGroupLayout> shaderOptions = RPI::ShaderOptionGroupLayout::Create();
         shaderOptions->AddShaderOption(ShaderOptionDescriptor{Name{"o_optionA"}, ShaderOptionType::Boolean, 0, 0, boolOptionValues, Name{"False"}});
@@ -138,7 +136,6 @@ namespace UnitTest
         shaderOptions->Finalize();
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
-        //Data::Asset<MaterialAsset> materialAsset;
 
         // Note we don't actually need any properties or functors in the material type. We just need to set up some sample data
         // structures that we can pass to the functors below, especially the shader with shader options.

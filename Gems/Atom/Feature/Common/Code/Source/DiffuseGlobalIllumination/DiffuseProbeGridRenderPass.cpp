@@ -51,17 +51,34 @@ namespace AZ
             AZ_Assert(m_shaderResourceGroup, "[DiffuseProbeGridRenderPass '%s']: Failed to create SRG", GetPathName().GetCStr());
         }
 
+        bool DiffuseProbeGridRenderPass::IsEnabled() const
+        {
+            if (!RenderPass::IsEnabled())
+            {
+                return false;
+            }
+
+            RPI::Scene* scene = m_pipeline->GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+
+            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetProbeGrids().empty())
+            {
+                // no diffuse probe grids
+                return false;
+            }
+
+            return true;
+        }
+
         void DiffuseProbeGridRenderPass::FrameBeginInternal(FramePrepareParams params)
         {
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetProbeGrids().empty())
-            {
-                // no diffuse probe grids
-                return;
-            }
 
             // get output attachment size
             AZ_Assert(GetInputOutputCount() > 0, "DiffuseProbeGridRenderPass: Could not find output bindings");
