@@ -80,7 +80,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         }
 
         // Transmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentTransmissionDistance, camToSurfDist/2.0);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentTransmissionDistance, camToSurfDist);
         
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
