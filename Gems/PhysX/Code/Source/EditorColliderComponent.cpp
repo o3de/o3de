@@ -1065,11 +1065,6 @@ namespace PhysX
         return AZ::Vector3::CreateOne();
     }
 
-    AZ::Vector3 EditorColliderComponent::GetCurrentNonUniformScale()
-    {
-        return m_cachedNonUniformScale;
-    }
-
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
         if (world.IsClose(m_cachedWorldTransform))

@@ -14,6 +14,8 @@
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 
 namespace AzToolsFramework
 {
@@ -37,12 +39,12 @@ namespace AzToolsFramework
     void BoxViewportEdit::UpdateManipulators()
     {
         AZ::Transform boxWorldFromLocal = AZ::Transform::CreateIdentity();
-        BoxManipulatorRequestBus::EventResult(
-            boxWorldFromLocal, m_entityComponentIdPair, &BoxManipulatorRequests::GetCurrentTransform);
+        AZ::TransformBus::EventResult(
+            boxWorldFromLocal, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
-        BoxManipulatorRequestBus::EventResult(
-            nonUniformScale, m_entityComponentIdPair, &BoxManipulatorRequests::GetCurrentNonUniformScale);
+        AZ::NonUniformScaleRequestBus::EventResult(
+            nonUniformScale, m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
 
         AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
         BoxManipulatorRequestBus::EventResult(
@@ -70,8 +72,8 @@ namespace AzToolsFramework
         m_entityComponentIdPair = entityComponentIdPair;
 
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-        BoxManipulatorRequestBus::EventResult(
-            worldFromLocal, entityComponentIdPair, &BoxManipulatorRequests::GetCurrentTransform);
+        AZ::TransformBus::EventResult(
+            worldFromLocal, entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_linearManipulators.size(); ++manipulatorIndex)
         {
@@ -98,8 +100,8 @@ namespace AzToolsFramework
                         boxLocalTransform, entityComponentIdPair, &BoxManipulatorRequests::GetCurrentLocalTransform);
 
                     AZ::Transform boxWorldTransform = AZ::Transform::CreateIdentity();
-                    BoxManipulatorRequestBus::EventResult(
-                        boxWorldTransform, entityComponentIdPair, &BoxManipulatorRequests::GetCurrentTransform);
+                    AZ::TransformBus::EventResult(
+                        boxWorldTransform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
                     float boxScale = AZ::GetMax(AZ::MinTransformScale, boxWorldTransform.GetUniformScale());
 
                     // calculate the position of the manipulator in the reference frame of the box
