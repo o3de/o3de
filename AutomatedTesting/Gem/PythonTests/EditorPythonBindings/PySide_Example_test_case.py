@@ -15,8 +15,6 @@ import sys
 import os
 import PySide2
 
-from editor_python_test_tools.utils import TestHelper as helper
-
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
 import azlmbr.bus as bus

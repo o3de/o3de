@@ -10,7 +10,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.entity as entity
-from editor_python_test_tools.utils import TestHelper as helper
 
 # Open a level
 editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'ocean_component')

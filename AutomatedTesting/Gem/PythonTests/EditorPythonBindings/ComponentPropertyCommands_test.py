@@ -76,7 +76,7 @@ class TestGradientRequiresShape(object):
         ]
 
         test_case_file = os.path.join(os.path.dirname(__file__), 'ComponentPropertyCommands_test_case_visibility.py')
-        launch_test_case(editor, test_case_file, expected_lines)
+        launch_test_case(editor, test_case_file, expected_lines, unexpected_lines)
 
     @pytest.mark.skip  # SPEC-4102
     def test_PropertyContainerOpeartions(self, request, editor, level, launcher_platform):
