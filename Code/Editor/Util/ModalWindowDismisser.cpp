@@ -14,7 +14,6 @@
 
 // Qt
 #include <QDialog>
-#include <QFileDialog>
 #include <QTimer>
 
 ModalWindowDismisser::ModalWindowDismisser()
@@ -30,28 +29,36 @@ ModalWindowDismisser::~ModalWindowDismisser()
     }
 }
 
+void ModalWindowDismisser::DismissWindows()
+{
+    for (QDialog* dialog : m_windows)
+    {
+        dialog->close();
+    }
+    m_windows.clear();
+    m_dissmiss = false;
+}
+
 bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
 {
     if (QDialog* dialog = qobject_cast<QDialog*>(object))
     {
         if (dialog->isModal())
         {
-            // if we wait until a Polish event arrives, we can be sure the dialog is fully open
-            // and that close() will work correctly.
-            if (event->type() == QEvent::Paint)
+            QEvent::Type test = event->type();
+            if (test == QEvent::Show || test == QEvent::WindowActivate)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
                 if (it == m_windows.end())
                 {
                     m_windows.push_back(dialog);
                 }
-                if (QFileDialog* dialog2 = qobject_cast<QFileDialog*>(object))
+                if (!m_dissmiss)
                 {
-                    QTimer::singleShot(5, this, [dialog2](){dialog2->close();});
-                }
-                else
-                {
-                    dialog->close();
+                    // Closing the window at the same moment is opened leads to crashes and is unstable,
+                    // so do it after a long 1 ms
+                    QTimer::singleShot(2, this, &ModalWindowDismisser::DismissWindows);
+                    m_dissmiss = true;
                 }
             }
             else if (event->type() == QEvent::Close)
