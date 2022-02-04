@@ -32,7 +32,7 @@ namespace AZ
             m_destAttachmentId = destAttachmentId;
 
             // Use the unique destination attachment id as scope id
-            SetScopeId(m_destAttachmentId);
+            InitScope(m_destAttachmentId);
 
             // Clear the previous attachment and copy item
             m_copyItem = {};
@@ -124,7 +124,7 @@ namespace AZ
         ImageAttachmentPreviewPass::ImageAttachmentPreviewPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
-            SetScopeId(RHI::ScopeId(GetPathName()));
+            InitScope(RHI::ScopeId(GetPathName()));
         }
 
         ImageAttachmentPreviewPass::~ImageAttachmentPreviewPass()
