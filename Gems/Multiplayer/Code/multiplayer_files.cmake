@@ -58,6 +58,14 @@ set(FILES
     Include/Multiplayer/NetworkTime/RewindableObject.h
     Include/Multiplayer/NetworkTime/RewindableObject.inl
     Include/Multiplayer/ReplicationWindows/IReplicationWindow.h
+    Include/Multiplayer/Session/IMatchmakingRequests.h
+    Include/Multiplayer/Session/ISessionHandlingRequests.h
+    Include/Multiplayer/Session/ISessionRequests.h
+    Include/Multiplayer/Session/MatchmakingRequests.h
+    Include/Multiplayer/Session/MatchmakingNotifications.h
+    Include/Multiplayer/Session/SessionRequests.h
+    Include/Multiplayer/Session/SessionConfig.h
+    Include/Multiplayer/Session/SessionNotifications.h
     Include/Multiplayer/AutoGen/AutoComponentTypes_Header.jinja
     Include/Multiplayer/AutoGen/AutoComponentTypes_Source.jinja
     Include/Multiplayer/AutoGen/AutoComponent_Common.jinja
@@ -131,4 +139,7 @@ set(FILES
     Source/ReplicationWindows/NullReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp
     Source/ReplicationWindows/ServerToClientReplicationWindow.h
+    Source/Session/MatchmakingRequests.cpp
+    Source/Session/SessionRequests.cpp
+    Source/Session/SessionConfig.cpp
 )

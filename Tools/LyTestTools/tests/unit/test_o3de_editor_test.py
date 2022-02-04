@@ -694,7 +694,7 @@ class TestRunningTests(unittest.TestCase):
                                                     'mock_log_name', mock_test_spec, [])
         assert mock_cycle_crash.called
         assert mock_editor.start.called
-        assert mock_editor.kill.called
+        assert mock_editor.stop.called
         assert mock_create.called
         assert results == {mock_test_spec.__name__: mock_timeout}
 

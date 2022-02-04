@@ -262,10 +262,11 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineLibraryData*) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, [[maybe_unused]] const AZ::RHI::PipelineLibraryDescriptor& descriptor) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
             AZ::RHI::ResultCode MergeIntoInternal(AZStd::span<const AZ::RHI::PipelineLibrary* const>) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ConstPtr<AZ::RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr; }
+            bool SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const { return true;}
         };
 
         class ShaderStageFunction

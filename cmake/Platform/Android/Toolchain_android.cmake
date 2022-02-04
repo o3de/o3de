@@ -56,6 +56,12 @@ include(${LY_ANDROID_NDK_TOOLCHAIN})
 
 set(CMAKE_FIND_ROOT_PATH ${BACKUP_CMAKE_FIND_ROOT_PATH})
 
+# The CMake Android-Initialize.cmake(https://gitlab.kitware.com/cmake/cmake/-/blob/v3.21.2/Modules/Platform/Android-Initialize.cmake#L61)
+# script sets CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH to OFF resulting in find_program calls being unable to locate host binaries
+# https://gitlab.kitware.com/cmake/cmake/-/issues/22634
+# Setting back to true to fix our find_program calls
+set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH ON)
+
 # Force the ANDROID_LINKER_FLAGS that are set in the NDK's toolchain file into the LINKER_FLAGS for the build and reset
 # the standard libraries
 set(LINKER_FLAGS ${ANDROID_LINKER_FLAGS})

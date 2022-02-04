@@ -669,8 +669,14 @@
                 "Component_[7256163899440301540]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 7256163899440301540,
-                    "m_name": "AutoComponent_RPC_NetLevelEntity",
+                    "m_name": "AutoComponent_RPC_NetLevelEntity.scriptcanvas",
                     "runtimeDataIsValid": true,
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "id": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}",
+                            "path": "C:/prj/o3de/AutomatedTesting/Levels/Multiplayer/AutoComponent_RPC/AutoComponent_RPC_NetLevelEntity.scriptcanvas"
+                        }
+                    },
                     "sourceHandle": {
                         "id": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}",
                         "path": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc_netlevelentity.scriptcanvas"

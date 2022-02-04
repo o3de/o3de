@@ -49,3 +49,4 @@ ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows              
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-windows                          TARGETS lz4                         PACKAGE_HASH 4ea457b833cd8cfaf8e8e06ed6df601d3e6783b606bdbc44a677f77e19e0db16)
 ly_associate_package(PACKAGE_NAME azslc-1.7.34-rev1-windows                             TARGETS azslc                       PACKAGE_HASH 44eb2e0fc4b0f1c75d0fb6f24c93a5753655b84dbc3e6ad45389ed3b9cf7a4b0)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-windows        	                TARGETS SQLite                      PACKAGE_HASH c1658c8ed5cf0e45d4a5da940c6a6d770b76e0f4f57313b70d0fd306885f015e)
+ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-windows                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH b03475a9f0f7a7e7c90619fba35f1a74fb2b8f4cd33fa07af99f2ae9e0c079dd)

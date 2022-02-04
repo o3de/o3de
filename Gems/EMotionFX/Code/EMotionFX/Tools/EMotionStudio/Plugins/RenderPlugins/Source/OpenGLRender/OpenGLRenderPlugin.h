@@ -35,7 +35,7 @@ namespace EMStudio
 
         // plugin information
         const char* GetCompileDate() const override         { return MCORE_DATE; }
-        const char* GetName() const override                { return "OpenGL Render Window"; }
+        const char* GetName() const override                { return "OpenGL Render Window (Deprecated)"; }
         uint32 GetClassID() const override                  { return static_cast<uint32>(RenderPlugin::CLASS_ID); }
         const char* GetCreatorName() const override         { return "O3DE"; }
         float GetVersion() const override                   { return 1.0f;  }
