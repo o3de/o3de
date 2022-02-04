@@ -32,7 +32,7 @@ COMMON_OPTIONS_EMISSIVE()
 #include "MaterialFunctions/ParallaxDepth.azsli"
 #include "MaterialFunctions/StandardGetNormalToWorld.azsli"
 #include "MaterialFunctions/StandardGetObjectToWorld.azsli"
-#include "MaterialFunctions/StandardMaybeClip.azsli"
+#include "MaterialFunctions/StandardGetAlphaAndClip.azsli"
 #include "MaterialFunctions/StandardTransformUvs.azsli"
 
 #include "StandardSurface_ForwardPass.azsl"

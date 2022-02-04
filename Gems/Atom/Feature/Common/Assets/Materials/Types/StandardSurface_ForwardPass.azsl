@@ -149,8 +149,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     // ------- Alpha & Clip -------
     // TODO: this often invokes a separate sample of the base color texture which is wasteful
-    float alpha = GetAlpha(IN.m_uv);
-    MaybeClip(alpha, IN.m_uv);
+    float alpha = GetAlphaAndClip(IN.m_uv);
 
     EvaluateStandardSurface(IN.m_normal, IN.m_uv, tangents, bitangents, isFrontFace, displacementIsClipped, surface);
 

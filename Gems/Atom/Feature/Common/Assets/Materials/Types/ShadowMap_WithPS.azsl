@@ -119,8 +119,7 @@ PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
     }
 
 #ifndef MULTILAYER
-    float alpha = GetAlpha(IN.m_uv);
-    MaybeClip(alpha, IN.m_uv);
+    GetAlphaAndClip(IN.m_uv);
 #endif
 
     return OUT;

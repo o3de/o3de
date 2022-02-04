@@ -8,10 +8,12 @@
 
 #include "../MaterialInputs/AlphaInput.azsli"
 
-float GetAlpha(float2 uvs[UvSetCount])
+float GetAlphaAndClip(float2 uvs[UvSetCount])
 {
     // Alpha
     float2 baseColorUV = uvs[MaterialSrg::m_baseColorMapUvIndex];
     float2 opacityUV = uvs[MaterialSrg::m_opacityMapUvIndex];
-    return MaterialSrg::m_opacityFactor * SampleAlpha(MaterialSrg::m_baseColorMap, MaterialSrg::m_opacityMap, baseColorUV, opacityUV, MaterialSrg::m_sampler, o_opacity_source);
+    float alpha = SampleAlpha(MaterialSrg::m_baseColorMap, MaterialSrg::m_opacityMap, baseColorUV, opacityUV, MaterialSrg::m_sampler, o_opacity_source);
+    CheckClipping(alpha, MaterialSrg::m_opacityFactor);
+    return MaterialSrg::m_opacityFactor * alpha;
 }

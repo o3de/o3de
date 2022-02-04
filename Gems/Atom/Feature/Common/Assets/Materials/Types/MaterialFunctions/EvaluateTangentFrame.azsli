@@ -17,8 +17,8 @@ void EvaluateTangentFrame(
     // The input tangent and bitangent vectors are optional and used to forward data from interpolants
     float3 IN_tangent,
     float3 IN_bitangent,
-    float3 OUT_tangent,
-    float3 OUT_bitangent)
+    out float3 OUT_tangent,
+    out float3 OUT_bitangent)
 {
     if (DrawSrg::GetTangentAtUv(uvIndex) == 0)
     {
