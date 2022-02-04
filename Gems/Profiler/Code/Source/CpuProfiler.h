@@ -61,8 +61,6 @@ namespace Profiler
 
         AZ_DISABLE_COPY_MOVE(CpuProfiler);
 
-        static CpuProfiler* Get();
-
         //! Get the last frame's TimeRegionMap
         virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
 

@@ -17,13 +17,6 @@ namespace Profiler
 {
     thread_local CpuTimingLocalStorage* CpuProfilerImpl::ms_threadLocalStorage = nullptr;
 
-    // --- CpuProfiler ---
-
-    CpuProfiler* CpuProfiler::Get()
-    {
-        return AZ::Interface<CpuProfiler>::Get();
-    }
-
     // --- CachedTimeRegion ---
 
     CachedTimeRegion::CachedTimeRegion(const GroupRegionName& groupRegionName)
@@ -66,7 +59,6 @@ namespace Profiler
     void CpuProfilerImpl::Init()
     {
         AZ::Interface<AZ::Debug::Profiler>::Register(this);
-        AZ::Interface<CpuProfiler>::Register(this);
         m_initialized = true;
         AZ::SystemTickBus::Handler::BusConnect();
         m_continuousCaptureData.set_capacity(10);
@@ -78,8 +70,8 @@ namespace Profiler
         {
             return;
         }
+
         // When this call is made, no more thread profiling calls can be performed anymore
-        AZ::Interface<CpuProfiler>::Unregister(this);
         AZ::Interface<AZ::Debug::Profiler>::Unregister(this);
 
         // Wait for the remaining threads that might still be processing its profiling calls
