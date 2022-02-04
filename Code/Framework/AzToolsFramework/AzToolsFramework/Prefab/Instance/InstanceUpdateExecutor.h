@@ -57,11 +57,12 @@ namespace AzToolsFramework
              * @param startInstance The position the new entity will be created at.
              * @param parentId The id of the parent of the newly created entity.
              */
-            const Instance* ClimbUpToTargetInstance(const Instance* startInstance, const Instance* targetInstance, AZStd::string& aliasPath);
+            const Instance* ClimbUpToTargetInstance(const Instance* startInstance, const Instance* targetInstance, AZStd::string& aliasPath) const;
 
-            /**
-            * 
-             */
+            // focusedInstance is the pointer to the focused instance.
+            // instanceDom is the dom of the instance that is being propagated, and will be edited by this function.
+            const void ReplaceFocusedContainerTransformAccordingToRoot(const Instance* focusedInstance, PrefabDom& focusedInstanceDom) const;
+
             bool GenerateInstanceDomAccordingToCurrentFocus(const Instance* instance, PrefabDom& instanceDom);
 
             int m_instanceCountToUpdateInBatch = 0;
