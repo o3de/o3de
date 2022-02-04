@@ -76,11 +76,10 @@ class DirectionalLightShadow
     };
 
     // This outputs the coordinate in shadowmap Texture space of the given point.
-    void GetShadowCoords(
+    void ComputeShadowCoords(
         uint lightIndex,
         float3 worldPosition,
-        float3 worldNormal,
-        out float3 shadowCoords[ViewSrg::MaxCascadeCount])
+        float3 worldNormal)
     {
         const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
 
@@ -96,7 +95,7 @@ class DirectionalLightShadow
             lightSpacePos.z += shadowBias;
             
             const float4 clipSpacePos = mul(lightViewToShadowmapMatrices[index], lightSpacePos);                
-            shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
+            m_shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
         }
     }
 
@@ -334,7 +333,7 @@ PSOutput MainPS(VSOutput IN)
     
     const float3 worldNormal = float3(0,0,1);
     float lit = 1;
-    directionalLightShadow.GetShadowCoords(lightIndex, surfacePosWS, worldNormal, directionalLightShadow.m_shadowCoords);
+    directionalLightShadow.ComputeShadowCoords(lightIndex, surfacePosWS, worldNormal);
     
     switch(o_directional_shadow_filtering_method)
     {
