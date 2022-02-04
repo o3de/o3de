@@ -39,10 +39,10 @@ namespace AWSGameLift
             return request;
         }
 
-        AzFramework::SessionConnectionConfig BuildSessionConnectionConfig(
+        Multiplayer::SessionConnectionConfig BuildSessionConnectionConfig(
             const Aws::GameLift::Model::CreatePlayerSessionOutcome& createPlayerSessionOutcome)
         {
-            AzFramework::SessionConnectionConfig sessionConnectionConfig;
+            Multiplayer::SessionConnectionConfig sessionConnectionConfig;
             auto createPlayerSessionResult = createPlayerSessionOutcome.GetResult();
             // TODO: AWSNativeSDK needs to be updated to support this attribute, and it is a must have for TLS certificate enabled fleet
             //sessionConnectionConfig.m_dnsName = createPlayerSessionResult.GetPlayerSession().GetDnsName().c_str();
@@ -95,10 +95,10 @@ namespace AWSGameLift
             bool result = false;
             if (createPlayerSessionOutcome.IsSuccess())
             {
-                auto clientRequestHandler = AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Get();
+                auto clientRequestHandler = AZ::Interface<Multiplayer::ISessionHandlingClientRequests>::Get();
                 if (clientRequestHandler)
                 {
-                    AzFramework::SessionConnectionConfig sessionConnectionConfig =
+                    Multiplayer::SessionConnectionConfig sessionConnectionConfig =
                         BuildSessionConnectionConfig(createPlayerSessionOutcome);
 
                     AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
@@ -114,7 +114,7 @@ namespace AWSGameLift
             return result;
         }
 
-        bool ValidateJoinSessionRequest(const AzFramework::JoinSessionRequest& joinSessionRequest)
+        bool ValidateJoinSessionRequest(const Multiplayer::JoinSessionRequest& joinSessionRequest)
         {
             auto gameliftJoinSessionRequest = azrtti_cast<const AWSGameLiftJoinSessionRequest*>(&joinSessionRequest);
 
