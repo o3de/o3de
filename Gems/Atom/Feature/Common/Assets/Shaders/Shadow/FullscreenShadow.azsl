@@ -191,7 +191,6 @@ class DirectionalLightShadow
                 shadowCoord.z < 1. - DepthMargin)
             {
                 currentCascadeIndex = m_debugInfo.m_cascadeIndex = indexOfCascade;
-      //          currentCascadeIndex = indexOfCascade;
                 cascadeFound = true;
                 break;
             }
@@ -253,8 +252,51 @@ class DirectionalLightShadow
         m_debugInfo.m_cascadeIndex = cascadeCount;
         return 1.;
     }
+    
+    float GetVisibilityFromLightEsmPcf()
+    {
+        const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
+        Texture2DArray<float> expShadowmap = PassSrg::m_directionalLightExponentialShadowmap;
 
+        for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+        {
+            const float3 shadowCoord = m_shadowCoords[indexOfCascade];
+            const float distanceMin = ViewSrg::m_esmsDirectional[indexOfCascade].m_lightDistanceOfCameraViewFrustum;
+            bool2 checkedShadowed = IsShadowed(shadowCoord, indexOfCascade);
+            const float depthDiff = shadowCoord.z - distanceMin;
         
+            [branch]
+            if (checkedShadowed.x && depthDiff >= 0)
+            {
+                const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
+                const float3 coord = float3(shadowCoord.xy, indexOfCascade);
+                const float occluder = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;
+                const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
+                float ratio = exp(exponent);
+
+                static const float pcfFallbackThreshold = 1.04;
+                if (ratio > pcfFallbackThreshold)
+                {
+                    m_debugInfo.m_usePcfFallback = true;
+                    ratio = GetVisibilityFromLightPcf();
+                }
+                else
+                {
+                    m_debugInfo.m_usePcfFallback = false;
+                }
+                m_debugInfo.m_cascadeIndex = indexOfCascade;
+                return saturate(ratio);
+            }
+        }
+
+        m_debugInfo.m_usePcfFallback = false;
+        m_debugInfo.m_cascadeIndex = cascadeCount;
+        return 1.;
+    }
+
+            
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount];
     float m_slopeBias[ViewSrg::MaxCascadeCount];
     uint m_lightIndex;
@@ -277,14 +319,24 @@ PSOutput MainPS(VSOutput IN)
 
     float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_constantData.m_screenSize, zDepth, IN.m_position.xy).xyz;
     
-    const float distanceFromOrigin = length(surfacePosWS);
     const float3 worldNormal = float3(0,0,1);
     
     directionalLightShadow.GetShadowCoords(lightIndex, surfacePosWS, worldNormal, directionalLightShadow.m_shadowCoords);
-    float shadow = directionalLightShadow.GetVisibilityFromLightPcf(); // GetVisibilityFromLightNoFilter
-    shadow = directionalLightShadow.GetVisibilityFromLightEsm();
+    float shadow = directionalLightShadow.GetVisibilityFromLightNoFilter();
+    if (IN.m_texCoord.x > 0.5  && IN.m_texCoord.y < 0.5)
+    {
+        shadow = directionalLightShadow.GetVisibilityFromLightPcf();
+    }
+    if (IN.m_texCoord.x < 0.5 && IN.m_texCoord.y > 0.5)
+    {
+        shadow = directionalLightShadow.GetVisibilityFromLightEsm();
+    }
+    if (IN.m_texCoord.x > 0.5 && IN.m_texCoord.y > 0.5)
+    {
+        shadow = directionalLightShadow.GetVisibilityFromLightEsmPcf();
+    }
     
-    PSOutput OUT;
+    PSOutput OUT;   
     OUT.m_color.rgb = shadow;
 
     return OUT; 
