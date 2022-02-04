@@ -139,8 +139,9 @@ namespace UnitTest
                                                               queryPoint, pointList);
             if (pointOnProvider)
             {
-                ASSERT_EQ(pointList.GetSize(), 1);
-                pointList.EnumeratePoints(
+                constexpr size_t inPositionIndex = 0;
+                ASSERT_EQ(pointList.GetSize(inPositionIndex), 1);
+                pointList.EnumeratePoints(inPositionIndex,
                     [this, expectedOutput](
                         const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                     {
@@ -150,7 +151,8 @@ namespace UnitTest
             }
             else
             {
-                EXPECT_TRUE(pointList.IsEmpty());
+                constexpr size_t inPositionIndex = 0;
+                EXPECT_TRUE(pointList.IsEmpty(inPositionIndex));
             }
         }
 
@@ -187,8 +189,9 @@ namespace UnitTest
             // filtered out.
             SurfaceData::SurfacePointList pointList = { input };
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
-            ASSERT_EQ(pointList.GetSize(), 1);
-            pointList.EnumeratePoints(
+            constexpr size_t inPositionIndex = 0;
+            ASSERT_EQ(pointList.GetSize(inPositionIndex), 1);
+            pointList.EnumeratePoints(inPositionIndex,
                 [this, expectedOutput](
                     const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {

@@ -109,14 +109,15 @@ namespace GradientSignal
     private:
         static float CalculateAltitudeRatio(const SurfaceData::SurfacePointList& points, float altitudeMin, float altitudeMax)
         {
-            if (points.IsEmpty())
+            constexpr size_t inPositionIndex = 0;
+            if (points.IsEmpty(inPositionIndex))
             {
                 return 0.0f;
             }
 
             // GetSurfacePoints (which was used to populate the points list) always returns points in decreasing height order, so the
             // first point in the list contains the highest altitude.
-            const float highestAltitude = points.GetHighestSurfacePoint().m_position.GetZ();
+            const float highestAltitude = points.GetHighestSurfacePoint(inPositionIndex).m_position.GetZ();
 
             // Turn the absolute altitude value into a 0-1 value by returning the % of the given altitude range that it falls at.
             return GetRatio(altitudeMin, altitudeMax, highestAltitude);

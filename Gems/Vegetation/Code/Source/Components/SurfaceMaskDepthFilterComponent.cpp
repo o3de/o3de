@@ -218,7 +218,8 @@ namespace Vegetation
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, instanceData.m_position, surfaceTagsToCompare, m_points);
 
             float instanceZ = instanceData.m_position.GetZ();
-            m_points.EnumeratePoints(
+            constexpr size_t inPositionIndex = 0;
+            m_points.EnumeratePoints(inPositionIndex,
                 [instanceZ, lowerZDistanceRange, upperZDistanceRange, &passesFilter](
                     const AZ::Vector3& position,
                     [[maybe_unused]] const AZ::Vector3& normal, [[maybe_unused]] const SurfaceData::SurfaceTagWeights& masks) -> bool

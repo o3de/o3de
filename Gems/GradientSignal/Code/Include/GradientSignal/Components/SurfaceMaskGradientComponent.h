@@ -84,8 +84,10 @@ namespace GradientSignal
         static float GetMaxSurfaceWeight(const SurfaceData::SurfacePointList& points)
         {
             float result = 0.0f;
-
-            points.EnumeratePoints([&result](
+            constexpr size_t inPositionIndex = 0;
+            points.EnumeratePoints(
+                inPositionIndex,
+                [&result](
                 [[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
                 const SurfaceData::SurfaceTagWeights& masks) -> bool
             {

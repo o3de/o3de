@@ -218,7 +218,8 @@ public:
             SurfaceData::SurfacePointList tempSingleQueryPointList;
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                 &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, testTags, tempSingleQueryPointList);
-            tempSingleQueryPointList.EnumeratePoints(
+            constexpr size_t inPositionIndex = 0;
+            tempSingleQueryPointList.EnumeratePoints(inPositionIndex,
                 [&singleQueryResults](
                     const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
@@ -236,7 +237,8 @@ public:
         for (size_t listIndex = 0; listIndex < surfacePointLists.size(); listIndex++)
         {
             auto& surfacePointList = surfacePointLists[listIndex];
-            surfacePointList.EnumeratePoints(
+            constexpr size_t inPositionIndex = 0;
+            surfacePointList.EnumeratePoints(inPositionIndex,
                 [&singleQueryPoint, singleQueryResults](
                     const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
@@ -498,9 +500,10 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion)
     // We *could* check every mask as well for completeness, but that seems like overkill.
     for (auto& pointList : availablePointsPerPosition)
     {
-        EXPECT_EQ(pointList.GetSize(), 2);
+        constexpr size_t inPositionIndex = 0;
+        EXPECT_EQ(pointList.GetSize(inPositionIndex), 2);
         float expectedZ = 4.0f;
-        pointList.EnumeratePoints(
+        pointList.EnumeratePoints(inPositionIndex,
             [providerTags,
              &expectedZ](const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
                  const SurfaceData::SurfaceTagWeights& masks) -> bool
@@ -538,7 +541,8 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingMas
     // any of the masks from our mock surface provider.
     for (auto& queryPosition : availablePointsPerPosition)
     {
-        EXPECT_TRUE(queryPosition.IsEmpty());
+        constexpr size_t inPositionIndex = 0;
+        EXPECT_TRUE(queryPosition.IsEmpty(inPositionIndex));
     }
 }
 
@@ -566,7 +570,8 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingReg
     // our surface provider.
     for (auto& pointList : availablePointsPerPosition)
     {
-        EXPECT_TRUE(pointList.IsEmpty());
+        constexpr size_t inPositionIndex = 0;
+        EXPECT_TRUE(pointList.IsEmpty(inPositionIndex));
     }
 }
 
@@ -616,9 +621,10 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_ProviderModif
         // and each point should have both the "test_surface1" and "test_surface2" tag.
         for (auto& pointList : availablePointsPerPosition)
         {
-            EXPECT_EQ(pointList.GetSize(), 2);
+            constexpr size_t inPositionIndex = 0;
+            EXPECT_EQ(pointList.GetSize(inPositionIndex), 2);
             float expectedZ = 4.0f;
-            pointList.EnumeratePoints(
+            pointList.EnumeratePoints(inPositionIndex,
                 [&expectedZ](const AZ::Vector3& position,
                     [[maybe_unused]] const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
@@ -666,9 +672,10 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_SimilarPoints
     // should have both surface tags on them.
     for (auto& pointList : availablePointsPerPosition)
     {
-        EXPECT_EQ(pointList.GetSize(), 2);
+        constexpr size_t inPositionIndex = 0;
+        EXPECT_EQ(pointList.GetSize(inPositionIndex), 2);
         float expectedZ = 4.0f;
-        pointList.EnumeratePoints(
+        pointList.EnumeratePoints(inPositionIndex,
             [&expectedZ](
                 const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
                 const SurfaceData::SurfaceTagWeights& masks) -> bool
@@ -717,8 +724,9 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_DissimilarPoi
     // because the points are far enough apart that they won't merge.
     for (auto& pointList : availablePointsPerPosition)
     {
-        EXPECT_EQ(pointList.GetSize(), 4);
-        pointList.EnumeratePoints(
+        constexpr size_t inPositionIndex = 0;
+        EXPECT_EQ(pointList.GetSize(inPositionIndex), 4);
+        pointList.EnumeratePoints(inPositionIndex,
             []([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
                const SurfaceData::SurfaceTagWeights& masks) -> bool
             {

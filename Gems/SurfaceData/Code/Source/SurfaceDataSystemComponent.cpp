@@ -199,7 +199,8 @@ namespace SurfaceData
             }
         }
 
-        if (!surfacePointList.IsEmpty())
+        constexpr size_t inPositionIndex = 0;
+        if (!surfacePointList.IsEmpty(inPositionIndex))
         {
             //modify or annotate reported points
             for (const auto& entryPair : m_registeredSurfaceDataModifiers)
@@ -299,7 +300,8 @@ namespace SurfaceData
             {
                 const auto& inPosition = inPositions[index];
                 SurfacePointList& surfacePointList = surfacePointLists[index];
-                if (!surfacePointList.IsEmpty())
+                constexpr size_t inPositionIndex = 0;
+                if (!surfacePointList.IsEmpty(inPositionIndex))
                 {
                     if (hasInfiniteBounds || AabbContains2D(entry.m_bounds, inPosition))
                     {

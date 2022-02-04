@@ -237,17 +237,18 @@ namespace SurfaceData
         m_surfaceWeightsList.reserve(maxPointsPerInput);
     }
 
-    bool SurfacePointList::IsEmpty() const
+    bool SurfacePointList::IsEmpty([[maybe_unused]] size_t inputPositionIndex) const
     {
         return m_surfacePositionList.empty();
     }
 
-    size_t SurfacePointList::GetSize() const
+    size_t SurfacePointList::GetSize([[maybe_unused]] size_t inputPositionIndex) const
     {
         return m_surfacePositionList.size();
     }
 
     void SurfacePointList::EnumeratePoints(
+        [[maybe_unused]] size_t inputPositionIndex, 
         AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceData::SurfaceTagWeights&)>
             pointCallback) const
     {
@@ -273,7 +274,7 @@ namespace SurfaceData
         }
     }
 
-    AzFramework::SurfaceData::SurfacePoint SurfacePointList::GetHighestSurfacePoint() const
+    AzFramework::SurfaceData::SurfacePoint SurfacePointList::GetHighestSurfacePoint([[maybe_unused]] size_t inputPositionIndex) const
     {
         AzFramework::SurfaceData::SurfacePoint point;
         point.m_position = m_surfacePositionList.front();

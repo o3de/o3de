@@ -1127,7 +1127,8 @@ namespace Vegetation
         uint claimIndex = 0;
         for (auto& availablePoints : availablePointsPerPosition)
         {
-            availablePoints.EnumeratePoints(
+            constexpr size_t inPositionIndex = 0;
+            availablePoints.EnumeratePoints(inPositionIndex,
                 [this, &sectorInfo,
                  &claimIndex](const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {

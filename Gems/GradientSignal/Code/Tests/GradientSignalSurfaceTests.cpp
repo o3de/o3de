@@ -111,8 +111,9 @@ namespace UnitTest
             // Call ModifySurfacePoints and verify the results
             SurfaceData::SurfacePointList pointList = { { input } };
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
-            ASSERT_EQ(pointList.GetSize(), 1);
-            pointList.EnumeratePoints(
+            constexpr size_t inPositionIndex = 0;
+            ASSERT_EQ(pointList.GetSize(inPositionIndex), 1);
+            pointList.EnumeratePoints(inPositionIndex,
                 [this, expectedOutput](
                     const AZ::Vector3& position, const AZ::Vector3& normal,
                     const SurfaceData::SurfaceTagWeights& masks)

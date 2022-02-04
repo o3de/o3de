@@ -225,15 +225,17 @@ namespace SurfaceData
 
         //! Check if the surface point list is empty.
         //! @return - true if empty, false if it contains points.
-        bool IsEmpty() const;
+        bool IsEmpty(size_t inputPositionIndex) const;
 
         //! Get the size of the surface point list.
         //! @return - The number of valid points in the list.
-        size_t GetSize() const;
+        size_t GetSize(size_t inputPositionIndex) const;
 
         //! Enumerate every surface point and call a callback for each point found.
-        void EnumeratePoints(AZStd::function<
-            bool(const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& surfaceWeights)> pointCallback) const;
+        void EnumeratePoints(
+            size_t inputPositionIndex,
+            AZStd::function<bool(
+                const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& surfaceWeights)> pointCallback) const;
 
         //! Modify the surface weights for each surface point in the list.
         void ModifySurfaceWeights(
@@ -241,7 +243,7 @@ namespace SurfaceData
             AZStd::function<void(const AZ::Vector3& position, SurfaceTagWeights& surfaceWeights)> modificationWeightCallback);
 
         //! Get the surface point with the highest Z value.
-        AzFramework::SurfaceData::SurfacePoint GetHighestSurfacePoint() const;
+        AzFramework::SurfaceData::SurfacePoint GetHighestSurfacePoint(size_t inputPositionIndex) const;
 
         //! Remove any points that don't contain any of the provided surface tags.
         void FilterPoints(const SurfaceTagVector& desiredTags);

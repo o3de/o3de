@@ -326,7 +326,8 @@ namespace Vegetation
             // unrelated heights
             float closestPointDistanceSq = AZStd::numeric_limits<float>::max();
             AZ::Vector3 originalInstanceDataPosition = instanceData.m_position;
-            m_points.EnumeratePoints(
+            constexpr size_t inPositionIndex = 0;
+            m_points.EnumeratePoints(inPositionIndex,
                 [&instanceData, originalInstanceDataPosition, &closestPointDistanceSq](
                     const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
