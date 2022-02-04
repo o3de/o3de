@@ -63,12 +63,12 @@ namespace EMotionFX::MotionMatching
     protected:
         bool ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth=20, size_t minFramesPerKdTreeNode=2000);
 
-        FrameDatabase m_frameDatabase; /**< The animation database with all the keyframes and joint transform data. */
+        FrameDatabase m_frameDatabase; //< The animation database with all the keyframes and joint transform data.
 
         const FeatureSchema& m_featureSchema;
         FeatureMatrix m_featureMatrix;
 
-        AZStd::unique_ptr<KdTree> m_kdTree; /**< The acceleration structure to speed up the search for lowest cost frames. */
+        AZStd::unique_ptr<KdTree> m_kdTree; //< The acceleration structure to speed up the search for lowest cost frames.
         AZStd::vector<Feature*> m_featuresInKdTree;
     };
 } // namespace EMotionFX::MotionMatching

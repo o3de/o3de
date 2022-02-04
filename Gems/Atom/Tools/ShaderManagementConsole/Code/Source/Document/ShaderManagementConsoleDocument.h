@@ -32,6 +32,7 @@ namespace ShaderManagementConsole
         ~ShaderManagementConsoleDocument();
 
         // AtomToolsFramework::AtomToolsDocument overrides...
+        AZStd::vector<AtomToolsFramework::DocumentObjectInfo> GetObjectInfo() const override;
         bool Open(AZStd::string_view loadPath) override;
         bool Save() override;
         bool SaveAsCopy(AZStd::string_view savePath) override;

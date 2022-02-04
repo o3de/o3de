@@ -7,14 +7,10 @@
  */
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
-#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
-#include <Document/MaterialDocumentRequestBus.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
 
 namespace MaterialEditor
@@ -38,7 +34,7 @@ namespace MaterialEditor
     {
         m_documentPath.clear();
         m_documentId = AZ::Uuid::CreateNull();
-        m_groups = {};
+        m_activeProperty = {};
 
         AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::InspectorWidget::Reset();
@@ -67,18 +63,31 @@ namespace MaterialEditor
         m_documentId = documentId;
 
         bool isOpen = false;
-        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isOpen, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsOpen);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
+            isOpen, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsOpen);
 
-        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(m_documentPath, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
+            m_documentPath, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
         if (!m_documentId.IsNull() && isOpen)
         {
-            // Create the top group for displaying overview info about the material
-            AddOverviewGroup();
-            // Create groups for displaying editable UV names
-            AddUvNamesGroup();
-            // Create groups for displaying editable properties
-            AddPropertiesGroup();
+            // This will automatically expose all document contents to an inspector with a collapsible group per object. In the case of the
+            // material editor, this will be one inspector group per property group.
+            AZStd::vector<AtomToolsFramework::DocumentObjectInfo> objects;
+            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
+                objects, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetObjectInfo);
+
+            for (auto& objectInfo : objects)
+            {
+                // Passing in same main and comparison instance to enable custom value comparison for highlighting modified properties
+                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                    objectInfo.m_objectPtr, objectInfo.m_objectPtr, objectInfo.m_objectType, this, this,
+                    GetGroupSaveStateKey(objectInfo.m_name), {},
+                    [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
+
+                AddGroup(objectInfo.m_name, objectInfo.m_displayName, objectInfo.m_description, propertyGroupWidget);
+                SetGroupVisible(objectInfo.m_name, objectInfo.m_visible);
+            }
 
             AtomToolsFramework::InspectorRequestBus::Handler::BusConnect(m_documentId);
         }
@@ -106,198 +115,42 @@ namespace MaterialEditor
         return ":/Icons/blank.png";
     }
 
-    void MaterialInspector::AddOverviewGroup()
+    void MaterialInspector::OnDocumentObjectInfoChanged(
+        [[maybe_unused]] const AZ::Uuid& documentId, const AtomToolsFramework::DocumentObjectInfo& objectInfo, bool rebuilt)
     {
-        const AZ::RPI::MaterialTypeSourceData* materialTypeSourceData = nullptr;
-        MaterialDocumentRequestBus::EventResult(
-            materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
-
-        const AZStd::string groupName = "overview";
-        const AZStd::string groupDisplayName = "Overview";
-        const AZStd::string groupDescription = materialTypeSourceData->m_description;
-        auto& group = m_groups[groupName];
-
-        AtomToolsFramework::DynamicProperty property;
-        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-            property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty, AZ::Name("overview.materialType"));
-        group.m_properties.push_back(property);
-
-        property = {};
-        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-            property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty, AZ::Name("overview.parentMaterial"));
-        group.m_properties.push_back(property);
-
-        // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-        auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
-            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
-        AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
-    }
-
-    void MaterialInspector::AddUvNamesGroup()
-    {
-        AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset;
-        MaterialDocumentRequestBus::EventResult(materialAsset, m_documentId, &MaterialDocumentRequestBus::Events::GetAsset);
-
-        const AZStd::string groupName = UvGroupName;
-        const AZStd::string groupDisplayName = "UV Sets";
-        const AZStd::string groupDescription = "UV set names in this material, which can be renamed to match those in the model.";
-        auto& group = m_groups[groupName];
-
-        const auto& uvNameMap = materialAsset->GetMaterialTypeAsset()->GetUvNameMap();
-        group.m_properties.reserve(uvNameMap.size());
-
-        for (const auto& uvNamePair : uvNameMap)
+        SetGroupVisible(objectInfo.m_name, objectInfo.m_visible);
+        if (rebuilt)
         {
-            AtomToolsFramework::DynamicProperty property;
-            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-                property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty,
-                AZ::RPI::MaterialPropertyId(groupName, uvNamePair.m_shaderInput.ToString()));
-            group.m_properties.push_back(property);
-
-            property.SetValue(property.GetConfig().m_parentValue);
+            RebuildGroup(objectInfo.m_name);
         }
-
-        // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-        auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
-            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
-        AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
-    }
-
-    void MaterialInspector::AddPropertiesGroup()
-    {
-        const AZ::RPI::MaterialTypeSourceData* materialTypeSourceData = nullptr;
-        MaterialDocumentRequestBus::EventResult(
-            materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
-        
-        // TODO: Support populating the Material Editor with nested property groups, not just the top level.
-        for (const AZStd::unique_ptr<AZ::RPI::MaterialTypeSourceData::PropertyGroup>& propertyGroup : materialTypeSourceData->GetPropertyLayout().m_propertyGroups)
+        else
         {
-            const AZStd::string& groupName = propertyGroup->GetName();
-            const AZStd::string& groupDisplayName = !propertyGroup->GetDisplayName().empty() ? propertyGroup->GetDisplayName() : groupName;
-            const AZStd::string& groupDescription = !propertyGroup->GetDescription().empty() ? propertyGroup->GetDescription() : groupDisplayName;
-            auto& group = m_groups[groupName];
-
-            group.m_properties.reserve(propertyGroup->GetProperties().size());
-            for (const auto& propertyDefinition : propertyGroup->GetProperties())
-            {
-                AtomToolsFramework::DynamicProperty property;
-                AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-                    property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty,
-                    AZ::RPI::MaterialPropertyId(groupName, propertyDefinition->GetName()));
-                group.m_properties.push_back(property);
-            }
-
-            // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-            auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
-                [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
-            AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
-            
-            bool isGroupVisible = false;
-            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-                isGroupVisible, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsPropertyGroupVisible, AZ::Name{groupName});
-            SetGroupVisible(groupName, isGroupVisible);
+            RefreshGroup(objectInfo.m_name);
         }
-    }
-
-    void MaterialInspector::OnDocumentPropertyValueModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property)
-    {
-        for (auto& groupPair : m_groups)
-        {
-            for (auto& reflectedProperty : groupPair.second.m_properties)
-            {
-                if (reflectedProperty.GetId() == property.GetId())
-                {
-                    if (!AtomToolsFramework::ArePropertyValuesEqual(reflectedProperty.GetValue(), property.GetValue()))
-                    {
-                        reflectedProperty.SetValue(property.GetValue());
-                        AtomToolsFramework::InspectorRequestBus::Event(
-                            documentId, &AtomToolsFramework::InspectorRequestBus::Events::RefreshGroup, groupPair.first);
-                    }
-                    return;
-                }
-            }
-        }
-    }
-
-    void MaterialInspector::OnDocumentPropertyConfigModified(const AZ::Uuid&, const AtomToolsFramework::DynamicProperty& property)
-    {
-        for (auto& groupPair : m_groups)
-        {
-            for (auto& reflectedProperty : groupPair.second.m_properties)
-            {
-                if (reflectedProperty.GetId() == property.GetId())
-                {
-                    // Visibility changes require the entire reflected property editor tree for this group to be rebuilt
-                    if (reflectedProperty.GetVisibility() != property.GetVisibility())
-                    {
-                        reflectedProperty.SetConfig(property.GetConfig());
-                        RebuildGroup(groupPair.first);
-                    }
-                    else
-                    {
-                        reflectedProperty.SetConfig(property.GetConfig());
-                        RefreshGroup(groupPair.first);
-                    }
-                    return;
-                }
-            }
-        }
-    }
-    
-    void MaterialInspector::OnDocumentPropertyGroupVisibilityChanged(const AZ::Uuid&, const AZ::Name& groupId, bool visible)
-    {
-        SetGroupVisible(groupId.GetStringView(), visible);
     }
 
     void MaterialInspector::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)
     {
-        // For some reason the reflected property editor notifications are not symmetrical
-        // This function is called continuously anytime a property changes until the edit has completed
-        // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has started and
-        // ended
+        // This function is called before every single property change whether it's a button click or dragging a slider. We only want to
+        // begin tracking undo state for the first change in the sequence, when the user begins to drag the slider.
         const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
-        if (property)
+        if (!m_activeProperty && property)
         {
-            if (m_activeProperty != property)
-            {
-                m_activeProperty = property;
-                AtomToolsFramework::AtomToolsDocumentRequestBus::Event(m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::BeginEdit);
-            }
-        }
-    }
-
-    void MaterialInspector::AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode)
-    {
-        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
-        if (property)
-        {
-            if (m_activeProperty == property)
-            {
-                AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
-                    m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::SetPropertyValue, property->GetId(), property->GetValue());
-            }
+            m_activeProperty = property;
+            AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
+                m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::BeginEdit);
         }
     }
 
     void MaterialInspector::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode)
     {
-        // As above, there are symmetrical functions on the notification interface for when editing begins and ends and has been completed
-        // but they are not being called following that pattern. when this function executes the changes to the property are ready to be
-        // committed or reverted
+        // If tracking has started and editing has completed then we can stop tracking undue state for this sequence of changes.
         const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
-        if (property)
+        if (m_activeProperty && m_activeProperty == property)
         {
-            if (m_activeProperty == property)
-            {
-                AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
-                    m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::SetPropertyValue, property->GetId(), property->GetValue());
-
-                AtomToolsFramework::AtomToolsDocumentRequestBus::Event(m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::EndEdit);
-                m_activeProperty = nullptr;
-            }
+            AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
+                m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::EndEdit);
+            m_activeProperty = {};
         }
     }
 } // namespace MaterialEditor
