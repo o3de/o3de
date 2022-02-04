@@ -14,8 +14,7 @@
 
 // Qt
 #include <QDialog>
-#include <QEvent>
-#include <qmetaobject.h>
+#include <QTimer>
 
 ModalWindowDismisser::ModalWindowDismisser()
 {
@@ -29,21 +28,6 @@ ModalWindowDismisser::~ModalWindowDismisser()
         qApp->removeEventFilter(this);
     }
 }
-static std::vector<QEvent::Type> types;
-
-template<typename EnumType>
-QString ToString(const EnumType& enumValue)
-{
-    const char* enumName = qt_getEnumName(enumValue);
-    const QMetaObject* metaObject = qt_getEnumMetaObject(enumValue);
-    if (metaObject)
-    {
-        const int enumIndex = metaObject->indexOfEnumerator(enumName);
-        return QString("%1::%2::%3").arg(metaObject->className(), enumName, metaObject->enumerator(enumIndex).valueToKey(enumValue));
-    }
-
-    return QString("%1::%2").arg(enumName).arg(static_cast<int>(enumValue));
-}
 
 bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
 {
@@ -51,19 +35,18 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
     {
         if (dialog->isModal())
         {
-            // if we wait until a Paint event arrives, we can be sure the dialog is fully open
-            // and that close() will work correctly.
-            types.push_back(event->type());
-            QString enumName = ToString(event->type());
-//            AZ::Debug::Trace::Output("ModalWindowDismisser", enumName.toStdString().c_str());
-            if (event->type() == QEvent::Timer || event->type() == QEvent::Paint)
+            // if we wait until a PolishRequest event arrives, we can be sure the dialog is fully open
+            // and that close() will work correctly. However, for the Import FileDialog to work correctly
+            // there must be a delay on Jenkins. I have tried to remove this SingleShot but nothing seems
+            // to make the closing of dialogs happen consistently without it.
+            if (event->type() == QEvent::PolishRequest)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
                 if (it == m_windows.end())
                 {
                     m_windows.push_back(dialog);
+                    QTimer::singleShot(2, this, [dialog](){ dialog->close(); });
                 }
-                dialog->close();
             }
             else if (event->type() == QEvent::Close)
             {
