@@ -72,7 +72,7 @@ namespace AZ
 
         void DiffuseProbeGridVisualizationAccelerationStructurePass::BuildInternal()
         {
-            SetScopeId(RHI::ScopeId(GetPathName()));
+            InitScope(RHI::ScopeId(GetPathName()));
         }
 
         void DiffuseProbeGridVisualizationAccelerationStructurePass::FrameBeginInternal(FramePrepareParams params)

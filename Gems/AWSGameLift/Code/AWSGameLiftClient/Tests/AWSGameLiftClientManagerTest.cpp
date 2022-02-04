@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Session/SessionConfig.h>
+#include <Multiplayer/Session/SessionConfig.h>
 #include <Credential/AWSCredentialBus.h>
 #include <ResourceMapping/AWSResourceMappingBus.h>
 
@@ -201,9 +201,9 @@ protected:
         return Aws::GameLift::Model::SearchGameSessionsOutcome(result);
     }
 
-    AzFramework::SearchSessionsResponse GetValidSearchSessionsResponse()
+    Multiplayer::SearchSessionsResponse GetValidSearchSessionsResponse()
     {
-        AzFramework::SessionConfig sessionConfig;
+        Multiplayer::SessionConfig sessionConfig;
         sessionConfig.m_creationTime = 0;
         sessionConfig.m_terminationTime = 0;
         sessionConfig.m_creatorId = "dummyCreatorId";
@@ -220,7 +220,7 @@ protected:
         // TODO: Update the AWS Native SDK to set the new game session attributes.
         // sessionConfig.m_dnsName = "dummyDnsName";
 
-        AzFramework::SearchSessionsResponse response;
+        Multiplayer::SearchSessionsResponse response;
         response.m_nextToken = "dummyNextToken";
         response.m_sessionConfigs = { sessionConfig };
 
@@ -344,7 +344,7 @@ TEST_F(AWSGameLiftClientManagerTest, CreateSession_CallWithoutClientSetup_GetEmp
 TEST_F(AWSGameLiftClientManagerTest, CreateSession_CallWithInvalidRequest_GetEmptyResponse)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
-    auto response = m_gameliftClientManager->CreateSession(AzFramework::CreateSessionRequest());
+    auto response = m_gameliftClientManager->CreateSession(Multiplayer::CreateSessionRequest());
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
     EXPECT_TRUE(response == "");
 }
@@ -381,7 +381,7 @@ TEST_F(AWSGameLiftClientManagerTest, CreateSessionAsync_CallWithInvalidRequest_G
     AZ_TEST_START_TRACE_SUPPRESSION;
     SessionAsyncRequestNotificationsHandlerMock sessionHandlerMock;
     EXPECT_CALL(sessionHandlerMock, OnCreateSessionAsyncComplete(AZStd::string())).Times(1);
-    m_gameliftClientManager->CreateSessionAsync(AzFramework::CreateSessionRequest());
+    m_gameliftClientManager->CreateSessionAsync(Multiplayer::CreateSessionRequest());
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
 }
 
@@ -513,7 +513,7 @@ TEST_F(AWSGameLiftClientManagerTest, JoinSession_CallWithoutClientSetup_GetFalse
 TEST_F(AWSGameLiftClientManagerTest, JoinSession_CallWithInvalidRequest_GetFalseResponse)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
-    auto response = m_gameliftClientManager->JoinSession(AzFramework::JoinSessionRequest());
+    auto response = m_gameliftClientManager->JoinSession(Multiplayer::JoinSessionRequest());
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
     EXPECT_FALSE(response);
 }
@@ -590,7 +590,7 @@ TEST_F(AWSGameLiftClientManagerTest, JoinSessionAsync_CallWithInvalidRequest_Get
     AZ_TEST_START_TRACE_SUPPRESSION;
     SessionAsyncRequestNotificationsHandlerMock sessionHandlerMock;
     EXPECT_CALL(sessionHandlerMock, OnJoinSessionAsyncComplete(false)).Times(1);
-    m_gameliftClientManager->JoinSessionAsync(AzFramework::JoinSessionRequest());
+    m_gameliftClientManager->JoinSessionAsync(Multiplayer::JoinSessionRequest());
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
 }
 
@@ -698,7 +698,7 @@ TEST_F(AWSGameLiftClientManagerTest, SearchSessions_CallWithValidRequestAndSucce
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
-    AzFramework::SearchSessionsResponse expectedResponse = GetValidSearchSessionsResponse();
+    Multiplayer::SearchSessionsResponse expectedResponse = GetValidSearchSessionsResponse();
     auto result = m_gameliftClientManager->SearchSessions(request);
     EXPECT_TRUE(result.m_sessionConfigs.size() != 0);
 }
@@ -713,7 +713,7 @@ TEST_F(AWSGameLiftClientManagerTest, SearchSessionsAsync_CallWithoutClientSetup_
 
     SessionAsyncRequestNotificationsHandlerMock sessionHandlerMock;
     EXPECT_CALL(sessionHandlerMock,
-        OnSearchSessionsAsyncComplete(SearchSessionsResponseMatcher(AzFramework::SearchSessionsResponse()))).Times(1);
+        OnSearchSessionsAsyncComplete(SearchSessionsResponseMatcher(Multiplayer::SearchSessionsResponse()))).Times(1);
 
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientManager->SearchSessionsAsync(request);
@@ -725,9 +725,9 @@ TEST_F(AWSGameLiftClientManagerTest, SearchSessionsAsync_CallWithInvalidRequest_
     AZ_TEST_START_TRACE_SUPPRESSION;
     SessionAsyncRequestNotificationsHandlerMock sessionHandlerMock;
     EXPECT_CALL(sessionHandlerMock,
-        OnSearchSessionsAsyncComplete(SearchSessionsResponseMatcher(AzFramework::SearchSessionsResponse()))).Times(1);
+        OnSearchSessionsAsyncComplete(SearchSessionsResponseMatcher(Multiplayer::SearchSessionsResponse()))).Times(1);
 
-    m_gameliftClientManager->SearchSessionsAsync(AzFramework::SearchSessionsRequest());
+    m_gameliftClientManager->SearchSessionsAsync(Multiplayer::SearchSessionsRequest());
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
 }
 
@@ -746,7 +746,7 @@ TEST_F(AWSGameLiftClientManagerTest, SearchSessionsAsync_CallWithValidRequestAnd
 
     SessionAsyncRequestNotificationsHandlerMock sessionHandlerMock;
     EXPECT_CALL(sessionHandlerMock,
-        OnSearchSessionsAsyncComplete(SearchSessionsResponseMatcher(AzFramework::SearchSessionsResponse()))).Times(1);
+        OnSearchSessionsAsyncComplete(SearchSessionsResponseMatcher(Multiplayer::SearchSessionsResponse()))).Times(1);
 
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientManager->SearchSessionsAsync(request);
@@ -765,7 +765,7 @@ TEST_F(AWSGameLiftClientManagerTest, SearchSessionsAsync_CallWithValidRequestAnd
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
-    AzFramework::SearchSessionsResponse expectedResponse = GetValidSearchSessionsResponse();
+    Multiplayer::SearchSessionsResponse expectedResponse = GetValidSearchSessionsResponse();
     SessionAsyncRequestNotificationsHandlerMock sessionHandlerMock;
     EXPECT_CALL(sessionHandlerMock,
         OnSearchSessionsAsyncComplete(SearchSessionsResponseMatcher(expectedResponse))).Times(1);
@@ -926,7 +926,7 @@ TEST_F(AWSGameLiftClientManagerTest, StopMatchmaking_CallWithoutClientSetup_GetE
 TEST_F(AWSGameLiftClientManagerTest, StopMatchmaking_CallWithInvalidRequest_GetError)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
-    m_gameliftClientManager->StopMatchmaking(AzFramework::StopMatchmakingRequest());
+    m_gameliftClientManager->StopMatchmaking(Multiplayer::StopMatchmakingRequest());
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
 }
 
@@ -1029,7 +1029,7 @@ TEST_F(AWSGameLiftClientManagerTest, AcceptMatch_CallWithoutClientSetup_GetError
 TEST_F(AWSGameLiftClientManagerTest, AcceptMatch_CallWithInvalidRequest_GetError)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
-    m_gameliftClientManager->AcceptMatch(AzFramework::AcceptMatchRequest());
+    m_gameliftClientManager->AcceptMatch(Multiplayer::AcceptMatchRequest());
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
 }
 

@@ -510,6 +510,70 @@ namespace AzToolsFramework
         m_playInEditorData.m_isEnabled = false;
     }
 
+    bool PrefabEditorEntityOwnershipService::IsValidRootAliasPath(Prefab::RootAliasPath rootAliasPath) const
+    {
+        return GetInstanceReferenceFromRootAliasPath(rootAliasPath) != AZStd::nullopt;
+    }
+
+    Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::GetInstanceReferenceFromRootAliasPath(
+        Prefab::RootAliasPath rootAliasPath) const
+    {
+        Prefab::InstanceOptionalReference instance = *m_rootInstance;
+
+        for (const auto& pathElement : rootAliasPath)
+        {
+            if (pathElement.Native() == rootAliasPath.begin()->Native())
+            {
+                // If the root is not the root Instance, the rootAliasPath is invalid.
+                if (pathElement.Native() != instance->get().GetInstanceAlias())
+                {
+                    return Prefab::InstanceOptionalReference();
+                }
+            }
+            else
+            {
+                // If the instance alias can't be found, the rootAliasPath is invalid.
+                instance = instance->get().FindNestedInstance(pathElement.Native());
+                if (!instance.has_value())
+                {
+                    return Prefab::InstanceOptionalReference();
+                }
+            }
+        }
+
+        return instance;
+    }
+
+    bool PrefabEditorEntityOwnershipService::GetInstancesInRootAliasPath(
+        Prefab::RootAliasPath rootAliasPath, const AZStd::function<bool(const Prefab::InstanceOptionalReference)>& callback) const
+    {
+        if (!IsValidRootAliasPath(rootAliasPath))
+        {
+            return false;
+        }
+
+        Prefab::InstanceOptionalReference instance;
+
+        for (const auto& pathElement : rootAliasPath)
+        {
+            if (!instance.has_value())
+            {
+                instance = *m_rootInstance;
+            }
+            else
+            {
+                instance = instance->get().FindNestedInstance(pathElement.Native());
+            }
+
+            if(callback(instance))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //////////////////////////////////////////////////////////////////////////
     // Slice Buses implementation with Assert(false), this will exist only during Slice->Prefab
     // development to pinpoint and replace specific calls to Slice system

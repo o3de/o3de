@@ -21,6 +21,7 @@ set(FILES
     Include/Atom/Utils/ImGuiShaderMetrics.inl
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.h
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.inl
+    Include/Atom/Utils/MaterialUtils.h
     Include/Atom/Utils/PngFile.h
     Include/Atom/Utils/PpmFile.h
     Include/Atom/Utils/StableDynamicArray.h
@@ -30,6 +31,7 @@ set(FILES
     Include/Atom/Utils/AssetCollectionAsyncLoader.h
     Source/DdsFile.cpp
     Source/ImageComparison.cpp
+    Source/MaterialUtils.cpp
     Source/PngFile.cpp
     Source/PpmFile.cpp
     Source/Utils.cpp
