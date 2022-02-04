@@ -14,6 +14,20 @@
 
 namespace AtomToolsFramework
 {
+    //! Structure used as an opaque description of objects reflected inside of a document.
+    //! An example use would be semi automatic handling of serialization or reflection to a property editor.
+    struct DocumentObjectInfo
+    {
+        bool m_visible = true;
+        AZStd::string m_name;
+        AZStd::string m_displayName;
+        AZStd::string m_description;
+        AZ::Uuid m_objectType = AZ::Uuid::CreateNull();
+        void* m_objectPtr = {};
+    };
+
+    //! This bus provides the most basic interface for implementing a document that works with the document system.
+    //! Any extensions or application specific functionality should be added using a domain specific buses. 
     class AtomToolsDocumentRequests
         : public AZ::EBusTraits
     {
@@ -25,20 +39,8 @@ namespace AtomToolsFramework
         //! Get absolute path of document
         virtual AZStd::string_view GetAbsolutePath() const = 0;
 
-        //! Return property value
-        //! If the document is not open or the id can't be found, an invalid value is returned instead.
-        virtual const AZStd::any& GetPropertyValue(const AZ::Name& propertyFullName) const = 0;
-
-        //! Returns a property object
-        //! If the document is not open or the id can't be found, an invalid property is returned.
-        virtual const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyFullName) const = 0;
-        
-        //! Returns whether a property group is visible
-        //! If the document is not open or the id can't be found, returns false.
-        virtual bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const = 0;
-
-        //! Modify document property value
-        virtual void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) = 0;
+        //! Returns a container describing all reflected objects contained in a document 
+        virtual AZStd::vector<DocumentObjectInfo> GetObjectInfo() const = 0;
 
         //! Load document and related data
         //! @param loadPath absolute path of document to load
