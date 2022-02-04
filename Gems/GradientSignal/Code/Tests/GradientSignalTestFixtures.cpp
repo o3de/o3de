@@ -84,7 +84,7 @@ namespace UnitTest
 
     AZStd::unique_ptr<MockSurfaceDataSystem> GradientSignalBaseFixture::CreateMockSurfaceDataSystem(const AZ::Aabb& spawnerBox)
     {
-        SurfaceData::SurfacePoint point;
+        AzFramework::SurfaceData::SurfacePoint point;
         AZStd::unique_ptr<MockSurfaceDataSystem> mockSurfaceDataSystem = AZStd::make_unique<MockSurfaceDataSystem>();
 
         // Give the mock surface data a bunch of fake point values to return.
@@ -101,7 +101,8 @@ namespace UnitTest
                 // Create an arbitrary normal value.
                 point.m_normal = point.m_position.GetNormalized();
                 // Create an arbitrary surface value.
-                point.m_masks[AZ_CRC_CE("test_mask")] = arbitraryPercentage;
+                point.m_surfaceTags.clear();
+                point.m_surfaceTags.emplace_back(AZ_CRC_CE("test_mask"), arbitraryPercentage);
 
                 mockSurfaceDataSystem->m_GetSurfacePoints[AZStd::make_pair(x, y)] = { { point } };
             }
