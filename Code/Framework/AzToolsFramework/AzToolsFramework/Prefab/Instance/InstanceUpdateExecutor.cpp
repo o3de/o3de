@@ -165,13 +165,14 @@ namespace AzToolsFramework
                 rootDom.CopyFrom(
                     m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->GetTemplateId()), focusedInstanceDom.GetAllocator());
 
+                PrefabDom containerDom;
+                containerDom.CopyFrom(*rootToFocusedInstanceContainerPath.Get(rootDom), focusedInstanceDom.GetAllocator());
+
                 // Paste the focused instance container dom as seen from the root into instanceDom.
                 AZStd::string containerName =
                     AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
                 PrefabDomPath containerPath(containerName.c_str());
-                containerPath.Set(
-                    focusedInstanceDom, *rootToFocusedInstanceContainerPath.Get(rootDom),
-                    focusedInstanceDom.GetAllocator());
+                containerPath.Set(focusedInstanceDom, containerDom, focusedInstanceDom.GetAllocator());
             }
         }
 
@@ -220,6 +221,12 @@ namespace AzToolsFramework
                     // Copy the focused instance dom inside the dom that will be used to refresh the instance.
                     PrefabDomPath domSourceToFocusPath(aliasPathToFocus.c_str());
                     domSourceToFocusPath.Set(instanceDom, focusedInstanceDom, instanceDom.GetAllocator());
+
+                    // Force a deep copy
+                    PrefabDom instanceDomCopy;
+                    instanceDomCopy.CopyFrom(instanceDom, instanceDom.GetAllocator());
+
+                    instanceDom.CopyFrom(instanceDomCopy, instanceDom.GetAllocator());
                 }
             }
             // If our instance is the focused instance, fix the container
