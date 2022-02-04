@@ -97,6 +97,16 @@ class DirectionalLightShadow
             const float4 clipSpacePos = mul(lightViewToShadowmapMatrices[index], lightSpacePos);                
             m_shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
         }
+        
+        if (o_directional_shadow_receiver_plane_bias_enable)
+        {
+            [unroll]
+            for(int i = 0 ; i < ViewSrg::MaxCascadeCount ; ++i)
+            {
+                m_shadowPosDX[i] = ddx_fine(m_shadowCoords[i]);
+                m_shadowPosDY[i] = ddy_fine(m_shadowCoords[i]);        
+            }    
+        }        
     }
 
 
@@ -127,6 +137,27 @@ class DirectionalLightShadow
             }
         }
         return bool2(false, false);
+    }
+    
+    float GetVisibility()
+    {
+        float lit = 1;
+        switch(o_directional_shadow_filtering_method)
+        {
+            case ShadowFilterMethod::None:
+                lit = GetVisibilityFromLightNoFilter();
+                break;
+            case ShadowFilterMethod::Pcf:
+                lit = GetVisibilityFromLightPcf();
+                break;
+            case ShadowFilterMethod::Esm:
+                lit = GetVisibilityFromLightEsm();
+                break;
+            case ShadowFilterMethod::EsmPcf:
+                lit = GetVisibilityFromLightEsmPcf();
+                break;
+        }
+        return lit;
     }
     
     float GetVisibilityFromLightNoFilter()
@@ -162,7 +193,7 @@ class DirectionalLightShadow
         param.invShadowMapSize = rcp(size); 
         param.comparisonValue = shadowCoord.z;
         param.samplerState = PassSrg::m_hwPcfSampler;
-        param.receiverPlaneDepthBias = 0;//o_directional_shadow_receiver_plane_bias_enable ? ComputeReceiverPlaneDepthBias(m_shadowPosDX[indexOfCascade], m_shadowPosDY[indexOfCascade]) : 0;
+        param.receiverPlaneDepthBias = o_directional_shadow_receiver_plane_bias_enable ? ComputeReceiverPlaneDepthBias(m_shadowPosDX[indexOfCascade], m_shadowPosDY[indexOfCascade]) : 0;
         
         [branch]     
         if (filteringSampleCount <= 4)       
@@ -312,6 +343,8 @@ class DirectionalLightShadow
     
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount];
     float m_slopeBias[ViewSrg::MaxCascadeCount];
+    float3 m_shadowPosDX[ViewSrg::MaxCascadeCount];
+    float3 m_shadowPosDY[ViewSrg::MaxCascadeCount];
     uint m_lightIndex;
     DebugInfo m_debugInfo;    
 };
@@ -332,27 +365,12 @@ PSOutput MainPS(VSOutput IN)
     float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_constantData.m_screenSize, zDepth, IN.m_position.xy).xyz;
     
     const float3 worldNormal = float3(0,0,1);
-    float lit = 1;
+    
     directionalLightShadow.ComputeShadowCoords(lightIndex, surfacePosWS, worldNormal);
-    
-    switch(o_directional_shadow_filtering_method)
-    {
-        case ShadowFilterMethod::None:
-            lit = directionalLightShadow.GetVisibilityFromLightNoFilter();
-            break;
-        case ShadowFilterMethod::Pcf:
-            lit = directionalLightShadow.GetVisibilityFromLightPcf();
-            break;
-        case ShadowFilterMethod::Esm:
-            lit = directionalLightShadow.GetVisibilityFromLightEsm();
-            break;
-        case ShadowFilterMethod::EsmPcf:
-            lit = directionalLightShadow.GetVisibilityFromLightEsmPcf();
-            break;
-    }
-    
+   
+ 
     PSOutput OUT;   
-    OUT.m_color.rgb = lit;
+    OUT.m_color.rgb = directionalLightShadow.GetVisibility();
     return OUT; 
 }
 
