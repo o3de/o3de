@@ -11,7 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
 
-namespace AzFramework
+namespace Multiplayer
 {
     //! MatchmakingNotifications
     //! The matchmaking notifications to listen for performing required operations
@@ -43,4 +43,4 @@ namespace AzFramework
         virtual void OnMatchFailure() = 0;
     };
     using MatchmakingNotificationBus = AZ::EBus<MatchmakingNotifications>;
-} // namespace AzFramework
+} // namespace Multiplayer

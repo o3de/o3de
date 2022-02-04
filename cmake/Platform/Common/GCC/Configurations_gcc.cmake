@@ -55,7 +55,6 @@ ly_append_configurations_options(
         -Wno-parentheses
         -Wno-reorder
         -Wno-restrict
-        -Wno-return-local-addr
         -Wno-sequence-point
         -Wno-sign-compare
         -Wno-strict-aliasing
