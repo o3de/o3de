@@ -21,4 +21,38 @@ namespace Terrain
             typename BaseClassType::WrappedConfigType, 1>
         );
     }
+
+    void EditorTerrainPhysicsColliderComponent::Activate()
+    {
+        UpdateConfigurationTagProvider();
+        BaseClassType::Activate();
+    }
+
+    AZStd::unordered_set<AZ::u32> EditorTerrainPhysicsColliderComponent::GetSurfaceTagsInUse() const
+    {
+        AZStd::unordered_set<AZ::u32> tagsInUse;
+
+        for (const TerrainPhysicsSurfaceMaterialMapping& mapping : m_configuration.m_surfaceMaterialMappings)
+        {
+            AZ::u32 crc = mapping.m_surfaceTag;
+            tagsInUse.insert(crc);
+        }
+
+        return AZStd::move(tagsInUse);
+    }
+
+    AZ::u32 EditorTerrainPhysicsColliderComponent::ConfigurationChanged()
+    {
+        UpdateConfigurationTagProvider();
+        return BaseClassType::ConfigurationChanged();
+    }
+
+    void EditorTerrainPhysicsColliderComponent::UpdateConfigurationTagProvider()
+    {
+        for (TerrainPhysicsSurfaceMaterialMapping& mapping : m_configuration.m_surfaceMaterialMappings)
+        {
+            mapping.SetTagListProvider(this);
+        }
+    }
+
 }

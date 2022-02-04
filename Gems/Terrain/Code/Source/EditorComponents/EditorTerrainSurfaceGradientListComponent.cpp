@@ -20,4 +20,37 @@ namespace Terrain
             typename BaseClassType::WrappedConfigType, 1>
         );
     }
+
+    void EditorTerrainSurfaceGradientListComponent::Activate()
+    {
+        UpdateConfigurationTagProvider();
+        BaseClassType::Activate();
+    }
+
+    AZ::u32 EditorTerrainSurfaceGradientListComponent::ConfigurationChanged()
+    {
+        UpdateConfigurationTagProvider();
+        return BaseClassType::ConfigurationChanged();
+    }
+
+    void EditorTerrainSurfaceGradientListComponent::UpdateConfigurationTagProvider()
+    {
+        for (TerrainSurfaceGradientMapping& mapping : m_configuration.m_gradientSurfaceMappings)
+        {
+            mapping.SetTagListProvider(this);
+        }
+    }
+
+    AZStd::unordered_set<AZ::u32> EditorTerrainSurfaceGradientListComponent::GetSurfaceTagsInUse() const
+    {
+        AZStd::unordered_set<AZ::u32> tagsInUse;
+
+        for (const TerrainSurfaceGradientMapping& mapping : m_configuration.m_gradientSurfaceMappings)
+        {
+            AZ::u32 crc = mapping.m_surfaceTag;
+            tagsInUse.insert(crc);
+        }
+
+        return AZStd::move(tagsInUse);
+    }
 }

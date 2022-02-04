@@ -17,10 +17,13 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/sort.h>
 
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+
+#include <EditorSelectableTagListProvider.h>
 
 namespace Terrain
 {
@@ -45,12 +48,38 @@ namespace Terrain
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &TerrainPhysicsSurfaceMaterialMapping::m_surfaceTag, "Surface Tag",
                         "Surface type to map to a physics material.")
+                    ->Attribute(AZ::Edit::Attributes::EnumValues, &TerrainPhysicsSurfaceMaterialMapping::BuildSelectableTagList)
+
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainPhysicsSurfaceMaterialMapping::m_materialId, "Material ID", "")
                     ->ElementAttribute(Physics::Attributes::MaterialLibraryAssetId, &TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true);
             }
         }
+    }
+
+    AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> TerrainPhysicsSurfaceMaterialMapping::BuildSelectableTagList() const
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        if (m_tagListProvider)
+        {
+            AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> selectableTags = AZStd::move(m_tagListProvider->BuildSelectableTagList());
+
+            // Insert the tag currently in use by this mapping
+            selectableTags.push_back({ m_surfaceTag, m_surfaceTag.GetDisplayName() });
+
+            // Sorting for consistency
+            AZStd::sort(selectableTags.begin(), selectableTags.end(), [](const auto& lhs, const auto& rhs) {return lhs.second < rhs.second; });
+            return selectableTags;
+        }
+
+        return SurfaceData::SurfaceTag::GetRegisteredTags();
+    }
+
+    void TerrainPhysicsSurfaceMaterialMapping::SetTagListProvider(const EditorSelectableTagListProvider* tagListProvider)
+    {
+        m_tagListProvider = tagListProvider;
     }
 
     AZ::Data::AssetId TerrainPhysicsSurfaceMaterialMapping::GetMaterialLibraryId()
