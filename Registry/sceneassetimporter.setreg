@@ -1,21 +1,17 @@
 {
-	"O3DE":
-	{
-		"SceneAPI":
-		{
-			"AssetImporter":
-			{
-				"SupportedFileTypeExtensions":
-				[
-					".fbx",
-					".stl"
-				]
-			},
-			"MaterialConverter": 
-			{
-				"Enable": true,
-				"DefaultMaterial": "Materials/Presets/PBR/default_grid.material"
-			}
-		}
-	}
+    "O3DE": {
+        "SceneAPI": {
+            "AssetImporter": {
+                "SupportedFileTypeExtensions": [
+                    ".fbx",
+                    ".stl",
+                    ".glb"
+                ]
+            },
+            "MaterialConverter": {
+                "Enable": true,
+                "DefaultMaterial": "Materials/Presets/PBR/default_grid.material"
+            }
+        }
+    }
 }
