@@ -45,7 +45,14 @@ namespace MaterialEditor
 
         //! Get the internal material type source data
         virtual const AZ::RPI::MaterialTypeSourceData* GetMaterialTypeSourceData() const = 0;
-    };
+
+        //! Modify property value
+        virtual void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) = 0;
+
+        //! Return property value
+        //! If the document is not open or the id can't be found, an invalid value is returned instead.
+        virtual const AZStd::any& GetPropertyValue(const AZ::Name& propertyFullName) const = 0;
+   };
 
     using MaterialDocumentRequestBus = AZ::EBus<MaterialDocumentRequests>;
 } // namespace MaterialEditor

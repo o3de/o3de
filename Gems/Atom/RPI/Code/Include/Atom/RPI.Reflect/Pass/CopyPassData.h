@@ -32,7 +32,7 @@ namespace AZ
                 if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
                 {
                     serializeContext->Class<CopyPassData, PassData>()
-                        ->Version(0)
+                        ->Version(1)
                         ->Field("BufferSize", &CopyPassData::m_bufferSize)
                         ->Field("BufferSourceOffset", &CopyPassData::m_bufferSourceOffset)
                         ->Field("BufferSourceBytesPerRow", &CopyPassData::m_bufferSourceBytesPerRow)
@@ -46,6 +46,7 @@ namespace AZ
                         ->Field("ImageDestinationSubresource", &CopyPassData::m_imageDestinationSubresource)
                         ->Field("ImageDestinationOrigin", &CopyPassData::m_imageDestinationOrigin)
                         ->Field("CloneInput", &CopyPassData::m_cloneInput)
+                        ->Field("UseCopyQueue", &CopyPassData::m_useCopyQueue)
                         ;
                 }
             }
@@ -75,6 +76,9 @@ namespace AZ
             // If set to true, pass will automatically create a transient output attachment based on input
             // If false, the output target of the copy will need to be specified
             bool m_cloneInput = true;
+
+            // Whether the pass should use the copy queue.
+            bool m_useCopyQueue = false;
         };
     } // namespace RPI
 } // namespace AZ

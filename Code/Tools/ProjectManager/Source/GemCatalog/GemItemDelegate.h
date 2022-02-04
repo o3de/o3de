@@ -47,11 +47,11 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_height = 105; // Gem item total height
         inline constexpr static qreal s_gemNameFontSize = 13.0;
         inline constexpr static qreal s_fontSize = 12.0;
-        inline constexpr static int s_defaultSummaryStartX = 190;
+        inline constexpr static int s_defaultSummaryStartX = 270;
 
         // Margin and borders
-        inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/16, /*top=*/8, /*right=*/16, /*bottom=*/8); // Item border distances
-        inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/20, /*top=*/12, /*right=*/20, /*bottom=*/12); // Distances of the elements within an item to the item borders
+        inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/16, /*top=*/5, /*right=*/16, /*bottom=*/5); // Item border distances
+        inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/10, /*top=*/12, /*right=*/20, /*bottom=*/12); // Distances of the elements within an item to the item borders
         inline constexpr static int s_borderWidth = 4;
         inline constexpr static int s_extraSummarySpacing = s_itemMargins.right();
 
@@ -68,8 +68,13 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_featureTagBorderMarginY = 3;
         inline constexpr static int s_featureTagSpacing = 7;
 
+        // Status icon
+        inline constexpr static int s_statusIconSize = 16;
+        inline constexpr static int s_statusButtonSpacing = 5;
+
         enum class HeaderOrder
         {
+            Preview,
             Name,
             Summary,
             Status
@@ -109,8 +114,6 @@ namespace O3DE::ProjectManager
 
         // Status icons
         void SetStatusIcon(QPixmap& m_iconPixmap, const QString& iconPath);
-        inline constexpr static int s_statusIconSize = 16;
-        inline constexpr static int s_statusButtonSpacing = 5;
 
         QPixmap m_unknownStatusPixmap;
         QPixmap m_notDownloadedPixmap;
