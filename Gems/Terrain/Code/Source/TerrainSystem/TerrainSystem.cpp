@@ -288,8 +288,26 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
                 &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights,
                 AZStd::span<AZ::Vector3>(outPositions.begin() + windowStart, spanLength), AZStd::span<bool>(outTerrainExists.begin() + windowStart, spanLength));
             
-            // Reset the window to start at the current position.
-            // Set the new area id on which to run the next query.
+            // Sometimes, a position generated for a bilinear sample may be outside
+            // of all areas. This won't be caught by our world bounds check since we
+            // only do them on input positions and not the generated ones.
+            while (areaId == AZ::EntityId())
+            {
+                // Out of bounds. Set height to world min.
+                outPositions[i].SetZ(minHeight);
+                i++;
+                if (i < numPositions)
+                {
+                    areaId = FindBestAreaEntityAtPosition(outPositions[i].GetX(), outPositions[i].GetY(), bounds);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            
+            // Reset the window to start at the current position. Set the new area
+            // id on which to run the next query.
             windowStart = windowEnd = i;
             prevAreaId = areaId;
         }
