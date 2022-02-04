@@ -35,8 +35,6 @@
 // Editor
 #include "CryEdit.h"
 #include "MainWindow.h"
-#include <EditorBookmarkSettings.h>
-
 
 //////////////////////////////////////////////////////////////////////////
 // Global Instance of Editor settings.
@@ -640,10 +638,18 @@ void SEditorSettings::Save(bool isEditorClosing)
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     prefabLoaderInterface->SetSaveAllPrefabsPreference(levelSaveSettings.saveAllPrefabsPreference);
 
+    ViewBookmarkLoaderInterface* viewBookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
+    ViewBookmark config;
+
+    config.m_xPos = 1.5f;
+    config.m_yPos = 211.5f;
+    config.m_zPos = 10.5f;
+
     if (!isEditorClosing)
     {
-        EditorBookmarkSettings bookmarkSettings;
-        bookmarkSettings.SaveBookmarkSettingsFile();
+        viewBookmarkLoader->SaveCustomBookmark(config);
+
+        viewBookmarkLoader->SaveBookmarkSettingsFile();
         SaveSettingsRegistryFile();
     }
 }

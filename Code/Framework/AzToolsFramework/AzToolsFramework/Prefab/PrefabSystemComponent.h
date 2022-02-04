@@ -23,6 +23,7 @@
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
+#include <AzToolsFramework/Prefab/ViewBookmarkLoader.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabPublicRequestHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -420,6 +421,8 @@ namespace AzToolsFramework
             PrefabPublicRequestHandler m_prefabPublicRequestHandler;
 
             PrefabSystemScriptingHandler m_prefabSystemScriptingHandler;
+
+            ViewBookmarkLoader m_viewBookmarkLoader;
 
             // If true, individual template-remove messages will be suppressed
             bool m_removingAllTemplates = false;

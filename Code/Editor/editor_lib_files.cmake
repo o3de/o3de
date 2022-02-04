@@ -727,8 +727,6 @@ set(FILES
     EditorViewportWidget.h
     EditorViewportSettings.cpp
     EditorViewportSettings.h
-    EditorBookmarkSettings.cpp
-    EditorBookmarkSettings.h
     EditorViewportCamera.cpp
     EditorViewportCamera.h
     EditorModularViewportCameraComposer.cpp
