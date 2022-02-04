@@ -383,6 +383,10 @@ float DirectionalLightShadow::GetVisibility(
     float2 screenUv,
     out DirectionalLightShadow::DebugInfo debugInfo)
 {
+    Texture2D<float> fullscreenShadow = PassSrg::m_fullscreenShadow;
+    return fullscreenShadow.Load(float3(screenUv, 0));
+
+
     DirectionalLightShadow shadow;
     shadow.m_lightIndex = lightIndex;
     shadow.m_shadowCoords = shadowCoords;

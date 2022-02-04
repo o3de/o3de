@@ -17,6 +17,7 @@
 #include <Atom/Features/Shadow/NormalOffsetShadows.azsli>
 #include <Atom/Features/Shadow/BicubicPcfFilters.azsli>
 #include <Atom/Features/Shadow/Shadow.azsli>
+#include <Atom/RPI/Math.azsli>
 #include <viewsrg.srgi>
 
 // This matchs ShadowFilterMethod in ShadowConstants.h
@@ -25,6 +26,7 @@ option ShadowFilterMethod o_directional_shadow_filtering_method = ShadowFilterMe
 option bool o_directional_shadow_receiver_plane_bias_enable = true;
 option bool o_blend_between_cascades_enable = false;
 
+static const float CascadeBlendArea = 0.015f; // might be worth exposing this as a slider.
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
@@ -206,7 +208,7 @@ class DirectionalLightShadow
         if (cascadeFound)
         {
             float lit = SamplePcfBicubic(m_shadowCoords[currentCascadeIndex], currentCascadeIndex);
-            /*
+            
             if(o_blend_between_cascades_enable) 
             {  
                 const float blendBetweenCascadesAmount = CalculateCascadeBlendAmount(m_shadowCoords[currentCascadeIndex].xyz);
@@ -219,7 +221,7 @@ class DirectionalLightShadow
                     lit = lerp(nextLit, lit, blendBetweenCascadesAmount);             
                 }
             } 
-*/
+
             return lit;
         }
 
@@ -302,7 +304,13 @@ class DirectionalLightShadow
         return 1.;
     }
 
-            
+    float CalculateCascadeBlendAmount(const float3 texCoord)
+    {
+        const float distanceToOneMin = min3(1.0f - texCoord);
+        const float currentPixelsBlendBandLocation = min(min(texCoord.x, texCoord.y), distanceToOneMin);
+        return currentPixelsBlendBandLocation / CascadeBlendArea;
+    }
+    
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount];
     float m_slopeBias[ViewSrg::MaxCascadeCount];
     uint m_lightIndex;
