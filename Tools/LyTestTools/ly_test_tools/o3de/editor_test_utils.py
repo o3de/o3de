@@ -171,14 +171,12 @@ def save_failed_asset_joblogs(workspace: AbstractWorkspace) -> None:
 
 def _check_log_errors_warnings(log_path: str) -> bool:
     """
-    Checks to see if the asset log contains any errors or warnings by reading the last line of the file. There are
-    multiple types of log regex. Returns True is no regex is found because something probably went wrong.
+    Checks to see if the asset log contains any errors or warnings. Also returns True is no regex is found because
+    something probably went wrong.
     Example log lines: ~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 0 errors, 1 warnings
-    (Current issue where the expected line isn't always the last line. This function will instead query each line until
-    the issue is resolved).
 
-    :param log_path: The pull path to the asset log file to read
-    :return: True if the last line regex finds an error or warning, else False
+    :param log_path: The full path to the asset log file to read
+    :return: True if the regex finds an error or warning, else False
     """
     log_regex = "(\\d+) errors, (\\d+) warnings"
     with open(log_path, 'r') as opened_asset_log:
