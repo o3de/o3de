@@ -257,8 +257,6 @@ namespace AzToolsFramework
             }
 
             PrefabDom& sourceDom = sourceTemplate->get().GetPrefabDom();
-            PrefabDom sourceTemplateDomCopy;
-            sourceTemplateDomCopy.CopyFrom(sourceDom, sourceDom.GetAllocator());
 
             //use instance pointer to reach position
             PrefabDomValueReference instanceDomRef = link->get().GetLinkedInstanceDom();
@@ -279,11 +277,11 @@ namespace AzToolsFramework
             // Remove the link ids if present in the doms. We don't want any overrides to be created on top of linkIds because
             // linkIds are not persistent and will be created dynamically when prefabs are loaded into the editor.
             instanceDom.RemoveMember(PrefabDomUtils::LinkIdName);
-            sourceTemplateDomCopy.RemoveMember(PrefabDomUtils::LinkIdName);
+            sourceDom.RemoveMember(PrefabDomUtils::LinkIdName);
 
             //we use this to diff our copy against the vanilla template (source template)
             PrefabDom patchLink;
-            m_instanceToTemplateInterface->GeneratePatch(patchLink, sourceTemplateDomCopy, instanceDom);
+            m_instanceToTemplateInterface->GeneratePatch(patchLink, sourceDom, instanceDom);
 
             // Create a copy of patchLink by providing the allocator of m_linkDomNext so that the patch doesn't become invalid when
             // the patch goes out of scope in this function.

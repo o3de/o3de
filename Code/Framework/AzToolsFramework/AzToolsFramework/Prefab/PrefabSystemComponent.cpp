@@ -163,17 +163,25 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
         {
-            auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
-            if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
+            TemplateReference findTemplateResult = FindTemplate(templateId);
+            if (findTemplateResult.has_value())
             {
-                // We need to initialize a queue here because once all linked instances of a template are updated,
-                // we will find all the linkIds corresponding to the updated template and add them to this queue again.
-                AZStd::queue<LinkIds> linkIdsToUpdateQueue;
-                linkIdsToUpdateQueue.push(LinkIds(templateIdToLinkIdsIterator->second.begin(),
-                    templateIdToLinkIdsIterator->second.end()));
-                UpdateLinkedInstances(linkIdsToUpdateQueue);
+                // There shouldn't be a linkId in the top level template. LinkIds exist on the nested instances of a template.
+                PrefabDom& templateDom = findTemplateResult->get().GetPrefabDom();
+                templateDom.RemoveMember(PrefabDomUtils::LinkIdName);
+
+                auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
+                if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
+                {
+                    // We need to initialize a queue here because once all linked instances of a template are updated,
+                    // we will find all the linkIds corresponding to the updated template and add them to this queue again.
+                    AZStd::queue<LinkIds> linkIdsToUpdateQueue;
+                    linkIdsToUpdateQueue.push(
+                        LinkIds(templateIdToLinkIdsIterator->second.begin(), templateIdToLinkIdsIterator->second.end()));
+                    UpdateLinkedInstances(linkIdsToUpdateQueue);
+                }
+                UpdatePrefabInstances(templateId, instanceToExclude);
             }
-            UpdatePrefabInstances(templateId, instanceToExclude);
         }
 
         void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom)
