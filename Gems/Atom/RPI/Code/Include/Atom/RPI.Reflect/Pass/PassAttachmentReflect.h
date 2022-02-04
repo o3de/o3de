@@ -248,6 +248,9 @@ namespace AZ
 
             //! Reference to an external attachment asset, which used for imported attachment
             AssetReference m_assetRef;
+
+            //! Whether this attachment can be referenced in a global manner
+            bool m_isPipelineAttachment = false;
         };
 
         //! A PassAttachmentDesc used for images

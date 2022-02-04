@@ -105,19 +105,17 @@ namespace AZ
             Pass* m_ownerPass = nullptr;
 
             //! Collection of flags that influence how source data is queried
-            struct
+            union
             {
-                union
+                struct
                 {
-                    struct
-                    {
-                        u8 m_getSizeFromPipeline : 1;
-                        u8 m_getFormatFromPipeline : 1;
-                        u8 m_getMultisampleStateFromPipeline : 1;
-                    };
-                    u8 m_allFlags = 0;
+                    u8 m_getSizeFromPipeline : 1;
+                    u8 m_getFormatFromPipeline : 1;
+                    u8 m_getMultisampleStateFromPipeline : 1;
+                    u8 m_isPipelineAttachment : 1;
                 };
-            } m_settingFlags;
+                u8 m_allFlags = 0;
+            };
         };
 
         //! An attachment binding points to a PassAttachment and specifies how the pass uses that attachment.

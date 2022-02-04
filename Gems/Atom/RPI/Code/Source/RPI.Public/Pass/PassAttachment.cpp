@@ -27,6 +27,7 @@ namespace AZ
         {
             m_name = attachmentDesc.m_name;
             m_lifetime = attachmentDesc.m_lifetime;
+            m_isPipelineAttachment = attachmentDesc.m_isPipelineAttachment;
             m_generateFullMipChain = attachmentDesc.m_generateFullMipChain;
 
             m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_imageDescriptor);
@@ -35,9 +36,11 @@ namespace AZ
 
         PassAttachment::PassAttachment(const PassBufferAttachmentDesc& attachmentDesc)
         {
-            m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_bufferDescriptor);
             m_name = attachmentDesc.m_name;
             m_lifetime = attachmentDesc.m_lifetime;
+            m_isPipelineAttachment = attachmentDesc.m_isPipelineAttachment;
+
+            m_descriptor = RHI::UnifiedAttachmentDescriptor(attachmentDesc.m_bufferDescriptor);
         }
 
         Ptr<PassAttachment> PassAttachment::Clone() const
@@ -114,7 +117,7 @@ namespace AZ
         {
             if (m_descriptor.m_type == RHI::AttachmentType::Image && (m_lifetime == RHI::AttachmentLifetimeType::Transient || updateImportedAttachments == true))
             {
-                if (m_settingFlags.m_getFormatFromPipeline && m_renderPipelineSource)
+                if (m_getFormatFromPipeline && m_renderPipelineSource)
                 {
                     m_descriptor.m_image.m_format = m_renderPipelineSource->GetRenderSettings().m_format;
                 }
@@ -123,7 +126,7 @@ namespace AZ
                     m_descriptor.m_image.m_format = m_formatSource->m_attachment->m_descriptor.m_image.m_format;
                 }
 
-                if (m_settingFlags.m_getMultisampleStateFromPipeline && m_renderPipelineSource)
+                if (m_getMultisampleStateFromPipeline && m_renderPipelineSource)
                 {
                     m_descriptor.m_image.m_multisampleState = m_renderPipelineSource->GetRenderSettings().m_multisampleState;
                 }
@@ -132,7 +135,7 @@ namespace AZ
                     m_descriptor.m_image.m_multisampleState = m_multisampleSource->m_attachment->m_descriptor.m_image.m_multisampleState;
                 }
 
-                if (m_settingFlags.m_getSizeFromPipeline && m_renderPipelineSource)
+                if (m_getSizeFromPipeline && m_renderPipelineSource)
                 {
                     RHI::Size sourceSize = m_renderPipelineSource->GetRenderSettings().m_size;
                     m_descriptor.m_image.m_size = m_sizeMultipliers.ApplyModifiers(sourceSize);

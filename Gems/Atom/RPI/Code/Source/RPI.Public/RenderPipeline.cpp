@@ -435,6 +435,28 @@ namespace AZ
             }
         }
 
+        const Ptr<PassAttachment> RenderPipeline::GetPipelineAttachment(const Name& name) const
+        {
+            for (const Ptr<PassAttachment>& attachment : m_pipelineAttachments)
+            {
+                if (attachment->m_name == name)
+                {
+                    return attachment;
+                }
+            }
+            return nullptr;
+        }
+
+        void RenderPipeline::AddPipelineAttachment(const Ptr<PassAttachment>& attachment)
+        {
+            m_pipelineAttachments.push_back(attachment);
+        }
+
+        void RenderPipeline::RemovePipelineAttachment(const Ptr<PassAttachment>& attachment)
+        {
+            erase(m_pipelineAttachments, attachment);
+        }
+
         RenderPipelineId RenderPipeline::GetId() const
         {
             return m_nameId;

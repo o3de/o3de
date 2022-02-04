@@ -184,6 +184,11 @@ namespace AZ
             //! Get draw filter mask
             RHI::DrawFilterMask GetDrawFilterMask() const;
 
+            //! Finding, adding and removing pipeline attachments (attachments that can be referenced directly by any pass in the pipeline)
+            const Ptr<PassAttachment> GetPipelineAttachment(const Name& name) const;
+            void AddPipelineAttachment(const Ptr<PassAttachment>& attachment);
+            void RemovePipelineAttachment(const Ptr<PassAttachment>& attachment);
+
         private:
             RenderPipeline() = default;
 
@@ -224,7 +229,10 @@ namespace AZ
 
             // Pass tree which contains all the passes in this render pipeline.
             Ptr<ParentPass> m_rootPass;
-            
+
+            // Attachments that can be referenced from any pass in the pipeline
+            AZStd::vector<Ptr<PassAttachment>> m_pipelineAttachments;
+
             PipelineViewMap m_pipelineViewsByTag;
             
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene

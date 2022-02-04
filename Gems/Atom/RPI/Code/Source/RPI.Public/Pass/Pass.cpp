@@ -164,6 +164,17 @@ namespace AZ
 
         void Pass::OnOrphan()
         {
+            if (m_pipeline)
+            {
+                for (Ptr<PassAttachment>& attachment : m_ownedAttachments)
+                {
+                    if (attachment->m_isPipelineAttachment)
+                    {
+                        m_pipeline->RemovePipelineAttachment(attachment);
+                    }
+                }
+            }
+
             m_parent = nullptr;
             m_flags.m_partOfHierarchy = false;
             m_treeDepth = 0;
@@ -493,7 +504,27 @@ namespace AZ
                 return;
             }
 
-            if (m_parent)
+            if (connectedPassName == PipelineKeyword)
+            {
+                AZ_RPI_PASS_ERROR(m_pipeline != nullptr, "Pass::ProcessConnection - Pass [%s] references pipeline attachment [%s] doesn't have a valid pipeline pointer",
+                    m_path.GetCStr(),
+                    connectedSlotName.GetCStr());
+
+                if (m_pipeline)
+                {
+                    Ptr<PassAttachment> attachment = m_pipeline->GetPipelineAttachment(connectedSlotName);
+                    if (attachment)
+                    {
+                        localBinding->SetAttachment(attachment);
+                        localBinding->m_originalAttachment = attachment;
+                    }
+                }
+            }
+
+            // The (connectedPassName != m_name) avoids edge case where parent pass has child pass of same name.
+            // In this case, parent pass would ask it's parent pass for a sibling with the given name and get a pointer to itself.
+            // It would then try to connect to itself, which is obviously not the intention of the user
+            if (m_parent && connectedPassName != m_name)
             {
                 if (connectedPassName == PassNameParent)
                 {
@@ -557,7 +588,13 @@ namespace AZ
                 }
             }
 
-            if (!connectedBinding)
+            if (connectedPassName == PipelineKeyword)
+            {
+                AZ_RPI_PASS_ERROR(localBinding->m_attachment != nullptr, "Pass::ProcessConnection - Pass [%s] couldn't find pipeline attachment [%s].",
+                    m_path.GetCStr(),
+                    connectedSlotName.GetCStr());
+            }
+            else if (!connectedBinding)
             {
                 if (!m_flags.m_partOfHierarchy)
                 {
@@ -677,7 +714,7 @@ namespace AZ
             if (desc.m_sizeSource.m_source.m_pass == PipelineKeyword)         // if source is pipeline
             {
                 attachment->m_renderPipelineSource = m_pipeline;
-                attachment->m_settingFlags.m_getSizeFromPipeline = true;
+                attachment->m_getSizeFromPipeline = true;
                 attachment->m_sizeMultipliers = desc.m_sizeSource.m_multipliers;
             }
             else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_sizeSource.m_source))
@@ -689,7 +726,7 @@ namespace AZ
             if (desc.m_formatSource.m_pass == PipelineKeyword)                // if source is pipeline
             {
                 attachment->m_renderPipelineSource = m_pipeline;
-                attachment->m_settingFlags.m_getFormatFromPipeline = true;
+                attachment->m_getFormatFromPipeline = true;
             }
             else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_formatSource))
             {
@@ -699,7 +736,7 @@ namespace AZ
             if (desc.m_multisampleSource.m_pass == PipelineKeyword)           // if source is pipeline
             {
                 attachment->m_renderPipelineSource = m_pipeline;
-                attachment->m_settingFlags.m_getMultisampleStateFromPipeline = true;
+                attachment->m_getMultisampleStateFromPipeline = true;
             }
             else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_multisampleSource))
             {
@@ -712,6 +749,11 @@ namespace AZ
             }
 
             attachment->m_ownerPass = this;
+
+            if (desc.m_isPipelineAttachment)
+            {
+                m_pipeline->AddPipelineAttachment(attachment);
+            }
 
             return attachment;
         }
