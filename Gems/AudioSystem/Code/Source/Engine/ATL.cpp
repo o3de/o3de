@@ -9,10 +9,6 @@
 
 #include <ATL.h>
 
-#if !defined(AUDIO_RELEASE)
-    #include <AzCore/Math/Color.h>
-#endif // !AUDIO_RELEASE
-
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
@@ -21,7 +17,12 @@
 #include <ATLAudioObject.h>
 #include <IAudioSystemImplementation.h>
 
-#include <IRenderAuxGeom.h>
+#if !defined(AUDIO_RELEASE)
+    // Debug Draw
+    #include <AzCore/Math/Color.h>
+    #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#endif // !AUDIO_RELEASE
+
 
 namespace Audio
 {
@@ -231,7 +232,7 @@ namespace Audio
                 else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::LoadBank>)
                 {
                     //!  NEED A BLOCKING FLAG TO INDICATE WHETHER IT SHOULD LOAD ASYNC OR NOT  !//
-                    result = m_oFileCacheMgr.TryLoadRequest(request.m_preloadRequestId, true, request.m_autoLoadOnly);
+                    result = m_oFileCacheMgr.TryLoadRequest(request.m_preloadRequestId, !request.m_asyncLoad, request.m_autoLoadOnly);
                 }
 
                 else if constexpr (AZStd::is_same_v<T, Audio::SystemRequest::UnloadBank>)
@@ -1824,11 +1825,15 @@ namespace Audio
     {
         AZ_PROFILE_FUNCTION(Audio);
 
-        // ToDo: Update to work with Atom? LYN-3677
-        /*if (CVars::s_debugDrawOptions.GetRawFlags() != 0)
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
+        AzFramework::DebugDisplayRequests* debugDisplay{ AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus) };
+
+        if (debugDisplay && CVars::s_debugDrawOptions.GetRawFlags() != 0)
         {
-            DrawAudioObjectDebugInfo(*pAuxGeom); // needs to be called first so that the rest of the labels are printed
-            // on top (Draw2dLabel doesn't provide a way set which labels are printed on top)
+            DrawAudioObjectDebugInfo(*debugDisplay);
+
+            const float textSize = 1.f;
 
             const size_t nPrimaryPoolSize = AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().Capacity();
             const size_t nPrimaryPoolUsedSize = nPrimaryPoolSize - AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Get().GetUnAllocatedMemory();
@@ -1836,36 +1841,39 @@ namespace Audio
             float fPosX = 0.0f;
             float fPosY = 4.0f;
 
-            const float fColor[4] = { 1.0f, 1.0f, 1.0f, 0.9f };
-            const float fColorRed[4] = { 1.0f, 0.0f, 0.0f, 0.7f };
-            const float fColorGreen[4] = { 0.0f, 1.0f, 0.0f, 0.7f };
-            const float fColorBlue[4] = { 0.4f, 0.4f, 1.0f, 1.0f };
+            const AZ::Color colorWhite{ 1.0f, 1.0f, 1.0f, 0.9f };
+            const AZ::Color colorRed{ 1.0f, 0.0f, 0.0f, 0.7f };
+            const AZ::Color colorGreen{ 0.0f, 1.0f, 0.0f, 0.7f };
+            const AZ::Color colorBlue{ 0.4f, 0.4f, 1.0f, 1.0f };
 
+            AZStd::string str;
             const char* implementationName = nullptr;
             AudioSystemImplementationRequestBus::BroadcastResult(implementationName, &AudioSystemImplementationRequestBus::Events::GetImplementationNameString);
-            pAuxGeom->Draw2dLabel(fPosX, fPosY, 1.6f, fColorBlue, false, "AudioTranslationLayer with %s", implementationName);
 
-            fPosX += 20.0f;
-            fPosY += 17.0f;
+            str = AZStd::string::format("Audio Translation Layer with %s", implementationName);
 
-            pAuxGeom->Draw2dLabel(fPosX, fPosY, 1.35f, fColor, false,
-                "AudioSystem Memory: %.2f / %.2f MiB",
-                (nPrimaryPoolUsedSize / 1024) / 1024.f,
-                (nPrimaryPoolSize / 1024) / 1024.f
-                );
+            debugDisplay->SetColor(colorBlue);
+            debugDisplay->Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
 
+            fPosX += 30.0f;
+            fPosY += 30.0f;
 
-            float const fLineHeight = 13.0f;
+            str = AZStd::string::format(
+                "Audio System Mem:  %.2f / %.2f MiB", (nPrimaryPoolUsedSize / 1024) / 1024.f, (nPrimaryPoolSize / 1024) / 1024.f);
+            debugDisplay->SetColor(colorWhite);
+            debugDisplay->Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
+
+            float const fLineHeight = 20.0f;
 
             SAudioImplMemoryInfo oMemoryInfo;
             AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::GetMemoryInfo, oMemoryInfo);
 
             fPosY += fLineHeight;
-            pAuxGeom->Draw2dLabel(fPosX, fPosY, 1.35f, fColor, false,
-                "AudioImpl Memory: %.2f / %.2f MiB",
-                (oMemoryInfo.nPrimaryPoolUsedSize / 1024) / 1024.f,
-                (oMemoryInfo.nPrimaryPoolSize / 1024) / 1024.f
-                );
+
+            str = AZStd::string::format(
+                "Audio Engine Mem:  %.2f / %.2f MiB", (oMemoryInfo.nPrimaryPoolUsedSize / 1024) / 1024.f,
+                (oMemoryInfo.nPrimaryPoolSize / 1024) / 1024.f);
+            debugDisplay->Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
 
             static const float SMOOTHING_ALPHA = 0.2f;
 
@@ -1875,19 +1883,6 @@ namespace Audio
             const size_t nNumActiveAudioObjects = m_oAudioObjectMgr.GetNumActiveAudioObjects();
             const size_t nEvents = m_oAudioEventMgr.GetNumActive();
             const size_t nListeners = m_oAudioListenerMgr.GetNumActive();
-            const size_t nNumEventListeners = m_oAudioEventListenerMgr.GetNumEventListeners();
-
-
-            const bool bActive = true;
-            const float fColorListener[4] =
-            {
-                bActive ? fColorGreen[0] : fColorRed[0],
-                bActive ? fColorGreen[1] : fColorRed[1],
-                bActive ? fColorGreen[2] : fColorRed[2],
-                1.0f
-            };
-
-            const float* fColorNumbers = fColorBlue;
 
             TAudioObjectID activeListenerID = INVALID_AUDIO_OBJECT_ID;
             if (CATLListenerObject* overrideListener = m_oAudioListenerMgr.LookupID(m_oAudioListenerMgr.GetOverrideListenerID()))
@@ -1900,48 +1895,51 @@ namespace Audio
             }
 
             fPosY += fLineHeight;
-            pAuxGeom->Draw2dLabel(fPosX, fPosY, 1.35f, fColorListener, false,
-                "Listener <%llu> PosXYZ: %.2f %.2f %.2f FwdXYZ: %.2f %.2f %.2f",
-                activeListenerID,
-                static_cast<float>(vPos.GetX()), static_cast<float>(vPos.GetY()), static_cast<float>(vPos.GetZ()),
-                static_cast<float>(vFwd.GetX()), static_cast<float>(vFwd.GetY()), static_cast<float>(vFwd.GetZ()));
+
+            str = AZStd::string::format(
+                "Active Listener (ID: %llu) -> Position: ( %.2f,  %.2f,  %.2f )   Forward: ( %.2f,  %.2f,  %.2f )", activeListenerID,
+                vPos.GetX(), vPos.GetY(), vPos.GetZ(), vFwd.GetX(), vFwd.GetY(), vFwd.GetZ());
+            debugDisplay->SetColor(colorGreen);
+            debugDisplay->Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
 
             fPosY += fLineHeight;
-            pAuxGeom->Draw2dLabel(fPosX, fPosY, 1.35f, fColorNumbers, false,
-                "Objects: %3zu/%3zu | Events: %3zu  EventListeners %3zu | Listeners: %zu",
-                nNumActiveAudioObjects, nNumAudioObjects, nEvents, nNumEventListeners, nListeners);
+
+            str = AZStd::string::format(
+                "Audio Objects: %3zu / %3zu  |  Events: %3zu  |  Listeners: %zu", nNumActiveAudioObjects, nNumAudioObjects, nEvents,
+                nListeners);
+            debugDisplay->SetColor(colorWhite);
+            debugDisplay->Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
 
             fPosY += fLineHeight;
-            DrawATLComponentDebugInfo(*pAuxGeom, fPosX, fPosY);
 
-            pAuxGeom->Commit(7);
-        }*/
+            DrawATLComponentDebugInfo(*debugDisplay, fPosX, fPosY);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioTranslationLayer::DrawATLComponentDebugInfo(IRenderAuxGeom& auxGeom, float fPosX, const float fPosY)
+    void CAudioTranslationLayer::DrawATLComponentDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float fPosX, float fPosY)
     {
-        m_oFileCacheMgr.DrawDebugInfo(auxGeom, fPosX, fPosY);
+        m_oFileCacheMgr.DrawDebugInfo(debugDisplay, fPosX, fPosY);
 
         if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::MemoryInfo))
         {
-            DrawImplMemoryPoolDebugInfo(auxGeom, fPosX, fPosY);
+            DrawImplMemoryPoolDebugInfo(debugDisplay, fPosX, fPosY);
         }
 
         if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ActiveObjects))
         {
-            m_oAudioObjectMgr.DrawDebugInfo(auxGeom, fPosX, fPosY);
-            fPosX += 800.0f;
+            m_oAudioObjectMgr.DrawDebugInfo(debugDisplay, fPosX, fPosY);
+            fPosX += 1000.0f;
         }
 
         if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::ActiveEvents))
         {
-            m_oAudioEventMgr.DrawDebugInfo(auxGeom, fPosX, fPosY);
+            m_oAudioEventMgr.DrawDebugInfo(debugDisplay, fPosX, fPosY);
         }
 
         if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::DrawListener))
         {
-            m_oAudioListenerMgr.DrawDebugInfo(auxGeom);
+            m_oAudioListenerMgr.DrawDebugInfo(debugDisplay);
         }
     }
 
@@ -1954,22 +1952,21 @@ namespace Audio
         }
         else if (bytes < (1 << 20))
         {
-            azsnprintf(buffer, bufLength, "%.2f KB", static_cast<double>(bytes) / static_cast<double>(1 << 10));
+            azsnprintf(buffer, bufLength, "%.2f KiB", static_cast<double>(bytes) / static_cast<double>(1 << 10));
         }
         else
         {
-            azsnprintf(buffer, bufLength, "%.2f MB", static_cast<double>(bytes) / static_cast<double>(1 << 20));
+            azsnprintf(buffer, bufLength, "%.2f MiB", static_cast<double>(bytes) / static_cast<double>(1 << 20));
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioTranslationLayer::DrawImplMemoryPoolDebugInfo(IRenderAuxGeom& auxGeom, float fPosX, float fPosY)
+    void CAudioTranslationLayer::DrawImplMemoryPoolDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float fPosX, float fPosY)
     {
         const float colorMax = 0.9f;
         const float colorMin = 0.1f;
-        const float textSize = 1.5f;
+        const float textSize = 1.0f;
         const float lineHeight = 15.f;
-        float color[4] = { colorMax, colorMax, colorMax, 0.9f };
 
         const AZ::Color whiteColor(colorMax, colorMax, colorMax, 0.9f);
         const AZ::Color greenColor(colorMin, colorMax, colorMin, 0.9f);
@@ -1978,13 +1975,14 @@ namespace Audio
 
         float posY = fPosY;
         constexpr float xTablePositions[7] = { 0.f, 40.f, 300.f, 400.f, 500.f, 600.f, 700.f };
-        auxGeom.Draw2dLabel(fPosX + xTablePositions[0], posY, textSize, color, false, "ID");
-        auxGeom.Draw2dLabel(fPosX + xTablePositions[1], posY, textSize, color, false, "Name");
-        auxGeom.Draw2dLabel(fPosX + xTablePositions[2], posY, textSize, color, false, "Curr Used");
-        auxGeom.Draw2dLabel(fPosX + xTablePositions[3], posY, textSize, color, false, "Peak Used");
-        auxGeom.Draw2dLabel(fPosX + xTablePositions[4], posY, textSize, color, false, "%% of Used");
-        auxGeom.Draw2dLabel(fPosX + xTablePositions[5], posY, textSize, color, false, "Allocs");
-        auxGeom.Draw2dLabel(fPosX + xTablePositions[6], posY, textSize, color, false, "Frees");
+        debugDisplay.SetColor(whiteColor);
+        debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[0], posY, textSize, "ID");
+        debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[1], posY, textSize, "Name");
+        debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[2], posY, textSize, "Curr Used");
+        debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[3], posY, textSize, "Peak Used");
+        debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[4], posY, textSize, "% of Used");
+        debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[5], posY, textSize, "Allocs");
+        debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[6], posY, textSize, "Frees");
 
         // Get the memory pool information...
         AZStd::vector<AudioImplMemoryPoolInfo> poolInfos;
@@ -2001,6 +1999,7 @@ namespace Audio
             AZ::u64 totalFrees = 0;
             constexpr size_t bufferSize = 32;
             char buffer[bufferSize] = { 0 };
+            AZStd::string str;
 
             for (auto& poolInfo : poolInfos)
             {
@@ -2021,70 +2020,85 @@ namespace Audio
                 {
                     percentColor = yellowColor.Lerp(redColor, (percentUsed * 2.f) - 1.f);
                 }
-                percentColor.StoreToFloat4(color);
                 percentUsed *= 100.f;
+                debugDisplay.SetColor(percentColor);
 
                 // ID
-                auxGeom.Draw2dLabel(fPosX + xTablePositions[0], posY, textSize, color, false, "%d", poolInfo.m_poolId);
+                str = AZStd::string::format("%d", poolInfo.m_poolId);
+                debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[0], posY, textSize, str.c_str());
 
                 // Name
-                auxGeom.Draw2dLabel(fPosX + xTablePositions[1], posY, textSize, color, false, "%s", poolInfo.m_poolName);
+                str = AZStd::string::format("%s", poolInfo.m_poolName);
+                debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[1], posY, textSize, str.c_str());
 
                 // Current Used (bytes)
                 BytesToString(poolInfo.m_memoryUsed, buffer, bufferSize);
-                auxGeom.Draw2dLabel(fPosX + xTablePositions[2], posY, textSize, color, false, "%s", buffer);
+                str = AZStd::string::format("%s", buffer);
+                debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[2], posY, textSize, str.c_str());
 
                 // Peak Used (bytes)
                 BytesToString(poolInfo.m_peakUsed, buffer, bufferSize);
-                auxGeom.Draw2dLabel(fPosX + xTablePositions[3], posY, textSize, color, false, "%s", buffer);
+                str = AZStd::string::format("%s", buffer);
+                debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[3], posY, textSize, str.c_str());
 
-                // % of Used (percent)
-                auxGeom.Draw2dLabel(fPosX + xTablePositions[4], posY, textSize, color, false, "%.1f %%", percentUsed);
+                // Used Percentage
+                str = AZStd::string::format("%.1f %%", percentUsed);
+                debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[4], posY, textSize, str.c_str());
 
-                // Allocs
-                auxGeom.Draw2dLabel(fPosX + xTablePositions[5], posY, textSize, color, false, "%u", poolInfo.m_numAllocs);
+                // # Allocs
+                str = AZStd::string::format("%u", poolInfo.m_numAllocs);
+                debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[5], posY, textSize, str.c_str());
 
-                // Frees
-                auxGeom.Draw2dLabel(fPosX + xTablePositions[6], posY, textSize, color, false, "%u", poolInfo.m_numFrees);
+                // # Frees
+                str = AZStd::string::format("%u", poolInfo.m_numFrees);
+                debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[6], posY, textSize, str.c_str());
             }
 
-            whiteColor.StoreToFloat4(color);
+            debugDisplay.SetColor(whiteColor);
             posY += (2.f * lineHeight);
 
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[1], posY, textSize, color, false, "Name");
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[1], posY + lineHeight, textSize, color, false, "%s", globalInfo.m_poolName);
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[1], posY, textSize, "Name");
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[2], posY, textSize, "Total Used");
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[3], posY, textSize, "Total Peak");
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[4], posY, textSize, "Total Size");
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[5], posY, textSize, "Total Allocs");
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[6], posY, textSize, "Total Frees");
+            posY += lineHeight;
 
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[2], posY, textSize, color, false, "Total Used");
+            str = AZStd::string::format("%s", globalInfo.m_poolName);
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[1], posY, textSize, str.c_str());
+
             BytesToString(globalInfo.m_memoryUsed, buffer, bufferSize);
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[2], posY + lineHeight, textSize, color, false, "%s", buffer);
+            str = AZStd::string::format("%s", buffer);
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[2], posY, textSize, str.c_str());
 
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[3], posY, textSize, color, false, "Total Peak");
             BytesToString(totalPeak, buffer, bufferSize);
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[3], posY + lineHeight, textSize, color, false, "%s", buffer);
+            str = AZStd::string::format("%s", buffer);
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[3], posY, textSize, str.c_str());
 
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[4], posY, textSize, color, false, "Total Size");
             BytesToString(globalInfo.m_memoryReserved, buffer, bufferSize);
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[4], posY + lineHeight, textSize, color, false, "%s", buffer);
+            str = AZStd::string::format("%s", buffer);
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[4], posY, textSize, str.c_str());
 
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[5], posY, textSize, color, false, "Total Allocs");
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[5], posY + lineHeight, textSize, color, false, "%llu", totalAllocs);
+            str = AZStd::string::format("%llu", totalAllocs);
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[5], posY, textSize, str.c_str());
 
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[6], posY, textSize, color, false, "Total Frees");
-            auxGeom.Draw2dLabel(fPosX + xTablePositions[6], posY + lineHeight, textSize, color, false, "%llu", totalFrees);
+            str = AZStd::string::format("%llu", totalFrees);
+            debugDisplay.Draw2dTextLabel(fPosX + xTablePositions[6], posY, textSize, str.c_str());
         }
         else
         {
-            auxGeom.Draw2dLabel(
-                fPosX, posY + lineHeight, textSize, color, false, "No memory pool information is available for display!");
+            debugDisplay.SetColor(whiteColor);
+            debugDisplay.Draw2dTextLabel(fPosX, posY + lineHeight, textSize, "** No memory pool information is available for display **");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioTranslationLayer::DrawAudioObjectDebugInfo(IRenderAuxGeom& auxGeom)
+    void CAudioTranslationLayer::DrawAudioObjectDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         SATLWorldPosition oListenerPosition;
         m_oAudioListenerMgr.GetDefaultListenerPosition(oListenerPosition);
-        m_oAudioObjectMgr.DrawPerObjectDebugInfo(auxGeom, oListenerPosition.GetPositionVec());
+        m_oAudioObjectMgr.DrawPerObjectDebugInfo(debugDisplay, oListenerPosition.GetPositionVec());
     }
 #endif // !AUDIO_RELEASE
 } // namespace Audio

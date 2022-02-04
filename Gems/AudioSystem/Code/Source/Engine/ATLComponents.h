@@ -23,6 +23,11 @@
 #include <FileCacheManager.h>
 
 
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
+
 namespace Audio
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +76,7 @@ namespace Audio
 #if !defined(AUDIO_RELEASE)
     public:
         void SetDebugNameStore(const CATLDebugNameStore* const pDebugNameStore);
-        void DrawDebugInfo(IRenderAuxGeom& rAuxGeom, float fPosX, float fPosY) const;
+        void DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float posX, float posY) const;
 
     private:
         const CATLDebugNameStore* m_pDebugNameStore;
@@ -141,8 +146,8 @@ namespace Audio
         {
             return m_cAudioObjects;
         }
-        void DrawPerObjectDebugInfo(IRenderAuxGeom& rAuxGeom, const AZ::Vector3& rListenerPos) const;
-        void DrawDebugInfo(IRenderAuxGeom& rAuxGeom, float fPosX, float fPosY) const;
+        void DrawPerObjectDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& rListenerPos) const;
+        void DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float posX, float posY) const;
 
     private:
         CATLDebugNameStore* m_pDebugNameStore;
@@ -193,7 +198,7 @@ namespace Audio
         }
 
 #if !defined(AUDIO_RELEASE)
-        void DrawDebugInfo(IRenderAuxGeom& rAuxGeom) const;
+        void DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay) const;
 #endif // !AUDIO_RELEASE
 
     private:

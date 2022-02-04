@@ -18,8 +18,10 @@
 #include <IAudioInterfacesCommonData.h>
 #include <ATLEntities.h>
 
-// Forward declarations
-struct IRenderAuxGeom;
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
 
 namespace Audio
 {
@@ -68,7 +70,7 @@ namespace Audio
         EAudioRequestStatus UnloadDataByScope(const EATLDataScope dataScope);
 
     #if !defined(AUDIO_RELEASE)
-        void DrawDebugInfo(IRenderAuxGeom& auxGeom, const float posX, const float posY);
+        void DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, const float posX, const float posY);
     #endif // !AUDIO_RELEASE
 
     private:

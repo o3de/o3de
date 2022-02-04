@@ -19,7 +19,10 @@
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 
-struct IRenderAuxGeom;
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
 
 class ATLAudioObjectTest;
 
@@ -301,7 +304,7 @@ namespace Audio
         void SetupTestRay(AZ::u16 rayIndex);
 
 #if !defined(AUDIO_RELEASE)
-        void DrawObstructionRays(IRenderAuxGeom& auxGeom) const;
+        void DrawObstructionRays(AzFramework::DebugDisplayRequests& debugDisplay) const;
 #endif // !AUDIO_RELEASE
 
         static constexpr float s_epsilon = 1e-3f;
@@ -376,7 +379,10 @@ namespace Audio
 
 #if !defined(AUDIO_RELEASE)
     public:
-        void DrawDebugInfo(IRenderAuxGeom& auxGeom, const AZ::Vector3& vListenerPos, const CATLDebugNameStore* const pDebugNameStore) const;
+        void DrawDebugInfo(
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            const AZ::Vector3& listenerPos,
+            const CATLDebugNameStore* const debugNameStore) const;
         const SATLWorldPosition& GetPosition() const
         {
             return m_oPosition;

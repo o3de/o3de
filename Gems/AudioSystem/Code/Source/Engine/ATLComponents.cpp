@@ -15,10 +15,6 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
-#if !defined(AUDIO_RELEASE)
-    #include <AzCore/std/string/conversions.h>
-#endif // !AUDIO_RELEASE
-
 #include <AzFramework/FileFunc/FileFunc.h>
 
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -30,7 +26,13 @@
 #include <IAudioSystemImplementation.h>
 
 #include <MathConversion.h>
-#include <IRenderAuxGeom.h>
+
+#if !defined(AUDIO_RELEASE)
+    // Debug Draw
+    #include <AzCore/std/string/conversions.h>
+    #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#endif // !AUDIO_RELEASE
+
 
 namespace Audio
 {
@@ -423,7 +425,7 @@ namespace Audio
     {
         if (atlEvent)
         {
-            if (CATLAudioObject* audioObject = LookupID(atlEvent->GetID());
+            if (CATLAudioObject* audioObject = LookupID(atlEvent->m_nObjectID);
                 audioObject != nullptr)
             {
                 audioObject->EventFinished(atlEvent);
@@ -1666,14 +1668,17 @@ namespace Audio
 #if !defined(AUDIO_RELEASE)
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioEventManager::DrawDebugInfo(IRenderAuxGeom& rAuxGeom, float fPosX, float fPosY) const
+    void CAudioEventManager::DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float fPosX, float fPosY) const
     {
-        static float const fHeaderColor[4] = { 1.0f, 1.0f, 1.0f, 0.9f };
-        static float const fItemPlayingColor[4] = { 0.3f, 0.6f, 0.3f, 0.9f };
-        static float const fItemLoadingColor[4] = { 0.9f, 0.2f, 0.2f, 0.9f };
-        static float const fItemOtherColor[4] = { 0.8f, 0.8f, 0.8f, 0.9f };
+        static const AZ::Color headerColor{ 1.0f, 1.0f, 1.0f, 0.9f };
+        static const AZ::Color itemPlayingColor{ 0.3f, 0.6f, 0.3f, 0.9f };
+        static const AZ::Color itemLoadingColor{ 0.9f, 0.2f, 0.2f, 0.9f };
+        static const AZ::Color itemOtherColor{ 0.8f, 0.8f, 0.8f, 0.9f };
 
-        rAuxGeom.Draw2dLabel(fPosX, fPosY, 1.6f, fHeaderColor, false, "Audio Events [%zu]", m_cActiveAudioEvents.size());
+        const float textSize = 0.8f;
+        AZStd::string str = AZStd::string::format("Audio Events [%zu]", m_cActiveAudioEvents.size());
+        debugDisplay.SetColor(headerColor);
+        debugDisplay.Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
         fPosX += 20.0f;
         fPosY += 17.0f;
 
@@ -1689,25 +1694,23 @@ namespace Audio
 
             if (AudioDebugDrawFilter(triggerName, triggerFilter))
             {
-                const float* pColor = fItemOtherColor;
-
                 if (atlEvent->IsPlaying())
                 {
-                    pColor = fItemPlayingColor;
+                    debugDisplay.SetColor(itemPlayingColor);
                 }
                 else if (atlEvent->m_audioEventState == eAES_LOADING)
                 {
-                    pColor = fItemLoadingColor;
+                    debugDisplay.SetColor(itemLoadingColor);
+                }
+                else
+                {
+                    debugDisplay.SetColor(itemOtherColor);
                 }
 
-                rAuxGeom.Draw2dLabel(fPosX, fPosY, 1.6f,
-                    pColor,
-                    false,
-                    "%s (%llu): %s (%llu)",
-                    m_pDebugNameStore->LookupAudioObjectName(atlEvent->m_nObjectID),
-                    atlEvent->m_nObjectID,
-                    triggerName.c_str(),
-                    atlEvent->GetID());
+                str = AZStd::string::format(
+                    "%s (%llu): %s (%llu)", m_pDebugNameStore->LookupAudioObjectName(atlEvent->m_nObjectID), atlEvent->m_nObjectID,
+                    triggerName.c_str(), atlEvent->GetID());
+                debugDisplay.Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
 
                 fPosY += 16.0f;
             }
@@ -1745,7 +1748,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioObjectManager::DrawPerObjectDebugInfo(IRenderAuxGeom& rAuxGeom, const AZ::Vector3& rListenerPos) const
+    void CAudioObjectManager::DrawPerObjectDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& rListenerPos) const
     {
         auto audioObjectFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioObjectsDebugFilter);
         AZStd::to_lower(audioObjectFilter.begin(), audioObjectFilter.end());
@@ -1763,24 +1766,25 @@ namespace Audio
 
             if (bDraw)
             {
-                audioObject->DrawDebugInfo(rAuxGeom, rListenerPos, m_pDebugNameStore);
+                audioObject->DrawDebugInfo(debugDisplay, rListenerPos, m_pDebugNameStore);
             }
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioObjectManager::DrawDebugInfo(IRenderAuxGeom& rAuxGeom, float fPosX, float fPosY) const
+    void CAudioObjectManager::DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float fPosX, float fPosY) const
     {
-        static const float fHeaderColor[4] = { 1.0f, 1.0f, 1.0f, 0.9f };
-        static const float fItemActiveColor[4] = { 0.3f, 0.6f, 0.3f, 0.9f };
-        static const float fItemInactiveColor[4] = { 0.8f, 0.8f, 0.8f, 0.9f };
-        static const float fOverloadColor[4] = { 1.0f, 0.3f, 0.3f, 0.9f };
+        static const AZ::Color headerColor{ 1.0f, 1.0f, 1.0f, 0.9f };
+        static const AZ::Color itemActiveColor{ 0.3f, 0.6f, 0.3f, 0.9f };
+        static const AZ::Color itemInactiveColor{ 0.8f, 0.8f, 0.8f, 0.9f };
+        static const AZ::Color overloadColor{ 1.0f, 0.3f, 0.3f, 0.9f };
 
+        AZStd::string str;
         size_t activeObjects = 0;
         size_t aliveObjects = m_cAudioObjects.size();
         size_t remainingObjects = (m_cObjectPool.m_nReserveSize > aliveObjects ? m_cObjectPool.m_nReserveSize - aliveObjects : 0);
         const float fHeaderPosY = fPosY;
-
+        const float textSize = 0.8f;
         fPosX += 20.0f;
         fPosY += 17.0f;
 
@@ -1804,17 +1808,12 @@ namespace Audio
                 SATLSoundPropagationData propData;
                 audioObject->GetObstOccData(propData);
 
-                rAuxGeom.Draw2dLabel(fPosX, fPosY, 1.6f,
-                    hasActiveEvents ? fItemActiveColor : fItemInactiveColor,
-                    false,
+                str = AZStd::string::format(
                     "[%.2f  %.2f  %.2f] (ID: %llu  Obst: %.2f  Occl: %.2f): %s",
-                    static_cast<float>(position.GetX()),
-                    static_cast<float>(position.GetY()),
-                    static_cast<float>(position.GetZ()),
-                    audioObject->GetID(),
-                    propData.fObstruction,
-                    propData.fOcclusion,
-                    audioObjectName.c_str());
+                    position.GetX(), position.GetY(), position.GetZ(), audioObject->GetID(),
+                    propData.fObstruction, propData.fOcclusion, audioObjectName.c_str());
+                debugDisplay.SetColor(hasActiveEvents ? itemActiveColor : itemInactiveColor);
+                debugDisplay.Draw2dTextLabel(fPosX, fPosY, textSize, str.c_str());
 
                 fPosY += 16.0f;
             }
@@ -1827,18 +1826,11 @@ namespace Audio
 
         static const char* headerFormat = "Audio Objects [Active : %3zu | Alive: %3zu | Pool: %3zu | Remaining: %3zu]";
         const bool overloaded = (m_cAudioObjects.size() > m_cObjectPool.m_nReserveSize);
-
-        rAuxGeom.Draw2dLabel(
-            fPosX,
-            fHeaderPosY,
-            1.6f,
-            overloaded ? fOverloadColor : fHeaderColor,
-            false,
-            headerFormat,
-            activeObjects,
-            aliveObjects,
-            m_cObjectPool.m_nReserveSize,
-            remainingObjects);
+        str = AZStd::string::format(
+            "Audio Objects [Active : %3zu | Alive: %3zu | Pool: %3zu | Remaining: %3zu]",
+            activeObjects, aliveObjects, m_cObjectPool.m_nReserveSize, remainingObjects);
+        debugDisplay.SetColor(overloaded ? overloadColor : headerColor);
+        debugDisplay.Draw2dTextLabel(fPosX, fHeaderPosY, textSize, str.c_str());
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1863,7 +1855,7 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CAudioListenerManager::DrawDebugInfo(IRenderAuxGeom& rAuxGeom) const
+    void CAudioListenerManager::DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         static const AZ::Color audioListenerColor(0.2f, 0.6f, 0.9f, 0.9f);
         static const AZ::Color xAxisColor(1.f, 0.f, 0.f, 0.9f);
@@ -1874,24 +1866,18 @@ namespace Audio
         {
             AZ::Vector3 vListenerPos = m_pDefaultListenerObject->oPosition.GetPositionVec();
 
-            const SAuxGeomRenderFlags previousAuxGeomRenderFlags = rAuxGeom.GetRenderFlags();
-            SAuxGeomRenderFlags newAuxGeomRenderFlags(e_Def3DPublicRenderflags | e_AlphaBlended);
-            newAuxGeomRenderFlags.SetCullMode(e_CullModeNone);
-            rAuxGeom.SetRenderFlags(newAuxGeomRenderFlags);
-
             // Draw Axes...
-            rAuxGeom.DrawLine(AZVec3ToLYVec3(vListenerPos), AZColorToLYColorB(xAxisColor),
-                AZVec3ToLYVec3(vListenerPos + m_pDefaultListenerObject->oPosition.GetRightVec()), AZColorToLYColorB(xAxisColor));
-            rAuxGeom.DrawLine(AZVec3ToLYVec3(vListenerPos), AZColorToLYColorB(yAxisColor),
-                AZVec3ToLYVec3(vListenerPos + m_pDefaultListenerObject->oPosition.GetForwardVec()), AZColorToLYColorB(yAxisColor));
-            rAuxGeom.DrawLine(AZVec3ToLYVec3(vListenerPos), AZColorToLYColorB(zAxisColor),
-                AZVec3ToLYVec3(vListenerPos + m_pDefaultListenerObject->oPosition.GetUpVec()), AZColorToLYColorB(zAxisColor));
+            debugDisplay.SetColor(xAxisColor);
+            debugDisplay.DrawLine(vListenerPos, vListenerPos + m_pDefaultListenerObject->oPosition.GetRightVec());
+            debugDisplay.SetColor(yAxisColor);
+            debugDisplay.DrawLine(vListenerPos, vListenerPos + m_pDefaultListenerObject->oPosition.GetForwardVec());
+            debugDisplay.SetColor(zAxisColor);
+            debugDisplay.DrawLine(vListenerPos, vListenerPos + m_pDefaultListenerObject->oPosition.GetUpVec());
 
             // Draw Sphere...
-            const float radius = 0.15f; // 0.15 meters
-            rAuxGeom.DrawSphere(AZVec3ToLYVec3(vListenerPos), radius, AZColorToLYColorB(audioListenerColor));
-
-            rAuxGeom.SetRenderFlags(previousAuxGeomRenderFlags);
+            const float radius = 0.05f; // 0.15 meters
+            debugDisplay.SetColor(audioListenerColor);
+            debugDisplay.DrawWireSphere(vListenerPos, radius);
         }
     }
 

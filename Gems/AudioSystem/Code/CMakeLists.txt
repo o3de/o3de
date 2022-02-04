@@ -34,6 +34,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
+            AZ::AtomCore
+            Gem::Atom_RPI.Public
 )
 
 ly_add_target(

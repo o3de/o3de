@@ -24,7 +24,10 @@
 #include <SoundCVars.h>
 #include <AudioSystem_Traits_Platform.h>
 
-#include <IRenderAuxGeom.h>
+#if !defined(AUDIO_RELEASE)
+    // Debug Draw
+    #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#endif // !AUDIO_RELEASE
 
 namespace Audio
 {
@@ -344,35 +347,30 @@ namespace Audio
 
 #if !defined(AUDIO_RELEASE)
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void CFileCacheManager::DrawDebugInfo(IRenderAuxGeom& auxGeom, const float posX, const float posY)
+    void CFileCacheManager::DrawDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, const float posX, const float posY)
     {
         if (CVars::s_debugDrawOptions.AreAllFlagsActive(DebugDraw::Options::FileCacheInfo))
         {
             const auto frameTime = AZStd::chrono::system_clock::now();
 
-            const float entryDrawSize = 1.5f;
+            const float entryDrawSize = 0.8f;
             const float entryStepSize = 15.0f;
             float positionY = posY + 20.0f;
             float positionX = posX + 20.0f;
             float time = 0.0f;
             float ratio = 0.0f;
             float originalAlpha = 0.7f;
-            float* color = nullptr;
 
             // The colors.
-            float white[4] = { 1.0f, 1.0f, 1.0f, originalAlpha };
-            float cyan[4] = { 0.0f, 1.0f, 1.0f, originalAlpha };
-            float orange[4] = { 1.0f, 0.5f, 0.0f, originalAlpha };
-            float green[4] = { 0.0f, 1.0f, 0.0f, originalAlpha };
-            float red[4] = { 1.0f, 0.0f, 0.0f, originalAlpha };
-            float redish[4] = { 0.7f, 0.0f, 0.0f, originalAlpha };
-            float blue[4] = { 0.1f, 0.2f, 0.8f, originalAlpha };
-            float yellow[4] = { 1.0f, 1.0f, 0.0f, originalAlpha };
-            float darkish[4] = { 0.3f, 0.3f, 0.3f, originalAlpha };
-
-            auxGeom.Draw2dLabel(posX, positionY, 1.6f, orange, false,
-                "FileCacheManager (%zu of %zu KiB) [Entries: %zu]", m_currentByteTotal >> 10, m_maxByteTotal >> 10, m_audioFileEntries.size());
-            positionY += 15.0f;
+            AZ::Color white{ 1.0f, 1.0f, 1.0f, originalAlpha };     // file is use-counted
+            AZ::Color cyan{ 0.0f, 1.0f, 1.0f, originalAlpha };      // file is global scope
+            AZ::Color orange{ 1.0f, 0.5f, 0.0f, originalAlpha };    // header color
+            AZ::Color green{ 0.0f, 1.0f, 0.0f, originalAlpha };     // file is removable
+            AZ::Color red{ 1.0f, 0.0f, 0.0f, originalAlpha };       // memory allocation failed
+            AZ::Color redish{ 0.7f, 0.0f, 0.0f, originalAlpha };    // file not found
+            AZ::Color blue{ 0.1f, 0.2f, 0.8f, originalAlpha };      // file is loading
+            AZ::Color yellow{ 1.0f, 1.0f, 0.0f, originalAlpha };    // file is level scope
+            AZ::Color darkish{ 0.3f, 0.3f, 0.3f, originalAlpha };   // file is not loaded
 
             const bool displayAll = CVars::s_fcmDrawOptions.GetRawFlags() == 0;
             const bool displayGlobals = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Global);
@@ -380,8 +378,18 @@ namespace Audio
             const bool displayUseCounted = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::UseCounted);
             const bool displayLoaded = CVars::s_fcmDrawOptions.AreAllFlagsActive(FileCacheManagerDebugDraw::Options::Loaded);
 
+            // The text
+            AZStd::string str = AZStd::string::format(
+                "File Cache Mgr (%zu of %zu KiB) [Total Entries: %zu]", m_currentByteTotal >> 10, m_maxByteTotal >> 10,
+                m_audioFileEntries.size());
+            debugDisplay.SetColor(orange);
+            debugDisplay.Draw2dTextLabel(posX, positionY, entryDrawSize, str.c_str());
+            positionY += entryStepSize;
+
             for (auto& audioFileEntryPair : m_audioFileEntries)
             {
+                AZ::Color& color = white;
+
                 CATLAudioFileEntry* const audioFileEntry = audioFileEntryPair.second;
 
                 bool isGlobal = (audioFileEntry->m_dataScope == eADS_GLOBAL);
@@ -403,7 +411,7 @@ namespace Audio
                     {
                         color = green;
                     }
-                    else if (!audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_CACHED))
+                    else if (!isLoaded)
                     {
                         color = darkish;
                     }
@@ -419,17 +427,14 @@ namespace Audio
                     {
                         color = yellow;
                     }
-                    else  // isUseCounted
-                    {
-                        color = white;
-                    }
+                    //else  isUseCounted
 
                     using duration_sec = AZStd::chrono::duration<float>;
                     time = AZStd::chrono::duration_cast<duration_sec>(frameTime - audioFileEntry->m_timeCached).count();
 
                     ratio = time / 5.0f;
-                    originalAlpha = color[3];
-                    color[3] *= AZ::GetClamp(ratio, 0.2f, 1.0f);
+                    originalAlpha = color.GetA();
+                    color.SetA(originalAlpha * AZ::GetClamp(ratio, 0.2f, 1.0f));
 
                     bool kiloBytes = false;
                     size_t fileSize = audioFileEntry->m_fileSize;
@@ -440,14 +445,13 @@ namespace Audio
                     }
 
                     // Format: "relative/path/filename.ext (230 KiB) [2]"
-                    auxGeom.Draw2dLabel(positionX, positionY, entryDrawSize, color, false,
-                        "%s (%zu %s) [%zu]",
-                        audioFileEntry->m_filePath.c_str(),
-                        fileSize,
-                        kiloBytes ? "KiB" : "Bytes",
+                    str = AZStd::string::format(
+                        "%s (%zu %s) [%zu]", audioFileEntry->m_filePath.c_str(), fileSize, kiloBytes ? "KiB" : "Bytes",
                         audioFileEntry->m_useCount);
+                    debugDisplay.SetColor(color);
+                    debugDisplay.Draw2dTextLabel(positionX, positionY, entryDrawSize, str.c_str());
 
-                    color[3] = originalAlpha;
+                    color.SetA(originalAlpha);
                     positionY += entryStepSize;
                 }
             }

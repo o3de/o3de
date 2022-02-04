@@ -16,6 +16,11 @@
 
 #include <ISystem.h>
 
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
+
 namespace Audio
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -171,9 +176,9 @@ namespace Audio
         const CATLDebugNameStore& GetDebugStore() const { return m_oDebugNameStore; }
 
     private:
-        void DrawAudioObjectDebugInfo(IRenderAuxGeom& auxGeom);
-        void DrawATLComponentDebugInfo(IRenderAuxGeom& auxGeom, float fPosX, const float fPosY);
-        void DrawImplMemoryPoolDebugInfo(IRenderAuxGeom& auxGeom, float fPosX, float fPosY);
+        void DrawAudioObjectDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay);
+        void DrawATLComponentDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float posX, float posY);
+        void DrawImplMemoryPoolDebugInfo(AzFramework::DebugDisplayRequests& debugDisplay, float posX, float posY);
 
         CATLDebugNameStore m_oDebugNameStore;
         AZStd::string m_implementationName;
