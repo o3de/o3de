@@ -16,6 +16,8 @@
 #include <viewsrg.srgi>
 #include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
 #include <Atom/Features/Shadow/NormalOffsetShadows.azsli>
+#include <Atom/Features/Shadow/BicubicPcfFilters.azsli>
+
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
@@ -28,6 +30,20 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
+
+    // Hardware PCF comparison sampler that is used when sampling the shadow maps
+    SamplerComparisonState m_hwPcfSampler
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+        MagFilter = Linear;
+        MinFilter = Linear;
+        MipFilter = Point;
+        ComparisonFunc = Less;
+        MaxAnisotropy = 16;
+        ReductionType = Comparison;
+    };    
     
     struct Constants
     {
@@ -98,7 +114,7 @@ class DirectionalLightShadow
         return bool2(false, false);
     }
     
-    float GetVisibilityFromLightNoFilter(float2 screenUv)
+    float GetVisibilityFromLightNoFilter()
     {       
         const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
         for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
@@ -115,8 +131,89 @@ class DirectionalLightShadow
         // m_debugInfo.m_cascadeIndex = cascadeCount;
         return 1.;
     }    
-    
-    
+
+    float SamplePcfBicubic(float3 shadowCoord, uint indexOfCascade)
+    {
+        const uint filteringSampleCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount;
+        const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+        
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
+
+        SampleShadowMapBicubicParameters param;
+        param.shadowMap = shadowmap;
+        param.shadowPos = float3(shadowCoord.xy, indexOfCascade);
+        param.shadowMapSize = size;
+        param.invShadowMapSize = rcp(size); 
+        param.comparisonValue = shadowCoord.z;
+        param.samplerState = PassSrg::m_hwPcfSampler;
+        param.receiverPlaneDepthBias = 0;//o_directional_shadow_receiver_plane_bias_enable ? ComputeReceiverPlaneDepthBias(m_shadowPosDX[indexOfCascade], m_shadowPosDY[indexOfCascade]) : 0;
+        
+        [branch]     
+        if (filteringSampleCount <= 4)       
+        {
+            return SampleShadowMapBicubic_4Tap(param);
+        }
+        else if (filteringSampleCount <= 9)
+        {
+            return SampleShadowMapBicubic_9Tap(param);
+        }
+        else
+        {
+            return SampleShadowMapBicubic_16Tap(param);
+        }
+    }
+     
+    float GetVisibilityFromLightPcf()
+    {   
+        static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
+        static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
+
+        bool cascadeFound = false;
+        int currentCascadeIndex = 0;
+
+        const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+        {
+            const float3 shadowCoord = m_shadowCoords[indexOfCascade];
+            
+            if (shadowCoord.x >= 0. && shadowCoord.x * size < size - PixelMargin &&
+                shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
+                shadowCoord.z < 1. - DepthMargin)
+            {
+//                currentCascadeIndex = m_debugInfo.m_cascadeIndex = indexOfCascade;
+                currentCascadeIndex = indexOfCascade;
+                cascadeFound = true;
+                break;
+            }
+        }
+
+        [branch]
+        if (cascadeFound)
+        {
+            float lit = SamplePcfBicubic(m_shadowCoords[currentCascadeIndex], currentCascadeIndex);
+            /*
+            if(o_blend_between_cascades_enable) 
+            {  
+                const float blendBetweenCascadesAmount = CalculateCascadeBlendAmount(m_shadowCoords[currentCascadeIndex].xyz);
+
+                const int nextCascadeIndex = currentCascadeIndex + 1;
+                [branch]
+                if (blendBetweenCascadesAmount < 1.0f && nextCascadeIndex < cascadeCount)
+                {
+                    const float nextLit = SamplePcfBicubic(m_shadowCoords[nextCascadeIndex], nextCascadeIndex);
+                    lit = lerp(nextLit, lit, blendBetweenCascadesAmount);             
+                }
+            } 
+*/
+            return lit;
+        }
+
+   //     m_debugInfo.m_cascadeIndex = cascadeCount;
+        return 1.;
+    } 
+        
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount];
     float m_slopeBias[ViewSrg::MaxCascadeCount];
     uint m_lightIndex;
@@ -142,7 +239,7 @@ PSOutput MainPS(VSOutput IN)
     const float3 worldNormal = float3(0,0,1);
     
     directionalLightShadow.GetShadowCoords(lightIndex, surfacePosWS, worldNormal, directionalLightShadow.m_shadowCoords);
-    float shadow = directionalLightShadow.GetVisibilityFromLightNoFilter(IN.m_position.xy);
+    float shadow = directionalLightShadow.GetVisibilityFromLightPcf(); // GetVisibilityFromLightNoFilter
     
     PSOutput OUT;
     OUT.m_color.rgb = shadow;

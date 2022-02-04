@@ -38,20 +38,6 @@ namespace AZ
             FullscreenTrianglePass::CompileResources(context);
         }
 
-        //void FullscreenShadowPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
-        //{
-        //    // Dispatch one compute shader thread per depth buffer pixel. These threads are divided into thread-groups that analyze one tile. (Typically 16x16 pixel tiles)
-        //    RHI::CommandList* commandList = context.GetCommandList();
-        //    SetSrgsForDispatch(commandList);
-
-        ////    RHI::Size resolution = GetDepthBufferDimensions();
-
-        //    //m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = resolution.m_width;
-        //    //m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = resolution.m_height;
-        //    //m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
-        //    //commandList->Submit(m_dispatchItem);
-        //}
-
         RPI::PassAttachmentBinding FullscreenShadowPass::GetPassAttachmentBinding(AZ::Name name)
         {
             for (unsigned int i = 0; i < GetInputCount(); ++i)
@@ -59,10 +45,6 @@ namespace AZ
                 auto b = GetInputBinding(i);
                 if (b.m_name == name)
                     return b;
-
-                //auto n = b.m_name;
-                //const char* c = n.GetCStr();
-                //AZ_Printf("MKR", "Input %s\n", c);
             }
 
             for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
@@ -70,9 +52,6 @@ namespace AZ
                 auto b = GetInputOutputBinding(i);
                 if (b.m_name == name)
                     return b;
-
-                //const char* c = n.GetCStr();
-                //AZ_Printf("MKR", "InotuputOutp %s\n", c);
             }
 
             for (unsigned int i = 0; i < GetOutputCount(); ++i)
@@ -86,30 +65,6 @@ namespace AZ
 
         AZ::RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
         {
-            //for (unsigned int i = 0; i < GetInputCount() ; ++i)
-            //{
-            //    auto b = GetInputBinding(i);
-            //    auto n = b.m_name;
-            //    const char* c = n.GetCStr();
-            //    AZ_Printf("MKR", "Input %s\n", c);
-            //}
-
-            //for (unsigned int i = 0; i < GetInputOutputCount(); ++i)
-            //{
-            //    auto b = GetInputOutputBinding(i);
-            //    auto n = b.m_name;
-            //    const char* c = n.GetCStr();
-            //    AZ_Printf("MKR", "InotuputOutp %s\n", c);
-            //}
-
-            //for (unsigned int i = 0; i < GetOutputCount(); ++i)
-            //{
-            //    auto b = GetOutputBinding(i);
-            //    auto n = b.m_name;
-            //    const char* c = n.GetCStr();
-            //    AZ_Printf("MKR", "output %s\n", c);
-            //}
-
             auto outputBinding = GetPassAttachmentBinding(AZ::Name("Output"));
             auto outputDim = outputBinding.m_attachment->m_descriptor.m_image.m_size;
             AZ_Assert(outputDim.m_width > 0 && outputDim.m_height > 0, "Height and width are not valid\n");
