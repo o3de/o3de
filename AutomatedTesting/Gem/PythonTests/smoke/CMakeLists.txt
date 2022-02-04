@@ -45,4 +45,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AutomatedTesting.Assets
     )
 
+    ly_add_pytest(
+        NAME AutomatedTesting::SmokeTest_Sandbox
+        TEST_SUITE sandbox
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}
+        PYTEST_MARKS "SUITE_sandbox"
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+    )
+
 endif()
