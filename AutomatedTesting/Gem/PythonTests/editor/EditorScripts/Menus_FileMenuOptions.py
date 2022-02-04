@@ -29,21 +29,20 @@ def Menus_FileMenuOptions_Work():
     import editor_python_test_tools.hydra_editor_utils as hydra
     import editor_python_test_tools.pyside_utils as pyside_utils
     from editor_python_test_tools.utils import Report
-    import azlmbr.legacy.general as general
 
     file_menu_options = [
         ("New Level",),
         ("Open Level",),
         ("Import",),
-        #("Save",),
-        #("Save As",),
-        #("Save Level Statistics",),
-        #("Edit Project Settings",),
-        #("Edit Platform Settings",),
-        #("New Project",),
-        #("Open Project",),
-        #("Show Log File",),
-        #("Exit",),
+        ("Save",),
+        ("Save As",),
+        ("Save Level Statistics",),
+        ("Edit Project Settings",),
+        ("Edit Platform Settings",),
+        ("New Project",),
+        ("Open Project",),
+        ("Show Log File",),
+        ("Exit",),
     ]
 
     # 1) Open an existing simple level
@@ -64,9 +63,8 @@ def Menus_FileMenuOptions_Work():
             f"{action.iconText()} action triggered successfully",
             f"Failed to trigger {action.iconText()} action"
         )
-        general.idle_wait_frames(1)
         Report.result(menu_action_triggered, action_triggered)
-        general.idle_wait_frames(1)
+
 
 if __name__ == "__main__":
 
