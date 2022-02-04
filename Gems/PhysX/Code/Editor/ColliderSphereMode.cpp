@@ -8,6 +8,7 @@
 
 #include "ColliderSphereMode.h"
 #include <PhysX/EditorColliderComponentRequestBus.h>
+#include <Source/Utils.h>
 
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -25,27 +26,15 @@ namespace PhysX
     static const float MinSphereRadius = 0.01f;
     static const AZ::Vector3 ManipulatorAxis = AZ::Vector3::CreateAxisX();
 
-    AZ::Transform GetColliderLocalTransform(const AZ::EntityComponentIdPair& idPair)
-    {
-        AZ::Quaternion colliderRotation = AZ::Quaternion::CreateIdentity();
-        PhysX::EditorColliderComponentRequestBus::EventResult(colliderRotation, idPair, &PhysX::EditorColliderComponentRequests::GetColliderRotation);
-
-        AZ::Vector3 colliderOffset = AZ::Vector3::CreateZero();
-        PhysX::EditorColliderComponentRequestBus::EventResult(colliderOffset, idPair, &PhysX::EditorColliderComponentRequests::GetColliderOffset);
-
-        return AZ::Transform::CreateFromQuaternionAndTranslation(colliderRotation, colliderOffset);
-    }
-
     void ColliderSphereMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         AZ::Transform colliderWorldTransform = AZ::Transform::Identity();
         AZ::TransformBus::EventResult(colliderWorldTransform, idPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        //PhysX::EditorColliderComponentRequestBus::EventResult(colliderWorldTransform, idPair, &PhysX::EditorColliderComponentRequests::GetColliderWorldTransform);
 
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, idPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
 
-        const AZ::Transform colliderLocalTransform = GetColliderLocalTransform(idPair);
+        const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
 
         float sphereRadius = 0.0f;
         PhysX::EditorColliderComponentRequestBus::EventResult(sphereRadius, idPair, &PhysX::EditorColliderComponentRequests::GetSphereRadius);
@@ -54,7 +43,6 @@ namespace PhysX
         m_radiusManipulator->AddEntityComponentIdPair(idPair);
         m_radiusManipulator->SetAxis(ManipulatorAxis);
         m_radiusManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
-        //m_radiusManipulator->SetLocalPosition(ManipulatorAxis * sphereRadius);
         m_radiusManipulator->SetLocalTransform(colliderLocalTransform * AZ::Transform::CreateTranslation(ManipulatorAxis * sphereRadius));
         m_radiusManipulator->SetNonUniformScale(nonUniformScale);
         m_radiusManipulator->SetBoundsDirty();
@@ -75,13 +63,12 @@ namespace PhysX
     {
         AZ::Transform colliderWorldTransform = AZ::Transform::Identity();
         AZ::TransformBus::EventResult(colliderWorldTransform, idPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        //PhysX::EditorColliderComponentRequestBus::EventResult(colliderWorldTransform, idPair, &PhysX::EditorColliderComponentRequests::GetColliderWorldTransform);
         m_radiusManipulator->SetSpace(colliderWorldTransform);
 
         AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, idPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
 
-        const AZ::Transform colliderLocalTransform = GetColliderLocalTransform(idPair);
+        const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
 
         float sphereRadius = 0.0f;
         PhysX::EditorColliderComponentRequestBus::EventResult(sphereRadius, idPair, &PhysX::EditorColliderComponentRequests::GetSphereRadius);
@@ -114,9 +101,9 @@ namespace PhysX
             const AZ::EntityComponentIdPair idPair = *m_radiusManipulator->EntityComponentIdPairs().begin();
             float radius = 0.0f;
             PhysX::EditorColliderComponentRequestBus::EventResult(radius, idPair, &PhysX::EditorColliderComponentRequests::GetSphereRadius);
-            const AZ::Transform colliderLocalTransform = GetColliderLocalTransform(idPair);
+            const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
             m_radiusManipulator->SetAxis(cameraState.m_side);
-            m_radiusManipulator->SetLocalTransform(GetColliderLocalTransform(idPair) * AZ::Transform::CreateTranslation(cameraState.m_side * radius));
+            m_radiusManipulator->SetLocalTransform(colliderLocalTransform * AZ::Transform::CreateTranslation(cameraState.m_side * radius));
         }
     }
 
@@ -136,7 +123,7 @@ namespace PhysX
 
         // Update the manipulator and sphere radius
         m_radiusManipulator->SetLocalTransform(
-            GetColliderLocalTransform(idPair) * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
+            Utils::GetColliderLocalTransform(idPair) * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
         PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetSphereRadius, extent);
     }
 }
