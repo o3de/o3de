@@ -19,6 +19,12 @@
 #include <Atom/Features/Shadow/Shadow.azsli>
 #include <viewsrg.srgi>
 
+// This matchs ShadowFilterMethod in ShadowConstants.h
+enum class ShadowFilterMethod {None, Pcf, Esm, EsmPcf};
+option ShadowFilterMethod o_directional_shadow_filtering_method = ShadowFilterMethod::None;
+option bool o_directional_shadow_receiver_plane_bias_enable = true;
+option bool o_blend_between_cascades_enable = false;
+
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
@@ -313,32 +319,33 @@ PSOutput MainPS(VSOutput IN)
 
     const uint lightIndex = 0;
     float3 coord = 0;
-    float v = PassSrg::m_directionalLightShadowmap.Sample(PassSrg::LinearSampler, coord);
     const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
     const float zDepth = PassSrg::m_depth.Sample(PassSrg::LinearSampler, IN.m_texCoord);
 
     float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_constantData.m_screenSize, zDepth, IN.m_position.xy).xyz;
     
     const float3 worldNormal = float3(0,0,1);
-    
+    float lit = 1;
     directionalLightShadow.GetShadowCoords(lightIndex, surfacePosWS, worldNormal, directionalLightShadow.m_shadowCoords);
-    float shadow = directionalLightShadow.GetVisibilityFromLightNoFilter();
-    if (IN.m_texCoord.x > 0.5  && IN.m_texCoord.y < 0.5)
+    
+    switch(o_directional_shadow_filtering_method)
     {
-        shadow = directionalLightShadow.GetVisibilityFromLightPcf();
-    }
-    if (IN.m_texCoord.x < 0.5 && IN.m_texCoord.y > 0.5)
-    {
-        shadow = directionalLightShadow.GetVisibilityFromLightEsm();
-    }
-    if (IN.m_texCoord.x > 0.5 && IN.m_texCoord.y > 0.5)
-    {
-        shadow = directionalLightShadow.GetVisibilityFromLightEsmPcf();
+        case ShadowFilterMethod::None:
+            lit = directionalLightShadow.GetVisibilityFromLightNoFilter();
+            break;
+        case ShadowFilterMethod::Pcf:
+            lit = directionalLightShadow.GetVisibilityFromLightPcf();
+            break;
+        case ShadowFilterMethod::Esm:
+            lit = directionalLightShadow.GetVisibilityFromLightEsm();
+            break;
+        case ShadowFilterMethod::EsmPcf:
+            lit = directionalLightShadow.GetVisibilityFromLightEsmPcf();
+            break;
     }
     
     PSOutput OUT;   
-    OUT.m_color.rgb = shadow;
-
+    OUT.m_color.rgb = lit;
     return OUT; 
 }
 
