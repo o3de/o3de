@@ -304,9 +304,15 @@ endfunction()
 function(o3de_pal_dir out_name in_name object_restricted_path object_path) #parent_relative_path)
     set(full_name ${in_name})
 
+    cmake_path(NORMAL_PATH full_name)
+    cmake_path(NORMAL_PATH object_restricted_path)
+
     # parent relative path is optional
     if(${ARGC} GREATER 4)
         set(parent_relative_path ${ARGV4})
+        if(parent_relative_path)
+            cmake_path(NORMAL_PATH parent_relative_path)
+        endif()
     endif()
 
     # The input path must not exist in order to form a restricted PAL path
