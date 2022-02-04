@@ -17,6 +17,7 @@
 #include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
 #include <Atom/Features/Shadow/NormalOffsetShadows.azsli>
 #include <Atom/Features/Shadow/BicubicPcfFilters.azsli>
+#include <Atom/Features/Shadow/Shadow.azsli>
 
 
 ShaderResourceGroup PassSrg : SRG_PerPass
@@ -52,6 +53,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     
     Constants m_constantData;
     Texture2DArray<float> m_directionalLightShadowmap;   
+    Texture2DArray<float> m_directionalLightExponentialShadowmap;    
     Texture2D<float> m_depth;
 }
 
@@ -219,6 +221,39 @@ class DirectionalLightShadow
         m_debugInfo.m_cascadeIndex = cascadeCount;
         return 1.;
     } 
+            
+    float GetVisibilityFromLightEsm()
+    {
+        const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
+        Texture2DArray<float> expShadowmap = PassSrg::m_directionalLightExponentialShadowmap;
+
+        for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
+        {
+            const float3 shadowCoord = m_shadowCoords[indexOfCascade];
+            const float distanceMin = ViewSrg::m_esmsDirectional[indexOfCascade].m_lightDistanceOfCameraViewFrustum;
+            bool2 checkedShadowed = IsShadowed(shadowCoord, indexOfCascade);
+            const float depthDiff = shadowCoord.z - distanceMin;
+        
+            [branch]
+            if (checkedShadowed.x && depthDiff >= 0)
+            {
+                const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
+                const float3 coord = float3(shadowCoord.xy, indexOfCascade);
+                const float occluder = expShadowmap.Sample(PassSrg::LinearSampler, coord).r;                        
+                const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
+                const float ratio = exp(exponent);
+
+                m_debugInfo.m_cascadeIndex = indexOfCascade;
+                return saturate(ratio);
+            }
+        }
+
+        m_debugInfo.m_cascadeIndex = cascadeCount;
+        return 1.;
+    }
+
         
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount];
     float m_slopeBias[ViewSrg::MaxCascadeCount];
