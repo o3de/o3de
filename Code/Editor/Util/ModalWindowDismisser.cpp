@@ -14,6 +14,7 @@
 
 // Qt
 #include <QDialog>
+#include <QFileDialog>
 #include <QTimer>
 
 ModalWindowDismisser::ModalWindowDismisser()
@@ -35,17 +36,22 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
     {
         if (dialog->isModal())
         {
-            // if we wait until a PolishRequest event arrives, we can be sure the dialog is fully open
-            // and that close() will work correctly. However, for the Import FileDialog to work correctly
-            // there must be a delay on Jenkins. I have tried to remove this SingleShot but nothing seems
-            // to make the closing of dialogs happen consistently without it.
-            if (event->type() == QEvent::PolishRequest)
+            // if we wait until a Polish event arrives, we can be sure the dialog is fully open
+            // and that close() will work correctly.
+            if (event->type() == QEvent::Paint)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
                 if (it == m_windows.end())
                 {
                     m_windows.push_back(dialog);
-                    QTimer::singleShot(2, this, [dialog](){ dialog->close(); });
+                }
+                if (QFileDialog* dialog2 = qobject_cast<QFileDialog*>(object))
+                {
+                    QTimer::singleShot(5, this, [dialog2](){dialog2->close();});
+                }
+                else
+                {
+                    dialog->close();
                 }
             }
             else if (event->type() == QEvent::Close)
