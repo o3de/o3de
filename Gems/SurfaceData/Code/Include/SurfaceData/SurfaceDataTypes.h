@@ -27,6 +27,12 @@ namespace SurfaceData
     class SurfaceTagWeights
     {
     public:
+        //! The maximum number of surface weights that we can store.
+        //! For performance reasons, we want to limit this so that we can preallocate the max size in advance.
+        //! The current number is chosen to be higher than expected needs, but small enough to avoid being excessively wasteful.
+        //! (Dynamic structures would end up taking more memory than what we're preallocating)
+        static inline constexpr size_t MaxSurfaceWeights = 16;
+
         SurfaceTagWeights() = default;
 
         //! Construct a collection of SurfaceTagWeights from the given SurfaceTagWeightList.
@@ -44,11 +50,6 @@ namespace SurfaceData
         //! @param tags - The list of tags to assign to this instance.
         //! @param weight - The weight to assign to each tag.
         void AssignSurfaceTagWeights(const SurfaceTagVector& tags, float weight);
-
-        //! Add a surface tag weight to this collection.
-        //! @param tag - The surface tag.
-        //! @param weight - The surface tag weight.
-        void AddSurfaceTagWeight(const AZ::Crc32 tag, const float weight);
 
         //! Replace the surface tag weight with the new one if it's higher, or add it if the tag isn't found.
         //! (This method is intentionally inlined for its performance impact)
