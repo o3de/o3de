@@ -216,6 +216,65 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPos
     }
 }
 
+void TerrainSystem::MakeBulkQueries(
+    const AZStd::span<AZ::Vector3> inPositions,
+    AZStd::span<AZ::Vector3> outPositions,
+    AZStd::span<bool> outTerrainExists,
+    AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
+    BulkQueriesCallback queryCallback) const
+{
+    AZ::Aabb bounds;
+    AZ::EntityId prevAreaId = FindBestAreaEntityAtPosition(inPositions[0].GetX(), inPositions[0].GetY(), bounds);
+    
+    // We use a sliding window here and update the window end for each
+    // position that falls in the same area as the previous positions. This consumes lesser memory
+    // than sorting the points into separate lists and handling putting them back together.
+    // This may be sub optimal if the points are randomly distributed in the list as opposed
+    // to points in the same area id being close to each other.
+    size_t windowStart = 0;
+    size_t windowEnd = 0;
+    const size_t numPositions = inPositions.size();
+    for(int i = 1; i < numPositions; i++)
+    {
+        AZ::EntityId areaId = FindBestAreaEntityAtPosition(inPositions[i].GetX(), inPositions[i].GetY(), bounds);
+        bool queryHeights = false;
+        if (areaId == prevAreaId)
+        {
+            // Update window end to current position.
+            // If it's the last position, submit the query.
+            windowEnd = i;
+            if (windowEnd == numPositions - 1)
+            {
+                queryHeights = true;
+            }
+        }
+        else
+        {
+            queryHeights = true;
+        }
+
+        if (queryHeights)
+        {
+            // If the area id is a default entity id, it usually means the
+            // position is outside world bounds.
+            if (prevAreaId != AZ::EntityId())
+            {
+                size_t spanLength = (windowEnd - windowStart) + 1;
+                queryCallback(AZStd::span<AZ::Vector3>(inPositions.begin() + windowStart, spanLength),
+                    AZStd::span<AZ::Vector3>(outPositions.begin() + windowStart, spanLength),
+                    AZStd::span<bool>(outTerrainExists.begin() + windowStart, spanLength),
+                    AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList>(outSurfaceWeights.begin() + windowStart, spanLength),
+                    prevAreaId);
+            }
+
+            // Reset the window to start at the current position. Set the new area
+            // id on which to run the next query.
+            windowStart = windowEnd = i;
+            prevAreaId = areaId;
+        }   
+    }
+}
+
 void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<float> heights, AZStd::span<bool> terrainExists) const
 {
@@ -242,52 +301,21 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
 
     GenerateQueryPositions(inPositions, outPositions, sampler, indexStepSize);
 
-    AZ::Aabb bounds;
-    AZ::EntityId prevAreaId = FindBestAreaEntityAtPosition(outPositions[0].GetX(), outPositions[0].GetY(), bounds);
-    
-    // We use a sliding window here and update the window end for each
-    // position that falls in the same area as the previous positions. This consumes lesser memory
-    // than sorting the points into separate lists and handling putting them back together.
-    // This may be sub optimal if the points are randomly distributed in the list as opposed
-    // to points in the same area id being close to each other.
-    size_t windowStart = 0;
-    size_t windowEnd = 0;
-    const size_t numPositions = outPositions.size();
-    for(int i = 1; i < numPositions; i++)
-    {
-        AZ::EntityId areaId = FindBestAreaEntityAtPosition(outPositions[i].GetX(), outPositions[i].GetY(), bounds);
-        bool queryHeights = false;
-        if (areaId == prevAreaId)
-        {
-            // Update window end to current position.
-            // If it's the last position, submit the query.
-            windowEnd = i;
-            if (windowEnd == numPositions - 1)
-            {
-                queryHeights = true;
-            }
-        }
-        else
-        {
-            queryHeights = true;
-        }
+    auto callback = [](const AZStd::span<AZ::Vector3> inPositions,
+                        AZStd::span<AZ::Vector3> outPositions,
+                        AZStd::span<bool> outTerrainExists,
+                        [[maybe_unused]] AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
+                        AZ::EntityId areaId)
+                        {
+                            AZ_Assert((inPositions.size() == outPositions.size() && inPositions.size() == outTerrainExists.size()),
+                                "The sizes of the terrain exists list and in/out positions list should match.");
+                            Terrain::TerrainAreaHeightRequestBus::Event(areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights,
+                                outPositions, outTerrainExists);
+                        };
 
-        if (queryHeights)
-        {
-            if (prevAreaId != AZ::EntityId())
-            {
-                size_t spanLength = (windowEnd - windowStart) + 1;
-                Terrain::TerrainAreaHeightRequestBus::Event(prevAreaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights,
-                    AZStd::span<AZ::Vector3>(outPositions.begin() + windowStart, spanLength),
-                    AZStd::span<bool>(outTerrainExists.begin() + windowStart, spanLength));
-            }
-
-            // Reset the window to start at the current position. Set the new area
-            // id on which to run the next query.
-            windowStart = windowEnd = i;
-            prevAreaId = areaId;
-        }   
-    }
+    // This will be unused for heights. It's fine if it's empty.
+    AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights;
+    MakeBulkQueries(outPositions, outPositions, outTerrainExists, outSurfaceWeights, callback);
 
     // Compute/store the final result
     for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
@@ -647,6 +675,34 @@ AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::A
     }
 
     return AZ::EntityId();
+}
+
+void TerrainSystem::GetOrderedSurfaceWeightsFromList(
+    const AZStd::span<AZ::Vector3>& inPositions,
+    [[maybe_unused]] Sampler sampler,
+    AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
+    AZStd::span<bool> terrainExists) const
+{
+    {
+        AZStd::vector<float> heights(inPositions.size());
+        GetHeightsSynchronous(inPositions, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, heights, terrainExists);
+    }
+
+    auto callback = [](const AZStd::span<AZ::Vector3> inPositions,
+                        [[maybe_unused]] AZStd::span<AZ::Vector3> outPositions,
+                        [[maybe_unused]] AZStd::span<bool> outTerrainExists,
+                        AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
+                        AZ::EntityId areaId)
+                        {
+                            AZ_Assert(inPositions.size() == outSurfaceWeights.size(),
+                                "The sizes of the surface weights list and in/out positions list should match.");
+                            Terrain::TerrainAreaSurfaceRequestBus::Event(areaId, &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeightsFromList,
+                                inPositions, outSurfaceWeights);
+                        };
+    
+    // This will be unused for surface weights. It's fine if it's empty.
+    AZStd::vector<AZ::Vector3> outPositions;
+    MakeBulkQueries(inPositions, outPositions, terrainExists, outSurfaceWeightsList, callback);
 }
 
 void TerrainSystem::GetOrderedSurfaceWeights(
