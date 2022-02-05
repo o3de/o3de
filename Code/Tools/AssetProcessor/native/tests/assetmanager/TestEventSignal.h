@@ -14,12 +14,13 @@ namespace UnitTests
 {
     class TestEventPair
     {
+        AZStd::atomic_bool m_signaled{ false };
         AZStd::thread_id m_threadId;
         AZStd::binary_semaphore m_event;
 
     public:
         void Signal();
-        void WaitAndCheck();
+        bool WaitAndCheck();
     };
 
     enum TestEvents : int

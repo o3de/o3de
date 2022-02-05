@@ -21,57 +21,72 @@ namespace UnitTests
         return true;
     }
 
-    using ApplicationManagerTest = ::UnitTest::ScopedAllocatorSetupFixture;
-
-    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
+    void ApplicationManagerTest::SetUp()
     {
-        AZ::Test::ScopedAutoTempDirectory m_tempDir;
+        ScopedAllocatorSetupFixture::SetUp();
+        
         AZ::IO::Path tempDir(m_tempDir.GetDirectory());
-        DatabaseLocationListener m_databaseLocationListener;
         m_databaseLocationListener.m_databaseLocation = (tempDir / "test_database.sqlite").Native();
 
         // We need a QCoreApplication to run the event loop
         int argc = 0;
-        QCoreApplication app{ argc, nullptr };
+        m_coreApplication = AZStd::make_unique<QCoreApplication>(argc, nullptr);
 
-        MockBatchApplicationManager applicationManager(&argc, nullptr);
-        applicationManager.m_platformConfiguration = new AssetProcessor::PlatformConfiguration{ nullptr };
-        applicationManager.m_fileStateCache = AZStd::make_unique<AssetProcessor::FileStateCache>();
-        auto mockAPM = new MockAssetProcessorManager{ applicationManager.m_platformConfiguration, nullptr };
-        applicationManager.m_assetProcessorManager = mockAPM;
+        m_applicationManager = AZStd::make_unique<MockBatchApplicationManager>(&argc, nullptr);
+        m_applicationManager->m_platformConfiguration = new AssetProcessor::PlatformConfiguration{ nullptr };
+        m_applicationManager->m_fileStateCache = AZStd::make_unique<AssetProcessor::FileStateCache>();
 
-        QThread apmThread(nullptr);
-        applicationManager.m_assetProcessorManager->moveToThread(&apmThread);
-        apmThread.start();
+        m_mockAPM = AZStd::make_unique<MockAssetProcessorManager>(m_applicationManager->m_platformConfiguration, nullptr);
+        m_applicationManager->m_assetProcessorManager = m_mockAPM.get();
 
-        QThread fileProcessorThread(nullptr);
-        auto fileProcessor = AZStd::make_unique<MockFileProcessor>(applicationManager.m_platformConfiguration);
-        fileProcessor->moveToThread(&fileProcessorThread);
-        MockFileProcessor* mockFileProcessor = fileProcessor.get();
-        applicationManager.m_fileProcessor = AZStd::move(fileProcessor); // The manager is taking ownership
-        fileProcessorThread.start();
+        AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
+        m_applicationManager->m_platformConfiguration->EnablePlatform(AssetBuilderSDK::PlatformInfo{ "pc", { "tag" } });
+        m_applicationManager->m_platformConfiguration->PopulatePlatformsForScanFolder(platforms);
+        m_applicationManager->m_platformConfiguration->AddScanFolder(
+            AssetProcessor::ScanFolderInfo{ tempDir.c_str(), "test", "test", true, true, platforms });
+        
+        m_apmThread = AZStd::make_unique<QThread>(nullptr);
+        m_apmThread->setObjectName("APM Thread");
+        m_applicationManager->m_assetProcessorManager->moveToThread(m_apmThread.get());
+        m_apmThread->start();
+
+        m_fileProcessorThread = AZStd::make_unique<QThread>(nullptr);
+        m_fileProcessorThread->setObjectName("File Processor Thread");
+        auto fileProcessor = AZStd::make_unique<MockFileProcessor>(m_applicationManager->m_platformConfiguration);
+        fileProcessor->moveToThread(m_fileProcessorThread.get());
+        m_mockFileProcessor = fileProcessor.get();
+        m_applicationManager->m_fileProcessor = AZStd::move(fileProcessor); // The manager is taking ownership
+        m_fileProcessorThread->start();
 
         auto fileWatcher = AZStd::make_unique<FileWatcher>();
-        FileWatcher* mockFileWatcher = fileWatcher.get();
+        m_fileWatcher = fileWatcher.get();
 
         // This is what we're testing, it will set up connections between the fileWatcher and the 2 QObject handlers we'll check
-        applicationManager.InitFileMonitor(AZStd::move(fileWatcher)); // The manager is going to take ownership of the file watcher
+        m_applicationManager->InitFileMonitor(AZStd::move(fileWatcher)); // The manager is going to take ownership of the file watcher
+    }
 
-        Q_EMIT mockFileWatcher->fileAdded("test");
-        Q_EMIT mockFileWatcher->fileModified("test2");
-        Q_EMIT mockFileWatcher->fileRemoved("test3");
+    void ApplicationManagerTest::TearDown()
+    {
+        m_apmThread->exit();
+        m_fileProcessorThread->exit();
+        m_mockAPM = nullptr;
 
-        QCoreApplication::processEvents();
+        ScopedAllocatorSetupFixture::TearDown();
+    }
 
-        mockAPM->m_events[Added].WaitAndCheck();
-        mockAPM->m_events[Modified].WaitAndCheck();
-        mockAPM->m_events[Deleted].WaitAndCheck();
+    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
+    {
+        AZ::IO::Path tempDir(m_tempDir.GetDirectory());
 
-        mockFileProcessor->m_events[Added].WaitAndCheck();
-        mockFileProcessor->m_events[Deleted].WaitAndCheck();
+        Q_EMIT m_fileWatcher->fileAdded((tempDir / "test").c_str());
+        Q_EMIT m_fileWatcher->fileModified((tempDir / "test2").c_str());
+        Q_EMIT m_fileWatcher->fileRemoved((tempDir / "test3").c_str());
+        
+        EXPECT_TRUE(m_mockAPM->m_events[Added].WaitAndCheck()) << "APM Added event failed";
+        EXPECT_TRUE(m_mockAPM->m_events[Modified].WaitAndCheck()) << "APM Modified event failed";
+        EXPECT_TRUE(m_mockAPM->m_events[Deleted].WaitAndCheck()) << "APM Deleted event failed";
 
-        apmThread.exit();
-        fileProcessorThread.exit();
-        delete mockAPM;
+        EXPECT_TRUE(m_mockFileProcessor->m_events[Added].WaitAndCheck()) << "File Processor Added event failed";
+        EXPECT_TRUE(m_mockFileProcessor->m_events[Deleted].WaitAndCheck()) << "File Processor Deleted event failed";
     }
 }

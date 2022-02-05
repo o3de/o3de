@@ -14,15 +14,24 @@ namespace UnitTests
 {
     void TestEventPair::Signal()
     {
+        bool expected = false;
+        ASSERT_TRUE(m_signaled.compare_exchange_strong(expected, true));
+        ASSERT_EQ(m_threadId, AZStd::thread_id{});
         m_threadId = AZStd::this_thread::get_id();
         m_event.release();
     }
 
-    void TestEventPair::WaitAndCheck()
+    bool TestEventPair::WaitAndCheck()
     {
-        constexpr int MaxWaitTimeMilliseconds = 10;
+        constexpr int MaxWaitTimeMilliseconds = 100;
 
-        EXPECT_TRUE(m_event.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitTimeMilliseconds)));
-        EXPECT_NE(m_threadId, AZStd::this_thread::get_id());
+        auto thisThreadId = AZStd::this_thread::get_id();
+        bool acquireSuccess = m_event.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitTimeMilliseconds));
+
+        EXPECT_TRUE(acquireSuccess);
+        EXPECT_NE(m_threadId, AZStd::thread_id{});
+        EXPECT_TRUE(m_threadId != thisThreadId);
+
+        return acquireSuccess && m_threadId != AZStd::thread_id{} && m_threadId != thisThreadId;
     }
 }

@@ -10,6 +10,9 @@
 
 #include <utilities/BatchApplicationManager.h>
 
+#include "assetmanager/MockAssetProcessorManager.h"
+#include "assetmanager/MockFileProcessor.h"
+
 namespace UnitTests
 {
     struct MockBatchApplicationManager : BatchApplicationManager
@@ -37,5 +40,25 @@ namespace UnitTests
         bool GetAssetDatabaseLocation(AZStd::string& location) override;
 
         AZStd::string m_databaseLocation;
+    };
+
+    struct ApplicationManagerTest : ::UnitTest::ScopedAllocatorSetupFixture
+    {
+    protected:
+        void SetUp() override;
+        void TearDown() override;
+
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
+        DatabaseLocationListener m_databaseLocationListener;
+
+        AZStd::unique_ptr<QCoreApplication> m_coreApplication;
+        AZStd::unique_ptr<MockBatchApplicationManager> m_applicationManager;
+        AZStd::unique_ptr<QThread> m_apmThread;
+        AZStd::unique_ptr<QThread> m_fileProcessorThread;
+        AZStd::unique_ptr<MockAssetProcessorManager> m_mockAPM;
+
+        // These are just aliases, no need to manage/delete them
+        FileWatcher* m_fileWatcher{};
+        MockFileProcessor* m_mockFileProcessor{};
     };
 }
