@@ -777,7 +777,7 @@ class EditorTestSuite():
             if return_code == 0:
                 test_result = Result.Pass.create(test_spec, output, editor_log_content)
             else:
-                editor_utils.save_failed_asset_joblogs(workspace)
+                # editor_utils.save_failed_asset_joblogs(workspace)
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
                     test_result = Result.Crash.create(test_spec, output, return_code, editor_utils.retrieve_crash_output
@@ -856,7 +856,7 @@ class EditorTestSuite():
                 for test_spec in test_spec_list:
                     results[test_spec.__name__] = Result.Pass.create(test_spec, output, editor_log_content)
             else:
-                editor_utils.save_failed_asset_joblogs(workspace)
+                # editor_utils.save_failed_asset_joblogs(workspace)
                 # Scrap the output to attempt to find out which tests failed.
                 # This function should always populate the result list, if it didn't find it, it will have "Unknown" type of result
                 results = self._get_results_using_output(test_spec_list, output, editor_log_content)
