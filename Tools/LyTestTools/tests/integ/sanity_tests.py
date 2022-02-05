@@ -63,6 +63,35 @@ class TestAutomatedTestingProject(object):
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
+    def test_StartServerLauncher_Sanity(self, project):
+        """
+        The `test_StartServerLauncher_Sanity` test function verifies that the O3DE game client launches successfully.
+        Start the test by utilizing the `kill_processes_named` function to close any open O3DE processes that may
+        interfere with the test. The Workspace object emulates the O3DE package by locating the engine and project
+        directories. The Launcher object controls the O3DE game client and requires a Workspace object for
+        initialization. Add the `-rhi=Null` arg to the executable call to disable GPU rendering. This allows the
+        test to run on instances without a GPU. We launch the game client executable and wait for the process to exist.
+        A try/finally block ensures proper test cleanup if issues occur during the test.
+        """
+        # Kill processes that may interfere with the test
+        process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
+
+        try:
+            # Create the Workspace object
+            workspace = helpers.create_builtin_workspace(project=project)
+
+            # Create the Launcher object and add args
+            launcher = launcher_helper.create_dedicated_launcher(workspace)
+            launcher.args.extend(['-rhi=Null'])
+
+            # Call the game client executable
+            with launcher.start():
+                # Wait for the process to exist
+                waiter.wait_for(lambda: process_utils.process_exists(f"{project}.ServerLauncher.exe", ignore_extensions=True))
+        finally:
+            # Clean up processes after the test is finished
+            process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
+
     def test_StartEditor_Sanity(self, project):
         """
         The `test_StartEditor_Sanity` test function is similar to the previous example with minor adjustments. A
