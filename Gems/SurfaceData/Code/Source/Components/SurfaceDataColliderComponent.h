@@ -101,6 +101,6 @@ namespace SurfaceData
         AZStd::atomic_bool m_refresh{ false };
         mutable AZStd::shared_mutex m_cacheMutex;
         AZ::Aabb m_colliderBounds = AZ::Aabb::CreateNull();
-        SurfaceTagWeightMap m_newPointWeights;
+        SurfaceTagWeights m_newPointWeights;
     };
 }
