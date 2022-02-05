@@ -11,7 +11,7 @@
 #include <Atom/Features/MatrixUtility.azsli>
 
  void MultilayerSetPixelDepth(
-     float blendMask,
+     float3 blendMask,
      float3 worldPosition,
      float3 normal,
      float3 tangents[UvSetCount],
@@ -21,7 +21,7 @@
      out float depth)
 {
     s_blendMaskFromVertexStream = blendMask;
-        
+
     float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
     float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
 

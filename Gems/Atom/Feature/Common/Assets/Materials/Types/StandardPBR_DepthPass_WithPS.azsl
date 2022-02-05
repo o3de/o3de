@@ -16,4 +16,4 @@
 #include "MaterialFunctions/StandardTransformUvs.azsli"
 #include "MaterialFunctions/ParallaxDepth.azsli"
 
-#include "DepthPass_WithPS.azsl"
+#include "DepthPass_WithPS.azsli"

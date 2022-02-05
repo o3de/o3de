@@ -43,4 +43,4 @@ COMMON_OPTIONS_DETAIL_MAPS()
 #include "MaterialFunctions/StandardTransformDetailUvs.azsli"
 #include "MaterialFunctions/StandardTransformUvs.azsli"
 
-#include "EnhancedSurface_ForwardPass.azsl"
+#include "EnhancedSurface_ForwardPass.azsli"

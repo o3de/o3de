@@ -16,4 +16,4 @@
 #include "MaterialFunctions/ParallaxDepth.azsli"
 #include "MaterialFunctions/StandardGetAlphaAndClip.azsli"
 
-#include "DepthPass_WithPS.azsl"
+#include "DepthPass_WithPS.azsli"

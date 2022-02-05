@@ -20,4 +20,5 @@
 #include "MaterialFunctions/EvaluateTangentFrame.azsli"
 #include "MaterialFunctions/ParallaxDepth.azsli"
 
-#include "ShadowMap_WithPS.azsl"
+#define SHADOWS
+#include "DepthPass_WithPS.azsli"

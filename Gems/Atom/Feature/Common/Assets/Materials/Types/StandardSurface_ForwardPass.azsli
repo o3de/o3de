@@ -143,6 +143,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         }
     }
 
+    SurfaceSettings surfaceSettings;
     Surface surface;
     surface.vertexNormal = vertexNormal;
     surface.position = IN.m_worldPosition.xyz;
@@ -151,7 +152,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // TODO: this often invokes a separate sample of the base color texture which is wasteful
     float alpha = GetAlphaAndClip(IN.m_uv);
 
-    EvaluateStandardSurface(IN.m_normal, IN.m_uv, tangents, bitangents, isFrontFace, displacementIsClipped, surface);
+    EvaluateStandardSurface(IN.m_normal, IN.m_uv, tangents, bitangents, isFrontFace, displacementIsClipped, surface, surfaceSettings);
 
     // ------- Lighting Data -------
 
@@ -209,7 +210,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
         // not apply.
         float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x;
-        alpha = lerp(fresnelAlpha, alpha, surface.opacityAffectsSpecularFactor);
+        alpha = lerp(fresnelAlpha, alpha, surfaceSettings.opacityAffectsSpecularFactor);
     }
 
     if (o_opacity_mode == OpacityMode::Blended)
@@ -225,7 +226,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         
         // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
         float3 specular = lightingOutput.m_specularColor.rgb;
-        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, surface.opacityAffectsSpecularFactor);
+        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, surfaceSettings.opacityAffectsSpecularFactor);
         lightingOutput.m_diffuseColor.rgb += specular;
 
         lightingOutput.m_diffuseColor.w = alpha;
@@ -248,7 +249,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
         // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
         float3 specular = lightingOutput.m_specularColor.rgb;
-        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, surface.opacityAffectsSpecularFactor);
+        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, surfaceSettings.opacityAffectsSpecularFactor);
         lightingOutput.m_diffuseColor.rgb += specular;
 
         lightingOutput.m_specularColor.rgb = surface.baseColor * (1.0 - alpha); 

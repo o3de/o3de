@@ -144,20 +144,18 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
                                                       identityUvMatrix);
     
     IN.m_uv += tangentOffset.m_offsetTS.xy;
-
-    Surface surface;
  
-    surface.baseColor = float3(1,1,1);
+    float3 baseColor = float3(1,1,1);
     const float noise = AutoBrickSrg::m_noise.Sample(AutoBrickSrg::m_sampler, IN.m_uv).r;
 
     float distanceFromBrick = GetNormalizedDistanceFromBrick(IN.m_uv);
     if(distanceFromBrick > AutoBrickSrg::m_brickColorBleed) 
     {
-        surface.baseColor = AutoBrickSrg::m_lineColor * lerp(1.0, noise, AutoBrickSrg::m_lineNoiseFactor);
+        baseColor = AutoBrickSrg::m_lineColor * lerp(1.0, noise, AutoBrickSrg::m_lineNoiseFactor);
     }
     else
     {
-        surface.baseColor = AutoBrickSrg::m_brickColor * lerp(1.0, noise, AutoBrickSrg::m_brickNoiseFactor);
+        baseColor = AutoBrickSrg::m_brickColor * lerp(1.0, noise, AutoBrickSrg::m_brickNoiseFactor);
     }
 
     float surfaceDepth;
@@ -166,6 +164,8 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     const float3 normal = TangentSpaceToWorld(surfaceNormal, normalize(IN.m_normal), normalize(IN.m_tangent), normalize(IN.m_bitangent));
     
     // ------- Surface -------
+
+    Surface surface;
     
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
@@ -175,9 +175,9 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
     surface.CalculateRoughnessA();
 
     // Albedo, SpecularF0
-    surface.metallic = 0.0f;
-    float specularF0Factor = 0.5f;
-    surface.SetAlbedoAndSpecularF0(specularF0Factor);
+    const float metallic = 0.0f;
+    const float specularF0Factor = 0.5f;
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
     // Clear Coat
     surface.clearCoat.InitializeToZero();

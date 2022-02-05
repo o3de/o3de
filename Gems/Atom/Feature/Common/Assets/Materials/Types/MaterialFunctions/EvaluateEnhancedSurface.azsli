@@ -17,7 +17,8 @@ void EvaluateEnhancedSurface(
     float3 bitangents[UvSetCount],
     bool isFrontFace,
     bool displacementIsClipped,
-    inout Surface surface)
+    inout Surface surface,
+    out SurfaceSettings surfaceSettings)
 {
     // ------- Detail Layer Setup -------
     
@@ -52,22 +53,22 @@ void EvaluateEnhancedSurface(
     float detailLayerBaseColorFactor = MaterialSrg::m_detail_baseColor_factor * detailLayerBlendFactor;
     float2 baseColorUv = uvs[MaterialSrg::m_baseColorMapUvIndex];
 
-    surface.baseColor = GetDetailedBaseColorInput(
+    float3 baseColor = GetDetailedBaseColorInput(
         MaterialSrg::m_baseColorMap,             MaterialSrg::m_sampler, baseColorUv, o_baseColor_useTexture,        MaterialSrg::m_baseColor,  MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode,
         MaterialSrg::m_detail_baseColor_texture, MaterialSrg::m_sampler, detailUv,    o_detail_baseColor_useTexture, detailLayerBaseColorFactor);
         
     if(o_parallax_highlightClipping && displacementIsClipped)
     {
-        ApplyParallaxClippingHighlight(surface.baseColor);
+        ApplyParallaxClippingHighlight(baseColor);
     }
 
     // ------- Metallic -------
 
-    surface.metallic = 0;
+    float metallic = 0;
     if(!o_enableSubsurfaceScattering)   // If subsurface scattering is enabled skip texture lookup for metallic, as this quantity won't be used anyway
     {
         float2 metallicUv = uvs[MaterialSrg::m_metallicMapUvIndex];
-        surface.metallic = GetMetallicInput(MaterialSrg::m_metallicMap, MaterialSrg::m_sampler, metallicUv, MaterialSrg::m_metallicFactor, o_metallic_useTexture);
+        metallic = GetMetallicInput(MaterialSrg::m_metallicMap, MaterialSrg::m_sampler, metallicUv, MaterialSrg::m_metallicFactor, o_metallic_useTexture);
     }
 
     // ------- Specular -------
@@ -75,7 +76,7 @@ void EvaluateEnhancedSurface(
     float2 specularUv = uvs[MaterialSrg::m_specularF0MapUvIndex];
     float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
 
-    surface.SetAlbedoAndSpecularF0(specularF0Factor);
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
     // ------- Roughness -------
 
@@ -88,8 +89,8 @@ void EvaluateEnhancedSurface(
 
     float2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
     surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, MaterialSrg::m_subsurfaceScatteringFactor);
-    surface.subsurfaceScatteringQuality = MaterialSrg::m_subsurfaceScatteringQuality;
-    surface.scatterDistance = MaterialSrg::m_scatterDistance;
+    surfaceSettings.subsurfaceScatteringQuality = MaterialSrg::m_subsurfaceScatteringQuality;
+    surfaceSettings.scatterDistance = MaterialSrg::m_scatterDistance;
 
     // ------- Transmission -------
 
@@ -144,5 +145,5 @@ void EvaluateEnhancedSurface(
         surface.specularF0 = lerp(surface.specularF0, f0 * f0, surface.clearCoat.factor);
     }
 
-    surface.opacityAffectsSpecularFactor = MaterialSrg::m_opacityAffectsSpecularFactor;
+    surfaceSettings.opacityAffectsSpecularFactor = MaterialSrg::m_opacityAffectsSpecularFactor;
 }

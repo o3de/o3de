@@ -27,7 +27,7 @@ void EvaluateTangentFrame(
     }
     else
     {
-        SurfaceGradientNormalMapping_Init(normal, worldPosition, !isFrontFace);                                                      \
-        SurfaceGradientNormalMapping_GenerateTB(uv, OUT_tangent, OUT_bitangent);                               \
+        SurfaceGradientNormalMapping_Init(normal, worldPosition, !isFrontFace);
+        SurfaceGradientNormalMapping_GenerateTB(uv, OUT_tangent, OUT_bitangent);
     }
 }

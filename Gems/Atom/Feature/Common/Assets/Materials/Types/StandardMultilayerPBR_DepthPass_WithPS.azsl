@@ -28,4 +28,5 @@ COMMON_OPTIONS_PARALLAX(o_layer3_)
 #include "MaterialFunctions/MultilayerParallaxDepth.azsli"
 
 #define MULTILAYER
-#include "DepthPass_WithPS.azsl"
+#define DEACTIVATE_ALPHA_CLIP
+#include "DepthPass_WithPS.azsli"

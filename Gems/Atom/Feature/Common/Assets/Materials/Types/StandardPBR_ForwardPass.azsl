@@ -35,4 +35,4 @@ COMMON_OPTIONS_EMISSIVE()
 #include "MaterialFunctions/StandardGetAlphaAndClip.azsli"
 #include "MaterialFunctions/StandardTransformUvs.azsli"
 
-#include "StandardSurface_ForwardPass.azsl"
+#include "StandardSurface_ForwardPass.azsli"

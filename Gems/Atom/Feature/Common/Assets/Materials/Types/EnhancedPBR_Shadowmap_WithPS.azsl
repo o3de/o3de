@@ -23,4 +23,5 @@
 #include "MaterialFunctions/ParallaxDepth.azsli"
 #include "MaterialFunctions/StandardGetAlphaAndClip.azsli"
 
-#include "ShadowMap_WithPS.azsl"
+#define SHADOWS
+#include "DepthPass_WithPS.azsli"

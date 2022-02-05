@@ -6,10 +6,11 @@
  *
  */
 
-#include <scenesrg.srgi>
+#ifdef SHADOWS
 #include <Atom/Features/Shadow/Shadow.azsli>
+#endif
 
-struct VertexInput
+struct VSInput
 {
     float3 m_position : POSITION;
     float2 m_uv0 : UV0;
@@ -28,11 +29,11 @@ struct VertexInput
     float4 m_optional_blendMask : COLOR0;
 #endif
 };
-
-struct VertexOutput
+ 
+struct VSDepthOutput
 {
     // "centroid" is needed for SV_Depth to compile
-    linear centroid float4 m_position : SV_Position;
+    precise linear centroid float4 m_position : SV_Position;
     float2 m_uv[UvSetCount] : UV1;
 
     // only used for parallax depth calculation
@@ -46,16 +47,17 @@ struct VertexOutput
 #endif
 };
 
-VertexOutput MainVS(VertexInput IN)
+VSDepthOutput MainVS(VSInput IN)
 {
-    const float4x4 objectToWorld = GetObjectToWorld();
-    VertexOutput OUT;
-    
-    const float3 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0)).xyz;
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+    VSDepthOutput OUT;
+ 
+    float4x4 objectToWorld = GetObjectToWorld();
+    float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
 
-    float2 uv[UvSetCount] = { IN.m_uv0, IN.m_uv1 };
-    TransformUvs(uv, OUT.m_uv);
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+
+    float2 uvs[UvSetCount] = { IN.m_uv0, IN.m_uv1 };
+    TransformUvs(uvs, OUT.m_uv);
 
     if(ShouldHandleParallaxInDepthShaders())
     {
@@ -81,10 +83,10 @@ VertexOutput MainVS(VertexInput IN)
 
 struct PSDepthOutput
 {
-    float m_depth : SV_Depth;
+    precise float m_depth : SV_Depth;
 };
 
-PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
+PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     PSDepthOutput OUT;
 
@@ -115,10 +117,12 @@ PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
         SetPixelDepth(IN.m_worldPosition, IN.m_normal, tangents, bitangents, IN.m_uv, isFrontFace, OUT.m_depth);
 #endif
 
+#ifdef SHADOW
         OUT.m_depth += PdoShadowMapBias;
+#endif
     }
-
-#ifndef MULTILAYER
+    
+#ifndef DEACTIVATE_ALPHA_CLIP
     GetAlphaAndClip(IN.m_uv);
 #endif
 

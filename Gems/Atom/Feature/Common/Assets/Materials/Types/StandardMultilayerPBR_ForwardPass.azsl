@@ -450,16 +450,16 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         
     // ------- Combine Albedo, roughness, specular, roughness ---------
 
-    surface.baseColor = BlendLayers(lightingInputLayer1.m_baseColor, lightingInputLayer2.m_baseColor, lightingInputLayer3.m_baseColor, blendWeights);
+    float3 baseColor = BlendLayers(lightingInputLayer1.m_baseColor, lightingInputLayer2.m_baseColor, lightingInputLayer3.m_baseColor, blendWeights);
     float specularF0Factor = BlendLayers(lightingInputLayer1.m_specularF0Factor, lightingInputLayer2.m_specularF0Factor, lightingInputLayer3.m_specularF0Factor, blendWeights);
-    surface.metallic = BlendLayers(lightingInputLayer1.m_metallic, lightingInputLayer2.m_metallic, lightingInputLayer3.m_metallic, blendWeights);
+    float metallic = BlendLayers(lightingInputLayer1.m_metallic, lightingInputLayer2.m_metallic, lightingInputLayer3.m_metallic, blendWeights);
     
     if(o_parallax_highlightClipping && displacementIsClipped)
     {
-        ApplyParallaxClippingHighlight(surface.baseColor);
+        ApplyParallaxClippingHighlight(baseColor);
     }
 
-    surface.SetAlbedoAndSpecularF0(specularF0Factor);
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
     surface.roughnessLinear = BlendLayers(lightingInputLayer1.m_roughness, lightingInputLayer2.m_roughness, lightingInputLayer3.m_roughness, blendWeights);
     surface.CalculateRoughnessA();
