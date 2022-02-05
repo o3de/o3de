@@ -278,6 +278,20 @@ namespace Multiplayer
                 AZLOG_INFO("** Autonomous Desync - Corrected clientInputId=%d at hostFrame=%u hostTime=%u", aznumeric_cast<int32_t>(m_lastClientInputId),
                     aznumeric_cast<uint32_t>(m_lastInputReceived[0].GetHostFrameId()), aznumeric_cast<uint64_t>(m_lastInputReceived[0].GetHostTimeMs()));
 
+ #ifndef AZ_RELEASE_BUILD
+                if (cl_EnableDesyncDebugging)
+                {
+                    MultiplayerAuditingElement detail;
+                    detail.m_name = AZStd::string::format(
+                        "Autonomous Desync - Corrected clientInputId=%d at hostFrame=%u hostTime=%u",
+                        aznumeric_cast<int32_t>(m_lastClientInputId), aznumeric_cast<uint32_t>(m_lastInputReceived[0].GetHostFrameId()),
+                        aznumeric_cast<uint64_t>(m_lastInputReceived[0].GetHostTimeMs()));
+                    AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
+                        AuditCategory::Desync, m_lastClientInputId, m_lastInputReceived[0].GetHostFrameId(), GetEntity()->GetName(),
+                        { AZStd::move(detail) });
+                }
+ #endif
+
                 // Send correction
                 SendClientInputCorrection(m_lastClientInputId, correction);
             }

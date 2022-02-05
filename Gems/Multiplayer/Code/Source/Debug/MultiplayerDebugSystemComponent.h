@@ -14,6 +14,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <Multiplayer/IMultiplayerDebug.h>
 
 #ifdef IMGUI_ENABLED
@@ -82,9 +83,12 @@ namespace Multiplayer
         bool m_displayNetAuditTrail = false;
         AZStd::unique_ptr<MultiplayerDebugAuditTrail> m_auditTrail;
 
+        AzFramework::SystemCursorState m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown; //! The last system cursor state.
+
         AZStd::string_view m_lastFilter;
         AZStd::deque<AuditTrailInput> m_auditTrailElems;
         AZStd::deque<AuditTrailInput> m_committedAuditTrail;
+        AZStd::deque<AuditTrailInput> m_pendingAuditTrail;
         AZStd::deque<AuditTrailInput> m_filteredAuditTrail;
     };
 }
