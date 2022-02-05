@@ -598,7 +598,7 @@ namespace ScriptCanvasEditor
         bool changed = false;
         if (output.m_actionIsValid)
         {
-            // #before_pr post an undo point
+            // #before_pr post an undo point, if necessary
             if (output.m_nameChanged && !output.m_name.empty())
             {
                 variable->SetVariableName(output.m_name);

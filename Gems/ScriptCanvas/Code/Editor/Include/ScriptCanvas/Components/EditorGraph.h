@@ -77,8 +77,6 @@ namespace ScriptCanvasEditor
 
         typedef AZStd::unordered_map< AZ::EntityId, AZ::EntityId > WrappedNodeGroupingMap;
 
-        static void ConvertToGetVariableNode(Graph* graph, ScriptCanvas::VariableId variableId, const AZ::EntityId& nodeId, AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& setVariableRemapping);
-
         struct CRCCache
         {
             AZ_TYPE_INFO(CRCCache, "{59798D92-94AD-4A08-8F38-D5975B0DC33B}");
@@ -355,6 +353,7 @@ namespace ScriptCanvasEditor
         //// Version Update code
         static ScriptCanvas::Node* GetOrCreateNodeFromReplacementConfig(ScriptCanvas::NodeConfiguration& config);
         AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, ScriptCanvas::NodeConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
+        AZ::Outcome<ScriptCanvas::Node*> ReplaceLiveNode(ScriptCanvas::Node*, ScriptCanvas::NodeConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
         bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
 
         void RefreshVariableReferences(const ScriptCanvas::VariableId& variableId) override;

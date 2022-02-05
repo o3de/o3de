@@ -155,294 +155,6 @@ namespace ScriptCanvasEditor
         return true;
     }
 
-    void Graph::ConvertToGetVariableNode(Graph* graph, ScriptCanvas::VariableId variableId, const AZ::EntityId& nodeId, AZStd::unordered_map< AZ::EntityId, AZ::EntityId >& setVariableRemapping)
-    {
-        ScriptCanvas::ScriptCanvasId scriptCanvasId = graph->GetScriptCanvasId();
-        GraphCanvas::GraphId graphId = graph->GetGraphCanvasGraphId();
-
-        AZ::EntityId gridId;
-        GraphCanvas::SceneRequestBus::EventResult(gridId, graphId, &GraphCanvas::SceneRequests::GetGrid);
-
-        AZ::Vector2 position;
-        GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
-
-        AZStd::vector< AZ::EntityId > slotIds;
-        GraphCanvas::NodeRequestBus::EventResult(slotIds, nodeId, &GraphCanvas::NodeRequests::GetSlotIds);
-
-        int dataSlotIndex = 0;
-
-        AZStd::unordered_map< AZ::EntityId, AZ::EntityId > targetToNodeMapping;
-
-        for (int i = 0; i < slotIds.size(); ++i)
-        {
-            AZ::EntityId slotId = slotIds[i];
-
-            GraphCanvas::Endpoint endpoint(nodeId, slotId);
-
-            AZStd::vector< AZ::EntityId > connectionIds;
-            GraphCanvas::SlotRequestBus::EventResult(connectionIds, slotId, &GraphCanvas::SlotRequests::GetConnections);
-
-            GraphCanvas::ConnectionType connectionType;
-            GraphCanvas::SlotRequestBus::EventResult(connectionType, slotId, &GraphCanvas::SlotRequests::GetConnectionType);
-
-            GraphCanvas::SlotType slotType;
-            GraphCanvas::SlotRequestBus::EventResult(slotType, slotId, &GraphCanvas::SlotRequests::GetSlotType);
-
-            if (slotType == GraphCanvas::SlotTypes::ExecutionSlot)
-            {
-                continue;
-            }
-            else if (slotType == GraphCanvas::SlotTypes::DataSlot)
-            {
-                ++dataSlotIndex;
-
-                for (const AZ::EntityId& connectionId : connectionIds)
-                {
-                    GraphCanvas::Endpoint targetEndpoint;
-                    GraphCanvas::ConnectionRequestBus::EventResult(targetEndpoint, connectionId, &GraphCanvas::ConnectionRequests::GetTargetEndpoint);
-
-                    AZ::EntityId targetNodeId = targetEndpoint.GetNodeId();
-
-                    // Some nodes might have been converted
-                    auto remappedNodeIter = setVariableRemapping.find(targetNodeId);
-                    if (remappedNodeIter != setVariableRemapping.end())
-                    {
-                        targetNodeId = remappedNodeIter->second;
-
-                        AZStd::vector< AZ::EntityId > originalSetDataSlots;
-                        GraphCanvas::NodeRequestBus::EventResult(originalSetDataSlots, targetEndpoint.GetNodeId(), &GraphCanvas::NodeRequests::GetSlotIds);
-
-                        AZStd::vector< AZ::EntityId > newSetDataSlots;
-                        GraphCanvas::NodeRequestBus::EventResult(newSetDataSlots, targetNodeId, &GraphCanvas::NodeRequests::GetSlotIds);
-
-                        bool foundSlot = false;
-                        int remappingDataSlotIndex = 0;
-
-                        for (int ii = 0; ii < originalSetDataSlots.size(); ++ii)
-                        {
-                            GraphCanvas::SlotType originalSlotType = GraphCanvas::SlotTypes::Invalid;
-                            GraphCanvas::SlotRequestBus::EventResult(originalSlotType, originalSetDataSlots[ii], &GraphCanvas::SlotRequests::GetSlotType);
-
-                            if (originalSlotType == GraphCanvas::SlotTypes::DataSlot)
-                            {
-                                ++remappingDataSlotIndex;
-                            }
-
-                            if (originalSetDataSlots[ii] == targetEndpoint.m_slotId)
-                            {
-                                foundSlot = true;
-                                break;
-                            }
-                        }
-
-                        if (foundSlot)
-                        {
-                            for (int ii = 0; ii < newSetDataSlots.size(); ++ii)
-                            {
-                                GraphCanvas::SlotType remappedSlotType = GraphCanvas::SlotTypes::Invalid;
-                                GraphCanvas::SlotRequestBus::EventResult(remappedSlotType, newSetDataSlots[ii], &GraphCanvas::SlotRequests::GetSlotType);
-
-                                if (remappedSlotType == GraphCanvas::SlotTypes::DataSlot)
-                                {
-                                    --remappingDataSlotIndex;
-
-                                    if (remappingDataSlotIndex == 0)
-                                    {
-                                        targetEndpoint = GraphCanvas::Endpoint(targetNodeId, newSetDataSlots[ii]);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            AZ_Warning("ScriptCanvas", false, "Failed to convert a connection. Could not find equivalent connection pin on a converted Set Variable node.");
-                            continue;
-                        }
-                    }
-
-                    auto targetIter = targetToNodeMapping.find(targetNodeId);
-                    AZStd::vector< AZ::EntityId > newSlotIds;
-                    AZ::EntityId newNodeId;
-
-                    if (targetIter == targetToNodeMapping.end())
-                    {
-                        NodeIdPair newVariablePair = Nodes::CreateGetVariableNode(variableId, scriptCanvasId);
-                        GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::AddNode, newVariablePair.m_graphCanvasId, position, false);
-
-                        AZ::Vector2 minorStep;
-                        GraphCanvas::GridRequestBus::EventResult(minorStep, gridId, &GraphCanvas::GridRequests::GetMinorPitch);
-
-                        position += minorStep;
-
-                        GraphCanvas::NodeRequestBus::EventResult(newSlotIds, newVariablePair.m_graphCanvasId, &GraphCanvas::NodeRequests::GetSlotIds);
-                        newNodeId = newVariablePair.m_graphCanvasId;
-                        targetToNodeMapping[targetNodeId] = newNodeId;
-
-                        GraphCanvas::Endpoint newExecutionInEndpoint;
-                        newExecutionInEndpoint.m_nodeId = newNodeId;
-
-                        GraphCanvas::Endpoint newExecutionOutEndpoint;
-                        newExecutionOutEndpoint.m_nodeId = newNodeId;
-
-                        for (AZ::EntityId newSlotId : newSlotIds)
-                        {
-                            GraphCanvas::SlotType slotType2;
-                            GraphCanvas::SlotRequestBus::EventResult(slotType2, newSlotId, &GraphCanvas::SlotRequests::GetSlotType);
-
-                            if (slotType2 == GraphCanvas::SlotTypes::ExecutionSlot)
-                            {
-                                GraphCanvas::ConnectionType connectionType2 = GraphCanvas::CT_Invalid;
-                                GraphCanvas::SlotRequestBus::EventResult(connectionType2, newSlotId, &GraphCanvas::SlotRequests::GetConnectionType);
-
-                                if (connectionType2 == GraphCanvas::CT_Input)
-                                {
-                                    newExecutionInEndpoint.m_slotId = newSlotId;
-                                }
-                                else if (connectionType2 == GraphCanvas::CT_Output)
-                                {
-                                    newExecutionOutEndpoint.m_slotId = newSlotId;
-                                }
-                            }
-                        }
-
-                        AZStd::vector< AZ::EntityId > targetSlotIds;
-                        GraphCanvas::NodeRequestBus::EventResult(targetSlotIds, targetNodeId, &GraphCanvas::NodeRequests::GetSlotIds);
-
-                        bool spliceConnections = false;
-                        AZ::EntityId targetExecutionInId;
-
-                        for (AZ::EntityId testTargetSlotId : targetSlotIds)
-                        {
-                            GraphCanvas::SlotType slotType2;
-                            GraphCanvas::SlotRequestBus::EventResult(slotType2, testTargetSlotId, &GraphCanvas::SlotRequests::GetSlotType);
-
-                            if (slotType2 != GraphCanvas::SlotTypes::ExecutionSlot)
-                            {
-                                continue;
-                            }
-
-                            GraphCanvas::ConnectionType connectionType2 = GraphCanvas::CT_Invalid;
-                            GraphCanvas::SlotRequestBus::EventResult(connectionType2, testTargetSlotId, &GraphCanvas::SlotRequests::GetConnectionType);
-
-                            if (connectionType2 == GraphCanvas::CT_Input)
-                            {
-                                bool hasConnections = false;
-                                GraphCanvas::SlotRequestBus::EventResult(hasConnections, testTargetSlotId, &GraphCanvas::SlotRequests::HasConnections);
-
-                                if (hasConnections)
-                                {
-                                    // Gate the connection, so we only try to splice connections if we have a single execution slot
-                                    spliceConnections = !targetExecutionInId.IsValid();
-                                    targetExecutionInId = testTargetSlotId;
-                                }
-                            }
-                        }
-
-                        if (spliceConnections)
-                        {
-                            AZStd::vector< AZ::EntityId > connectionIds2;
-                            GraphCanvas::SlotRequestBus::EventResult(connectionIds2, targetExecutionInId, &GraphCanvas::SlotRequests::GetConnections);
-
-                            GraphCanvas::Endpoint connectionTargetEndpoint(targetNodeId, targetExecutionInId);
-
-                            bool createConnection = false;
-
-                            for (const AZ::EntityId& oldConnectionId : connectionIds2)
-                            {
-                                GraphCanvas::Endpoint connectionSourceEndpoint;
-                                GraphCanvas::ConnectionRequestBus::EventResult(connectionSourceEndpoint, oldConnectionId, &GraphCanvas::ConnectionRequests::GetSourceEndpoint);
-
-                                if (graph->IsValidConnection(connectionSourceEndpoint, newExecutionInEndpoint))
-                                {
-                                    if (!createConnection)
-                                    {
-                                        createConnection = graph->IsValidConnection(newExecutionOutEndpoint, connectionTargetEndpoint);
-                                    }
-
-                                    AZStd::unordered_set<AZ::EntityId> deleteConnections = { oldConnectionId };
-                                    GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::Delete, deleteConnections);
-
-                                    AZ::EntityId newConnectionId;
-                                    GraphCanvas::SlotRequestBus::EventResult(newConnectionId, connectionSourceEndpoint.m_slotId, &GraphCanvas::SlotRequests::CreateConnectionWithEndpoint, newExecutionInEndpoint);
-
-                                    if (newConnectionId.IsValid())
-                                    {
-                                        graph->CreateConnection(newConnectionId, connectionSourceEndpoint, newExecutionInEndpoint);
-                                    }
-                                }
-                            }
-
-                            if (createConnection)
-                            {
-                                AZ::EntityId newConnectionId;
-                                GraphCanvas::SlotRequestBus::EventResult(newConnectionId, newExecutionOutEndpoint.GetSlotId(), &GraphCanvas::SlotRequests::CreateConnectionWithEndpoint, connectionTargetEndpoint);
-
-                                if (newConnectionId.IsValid())
-                                {
-                                    graph->CreateConnection(newConnectionId, newExecutionOutEndpoint, connectionTargetEndpoint);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        newNodeId = targetIter->second;
-                        GraphCanvas::NodeRequestBus::EventResult(newSlotIds, newNodeId, &GraphCanvas::NodeRequests::GetSlotIds);
-                    }
-
-                    AZ::EntityId newSlotId;
-
-                    // Going to just hope they're in the same ordering...since there really isn't much
-                    // I can rely on to look this up.
-                    int newDataSlotIndex = 0;
-
-                    for (unsigned int newSlotIndex = 0; newSlotIndex < newSlotIds.size(); ++newSlotIndex)
-                    {
-                        AZ::EntityId testSlotId = newSlotIds[newSlotIndex];
-
-                        GraphCanvas::SlotType slotType2;
-                        GraphCanvas::SlotRequestBus::EventResult(slotType2, testSlotId, &GraphCanvas::SlotRequests::GetSlotType);
-
-                        if (slotType2 == GraphCanvas::SlotTypes::DataSlot)
-                        {
-                            ++newDataSlotIndex;
-
-                            if (dataSlotIndex == newDataSlotIndex)
-                            {
-                                newSlotId = testSlotId;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!newSlotId.IsValid() || !newNodeId.IsValid())
-                    {
-                        AZ_Warning("ScriptCanvas", false, "Could not find appropriate Data Slot target when converting to a Get Variable node.");
-                        continue;
-                    }
-
-                    // When stitching up the connections.
-                    // We cannot add multiple data connections, so we need to remove the old connection before we attempt to make the
-                    // new one, otherwise it might fail.
-                    AZStd::unordered_set< AZ::EntityId > connectionClensing = { connectionId };
-                    GraphCanvas::SceneRequestBus::Event(graphId, &GraphCanvas::SceneRequests::Delete, connectionClensing);
-
-                    GraphCanvas::Endpoint newEndpoint(newNodeId, newSlotId);
-
-                    if (graph->IsValidConnection(newEndpoint, targetEndpoint))
-                    {
-                        AZ::EntityId newConnectionId;
-                        GraphCanvas::SlotRequestBus::EventResult(newConnectionId, newEndpoint.m_slotId, &GraphCanvas::SlotRequests::CreateConnectionWithEndpoint, targetEndpoint);
-
-                        [[maybe_unused]] bool created = graph->CreateConnection(newConnectionId, newEndpoint, targetEndpoint);
-                        AZ_Warning("ScriptCanvas", created, "Failed to created connection between migrated endpoints, despite valid connection check.");
-                    }
-                }
-            }
-        }
-    }
-
     void Graph::Reflect(AZ::ReflectContext* context)
     {
         GraphStatisticsHelper::Reflect(context);
@@ -769,22 +481,24 @@ namespace ScriptCanvasEditor
 
     void Graph::RefreshVariableReferences(const ScriptCanvas::VariableId& variableId)
     {
-        for (auto nodeEntity : GetNodeEntities())
+        auto nodeEntities = GetNodeEntities();
+        for (auto nodeEntity : nodeEntities)
         {
             if (auto node = FindNode(nodeEntity->GetId()))
             {
                 if (auto configOptional = CreateVariableNodeThatRequiresUpdate(*node, variableId, GetScriptCanvasId()))
                 {
                     ScriptCanvas::NodeUpdateSlotReport report;
-
-                    auto replaceOutcome = ReplaceNodeByConfig(node, *configOptional, report);
+                    // do a test run, and see what happens, just replace with a new node type in place
+                    auto replaceOutcome = ReplaceLiveNode(node, *configOptional, report);
                     if (replaceOutcome.IsSuccess())
                     {
                         node = replaceOutcome.GetValue();
                     }
                     else
                     {
-                        // warn, report
+                        // warn / report
+                        continue;
                     }
                 }
 
@@ -797,6 +511,25 @@ namespace ScriptCanvasEditor
                 }
             }
         }
+    }
+
+    AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceLiveNode(ScriptCanvas::Node* node
+        , ScriptCanvas::NodeConfiguration& nodeConfig
+        , ScriptCanvas::NodeUpdateSlotReport& nodeSlotUpdateReport)
+    {
+        // start with remove node, like the user would
+        AZ::EntityId graphCanvasGraphId = GetGraphCanvasGraphId();
+        AZStd::unordered_set<AZ::EntityId> nodeGraphCanvasIds;
+        AZ::EntityId nodeGraphCanvasId;
+        SceneMemberMappingRequestBus::EventResult(nodeGraphCanvasId, node->GetEntityId(), &SceneMemberMappingRequests::GetGraphCanvasEntityId);
+        nodeGraphCanvasIds.insert(nodeGraphCanvasId);
+
+        // AZ::Vector2 position;
+        // GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
+                
+        GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Delete, nodeGraphCanvasIds);
+
+        return AZ::Failure();
     }
 
     AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceNodeByConfig
