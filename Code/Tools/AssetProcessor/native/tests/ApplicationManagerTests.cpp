@@ -9,7 +9,6 @@
 #include "ApplicationManagerTests.h"
 
 #include <QCoreApplication>
-#include <AzCore/UnitTest/TestTypes.h>
 #include <tests/assetmanager/MockAssetProcessorManager.h>
 #include <tests/assetmanager/MockFileProcessor.h>
 
