@@ -36,7 +36,7 @@ void ModalWindowDismisser::DismissWindows()
         dialog->close();
     }
     m_windows.clear();
-    m_dissmiss = false;
+    m_dismiss = false;
 }
 
 bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
@@ -46,19 +46,19 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
         if (dialog->isModal())
         {
             QEvent::Type test = event->type();
-            if (test == QEvent::Show || test == QEvent::WindowActivate)
+            if (test == QEvent::PolishRequest)
             {
                 auto it = AZStd::find(m_windows.begin(), m_windows.end(), dialog);
                 if (it == m_windows.end())
                 {
                     m_windows.push_back(dialog);
                 }
-                if (!m_dissmiss)
+                if (!m_dismiss)
                 {
                     // Closing the window at the same moment is opened leads to crashes and is unstable,
                     // so do it after a long 1 ms
-                    QTimer::singleShot(1, this, &ModalWindowDismisser::DismissWindows);
-                    m_dissmiss = true;
+                    QTimer::singleShot(2, this, &ModalWindowDismisser::DismissWindows);
+                    m_dissmis = true;
                 }
             }
             else if (event->type() == QEvent::Close)
