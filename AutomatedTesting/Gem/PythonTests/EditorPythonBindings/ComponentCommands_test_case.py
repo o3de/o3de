@@ -5,7 +5,6 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-# This test was using 'WaterSample' as its test level but the level has been removed.
 # It needs a new test level in prefab format to make it testable again.
 
 # Tests a portion of the Component CRUD Python API while the Editor is running

@@ -20,9 +20,7 @@ def fetch_vector3_parts(vec3):
 
 general.idle_enable(True)
 
-# This test was using 'WaterSample' as its test level but the level has been removed.
 # It needs a new test level in prefab format to make it testable again.
-# Right now 'WaterSample' was temporarily replaced by 'Base'.
 editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'OpenLevelNoPrompt', 'Base')
 
 if (editor.EditorToolsApplicationRequestBus(bus.Broadcast, 'GetCurrentLevelName') == 'Base'):

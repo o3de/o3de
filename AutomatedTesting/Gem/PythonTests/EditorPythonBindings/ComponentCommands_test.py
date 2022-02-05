@@ -24,7 +24,6 @@ from hydra_utils import launch_test_case
 @pytest.mark.parametrize('level', ['Simple'])
 class TestComponentCommands(object):
 
-    # This test was using 'WaterSample' as its test level but the level has been removed.
     # It needs a new test level in prefab format to make it testable again.
     def test_MeshComponentBasics(self, request, editor, level, launcher_platform):
 
