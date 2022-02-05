@@ -235,6 +235,10 @@ namespace Terrain
         void GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPositions, 
             AZStd::vector<AZ::Vector3>& outPositions,
             Sampler sampler, size_t indexStepSize) const;
+        void GenerateInputPositionsFromRegion(
+            const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize,
+            AZStd::span<AZ::Vector3> inPositions) const;
 
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
