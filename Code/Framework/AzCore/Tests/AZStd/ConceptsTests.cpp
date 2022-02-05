@@ -8,6 +8,7 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/concepts/concepts.h>
+#include <AzCore/std/ranges/ranges_functional.h>
 
 namespace UnitTest
 {
@@ -293,5 +294,28 @@ namespace UnitTest
         // indirect_result_t type alias
         static_assert(AZStd::same_as<AZStd::indirect_result_t<decltype(CharCharRefBinaryPredicate),
             AZStd::string_view::iterator, const char*>, uint32_t>);
+
+        // projected operator* returns indirect result of the projection function
+        static_assert(AZStd::same_as<AZStd::iter_reference_t<AZStd::projected<int*, AZStd::identity>>, int&>);
+    }
+
+    TEST_F(ConceptsTestFixture, IteratorAlgorithmConcepts)
+    {
+        static_assert(AZStd::indirectly_swappable<int*, int*>);
+        static_assert(!AZStd::indirectly_swappable<int*, const int*>);
+        auto CharIntIndirectlyComparable = [](const char lhs, int rhs) -> bool { return lhs == rhs; };
+        static_assert(AZStd::indirectly_comparable<const char*, int*, decltype(CharIntIndirectlyComparable)>);
+        static_assert(!AZStd::indirectly_comparable<AZStd::string_view, int*, decltype(CharIntIndirectlyComparable)>);
+
+        static_assert(AZStd::permutable<typename AZStd::vector<int>::iterator>);
+        // const iterator isn't indirectlly swappable or indirectly movable
+        static_assert(!AZStd::permutable<typename AZStd::vector<int>::const_iterator>);
+
+        static_assert(AZStd::mergeable<AZStd::vector<int>::iterator, AZStd::string_view::iterator, AZStd::vector<int>::iterator>);
+        static_assert(!AZStd::mergeable<AZStd::vector<int>::iterator, AZStd::string_view::iterator, AZStd::string_view::iterator>);
+
+        static_assert(AZStd::sortable<int*>);
+        // Not sortable becaue the iter_reference_t<const int*> = const int& which isn't swappable
+        static_assert(!AZStd::sortable<const int*>);
     }
 }

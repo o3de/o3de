@@ -685,6 +685,7 @@ namespace AZStd::ranges::Internal
         template <class I1, class I2>
         constexpr auto operator()(I1&& i1, I2&& i2) const
             ->enable_if_t<conjunction_v<bool_constant<!is_class_or_enum_with_iter_swap_adl<I1, I2>>,
+            bool_constant<!swappable_with<iter_reference_t<I1>, iter_reference_t<I2>>>,
             bool_constant<indirectly_movable_storable<I1, I2>>,
             bool_constant<indirectly_movable_storable<I2, I1>>
             >>
