@@ -203,6 +203,9 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
         except urllib.error.HTTPError as e:
             logger.error(f'HTTP Error {e.code} opening {parsed_uri.geturl()}')
             return 1
+        except urllib.error.URLError as e:
+            logger.error(f'URL Error {e.reason} opening {parsed_uri.geturl()}')
+            return 1
     else:
         origin_file = pathlib.Path(parsed_uri.geturl()).resolve()
         if not origin_file.is_file():
