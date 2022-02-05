@@ -401,8 +401,7 @@ namespace AZ
             }
 
             [[maybe_unused]] const uint32_t originalVersion = m_materialTypeVersion;
-
-            bool changesWereApplied = false;
+            [[maybe_unused]] bool changesWereApplied = false;
 
             for (const MaterialVersionUpdate& versionUpdate : m_materialTypeAsset->GetMaterialVersionUpdateList())
             {
@@ -416,17 +415,28 @@ namespace AZ
                 }
             }
             
+#if AZ_ENABLE_TRACING
             if (changesWereApplied)
             {
                 const AZStd::string versionString = (originalVersion == UnspecifiedMaterialTypeVersion) ? "<Unspecified>" : AZStd::string::format("'%u'", originalVersion);
+                
+                AZStd::string assetString = GetId().ToString<AZStd::string>().c_str();
+                
+                AZ::Data::AssetInfo assetInfo;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, GetId());
+                if (assetInfo.m_assetId.IsValid())
+                {
+                    assetString += " (" + assetInfo.m_relativePath + ")";
+                }
 
                 AZ_Warning(
                     "MaterialAsset", false,
                     "This material is based on version %s of %s, and the material type is now at version '%u'. "
-                    "Automatic updates have been applied. Consider updating the .material source file for '%s'.",
-                    versionString.c_str(), m_materialTypeAsset.ToString<AZStd::string>().c_str(), m_materialTypeAsset->GetVersion(),
-                    GetId().ToString<AZStd::string>().c_str());
+                    "Automatic updates have been applied. Consider updating the .material source file for %s.",
+                    versionString.c_str(), m_materialTypeAsset.ToString<AZStd::string>().c_str(), m_materialTypeAsset->GetVersion(), assetString.c_str());
             }
+#endif
 
             m_materialTypeVersion = m_materialTypeAsset->GetVersion();
         }
