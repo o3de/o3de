@@ -968,8 +968,10 @@ namespace PhysX
                     static_cast<const Physics::CookedMeshShapeConfiguration*>(shapeConfiguration);
 
                 const AZ::Vector3 overallScale = Utils::GetTransformScale(GetEntityId()) * m_cachedNonUniformScale * assetScale;
+                Physics::ColliderConfiguration nonUniformScaledColliderConfiguration = *colliderConfiguration;
+                nonUniformScaledColliderConfiguration.m_position *= m_cachedNonUniformScale;
 
-                m_colliderDebugDraw.DrawMesh(debugDisplay, *colliderConfiguration, *cookedMeshShapeConfiguration,
+                m_colliderDebugDraw.DrawMesh(debugDisplay, nonUniformScaledColliderConfiguration, *cookedMeshShapeConfiguration,
                     overallScale, static_cast<AZ::u32>(shapeIndex));
                 break;
             }
