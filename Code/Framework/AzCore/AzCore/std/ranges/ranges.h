@@ -674,8 +674,22 @@ namespace AZStd::ranges
         constexpr dangling(T&&...) noexcept {}
     };
 
+
+    enum class subrange_kind : bool
+    {
+        unsized,
+        sized
+    };
+    template<class I, class S = I,
+        subrange_kind K = sized_sentinel_for<S, I> ? subrange_kind::sized : subrange_kind::unsized,
+        class = void>
+        class subrange;
+
     template<class R>
     using borrowed_iterator_t = conditional_t<borrowed_range<R>, iterator_t<R>, dangling>;
+
+    template<class R>
+    using borrowed_subrange_t = conditional_t<borrowed_range<R>, subrange<iterator_t<R>>, dangling>;
 
     // Models sized range concept
     namespace Internal

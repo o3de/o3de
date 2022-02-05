@@ -10,20 +10,6 @@
 #include <AzCore/std/ranges/ranges_adaptor.h>
 #include <AzCore/std/tuple.h>
 
-namespace AZStd::ranges
-{
-    enum class subrange_kind : bool
-    {
-        unsized,
-        sized
-    };
-
-    template<class I, class S = I,
-        subrange_kind K = sized_sentinel_for<S, I> ? subrange_kind::sized : subrange_kind::unsized,
-        class = void>
-    class subrange;
-}
-
 // Specializing tuple in std:: namespace since tuple_size and tuple_element structs
 // are alias templates inside of the AZStd:: namespace
 namespace std
