@@ -58,7 +58,7 @@ bool ModalWindowDismisser::eventFilter(QObject* object, QEvent* event)
                     // Closing the window at the same moment is opened leads to crashes and is unstable,
                     // so do it after a long 1 ms
                     QTimer::singleShot(2, this, &ModalWindowDismisser::DismissWindows);
-                    m_dissmis = true;
+                    m_dismiss = true;
                 }
             }
             else if (event->type() == QEvent::Close)
