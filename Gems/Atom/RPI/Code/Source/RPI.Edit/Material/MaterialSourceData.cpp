@@ -125,6 +125,8 @@ namespace AZ
 
             materialAssetCreator.Begin(assetId, materialTypeAsset, processingMode == MaterialAssetProcessingMode::PreBake);
 
+            materialAssetCreator.SetMaterialTypeVersion(m_materialTypeVersion);
+
             if (!m_parentMaterial.empty())
             {
                 auto parentMaterialAsset = AssetUtils::LoadAsset<MaterialAsset>(materialSourceFilePath, m_parentMaterial);
@@ -292,6 +294,8 @@ namespace AZ
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
             materialAssetCreator.Begin(assetId, materialTypeAsset.GetValue(), finalize);
+            
+            materialAssetCreator.SetMaterialTypeVersion(m_materialTypeVersion);
 
             while (!parentSourceDataStack.empty())
             {

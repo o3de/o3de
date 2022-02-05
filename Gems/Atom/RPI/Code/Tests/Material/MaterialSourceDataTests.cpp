@@ -86,8 +86,8 @@ namespace UnitTest
 
             RPITestFixture::TearDown();
         }
-        
-        Data::Asset<MaterialTypeAsset> CreateTestMaterialTypeAsset(Data::AssetId assetId)
+
+        AZStd::string GetTestMaterialTypeJson()
         {
             const char* materialTypeJson = R"(
                     {
@@ -146,9 +146,13 @@ namespace UnitTest
                     }
                 )";
 
+            return materialTypeJson;
+        }
 
+        Data::Asset<MaterialTypeAsset> CreateTestMaterialTypeAsset(Data::AssetId assetId)
+        {
             MaterialTypeSourceData materialTypeSourceData;
-            LoadTestDataFromJson(materialTypeSourceData, materialTypeJson);
+            LoadTestDataFromJson(materialTypeSourceData, GetTestMaterialTypeJson());
             return materialTypeSourceData.CreateMaterialTypeAsset(assetId).TakeValue();
         }
     };
@@ -298,6 +302,64 @@ namespace UnitTest
         // The raw property values are still available (because they are needed if a hot-reload of the MaterialTypeAsset occurs)
         EXPECT_FALSE(materialAsset->WasPreFinalized());
         checkRawPropertyValues();
+    }
+    
+    TEST_F(MaterialSourceDataTests, CreateMaterialAsset_VersionUpdate_ReportTheSpecifiedMaterialTypeVersion)
+    {
+        // This is in response to a specific issue where the material type version update reported the wrong version
+        // because MaterialSourceData was not feeding it to the MaterialAsset 
+
+        AZ::Utils::WriteFile(GetTestMaterialTypeJson(), "@exefolder@/Temp/test.materialtype");
+
+        MaterialSourceData sourceData;
+
+        sourceData.m_materialType = "@exefolder@/Temp/test.materialtype";
+        sourceData.m_materialTypeVersion = 5;
+        AddPropertyGroup(sourceData, "oldGroup");
+        AddProperty(sourceData, "oldGroup", "MyFloat", 1.2f);
+
+        ErrorMessageFinder findVersionWarning;
+        findVersionWarning.AddExpectedErrorMessage("This material is based on version '5'");
+        findVersionWarning.AddExpectedErrorMessage("the material type is now at version '10'");
+        findVersionWarning.AddExpectedErrorMessage("Consider updating the .material source file");
+
+        findVersionWarning.ResetCounts();
+        sourceData.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::PreBake);
+        findVersionWarning.CheckExpectedErrorsFound();
+        
+        findVersionWarning.ResetCounts();
+        sourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom());
+        findVersionWarning.CheckExpectedErrorsFound();
+    }
+    
+    TEST_F(MaterialSourceDataTests, CreateMaterialAsset_VersionUpdate_ReportUnspecifiedMaterialTypeVersion)
+    {
+        // This is in response to a specific issue where the material type version update reported the wrong version
+        // because MaterialSourceData was not feeding it to the MaterialAsset.
+        // It's the same as CreateMaterialAsset_VersionUpdate_ReportTheSpecifiedMaterialTypeVersion except it looks
+        // for "<Unspecified>" in the warning message.
+
+        AZ::Utils::WriteFile(GetTestMaterialTypeJson(), "@exefolder@/Temp/test.materialtype");
+
+        MaterialSourceData sourceData;
+
+        sourceData.m_materialType = "@exefolder@/Temp/test.materialtype";
+        // We intentionally do not set sourceData.m_materialTypeVersion here
+        AddPropertyGroup(sourceData, "oldGroup");
+        AddProperty(sourceData, "oldGroup", "MyFloat", 1.2f);
+
+        ErrorMessageFinder findVersionWarning;
+        findVersionWarning.AddExpectedErrorMessage("This material is based on version <Unspecified>");
+        findVersionWarning.AddExpectedErrorMessage("the material type is now at version '10'");
+        findVersionWarning.AddExpectedErrorMessage("Consider updating the .material source file");
+
+        findVersionWarning.ResetCounts();
+        sourceData.CreateMaterialAsset(Uuid::CreateRandom(), "", MaterialAssetProcessingMode::PreBake);
+        findVersionWarning.CheckExpectedErrorsFound();
+        
+        findVersionWarning.ResetCounts();
+        sourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom());
+        findVersionWarning.CheckExpectedErrorsFound();
     }
 
     // Can return a Vector4 or a Color as a Vector4
