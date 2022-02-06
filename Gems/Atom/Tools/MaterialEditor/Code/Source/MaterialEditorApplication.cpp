@@ -6,20 +6,31 @@
  *
  */
 
+#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Document/MaterialDocument.h>
 #include <Document/MaterialDocumentRequestBus.h>
-#include <Document/MaterialDocumentSettings.h>
 #include <MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
 #include <Viewport/MaterialViewportModule.h>
+#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/MaterialEditorWindow.h>
 #include <Window/MaterialEditorWindowSettings.h>
+
+#include <QDesktopServices>
+#include <QDialog>
+#include <QMenu>
+#include <QUrl>
 
 void InitMaterialEditorResources()
 {
@@ -56,7 +67,6 @@ namespace MaterialEditor
     void MaterialEditorApplication::Reflect(AZ::ReflectContext* context)
     {
         Base::Reflect(context);
-        MaterialDocumentSettings::Reflect(context);
         MaterialEditorWindowSettings::Reflect(context);
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -112,8 +122,77 @@ namespace MaterialEditor
 
     void MaterialEditorApplication::CreateMainWindow()
     {
-        m_materialEditorBrowserInteractions.reset(aznew MaterialEditorBrowserInteractions);
         m_window.reset(aznew MaterialEditorWindow);
+        m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
+        m_assetBrowserInteractions->RegisterContextMenuActions(
+            [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
+            },
+            []([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                const bool isMaterial = AzFramework::StringFunc::Path::IsExtension(
+                    entries.front()->GetFullPath().c_str(), AZ::RPI::MaterialSourceData::Extension);
+                const bool isMaterialType = AzFramework::StringFunc::Path::IsExtension(
+                    entries.front()->GetFullPath().c_str(), AZ::RPI::MaterialTypeSourceData::Extension);
+                if (isMaterial || isMaterialType)
+                {
+                    menu->addAction(QObject::tr("Open"), [entries]()
+                        {
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
+                                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument,
+                                entries.front()->GetFullPath());
+                        });
+
+                    const QString createActionName =
+                        isMaterialType ? QObject::tr("Create Material...") : QObject::tr("Create Child Material...");
+
+                    menu->addAction(createActionName, [entries]()
+                        {
+                            const QString defaultPath = AtomToolsFramework::GetUniqueFileInfo(
+                                QString(AZ::Utils::GetProjectPath().c_str()) +
+                                AZ_CORRECT_FILESYSTEM_SEPARATOR + "Assets" +
+                                AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
+                                AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
+
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
+                                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                                entries.front()->GetFullPath(),
+                                AtomToolsFramework::GetSaveFileInfo(defaultPath).absoluteFilePath().toUtf8().constData());
+                        });
+                }
+                else
+                {
+                    menu->addAction(QObject::tr("Open"), [entries]()
+                        {
+                            QDesktopServices::openUrl(QUrl::fromLocalFile(entries.front()->GetFullPath().c_str()));
+                        });
+                }
+            });
+
+        m_assetBrowserInteractions->RegisterContextMenuActions(
+            [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder;
+            },
+            [](QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                menu->addAction(QObject::tr("Create Material..."), [caller, entries]()
+                    {
+                        CreateMaterialDialog createDialog(entries.front()->GetFullPath().c_str(), caller);
+                        createDialog.adjustSize();
+
+                        if (createDialog.exec() == QDialog::Accepted &&
+                            !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
+                            !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
+                        {
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
+                                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                                createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData(),
+                                createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData());
+                        }
+                    });
+            });
     }
 
     void MaterialEditorApplication::DestroyMainWindow()
