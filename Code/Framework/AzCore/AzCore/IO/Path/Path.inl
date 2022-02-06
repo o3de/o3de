@@ -1398,12 +1398,6 @@ namespace AZ::IO
     }
 
     template <typename PathType>
-    constexpr auto PathIterator<PathType>::operator->() const -> pointer
-    {
-        return &m_stashed_elem;
-    }
-
-    template <typename PathType>
     constexpr auto PathIterator<PathType>::operator++() -> PathIterator&
     {
         AZ_Assert(m_state != Singular, "attempting to increment a singular iterator (i.e a default constructed iterator)");

@@ -59,29 +59,31 @@ namespace AZStd::Internal
     using sfinae_trigger = true_type;
     template <class... Args>
     constexpr bool sfinae_trigger_v = true;
-
-    template <typename T, typename = void>
-    constexpr bool pointer_traits_has_to_address_v = false;
-
-    template <typename T>
-    constexpr bool pointer_traits_has_to_address_v<T, enable_if_t<
-        is_void_v<void_t<decltype(pointer_traits<T>::to_address(declval<const T&>()))>>> > = true;
-
-    // pointer_traits isn't SFINAE friendly https://cplusplus.github.io/LWG/lwg-active.html#3545
-    // So working around that by checking if type T has an element_type alias
-    template <typename T, typename = void>
-    constexpr bool pointer_traits_valid_and_has_to_address_v = false;
-    template <typename T>
-    constexpr bool pointer_traits_valid_and_has_to_address_v<T, enable_if_t<has_element_type_v<T>> >
-        = pointer_traits_has_to_address_v<T>;
 }
 
 namespace AZStd
 {
+    namespace Internal
+    {
+        template <class T, class = void>
+        constexpr bool pointer_traits_has_to_address_v = false;
+
+        template <class T>
+        constexpr bool pointer_traits_has_to_address_v<T, enable_if_t<
+            is_void_v<void_t<decltype(pointer_traits<T>::to_address(declval<const T&>()))>>> > = true;
+
+        // pointer_traits isn't SFINAE friendly https://cplusplus.github.io/LWG/lwg-active.html#3545
+        // So working around that by checking if type T has an element_type alias
+        template <class T, class = void>
+        constexpr bool pointer_traits_valid_and_has_to_address_v = false;
+        template <class T>
+        constexpr bool pointer_traits_valid_and_has_to_address_v<T, enable_if_t<has_element_type_v<T>> >
+            = pointer_traits_has_to_address_v<T>;
+    }
     //! Implements the C++20 to_address function
     //! This obtains the address represented by ptr without forming a reference
     //! to the pointee type
-    template <typename T>
+    template <class T>
     constexpr T* to_address(T* ptr) noexcept
     {
         static_assert(!AZStd::is_function_v<T>, "Invoking to address on a function pointer is not allowed");
@@ -91,7 +93,7 @@ namespace AZStd
     //! if that is a well-formed expression, otherwise it returns ptr->operator->()
     //! For example invoking `to_address(AZStd::reverse_iterator<const char*>(char_ptr))`
     //! Returns an element of type const char*
-    template <typename T>
+    template <class T>
     constexpr auto to_address(const T& ptr) noexcept
     {
         if constexpr (AZStd::Internal::pointer_traits_valid_and_has_to_address_v<T>)
@@ -102,6 +104,24 @@ namespace AZStd
         {
             return to_address(ptr.operator->());
         }
+    }
+
+    namespace Internal
+    {
+        template <class T, class = void>
+        struct to_address_type
+        {
+        private:
+            struct invalid_type {};
+        public:
+            using type = invalid_type;
+        };
+
+        template <class T>
+        struct to_address_type<T, void_t<decltype(to_address(declval<T>()))>>
+        {
+            using type = decltype(to_address(declval<T>()));
+        };
     }
 }
 
@@ -847,8 +867,9 @@ namespace AZStd::Internal
         bool_constant<derived_from<iter_concept_t<I>, contiguous_iterator_tag>>,
         bool_constant<is_lvalue_reference_v<iter_reference_t<I>>>,
         bool_constant<indirectly_readable<I>>,
-        bool_constant<same_as<iter_value_t<I>, remove_cvref_t<iter_reference_t<I>>>>
-        >>> = same_as<decltype(to_address(declval<const I&>())), add_pointer_t<iter_reference_t<I>>>;
+        bool_constant<same_as<iter_value_t<I>, remove_cvref_t<iter_reference_t<I>>>>,
+        bool_constant<same_as<typename to_address_type<const I&>::type, add_pointer_t<iter_reference_t<I>>>>
+        >>> = true;
 }
 
 namespace AZStd

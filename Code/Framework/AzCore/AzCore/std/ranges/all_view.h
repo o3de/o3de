@@ -17,7 +17,7 @@ namespace AZStd::ranges::views
         template<class T, class = void>
         constexpr bool convertible_to_ref_view = false;
         template<class T>
-        constexpr bool convertible_to_ref_view<T, decltype(ranges::ref_view(declval<T>()))> = true;
+        constexpr bool convertible_to_ref_view<T, void_t<decltype(ranges::ref_view(declval<T>()))>> = true;
 
         struct all_fn
             : Internal::range_adaptor_closure<all_fn>
@@ -59,7 +59,7 @@ namespace AZStd::ranges::views
         template <class R>
         struct all_t<R, enable_if_t<ranges::viewable_range<R>>>
         {
-            using type = decltype(views::all(std::declval<R>()));
+            using type = decltype(views::all(declval<R>()));
         };
     }
     template<class R>
