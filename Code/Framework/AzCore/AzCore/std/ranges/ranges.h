@@ -709,8 +709,11 @@ namespace AZStd::ranges
         template<class R, class T, class = void>
         constexpr bool output_range_impl = false;
         template<class R, class T>
-        constexpr bool output_range_impl<R, T, enable_if_t<has_iterator_t<R>>> = conjunction_v<bool_constant<range<R>>,
-            bool_constant<output_iterator<iterator_t<R>, T>>>;
+        constexpr bool output_range_impl<R, T, enable_if_t<conjunction_v<
+            bool_constant<has_iterator_t<R>>,
+            bool_constant<range<R>>,
+            bool_constant<output_iterator<iterator_t<R>, T>>
+            >>> = true;
     }
 
     template<class R, class T>
@@ -721,8 +724,11 @@ namespace AZStd::ranges
         template<class T, class = void>
         constexpr bool input_range_impl = false;
         template<class T>
-        constexpr bool input_range_impl<T, enable_if_t<has_iterator_t<T>>> = conjunction_v<bool_constant<range<T>>,
-            bool_constant<input_iterator<iterator_t<T>>>>;
+        constexpr bool input_range_impl<T, enable_if_t<conjunction_v<
+            bool_constant<has_iterator_t<T>>,
+            bool_constant<range<T>>,
+            bool_constant<input_iterator<iterator_t<T>>>
+            >>> = true;
     }
 
     template<class T>
@@ -733,8 +739,11 @@ namespace AZStd::ranges
         template<class T, class = void>
         constexpr bool forward_range_impl = false;
         template<class T>
-        constexpr bool forward_range_impl<T, enable_if_t<has_iterator_t<T>>> = conjunction_v<bool_constant<input_range<T>>,
-            bool_constant<forward_iterator<iterator_t<T>>>>;
+        constexpr bool forward_range_impl<T, enable_if_t<conjunction_v<
+            bool_constant<has_iterator_t<T>>,
+            bool_constant<input_range<T>>,
+            bool_constant<forward_iterator<iterator_t<T>>>
+            >>> = true;
     }
 
     template<class T>
@@ -745,8 +754,11 @@ namespace AZStd::ranges
         template<class T, class = void>
         constexpr bool bidirectional_range_impl = false;
         template<class T>
-        constexpr bool bidirectional_range_impl<T, enable_if_t<has_iterator_t<T>>> = conjunction_v<bool_constant<forward_range<T>>,
-            bool_constant<bidirectional_iterator<iterator_t<T>>>>;
+        constexpr bool bidirectional_range_impl<T, enable_if_t<conjunction_v<
+            bool_constant<has_iterator_t<T>>,
+            bool_constant<forward_range<T>>,
+            bool_constant<bidirectional_iterator<iterator_t<T>>>
+            >>> = true;
     }
 
     template<class T>
@@ -757,8 +769,11 @@ namespace AZStd::ranges
         template<class T, class = void>
         constexpr bool random_access_range_impl = false;
         template<class T>
-        constexpr bool random_access_range_impl<T, enable_if_t<has_iterator_t<T>>> = conjunction_v<bool_constant<bidirectional_range<T>>,
-            bool_constant<random_access_iterator<iterator_t<T>>>>;
+        constexpr bool random_access_range_impl<T, enable_if_t<conjunction_v<
+            bool_constant<has_iterator_t<T>>,
+            bool_constant<bidirectional_range<T>>,
+            bool_constant<random_access_iterator<iterator_t<T>>>
+            >>> = true;
     }
 
     template<class T>

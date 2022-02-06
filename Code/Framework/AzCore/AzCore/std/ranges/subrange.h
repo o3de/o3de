@@ -257,11 +257,11 @@ namespace AZStd::ranges
     {
         if constexpr (N == 0)
         {
-            return r.m_begin;
+            return r.begin();
         }
         else
         {
-            return r.m_end;
+            return r.end();
         }
     }
 
@@ -270,11 +270,11 @@ namespace AZStd::ranges
     {
         if constexpr (N == 0)
         {
-            return r.m_begin;
+            return r.begin();
         }
         else
         {
-            return r.m_end;
+            return r.end();
         }
     }
 
