@@ -13,6 +13,7 @@
 #include <AzCore/std/ranges/empty_view.h>
 #include <AzCore/std/ranges/ranges_adaptor.h>
 #include <AzCore/std/ranges/single_view.h>
+#include <AzCore/std/ranges/split_view.h>
 #include <AzCore/std/ranges/subrange.h>
 #include <AzCore/std/ranges/zip_view.h>
 #include <AzCore/std/string/string_view.h>
@@ -219,5 +220,123 @@ namespace UnitTest
         }
 
         EXPECT_EQ(expectedIterations, iterationCount);
+    }
+
+    TEST_F(RangesViewTestFixture, SplitView_CanSplitPatterns_Succeeds)
+    {
+        AZStd::string_view emptyView{ "" };
+        auto splitView = AZStd::ranges::views::split(emptyView, " ");
+        auto splitIt = splitView.begin();
+        EXPECT_EQ(splitView.end(), splitIt);
+
+        AZStd::string_view testView1{ "Hello" };
+        auto splitViewCharPattern = AZStd::ranges::views::split(testView1, ' ');
+        auto splitCharIt = splitViewCharPattern.begin();
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("Hello", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        EXPECT_EQ(splitViewCharPattern.end(), splitCharIt);
+
+        AZStd::string_view testView2{ "Hello World" };
+        splitViewCharPattern = AZStd::ranges::views::split(testView2, ' ');
+        splitCharIt = splitViewCharPattern.begin();
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("Hello", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("World", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        EXPECT_EQ(splitViewCharPattern.end(), splitCharIt);
+
+        AZStd::string_view testView3{ "Hello World Moon" };
+        splitViewCharPattern = AZStd::ranges::views::split(testView3, ' ');
+        splitCharIt = splitViewCharPattern.begin();
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("Hello", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("World", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("Moon", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        EXPECT_EQ(splitViewCharPattern.end(), splitCharIt);
+
+
+        AZStd::string_view testView4{ "Hello World Moon " };
+        splitViewCharPattern = AZStd::ranges::views::split(testView4, ' ');
+        splitCharIt = splitViewCharPattern.begin();
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("Hello", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("World", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("Moon", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        EXPECT_EQ(splitViewCharPattern.end(), splitCharIt);
+
+        AZStd::string_view testView5{ "Hello World Moon  " };
+        splitViewCharPattern = AZStd::ranges::views::split(testView5, ' ');
+        splitCharIt = splitViewCharPattern.begin();
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("Hello", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("World", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("Moon", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        EXPECT_EQ(splitViewCharPattern.end(), splitCharIt);
+
+        AZStd::string_view testView6{ "Hello  World Moon" };
+        splitViewCharPattern = AZStd::ranges::views::split(testView6, ' ');
+        splitCharIt = splitViewCharPattern.begin();
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("Hello", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("World", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        ASSERT_NE(splitViewCharPattern.end(), splitCharIt);
+        EXPECT_EQ("Moon", AZStd::string_view(*splitCharIt));
+        ++splitCharIt;
+        EXPECT_EQ(splitViewCharPattern.end(), splitCharIt);
+    }
+
+    TEST_F(RangesViewTestFixture, SplitView_SplitsFromNonString_Succeeds)
+    {
+        const AZStd::vector<int> testVector{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        // Split the vector on 3
+        auto splitView = AZStd::ranges::views::split(testVector, 3);
+        auto splitIt = splitView.begin();
+        ASSERT_NE(splitView.end(), splitIt);
+        auto splitSubrange = *splitIt;
+        {
+            AZStd::array expectedValue{ 1, 2 };
+            EXPECT_TRUE(AZStd::ranges::equal(expectedValue, splitSubrange));
+        }
+
+        ++splitIt;
+        ASSERT_NE(splitView.end(), splitIt);
+        splitSubrange = *splitIt;
+        {
+            AZStd::array expectedValue{ 4, 5, 6, 7, 8, 9, 10 };
+            EXPECT_TRUE(AZStd::ranges::equal(expectedValue, splitSubrange));
+        }
     }
 }
