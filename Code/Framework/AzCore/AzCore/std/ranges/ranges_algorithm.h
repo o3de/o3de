@@ -10,7 +10,7 @@
 #include <AzCore/std/function/identity.h>
 #include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/ranges/ranges_functional.h>
-
+#include <AzCore/std/ranges/subrange.h>
 
 namespace AZStd::ranges
 {
@@ -544,6 +544,453 @@ namespace AZStd::ranges
     inline namespace customization_point_object
     {
         constexpr Internal::minmax_element_fn minmax_element{};
+    }
+
+    // find algorithms
+    namespace Internal
+    {
+        struct find_fn
+        {
+            template<class I, class S, class T, class Proj = identity, class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_binary_predicate<ranges::equal_to, projected<I, Proj>, const T*>>
+                >>>
+            constexpr I operator()(I first, S last, const T& value, Proj proj = {}) const
+            {
+                for (; first != last; ++first)
+                {
+                    if (AZStd::invoke(proj, *first) == value)
+                    {
+                        return first;
+                    }
+                }
+
+                return first;
+            }
+            template<class R, class T, class Proj = identity, class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<indirect_binary_predicate<equal_to, projected<iterator_t<R>, Proj>, const T*>>
+                >>>
+            constexpr borrowed_iterator_t<R> operator()(R&& r, const T& value, Proj proj = {}) const
+            {
+                return operator()(ranges::begin(AZStd::forward<R>(r)), ranges::end(AZStd::forward<R>(r)),
+                    value, AZStd::move(proj));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::find_fn find{};
+    }
+
+    namespace Internal
+    {
+        struct find_if_fn
+        {
+            template<class I, class S, class Proj = identity, class Pred, class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<I, Proj>>>
+                >>>
+            constexpr I operator()(I first, S last, Pred pred, Proj proj = {}) const
+            {
+                for (; first != last; ++first)
+                {
+                    if (AZStd::invoke(pred, AZStd::invoke(proj, *first)))
+                    {
+                        return first;
+                    }
+                }
+
+                return first;
+            }
+            template<class R,  class Proj = identity, class Pred, class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<iterator_t<R>, Proj>>>
+                >>>
+            constexpr borrowed_iterator_t<R> operator()(R&& r, Pred pred, Proj proj = {}) const
+            {
+                return operator()(ranges::begin(AZStd::forward<R>(r)), ranges::end(AZStd::forward<R>(r)),
+                    AZStd::move(pred), AZStd::move(proj));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::find_if_fn find_if{};
+    }
+
+    namespace Internal
+    {
+        struct find_if_not_fn
+        {
+            template<class I, class S, class Proj = identity, class Pred, class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<I, Proj>>>
+                >>>
+            constexpr I operator()(I first, S last, Pred pred, Proj proj = {}) const
+            {
+                for (; first != last; ++first)
+                {
+                    if (!AZStd::invoke(pred, AZStd::invoke(proj, *first)))
+                    {
+                        return first;
+                    }
+                }
+
+                return first;
+            }
+            template<class R, class Proj = identity, class Pred, class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<iterator_t<R>, Proj>>>
+                >>>
+            constexpr borrowed_iterator_t<R>
+                operator()(R&& r, Pred pred, Proj proj = {}) const
+            {
+                return operator()(ranges::begin(AZStd::forward<R>(r)), ranges::end(AZStd::forward<R>(r)),
+                    AZStd::move(pred), AZStd::move(proj));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::find_if_not_fn find_if_not{};
+    }
+
+    namespace Internal
+    {
+        struct find_first_of_fn
+        {
+            template<class I1, class S1, class I2, class S2, class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I1>>,
+                bool_constant<sentinel_for<S1, I1>>,
+                bool_constant<forward_iterator<I2>>,
+                bool_constant<sentinel_for<S2, I2>>,
+                bool_constant<indirectly_comparable<I1, I2, Pred, Proj1, Proj2>>
+                >>>
+                constexpr I1 operator()(I1 first1, S1 last1, I2 first2, S2 last2,
+                    Pred pred = {},
+                    Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                for (; first1 != last1; ++first1)
+                {
+                    for (I2 elementIt = first2; elementIt != last2; ++elementIt)
+                    {
+                        if (AZStd::invoke(pred, AZStd::invoke(proj1, *first1), AZStd::invoke(proj2, *elementIt)))
+                        {
+                            return first1;
+                        }
+                    }
+                }
+
+                return first1;
+            }
+            template<class R1, class R2,class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R1>>,
+                bool_constant<forward_range<R2>>,
+                bool_constant<indirectly_comparable<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>>
+            >>>
+            constexpr borrowed_iterator_t<R1> operator()(R1&& r1, R2&& r2,
+                    Pred pred = {}, Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                return operator()(ranges::begin(AZStd::forward<R1>(r1)), ranges::end(AZStd::forward<R1>(r1)),
+                    ranges::begin(AZStd::forward<R2>(r2)), ranges::end(AZStd::forward<R2>(r2)),
+                        AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::find_first_of_fn find_first_of{};
+    }
+
+    // ranges::mismatch
+    template<class I1, class I2>
+    using mismatch_result = in_in_result<I1, I2>;
+
+    namespace Internal
+    {
+        struct mismatch_fn
+        {
+            template<class I1, class S1, class I2, class S2, class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I1>>,
+                bool_constant<sentinel_for<S1, I1>>,
+                bool_constant<input_iterator<I2>>,
+                bool_constant<sentinel_for<S2, I2>>,
+                bool_constant<indirectly_comparable<I1, I2, Pred, Proj1, Proj2>>
+                >>>
+            constexpr mismatch_result<I1, I2> operator()(I1 first1, S1 last1, I2 first2, S2 last2,
+                Pred pred = {}, Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                for (; first1 != last1 && first2 != last2; ++first1, ++first2)
+                {
+                    if (!AZStd::invoke(pred, AZStd::invoke(proj1, *first1), AZStd::invoke(proj2, *first2)))
+                    {
+                        return { first1, first2 };
+                    }
+                }
+
+                return { first1, first2 };
+            }
+
+            template<class R1, class R2, class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R1>>,
+                bool_constant<input_range<R2>>,
+                bool_constant<indirectly_comparable<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>>
+                >>>
+            constexpr mismatch_result<borrowed_iterator_t<R1>, borrowed_iterator_t<R2>> operator()(R1&& r1, R2&& r2,
+                Pred pred = {}, Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                return operator()(ranges::begin(AZStd::forward<R1>(r1)), ranges::end(AZStd::forward<R1>(r1)),
+                    ranges::begin(AZStd::forward<R2>(r2)), ranges::end(AZStd::forward<R2>(r2)),
+                    AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::mismatch_fn mismatch{};
+    }
+
+    namespace Internal
+    {
+        struct equal_fn
+        {
+            template<class I1, class S1, class I2, class S2, class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I1>>,
+                bool_constant<sentinel_for<S1, I1>>,
+                bool_constant<input_iterator<I2>>,
+                bool_constant<sentinel_for<S2, I2>>,
+                bool_constant<indirectly_comparable<I1, I2, Pred, Proj1, Proj2>>
+                >>>
+                constexpr bool operator()(I1 first1, S1 last1, I2 first2, S2 last2,
+                    Pred pred = {},
+                    Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                if constexpr (sized_sentinel_for<S1, I1> && sized_sentinel_for<S2, I2>)
+                {
+                    if (ranges::distance(first1, last1) != ranges::distance(first2, last2))
+                    {
+                        return false;
+                    }
+                }
+
+                for (; first1 != last1 && first2 != last2; ++first1, ++first2)
+                {
+                    if (!AZStd::invoke(pred, AZStd::invoke(proj1, *first1), AZStd::invoke(proj2, *first2)))
+                    {
+                        return false;
+                    }
+                }
+
+                return first1 == last1 && first2 == last2;
+            }
+
+            template<class R1, class R2, class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R1>>,
+                bool_constant<input_range<R2>>,
+                bool_constant<indirectly_comparable<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>>
+                >>>
+                constexpr bool operator()(R1&& r1, R2&& r2, Pred pred = {},
+                    Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                return operator()(ranges::begin(AZStd::forward<R1>(r1)), ranges::end(AZStd::forward<R1>(r1)),
+                    ranges::begin(AZStd::forward<R2>(r2)), ranges::end(AZStd::forward<R2>(r2)),
+                    AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::equal_fn equal{};
+    }
+
+    namespace Internal
+    {
+        struct search_fn
+        {
+            template<class I1, class S1, class I2, class S2, class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_iterator<I1>>,
+                bool_constant<sentinel_for<S1, I1>>,
+                bool_constant<forward_iterator<I2>>,
+                bool_constant<sentinel_for<S2, I2>>,
+                bool_constant<indirectly_comparable<I1, I2, Pred, Proj1, Proj2>>
+                >>>
+            constexpr subrange<I1> operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = {},
+                Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                do
+                {
+                    I1 it1 = first1;
+                    I2 it2 = first2;
+                    for (;; ++it1, ++it2)
+                    {
+                        if (it2 == last2)
+                        {
+                            // Reached the end of the second iteator sequence
+                            // Therefore the search has succeeded. return the matching range from the first sequence
+                            return { first1, it1 };
+                        }
+                        if (it1 == last1)
+                        {
+                            // The search has failed to find the second iterator sequence within the first
+                            return { last1, last1 };
+                        }
+                        if (!AZStd::invoke(pred, AZStd::invoke(proj1, *it1), AZStd::invoke(proj2, *it2)))
+                        {
+                            // Mismatch found break out of iteration of loop
+                            break;
+                        }
+                    }
+                    // Increment to the next element in the range of [first1, last1) and restart the search
+                    ++first1;
+                } while (true);
+            }
+
+            template<class R1, class R2, class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_range<R1>>,
+                bool_constant<forward_range<R2>>,
+                bool_constant<indirectly_comparable<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>>
+                >>>
+            constexpr borrowed_subrange_t<R1>
+                operator()(R1&& r1, R2&& r2, Pred pred = {},
+                    Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                return operator()(ranges::begin(AZStd::forward<R1>(r1)), ranges::end(AZStd::forward<R1>(r1)),
+                    ranges::begin(AZStd::forward<R2>(r2)), ranges::end(AZStd::forward<R2>(r2)),
+                        AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2));
+            }
+
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::search_fn search{};
+    }
+
+    namespace Internal
+    {
+        struct search_n_fn
+        {
+            template<class I, class S, class T, class Pred = equal_to, class Proj = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirectly_comparable<I, const T*, Pred, Proj>>
+                >>>
+                constexpr subrange<I> operator()(I first, S last, iter_difference_t<I> count,
+                    const T& value, Pred pred = {}, Proj proj = {}) const
+            {
+                for (; first != last; ++first)
+                {
+                    iter_difference_t<I> foundCount{};
+                    I searchFirst = first;
+                    for (; foundCount != count && first != last; ++first, ++foundCount)
+                    {
+                        if (!AZStd::invoke(pred, AZStd::invoke(proj, *first), value))
+                        {
+                            break;
+                        }
+                    }
+                    if (foundCount == count)
+                    {
+                        // count consecutive elements matching value have been found
+                        return { searchFirst, first };
+                    }
+                    if (first == last)
+                    {
+                        // search has failed to find count matching elements over the range.
+                        break;
+                    }
+                }
+
+                return { last, last };
+            }
+            template<class R, class T, class Pred = equal_to, class Proj = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_range<R>>,
+                bool_constant<indirectly_comparable<iterator_t<R>, const T*, Pred, Proj>>
+                >>>
+                constexpr borrowed_subrange_t<R> operator()(R&& r, range_difference_t<R> count,
+                    const T& value, Pred pred = {}, Proj proj = {}) const
+            {
+                return operator()(ranges::begin(AZStd::forward<R>(r)), ranges::end(AZStd::forward<R>(r)),
+                    AZStd::move(count), value, AZStd::move(pred), AZStd::move(proj));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::search_n_fn search_n{};
+    }
+
+    // ranges::find_end_fn
+    // use ranges::search
+    namespace Internal
+    {
+        struct find_end_fn
+        {
+            template<class I1, class S1, class I2, class S2, class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_iterator<I1>>,
+                bool_constant<sentinel_for<S1, I1>>,
+                bool_constant<forward_iterator<I2>>,
+                bool_constant<sentinel_for<S2, I2>>,
+                bool_constant<indirectly_comparable<I1, I2, Pred, Proj1, Proj2>>
+                >>>
+                constexpr subrange<I1> operator()(I1 first1, S1 last1, I2 first2, S2 last2, Pred pred = {},
+                    Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                if (first2 == last2)
+                {
+                    return { last1, last1 };
+                }
+                auto foundSubrange = ranges::search(first1, last1, first2, last2, pred, proj1, proj2);
+                if (foundSubrange.empty())
+                {
+                    return foundSubrange;
+                }
+                do
+                {
+                    auto nextIt = ranges::next(foundSubrange.begin());
+                    auto nextSubrange = ranges::search(nextIt, last1, first2, last2, pred, proj1, proj2);
+                    if (nextSubrange.empty())
+                    {
+                        return foundSubrange;
+                    }
+
+                    foundSubrange = AZStd::move(nextSubrange);
+
+                } while (true);
+            }
+            template<class R1, class R2, class Pred = equal_to, class Proj1 = identity, class Proj2 = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<forward_range<R1>>,
+                bool_constant<forward_range<R2>>,
+                bool_constant<indirectly_comparable<iterator_t<R1>, iterator_t<R2>, Pred, Proj1, Proj2>>
+                >>>
+                constexpr borrowed_subrange_t<R1> operator()(R1&& r1, R2&& r2, Pred pred = {},
+                    Proj1 proj1 = {}, Proj2 proj2 = {}) const
+            {
+                return operator()(ranges::begin(AZStd::forward<R1>(r1)), ranges::end(AZStd::forward<R1>(r1)),
+                    ranges::begin(AZStd::forward<R2>(r2)), ranges::end(AZStd::forward<R2>(r2)),
+                        AZStd::move(pred), AZStd::move(proj1), AZStd::move(proj2));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::find_end_fn find_end{};
     }
 } // namespace AZStd::ranges
 

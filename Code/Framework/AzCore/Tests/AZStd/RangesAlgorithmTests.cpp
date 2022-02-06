@@ -132,4 +132,119 @@ namespace UnitTest
         EXPECT_EQ(-8, *leftmostSmallestIt);
         EXPECT_EQ(1000, *rightmostLargestIt);
     }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesFind_LocatesElementInContainer_Succeeds)
+    {
+        AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
+
+        auto foundIt = AZStd::ranges::find(testVector, 22);
+        ASSERT_NE(testVector.end(), foundIt);
+        EXPECT_EQ(22, *foundIt);
+
+        foundIt = AZStd::ranges::find_if(testVector, [](int value) { return value < 0; });
+        ASSERT_NE(testVector.end(), foundIt);
+        EXPECT_EQ(-8, *foundIt);
+
+        foundIt = AZStd::ranges::find_if_not(testVector, [](int value) { return value < 1000; });
+        ASSERT_NE(testVector.end(), foundIt);
+        EXPECT_EQ(1000, *foundIt);
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesFindFirstOf_LocatesElementInContainer_Succeeds)
+    {
+        AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, 1000, 45 };
+
+        AZStd::array testArray{ -8, 47 };
+        auto foundIt = AZStd::ranges::find_first_of(testVector, testArray);
+        ASSERT_NE(testVector.end(), foundIt);
+        EXPECT_EQ(47, *foundIt);
+
+        AZStd::array<int, 0> emptyArray{};
+        foundIt = AZStd::ranges::find_first_of(testVector, emptyArray);
+        EXPECT_EQ(testVector.end(), foundIt);
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesSearch_LocatesElementInContainer_Succeeds)
+    {
+        AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000, 45 };
+
+        AZStd::array testArray{ 1000 };
+        auto testSubrange = AZStd::ranges::search(testVector, testArray);
+        ASSERT_FALSE(testSubrange.empty());
+        EXPECT_EQ(1000, testSubrange.front());
+
+        AZStd::array testArray2{ 1000, 45 };
+        testSubrange = AZStd::ranges::search(testVector, testArray2);
+        ASSERT_EQ(2, testSubrange.size());
+        EXPECT_EQ(1000, testSubrange[0]);
+        EXPECT_EQ(45, testSubrange[1]);
+
+        testSubrange = AZStd::ranges::search_n(testVector, 1, 22);
+        ASSERT_FALSE(testSubrange.empty());
+        EXPECT_EQ(22, testSubrange.front());
+
+        // 2 Consecutive values of 22 does not exist in vector
+        testSubrange = AZStd::ranges::search_n(testVector, 2, 22);
+        EXPECT_TRUE(testSubrange.empty());
+
+        // 2 Consecutive values of -8 does exist in vector
+        testSubrange = AZStd::ranges::search_n(testVector, 2,- 8);
+        ASSERT_EQ(2, testSubrange.size());
+        EXPECT_EQ(-8, testSubrange[0]);
+        EXPECT_EQ(-8, testSubrange[1]);
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesFindEnd_LocatesElementLastElement_Succeeds)
+    {
+        AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000, 45 };
+
+        AZStd::array testArray{ -8 };
+        auto testSubrange = AZStd::ranges::find_end(testVector, testArray);
+        ASSERT_FALSE(testSubrange.empty());
+        EXPECT_EQ(-8, testSubrange.front());
+        EXPECT_EQ(testVector.end() - 3, testSubrange.begin());
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesEqual_IsAbleToCompareTwoRanges_Succeeds)
+    {
+        AZStd::vector testVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000, 45 };
+        AZStd::vector longerVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000, 45, 929 };
+        AZStd::vector shorterVector{ 5, 1, 22, 47, -8, -5, 1000, 687, 22, -8, -8, 1000 };
+        AZStd::vector unequalVector{ 5, 1, 22, 47, -8, -5, 1000, 14, 22, -8, -8, 1000, 25 };
+
+        EXPECT_TRUE(AZStd::ranges::equal(testVector, testVector));
+        EXPECT_FALSE(AZStd::ranges::equal(testVector, longerVector));
+        EXPECT_FALSE(AZStd::ranges::equal(longerVector, testVector));
+        EXPECT_FALSE(AZStd::ranges::equal(testVector, shorterVector));
+        EXPECT_FALSE(AZStd::ranges::equal(shorterVector, testVector));
+        EXPECT_FALSE(AZStd::ranges::equal(testVector, unequalVector));
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesMismatch_Returns_IteratorsToMismatchElements)
+    {
+        AZStd::vector testVector{ 1, 2, 3, 4, 5 ,6 };
+        AZStd::vector secondVector{ 1, 2, 3, 14, 5, 6 };
+        AZStd::vector<int> emptyVector;
+        AZStd::vector<int> longerVector{ 1, 2, 3, 4, 5, 6, 7 };
+
+        {
+            auto [mismatchIt1, mismatchIt2] = AZStd::ranges::mismatch(testVector, secondVector);
+            ASSERT_NE(testVector.end(), mismatchIt1);
+            EXPECT_EQ(4, *mismatchIt1);
+            ASSERT_NE(secondVector.end(), mismatchIt2);
+            EXPECT_EQ(14, *mismatchIt2);
+        }
+        {
+            auto [mismatchIt1, mismatchIt2] = AZStd::ranges::mismatch(testVector, emptyVector);
+            ASSERT_NE(testVector.end(), mismatchIt1);
+            EXPECT_EQ(1, *mismatchIt1);
+            EXPECT_EQ(emptyVector.end(), mismatchIt2);
+        }
+        {
+            auto [mismatchIt1, mismatchIt2] = AZStd::ranges::mismatch(testVector, longerVector);
+            EXPECT_EQ(testVector.end(), mismatchIt1);
+            ASSERT_NE(longerVector.end(), mismatchIt2);
+            EXPECT_EQ(7, *mismatchIt2);
+        }
+    }
 }
