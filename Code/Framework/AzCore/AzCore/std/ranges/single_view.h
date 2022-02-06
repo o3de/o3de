@@ -20,7 +20,7 @@ namespace AZStd::ranges
         {
             struct single_view_fn
             {
-                template <class View, class = enable_if_t<ranges::view<View>>>
+                template <class View>
                 constexpr decltype(auto) operator()(View&& view) const
                 {
                     return single_view<decay_t<View>>(AZStd::forward<View>(view));
