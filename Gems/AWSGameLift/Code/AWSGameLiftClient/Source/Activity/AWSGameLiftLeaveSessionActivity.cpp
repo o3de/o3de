@@ -8,7 +8,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <Multiplayer/Session/ISessionHandlingRequests.h>
 
 #include <Activity/AWSGameLiftLeaveSessionActivity.h>
 
@@ -18,7 +18,7 @@ namespace AWSGameLift
     {
         void LeaveSession()
         {
-            auto clientRequestHandler = AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Get();
+            auto clientRequestHandler = AZ::Interface<Multiplayer::ISessionHandlingClientRequests>::Get();
             if (clientRequestHandler)
             {
                 AZ_TracePrintf(AWSGameLiftLeaveSessionActivityName, "Requesting player to leave the current session ...");

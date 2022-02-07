@@ -1091,7 +1091,7 @@ namespace Vegetation
         const float vegStep = sectorSizeInMeters / static_cast<float>(sectorDensity);
 
         //build a free list of all points in the sector for areas to consume
-        sectorInfo.m_baseContext.m_masks.clear();
+        sectorInfo.m_baseContext.m_masks.Clear();
         sectorInfo.m_baseContext.m_availablePoints.clear();
         sectorInfo.m_baseContext.m_availablePoints.reserve(sectorDensity * sectorDensity);
 
@@ -1127,16 +1127,19 @@ namespace Vegetation
         uint claimIndex = 0;
         for (auto& availablePoints : availablePointsPerPosition)
         {
-            for (auto& surfacePoint : availablePoints)
-            {
-                sectorInfo.m_baseContext.m_availablePoints.push_back();
-                ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();
-                claimPoint.m_handle = CreateClaimHandle(sectorInfo, ++claimIndex);
-                claimPoint.m_position = surfacePoint.m_position;
-                claimPoint.m_normal = surfacePoint.m_normal;
-                claimPoint.m_masks = surfacePoint.m_masks;
-                SurfaceData::AddMaxValueForMasks(sectorInfo.m_baseContext.m_masks, surfacePoint.m_masks);
-            }
+            availablePoints.EnumeratePoints(
+                [this, &sectorInfo,
+                 &claimIndex](const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+                {
+                    sectorInfo.m_baseContext.m_availablePoints.push_back();
+                    ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();
+                    claimPoint.m_handle = CreateClaimHandle(sectorInfo, ++claimIndex);
+                    claimPoint.m_position = position;
+                    claimPoint.m_normal = normal;
+                    claimPoint.m_masks = masks;
+                    sectorInfo.m_baseContext.m_masks.AddSurfaceTagWeights(masks);
+                    return true;
+                });
         }
     }
 

@@ -18,6 +18,9 @@ class Tests:
     grid_component_added = (
         "Entity has a Grid component",
         "Entity failed to find Grid component")
+    grid_size = (
+        "Grid Size value set successfully",
+        "Grid Size value could not be set")
     enter_game_mode = (
         "Entered game mode",
         "Failed to enter game mode")
@@ -59,13 +62,14 @@ def AtomEditorComponents_Grid_AddedToEntity():
     2) Add a Grid component to Grid entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Enter/Exit game mode.
-    6) Test IsHidden.
-    7) Test IsVisible.
-    8) Delete Grid entity.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors.
+    5) Grid Size changed.
+    6) Enter/Exit game mode.
+    7) Test IsHidden.
+    8) Test IsVisible.
+    9) Delete Grid entity.
+    10) UNDO deletion.
+    11) REDO deletion.
+    12) Look for errors.
 
     :return: None
     """
@@ -119,35 +123,42 @@ def AtomEditorComponents_Grid_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, grid_entity.exists())
 
-        # 5. Enter/Exit game mode.
+        # 5. Grid Size changed
+        grid_component.set_component_property_value(
+            AtomComponentProperties.grid('Grid Size'), value=64)
+        current_grid_size = grid_component.get_component_property_value(
+            AtomComponentProperties.grid('Grid Size'))
+        Report.result(Tests.grid_size, current_grid_size == 64)
+
+        # 6. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Test IsHidden.
+        # 7. Test IsHidden.
         grid_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, grid_entity.is_hidden() is True)
 
-        # 7. Test IsVisible.
+        # 8. Test IsVisible.
         grid_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, grid_entity.is_visible() is True)
 
-        # 8. Delete Grid entity.
+        # 9. Delete Grid entity.
         grid_entity.delete()
         Report.result(Tests.entity_deleted, not grid_entity.exists())
 
-        # 9. UNDO deletion.
+        # 10. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, grid_entity.exists())
 
-        # 10. REDO deletion.
+        # 11. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not grid_entity.exists())
 
-        # 11. Look for errors or asserts.
+        # 12. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

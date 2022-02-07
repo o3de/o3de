@@ -38,6 +38,11 @@ namespace AZ
             if (copyData)
             {
                 m_data = *copyData;
+
+                if (copyData->m_useCopyQueue)
+                {
+                    m_hardwareQueueClass = RHI::HardwareQueueClass::Copy;
+                }
             }
         }
 
