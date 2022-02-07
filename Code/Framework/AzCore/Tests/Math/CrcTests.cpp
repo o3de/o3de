@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,7 @@ namespace Benchmark
         // This function only exist to calculate AZ::Crc32 values at compile time
         for (auto _ : state)
         {
-            constexpr auto resultArray = Crc32Internal::GenerateTestCrc32Values();
+            [[maybe_unused]] constexpr auto resultArray = Crc32Internal::GenerateTestCrc32Values();
         }
     }
 

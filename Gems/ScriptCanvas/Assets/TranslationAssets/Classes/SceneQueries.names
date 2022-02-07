@@ -1,0 +1,69 @@
+{
+    "entries": [
+        {
+            "base": "SceneQueries",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Scene Queries"
+            },
+            "methods": [
+                {
+                    "base": "CreateRayCastRequest",
+                    "context": "SceneQueries",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateRayCastRequest"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateRayCastRequest is invoked"
+                    },
+                    "details": {
+                        "name": "SceneQueries::CreateRayCastRequest",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Start",
+                                "tooltip": "The position from which the raycast starts"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Direction",
+                                "tooltip": "The (normalized) direction in which to fire the raycast"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Distance",
+                                "tooltip": "The length of the raycast"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Collision Group",
+                                "tooltip": "Allows filtering of objects intersecting the raycast based on their collision layers"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{53EAD088-A391-48F1-8370-2A1DBA31512F}",
+                            "details": {
+                                "name": "RayCastRequest",
+                                "tooltip": "Parameters for raycast"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

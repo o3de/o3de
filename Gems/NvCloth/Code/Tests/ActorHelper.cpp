@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,9 +28,9 @@ namespace UnitTest
     {
     }
 
-    AZ::u32 ActorHelper::AddJoint(
+    size_t ActorHelper::AddJoint(
         const AZStd::string& name,
-        const AZ::Transform localTransform,
+        const AZ::Transform& localTransform,
         const AZStd::string& parentName)
     {
         EMotionFX::Node* parentNode = GetSkeleton()->FindNodeByNameNoCase(parentName.c_str());
@@ -37,7 +38,7 @@ namespace UnitTest
         auto node = AddNode(
             GetNumNodes(),
             name.c_str(),
-            (parentNode) ? parentNode->GetNodeIndex() : MCORE_INVALIDINDEX32);
+            (parentNode) ? parentNode->GetNodeIndex() : InvalidIndex);
 
         GetBindPose()->SetLocalSpaceTransform(node->GetNodeIndex(), localTransform);
 

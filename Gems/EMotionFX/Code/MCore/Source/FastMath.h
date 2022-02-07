@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -299,24 +300,15 @@ namespace MCore
         static MCORE_INLINE float SafeFMod(float x, float y);
 
         /**
-         * Align a given uint32 value to a given alignment.
-         * For example when the input value of inOutValue contains a value of 50, and the alignment is set to 16, then the
-         * value is modified to be 64.
-         * @param inOutValue The input value to align. This will also be the output, so the value is modified.
-         * @param alignment The alignment to use, for example 16, 32 or 64, etc.
-         */
-        static MCORE_INLINE void Align(uint32* inOutValue, uint32 alignment);
-
-
-        /**
-         * Align a given uint32 value to a given alignment.
+         * Align a given size_t value to a given alignment.
          * For example when the input value of inOutValue contains a value of 50, and the alignment is set to 16, then the
          * aligned return value would be 64.
          * @param inValue The input value, which would be 50 in our above example.
          * @param alignment The alignment touse, which would be 16 in our above example.
          * @result The value returned is the input value aligned to the given alignment. In our example it would return a value of 64.
          */
-        static MCORE_INLINE uint32 Align(uint32 inValue, uint32 alignment);
+        template<typename T>
+        static MCORE_INLINE T Align(T inValue, T alignment);
 
         /**
          * Multiply a float value by its sign.

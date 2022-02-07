@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,6 +20,7 @@
 namespace Multiplayer
 {
     class NetSystemComponent;
+    class NetworkHierarchyRootComponent;
 
     class ServerToClientReplicationWindow
         : public IReplicationWindow
@@ -37,15 +39,17 @@ namespace Multiplayer
         // we sort lowest priority first, so that we can easily keep the biggest N priorities
         using ReplicationCandidateQueue = AZStd::priority_queue<PrioritizedReplicationCandidate>;
 
-        ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, const AzNetworking::IConnection* connection);
+        ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection);
 
         //! IReplicationWindow interface
         //! @{
         bool ReplicationSetUpdateReady() override;
         const ReplicationSet& GetReplicationSet() const override;
-        uint32_t GetMaxEntityReplicatorSendCount() const override;
+        uint32_t GetMaxProxyEntityReplicatorSendCount() const override;
         bool IsInWindow(const ConstNetworkEntityHandle& entityPtr, NetEntityRole& outNetworkRole) const override;
         void UpdateWindow() override;
+        AzNetworking::PacketId SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector) override;
+        void SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable) override;
         void DebugDraw() const override;
         //! @}
 
@@ -53,8 +57,7 @@ namespace Multiplayer
         void OnEntityActivated(AZ::Entity* entity);
         void OnEntityDeactivated(AZ::Entity* entity);
 
-        //void CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController);
-        //void OnAddFilteredEntity(NetEntityId filteredEntityId);
+        void UpdateHierarchyReplicationSet(ReplicationSet& replicationSet, NetworkHierarchyRootComponent& hierarchyComponent);
 
         void EvaluateConnection();
         void AddEntityToReplicationSet(ConstNetworkEntityHandle& entityHandle, float priority, float distanceSquared);
@@ -73,11 +76,7 @@ namespace Multiplayer
         AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
         AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
-        //FilteredEntityComponent::Authority* m_controlledFilteredEntityComponent = nullptr;
-        //NetBindComponent* m_controlledNetBindComponent = nullptr;
-
-        const AzNetworking::IConnection* m_connection = nullptr;
-        float m_minPriorityReplicated = 0.0f; ///< Lowest replicated entity priority in last update
+        AzNetworking::IConnection* m_connection = nullptr;
 
         // Cached values to detect a poor network connection
         uint32_t m_lastCheckedSentPackets = 0;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,9 @@
 #ifndef CRYINCLUDE_EDITOR_WIPFEATUREMANAGER_H
 #define CRYINCLUDE_EDITOR_WIPFEATUREMANAGER_H
 #pragma once
+
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/map.h>
 
 /*
     This class is used to control work in progress features at runtime, so QA can test even if the end user will not see those features
@@ -44,7 +48,7 @@ public:
     static const char* kWipFeaturesFilename;
 
     // Used to register a callback function to update the state of features whitin the editor
-    // pbVisible, pbEnabled, pbSafeMode, pParams - if the pointer is NULL, then that attribute was not changed
+    // pbVisible, pbEnabled, pbSafeMode, pParams - if the pointer is nullptr, then that attribute was not changed
     typedef void (* TWipFeatureUpdateCallback)(int aFeatureId, const bool* const pbVisible, const bool* const pbEnabled, const bool* const pbSafeMode, const char* pParams);
 
     // wip feature registerer auto create object, used for static auto feature creation with the REGISTER_WIP_FEATURE macro
@@ -67,19 +71,19 @@ public:
             , m_bVisible(true)
             , m_bEnabled(true)
             , m_bSafeMode(false)
-            , m_pfnUpdateFeature(NULL)
+            , m_pfnUpdateFeature(nullptr)
             , m_bLoadedFromXml(false)
         {}
 
         int         m_id;
-        string  m_displayName, m_params;
+        AZStd::string  m_displayName, m_params;
         bool        m_bVisible, m_bEnabled, m_bSafeMode,
         // if true, this feature will be saved into the xml file when Save(...) will be called
                     m_bSaveToXml, m_bLoadedFromXml;
         TWipFeatureUpdateCallback   m_pfnUpdateFeature;
     };
 
-    typedef std::map<int, SWipFeatureInfo> TWipFeatures;
+    typedef AZStd::map<int, SWipFeatureInfo> TWipFeatures;
 
 private:
 
@@ -95,7 +99,7 @@ public:
         if (!s_pInstance)
         {
             s_pInstance = new CWipFeatureManager();
-            assert(s_pInstance);
+            AZ_Assert(s_pInstance, "Could not construct CWipFeatureManager");
         }
 
         return s_pInstance;

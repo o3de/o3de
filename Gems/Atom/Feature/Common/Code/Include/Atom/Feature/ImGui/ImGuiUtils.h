@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -49,12 +50,12 @@ namespace AZ
                 return scope;
             }
 
-            //! Sets the active context based on the provided PassHierarchyFilter. If the filter doesn't match exactly one pass, then do nothing.
-            static ImGuiActiveContextScope FromPass(const RPI::PassHierarchyFilter& passHierarchyFilter)
+            //! Sets the active context based on the provided pass hierarchy filter. If the filter doesn't match exactly one pass, then do nothing.
+            static ImGuiActiveContextScope FromPass(const AZStd::vector<AZStd::string>& passHierarchy)
             {
                 ImGuiActiveContextScope scope;
                 scope.ConnectToImguiNotificationBus();
-                ImGuiSystemRequestBus::BroadcastResult(scope.m_isEnabled, &ImGuiSystemRequests::PushActiveContextFromPass, passHierarchyFilter);
+                ImGuiSystemRequestBus::BroadcastResult(scope.m_isEnabled, &ImGuiSystemRequests::PushActiveContextFromPass, passHierarchy);
                 return scope;
             }
 

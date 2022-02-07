@@ -1,0 +1,37 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "NewDepthOfFieldCompositeTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_fullResDimensions"
+                },
+                {
+                    "Name": "HalfResColorAndCoC",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_halfResDimensions"
+                },
+                {
+                    "Name": "ColorInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/NewDepthOfFieldComposite.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

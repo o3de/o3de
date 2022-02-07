@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,7 +27,6 @@
 #include <Atom/RHI.Reflect/ReflectSystemComponent.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
 #include <Atom/RHI.Reflect/ResolveScopeAttachmentDescriptor.h>
-#include <Atom/RHI.Reflect/RHISystemDescriptor.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/ScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderDataMappings.h>
@@ -160,7 +160,6 @@ namespace AZ
             TransientAttachmentPoolBudgets::Reflect(context);
             PlatformLimits::Reflect(context);
             PlatformLimitsDescriptor::Reflect(context);
-            RHISystemDescriptor::Reflect(context);
             Origin::Reflect(context);
             ReflectVendorIdEnums(context);
             PhysicalDeviceDriverValidator::Reflect(context);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 // include the required headers
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -75,7 +76,7 @@ namespace EMotionFX
          * @param nr The motion to remove.
          * @param deleteMem If true the allocated memory of the motion will be deleted.
          */
-        void RemoveMotion(uint32 nr, bool deleteMem = true);
+        void RemoveMotion(size_t nr, bool deleteMem = true);
 
         /**
          * Remove a given motion.
@@ -103,7 +104,7 @@ namespace EMotionFX
          * @result A pointer to the motion instance.
          * @see IsValidMotionInstance
          */
-        MotionInstance* GetMotionInstance(uint32 nr) const;
+        MotionInstance* GetMotionInstance(size_t nr) const;
 
         /**
          * Recursively search for the first non mixing motion and return the motion instance.
@@ -121,7 +122,7 @@ namespace EMotionFX
          * @result The number of active motion instances inside this actor.
          * @see IsValidMotionInstance
          */
-        uint32 GetNumMotionInstances() const;
+        size_t GetNumMotionInstances() const;
 
         /**
          * Checks if a given motion instance is still valid.
@@ -214,9 +215,9 @@ namespace EMotionFX
 
 
     protected:
-        MCore::Array<MotionInstance*>   mMotionInstances;       /**< The collection of motion instances. */
-        ActorInstance*                  mActorInstance;         /**< The actor instance where this motion system belongs to. */
-        MotionQueue*                    mMotionQueue;           /**< The motion queue. */
+        AZStd::vector<MotionInstance*>   m_motionInstances;       /**< The collection of motion instances. */
+        ActorInstance*                  m_actorInstance;         /**< The actor instance where this motion system belongs to. */
+        MotionQueue*                    m_motionQueue;           /**< The motion queue. */
 
         /**
          * Constructor.

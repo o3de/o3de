@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,7 @@
 #include <EMotionFX/Source/BaseObject.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <MCore/Source/Attribute.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Random.h>
 
 
@@ -63,11 +64,11 @@ namespace EMotionFX
 
         struct EMFX_API InitSettings
         {
-            bool    mPreInitMotionInstances;
+            bool    m_preInitMotionInstances;
 
             InitSettings()
             {
-                mPreInitMotionInstances = false;
+                m_preInitMotionInstances = false;
             }
         };
 
@@ -78,9 +79,9 @@ namespace EMotionFX
         void Start();
         void Stop();
 
-        MCORE_INLINE ActorInstance* GetActorInstance() const            { return mActorInstance; }
-        MCORE_INLINE AnimGraph* GetAnimGraph() const                  { return mAnimGraph; }
-        MCORE_INLINE MotionSet* GetMotionSet() const                    { return mMotionSet; }
+        MCORE_INLINE ActorInstance* GetActorInstance() const            { return m_actorInstance; }
+        MCORE_INLINE AnimGraph* GetAnimGraph() const                  { return m_animGraph; }
+        MCORE_INLINE MotionSet* GetMotionSet() const                    { return m_motionSet; }
 
         void SetParentAnimGraphInstance(AnimGraphInstance* parentAnimGraphInstance);
         MCORE_INLINE AnimGraphInstance* GetParentAnimGraphInstance() const { return m_parentAnimGraphInstance; }
@@ -94,30 +95,30 @@ namespace EMotionFX
         bool GetVector4ParameterValue(const char* paramName, AZ::Vector4* outValue);
         bool GetRotationParameterValue(const char* paramName, AZ::Quaternion* outRotation);
 
-        bool GetParameterValueAsFloat(uint32 paramIndex, float* outValue);
-        bool GetParameterValueAsBool(uint32 paramIndex, bool* outValue);
-        bool GetParameterValueAsInt(uint32 paramIndex, int32* outValue);
-        bool GetVector2ParameterValue(uint32 paramIndex, AZ::Vector2* outValue);
-        bool GetVector3ParameterValue(uint32 paramIndex, AZ::Vector3* outValue);
-        bool GetVector4ParameterValue(uint32 paramIndex, AZ::Vector4* outValue);
-        bool GetRotationParameterValue(uint32 paramIndex, AZ::Quaternion* outRotation);
+        bool GetParameterValueAsFloat(size_t paramIndex, float* outValue);
+        bool GetParameterValueAsBool(size_t paramIndex, bool* outValue);
+        bool GetParameterValueAsInt(size_t paramIndex, int32* outValue);
+        bool GetVector2ParameterValue(size_t paramIndex, AZ::Vector2* outValue);
+        bool GetVector3ParameterValue(size_t paramIndex, AZ::Vector3* outValue);
+        bool GetVector4ParameterValue(size_t paramIndex, AZ::Vector4* outValue);
+        bool GetRotationParameterValue(size_t paramIndex, AZ::Quaternion* outRotation);
 
         void SetMotionSet(MotionSet* motionSet);
 
         void CreateParameterValues();
         void AddMissingParameterValues();   // add the missing parameters that the anim graph has to this anim graph instance
-        void ReInitParameterValue(uint32 index);
+        void ReInitParameterValue(size_t index);
         void ReInitParameterValues();
-        void RemoveParameterValue(uint32 index, bool delFromMem = true);
+        void RemoveParameterValue(size_t index, bool delFromMem = true);
         void AddParameterValue();       // add the last anim graph parameter to this instance
-        void InsertParameterValue(uint32 index);    // add the parameter of the animgraph, at a given index
-        void MoveParameterValue(uint32 oldIndex, uint32 newIndex);   // move the parameter from old index to new index
+        void InsertParameterValue(size_t index);    // add the parameter of the animgraph, at a given index
+        void MoveParameterValue(size_t oldIndex, size_t newIndex);   // move the parameter from old index to new index
         void RemoveAllParameters(bool delFromMem);
 
         template <typename T>
-        MCORE_INLINE T* GetParameterValueChecked(uint32 index) const
+        MCORE_INLINE T* GetParameterValueChecked(size_t index) const
         {
-            MCore::Attribute* baseAttrib = mParamValues[index];
+            MCore::Attribute* baseAttrib = m_paramValues[index];
             if (baseAttrib->GetType() == T::TYPE_ID)
             {
                 return static_cast<T*>(baseAttrib);
@@ -125,7 +126,7 @@ namespace EMotionFX
             return nullptr;
         }
 
-        MCORE_INLINE MCore::Attribute* GetParameterValue(uint32 index) const                            { return mParamValues[index]; }
+        MCORE_INLINE MCore::Attribute* GetParameterValue(size_t index) const                            { return m_paramValues[index]; }
         MCore::Attribute* FindParameter(const AZStd::string& name) const;
         AZ::Outcome<size_t> FindParameterIndex(const AZStd::string& name) const;
 
@@ -159,7 +160,7 @@ namespace EMotionFX
         void RemoveAllInternalAttributes();
         void ReserveInternalAttributes(size_t totalNumInternalAttributes);
         void RemoveInternalAttribute(size_t index, bool delFromMem = true);   // removes the internal attribute (does not update any indices of other attributes)
-        uint32 AddInternalAttribute(MCore::Attribute* attribute);           // returns the index of the new added attribute
+        size_t AddInternalAttribute(MCore::Attribute* attribute);           // returns the index of the new added attribute
 
         AnimGraphObjectData* FindOrCreateUniqueObjectData(const AnimGraphObject* object);
         AnimGraphNodeData* FindOrCreateUniqueNodeData(const AnimGraphNode* node);
@@ -194,7 +195,7 @@ namespace EMotionFX
         void SetIsOwnedByRuntime(bool isOwnedByRuntime);
         bool GetIsOwnedByRuntime() const;
 
-        ActorInstance* FindActorInstanceFromParentDepth(uint32 parentDepth) const;
+        ActorInstance* FindActorInstanceFromParentDepth(size_t parentDepth) const;
 
         void SetVisualizeScale(float scale);
         float GetVisualizeScale() const;
@@ -236,40 +237,40 @@ namespace EMotionFX
         void CollectActiveAnimGraphNodes(AZStd::vector<AnimGraphNode*>* outNodes, const AZ::TypeId& nodeType = AZ::TypeId::CreateNull()); // MCORE_INVALIDINDEX32 means all node types
         void CollectActiveNetTimeSyncNodes(AZStd::vector<AnimGraphNode*>* outNodes);
 
-        MCORE_INLINE uint32 GetObjectFlags(uint32 objectIndex) const                                            { return mObjectFlags[objectIndex]; }
-        MCORE_INLINE void SetObjectFlags(uint32 objectIndex, uint32 flags)                                      { mObjectFlags[objectIndex] = flags; }
-        MCORE_INLINE void EnableObjectFlags(uint32 objectIndex, uint32 flagsToEnable)                           { mObjectFlags[objectIndex] |= flagsToEnable; }
-        MCORE_INLINE void DisableObjectFlags(uint32 objectIndex, uint32 flagsToDisable)                         { mObjectFlags[objectIndex] &= ~flagsToDisable; }
-        MCORE_INLINE void SetObjectFlags(uint32 objectIndex, uint32 flags, bool enabled)
+        MCORE_INLINE uint32 GetObjectFlags(size_t objectIndex) const                                            { return m_objectFlags[objectIndex]; }
+        MCORE_INLINE void SetObjectFlags(size_t objectIndex, uint32 flags)                                      { m_objectFlags[objectIndex] = flags; }
+        MCORE_INLINE void EnableObjectFlags(size_t objectIndex, uint32 flagsToEnable)                           { m_objectFlags[objectIndex] |= flagsToEnable; }
+        MCORE_INLINE void DisableObjectFlags(size_t objectIndex, uint32 flagsToDisable)                         { m_objectFlags[objectIndex] &= ~flagsToDisable; }
+        MCORE_INLINE void SetObjectFlags(size_t objectIndex, uint32 flags, bool enabled)
         {
             if (enabled)
             {
-                mObjectFlags[objectIndex] |= flags;
+                m_objectFlags[objectIndex] |= flags;
             }
             else
             {
-                mObjectFlags[objectIndex] &= ~flags;
+                m_objectFlags[objectIndex] &= ~flags;
             }
         }
-        MCORE_INLINE bool GetIsObjectFlagEnabled(uint32 objectIndex, uint32 flag) const                         { return (mObjectFlags[objectIndex] & flag) != 0; }
+        MCORE_INLINE bool GetIsObjectFlagEnabled(size_t objectIndex, uint32 flag) const                         { return (m_objectFlags[objectIndex] & flag) != 0; }
 
-        MCORE_INLINE bool GetIsOutputReady(uint32 objectIndex) const                                            { return (mObjectFlags[objectIndex] & OBJECTFLAGS_OUTPUT_READY) != 0; }
-        MCORE_INLINE void SetIsOutputReady(uint32 objectIndex, bool isReady)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_OUTPUT_READY, isReady); }
+        MCORE_INLINE bool GetIsOutputReady(size_t objectIndex) const                                            { return (m_objectFlags[objectIndex] & OBJECTFLAGS_OUTPUT_READY) != 0; }
+        MCORE_INLINE void SetIsOutputReady(size_t objectIndex, bool isReady)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_OUTPUT_READY, isReady); }
 
-        MCORE_INLINE bool GetIsSynced(uint32 objectIndex) const                                                 { return (mObjectFlags[objectIndex] & OBJECTFLAGS_SYNCED) != 0; }
-        MCORE_INLINE void SetIsSynced(uint32 objectIndex, bool isSynced)                                        { SetObjectFlags(objectIndex, OBJECTFLAGS_SYNCED, isSynced); }
+        MCORE_INLINE bool GetIsSynced(size_t objectIndex) const                                                 { return (m_objectFlags[objectIndex] & OBJECTFLAGS_SYNCED) != 0; }
+        MCORE_INLINE void SetIsSynced(size_t objectIndex, bool isSynced)                                        { SetObjectFlags(objectIndex, OBJECTFLAGS_SYNCED, isSynced); }
 
-        MCORE_INLINE bool GetIsResynced(uint32 objectIndex) const                                               { return (mObjectFlags[objectIndex] & OBJECTFLAGS_RESYNC) != 0; }
-        MCORE_INLINE void SetIsResynced(uint32 objectIndex, bool isResynced)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_RESYNC, isResynced); }
+        MCORE_INLINE bool GetIsResynced(size_t objectIndex) const                                               { return (m_objectFlags[objectIndex] & OBJECTFLAGS_RESYNC) != 0; }
+        MCORE_INLINE void SetIsResynced(size_t objectIndex, bool isResynced)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_RESYNC, isResynced); }
 
-        MCORE_INLINE bool GetIsUpdateReady(uint32 objectIndex) const                                            { return (mObjectFlags[objectIndex] & OBJECTFLAGS_UPDATE_READY) != 0; }
-        MCORE_INLINE void SetIsUpdateReady(uint32 objectIndex, bool isReady)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_UPDATE_READY, isReady); }
+        MCORE_INLINE bool GetIsUpdateReady(size_t objectIndex) const                                            { return (m_objectFlags[objectIndex] & OBJECTFLAGS_UPDATE_READY) != 0; }
+        MCORE_INLINE void SetIsUpdateReady(size_t objectIndex, bool isReady)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_UPDATE_READY, isReady); }
 
-        MCORE_INLINE bool GetIsTopDownUpdateReady(uint32 objectIndex) const                                     { return (mObjectFlags[objectIndex] & OBJECTFLAGS_TOPDOWNUPDATE_READY) != 0; }
-        MCORE_INLINE void SetIsTopDownUpdateReady(uint32 objectIndex, bool isReady)                             { SetObjectFlags(objectIndex, OBJECTFLAGS_TOPDOWNUPDATE_READY, isReady); }
+        MCORE_INLINE bool GetIsTopDownUpdateReady(size_t objectIndex) const                                     { return (m_objectFlags[objectIndex] & OBJECTFLAGS_TOPDOWNUPDATE_READY) != 0; }
+        MCORE_INLINE void SetIsTopDownUpdateReady(size_t objectIndex, bool isReady)                             { SetObjectFlags(objectIndex, OBJECTFLAGS_TOPDOWNUPDATE_READY, isReady); }
 
-        MCORE_INLINE bool GetIsPostUpdateReady(uint32 objectIndex) const                                        { return (mObjectFlags[objectIndex] & OBJECTFLAGS_POSTUPDATE_READY) != 0; }
-        MCORE_INLINE void SetIsPostUpdateReady(uint32 objectIndex, bool isReady)                                { SetObjectFlags(objectIndex, OBJECTFLAGS_POSTUPDATE_READY, isReady); }
+        MCORE_INLINE bool GetIsPostUpdateReady(size_t objectIndex) const                                        { return (m_objectFlags[objectIndex] & OBJECTFLAGS_POSTUPDATE_READY) != 0; }
+        MCORE_INLINE void SetIsPostUpdateReady(size_t objectIndex, bool isReady)                                { SetObjectFlags(objectIndex, OBJECTFLAGS_POSTUPDATE_READY, isReady); }
 
         const InitSettings& GetInitSettings() const;
         const AnimGraphEventBuffer& GetEventBuffer() const;
@@ -282,9 +283,9 @@ namespace EMotionFX
         void CreateSnapshot(bool authoritative);
         void SetSnapshotSerializer(AZStd::shared_ptr<Network::AnimGraphSnapshotSerializer> serializer);
         void SetSnapshotChunkSerializer(AZStd::shared_ptr<Network::AnimGraphSnapshotChunkSerializer> serializer);
-        const AZStd::shared_ptr<AnimGraphSnapshot> GetSnapshot() const { return mSnapshot; }
+        const AZStd::shared_ptr<AnimGraphSnapshot> GetSnapshot() const { return m_snapshot; }
         bool IsNetworkEnabled() const { return GetSnapshot(); }
-        MCore::LcgRandom& GetLcgRandom() { return mLcgRandom;  }
+        MCore::LcgRandom& GetLcgRandom() { return m_lcgRandom;  }
 
         void OnNetworkConnected();   
         void OnNetworkParamUpdate(const AttributeContainer& parameters);
@@ -297,24 +298,24 @@ namespace EMotionFX
         void ReleasePoses();
 
     private:
-        AnimGraph*                                          mAnimGraph;
-        ActorInstance*                                      mActorInstance;
+        AnimGraph*                                          m_animGraph;
+        ActorInstance*                                      m_actorInstance;
         AnimGraphInstance*                                  m_parentAnimGraphInstance; // If this anim graph instance is in a reference node, it will have a parent anim graph instance.
         AZStd::vector<AnimGraphInstance*>                   m_childAnimGraphInstances; // If this anim graph instance contains reference nodes, the anim graph instances will be listed here.
-        MCore::Array<MCore::Attribute*>                     mParamValues;           // a value for each AnimGraph parameter (the control parameters)
+        AZStd::vector<MCore::Attribute*>                     m_paramValues;           // a value for each AnimGraph parameter (the control parameters)
         AZStd::vector<AnimGraphObjectData*>                 m_uniqueDatas;          // unique object data
-        MCore::Array<uint32>                                mObjectFlags;           // the object flags
+        AZStd::vector<uint32>                                m_objectFlags;           // the object flags
         using EventHandlerVector = AZStd::vector<AnimGraphInstanceEventHandler*>;
         AZStd::vector<EventHandlerVector>                   m_eventHandlersByEventType; /**< The event handler to use to process events organized by EventTypes. */
         AZStd::vector<MCore::Attribute*>                    m_internalAttributes;
-        MotionSet*                                          mMotionSet;             // the used motion set
-        MCore::Mutex                                        mMutex;
-        InitSettings                                        mInitSettings;
-        AnimGraphEventBuffer                                mEventBuffer;           /**< The event buffer of the last update. */
-        float                                               mVisualizeScale;
-        bool                                                mAutoUnregister;        /**< Specifies whether we will automatically unregister this anim graph instance set from the anim graph manager or not, when deleting this object. */
-        bool                                                mEnableVisualization;
-        bool                                                mRetarget;              /**< Is retargeting enabled? */
+        MotionSet*                                          m_motionSet;             // the used motion set
+        MCore::Mutex                                        m_mutex;
+        InitSettings                                        m_initSettings;
+        AnimGraphEventBuffer                                m_eventBuffer;           /**< The event buffer of the last update. */
+        float                                               m_visualizeScale;
+        bool                                                m_autoUnregister;        /**< Specifies whether we will automatically unregister this anim graph instance set from the anim graph manager or not, when deleting this object. */
+        bool                                                m_enableVisualization;
+        bool                                                m_retarget;              /**< Is retargeting enabled? */
 
         bool                                                m_autoReleaseAllPoses;
         bool                                                m_autoReleaseAllRefDatas;
@@ -323,11 +324,11 @@ namespace EMotionFX
         AZStd::vector<AnimGraphInstance*>                   m_leaderGraphs;
 
         // Network related members
-        AZStd::shared_ptr<AnimGraphSnapshot>                mSnapshot;
-        MCore::LcgRandom                                    mLcgRandom;
+        AZStd::shared_ptr<AnimGraphSnapshot>                m_snapshot;
+        MCore::LcgRandom                                    m_lcgRandom;
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        bool                                                mIsOwnedByRuntime;
+        bool                                                m_isOwnedByRuntime;
 #endif // EMFX_DEVELOPMENT_BUILD
 
         AnimGraphInstance(AnimGraph* animGraph, ActorInstance* actorInstance, MotionSet* motionSet, const InitSettings* initSettings = nullptr);

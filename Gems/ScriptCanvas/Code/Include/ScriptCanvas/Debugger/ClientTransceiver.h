@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -77,7 +78,7 @@ namespace ScriptCanvas
             //////////////////////////////////////////////////////////////////////////
             // TargetManagerClient
             void DesiredTargetConnected(bool connected) override;
-            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
+            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId) override;
             void TargetJoinedNetwork(AzFramework::TargetInfo info) override;
             void TargetLeftNetwork(AzFramework::TargetInfo info) override;
             //////////////////////////////////////////////////////////////////////////

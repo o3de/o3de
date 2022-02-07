@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,29 +12,29 @@ namespace AZ
 {
     namespace Simd
     {
-        static AZ_ALIGN(constexpr float g_sinCoef1[4],    16) = { -0.0001950727f, -0.0001950727f, -0.0001950727f, -0.0001950727f };
-        static AZ_ALIGN(constexpr float g_sinCoef2[4],    16) = {  0.0083320758f,  0.0083320758f,  0.0083320758f,  0.0083320758f };
-        static AZ_ALIGN(constexpr float g_sinCoef3[4],    16) = { -0.1666665247f, -0.1666665247f, -0.1666665247f, -0.1666665247f };
-        static AZ_ALIGN(constexpr float g_cosCoef1[4],    16) = { -0.0013602249f, -0.0013602249f, -0.0013602249f, -0.0013602249f };
-        static AZ_ALIGN(constexpr float g_cosCoef2[4],    16) = {  0.0416566950f,  0.0416566950f,  0.0416566950f,  0.0416566950f };
-        static AZ_ALIGN(constexpr float g_cosCoef3[4],    16) = { -0.4999990225f, -0.4999990225f, -0.4999990225f, -0.4999990225f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef1[4], 16) = { -0.0012624911f, -0.0012624911f, -0.0012624911f, -0.0012624911f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef2[4], 16) = {  0.0066700901f,  0.0066700901f,  0.0066700901f,  0.0066700901f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef3[4], 16) = { -0.0170881256f, -0.0170881256f, -0.0170881256f, -0.0170881256f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef4[4], 16) = {  0.0308918810f,  0.0308918810f,  0.0308918810f,  0.0308918810f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef1[4], 16) = { -0.0501743046f, -0.0501743046f, -0.0501743046f, -0.0501743046f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef2[4], 16) = {  0.0889789874f,  0.0889789874f,  0.0889789874f,  0.0889789874f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef3[4], 16) = { -0.2145988016f, -0.2145988016f, -0.2145988016f, -0.2145988016f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef4[4], 16) = {  1.5707963050f,  1.5707963050f,  1.5707963050f,  1.5707963050f };
-        static AZ_ALIGN(constexpr float g_acosCoef1[4],   16) = { -0.0200752200f, -0.0200752200f, -0.0200752200f, -0.0200752200f };
-        static AZ_ALIGN(constexpr float g_acosCoef2[4],   16) = {  0.0759031500f,  0.0759031500f,  0.0759031500f,  0.0759031500f };
-        static AZ_ALIGN(constexpr float g_acosCoef3[4],   16) = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
-        static AZ_ALIGN(constexpr float g_atanHiRange[4], 16) = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
-        static AZ_ALIGN(constexpr float g_atanLoRange[4], 16) = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
-        static AZ_ALIGN(constexpr float g_atanCoef1[4],   16) = {  8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f };
-        static AZ_ALIGN(constexpr float g_atanCoef2[4],   16) = {  -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
-        static AZ_ALIGN(constexpr float g_atanCoef3[4],   16) = {  1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f };
-        static AZ_ALIGN(constexpr float g_atanCoef4[4],   16) = {  -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
+        alignas(16) static constexpr float g_sinCoef1[4]    = { -0.0001950727f, -0.0001950727f, -0.0001950727f, -0.0001950727f };
+        alignas(16) static constexpr float g_sinCoef2[4]    = {  0.0083320758f,  0.0083320758f,  0.0083320758f,  0.0083320758f };
+        alignas(16) static constexpr float g_sinCoef3[4]    = { -0.1666665247f, -0.1666665247f, -0.1666665247f, -0.1666665247f };
+        alignas(16) static constexpr float g_cosCoef1[4]    = { -0.0013602249f, -0.0013602249f, -0.0013602249f, -0.0013602249f };
+        alignas(16) static constexpr float g_cosCoef2[4]    = {  0.0416566950f,  0.0416566950f,  0.0416566950f,  0.0416566950f };
+        alignas(16) static constexpr float g_cosCoef3[4]    = { -0.4999990225f, -0.4999990225f, -0.4999990225f, -0.4999990225f };
+        alignas(16) static constexpr float g_acosHiCoef1[4] = { -0.0012624911f, -0.0012624911f, -0.0012624911f, -0.0012624911f };
+        alignas(16) static constexpr float g_acosHiCoef2[4] = {  0.0066700901f,  0.0066700901f,  0.0066700901f,  0.0066700901f };
+        alignas(16) static constexpr float g_acosHiCoef3[4] = { -0.0170881256f, -0.0170881256f, -0.0170881256f, -0.0170881256f };
+        alignas(16) static constexpr float g_acosHiCoef4[4] = {  0.0308918810f,  0.0308918810f,  0.0308918810f,  0.0308918810f };
+        alignas(16) static constexpr float g_acosLoCoef1[4] = { -0.0501743046f, -0.0501743046f, -0.0501743046f, -0.0501743046f };
+        alignas(16) static constexpr float g_acosLoCoef2[4] = {  0.0889789874f,  0.0889789874f,  0.0889789874f,  0.0889789874f };
+        alignas(16) static constexpr float g_acosLoCoef3[4] = { -0.2145988016f, -0.2145988016f, -0.2145988016f, -0.2145988016f };
+        alignas(16) static constexpr float g_acosLoCoef4[4] = {  1.5707963050f,  1.5707963050f,  1.5707963050f,  1.5707963050f };
+        alignas(16) static constexpr float g_acosCoef1[4]   = { -0.0200752200f, -0.0200752200f, -0.0200752200f, -0.0200752200f };
+        alignas(16) static constexpr float g_acosCoef2[4]   = {  0.0759031500f,  0.0759031500f,  0.0759031500f,  0.0759031500f };
+        alignas(16) static constexpr float g_acosCoef3[4]   = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
+        alignas(16) static constexpr float g_atanHiRange[4] = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
+        alignas(16) static constexpr float g_atanLoRange[4] = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
+        alignas(16) static constexpr float g_atanCoef1[4]   = {  8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f };
+        alignas(16) static constexpr float g_atanCoef2[4]   = {  -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
+        alignas(16) static constexpr float g_atanCoef3[4]   = {  1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f };
+        alignas(16) static constexpr float g_atanCoef4[4]   = {  -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
 
         namespace Common
         {
@@ -338,7 +339,6 @@ namespace AZ
             {
                 const typename VecType::FloatType x_eq_0 = VecType::CmpEq(x, VecType::ZeroFloat());
                 const typename VecType::FloatType x_ge_0 = VecType::CmpGtEq(x, VecType::ZeroFloat());
-                const typename VecType::FloatType x_le_0 = VecType::CmpLtEq(x, VecType::ZeroFloat());
                 const typename VecType::FloatType x_lt_0 = VecType::CmpLt(x, VecType::ZeroFloat());
 
                 const typename VecType::FloatType y_eq_0 = VecType::CmpEq(y, VecType::ZeroFloat());
@@ -362,7 +362,6 @@ namespace AZ
                 typename VecType::FloatType swap_sign_mask_offset = VecType::And(x_lt_0, y_lt_0);
                 swap_sign_mask_offset = VecType::And(swap_sign_mask_offset, VecType::CastToFloat(FastLoadConstant<VecType>(Simd::g_negateMask)));
 
-                const typename VecType::FloatType offset0 = VecType::ZeroFloat();
                 typename VecType::FloatType offset1 = FastLoadConstant<VecType>(g_Pi);
                 offset1 = VecType::Xor(offset1, swap_sign_mask_offset);
 

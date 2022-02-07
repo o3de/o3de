@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,7 +32,7 @@ namespace EMotionFX
         AZ_RTTI(AnimGraphMotionNode, "{B8B8AAE6-E532-4BF8-898F-3D40AA41BC82}", AnimGraphNode)
         AZ_CLASS_ALLOCATOR_DECL
 
-        enum
+        enum : uint16
         {
             INPUTPORT_PLAYSPEED                 = 0,
             INPUTPORT_INPLACE                   = 1,
@@ -40,7 +41,7 @@ namespace EMotionFX
             OUTPUTPORT_MOTION                   = 1
         };
 
-        enum
+        enum : uint16
         {
             PORTID_INPUT_PLAYSPEED              = 0,
             PORTID_INPUT_INPLACE                = 1,
@@ -71,10 +72,10 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            uint32 mMotionSetID = InvalidIndex32;
-            uint32 mActiveMotionIndex = InvalidIndex32;
-            MotionInstance* mMotionInstance = nullptr;
-            bool mReload = false;
+            uint32 m_motionSetId = InvalidIndex32;
+            uint32 m_activeMotionIndex = InvalidIndex32;
+            MotionInstance* m_motionInstance = nullptr;
+            bool m_reload = false;
         };
 
         AnimGraphMotionNode();

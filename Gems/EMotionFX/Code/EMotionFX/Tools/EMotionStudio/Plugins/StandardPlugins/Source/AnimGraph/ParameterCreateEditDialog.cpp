@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,7 +25,7 @@
 
 namespace EMStudio
 {
-    int ParameterCreateEditDialog::m_parameterEditorMinWidth = 300;
+    int ParameterCreateEditDialog::s_parameterEditorMinWidth = 300;
 
     ParameterCreateEditDialog::ParameterCreateEditDialog(AnimGraphPlugin* plugin, QWidget* parent, const EMotionFX::Parameter* editParameter)
         : QDialog(parent)
@@ -73,7 +74,7 @@ namespace EMStudio
         m_parameterEditorWidget->setSizePolicy(QSizePolicy::Policy::MinimumExpanding, QSizePolicy::Policy::MinimumExpanding);
         m_parameterEditorWidget->SetSizeHintOffset(QSize(0, 0));
         m_parameterEditorWidget->SetLeafIndentation(0);
-        m_parameterEditorWidget->setMinimumWidth(m_parameterEditorMinWidth);
+        m_parameterEditorWidget->setMinimumWidth(s_parameterEditorMinWidth);
         mainLayout->addWidget(m_parameterEditorWidget);
 
         // Add the preview information

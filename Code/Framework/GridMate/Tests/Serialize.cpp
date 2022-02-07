@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -470,12 +471,12 @@ namespace UnitTest
             // ------------------------------------
             // String
             {
-                string s = "hello";
+                AZStd::string s = "hello";
 
                 wb.Write(s);
                 AZ_TEST_ASSERT(wb.Size() == s.length() + sizeof(AZ::u16));
 
-                string rs;
+                AZStd::string rs;
                 rb = ReadBuffer(wb.GetEndianType(), wb.Get(), wb.Size());
                 rb.Read(rs);
                 AZ_TEST_ASSERT(rs == s);

@@ -1,0 +1,57 @@
+{
+    "entries": [
+        {
+            "base": "NetworkTestPlayerComponentBusHandler",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Network Test Player",
+                "category": "Automated Testing"
+            },
+            "methods": [
+                {
+                    "base": "CreateInput",
+                    "details": {
+                        "name": "Create Input"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Delta Time"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{12A1776B-61F6-4E5F-356A-AD718A62051F}",
+                            "details": {
+                                "name": "Network Test Player Component Network Input"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ProcessInput",
+                    "details": {
+                        "name": "Process Input"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{12A1776B-61F6-4E5F-356A-AD718A62051F}",
+                            "details": {
+                                "name": "Network Test Player Component Network Input"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Delta Time"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

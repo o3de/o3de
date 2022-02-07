@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 // include the required headers
 #include "Command.h"
+#include <AzCore/std/numeric.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -15,8 +17,8 @@ namespace MCore
     // constructor
     Command::Callback::Callback(bool executePreUndo, bool executePreCommand)
     {
-        mPreUndoExecute     = executePreUndo;
-        mPreCommandExecute  = executePreCommand;
+        m_preUndoExecute     = executePreUndo;
+        m_preCommandExecute  = executePreCommand;
     }
 
 
@@ -27,10 +29,10 @@ namespace MCore
 
 
     // constructor
-    Command::Command(const char* commandName, Command* originalCommand)
+    Command::Command(AZStd::string commandName, Command* originalCommand)
+        : m_orgCommand(originalCommand)
+        , m_commandName(AZStd::move(commandName))
     {
-        mCommandName = commandName;
-        mOrgCommand  = originalCommand;
     }
 
 
@@ -57,13 +59,13 @@ namespace MCore
 
     const char* Command::GetName() const
     {
-        return mCommandName.c_str();
+        return m_commandName.c_str();
     }
 
 
     const AZStd::string& Command::GetNameString() const
     {
-        return mCommandName;
+        return m_commandName;
     }
 
 
@@ -80,27 +82,27 @@ namespace MCore
     }
 
 
-    uint32 Command::GetNumCallbacks() const
+    size_t Command::GetNumCallbacks() const
     {
-        return static_cast<uint32>(mCallbacks.size());
+        return m_callbacks.size();
     }
 
 
     void Command::AddCallback(Command::Callback* callback)
     { 
-        mCallbacks.push_back(callback);
+        m_callbacks.push_back(callback);
     }
 
 
     bool Command::CheckIfHasCallback(Command::Callback* callback) const
     {
-        return (AZStd::find(mCallbacks.begin(), mCallbacks.end(), callback) != mCallbacks.end());
+        return (AZStd::find(m_callbacks.begin(), m_callbacks.end(), callback) != m_callbacks.end());
     }
 
 
     void Command::RemoveCallback(Command::Callback* callback, bool delFromMem)
     {
-        mCallbacks.erase(AZStd::remove(mCallbacks.begin(), mCallbacks.end(), callback), mCallbacks.end());
+        m_callbacks.erase(AZStd::remove(m_callbacks.begin(), m_callbacks.end(), callback), m_callbacks.end());
         if (delFromMem)
         {
             delete callback;
@@ -110,49 +112,30 @@ namespace MCore
 
     void Command::RemoveAllCallbacks()
     {
-        const size_t numCallbacks = mCallbacks.size();
+        const size_t numCallbacks = m_callbacks.size();
         for (size_t i = 0; i < numCallbacks; ++i)
         {
             // If it crashes here, you probably created your callback in another dll and didn't remove it from memory there as well.
-            delete mCallbacks[i];
+            delete m_callbacks[i];
         }
 
-        mCallbacks.clear();
+        m_callbacks.clear();
     }
 
 
     // calculate the number of registered pre-execute callbacks
-    uint32 Command::CalcNumPreCommandCallbacks() const
+    size_t Command::CalcNumPreCommandCallbacks() const
     {
-        uint32 result = 0;
-
-        const size_t numCallbacks = mCallbacks.size();
-        for (size_t i = 0; i < numCallbacks; ++i)
+        return AZStd::accumulate(begin(m_callbacks), end(m_callbacks), size_t{0}, [](size_t total, const Callback* callback)
         {
-            if (mCallbacks[i]->GetExecutePreCommand())
-            {
-                result++;
-            }
-        }
-
-        return result;
+            return callback->GetExecutePreCommand() ? total + 1 : total;
+        });
     }
 
 
     // calculate the number of registered post-execute callbacks
-    uint32 Command::CalcNumPostCommandCallbacks() const
+    size_t Command::CalcNumPostCommandCallbacks() const
     {
-        uint32 result = 0;
-
-        const size_t numCallbacks = mCallbacks.size();
-        for (size_t i = 0; i < numCallbacks; ++i)
-        {
-            if (mCallbacks[i]->GetExecutePreCommand() == false)
-            {
-                result++;
-            }
-        }
-
-        return result;
+        return m_callbacks.size() - CalcNumPreCommandCallbacks();
     }
 } // namespace MCore

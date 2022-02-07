@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -75,7 +76,7 @@ namespace AZ
 
             bool ManifestWidgetPage::AddObject(const AZStd::shared_ptr<DataTypes::IManifestObject>& object)
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+                AZ_PROFILE_FUNCTION(Editor);
                 if (!SupportsType(object))
                 {
                     return false;
@@ -217,7 +218,7 @@ namespace AZ
 
             void ManifestWidgetPage::RefreshPage()
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+                AZ_PROFILE_FUNCTION(Editor);
                 m_propertyEditor->InvalidateAll();
                 m_propertyEditor->ExpandAll();
             }

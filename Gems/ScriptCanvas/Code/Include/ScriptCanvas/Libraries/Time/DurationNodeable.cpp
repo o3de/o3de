@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,7 +28,7 @@ namespace ScriptCanvas
 
             void DurationNodeable::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
+                AZ_PROFILE_FUNCTION(ScriptCanvas);
                 SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetScriptCanvasId(), GetAssetId());
 
                 if (m_elapsedTime <= m_duration)
@@ -46,7 +47,7 @@ namespace ScriptCanvas
             void DurationNodeable::Start(Data::NumberType duration)
             {
                 m_elapsedTime = 0.0f;
-                m_duration = duration;
+                m_duration = static_cast<float>(duration);
                 AZ::TickBus::Handler::BusConnect();
             }
         }

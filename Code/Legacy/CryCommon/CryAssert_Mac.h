@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -68,8 +69,6 @@ bool CryAssert(const char* szCondition, const char* szFile, unsigned int line, b
 
     static const int max_len = 4096;
     static char gs_command_str[4096];
-
-    static CryLockT<CRYLOCK_RECURSIVE> lock;
 
     gEnv->pSystem->OnAssert(szCondition, gs_szMessage, szFile, line);
 

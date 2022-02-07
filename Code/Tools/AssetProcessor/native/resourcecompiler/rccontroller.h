@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -53,10 +54,11 @@ namespace AssetProcessor
         void StartJob(AssetProcessor::RCJob* rcJob);
         int NumberOfPendingCriticalJobsPerPlatform(QString platform);
 
-        void SetSystemRoot(const QDir& systemRoot);
         int NumberOfPendingJobsPerPlatform(QString platform);
         bool IsIdle();
-        bool IsPriorityCopyJob(AssetProcessor::RCJob* rcJob);
+
+        void SetQueueSortOnDBSourceName();
+
     Q_SIGNALS:
         void FileCompiled(JobEntry entry, AssetBuilderSDK::ProcessJobResponse response);
         void FileFailed(JobEntry entry);

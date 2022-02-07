@@ -1,0 +1,131 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+* 
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
+//
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <HairRenderingSrgs.azsli>
+
+//!------------------------------ SRG Structure --------------------------------
+//! Per pass SRG that holds the dynamic shared read-write buffer shared 
+//! across all dispatches and draw calls. It is used for all the dynamic buffers
+//! that can change between passes due to the application of skinning, simulation 
+//! and physics affect. 
+//! Once the compute pases are done, it is read by the rendering shaders.  
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    //! This shared buffer needs to match the SharedBuffer structure  
+    //! shared between all draw calls / dispatches for the hair skinning
+    StructuredBuffer<int>   m_skinnedHairSharedBuffer;
+
+    //! Based on [[vk::binding(0, 3)]] RWTexture2DArray<uint> RWFragmentDepthsTexture : register(u0, space3);
+    RWTexture2DArray<uint>  m_RWFragmentDepthsTexture;
+}
+//==============================================================================
+
+//!------------------------------ SRG Structure --------------------------------
+//! Per instance/draw SRG representing dynamic read-write set of buffers
+//!  that are unique per instance and are shared and changed between passes due 
+//!  to the application of skinning, simulation and physics affect.
+//! It is then also read by the rendering shaders. 
+//! This Srg is NOT shared by the passes since it requires having barriers between
+//!  both passes and draw calls, instead, all buffers are allocated from a single 
+//!  shared buffer (through BufferViews) and that buffer is then shared between 
+//!  the passes via the PerPass Srg frequency. 
+ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance / object
+{
+    Buffer<float4>      m_hairVertexPositions;
+    Buffer<float4>      m_hairVertexTangents;
+
+    //! Per hair object offset to the start location of each buffer within 
+    //! 'm_skinnedHairSharedBuffer'. The offset is in bytes!
+    uint m_positionBufferOffset;
+    uint m_tangentBufferOffset;
+};
+//------------------------------------------------------------------------------
+// Allow for the code to run with minimal changes - skinning / simulation compute passes
+// Usage of per-instance buffer
+#define g_GuideHairVertexPositions  HairDynamicDataSrg::m_hairVertexPositions
+#define g_GuideHairVertexTangents   HairDynamicDataSrg::m_hairVertexTangents
+//------------------------------------------------------------------------------
+
+#include <HairStrands.azsli>        // VS resides here
+
+//!=============================================================================
+//!         Geometry Depth Alpha - First Pass of ShortCut Render
+//! It is a Geometry pass that stores the K=3 front fragment depths, and accumulates 
+//! product of 1-alpha multiplications (fade out) of the input render target.
+//! 
+//! Short explanation: in the original AMD implementation 1-alpha is multiplied
+//! repeatedly with the incoming render target (back buffer) hence blending out 
+//! the existing back buffer color based on the density and transparency of the hair.
+//! This implies that later on the hair color should be added based on the inverse
+//! of this operation.
+//!=============================================================================
+[earlydepthstencil]
+float HairShortCutDepthsAlphaPS(PS_INPUT_HAIR input) : SV_Target
+{
+    //////////////////////////////////////////////////////////////////////
+    // [To Do] Hair: anti aliasing via coverage requires work and is disabled for now
+//    float3 vNDC = ScreenPosToNDC(PassSrg::m_linearDepth, input.Position.xy, input.Position.z);
+//    uint2  dimensions;
+//    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
+//    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, float2(dimensions.x, dimensions.y));
+    float coverage = 1.0;  
+    /////////////////////////////////////////////////////////////////////
+
+    float alpha = coverage * MatBaseColor.a;
+
+    if (alpha < SHORTCUT_MIN_ALPHA)
+        return 1.0;
+
+    int2 vScreenAddress = int2(input.Position.xy);
+    uint uDepth = asuint(input.Position.z);
+    uint uDepth0Prev, uDepth1Prev, uDepth2Prev;
+
+    // Min of depth 0 and input depth - in Atom the Z order is reverse
+    // Original value is uDepth0Prev
+    InterlockedMax(PassSrg::m_RWFragmentDepthsTexture[uint3(vScreenAddress, 0)], uDepth, uDepth0Prev);
+
+    // Min of depth 1 and greater of the last compare - in Atom the Z order is reverse
+    // If fragment opaque, always use input depth (don't need greater depths)
+    uDepth = (alpha > 0.98) ? uDepth : max(uDepth, uDepth0Prev);
+
+    InterlockedMax(PassSrg::m_RWFragmentDepthsTexture[uint3(vScreenAddress, 1)], uDepth, uDepth1Prev);
+
+    // Min of depth 2 and greater of the last compare - in Atom the Z order is reverse
+    // If fragment opaque, always use input depth (don't need greater depths)
+    uDepth = (alpha > 0.98) ? uDepth : max(uDepth, uDepth1Prev);
+
+    InterlockedMax(PassSrg::m_RWFragmentDepthsTexture[uint3(vScreenAddress, 2)], uDepth, uDepth2Prev);
+
+    // Accumulate the alpha multiplication from all hair components by multiplying the inverse and 
+    // therefore going down towards 0.  At the end product, the inverse will be taken as the hair 
+    // alpha and the remainder will be used to blend the back buffer.
+    return 1.0 - alpha;
+}

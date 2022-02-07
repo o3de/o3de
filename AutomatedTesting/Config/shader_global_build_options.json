@@ -3,9 +3,15 @@
     "Version": 1,
     "ClassName": "GlobalBuildOptions",
     "ClassData": {
-        "ShaderCompilerArguments" : {
-            "DefaultMatrixOrder" : "Row",
-            "AzslcAdditionalFreeArguments" : "--strip-unused-srgs"
+        "ShaderCompilerArguments": {
+            "DefaultMatrixOrder": "Row",
+            "AzslcAdditionalFreeArguments": "--strip-unused-srgs"
+        },
+        "PreprocessorOptions": {
+            "predefinedMacros": [ "AZSL=17" ],
+            "projectIncludePaths": [
+                "Gems/AtomTressFX/Assets/Shaders"
+            ]
         }
     }
 }

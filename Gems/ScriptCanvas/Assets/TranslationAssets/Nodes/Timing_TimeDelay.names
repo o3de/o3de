@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "base": "{364F5AC9-8351-44B6-A069-03367B21F7AA}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Time Delay",
+                "category": "Timing",
+                "tooltip": "Delays all incoming execution for the specified number of ticks"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "When signaled, execution is delayed at this node for the specified amount of times."
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled after waiting for the specified amount of times."
+                    }
+                },
+                {
+                    "base": "DataInput_Delay_0",
+                    "details": {
+                        "name": "Delay"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -93,7 +94,7 @@ namespace AZ
 
             Data::Instance<RPI::Buffer> m_lightList;
 
-            uint32_t m_tileDataIndex = -1;
+            uint32_t m_tileDataIndex = std::numeric_limits<uint32_t>::max();
         };
     }   // namespace Render
 }   // namespace AZ

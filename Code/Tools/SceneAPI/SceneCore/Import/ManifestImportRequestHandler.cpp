@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
@@ -19,6 +21,7 @@
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace AZ
 {
@@ -53,8 +56,14 @@ namespace AZ
                 result = s_extension;
             }
 
+            void ManifestImportRequestHandler::GetGeneratedManifestExtension(AZStd::string& result)
+            {
+                result = s_extension;
+                result.append(s_generated);
+            }
+
             Events::LoadingResult ManifestImportRequestHandler::LoadAsset(Containers::Scene& scene, const AZStd::string& path, 
-                const Uuid& /*guid*/, RequestingApplication /*requester*/)
+                                                                          const Uuid& /*guid*/, RequestingApplication /*requester*/)
             {
                 AZStd::string manifestPath = path + s_extension;
 
@@ -75,15 +84,16 @@ namespace AZ
                     filename += s_extension;
                     filename += s_generated;
 
-                    AZStd::string altManifestPath = path;
+                    AZStd::string altManifestFolder = path;
                     AzFramework::ApplicationRequests::Bus::Broadcast(
-                        &AzFramework::ApplicationRequests::Bus::Events::MakePathRootRelative,
-                        altManifestPath);
+                        &AzFramework::ApplicationRequests::Bus::Events::MakePathRelative,
+                        altManifestFolder,
+                        AZ::Utils::GetProjectPath().c_str());
 
-                    AZ::StringFunc::Path::GetFolderPath(altManifestPath.c_str(), altManifestPath);
+                    AZ::StringFunc::Path::GetFolderPath(altManifestFolder.c_str(), altManifestFolder);
 
                     AZStd::string generatedAssetInfoPath;
-                    AZ::StringFunc::Path::Join(assetCacheRoot.c_str(), altManifestPath.c_str(), generatedAssetInfoPath);
+                    AZ::StringFunc::Path::Join(assetCacheRoot.c_str(), altManifestFolder.c_str(), generatedAssetInfoPath);
                     AZ::StringFunc::Path::ConstructFull(generatedAssetInfoPath.c_str(), filename.c_str(), generatedAssetInfoPath);
 
                     if (!AZ::IO::FileIOBase::GetInstance()->Exists(generatedAssetInfoPath.c_str()))

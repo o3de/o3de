@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -143,6 +144,7 @@ namespace EMotionFX
 
                 Group::ActorGroup* group = azrtti_cast<Group::ActorGroup*>(&target);
                 group->SetName(AZ::SceneAPI::DataTypes::Utilities::CreateUniqueName<Group::IActorGroup>(scene.GetName(), scene.GetManifest()));
+                group->SetBestMatchingRootBone(scene.GetGraph());
 
                 // LOD Rule need to be built first in the actor, so we know which mesh and bone belongs to LOD.
                 // After this call, LOD rule will be populated with all the LOD bones
@@ -174,19 +176,10 @@ namespace EMotionFX
                     return AZ::SceneAPI::Events::ProcessingResult::Ignored;
                 }
 
-                const bool hasBoneData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBoneData>(scene, true);
+                // Skip adding the actor group if it doesn't contain any skin and blendshape data.
                 const bool hasSkinData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::ISkinWeightData>(scene, true);
-                const bool hasBlendShapeData =
-                    AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBlendShapeData>(scene, true);
-                // Skip adding the actor group if it doesn't contain any bone, skin and blendshape data.
-                if (!hasBoneData && !hasSkinData && !hasBlendShapeData)
-                {
-                    return AZ::SceneAPI::Events::ProcessingResult::Ignored;
-                }
-                
-                const bool hasAnimationData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IAnimationData>(scene, true);
-                // Skip adding the actor group if it contains animation data but doesn't contain any skin or blendshape data.
-                if (hasAnimationData && !hasSkinData && !hasBlendShapeData)
+                const bool hasBlendShapeData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBlendShapeData>(scene, true);
+                if (!hasSkinData && !hasBlendShapeData)
                 {
                     return AZ::SceneAPI::Events::ProcessingResult::Ignored;
                 }
@@ -195,7 +188,7 @@ namespace EMotionFX
                 AZStd::shared_ptr<Group::ActorGroup> group = AZStd::make_shared<Group::ActorGroup>();
 
                 // This is a group that's generated automatically so may not be saved to disk but would need to be recreated
-                //      in the same way again. To guarantee the same uuid, generate a stable one instead.
+                // in the same way again. To guarantee the same uuid, generate a stable one instead.
                 group->OverrideId(AZ::SceneAPI::DataTypes::Utilities::CreateStableUuid(scene, Group::ActorGroup::TYPEINFO_Uuid()));
 
                 EBUS_EVENT(AZ::SceneAPI::Events::ManifestMetaInfoBus, InitializeObject, scene, *group);

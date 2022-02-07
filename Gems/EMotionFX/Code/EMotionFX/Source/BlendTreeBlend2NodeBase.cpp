@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,23 +21,23 @@ namespace EMotionFX
 
     BlendTreeBlend2NodeBase::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
-        , mSyncTrackNode(nullptr)
+        , m_syncTrackNode(nullptr)
     {
     }
 
     void BlendTreeBlend2NodeBase::UniqueData::Update()
     {
-        BlendTreeBlend2NodeBase* blend2Node = azdynamic_cast<BlendTreeBlend2NodeBase*>(mObject);
+        BlendTreeBlend2NodeBase* blend2Node = azdynamic_cast<BlendTreeBlend2NodeBase*>(m_object);
         AZ_Assert(blend2Node, "Unique data linked to incorrect node type.");
 
-        mMask.clear();
+        m_mask.clear();
 
-        Actor* actor = mAnimGraphInstance->GetActorInstance()->GetActor();
+        Actor* actor = m_animGraphInstance->GetActorInstance()->GetActor();
         const AZStd::vector<WeightedMaskEntry>& weightedNodeMask = blend2Node->GetWeightedNodeMask();
         if (!weightedNodeMask.empty())
         {
             const size_t numNodes = weightedNodeMask.size();
-            mMask.reserve(numNodes);
+            m_mask.reserve(numNodes);
 
             // Try to find the node indices by name for all masked nodes.
             const Skeleton* skeleton = actor->GetSkeleton();
@@ -45,7 +46,7 @@ namespace EMotionFX
                 Node* node = skeleton->FindNodeByName(weightedNode.first.c_str());
                 if (node)
                 {
-                    mMask.emplace_back(node->GetNodeIndex());
+                    m_mask.emplace_back(node->GetNodeIndex());
                 }
             }
         }
@@ -99,8 +100,8 @@ namespace EMotionFX
 
     void BlendTreeBlend2NodeBase::FindBlendNodes(AnimGraphInstance* animGraphInstance, AnimGraphNode** outBlendNodeA, AnimGraphNode** outBlendNodeB, float* outWeight, bool isAdditive, bool optimizeByWeight)
     {
-        BlendTreeConnection* connectionA = mInputPorts[INPUTPORT_POSE_A].mConnection;
-        BlendTreeConnection* connectionB = mInputPorts[INPUTPORT_POSE_B].mConnection;
+        BlendTreeConnection* connectionA = m_inputPorts[INPUTPORT_POSE_A].m_connection;
+        BlendTreeConnection* connectionB = m_inputPorts[INPUTPORT_POSE_B].m_connection;
         if (!connectionA && !connectionB)
         {
             *outBlendNodeA  = nullptr;
@@ -111,11 +112,11 @@ namespace EMotionFX
 
         if (connectionA && connectionB)
         {
-            *outWeight = (mInputPorts[INPUTPORT_WEIGHT].mConnection) ? GetInputNumberAsFloat(animGraphInstance, INPUTPORT_WEIGHT) : 0.0f;
+            *outWeight = (m_inputPorts[INPUTPORT_WEIGHT].m_connection) ? GetInputNumberAsFloat(animGraphInstance, INPUTPORT_WEIGHT) : 0.0f;
             *outWeight = MCore::Clamp<float>(*outWeight, 0.0f, 1.0f);
 
             UniqueData* uniqueData = static_cast<BlendTreeBlend2NodeBase::UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-            if (uniqueData->mMask.size() > 0)
+            if (!uniqueData->m_mask.empty())
             {
                 *outBlendNodeA  = connectionA->GetSourceNode();
                 *outBlendNodeB  = connectionB->GetSourceNode();

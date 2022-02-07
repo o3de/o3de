@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,7 +33,7 @@ namespace AzToolsFramework
 
     bool BaseManipulator::OnLeftMouseDown(const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_onLeftMouseDownImpl)
         {
@@ -58,7 +59,7 @@ namespace AzToolsFramework
 
     bool BaseManipulator::OnRightMouseDown(const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_onRightMouseDownImpl)
         {
@@ -86,7 +87,7 @@ namespace AzToolsFramework
     // attached as no active manipulator will have been set in ManipulatorManager.
     void BaseManipulator::OnLeftMouseUp(const ViewportInteraction::MouseInteraction& interaction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         SetBoundsDirty();
 
@@ -97,7 +98,7 @@ namespace AzToolsFramework
 
     void BaseManipulator::OnRightMouseUp(const ViewportInteraction::MouseInteraction& interaction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         SetBoundsDirty();
 
@@ -108,7 +109,7 @@ namespace AzToolsFramework
 
     bool BaseManipulator::OnMouseOver(const ManipulatorId manipulatorId, const ViewportInteraction::MouseInteraction& interaction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         UpdateMouseOver(manipulatorId);
         OnMouseOverImpl(manipulatorId, interaction);
@@ -124,7 +125,7 @@ namespace AzToolsFramework
 
     void BaseManipulator::OnMouseMove(const ViewportInteraction::MouseInteraction& interaction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_performingAction)
         {
@@ -141,7 +142,7 @@ namespace AzToolsFramework
 
     void BaseManipulator::SetBoundsDirty()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         SetBoundsDirtyImpl();
     }
@@ -189,7 +190,7 @@ namespace AzToolsFramework
 
     void BaseManipulator::EndAction()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_performingAction)
         {
@@ -234,7 +235,7 @@ namespace AzToolsFramework
 
     void BaseManipulator::NotifyEntityComponentPropertyChanged()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         for (const AZ::EntityComponentIdPair& entityComponentIdPair : m_entityComponentIdPairs)
         {
@@ -267,7 +268,7 @@ namespace AzToolsFramework
 
     AZStd::unordered_set<AZ::EntityComponentIdPair>::iterator BaseManipulator::RemoveEntityId(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         auto afterErased = m_entityComponentIdPairs.end();
 
@@ -296,7 +297,7 @@ namespace AzToolsFramework
     AZStd::unordered_set<AZ::EntityComponentIdPair>::iterator BaseManipulator::RemoveEntityComponentIdPair(
         const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const auto entityIdIt = m_entityComponentIdPairs.find(entityComponentIdPair);
 

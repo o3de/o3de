@@ -1,0 +1,30 @@
+// The Lifecycle events contains the name of the event as a string
+// ComponentApplication derived classes
+// will set these these keys to a JSON Object indicate an event has occured
+// A callback can be registered with the SettingsRegistry
+// to be notified when that key is set
+// The JSON object that is set will contain any payload data
+// related to the event
+{
+    "O3DE" : {
+        "Application": {
+            "LifecycleEvents": {
+                "SystemComponentsActivated": {},
+                "SystemComponentsDeactivated": {},
+                "ReflectionManagerAvailable": {},
+                "ReflectionManagerUnavailable": {},
+                "SystemAllocatorCreated": {},
+                "SystemAllocatorPendingDestruction": {},
+                "SettingsRegistryAvailable": {},
+                "SettingsRegistryUnavailable": {},
+                "ConsoleAvailable": {},
+                "ConsoleUnavailable": {},
+                "GemsLoaded": {},
+                "GemsUnloaded": {},
+                "FileIOAvailable": {},
+                "FileIOUnavailable": {},
+                "LegacySystemInterfaceCreated": {}
+            }
+        }
+    }
+}

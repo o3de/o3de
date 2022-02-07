@@ -1,13 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/PlatformDef.h>
 
-#include "EMotionFX_precompiled.h"
 #include <MathConversion.h>
 
 #include <AzCore/Component/Entity.h>
@@ -43,7 +43,7 @@ namespace EMotionFX
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleLODDistance.svg")
-                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mannequin.png")
+                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/SimpleLODDistance.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorSimpleLODComponent::m_configuration, "LOD Configuration", "");
@@ -88,7 +88,7 @@ namespace EMotionFX
             if (actorInstance)
             {
                 m_actorInstance = actorInstance.get();
-                const AZ::u32 numLODs = m_actorInstance->GetActor()->GetNumLODLevels();
+                const size_t numLODs = m_actorInstance->GetActor()->GetNumLODLevels();
                 m_configuration.GenerateDefaultValue(numLODs);
             }
             else
@@ -111,7 +111,7 @@ namespace EMotionFX
             if (m_actorInstance != actorInstance)
             {
                 m_actorInstance = actorInstance;
-                const AZ::u32 numLODs = m_actorInstance->GetActor()->GetNumLODLevels();
+                const size_t numLODs = m_actorInstance->GetActor()->GetNumLODLevels();
                 m_configuration.GenerateDefaultValue(numLODs);
             }
         }

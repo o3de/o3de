@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,9 +16,9 @@
 
 namespace GridMate
 {
-    string Utils::GetMachineAddress(int familyType)
+    AZStd::string Utils::GetMachineAddress(int familyType)
     {
-        string machineName;
+        AZStd::string machineName;
         char name[MAX_PATH];
         int result = gethostname(name, sizeof(name));
         AZ_Error("GridMate", result == 0, "Failed in gethostname with result=%d, WSAGetLastError=%d!", result, WSAGetLastError());

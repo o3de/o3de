@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <QIcon>
 
 #include "Settings.h"
@@ -45,6 +47,7 @@ private:
         bool m_previewPanel;
         bool m_applyConfigSpec;
         bool m_enableSourceControl;
+        bool m_clearConsoleOnGameModeStart;
         AzToolsFramework::ConsoleColorTheme m_consoleBackgroundColorTheme;
         bool m_autoLoadLastLevel;
         bool m_bShowTimeInConsole;
@@ -53,6 +56,12 @@ private:
         bool m_restoreViewportCamera;
         bool m_bShowNews;
         bool m_enableSceneInspector;
+    };
+
+    struct LevelSaveSettings
+    {
+        AZ_TYPE_INFO(LevelSaveSettings, "{E297DAE3-3985-4BC2-8B43-45F3B1522F6B}");
+        AzToolsFramework::Prefab::SaveAllPrefabsPreference m_saveAllPrefabsPreference;
     };
 
     struct Messaging
@@ -87,6 +96,7 @@ private:
     };
 
     GeneralSettings m_generalSettings;
+    LevelSaveSettings m_levelSaveSettings;
     Messaging m_messaging;
     Undo m_undo;
     DeepSelection m_deepSelection;

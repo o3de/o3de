@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/Scope.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
@@ -18,6 +18,7 @@
 #include <Atom/RHI/ResourcePool.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <AzCore/Debug/EventTrace.h>
 
@@ -309,8 +310,11 @@ namespace AZ
             commandList.GetValidator().BeginScope(*this);
 
             PIXBeginEvent(0xFFFF00FF, GetId().GetCStr());
-            PIXBeginEvent(commandList.GetCommandList(), 0xFFFF00FF, GetId().GetCStr());
 
+            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            {
+                PIXBeginEvent(commandList.GetCommandList(), 0xFFFF00FF, GetId().GetCStr());
+            }
 
             commandList.SetAftermathEventMarker(GetId().GetCStr());
             
@@ -424,7 +428,10 @@ namespace AZ
                 }
             }
 
-            PIXEndEvent(commandList.GetCommandList());
+            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            {
+                PIXEndEvent(commandList.GetCommandList());
+            }
             PIXEndEvent();
 
             commandList.GetValidator().EndScope();

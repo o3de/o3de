@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -94,11 +95,6 @@ namespace AzNetworking
         //! @return the max transmission unit for this connection
         virtual uint32_t GetConnectionMtu() const = 0;
 
-        //! Sets connection quality values for testing poor connection conditions.
-        //! Currently unsupported on TcpConnections
-        //! @param connectionQuality simulated connection quality values to use
-        virtual void SetConnectionQuality(const ConnectionQuality& connectionQuality) = 0;
-
         //! Returns the connection identifier for this connection instance.
         //! @return the connection identifier for this connection instance
         ConnectionId GetConnectionId() const;
@@ -127,12 +123,23 @@ namespace AzNetworking
         //! @return reference to the connection metric info
         ConnectionMetrics& GetMetrics();
 
+        //! Retrieves debug connection quality settings.
+        //! Currently unsupported on TcpConnections
+        //! @return connection quality structure for this connection
+        const ConnectionQuality& GetConnectionQuality() const;
+
+        //! Retrieves debug connection quality settings, non-const.
+        //! Currently unsupported on TcpConnections
+        //! @return connection quality structure for this connection
+        ConnectionQuality& GetConnectionQuality();
+
     private:
 
         // The following data members are here in the interface for performance reasons
         ConnectionId      m_connectionId = InvalidConnectionId;
         IpAddress         m_remoteAddress;
         ConnectionMetrics m_connectionMetrics;
+        ConnectionQuality m_connectionQuality;
         void*             m_userData = nullptr;
     };
 }

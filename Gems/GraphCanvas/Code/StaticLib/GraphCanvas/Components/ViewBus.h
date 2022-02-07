@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 #include <GraphCanvas/Editor/EditorTypes.h>
 
@@ -138,11 +140,11 @@ namespace GraphCanvas
         virtual void RefreshView() = 0;
 
         //! Toast Notifications
-        virtual void HideToastNotification(const ToastId& toastId) = 0;
+        virtual void HideToastNotification(const AzToolsFramework::ToastId& toastId) = 0;
 
-        virtual ToastId ShowToastNotification(const ToastConfiguration& toastConfiguration) = 0;
-        virtual ToastId ShowToastAtCursor(const ToastConfiguration& toastConfiguration) = 0;
-        virtual ToastId ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint, const ToastConfiguration&) = 0;
+        virtual AzToolsFramework::ToastId ShowToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration) = 0;
+        virtual AzToolsFramework::ToastId ShowToastAtCursor(const AzQtComponents::ToastConfiguration& toastConfiguration) = 0;
+        virtual AzToolsFramework::ToastId ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint, const AzQtComponents::ToastConfiguration&) = 0;
 
         virtual bool IsShowing() const = 0;
     };

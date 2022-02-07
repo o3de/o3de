@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -105,7 +106,7 @@ namespace AZ
 
                 m_allAllocatorRecords.push_back(allocator->GetRecords());
 
-                if (m_output == NULL)
+                if (m_output == nullptr)
                 {
                     return;                    // we have no active output
                 }
@@ -153,7 +154,7 @@ namespace AZ
             delete allocatorRecords;
             allocator->SetRecords(nullptr);
 
-            if (m_output == NULL)
+            if (m_output == nullptr)
             {
                 return;                    // we have no active output
             }
@@ -172,7 +173,7 @@ namespace AZ
             if (records)
             {
                 const AllocationInfo* info = records->RegisterAllocation(address, byteSize, alignment, name, fileName, lineNum, stackSuppressCount + 1);
-                if (m_output == NULL)
+                if (m_output == nullptr)
                 {
                     return;                   // we have no active output
                 }
@@ -225,7 +226,7 @@ namespace AZ
             {
                 records->UnregisterAllocation(address, byteSize, alignment, info);
 
-                if (m_output == NULL)
+                if (m_output == nullptr)
                 {
                     return;                    // we have no active output
                 }
@@ -260,7 +261,7 @@ namespace AZ
             {
                 records->ResizeAllocation(address, newSize);
 
-                if (m_output == NULL)
+                if (m_output == nullptr)
                 {
                     return;                    // we have no active output
                 }

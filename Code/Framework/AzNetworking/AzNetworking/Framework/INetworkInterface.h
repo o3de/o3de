@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -92,11 +93,23 @@ namespace AzNetworking
         //! @return boolean true if the packet is confirmed acknowledged, false if the packet number is out of range, lost, or still pending acknowledgment
         virtual bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) = 0;
 
+        //! Closes the network interface to stop accepting new incoming connections.
+        //! @return boolean true if the operation was successful, false if it failed
+        virtual bool StopListening() = 0;
+
         //! Disconnects the specified connection.
         //! @param connectionId identifier of the connection to terminate
         //! @param reason      reason for the disconnect
         //! @return boolean true on success
         virtual bool Disconnect(ConnectionId connectionId, DisconnectReason reason) = 0;
+
+        //! Sets the timeout time in milliseconds, 0 ms means timeouts are disabled.
+        //! @param timeoutMs the number of milliseconds with no traffic before we timeout and close a connection
+        virtual void SetTimeoutMs(AZ::TimeMs timeoutMs) = 0;
+
+        //! Retrieves the timeout time in milliseconds for this network interface, 0 ms means timeouts are disabled.
+        //! @return the timeout time in milliseconds for this network interface, 0 ms means timeouts are disabled
+        virtual AZ::TimeMs GetTimeoutMs() const = 0;
 
         //! Const access to the metrics tracked by this network interface.
         //! @return const reference to the metrics tracked by this network interface

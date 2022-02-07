@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -111,7 +112,7 @@ namespace NvCloth
                         colliderConfig.get(),
                         static_cast<const Physics::SphereShapeConfiguration*>(shapeConfigPair.second.get()),
                         static_cast<int>(jointIndex),
-                        sphereCount);
+                        static_cast<int>(sphereCount));
 
                     sphereColliders.push_back(sphereCollider);
                     ++sphereCount;
@@ -143,9 +144,9 @@ namespace NvCloth
                         colliderConfig.get(),
                         static_cast<const Physics::CapsuleShapeConfiguration*>(shapeConfigPair.second.get()),
                         static_cast<int>(jointIndex),
-                        capsuleCount * 2, // Each capsule holds 2 sphere indices
-                        sphereCount + 0,  // First sphere index
-                        sphereCount + 1); // Second sphere index
+                        static_cast<int>(capsuleCount * 2), // Each capsule holds 2 sphere indices
+                        static_cast<int>(sphereCount + 0),  // First sphere index
+                        static_cast<int>(sphereCount + 1)); // Second sphere index
 
                     capsuleColliders.push_back(capsuleCollider);
                     ++capsuleCount;

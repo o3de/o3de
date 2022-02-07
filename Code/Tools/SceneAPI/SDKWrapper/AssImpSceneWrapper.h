@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,13 +21,14 @@ namespace AZ
             AZ_RTTI(AssImpSceneWrapper, "{43A61F62-DCD4-4132-B80B-F2FBC80740BC}", SDKScene::SceneWrapperBase);
             AssImpSceneWrapper();
             AssImpSceneWrapper(aiScene* aiScene);
-            ~AssImpSceneWrapper();
+            ~AssImpSceneWrapper() override = default;
 
             bool LoadSceneFromFile(const char* fileName) override;
             bool LoadSceneFromFile(const AZStd::string& fileName) override;
 
             const std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() const override;
             std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() override;
+            virtual const aiScene* GetAssImpScene() const;
             void Clear() override;
 
             enum class AxisVector
@@ -42,7 +44,7 @@ namespace AZ
 
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
         protected:
-
+            const aiScene* m_assImpScene = nullptr;
             Assimp::Importer m_importer;
 
             // FBX SDK automatically resolved relative paths to textures based on the current file location.

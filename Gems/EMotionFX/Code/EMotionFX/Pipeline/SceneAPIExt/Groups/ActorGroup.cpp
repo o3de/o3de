@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,10 +10,14 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <SceneAPI/SceneCore/Containers/SceneGraph.h>
+#include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
+#include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
+#include <SceneAPI/SceneData/GraphData/RootBoneData.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPIExt/Groups/ActorGroup.h>
@@ -76,6 +81,22 @@ namespace EMotionFX
                 m_selectedRootBone = selectedRootBone;
             }
 
+            void ActorGroup::SetBestMatchingRootBone(const AZ::SceneAPI::Containers::SceneGraph& sceneGraph)
+            {
+                auto nameContentView = AZ::SceneAPI::Containers::Views::MakePairView(sceneGraph.GetNameStorage(), sceneGraph.GetContentStorage());
+                auto graphDownwardsView = AZ::SceneAPI::Containers::Views::MakeSceneGraphDownwardsView<AZ::SceneAPI::Containers::Views::BreadthFirst>(
+                    sceneGraph, sceneGraph.GetRoot(), nameContentView.begin(), true);
+
+                for (auto it = graphDownwardsView.begin(); it != graphDownwardsView.end(); ++it)
+                {
+                    if (it->second && it->second->RTTI_IsTypeOf(AZ::SceneData::GraphData::RootBoneData::TYPEINFO_Uuid()))
+                    {
+                        SetSelectedRootBone(it->first.GetPath());
+                        return;
+                    }
+                }
+            }
+
             void ActorGroup::Reflect(AZ::ReflectContext* context)
             {
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -87,7 +108,7 @@ namespace EMotionFX
 
                 serializeContext->Class<IActorGroup, AZ::SceneAPI::DataTypes::IGroup>()->Version(3, IActorGroupVersionConverter);
 
-                serializeContext->Class<ActorGroup, IActorGroup>()->Version(6, ActorVersionConverter)
+                serializeContext->Class<ActorGroup, IActorGroup>()->Version(7, ActorVersionConverter)
                     ->Field("name", &ActorGroup::m_name)
                     ->Field("selectedRootBone", &ActorGroup::m_selectedRootBone)
                     ->Field("id", &ActorGroup::m_id)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -138,7 +139,7 @@ namespace ScriptCanvasDeveloper
 
     protected:
 
-        void OnActionsComplete();
+        void OnActionsComplete() override;
 
     private:
 
@@ -221,7 +222,7 @@ namespace ScriptCanvasDeveloper
         CreateGroupAction(GraphCanvas::EditorId editorGraph, GraphCanvas::GraphId graphId, CreationType creationType = CreationType::Hotkey);
         ~CreateGroupAction() override = default;
 
-        void SetupAction();
+        void SetupAction() override;
 
         // GraphCanvas::SceneNotificationBus::Handler
         void OnNodeAdded(const AZ::EntityId& groupId, bool isPaste = false) override;
@@ -235,7 +236,7 @@ namespace ScriptCanvasDeveloper
         void SetupToolbarAction();
         void SetupHotkeyAction();
 
-        void OnActionsComplete();
+        void OnActionsComplete() override;
 
     private:
 

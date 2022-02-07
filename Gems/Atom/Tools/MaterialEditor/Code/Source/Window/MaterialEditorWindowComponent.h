@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 
-#include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <Source/Window/MaterialEditorBrowserInteractions.h>
 #include <Source/Window/MaterialEditorWindow.h>
 
@@ -21,7 +22,7 @@ namespace MaterialEditor
     class MaterialEditorWindowComponent
         : public AZ::Component
         , private AzToolsFramework::EditorWindowRequestBus::Handler
-        , private MaterialEditorWindowFactoryRequestBus::Handler
+        , private AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler
     {
     public:
         AZ_COMPONENT(MaterialEditorWindowComponent, "{03976F19-3C74-49FE-A15F-7D3CADBA616C}");
@@ -34,9 +35,9 @@ namespace MaterialEditor
 
     private:
         ////////////////////////////////////////////////////////////////////////
-        // MaterialEditorWindowFactoryRequestBus::Handler overrides...
-        void CreateMaterialEditorWindow() override;
-        void DestroyMaterialEditorWindow() override;
+        // AtomToolsMainWindowFactoryRequestBus::Handler overrides...
+        void CreateMainWindow() override;
+        void DestroyMainWindow() override;
         ////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////

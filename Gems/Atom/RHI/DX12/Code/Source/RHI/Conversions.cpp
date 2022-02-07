@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <Atom/RHI.Reflect/Bits.h>
 #include <RHI/Conversions.h>
 #include <RHI/Buffer.h>
@@ -353,7 +353,7 @@ namespace AZ
 
                 if (imageViewDescriptor.m_depthSliceMax == RHI::ImageViewDescriptor::HighestSliceIndex)
                 {
-                    renderTargetView.Texture3D.WSize = -1;
+                    renderTargetView.Texture3D.WSize = std::numeric_limits<UINT>::max();
                 }
                 else
                 {
@@ -578,7 +578,7 @@ namespace AZ
 
                 if (imageViewDescriptor.m_depthSliceMax == RHI::ImageViewDescriptor::HighestSliceIndex)
                 {
-                    unorderedAccessView.Texture3D.WSize = -1;
+                    unorderedAccessView.Texture3D.WSize = std::numeric_limits<UINT>::max();
                 }
                 else
                 {
@@ -1264,7 +1264,7 @@ namespace AZ
                 dst.BlendOpAlpha = ConvertBlendOp(src.m_blendAlphaOp);
                 dst.DestBlend = ConvertBlendFactor(src.m_blendDest);
                 dst.DestBlendAlpha = ConvertBlendFactor(src.m_blendAlphaDest);
-                dst.RenderTargetWriteMask = ConvertColorWriteMask(src.m_writeMask);
+                dst.RenderTargetWriteMask = ConvertColorWriteMask(static_cast<uint8_t>(src.m_writeMask));
                 dst.SrcBlend = ConvertBlendFactor(src.m_blendSource);
                 dst.SrcBlendAlpha = ConvertBlendFactor(src.m_blendAlphaSource);
                 dst.LogicOp = D3D12_LOGIC_OP_CLEAR;
@@ -1399,8 +1399,8 @@ namespace AZ
             desc.DepthFunc = ConvertComparisonFunc(depthStencil.m_depth.m_func);
             desc.DepthWriteMask = ConvertDepthWriteMask(depthStencil.m_depth.m_writeMask);
             desc.StencilEnable = depthStencil.m_stencil.m_enable;
-            desc.StencilReadMask = depthStencil.m_stencil.m_readMask;
-            desc.StencilWriteMask = depthStencil.m_stencil.m_writeMask;
+            desc.StencilReadMask = static_cast<UINT8>(depthStencil.m_stencil.m_readMask);
+            desc.StencilWriteMask = static_cast<UINT8>(depthStencil.m_stencil.m_writeMask);
             return desc;
         }
    }

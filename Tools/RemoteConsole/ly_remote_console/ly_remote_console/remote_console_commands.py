@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -26,7 +27,8 @@ CONSOLE_MESSAGE_MAP = {
     'COMMAND': BASE_MSG_TYPE + 5,
     'AUTOCOMPLETELIST': BASE_MSG_TYPE + 6,
     'AUTOCOMPLETELISTDONE': BASE_MSG_TYPE + 7,
-    'GAMEPLAYEVENT': BASE_MSG_TYPE + 22
+    'GAMEPLAYEVENT': BASE_MSG_TYPE + 22,
+    'CONNECTMESSAGE': BASE_MSG_TYPE + 25,
 }
 
 
@@ -294,14 +296,7 @@ class RemoteConsole:
                     self.handlers[key].set()
                     continue
 
-        # The very first connection using the socket will return all of the auto complete items, turned off so no one
-        # wouldn't need to see them
-        elif message_type == CONSOLE_MESSAGE_MAP['AUTOCOMPLETELIST']:
-            pass
-
-        # The after the autocompletelists finishes we will be ready to send console commands we determine that by
-        # looking at for an autocompletelistdone message
-        elif message_type == CONSOLE_MESSAGE_MAP['AUTOCOMPLETELISTDONE']:
+        elif message_type == CONSOLE_MESSAGE_MAP['CONNECTMESSAGE']:
             self.ready.set()
 
         # cleanup expect_log_line handers if the matching string was found or timeout happened.

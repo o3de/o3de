@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,12 +39,12 @@ namespace MCore
          */
         MemoryFile()
             : File()
-            , mMemoryStart(nullptr)
-            , mCurrentPos(nullptr)
-            , mLength(0)
-            , mUsedLength(0)
-            , mPreAllocSize(1024)
-            , mAllocate(false) {}
+            , m_memoryStart(nullptr)
+            , m_currentPos(nullptr)
+            , m_length(0)
+            , m_usedLength(0)
+            , m_preAllocSize(1024)
+            , m_allocate(false) {}
 
         /**
          * Destructor. Automatically closes the file.
@@ -186,11 +187,11 @@ namespace MCore
         bool SaveToDiskFile(const char* fileName);
 
     private:
-        uint8*  mMemoryStart;   /**< The location of the file */
-        uint8*  mCurrentPos;    /**< The current location */
-        size_t  mLength;        /**< The total length of the file. */
-        size_t  mUsedLength;    /**< The actual used length of the memory file. */
-        size_t  mPreAllocSize;  /**< The pre-allocation size (in bytes) when we have to reallocate memory. This prevents many allocations. The default=1024, which is 1kb.*/
-        bool    mAllocate;      /**< Can we reallocate or not? */
+        uint8*  m_memoryStart;   /**< The location of the file */
+        uint8*  m_currentPos;    /**< The current location */
+        size_t  m_length;        /**< The total length of the file. */
+        size_t  m_usedLength;    /**< The actual used length of the memory file. */
+        size_t  m_preAllocSize;  /**< The pre-allocation size (in bytes) when we have to reallocate memory. This prevents many allocations. The default=1024, which is 1kb.*/
+        bool    m_allocate;      /**< Can we reallocate or not? */
     };
 } // namespace MCore

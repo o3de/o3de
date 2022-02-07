@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,7 +14,9 @@ namespace UnitTest
 
     TEST_F(PrefabInstantiateTest, PrefabInstantiate_InstantiateInvalidTemplate_InstantiateFails)
     {
+        AZ_TEST_START_TRACE_SUPPRESSION;
         EXPECT_FALSE(m_prefabSystemComponent->InstantiatePrefab(AzToolsFramework::Prefab::InvalidTemplateId));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
     TEST_F(PrefabInstantiateTest, PrefabInstantiate_NoNestingTemplate_InstantiateSucceeds)
@@ -30,7 +33,8 @@ namespace UnitTest
         CompareInstances(*firstInstance, *secondInstance, true, false);
     }
 
-    TEST_F(PrefabInstantiateTest, PrefabInstantiate_TripleNestingTemplate_InstantiateSucceeds)
+    // TODO: Issue #3398 will re-enable
+    TEST_F(PrefabInstantiateTest, DISABLED_PrefabInstantiate_TripleNestingTemplate_InstantiateSucceeds)
     {
         AZ::Entity* newEntity = CreateEntity("New Entity");
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
@@ -40,11 +44,11 @@ namespace UnitTest
         ASSERT_TRUE(firstInstance);
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> secondInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(firstInstance) ), "test/path2");
+            MakeInstanceList(AZStd::move(firstInstance)), "test/path2");
         ASSERT_TRUE(secondInstance);
 
         AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> thirdInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(secondInstance) ), "test/path3");
+            MakeInstanceList(AZStd::move(secondInstance)), "test/path3");
         ASSERT_TRUE(thirdInstance);
 
         //Instantiate it

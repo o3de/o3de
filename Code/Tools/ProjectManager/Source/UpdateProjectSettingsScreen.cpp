@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,7 +35,8 @@ namespace O3DE::ProjectManager
         previewExtrasLayout->setContentsMargins(50, 0, 0, 0);
 
         QLabel* projectPreviewLabel = new QLabel(tr("Select an image (PNG). Minimum %1 x %2 pixels.")
-                           .arg(QString::number(ProjectPreviewImageWidth), QString::number(ProjectPreviewImageHeight)));
+            .arg(QString::number(ProjectPreviewImageWidth), QString::number(ProjectPreviewImageHeight)));
+        projectPreviewLabel->setObjectName("projectPreviewLabel");
         previewExtrasLayout->addWidget(projectPreviewLabel);
 
         m_projectPreviewImage = new QLabel(this);
@@ -107,10 +109,11 @@ namespace O3DE::ProjectManager
     bool UpdateProjectSettingsScreen::ValidateProjectPath()
     {
         bool projectPathIsValid = true;
-        if (m_projectPath->lineEdit()->text().isEmpty())
+        QDir path(m_projectPath->lineEdit()->text());
+        if (!path.isAbsolute())
         {
             projectPathIsValid = false;
-            m_projectPath->setErrorLabelText(tr("Please provide a valid location."));
+            m_projectPath->setErrorLabelText(tr("Please provide an absolute path for the project location."));
         }
 
         m_projectPath->setErrorLabelVisible(!projectPathIsValid);

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="21px" height="21px" viewBox="0 0 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Notification / Helpers</title>
+    <g id="primary-use-cases" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Screen-1-Copy-61" transform="translate(-620.000000, -295.000000)">
+            <g id="Modals-/-Scrollable-Modal" transform="translate(594.114148, 244.000000)">
+                <g id="Group" transform="translate(24.000000, 49.500000)">
+                    <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+                    <path d="M12,2 C17.5228475,2 22,6.4771525 22,12 C22,17.5228475 17.5228475,22 12,22 C6.4771525,22 2,17.5228475 2,12 C2,6.4771525 6.4771525,2 12,2 Z M12.4748737,17 L10.4748737,17 L10.4748737,20 L12.4748737,20 L12.4748737,17 Z M8.47487373,5 L5.5,8.06066017 L6.91421356,9.47487373 L9.324,7 L14.9,7 L16,7.888 L16,11.306 L15.501,12 L10.4748737,12 L10.4748737,15 L12.4748737,15 L12.474,14 L16.4748737,14 L17.998,12 L18,12 L18,7 L15.4748737,5 L8.47487373,5 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

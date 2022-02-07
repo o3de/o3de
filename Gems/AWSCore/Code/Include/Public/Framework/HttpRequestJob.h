@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -177,7 +178,7 @@ namespace AWSCore
         };
 
         /// Override to process the response to the HTTP request before callbacks are fired.
-        /// WARNING: This gets called on the job's thread, so observe thread safety precations.
+        /// WARNING: This gets called on the job's thread, so observe thread safety precautions.
         virtual void ProcessResponse(const std::shared_ptr<Aws::Http::HttpResponse>& response)
         {
             AZ_UNUSED(response);

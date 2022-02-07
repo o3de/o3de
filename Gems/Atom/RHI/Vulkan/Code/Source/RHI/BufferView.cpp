@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
 #include <RHI/Conversion.h>
@@ -108,7 +108,7 @@ namespace AZ
         VkAccelerationStructureKHR BufferView::GetNativeAccelerationStructure() const
         {
             bool hasOverrideFlags = GetDescriptor().m_overrideBindFlags != RHI::BufferBindFlags::None;
-            const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? GetDescriptor().m_overrideBindFlags : GetBuffer().GetDescriptor().m_bindFlags;
+            [[maybe_unused]] const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? GetDescriptor().m_overrideBindFlags : GetBuffer().GetDescriptor().m_bindFlags;
 
             AZ_Assert(RHI::CheckBitsAll(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure),
                 "GetNativeAccelerationStructure() is only valid for buffers with the RayTracingAccelerationStructure bind flag");

@@ -1,7 +1,8 @@
 @ECHO OFF
 REM 
-REM Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-REM 
+REM Copyright (c) Contributors to the Open 3D Engine Project.
+REM For complete copyright and license terms please see the LICENSE at the root of this distribution.
+REM
 REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
@@ -16,7 +17,7 @@ SETLOCAL
 SET CMD_DIR=%~dp0
 SET CMD_DIR=%CMD_DIR:~0,-1%
 
-SET PYTHONHOME=%CMD_DIR%\runtime\python-3.7.10-rev1-windows\python
+SET PYTHONHOME=%CMD_DIR%\runtime\python-3.7.10-rev2-windows\python
 
 IF EXIST "%PYTHONHOME%" GOTO PYTHONHOME_EXISTS
 

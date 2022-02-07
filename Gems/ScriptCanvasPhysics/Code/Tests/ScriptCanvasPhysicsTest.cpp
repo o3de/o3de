@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "ScriptCanvasPhysics_precompiled.h"
 
 #include <AzTest/GemTestEnvironment.h>
 #include <gmock/gmock.h>
@@ -95,6 +94,9 @@ namespace ScriptCanvasPhysicsTests
         void DisableSimulationOfBody(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
             [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle) override {}
+        void RemoveJoint(
+            [[maybe_unused]]AzPhysics::SceneHandle sceneHandle,
+            [[maybe_unused]] AzPhysics::JointHandle jointHandle) override {}
         void SuppressCollisionEvents(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
             [[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleA,
@@ -143,6 +145,10 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD2(AddSimulatedBodies, AzPhysics::SimulatedBodyHandleList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs));
         MOCK_METHOD2(GetSimulatedBodyFromHandle, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle));
         MOCK_METHOD2(GetSimulatedBodiesFromHandle, AzPhysics::SimulatedBodyList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyHandleList& bodyHandles));
+        MOCK_METHOD4(AddJoint, AzPhysics::JointHandle(AzPhysics::SceneHandle sceneHandle, const AzPhysics::JointConfiguration* jointConfig,
+            AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody));
+        MOCK_METHOD2(
+            GetJointFromHandle, AzPhysics::Joint*(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle));
         MOCK_CONST_METHOD1(GetGravity, AZ::Vector3(AzPhysics::SceneHandle sceneHandle));
         MOCK_METHOD2(RegisterSceneSimulationFinishHandler, void(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationFinishHandler& handler));
         MOCK_CONST_METHOD2(GetLegacyBody, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle handle));
@@ -169,7 +175,7 @@ namespace ScriptCanvasPhysicsTests
         MOCK_CONST_METHOD0(GetNativePointer, void*());
     };
 
-    class MockShape        
+    class MockShape
         : public Physics::Shape
     {
     public:
@@ -197,10 +203,12 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD1(SetContactOffset, void(float));
     };
 
-    class MockPhysicsMaterial        
+    class MockPhysicsMaterial
         : public Physics::Material
     {
     public:
+        virtual ~MockPhysicsMaterial() = default;
+
         MOCK_CONST_METHOD0(GetSurfaceType, AZ::Crc32());
         MOCK_CONST_METHOD0(GetSurfaceTypeName, const AZStd::string&());
         MOCK_METHOD1(SetSurfaceTypeName, void(const AZStd::string&));
@@ -307,7 +315,6 @@ namespace ScriptCanvasPhysicsTests
             .WillByDefault(Return(m_hitResult));
 
         // given raycast data
-        const AZ::Vector3 start = AZ::Vector3::CreateZero();
         const AZ::Vector3 direction = AZ::Vector3(0.f,1.f,0.f);
         const float distance = 1.f;
         const AZStd::string collisionGroup = "default";
@@ -340,7 +347,6 @@ namespace ScriptCanvasPhysicsTests
             .WillByDefault(Return(m_hitResult));
 
         // given raycast data
-        const AZ::Vector3 start = AZ::Vector3::CreateZero();
         const AZ::Vector3 direction = AZ::Vector3(0.f,1.f,0.f);
         const float distance = 1.f;
         const AZStd::string collisionGroup = "default";
@@ -379,7 +385,6 @@ namespace ScriptCanvasPhysicsTests
             .WillByDefault(Return(m_hitResult));
 
         // given shapecast data
-        const AZ::Vector3 start = AZ::Vector3::CreateZero();
         const AZ::Vector3 direction = AZ::Vector3(0.f,1.f,0.f);
         const float distance = 1.f;
         const AZStd::string collisionGroup = "default";

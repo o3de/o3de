@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "DebugDraw_precompiled.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -33,6 +33,7 @@ namespace DebugDraw
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawText.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/DebugDrawText.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->DataElement(0, &EditorDebugDrawTextComponent::m_element, "Text element settings", "Settings for the text element.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawTextComponent::OnPropertyUpdate)

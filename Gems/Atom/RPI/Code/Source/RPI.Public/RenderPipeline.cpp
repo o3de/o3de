@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -177,6 +178,10 @@ namespace AZ
                     pipelineViews.m_views.resize(1);
                 }
                 ViewPtr previousView = pipelineViews.m_views[0];
+                if (view)
+                {
+                    view->OnAddToRenderPipeline();
+                }
                 pipelineViews.m_views[0] = view;
 
                 if (previousView)
@@ -237,6 +242,7 @@ namespace AZ
                     pipelineViews.m_type = PipelineViewType::Transient;
                 }
                 view->SetPassesByDrawList(&pipelineViews.m_passesByDrawList);
+                view->OnAddToRenderPipeline();
                 pipelineViews.m_views.push_back(view);
             }
         }
@@ -374,11 +380,9 @@ namespace AZ
             m_scene->RemoveRenderPipeline(m_nameId);
         }
 
-        void RenderPipeline::OnStartFrame(const TickTimeInfo& tick)
+        void RenderPipeline::OnStartFrame([[maybe_unused]] float time)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
-            m_lastRenderStartTime = tick.m_currentGameTime;
+            AZ_PROFILE_SCOPE(RPI, "RenderPipeline: OnStartFrame");
 
             OnPassModified();
 

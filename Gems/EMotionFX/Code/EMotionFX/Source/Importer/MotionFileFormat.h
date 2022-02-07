@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,10 +33,10 @@ namespace EMotionFX
         // (not aligned)
         struct Motion_Header
         {
-            uint8 mFourcc[4];   // must be "MOT " or "MOTW"
-            uint8 mHiVersion;   // high version (2  in case of v2.34)
-            uint8 mLoVersion;   // low version  (34 in case of v2.34)
-            uint8 mEndianType;  // the endian in which the data is saved [0=little, 1=big]
+            uint8 m_fourcc[4];   // must be "MOT " or "MOTW"
+            uint8 m_hiVersion;   // high version (2  in case of v2.34)
+            uint8 m_loVersion;   // low version  (34 in case of v2.34)
+            uint8 m_endianType;  // the endian in which the data is saved [0=little, 1=big]
         };
 
         struct Motion_MotionData
@@ -52,49 +53,49 @@ namespace EMotionFX
         // (not aligned)
         struct Motion_Info
         {
-            uint32  mMotionExtractionMask;      // motion extraction mask
-            uint32  mMotionExtractionNodeIndex; // motion extraction node index
-            uint8   mUnitType;                  // maps to EMotionFX::EUnitType
+            uint32  m_motionExtractionMask;      // motion extraction mask
+            uint32  m_motionExtractionNodeIndex; // motion extraction node index
+            uint8   m_unitType;                  // maps to EMotionFX::EUnitType
         };
 
         // information chunk
         // (not aligned)
         struct Motion_Info2
         {
-            uint32  mMotionExtractionFlags;     // motion extraction flags
-            uint32  mMotionExtractionNodeIndex; // motion extraction node index
-            uint8   mUnitType;                  // maps to EMotionFX::EUnitType
+            uint32  m_motionExtractionFlags;     // motion extraction flags
+            uint32  m_motionExtractionNodeIndex; // motion extraction node index
+            uint8   m_unitType;                  // maps to EMotionFX::EUnitType
         };
 
         // information chunk
         // (not aligned)
         struct Motion_Info3
         {
-            uint32  mMotionExtractionFlags;     // motion extraction flags
-            uint32  mMotionExtractionNodeIndex; // motion extraction node index
-            uint8   mUnitType;                  // maps to EMotionFX::EUnitType
-            uint8   mIsAdditive;                // if the motion is an additive motion [0=false, 1=true]
+            uint32  m_motionExtractionFlags;     // motion extraction flags
+            uint32  m_motionExtractionNodeIndex; // motion extraction node index
+            uint8   m_unitType;                  // maps to EMotionFX::EUnitType
+            uint8   m_isAdditive;                // if the motion is an additive motion [0=false, 1=true]
         };
 
         // skeletal submotion
         // (aligned)       
         struct Motion_SkeletalSubMotion
         {
-            File16BitQuaternion mPoseRot;       // initial pose rotation
-            File16BitQuaternion mBindPoseRot;   // bind pose rotation
-            FileVector3         mPosePos;       // initial pose position
-            FileVector3         mPoseScale;     // initial pose scale
-            FileVector3         mBindPosePos;   // bind pose position
-            FileVector3         mBindPoseScale; // bind pose scale
-            uint32              mNumPosKeys;    // number of position keyframes to follow
-            uint32              mNumRotKeys;    // number of rotation keyframes to follow
-            uint32              mNumScaleKeys;  // number of scale keyframes to follow
+            File16BitQuaternion m_poseRot;       // initial pose rotation
+            File16BitQuaternion m_bindPoseRot;   // bind pose rotation
+            FileVector3         m_posePos;       // initial pose position
+            FileVector3         m_poseScale;     // initial pose scale
+            FileVector3         m_bindPosePos;   // bind pose position
+            FileVector3         m_bindPoseScale; // bind pose scale
+            uint32              m_numPosKeys;    // number of position keyframes to follow
+            uint32              m_numRotKeys;    // number of rotation keyframes to follow
+            uint32              m_numScaleKeys;  // number of scale keyframes to follow
 
             // followed by:
             // string : motion part name
-            // Motion_Vector3Key[ mNumPosKeys ]
-            // Motion_16BitQuaternionKey[ mNumRotKeys ]
-            // Motion_Vector3Key[ mNumScaleKeys ]
+            // Motion_Vector3Key[ m_numPosKeys ]
+            // Motion_16BitQuaternionKey[ m_numRotKeys ]
+            // Motion_Vector3Key[ m_numScaleKeys ]
         };
 
 
@@ -102,8 +103,8 @@ namespace EMotionFX
         // (aligned)
         struct Motion_Vector3Key
         {
-            FileVector3     mValue;     // the value
-            float           mTime;      // the time in seconds
+            FileVector3     m_value;     // the value
+            float           m_time;      // the time in seconds
         };
 
 
@@ -111,8 +112,8 @@ namespace EMotionFX
         // (aligned)
         struct Motion_QuaternionKey
         {
-            FileQuaternion  mValue;     // the value
-            float           mTime;      // the time in seconds
+            FileQuaternion  m_value;     // the value
+            float           m_time;      // the time in seconds
         };
 
 
@@ -120,8 +121,8 @@ namespace EMotionFX
         // (aligned)
         struct Motion_16BitQuaternionKey
         {
-            File16BitQuaternion mValue; // the value
-            float               mTime;  // the time in seconds
+            File16BitQuaternion m_value; // the value
+            float               m_time;  // the time in seconds
         };
 
 
@@ -129,25 +130,25 @@ namespace EMotionFX
         // (aligned)
         struct Motion_SubMotions
         {
-            uint32  mNumSubMotions;// the number of skeletal motions
+            uint32  m_numSubMotions;// the number of skeletal motions
 
             // followed by:
-            // Motion_SkeletalSubMotion[ mNumSubMotions ]
+            // Motion_SkeletalSubMotion[ m_numSubMotions ]
         };
 
         // morph sub motion
         // (aligned)
         struct Motion_MorphSubMotion
         {
-            float   mPoseWeight;// pose weight to use in case no animation data is present
-            float   mMinWeight; // minimum allowed weight value (used for unpacking the keyframe weights)
-            float   mMaxWeight; // maximum allowed weight value (used for unpacking the keyframe weights)
-            uint32  mPhonemeSet;// the phoneme set of the submotion, 0 if this is a normal morph target submotion
-            uint32  mNumKeys;   // number of keyframes to follow
+            float   m_poseWeight;// pose weight to use in case no animation data is present
+            float   m_minWeight; // minimum allowed weight value (used for unpacking the keyframe weights)
+            float   m_maxWeight; // maximum allowed weight value (used for unpacking the keyframe weights)
+            uint32  m_phonemeSet;// the phoneme set of the submotion, 0 if this is a normal morph target submotion
+            uint32  m_numKeys;   // number of keyframes to follow
 
             // followed by:
             // string : name (the name of this motion part)
-            // Motion_UnsignedShortKey[mNumKeys]
+            // Motion_UnsignedShortKey[m_numKeys]
         };
 
 
@@ -155,17 +156,17 @@ namespace EMotionFX
         // (not aligned)
         struct Motion_UnsignedShortKey
         {
-            float   mTime;  // the time in seconds
-            uint16  mValue; // the value
+            float   m_time;  // the time in seconds
+            uint16  m_value; // the value
         };
 
 
         // (aligned)
         struct Motion_MorphSubMotions
         {
-            uint32  mNumSubMotions;
+            uint32  m_numSubMotions;
             // followed by:
-            // Motion_MorphSubMotion[ mNumSubMotions ]
+            // Motion_MorphSubMotion[ m_numSubMotions ]
         };
 
 
@@ -173,11 +174,11 @@ namespace EMotionFX
         // (not aligned)
         struct FileMotionEvent
         {
-            float   mStartTime;
-            float   mEndTime;
-            uint32  mEventTypeIndex;// index into the event type string table
-            uint32  mMirrorTypeIndex;// index into the event type string table
-            uint16  mParamIndex;    // index into the parameter string table
+            float   m_startTime;
+            float   m_endTime;
+            uint32  m_eventTypeIndex;// index into the event type string table
+            uint32  m_mirrorTypeIndex;// index into the event type string table
+            uint16  m_paramIndex;    // index into the parameter string table
         };
 
 
@@ -185,18 +186,18 @@ namespace EMotionFX
         // (not aligned)
         struct FileMotionEventTrack
         {
-            uint32  mNumEvents;
-            uint32  mNumTypeStrings;
-            uint32  mNumParamStrings;
-            uint32  mNumMirrorTypeStrings;
-            uint8   mIsEnabled;
+            uint32  m_numEvents;
+            uint32  m_numTypeStrings;
+            uint32  m_numParamStrings;
+            uint32  m_numMirrorTypeStrings;
+            uint8   m_isEnabled;
 
             // followed by:
             // String track name
-            // [mNumTypeStrings] string objects
-            // [mNumParamStrings] string objects
-            // [mNumMirrorTypeStrings] string objects
-            // FileMotionEvent[mNumEvents]
+            // [m_numTypeStrings] string objects
+            // [m_numParamStrings] string objects
+            // [m_numMirrorTypeStrings] string objects
+            // FileMotionEvent[m_numEvents]
         };
 
 
@@ -204,10 +205,10 @@ namespace EMotionFX
         // (aligned)
         struct FileMotionEventTable
         {
-            uint32  mNumTracks;
+            uint32  m_numTracks;
 
             // followed by:
-            // FileMotionEventTrack[mNumTracks]
+            // FileMotionEventTrack[m_numTracks]
         };
 
         struct FileMotionEventTableSerialized

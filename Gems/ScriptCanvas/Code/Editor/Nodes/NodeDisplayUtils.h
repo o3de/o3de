@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -62,5 +63,5 @@ namespace ScriptCanvasEditor::Nodes
 
     // SlotGroup will control how elements are grouped.
     // Invalid will cause the slots to put themselves into whatever category they belong to by default.
-    AZ::EntityId DisplayScriptCanvasSlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::Slot& slot, GraphCanvas::SlotGroup group = GraphCanvas::SlotGroups::Invalid);
+    AZ::EntityId DisplayScriptCanvasSlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::Slot& slot, int slotIndex, GraphCanvas::SlotGroup group = GraphCanvas::SlotGroups::Invalid);
 }

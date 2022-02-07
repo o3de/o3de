@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -123,8 +124,8 @@ namespace EMStudio
         : QWidget(parent)
     {
         setObjectName("MotionListWindow");
-        mMotionTable        = nullptr;
-        mMotionWindowPlugin = motionWindowPlugin;
+        m_motionTable        = nullptr;
+        m_motionWindowPlugin = motionWindowPlugin;
     }
 
 
@@ -136,77 +137,77 @@ namespace EMStudio
 
     void MotionListWindow::Init()
     {
-        mVLayout = new QVBoxLayout();
-        mVLayout->setMargin(3);
-        mVLayout->setSpacing(2);
-        mMotionTable = new MotionTableWidget(mMotionWindowPlugin, this);
-        mMotionTable->setObjectName("EMFX.MotionListWindow.MotionTable");
-        mMotionTable->setAlternatingRowColors(true);
-        connect(mMotionTable, &MotionTableWidget::cellDoubleClicked, this, &MotionListWindow::cellDoubleClicked);
-        connect(mMotionTable, &MotionTableWidget::itemSelectionChanged, this, &MotionListWindow::itemSelectionChanged);
+        m_vLayout = new QVBoxLayout();
+        m_vLayout->setMargin(3);
+        m_vLayout->setSpacing(2);
+        m_motionTable = new MotionTableWidget(m_motionWindowPlugin, this);
+        m_motionTable->setObjectName("EMFX.MotionListWindow.MotionTable");
+        m_motionTable->setAlternatingRowColors(true);
+        connect(m_motionTable, &MotionTableWidget::cellDoubleClicked, this, &MotionListWindow::cellDoubleClicked);
+        connect(m_motionTable, &MotionTableWidget::itemSelectionChanged, this, &MotionListWindow::itemSelectionChanged);
 
         // set the table to row single selection
-        mMotionTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mMotionTable->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        m_motionTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_motionTable->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
         // make the table items read only
-        mMotionTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        m_motionTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
         // disable the corner button between the row and column selection thingies
-        mMotionTable->setCornerButtonEnabled(false);
+        m_motionTable->setCornerButtonEnabled(false);
 
         // enable the custom context menu for the motion table
-        mMotionTable->setContextMenuPolicy(Qt::DefaultContextMenu);
+        m_motionTable->setContextMenuPolicy(Qt::DefaultContextMenu);
 
         // set the column count
-        mMotionTable->setColumnCount(5);
+        m_motionTable->setColumnCount(5);
 
         // add the name column
         QTableWidgetItem* nameHeaderItem = new QTableWidgetItem("Name");
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mMotionTable->setHorizontalHeaderItem(0, nameHeaderItem);
+        m_motionTable->setHorizontalHeaderItem(0, nameHeaderItem);
 
         // add the length column
         QTableWidgetItem* lengthHeaderItem = new QTableWidgetItem("Duration");
         lengthHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mMotionTable->setHorizontalHeaderItem(1, lengthHeaderItem);
+        m_motionTable->setHorizontalHeaderItem(1, lengthHeaderItem);
 
         // add the sub column
         QTableWidgetItem* subHeaderItem = new QTableWidgetItem("Joints");
         subHeaderItem->setToolTip("Number of joints inside the motion");
         subHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mMotionTable->setHorizontalHeaderItem(2, subHeaderItem);
+        m_motionTable->setHorizontalHeaderItem(2, subHeaderItem);
 
         // add the msub column
         QTableWidgetItem* msubHeaderItem = new QTableWidgetItem("Morphs");
         msubHeaderItem->setToolTip("Number of morph targets inside the motion");
         msubHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mMotionTable->setHorizontalHeaderItem(3, msubHeaderItem);
+        m_motionTable->setHorizontalHeaderItem(3, msubHeaderItem);
 
         // add the type column
         QTableWidgetItem* typeHeaderItem = new QTableWidgetItem("Type");
         typeHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mMotionTable->setHorizontalHeaderItem(4, typeHeaderItem);
+        m_motionTable->setHorizontalHeaderItem(4, typeHeaderItem);
 
         // set the sorting order on the first column
-        mMotionTable->horizontalHeader()->setSortIndicator(0, Qt::AscendingOrder);
+        m_motionTable->horizontalHeader()->setSortIndicator(0, Qt::AscendingOrder);
 
         // hide the vertical columns
-        QHeaderView* verticalHeader = mMotionTable->verticalHeader();
+        QHeaderView* verticalHeader = m_motionTable->verticalHeader();
         verticalHeader->setVisible(false);
 
         // set the last column to take the whole available space
-        mMotionTable->horizontalHeader()->setStretchLastSection(true);
+        m_motionTable->horizontalHeader()->setStretchLastSection(true);
 
         // set the column width
-        mMotionTable->setColumnWidth(0, 300);
-        mMotionTable->setColumnWidth(1, 55);
-        mMotionTable->setColumnWidth(2, 50);
-        mMotionTable->setColumnWidth(3, 55);
-        mMotionTable->setColumnWidth(4, 105);
+        m_motionTable->setColumnWidth(0, 300);
+        m_motionTable->setColumnWidth(1, 55);
+        m_motionTable->setColumnWidth(2, 50);
+        m_motionTable->setColumnWidth(3, 55);
+        m_motionTable->setColumnWidth(4, 105);
 
-        mVLayout->addWidget(mMotionTable);
-        setLayout(mVLayout);
+        m_vLayout->addWidget(m_motionTable);
+        setLayout(m_vLayout);
 
         ReInit();
     }
@@ -223,7 +224,7 @@ namespace EMStudio
     bool MotionListWindow::AddMotionByID(uint32 motionID)
     {
         // find the motion entry based on the id
-        MotionWindowPlugin::MotionTableEntry* motionEntry = mMotionWindowPlugin->FindMotionEntryByID(motionID);
+        MotionWindowPlugin::MotionTableEntry* motionEntry = m_motionWindowPlugin->FindMotionEntryByID(motionID);
         if (motionEntry == nullptr)
         {
             return false;
@@ -236,15 +237,15 @@ namespace EMStudio
         }
 
         // get the motion
-        EMotionFX::Motion* motion = motionEntry->mMotion;
+        EMotionFX::Motion* motion = motionEntry->m_motion;
 
         // disable the sorting
-        mMotionTable->setSortingEnabled(false);
+        m_motionTable->setSortingEnabled(false);
 
         // insert the new row
-        const uint32 rowIndex = 0;
-        mMotionTable->insertRow(rowIndex);
-        mMotionTable->setRowHeight(rowIndex, 21);
+        const int rowIndex = 0;
+        m_motionTable->insertRow(rowIndex);
+        m_motionTable->setRowHeight(rowIndex, 21);
 
         // create the name item
         QTableWidgetItem* nameTableItem = new QTableWidgetItem(motion->GetName());
@@ -256,7 +257,7 @@ namespace EMStudio
         nameTableItem->setToolTip(motion->GetFileName());
 
         // set the item in the motion table
-        mMotionTable->setItem(rowIndex, 0, nameTableItem);
+        m_motionTable->setItem(rowIndex, 0, nameTableItem);
 
         // create the length item
         AZStd::string length;
@@ -264,7 +265,7 @@ namespace EMStudio
         QTableWidgetItem* lengthTableItem = new QTableWidgetItem(length.c_str());
 
         // set the item in the motion table
-        mMotionTable->setItem(rowIndex, 1, lengthTableItem);
+        m_motionTable->setItem(rowIndex, 1, lengthTableItem);
 
         // set the sub and msub text
         AZStd::string sub, msub;
@@ -277,12 +278,12 @@ namespace EMStudio
         QTableWidgetItem* msubTableItem = new QTableWidgetItem(msub.c_str());
 
         // set the items in the motion table
-        mMotionTable->setItem(rowIndex, 2, subTableItem);
-        mMotionTable->setItem(rowIndex, 3, msubTableItem);
+        m_motionTable->setItem(rowIndex, 2, subTableItem);
+        m_motionTable->setItem(rowIndex, 3, msubTableItem);
 
         // create and set the type item
         QTableWidgetItem* typeTableItem = new QTableWidgetItem(motionData->RTTI_GetTypeName());
-        mMotionTable->setItem(rowIndex, 4, typeTableItem);
+        m_motionTable->setItem(rowIndex, 4, typeTableItem);
 
         // set the items italic if the motion is dirty
         if (motion->GetDirtyFlag())
@@ -300,7 +301,7 @@ namespace EMStudio
         }
 
         // enable the sorting
-        mMotionTable->setSortingEnabled(true);
+        m_motionTable->setSortingEnabled(true);
 
         // update the interface
         UpdateInterface();
@@ -313,8 +314,8 @@ namespace EMStudio
     uint32 MotionListWindow::FindRowByMotionID(uint32 motionID)
     {
         // iterate through the rows and compare the motion IDs
-        const uint32 rowCount = mMotionTable->rowCount();
-        for (uint32 i = 0; i < rowCount; ++i)
+        const int rowCount = m_motionTable->rowCount();
+        for (int i = 0; i < rowCount; ++i)
         {
             if (GetMotionID(i) == motionID)
             {
@@ -337,7 +338,7 @@ namespace EMStudio
         }
 
         // remove the row
-        mMotionTable->removeRow(rowIndex);
+        m_motionTable->removeRow(rowIndex);
 
         // update the interface
         UpdateInterface();
@@ -349,12 +350,12 @@ namespace EMStudio
 
     bool MotionListWindow::CheckIfIsMotionVisible(MotionWindowPlugin::MotionTableEntry* entry)
     {
-        if (entry->mMotion->GetIsOwnedByRuntime())
+        if (entry->m_motion->GetIsOwnedByRuntime())
         {
             return false;
         }
 
-        AZStd::string motionNameLowered = entry->mMotion->GetNameString();
+        AZStd::string motionNameLowered = entry->m_motion->GetNameString();
         AZStd::to_lower(motionNameLowered.begin(), motionNameLowered.end());
         if (m_searchWidgetText.empty() || motionNameLowered.find(m_searchWidgetText) != AZStd::string::npos)
         {
@@ -368,33 +369,33 @@ namespace EMStudio
     {
         const CommandSystem::SelectionList selection = GetCommandManager()->GetCurrentSelection();
 
-        size_t numMotions = mMotionWindowPlugin->GetNumMotionEntries();
-        mShownMotionEntries.clear();
-        mShownMotionEntries.reserve(numMotions);
+        size_t numMotions = m_motionWindowPlugin->GetNumMotionEntries();
+        m_shownMotionEntries.clear();
+        m_shownMotionEntries.reserve(numMotions);
 
         for (size_t i = 0; i < numMotions; ++i)
         {
-            MotionWindowPlugin::MotionTableEntry* entry = mMotionWindowPlugin->GetMotionEntry(i);
+            MotionWindowPlugin::MotionTableEntry* entry = m_motionWindowPlugin->GetMotionEntry(i);
             if (CheckIfIsMotionVisible(entry))
             {
-                mShownMotionEntries.push_back(entry);
+                m_shownMotionEntries.push_back(entry);
             }
         }
-        numMotions = mShownMotionEntries.size();
+        numMotions = m_shownMotionEntries.size();
 
         // set the number of rows
-        mMotionTable->setRowCount(static_cast<int>(numMotions));
+        m_motionTable->setRowCount(static_cast<int>(numMotions));
 
         // set the sorting disabled
-        mMotionTable->setSortingEnabled(false);
+        m_motionTable->setSortingEnabled(false);
 
         // iterate through the motions and fill in the table
         for (int i = 0; i < numMotions; ++i)
         {
-            EMotionFX::Motion* motion = mShownMotionEntries[static_cast<size_t>(i)]->mMotion;
+            EMotionFX::Motion* motion = m_shownMotionEntries[static_cast<size_t>(i)]->m_motion;
 
             // set the row height
-            mMotionTable->setRowHeight(i, 21);
+            m_motionTable->setRowHeight(i, 21);
 
             // create the name item
             QTableWidgetItem* nameTableItem = new QTableWidgetItem(motion->GetName());
@@ -406,7 +407,7 @@ namespace EMStudio
             nameTableItem->setToolTip(motion->GetFileName());
 
             // set the item in the motion table
-            mMotionTable->setItem(i, 0, nameTableItem);
+            m_motionTable->setItem(i, 0, nameTableItem);
 
             // create the length item
             AZStd::string length;
@@ -414,7 +415,7 @@ namespace EMStudio
             QTableWidgetItem* lengthTableItem = new QTableWidgetItem(length.c_str());
 
             // set the item in the motion table
-            mMotionTable->setItem(i, 1, lengthTableItem);
+            m_motionTable->setItem(i, 1, lengthTableItem);
 
             // set the sub and msub text
             AZStd::string sub, msub;
@@ -427,12 +428,12 @@ namespace EMStudio
             QTableWidgetItem* msubTableItem = new QTableWidgetItem(msub.c_str());
 
             // set the items in the motion table
-            mMotionTable->setItem(i, 2, subTableItem);
-            mMotionTable->setItem(i, 3, msubTableItem);
+            m_motionTable->setItem(i, 2, subTableItem);
+            m_motionTable->setItem(i, 3, msubTableItem);
 
             // create and set the type item
             QTableWidgetItem* typeTableItem = new QTableWidgetItem(motionData->RTTI_GetTypeName());
-            mMotionTable->setItem(i, 4, typeTableItem);
+            m_motionTable->setItem(i, 4, typeTableItem);
 
             // set the items italic if the motion is dirty
             if (motion->GetDirtyFlag())
@@ -451,7 +452,7 @@ namespace EMStudio
         }
 
         // set the sorting enabled
-        mMotionTable->setSortingEnabled(true);
+        m_motionTable->setSortingEnabled(true);
 
         // set the old selection as before the reinit
         UpdateSelection(selection);
@@ -462,13 +463,13 @@ namespace EMStudio
     void MotionListWindow::UpdateSelection(const CommandSystem::SelectionList& selectionList)
     {
         // block signals to not have the motion table events when selection changed
-        mMotionTable->blockSignals(true);
+        m_motionTable->blockSignals(true);
 
         // clear the selection
-        mMotionTable->clearSelection();
+        m_motionTable->clearSelection();
 
         // iterate through the selected motions and select the corresponding rows in the table widget
-        const uint32 numSelectedMotions = selectionList.GetNumSelectedMotions();
+        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
         for (uint32 i = 0; i < numSelectedMotions; ++i)
         {
             // get the index of the motion inside the motion manager (which is equal to the row in the motion table) and select the row at the motion index
@@ -477,17 +478,17 @@ namespace EMStudio
             if (row != MCORE_INVALIDINDEX32)
             {
                 // select the entire row
-                const int columnCount = mMotionTable->columnCount();
+                const int columnCount = m_motionTable->columnCount();
                 for (int c = 0; c < columnCount; ++c)
                 {
-                    QTableWidgetItem* tableWidgetItem = mMotionTable->item(row, c);
+                    QTableWidgetItem* tableWidgetItem = m_motionTable->item(row, c);
                     tableWidgetItem->setSelected(true);
                 }
             }
         }
 
         // enable the signals now all rows are selected
-        mMotionTable->blockSignals(false);
+        m_motionTable->blockSignals(false);
 
         // call the selection changed
         itemSelectionChanged();
@@ -501,7 +502,7 @@ namespace EMStudio
 
     uint32 MotionListWindow::GetMotionID(uint32 rowIndex)
     {
-        QTableWidgetItem* tableItem = mMotionTable->item(rowIndex, 0);
+        QTableWidgetItem* tableItem = m_motionTable->item(rowIndex, 0);
         if (tableItem)
         {
             return tableItem->data(Qt::UserRole).toInt();
@@ -519,7 +520,7 @@ namespace EMStudio
 
         if (motion)
         {
-            mMotionWindowPlugin->PlayMotion(motion);
+            m_motionWindowPlugin->PlayMotion(motion);
         }
     }
 
@@ -527,17 +528,17 @@ namespace EMStudio
     void MotionListWindow::itemSelectionChanged()
     {
         // get the current selection
-        const QList<QTableWidgetItem*> selectedItems = mMotionTable->selectedItems();
+        const QList<QTableWidgetItem*> selectedItems = m_motionTable->selectedItems();
 
         // get the number of selected items
-        const uint32 numSelectedItems = selectedItems.count();
+        const int numSelectedItems = selectedItems.count();
 
         // filter the items
-        AZStd::vector<uint32> rowIndices;
+        AZStd::vector<int> rowIndices;
         rowIndices.reserve(numSelectedItems);
-        for (size_t i = 0; i < numSelectedItems; ++i)
+        for (int i = 0; i < numSelectedItems; ++i)
         {
-            const uint32 rowIndex = selectedItems[static_cast<uint32>(i)]->row();
+            const int rowIndex = selectedItems[i]->row();
             if (AZStd::find(rowIndices.begin(), rowIndices.end(), rowIndex) == rowIndices.end())
             {
                 rowIndices.push_back(rowIndex);
@@ -545,25 +546,23 @@ namespace EMStudio
         }
 
         // clear the selected motion IDs
-        mSelectedMotionIDs.clear();
+        m_selectedMotionIDs.clear();
 
         // get the number of selected items and iterate through them
-        const size_t numSelectedRows = rowIndices.size();
-        mSelectedMotionIDs.reserve(numSelectedRows);
-        for (size_t i = 0; i < numSelectedRows; ++i)
+        m_selectedMotionIDs.reserve(rowIndices.size());
+        for (const int rowIndex : rowIndices)
         {
-            mSelectedMotionIDs.push_back(GetMotionID(rowIndices[i]));
+            m_selectedMotionIDs.push_back(GetMotionID(rowIndex));
         }
 
         // unselect all motions
         GetCommandManager()->GetCurrentSelection().ClearMotionSelection();
 
         // get the number of selected motions and iterate through them
-        const size_t numSelectedMotions = mSelectedMotionIDs.size();
-        for (size_t i = 0; i < numSelectedMotions; ++i)
+        for (uint32 selectedMotionID : m_selectedMotionIDs)
         {
             // find the motion by name in the motion library and select it
-            EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(mSelectedMotionIDs[i]);
+            EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(selectedMotionID);
             if (motion)
             {
                 GetCommandManager()->GetCurrentSelection().AddMotion(motion);
@@ -571,7 +570,7 @@ namespace EMStudio
         }
 
         // update the interface
-        mMotionWindowPlugin->UpdateInterface();
+        m_motionWindowPlugin->UpdateInterface();
 
         // emit signal that tells other windows that the motion selection changed
         emit MotionSelectionChanged();
@@ -582,7 +581,7 @@ namespace EMStudio
     {
         // get the current selection
         const CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numSelectedMotions = selection.GetNumSelectedMotions();
+        const size_t numSelectedMotions = selection.GetNumSelectedMotions();
         if (numSelectedMotions == 0)
         {
             return;
@@ -606,7 +605,6 @@ namespace EMStudio
 
         // Set the command group name based on the number of motions to add.
         AZStd::string groupName;
-        const size_t numSelectedMotionSets = selectedMotionSets.size();
         if (numSelectedMotions > 1)
         {
             groupName = "Add motions in motion sets";
@@ -620,16 +618,14 @@ namespace EMStudio
 
         // add in each selected motion set
         AZStd::string motionName;
-        for (uint32 m = 0; m < numSelectedMotionSets; ++m)
+        for (const EMotionFX::MotionSet* motionSet : selectedMotionSets)
         {
-            EMotionFX::MotionSet* motionSet = selectedMotionSets[m];
-
             // Build a list of unique string id values from all motion set entries.
             AZStd::vector<AZStd::string> idStrings;
             motionSet->BuildIdStringList(idStrings);
 
             // add each selected motion in the motion set
-            for (uint32 i = 0; i < numSelectedMotions; ++i)
+            for (size_t i = 0; i < numSelectedMotions; ++i)
             {
                 // remove the media root folder from the absolute motion filename so that we get the relative one to the media root folder
                 motionName = selection.GetMotion(i)->GetFileName();
@@ -653,7 +649,7 @@ namespace EMStudio
         const CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
 
         // iterate through the selected motions and show them
-        for (uint32 i = 0; i < selection.GetNumSelectedMotions(); ++i)
+        for (size_t i = 0; i < selection.GetNumSelectedMotions(); ++i)
         {
             EMotionFX::Motion* motion = selection.GetMotion(i);
             AzQtComponents::ShowFileOnDesktop(motion->GetFileName());
@@ -752,7 +748,7 @@ namespace EMStudio
     MotionTableWidget::MotionTableWidget(MotionWindowPlugin* parentPlugin, QWidget* parent)
         : QTableWidget(parent)
     {
-        mPlugin = parentPlugin;
+        m_plugin = parentPlugin;
 
         // enable dragging
         setDragEnabled(true);
@@ -776,8 +772,8 @@ namespace EMStudio
 
         // get the number of selected motions and return directly if there are no motions selected
         AZStd::string textData, command;
-        const uint32 numMotions = selectionList.GetNumSelectedMotions();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const size_t numMotions = selectionList.GetNumSelectedMotions();
+        for (size_t i = 0; i < numMotions; ++i)
         {
             EMotionFX::Motion* motion = selectionList.GetMotion(i);
 

@@ -1,17 +1,19 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
 #include "ProjectSettingsContainer.h"
 
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/XML/rapidxml_print.h>
 
+#include <CryCommon/platform.h>
 #include <Util/FileUtil.h>
 
 namespace ProjectSettingsTool

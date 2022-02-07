@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QCoreApplication>
 #include <QFont>
@@ -20,6 +20,7 @@
 #include <GraphCanvas/Editor/GraphCanvasProfiler.h>
 #include <GraphCanvas/tools.h>
 #include <GraphCanvas/Styling/StyleHelper.h>
+#include <Translation/TranslationBus.h>
 
 namespace GraphCanvas
 {
@@ -76,19 +77,11 @@ namespace GraphCanvas
         m_hasBorderOverride = false;
     }
 
-    void GraphCanvasLabel::SetLabel(const AZStd::string& label, const AZStd::string& translationContext, const AZStd::string& translationKey)
+    void GraphCanvasLabel::SetLabel(const AZStd::string& value)
     {
-        TranslationKeyedString keyedString(label, translationContext, translationKey);
-        SetLabel(keyedString);
-    }
-
-    void GraphCanvasLabel::SetLabel(const TranslationKeyedString& value)
-    {
-        AZStd::string displayString = value.GetDisplayString();
-
-        if (m_labelText.compare(QString(displayString.c_str())))
+        if (m_labelText.compare(QString(value.c_str())))
         {
-            m_labelText = Tools::qStringFromUtf8(displayString);
+            m_labelText = Tools::qStringFromUtf8(value);
 
             UpdateDisplayText();
             RefreshDisplay();
@@ -432,7 +425,5 @@ namespace GraphCanvas
         default:
             return QGraphicsWidget::sizeHint(which, constraint);
         }
-
-        return QGraphicsWidget::sizeHint(which, constraint);
     }
 }

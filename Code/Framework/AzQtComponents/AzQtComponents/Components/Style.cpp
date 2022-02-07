@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -489,29 +490,43 @@ namespace AzQtComponents
             }
             break;
             case CE_MenuItem:
+            {
+                const QMenu* menu = qobject_cast<const QMenu*>(widget);
+                QAction* action = menu->activeAction();
+                if (action)
                 {
-                    const QMenu* menu = qobject_cast<const QMenu*>(widget);
-                    QAction* action = menu->activeAction();
-                    if (action)
+                    QMenu* subMenu = action->menu();
+                    if (subMenu)
                     {
-                        QMenu* subMenu = action->menu();
-                        if (subMenu)
+                        QVariant noHover = subMenu->property("noHover");
+                        if (noHover.isValid() && noHover.toBool())
                         {
-                            QVariant noHover = subMenu->property("noHover");
-                            if (noHover.isValid() && noHover.toBool())
-                            {
-                                // First draw as standard to get the correct hover background for the complete control.
-                                QProxyStyle::drawControl(element, option, painter, widget);
-                                // Now draw the icon as non-hovered so control behaves as designed.
-                                QStyleOptionMenuItem myOpt = *qstyleoption_cast<const QStyleOptionMenuItem*>(option);
-                                myOpt.state &= ~QStyle::State_Selected;
-                                return QProxyStyle::drawControl(element, &myOpt, painter, widget);
-                            }
+                            // First draw as standard to get the correct hover background for the complete control.
+                            QProxyStyle::drawControl(element, option, painter, widget);
+                            // Now draw the icon as non-hovered so control behaves as designed.
+                            QStyleOptionMenuItem myOpt = *qstyleoption_cast<const QStyleOptionMenuItem*>(option);
+                            myOpt.state &= ~QStyle::State_Selected;
+                            return QProxyStyle::drawControl(element, &myOpt, painter, widget);
                         }
                     }
                 }
-                break;
+                // Implement checkmark with icon in menu.
+                QStyleOptionMenuItem myOpt = *qstyleoption_cast<const QStyleOptionMenuItem*>(option);
+                bool checkable = myOpt.checkType != QStyleOptionMenuItem::NotCheckable;
+                bool checked = checkable ? myOpt.checked : false;
+
+                if (!myOpt.icon.isNull() && checked)
+                {
+                    const int iconSize{ 18 };
+                    int topPadding{ AZStd::max( 0 , (myOpt.rect.height() - iconSize) / 2) - 1};
+
+                    QProxyStyle::drawControl(element, &myOpt, painter, widget);
+                    myOpt.rect.adjust(0, topPadding, iconSize - myOpt.rect.width(), iconSize - myOpt.rect.height());
+                    return drawPrimitive(PE_IndicatorMenuCheckMark, &myOpt, painter, widget);
+                }
             }
+            break;
+        }
 
         return QProxyStyle::drawControl(element, option, painter, widget);
     }

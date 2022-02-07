@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,7 +32,7 @@ class CTrackViewFindDlg
     Q_OBJECT
     // Construction
 public:
-    CTrackViewFindDlg(const char* title = NULL, QWidget* pParent = NULL);   // standard constructor
+    CTrackViewFindDlg(const char* title = nullptr, QWidget* pParent = nullptr);   // standard constructor
     ~CTrackViewFindDlg();
 
     //Functions

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzNetworking/Framework/ICompressor.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace MultiplayerCompression
 {
@@ -29,13 +31,13 @@ namespace MultiplayerCompression
         LZ4Compressor() = default;
 
         const char* GetName() const { return CompressorName; }
-        AzNetworking::CompressorType GetType() const { return CompressorType;  };
+        AzNetworking::CompressorType GetType() const override { return CompressorType;  };
 
-        bool Init() { return true; }
-        size_t GetMaxChunkSize(size_t maxCompSize) const;
-        size_t GetMaxCompressedBufferSize(size_t uncompSize) const;
+        bool Init() override { return true; }
+        size_t GetMaxChunkSize(size_t maxCompSize) const override;
+        size_t GetMaxCompressedBufferSize(size_t uncompSize) const override;
 
-        AzNetworking::CompressorError Compress(const void* uncompData, size_t uncompSize, void* compData, size_t compDataSize, size_t& compSize);
-        AzNetworking::CompressorError Decompress(const void* compData, size_t compDataSize, void* uncompData, size_t uncompDataSize, size_t& consumedSize, size_t& uncompSize);
+        AzNetworking::CompressorError Compress(const void* uncompData, size_t uncompSize, void* compData, size_t compDataSize, size_t& compSize) override;
+        AzNetworking::CompressorError Decompress(const void* compData, size_t compDataSize, void* uncompData, size_t uncompDataSize, size_t& consumedSize, size_t& uncompSize) override;
     };
 }

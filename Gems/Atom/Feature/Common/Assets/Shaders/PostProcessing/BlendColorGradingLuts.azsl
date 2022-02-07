@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/PostProcessing/Aces.azsli>
+#include <Atom/Features/PostProcessing/Shapers.azsli>
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
@@ -61,40 +63,18 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 [[range(0, 4)]]
 option uint o_numSourceLuts = 0;
 
-float3 ShaperToLinear(float3 shaperColor, ShaperType shaperType, float shaperBias, float shaperScale)
-{
-    // Apply the inverse of the shaper function to give the color in the working color space
-    float3 linearColor = shaperColor;
-    if (shaperType == ShaperType::ShaperLinear)
-    {
-        linearColor = (shaperColor - shaperBias)/shaperScale;
-    }
-    else if (shaperType == ShaperType::ShaperLog2)
-    {
-        linearColor = pow(2.0, (shaperColor - shaperBias)/shaperScale);
-    }
-    return linearColor;
-}
-
-float3 LinearToShaper(float3 linearColor, ShaperType shaperType, float shaperBias, float shaperScale)
-{
-    // Convert from working color space to lut coordinates by applying the shaper function
-    float3 shaperColor = linearColor;
-    if (shaperType == ShaperType::ShaperLinear)
-    {
-        shaperColor = linearColor * shaperScale + shaperBias;
-    }
-    else if (shaperType == ShaperType::ShaperLog2)
-    {
-        shaperColor = log2(linearColor) * shaperScale + shaperBias;
-    }
-    return shaperColor;
-}
-
 float3 GetSourceLutLinearColor(float3 baseColor, Texture3D<float4> sourceLut, ShaperType shaperType, float shaperBias, float shaperScale)
 {
     // Convert from reference linearColor to the lutCoordinate for this Lut
     float3 lutCoord = LinearToShaper(baseColor, shaperType, shaperBias, shaperScale);
+
+    // Adjust coordinate to the domain excluding the outer half texel in all directions
+    uint3 outputDimensions;
+    sourceLut.GetDimensions(outputDimensions.x, outputDimensions.y, outputDimensions.z);
+    float3 coordBias = 1.0 / (2.0 * outputDimensions);
+    float3 coordScale = (outputDimensions - 1.0) / outputDimensions;
+    lutCoord = (lutCoord * coordScale) + coordBias;
+
     float3 lutColor = sourceLut.SampleLevel(PassSrg::LinearSampler, lutCoord, 0).rgb;
     // Convert to linear
     float3 linearColor = ShaperToLinear(lutColor, shaperType, shaperBias, shaperScale);
@@ -114,11 +94,7 @@ void MainCS(uint3 dispatch_id: SV_DispatchThreadID)
     }
 
     // Get coordinates within the blended LUT 3D texture
-    float3 baseCoord = float3 (
-        (float)(dispatch_id.x)/(float)PassSrg::m_blendedLutDimensions.x,
-        (float)(dispatch_id.y)/(float)PassSrg::m_blendedLutDimensions.y,
-        (float)(dispatch_id.z)/(float)PassSrg::m_blendedLutDimensions.z
-        );
+    float3 baseCoord = float3(outPixel) / float3(PassSrg::m_blendedLutDimensions - 1.0);
     
     // Convert to the base linear color (this is the color of the identity LUT)
     float3 baseColor = ShaperToLinear(baseCoord, (ShaperType)PassSrg::m_blendedLutShaperType, PassSrg::m_blendedLutShaperBias, PassSrg::m_blendedLutShaperScale);

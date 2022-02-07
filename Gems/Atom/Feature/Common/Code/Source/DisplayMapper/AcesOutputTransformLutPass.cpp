@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -90,8 +91,8 @@ namespace AZ
                     m_shaderResourceGroup->SetImageView(m_shaderInputLutImageIndex, m_displayMapperLut.m_lutImageView.get());
                 }
 
-                m_shaderResourceGroup->SetConstant(m_shaderInputShaperBiasIndex, m_shaperParams.bias);
-                m_shaderResourceGroup->SetConstant(m_shaderInputShaperScaleIndex, m_shaperParams.scale);
+                m_shaderResourceGroup->SetConstant(m_shaderInputShaperBiasIndex, m_shaperParams.m_bias);
+                m_shaderResourceGroup->SetConstant(m_shaderInputShaperScaleIndex, m_shaperParams.m_scale);
             }
 
             BindPassSrg(context, m_shaderResourceGroup);

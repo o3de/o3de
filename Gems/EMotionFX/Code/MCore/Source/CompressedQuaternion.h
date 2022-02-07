@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -72,7 +73,7 @@ namespace MCore
         AZ_INLINE operator AZ::Quaternion() const { return ToQuaternion(); }
 
     public:
-        StorageType mX, mY, mZ, mW; /**< The compressed/packed quaternion components values. */
+        StorageType m_x, m_y, m_z, m_w; /**< The compressed/packed quaternion components values. */
 
         // the number of steps within the specified range
         enum

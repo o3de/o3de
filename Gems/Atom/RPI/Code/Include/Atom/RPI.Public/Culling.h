@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,8 +70,23 @@ namespace AZ
             };
             CullData m_cullData;
 
+            enum LodType : uint8_t
+            {
+                Default = 0,
+                ScreenCoverage,
+                SpecificLod,
+            };
             using LodOverride = uint8_t;
-            static constexpr uint8_t NoLodOverride = AZStd::numeric_limits<LodOverride>::max();
+
+            struct LodConfiguration
+            {
+                LodType m_lodType = LodType::Default;
+                LodOverride m_lodOverride = 0;
+                // the minimum possibe area a sphere enclosing a mesh projected onto the screen should have before it is culled.
+                float m_minimumScreenCoverage = 1.0f / 1080.0f; // For default, mesh should cover at least a screen pixel at 1080p to be drawn;
+                // The screen area decay between 0 and 1, i.e. closer to 1 -> lose quality immediately, closer to 0 -> never lose quality 
+                float m_qualityDecayRate = 0.5f;
+            };
 
             struct LodData
             {
@@ -87,7 +103,7 @@ namespace AZ
                 //! Suggest setting to: 0.5f*localAabb.GetExtents().GetMaxElement()
                 float m_lodSelectionRadius = 1.0f;
 
-                LodOverride m_lodOverride = NoLodOverride;
+                LodConfiguration m_lodConfiguration;
             };
             LodData m_lodData;
 

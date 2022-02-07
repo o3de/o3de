@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,11 +21,11 @@ namespace EMStudio
         : QDialog(parent)
     {
         // keep values
-        mActorInstance = actorInstance;
-        mMorphTarget = morphTarget;
+        m_actorInstance = actorInstance;
+        m_morphTarget = morphTarget;
 
         // init the phoneme selection window
-        mPhonemeSelectionWindow = nullptr;
+        m_phonemeSelectionWindow = nullptr;
 
         // set the window name
         setWindowTitle(QString("Edit Morph Target: %1").arg(morphTarget->GetName()));
@@ -34,35 +35,35 @@ namespace EMStudio
         layout->setAlignment(Qt::AlignVCenter);
 
         // get the morph target range min/max
-        const float morphTargetRangeMin = mMorphTarget->GetRangeMin();
-        const float morphTargetRangeMax = mMorphTarget->GetRangeMax();
+        const float morphTargetRangeMin = m_morphTarget->GetRangeMin();
+        const float morphTargetRangeMax = m_morphTarget->GetRangeMax();
 
         // create the range min label
         QLabel* rangeMinLabel = new QLabel("Range Min");
 
         // create the range min double spinbox
-        mRangeMin = new AzQtComponents::DoubleSpinBox();
-        mRangeMin->setSingleStep(0.1);
-        mRangeMin->setRange(std::numeric_limits<int32>::lowest(), morphTargetRangeMax);
-        mRangeMin->setValue(morphTargetRangeMin);
-        connect(mRangeMin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &MorphTargetEditWindow::MorphTargetRangeMinValueChanged);
+        m_rangeMin = new AzQtComponents::DoubleSpinBox();
+        m_rangeMin->setSingleStep(0.1);
+        m_rangeMin->setRange(std::numeric_limits<int32>::lowest(), morphTargetRangeMax);
+        m_rangeMin->setValue(morphTargetRangeMin);
+        connect(m_rangeMin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &MorphTargetEditWindow::MorphTargetRangeMinValueChanged);
 
         // create the range max label
         QLabel* rangeMaxLabel = new QLabel("Range Max");
 
         // create the range max double spinbox
-        mRangeMax = new AzQtComponents::DoubleSpinBox();
-        mRangeMax->setSingleStep(0.1);
-        mRangeMax->setRange(morphTargetRangeMin, std::numeric_limits<int32>::max());
-        mRangeMax->setValue(morphTargetRangeMax);
-        connect(mRangeMax, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &MorphTargetEditWindow::MorphTargetRangeMaxValueChanged);
+        m_rangeMax = new AzQtComponents::DoubleSpinBox();
+        m_rangeMax->setSingleStep(0.1);
+        m_rangeMax->setRange(morphTargetRangeMin, std::numeric_limits<int32>::max());
+        m_rangeMax->setValue(morphTargetRangeMax);
+        connect(m_rangeMax, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &MorphTargetEditWindow::MorphTargetRangeMaxValueChanged);
 
         // create the grid layout
         QGridLayout* gridLayout = new QGridLayout();
         gridLayout->addWidget(rangeMinLabel, 0, 0);
-        gridLayout->addWidget(mRangeMin, 0, 1);
+        gridLayout->addWidget(m_rangeMin, 0, 1);
         gridLayout->addWidget(rangeMaxLabel, 1, 0);
-        gridLayout->addWidget(mRangeMax, 1, 1);
+        gridLayout->addWidget(m_rangeMax, 1, 1);
 
         // create the buttons layout
         QHBoxLayout* buttonsLayout = new QHBoxLayout();
@@ -94,36 +95,36 @@ namespace EMStudio
 
     MorphTargetEditWindow::~MorphTargetEditWindow()
     {
-        delete mPhonemeSelectionWindow;
+        delete m_phonemeSelectionWindow;
     }
 
 
     void MorphTargetEditWindow::UpdateInterface()
     {
         // get the morph target range min/max
-        const float morphTargetRangeMin = mMorphTarget->GetRangeMin();
-        const float morphTargetRangeMax = mMorphTarget->GetRangeMax();
+        const float morphTargetRangeMin = m_morphTarget->GetRangeMin();
+        const float morphTargetRangeMax = m_morphTarget->GetRangeMax();
 
         // disable signals
-        mRangeMin->blockSignals(true);
-        mRangeMax->blockSignals(true);
+        m_rangeMin->blockSignals(true);
+        m_rangeMax->blockSignals(true);
 
         // update the range min
-        mRangeMin->setRange(std::numeric_limits<int32>::lowest(), morphTargetRangeMax);
-        mRangeMin->setValue(morphTargetRangeMin);
+        m_rangeMin->setRange(std::numeric_limits<int32>::lowest(), morphTargetRangeMax);
+        m_rangeMin->setValue(morphTargetRangeMin);
 
         // update the range max
-        mRangeMax->setRange(morphTargetRangeMin, std::numeric_limits<int32>::max());
-        mRangeMax->setValue(morphTargetRangeMax);
+        m_rangeMax->setRange(morphTargetRangeMin, std::numeric_limits<int32>::max());
+        m_rangeMax->setValue(morphTargetRangeMax);
 
         // enable signals
-        mRangeMin->blockSignals(false);
-        mRangeMax->blockSignals(false);
+        m_rangeMin->blockSignals(false);
+        m_rangeMax->blockSignals(false);
 
         // update the phoneme selection window
-        if (mPhonemeSelectionWindow)
+        if (m_phonemeSelectionWindow)
         {
-            mPhonemeSelectionWindow->UpdateInterface();
+            m_phonemeSelectionWindow->UpdateInterface();
         }
     }
 
@@ -131,24 +132,24 @@ namespace EMStudio
     void MorphTargetEditWindow::MorphTargetRangeMinValueChanged(double value)
     {
         const float rangeMin = (float)value;
-        mRangeMax->setRange(rangeMin, std::numeric_limits<int32>::max());
+        m_rangeMax->setRange(rangeMin, std::numeric_limits<int32>::max());
     }
 
 
     void MorphTargetEditWindow::MorphTargetRangeMaxValueChanged(double value)
     {
         const float rangeMax = (float)value;
-        mRangeMin->setRange(std::numeric_limits<int32>::lowest(), rangeMax);
+        m_rangeMin->setRange(std::numeric_limits<int32>::lowest(), rangeMax);
     }
 
 
     void MorphTargetEditWindow::Accepted()
     {
-        const float rangeMin = (float)mRangeMin->value();
-        const float rangeMax = (float)mRangeMax->value();
+        const float rangeMin = (float)m_rangeMin->value();
+        const float rangeMax = (float)m_rangeMax->value();
 
         AZStd::string result;
-        AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %i -name \"%s\" -rangeMin %f -rangeMax %f", mActorInstance->GetID(), mActorInstance->GetLODLevel(), mMorphTarget->GetNameString().c_str(), rangeMin, rangeMax);
+        AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %zu -name \"%s\" -rangeMin %f -rangeMax %f", m_actorInstance->GetID(), m_actorInstance->GetLODLevel(), m_morphTarget->GetNameString().c_str(), rangeMin, rangeMax);
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result) == false)
         {
             AZ_Error("EMotionFX", false, result.c_str());
@@ -160,9 +161,9 @@ namespace EMStudio
 
     void MorphTargetEditWindow::EditPhonemeButtonClicked()
     {
-        delete mPhonemeSelectionWindow;
-        mPhonemeSelectionWindow =  new PhonemeSelectionWindow(mActorInstance->GetActor(), mActorInstance->GetLODLevel(), mMorphTarget, this);
-        mPhonemeSelectionWindow->exec();
+        delete m_phonemeSelectionWindow;
+        m_phonemeSelectionWindow =  new PhonemeSelectionWindow(m_actorInstance->GetActor(), m_actorInstance->GetLODLevel(), m_morphTarget, this);
+        m_phonemeSelectionWindow->exec();
     }
 } // namespace EMStudio
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,22 +20,22 @@ namespace EMotionFX
     VertexAttributeLayerAbstractData::VertexAttributeLayerAbstractData(uint32 numAttributes, uint32 typeID, uint32 attribSizeInBytes, bool keepOriginals)
         : VertexAttributeLayer(numAttributes, keepOriginals)
     {
-        mData               = nullptr;
-        mSwapBuffer         = nullptr;
-        mTypeID             = typeID;
-        mAttribSizeInBytes  = attribSizeInBytes;
+        m_data               = nullptr;
+        m_swapBuffer         = nullptr;
+        m_typeId             = typeID;
+        m_attribSizeInBytes  = attribSizeInBytes;
 
         // allocate the data
-        const uint32 numBytes = CalcTotalDataSizeInBytes(mKeepOriginals);
-        mData = (uint8*)MCore::AlignedAllocate(numBytes, 16, EMFX_MEMCATEGORY_GEOMETRY_VERTEXATTRIBUTES);
+        const uint32 numBytes = CalcTotalDataSizeInBytes(m_keepOriginals);
+        m_data = (uint8*)MCore::AlignedAllocate(numBytes, 16, EMFX_MEMCATEGORY_GEOMETRY_VERTEXATTRIBUTES);
     }
 
 
     // the destructor
     VertexAttributeLayerAbstractData::~VertexAttributeLayerAbstractData()
     {
-        MCore::AlignedFree(mData);
-        MCore::AlignedFree(mSwapBuffer);
+        MCore::AlignedFree(m_data);
+        MCore::AlignedFree(m_swapBuffer);
     }
 
 
@@ -48,7 +49,7 @@ namespace EMotionFX
     // get the layer type
     uint32 VertexAttributeLayerAbstractData::GetType() const
     {
-        return mTypeID;
+        return m_typeId;
     }
 
 
@@ -62,13 +63,13 @@ namespace EMotionFX
     // calculate the total data size
     uint32 VertexAttributeLayerAbstractData::CalcTotalDataSizeInBytes(bool includeOriginals) const
     {
-        if (includeOriginals && mKeepOriginals)
+        if (includeOriginals && m_keepOriginals)
         {
-            return (mAttribSizeInBytes * mNumAttributes) << 1; // multiplied by two, as we store the originals right after it
+            return (m_attribSizeInBytes * m_numAttributes) << 1; // multiplied by two, as we store the originals right after it
         }
         else
         {
-            return mAttribSizeInBytes * mNumAttributes;
+            return m_attribSizeInBytes * m_numAttributes;
         }
     }
 
@@ -77,13 +78,13 @@ namespace EMotionFX
     VertexAttributeLayer* VertexAttributeLayerAbstractData::Clone()
     {
         // create the clone
-        VertexAttributeLayerAbstractData* clone = aznew VertexAttributeLayerAbstractData(mNumAttributes, mTypeID, mAttribSizeInBytes, mKeepOriginals);
+        VertexAttributeLayerAbstractData* clone = aznew VertexAttributeLayerAbstractData(m_numAttributes, m_typeId, m_attribSizeInBytes, m_keepOriginals);
 
         // copy over the data
         uint8* cloneData = (uint8*)clone->GetData();
-        MCore::MemCopy(cloneData, mData, CalcTotalDataSizeInBytes(true));
+        MCore::MemCopy(cloneData, m_data, CalcTotalDataSizeInBytes(true));
 
-        clone->mNameID = mNameID;
+        clone->m_nameId = m_nameId;
         return clone;
     }
 
@@ -92,7 +93,7 @@ namespace EMotionFX
     void VertexAttributeLayerAbstractData::ResetToOriginalData()
     {
         // if we dont have any original data, there is nothing to do
-        if (mKeepOriginals == false)
+        if (m_keepOriginals == false)
         {
             return;
         }
@@ -110,9 +111,9 @@ namespace EMotionFX
     void VertexAttributeLayerAbstractData::SwapAttributes(uint32 attribA, uint32 attribB)
     {
         // create a swap buffer if we haven't got it already
-        if (mSwapBuffer == nullptr)
+        if (m_swapBuffer == nullptr)
         {
-            mSwapBuffer = (uint8*)MCore::AlignedAllocate(mAttribSizeInBytes, 16, EMFX_MEMCATEGORY_GEOMETRY_VERTEXATTRIBUTES);
+            m_swapBuffer = (uint8*)MCore::AlignedAllocate(m_attribSizeInBytes, 16, EMFX_MEMCATEGORY_GEOMETRY_VERTEXATTRIBUTES);
         }
 
         // get the locations of where the attributes are stored
@@ -120,18 +121,18 @@ namespace EMotionFX
         uint8* attribPtrB = (uint8*)GetData(attribB);
 
         // swap the attribute data
-        MCore::MemCopy(mSwapBuffer, attribPtrA, mAttribSizeInBytes);    // copy attribute A into the temp swap buffer
-        MCore::MemCopy(attribPtrA, attribPtrB, mAttribSizeInBytes);     // copy attribute B into A
-        MCore::MemCopy(attribPtrB, mSwapBuffer, mAttribSizeInBytes);    // copy the temp swap buffer data into attribute B
+        MCore::MemCopy(m_swapBuffer, attribPtrA, m_attribSizeInBytes);    // copy attribute A into the temp swap buffer
+        MCore::MemCopy(attribPtrA, attribPtrB, m_attribSizeInBytes);     // copy attribute B into A
+        MCore::MemCopy(attribPtrB, m_swapBuffer, m_attribSizeInBytes);    // copy the temp swap buffer data into attribute B
 
         // swap the originals
-        if (mKeepOriginals)
+        if (m_keepOriginals)
         {
             attribPtrA = (uint8*)GetOriginalData(attribA);
             attribPtrB = (uint8*)GetOriginalData(attribB);
-            MCore::MemCopy(mSwapBuffer, attribPtrA, mAttribSizeInBytes);    // copy attribute A into the temp swap buffer
-            MCore::MemCopy(attribPtrA, attribPtrB, mAttribSizeInBytes);     // copy attribute B into A
-            MCore::MemCopy(attribPtrB, mSwapBuffer, mAttribSizeInBytes);    // copy the temp swap buffer data into attribute B
+            MCore::MemCopy(m_swapBuffer, attribPtrA, m_attribSizeInBytes);    // copy attribute A into the temp swap buffer
+            MCore::MemCopy(attribPtrA, attribPtrB, m_attribSizeInBytes);     // copy attribute B into A
+            MCore::MemCopy(attribPtrB, m_swapBuffer, m_attribSizeInBytes);    // copy the temp swap buffer data into attribute B
         }
     }
 
@@ -139,8 +140,8 @@ namespace EMotionFX
     // remove the swap buffer from memory
     void VertexAttributeLayerAbstractData::RemoveSwapBuffer()
     {
-        MCore::AlignedFree(mSwapBuffer);
-        mSwapBuffer = nullptr;
+        MCore::AlignedFree(m_swapBuffer);
+        m_swapBuffer = nullptr;
     }
 
 
@@ -148,11 +149,11 @@ namespace EMotionFX
     void VertexAttributeLayerAbstractData::RemoveAttributes(uint32 startAttributeNr, uint32 endAttributeNr)
     {
         // perform some checks on the input data
-        MCORE_ASSERT(startAttributeNr < mNumAttributes);
-        MCORE_ASSERT(endAttributeNr < mNumAttributes);
+        MCORE_ASSERT(startAttributeNr < m_numAttributes);
+        MCORE_ASSERT(endAttributeNr < m_numAttributes);
 
         // Store the original number of bytes for the reallocation
-        const size_t numOriginalBytes = CalcTotalDataSizeInBytes(mKeepOriginals);
+        const size_t numOriginalBytes = CalcTotalDataSizeInBytes(m_keepOriginals);
 
         // make sure the start attribute number is lower than the end
         uint32 start = startAttributeNr;
@@ -173,33 +174,33 @@ namespace EMotionFX
         }
 
         // remove the attributes from the current data
-        const uint32 numBytesToMove = (mNumAttributes - end - 1) * mAttribSizeInBytes;
+        const uint32 numBytesToMove = (m_numAttributes - end - 1) * m_attribSizeInBytes;
         if (numBytesToMove > 0)
         {
-            MCore::MemMove(mData + start * mAttribSizeInBytes, mData + (end + 1) * mAttribSizeInBytes, numBytesToMove);
+            MCore::MemMove(m_data + start * m_attribSizeInBytes, m_data + (end + 1) * m_attribSizeInBytes, numBytesToMove);
         }
 
         // remove the attributes from the original data
-        if (mKeepOriginals)
+        if (m_keepOriginals)
         {
             // remove them from the original data
             uint8* orgData = (uint8*)GetOriginalData();
 
             if (numBytesToMove > 0)
             {
-                MCore::MemMove(orgData + start * mAttribSizeInBytes, orgData + (end + 1) * mAttribSizeInBytes, numBytesToMove);
+                MCore::MemMove(orgData + start * m_attribSizeInBytes, orgData + (end + 1) * m_attribSizeInBytes, numBytesToMove);
             }
 
             // remove the created gap between the current data and original data, as both original and current data remain in the same continuous piece of memory
-            MCore::MemMove(mData + (mNumAttributes - numAttribsToRemove) * mAttribSizeInBytes, orgData, (mNumAttributes - numAttribsToRemove) * mAttribSizeInBytes);
+            MCore::MemMove(m_data + (m_numAttributes - numAttribsToRemove) * m_attribSizeInBytes, orgData, (m_numAttributes - numAttribsToRemove) * m_attribSizeInBytes);
         }
 
         // decrease the number of attributes
-        mNumAttributes -= numAttribsToRemove;
+        m_numAttributes -= numAttribsToRemove;
 
         // reallocate, to make the data array smaller
-        const uint32 numBytes = CalcTotalDataSizeInBytes(mKeepOriginals);
-        mData = (uint8*)MCore::AlignedRealloc(mData, numBytes, numOriginalBytes, 16, EMFX_MEMCATEGORY_GEOMETRY_VERTEXATTRIBUTES);
+        const uint32 numBytes = CalcTotalDataSizeInBytes(m_keepOriginals);
+        m_data = (uint8*)MCore::AlignedRealloc(m_data, numBytes, numOriginalBytes, 16, EMFX_MEMCATEGORY_GEOMETRY_VERTEXATTRIBUTES);
     }
 
 

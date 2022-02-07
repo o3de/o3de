@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,39 +22,30 @@
 
 namespace AWSCore
 {
-    AWSScriptBehaviorLambda::AWSScriptBehaviorLambda()
+    void AWSScriptBehaviorLambda::Reflect(AZ::ReflectContext* context)
     {
-    }
-
-    void AWSScriptBehaviorLambda::ReflectSerialization(AZ::SerializeContext* serializeContext)
-    {
-        if (serializeContext)
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<AWSScriptBehaviorLambda>()
                 ->Version(0);
         }
-    }
 
-    void AWSScriptBehaviorLambda::ReflectBehaviors(AZ::BehaviorContext* behaviorContext)
-    {
-        behaviorContext->Class<AWSScriptBehaviorLambda>("AWSScriptBehaviorLambda")
-            ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
-            ->Method("Invoke", &AWSScriptBehaviorLambda::Invoke,
-                {{{"Function Resource KeyName", "The resource key name of the lambda function in resource mapping config file."},
-                  {"Payload", "The JSON that you want to provide to your Lambda function as input."}}})
-            ->Method("InvokeRaw", &AWSScriptBehaviorLambda::InvokeRaw,
-                {{{"Function Name", "The name of the Lambda function, version, or alias."},
-                  {"Payload", "The JSON that you want to provide to your Lambda function as input."},
-                  {"Region Name", "The region of the lambda function located in."}}});
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<AWSScriptBehaviorLambda>("AWSScriptBehaviorLambda")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
+                ->Method("Invoke", &AWSScriptBehaviorLambda::Invoke,
+                    {{{"Function Resource KeyName", "The resource key name of the lambda function in resource mapping config file."},
+                      {"Payload", "The JSON that you want to provide to your Lambda function as input."}}})
+                ->Method("InvokeRaw", &AWSScriptBehaviorLambda::InvokeRaw,
+                    {{{"Function Name", "The name of the Lambda function, version, or alias."},
+                      {"Payload", "The JSON that you want to provide to your Lambda function as input."},
+                      {"Region Name", "The region of the lambda function located in."}}});
 
-        behaviorContext->EBus<AWSScriptBehaviorLambdaNotificationBus>("AWSLambdaBehaviorNotificationBus")
-            ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
-            ->Handler<AWSScriptBehaviorLambdaNotificationBusHandler>();
-    }
-
-    void AWSScriptBehaviorLambda::ReflectEditParameters(AZ::EditContext* editContext)
-    {
-        AZ_UNUSED(editContext);
+            behaviorContext->EBus<AWSScriptBehaviorLambdaNotificationBus>("AWSLambdaBehaviorNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
+                ->Handler<AWSScriptBehaviorLambdaNotificationBusHandler>();
+        }
     }
 
     void AWSScriptBehaviorLambda::Invoke(const AZStd::string& functionResourceKey, const AZStd::string& payload)

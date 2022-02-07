@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "LyShine_precompiled.h"
 #include "AzEntityNode.h"
 #include "AnimSplineTrack.h"
 #include "BoolTrack.h"
@@ -16,7 +16,6 @@
 #include "PNoise3.h"
 #include "AnimSequence.h"
 
-#include <IAudioSystem.h>
 #include <Cry_Camera.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -27,18 +26,6 @@
 #define s_nodeParamsInitialized s_nodeParamsInitializedEnt
 #define s_nodeParams s_nodeParamsEnt
 #define AddSupportedParam AddSupportedParamEnt
-
-static const float TIMEJUMPED_TRANSITION_TIME = 1.0f;
-static const float EPSILON = 0.01f;
-
-static const char* s_VariablePrefixes[] =
-{
-    "n", "i", "b", "f", "s", "ei", "es",
-    "shader", "clr", "color", "vector",
-    "snd", "sound", "dialog", "tex", "texture",
-    "obj", "object", "file", "text", "equip", "reverbpreset", "eaxpreset",
-    "aianchor", "customaction", "gametoken", "seq_", "mission_", "seqid_", "lightanimation_"
-};
 
 //////////////////////////////////////////////////////////////////////////
 namespace
@@ -57,16 +44,7 @@ namespace
         param.flags = (IUiAnimNode::ESupportedParamFlags)flags;
         nodeParams.push_back(param);
     }
-
-    // Quat::IsEquivalent has numerical problems with very similar values
-    bool CompareRotation(const Quat& q1, const Quat& q2, float epsilon)
-    {
-        return (fabs_tpl(q1.v.x - q2.v.x) <= epsilon)
-               && (fabs_tpl(q1.v.y - q2.v.y) <= epsilon)
-               && (fabs_tpl(q1.v.z - q2.v.z) <= epsilon)
-               && (fabs_tpl(q1.w - q2.w) <= epsilon);
-    }
-};
+}
 
 //////////////////////////////////////////////////////////////////////////
 CUiAnimAzEntityNode::CUiAnimAzEntityNode(const int id)
@@ -163,7 +141,7 @@ CUiAnimAzEntityNode::~CUiAnimAzEntityNode()
 //////////////////////////////////////////////////////////////////////////
 unsigned int CUiAnimAzEntityNode::GetParamCount() const
 {
-    return CUiAnimAzEntityNode::GetParamCountStatic() + m_entityScriptPropertiesParamInfos.size();
+    return static_cast<unsigned int>(CUiAnimAzEntityNode::GetParamCountStatic() + m_entityScriptPropertiesParamInfos.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -190,7 +168,7 @@ CUiAnimParamType CUiAnimAzEntityNode::GetParamType(unsigned int nIndex) const
 //////////////////////////////////////////////////////////////////////////
 int CUiAnimAzEntityNode::GetParamCountStatic()
 {
-    return s_nodeParams.size();
+    return static_cast<int>(s_nodeParams.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -278,20 +256,12 @@ const AZ::SerializeContext::ClassElement* CUiAnimAzEntityNode::ComputeOffsetFrom
 
         if (mismatch)
         {
-            string warnMsg = "Data mismatch reading animation data for type ";
-            warnMsg += classData->m_typeId.ToString<string>();
-            warnMsg += ". The field \"";
-            warnMsg += paramData.GetName();
-            if (!element)
-            {
-                warnMsg += "\" cannot be found.";
-            }
-            else
-            {
-                warnMsg += "\" has a different type to that in the animation data.";
-            }
-            warnMsg += " This part of the animation data will be ignored.";
-            CryWarning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING, warnMsg.c_str());
+            CryWarning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING,
+                "Data mismatch reading animation data for type %s. The field \"%s\" %s. This part of the animation data will be ignored.",
+                classData->m_typeId.ToString<AZStd::string>().c_str(),
+                paramData.GetName(),
+                (!element ? "cannot be found" : "has a different type to that in the animation data")
+            );
             return nullptr;
         }
     }
@@ -385,7 +355,7 @@ void CUiAnimAzEntityNode::ComputeOffsetsFromElementNames()
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimAzEntityNode::GetParamName(const CUiAnimParamType& param) const
+AZStd::string CUiAnimAzEntityNode::GetParamName(const CUiAnimParamType& param) const
 {
     SParamInfo info;
     if (GetParamInfoFromType(param, info))
@@ -403,7 +373,7 @@ const char* CUiAnimAzEntityNode::GetParamName(const CUiAnimParamType& param) con
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimAzEntityNode::GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const
+AZStd::string CUiAnimAzEntityNode::GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const
 {
     // for Az Component Fields we use the name from the ClassElement
     if (param == eUiAnimParamType_AzComponentField)
@@ -680,7 +650,7 @@ IUiAnimTrack* CUiAnimAzEntityNode::CreateTrackForAzField(const UiAnimParamData& 
         // this is a compound type, create a compound track
 
         // We only support compound tracks with 2, 3 or 4 subtracks
-        int numElements = classData->m_elements.size();
+        int numElements = static_cast<int>(classData->m_elements.size());
         if (numElements < 2 || numElements > 4)
         {
             return nullptr;

@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -10,6 +11,7 @@ from aws_cdk import (
 )
 
 from . import aws_metrics_constants
+from .aws_utils import resource_name_sanitizer
 
 
 class BatchAnalytics:
@@ -18,10 +20,12 @@ class BatchAnalytics:
     """
     def __init__(self,
                  stack: core.Construct,
+                 application_name: str,
                  analytics_bucket_name: str,
                  events_database_name: str,
                  events_table_name) -> None:
         self._stack = stack
+        self._application_name = application_name
         self._analytics_bucket_name = analytics_bucket_name
         self._events_database_name = events_database_name
         self._events_table_name = events_table_name
@@ -36,7 +40,8 @@ class BatchAnalytics:
         self._athena_work_group = athena.CfnWorkGroup(
             self._stack,
             id='AthenaWorkGroup',
-            name=f'{self._stack.stack_name}-AthenaWorkGroup',
+            name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-AthenaWorkGroup', 'athena_work_group'),
             recursive_delete_option=True,
             state='ENABLED',
             work_group_configuration=athena.CfnWorkGroup.WorkGroupConfigurationProperty(
@@ -55,6 +60,12 @@ class BatchAnalytics:
                 )
             )
         )
+        core.CfnOutput(
+            self._stack,
+            id='AthenaWorkGroupName',
+            description='Name of the Athena work group that contains sample queries',
+            export_name=f"{self._application_name}:AthenaWorkGroup",
+            value=self._athena_work_group.name)
 
     def _create_athena_queries(self) -> None:
         """
@@ -64,7 +75,8 @@ class BatchAnalytics:
             athena.CfnNamedQuery(
                 self._stack,
                 id='NamedQuery-CreatePartitionedEventsJson',
-                name=f'{self._stack.stack_name}-NamedQuery-CreatePartitionedEventsJson',
+                name=resource_name_sanitizer.sanitize_resource_name(
+                    f'{self._stack.stack_name}-NamedQuery-CreatePartitionedEventsJson', 'athena_named_query'),
                 database=self._events_database_name,
                 query_string="CREATE TABLE events_json "
                              "WITH (format='JSON',partitioned_by=ARRAY['application_id']) "
@@ -77,7 +89,8 @@ class BatchAnalytics:
             athena.CfnNamedQuery(
                 self._stack,
                 id='NamedQuery-TotalEventsLastMonth',
-                name=f'{self._stack.stack_name}-NamedQuery-TotalEventsLastMonth',
+                name=resource_name_sanitizer.sanitize_resource_name(
+                    f'{self._stack.stack_name}-NamedQuery-TotalEventsLastMonth', 'athena_named_query'),
                 database=self._events_database_name,
                 query_string="WITH detail AS "
                              "(SELECT date_trunc('month', date(date_parse(CONCAT(year, '-', month, '-', day), '%Y-%m-%d'))) as event_month, * "
@@ -91,8 +104,9 @@ class BatchAnalytics:
             ),
             athena.CfnNamedQuery(
                 self._stack,
-                id='NamedQuery-NewUsersLastMonth',
-                name=f'{self._stack.stack_name}-NamedQuery-NewUsersLastMonth',
+                id='NamedQuery-LoginLastMonth',
+                name=resource_name_sanitizer.sanitize_resource_name(
+                    f'{self._stack.stack_name}-NamedQuery-LoginLastMonth', 'athena_named_query'),
                 database=self._events_database_name,
                 query_string="WITH detail AS ("
                              "SELECT date_trunc('month', date(date_parse(CONCAT(year, '-', month, '-', day), '%Y-%m-%d'))) as event_month, * "
@@ -101,12 +115,15 @@ class BatchAnalytics:
                              "date_trunc('month', event_month) as month, "
                              "count(*) as new_accounts "
                              "FROM detail "
-                             "WHERE event_name = 'user_registration' "
+                             "WHERE event_name = 'login' "
                              "GROUP BY date_trunc('month', event_month)",
-                description='New users over the last month',
+                description='Total number of login events over the last month',
                 work_group=self._athena_work_group.name
             )
         ]
+
+        for named_query in self._named_queries:
+            named_query.node.add_dependency(self._athena_work_group)
 
     @property
     def athena_work_group_name(self) -> athena.CfnWorkGroup.name:

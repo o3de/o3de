@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ namespace EMotionFX
         {
             const AZStd::string& parameterName = parameterNames[i];
             AZ::Outcome<size_t> parameterIndex = animGraph->FindValueParameterIndexByName(parameterName);
-            EXPECT_TRUE(parameterIndex.IsSuccess()) << "Parameter " << parameterName.c_str() << " does not exist in the anim graph.";
+            ASSERT_TRUE(parameterIndex.IsSuccess()) << "Parameter " << parameterName.c_str() << " does not exist in the anim graph.";
             EXPECT_EQ(parameterIndex.GetValue(), parameterIndices[i]) << "Index for parameter " << parameterName.c_str() << "out of date.";
         }
     }
@@ -114,7 +115,8 @@ namespace EMotionFX
         {
             const AZStd::string parameterName = "Tag3";
             AZ::Outcome<size_t> parameterIndex = m_animGraph->FindValueParameterIndexByName(parameterName);
-            EXPECT_TRUE(parameterIndex.IsSuccess() && parameterIndex.GetValue() == 2) << "Tag3 should be at the 3rd position after removing Tag1.";
+            ASSERT_TRUE(parameterIndex.IsSuccess());
+            EXPECT_EQ(parameterIndex.GetValue(), 2) << "Tag3 should be at the 3rd position after removing Tag1.";
 
             // Move Tag3 from the 3rd place to the 1st place.
             commandString = AZStd::string::format("AnimGraphMoveParameter -animGraphID %d -name \"%s\" -index %d",

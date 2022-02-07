@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -28,7 +29,6 @@ set(FILES
     Console/ConsoleTests.cpp
     Debug.cpp
     DLL.cpp
-    Driller.cpp
     EBus.cpp
     EntityIdTests.cpp
     EntityTests.cpp
@@ -37,6 +37,7 @@ set(FILES
     FileIOBaseTestTypes.h
     Geometry2DUtils.cpp
     Interface.cpp
+    IO/FileReaderTests.cpp
     IO/Path/PathTests.cpp
     IPC.cpp
     Jobs.cpp
@@ -59,26 +60,28 @@ set(FILES
     SerializeContextFixture.h
     Slice.cpp
     State.cpp
-    StatisticalProfiler.cpp
     Statistics.cpp
+    StatisticalProfiler.cpp
     StreamerTests.cpp
     StringFunc.cpp
     SystemFile.cpp
+    TaskTests.cpp
     TickBusTest.cpp
-    TimeDataStatistics.cpp
     UUIDTests.cpp
     XML.cpp
     Debug/AssetTracking.cpp
     Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
+    Debug/UnhandledExceptions.cpp
     Name/NameJsonSerializerTests.cpp
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp
-    SettingsRegistryTests.cpp
-    SettingsRegistryMergeUtilsTests.cpp
     Settings/CommandLineTests.cpp
+    Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
+    Settings/SettingsRegistryMergeUtilsTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
+    Settings/SettingsRegistryVisitorUtilsTests.cpp
     Streamer/BlockCacheTests.cpp
     Streamer/DedicatedCacheTests.cpp
     Streamer/FullDecompressorTests.cpp
@@ -103,6 +106,7 @@ set(FILES
     Serialization/Json/JsonSerializationResultTests.cpp
     Serialization/Json/JsonSerializationTests.h
     Serialization/Json/JsonSerializationTests.cpp
+    Serialization/Json/JsonSerializationUtilsTests.cpp
     Serialization/Json/JsonSerializerConformityTests.h
     Serialization/Json/JsonSerializerMock.h
     Serialization/Json/MapSerializerTests.cpp
@@ -117,6 +121,7 @@ set(FILES
     Serialization/Json/TestCases_Classes.cpp
     Serialization/Json/TestCases_Compare.cpp
     Serialization/Json/TestCases_Enum.cpp
+    Serialization/Json/TestCases_Importing.cpp
     Serialization/Json/TestCases_Patching.cpp
     Serialization/Json/TestCases_Pointers.h
     Serialization/Json/TestCases_Pointers.cpp
@@ -126,6 +131,7 @@ set(FILES
     Serialization/Json/UnorderedSetSerializerTests.cpp
     Serialization/Json/UnsupportedTypesSerializerTests.cpp
     Serialization/Json/UuidSerializerTests.cpp
+    Time/TimeTests.cpp
     Math/AabbTests.cpp
     Math/ColorTests.cpp
     Math/CrcTests.cpp
@@ -191,6 +197,7 @@ set(FILES
     AZStd/LockFreeQueues.cpp
     AZStd/LockFreeStacks.cpp
     AZStd/LockTests.cpp
+    AZStd/Math.cpp
     AZStd/Numeric.cpp
     AZStd/Ordered.cpp
     AZStd/Optional.cpp

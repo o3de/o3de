@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,7 +48,7 @@ namespace EMStudio
             void OnRemovedChildNode(EMotionFX::AnimGraph* animGraph, EMotionFX::AnimGraphNode* parentNode) override;
 
         private:
-            NodePaletteWidget*  mWidget;
+            NodePaletteWidget*  m_widget;
         };
 
         NodePaletteWidget(AnimGraphPlugin* plugin);
@@ -64,13 +65,13 @@ namespace EMStudio
         void SaveExpandStates();
         void RestoreExpandStates();
 
-        AnimGraphPlugin*            mPlugin;
-        NodePaletteModel*           mModel;
-        QTreeView*                  mTreeView;
-        EMotionFX::AnimGraphNode*   mNode;
-        EventHandler*               mEventHandler;
-        QVBoxLayout*                mLayout;
-        QLabel*                     mInitialText;
+        AnimGraphPlugin*            m_plugin;
+        NodePaletteModel*           m_model;
+        QTreeView*                  m_treeView;
+        EMotionFX::AnimGraphNode*   m_node;
+        EventHandler*               m_eventHandler;
+        QVBoxLayout*                m_layout;
+        QLabel*                     m_initialText;
 
         // Cache the expanded states.
         AZStd::unordered_set<EMotionFX::AnimGraphObject::ECategory> m_expandedCatagory;

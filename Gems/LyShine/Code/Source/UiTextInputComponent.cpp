@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiTextInputComponent.h"
 
 #include <AzCore/Math/Crc.h>
@@ -17,6 +17,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 
 #include <IRenderer.h>
+#include <ITimer.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
@@ -26,6 +27,7 @@
 
 #include <LyShine/IDraw2d.h>
 #include <LyShine/UiSerializeHelpers.h>
+
 
 #include "UiNavigationHelpers.h"
 #include "UiSerialize.h"
@@ -63,14 +65,14 @@ namespace
     //! \brief Given a UTF8 string and index, return the raw string buffer index that maps to the UTF8 index.
     int GetCharArrayIndexFromUtf8CharIndex(const AZStd::string& utf8String, const uint utf8Index)
     {
-        int utfIndexIter = 0;
+        uint utfIndexIter = 0;
         int rawIndex = 0;
 
         const AZStd::string::size_type stringLength = utf8String.length();
         if (stringLength > 0 && stringLength >= utf8Index)
         {
             // Iterate over the string until the given index is found.
-            Unicode::CIterator<const char*, false> pChar(utf8String.c_str());
+            Utf8::Unchecked::octet_iterator pChar(utf8String.data());
             while (uint32_t ch = *pChar)
             {
                 if (utf8Index == utfIndexIter)
@@ -647,7 +649,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
 
             // Append text from clipboard
             textString.insert(m_textCursorPos, clipboardText);
-            m_textCursorPos += clipboardText.length();
+            m_textCursorPos += static_cast<int>(clipboardText.length());
             m_textSelectionStartPos = m_textCursorPos;
 
             // If max length is set, remove extra characters
@@ -1185,7 +1187,8 @@ void UiTextInputComponent::UpdateDisplayedTextFunction()
                 // NOTE: this assumes the uint32_t can be interpreted as a wchar_t, it seems to
                 // work for cases tested but may not in general.
                 wchar_t wcharString[2] = { static_cast<wchar_t>(this->GetReplacementCharacter()), 0 };
-                AZStd::string replacementCharString(CryStringUtils::WStrToUTF8(wcharString));
+                AZStd::string replacementCharString;
+                AZStd::to_string(replacementCharString, { wcharString, 1 });
 
                 int numReplacementChars = LyShine::GetUtf8StringLength(originalText);
 
@@ -1475,54 +1478,10 @@ bool UiTextInputComponent::VersionConverter(AZ::SerializeContext& context,
     // conversion from version 1:
     // - Need to convert CryString elements to AZStd::string
     // - Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() <= 1)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "SelectedSprite"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "PressedSprite"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "SelectedColor", "SelectedAlpha"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "PressedColor", "PressedAlpha"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToChar(context, classElement, "ReplacementCharacter", defaultReplacementChar))
-        {
-            return false;
-        }
-    }
-
     // conversion from version 1 or 2 to current:
     // - Need to convert CryString ActionName elements to AZStd::string
-    if (classElement.GetVersion() <= 2)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "ChangeAction"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "EndEditAction"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "EnterAction"))
-        {
-            return false;
-        }
-    }
-
+    AZ_Assert(classElement.GetVersion() > 2, "Unsupported UiTextInputComponent version: %d", classElement.GetVersion());
+    
     // conversion from version 1, 2 or 3 to current:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>
     if (classElement.GetVersion() <= 3)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -54,7 +55,9 @@ namespace PhysX
     size_t SceneSimulationFilterCallback::CollisionPairHasher::operator()(const CollisionActorPair& collisionPair) const
     {
         size_t hash{ 0 };
-        AZStd::hash_combine(hash, collisionPair.m_actorA, collisionPair.m_actorB);
+        // Order elements so {1,2} and {2,1} would generate the same hash
+        auto [smallerVal, biggerVal] = AZStd::minmax(collisionPair.m_actorA, collisionPair.m_actorB);
+        AZStd::hash_combine(hash, smallerVal, biggerVal);
         return hash;
     }
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -90,14 +91,6 @@ namespace ScriptCanvasTests
             AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
             AZ_Assert(fileIO, "SC unit tests require filehandling");
 
-            if (!fileIO->GetAlias("@engroot@"))
-            {
-                const char* engineRoot = nullptr;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-                AZ_Assert(engineRoot, "null engine root");
-                fileIO->SetAlias("@engroot@", engineRoot);
-            }
-
             s_setupSucceeded = fileIO->GetAlias("@engroot@") != nullptr;
             
             AZ::TickBus::AllowFunctionQueuing(true);
@@ -134,11 +127,6 @@ namespace ScriptCanvasTests
         {
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
-
-            if (AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance())
-            {
-                fileIO->DestroyPath(k_tempCoreAssetDir);
-            }
 
             if (s_application)
             {

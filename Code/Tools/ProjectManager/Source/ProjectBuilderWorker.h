@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 #include <AzCore/Outcome/Outcome.h>
 
 #include <QObject>
+#include <QProcessEnvironment>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QProcess)
@@ -22,7 +24,7 @@ namespace O3DE::ProjectManager
         // QProcess::waitForFinished uses -1 to indicate that the process should not timeout
         static constexpr int MaxBuildTimeMSecs = -1;
         // Build was cancelled
-        static const QString BuildCancelled;
+        inline static const QString BuildCancelled = QObject::tr("Build Cancelled.");
 
         Q_OBJECT
 
@@ -42,6 +44,12 @@ namespace O3DE::ProjectManager
     private:
         AZ::Outcome<void, QString> BuildProjectForPlatform();
         void QStringToAZTracePrint(const QString& error);
+
+        // Command line argument builders
+        AZ::Outcome<QStringList, QString> ConstructCmakeGenerateProjectArguments(const QString& thirdPartyPath) const;
+        AZ::Outcome<QStringList, QString> ConstructCmakeBuildCommandArguments() const;
+        AZ::Outcome<QStringList, QString> ConstructKillProcessCommandArguments(const QString& pidToKill) const;
+
 
         QProcess* m_configProjectProcess = nullptr;
         QProcess* m_buildProjectProcess = nullptr;

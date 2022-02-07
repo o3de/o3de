@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -43,7 +44,7 @@ public slots:
     QVector<int> Groups() const;
 
 protected:
-    void paintEvent(QPaintEvent* event)
+    void paintEvent(QPaintEvent* event) override
     {
         if (model() && model()->rowCount() > 0)
         {
@@ -70,7 +71,6 @@ private:
     ColumnGroupHeaderView* m_header;
     ColumnGroupProxyModel* m_groupModel;
     QSet<QString> m_openNodes;
-    bool m_showGroups;
 };
 
 #endif // COLUMNGROUPTREEVIEW_H

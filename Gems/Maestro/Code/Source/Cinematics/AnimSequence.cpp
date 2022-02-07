@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,6 @@
 // Description : Implementation of IAnimSequence interface.
 
 
-#include "Maestro_precompiled.h"
 
 #include <Maestro/Bus/EditorSequenceComponentBus.h>
 
@@ -66,7 +66,7 @@ CAnimSequence::CAnimSequence()
 CAnimSequence::~CAnimSequence()
 {
     // clear reference to me from all my nodes
-    for (int i = m_nodes.size(); --i >= 0;)
+    for (int i = static_cast<int>(m_nodes.size()); --i >= 0;)
     {
         if (m_nodes[i])
         {
@@ -98,10 +98,10 @@ void CAnimSequence::SetName(const char* name)
         return;   // should never happen, null pointer guard
     }
 
-    string originalName = GetName();
+    AZStd::string originalName = GetName();
 
     m_name = name;
-    m_pMovieSystem->OnSequenceRenamed(originalName, m_name.c_str());
+    m_pMovieSystem->OnSequenceRenamed(originalName.c_str(), m_name.c_str());
 
     // the sequence named LIGHT_ANIMATION_SET_NAME is a singleton sequence to hold all light animations.
     if (m_name == LIGHT_ANIMATION_SET_NAME)
@@ -181,7 +181,7 @@ const IAnimSequence* CAnimSequence::GetParentSequence() const
 //////////////////////////////////////////////////////////////////////////
 int CAnimSequence::GetNodeCount() const
 {
-    return m_nodes.size();
+    return static_cast<int>(m_nodes.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -744,9 +744,6 @@ void CAnimSequence::Deactivate()
         static_cast<CAnimNode*>(animNode)->OnReset();
     }
 
-    // Remove a possibly cached game hint associated with this anim sequence.
-    stack_string sTemp("anim_sequence_");
-    sTemp += m_name.c_str();
     // Audio: Release precached sound
 
     m_bActive = false;
@@ -774,16 +771,6 @@ void CAnimSequence::PrecacheStatic(const float startTime)
     if (m_precached)
     {
         return;
-    }
-
-    // Try to cache this sequence's game hint if one exists.
-    stack_string sTemp("anim_sequence_");
-    sTemp += m_name.c_str();
-
-    //if (gEnv->pAudioSystem)
-    {
-        // Make sure to use the non-serializable game hint type as trackview sequences get properly reactivated after load
-        // Audio: Precache sound
     }
 
     gEnv->pLog->Log("=== Precaching render data for cutscene: %s ===", GetName());

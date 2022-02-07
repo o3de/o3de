@@ -3,6 +3,5 @@
     <file alias="Assets/Editor/Style/Editor.qss">Editor.qss</file>
     <file alias="Assets/Editor/Style/EditorPreferencesDialog.qss">EditorPreferencesDialog.qss</file>
     <file alias="Assets/Editor/Style/LayoutConfigDialog.qss">LayoutConfigDialog.qss</file>
-    <file alias="Assets/Editor/Style/GraphicsSettingsDialog.qss">GraphicsSettingsDialog.qss</file>
 </qresource>
 </RCC>

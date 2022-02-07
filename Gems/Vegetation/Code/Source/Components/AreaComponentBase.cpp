@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -278,13 +279,13 @@ namespace Vegetation
 
     void AreaComponentBase::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& /*world*/)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
         OnCompositionChanged();
     }
 
     void AreaComponentBase::OnShapeChanged([[maybe_unused]] ShapeComponentNotifications::ShapeChangeReasons reasons)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
         OnCompositionChanged();
     }
 }

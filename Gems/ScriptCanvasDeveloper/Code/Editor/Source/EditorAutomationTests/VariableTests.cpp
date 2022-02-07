@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <qpushbutton.h>
 
@@ -669,7 +669,6 @@ namespace ScriptCanvasDeveloper
 
     VariableLifeCycleTest::VariableLifeCycleTest(AZStd::string name, AZStd::vector<ScriptCanvas::Data::Type> dataTypes, CreateVariableAction::CreationType creationType)
         : EditorAutomationTest(name.c_str())
-        , m_creationType(creationType)
         , m_typesToMake(dataTypes)
     {
         m_variableTypeId = "ActiveVariableTypeId";

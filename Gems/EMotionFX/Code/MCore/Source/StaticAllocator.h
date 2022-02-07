@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,7 +22,7 @@ namespace MCore
 
         StaticAllocator::size_type resize(pointer_type ptr, size_type newSize);
 
-        StaticAllocator::size_type get_max_size() const;
+        StaticAllocator::size_type max_size() const;
 
         StaticAllocator::size_type get_allocated_size() const;
     };

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -77,7 +78,7 @@ namespace AZ
             ~ImageAttachmentPreviewPass();
             
             //! Preview the PassAttachment of a pass' PassAttachmentBinding
-            void PreviewImageAttachmentForPass(RenderPass* pass, const PassAttachment* passAttachment);
+            void PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment);
 
             //! Set the output color attachment for this pass
             void SetOutputColorAttachment(RHI::Ptr<PassAttachment> outputImageAttachment);

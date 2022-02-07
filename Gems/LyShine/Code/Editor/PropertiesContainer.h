@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -118,7 +119,6 @@ private:
     PropertiesWidget* m_propertiesWidget;
     EditorWindow* m_editorWindow;
 
-    QWidget* m_containerWidget;
     QWidget* m_componentListContents;
     QVBoxLayout* m_rowLayout;
     QLineEdit* m_selectedEntityDisplayNameWidget;

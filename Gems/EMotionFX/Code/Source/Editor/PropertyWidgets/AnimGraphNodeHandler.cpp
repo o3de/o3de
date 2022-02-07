@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -112,7 +113,7 @@ namespace EMotionFX
             const AZStd::vector<AnimGraphSelectionItem>& selectedNodes = dialog.GetAnimGraphHierarchyWidget().GetSelectedItems();
             if (!selectedNodes.empty())
             {
-                AnimGraphNode* selectedNode = m_animGraph->RecursiveFindNodeByName(selectedNodes[0].mNodeName.c_str());
+                AnimGraphNode* selectedNode = m_animGraph->RecursiveFindNodeByName(selectedNodes[0].m_nodeName.c_str());
                 if (selectedNode)
                 {
                     m_nodeId = selectedNode->GetId();

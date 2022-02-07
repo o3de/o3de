@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "ScriptedEntityTweener_precompiled.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -48,7 +47,7 @@ namespace ScriptedEntityTweener
             Call(FN_RemoveCallback, callbackId);
         }
 
-        void OnTimelineAnimationStart(int timelineId, const AZ::Uuid& uuid, const AZStd::string& componentName, const AZStd::string& propertyName)
+        void OnTimelineAnimationStart(int timelineId, const AZ::Uuid& uuid, const AZStd::string& componentName, const AZStd::string& propertyName) override
         {
             Call(FN_OnTimelineAnimationStart, timelineId, uuid, componentName, propertyName);
         }

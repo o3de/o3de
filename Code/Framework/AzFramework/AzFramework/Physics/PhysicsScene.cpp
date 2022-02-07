@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 
 namespace AzPhysics
@@ -48,6 +50,7 @@ namespace AzPhysics
                 ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Method("GetOnGravityChangeEvent", getOnGravityChange)
                     ->Attribute(AZ::Script::Attributes::AzEventDescription, gravityChangedEventDescription)
+                ->Method("QueryScene", &Scene::QueryScene)
                 ;
         }
     }

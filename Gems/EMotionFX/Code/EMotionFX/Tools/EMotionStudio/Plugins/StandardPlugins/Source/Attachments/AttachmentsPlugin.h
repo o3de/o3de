@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -57,7 +58,7 @@ namespace EMStudio
         bool Init() override;
         EMStudioPlugin* Clone() override;
         void ReInit();
-        AttachmentsWindow* GetAttachmentsWindow() const     { return mAttachmentsWindow; }
+        AttachmentsWindow* GetAttachmentsWindow() const     { return m_attachmentsWindow; }
 
     public slots:
         void WindowReInit(bool visible);
@@ -74,21 +75,20 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandAdjustActorCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandRemoveActorInstanceCallback);
 
-        CommandSelectCallback*                      mSelectCallback;
-        CommandUnselectCallback*                    mUnselectCallback;
-        CommandClearSelectionCallback*              mClearSelectionCallback;
-        CommandAddAttachmentCallback*               mAddAttachmentCallback;
-        CommandAddDeformableAttachmentCallback*     mAddDeformableAttachmentCallback;
-        CommandRemoveAttachmentCallback*            mRemoveAttachmentCallback;
-        CommandClearAttachmentsCallback*            mClearAttachmentsCallback;
-        CommandAdjustActorCallback*                 mAdjustActorCallback;
-        CommandRemoveActorInstanceCallback*         mRemoveActorInstanceCallback;
+        CommandSelectCallback*                      m_selectCallback;
+        CommandUnselectCallback*                    m_unselectCallback;
+        CommandClearSelectionCallback*              m_clearSelectionCallback;
+        CommandAddAttachmentCallback*               m_addAttachmentCallback;
+        CommandAddDeformableAttachmentCallback*     m_addDeformableAttachmentCallback;
+        CommandRemoveAttachmentCallback*            m_removeAttachmentCallback;
+        CommandClearAttachmentsCallback*            m_clearAttachmentsCallback;
+        CommandAdjustActorCallback*                 m_adjustActorCallback;
+        CommandRemoveActorInstanceCallback*         m_removeActorInstanceCallback;
 
-        QWidget*                                    mNoSelectionWidget;
-        MysticQt::DialogStack*                      mDialogStack;
-        AttachmentsWindow*                          mAttachmentsWindow;
-        AttachmentsHierarchyWindow*                 mAttachmentsHierarchyWindow;
-        AttachmentNodesWindow*                      mAttachmentNodesWindow;
+        MysticQt::DialogStack*                      m_dialogStack;
+        AttachmentsWindow*                          m_attachmentsWindow;
+        AttachmentsHierarchyWindow*                 m_attachmentsHierarchyWindow;
+        AttachmentNodesWindow*                      m_attachmentNodesWindow;
     };
 } // namespace EMStudio
 

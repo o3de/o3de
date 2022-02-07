@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,6 +57,7 @@ namespace AZ
         AZ_FORCE_INLINE size_type           NumAllocatedBytes() const               { return m_used; }
         AZ_FORCE_INLINE size_type           Capacity() const                        { return m_desc.m_memoryBlockByteSize; }
         size_type                           GetMaxAllocationSize() const;
+        size_type                           GetMaxContiguousAllocationSize() const;
         AZ_FORCE_INLINE IAllocatorAllocate* GetSubAllocator() const                 { return m_desc.m_mapAllocator; }
 
         /**

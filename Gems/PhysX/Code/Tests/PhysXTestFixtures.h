@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,7 +33,6 @@ namespace PhysX
         // DefaultWorldBus
         AzPhysics::SceneHandle GetDefaultSceneHandle() const override;
 
-        AZ::ComponentDescriptor* m_dummyTerrainComponentDescriptor = nullptr;
         AzPhysics::Scene* m_defaultScene = nullptr;
         AzPhysics::SceneHandle m_testSceneHandle = AzPhysics::InvalidSceneHandle;
     };

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "precompiled.h"
 
 #include "CanvasWidget.h"
 
@@ -36,7 +36,7 @@ namespace ScriptCanvasEditor
 {
     namespace Widget
     {
-        CanvasWidget::CanvasWidget(const AZ::Data::AssetId& assetId, QWidget* parent)
+        CanvasWidget::CanvasWidget(const ScriptCanvasEditor::SourceHandle& assetId, QWidget* parent)
             : QWidget(parent)
             , ui(new Ui::CanvasWidget())
             , m_attached(false)
@@ -69,24 +69,15 @@ namespace ScriptCanvasEditor
         void CanvasWidget::ShowScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
         {
             EditorGraphRequests* editorGraphRequests = EditorGraphRequestBus::FindFirstHandler(scriptCanvasId);
-
-            editorGraphRequests->SetAssetId(m_assetId);
             editorGraphRequests->CreateGraphCanvasScene();
-
             AZ::EntityId graphCanvasSceneId = editorGraphRequests->GetGraphCanvasGraphId();
-
             m_graphicsView->SetScene(graphCanvasSceneId);
-
             m_scriptCanvasId = scriptCanvasId;
         }
 
-        void CanvasWidget::SetAssetId(const AZ::Data::AssetId& assetId)
+        void CanvasWidget::SetAssetId(const ScriptCanvasEditor::SourceHandle& assetId)
         {
             m_assetId = assetId;
-
-            EditorGraphRequests* editorGraphRequests = EditorGraphRequestBus::FindFirstHandler(m_scriptCanvasId);
-
-            editorGraphRequests->SetAssetId(m_assetId);
         }
 
         const GraphCanvas::ViewId& CanvasWidget::GetViewId() const

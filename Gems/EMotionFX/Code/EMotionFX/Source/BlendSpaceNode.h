@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -101,8 +102,8 @@ namespace EMotionFX
         virtual const AZStd::vector<BlendSpaceMotion>& GetMotions() const = 0;
 
         //! The node is in interactive mode when the user is interactively changing the current point.
-        void SetInteractiveMode(bool enable) { mInteractiveMode = enable; }
-        bool IsInInteractiveMode() const { return mInteractiveMode; }
+        void SetInteractiveMode(bool enable) { m_interactiveMode = enable; }
+        bool IsInInteractiveMode() const { return m_interactiveMode; }
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -165,7 +166,7 @@ namespace EMotionFX
         static const char* s_eventModeNone;
 
     protected:
-        bool mInteractiveMode = false;// true when the user is changing the current point by dragging in GUI
+        bool m_interactiveMode = false;// true when the user is changing the current point by dragging in GUI
         bool m_retarget = true;
         bool m_inPlace = false;
     };

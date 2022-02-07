@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,9 @@ private:
     QScopedPointer<Ui::CAboutDialog>    m_ui;
     QPixmap                             m_backgroundImage;
 
-    int m_enforcedWidth = 600;
-    int m_enforcedHeight = 400;
+    const int m_imageWidth = 668;
+    const int m_imageHeight = 368;
+    const int m_enforcedWidth = 600;
+    const int m_enforcedHeight = 300;
 };
 

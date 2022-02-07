@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,9 +30,8 @@ namespace EMotionFX
     MultiThreadScheduler::MultiThreadScheduler()
         : ActorUpdateScheduler()
     {
-        mSteps.SetMemoryCategory(EMFX_MEMCATEGORY_UPDATESCHEDULERS);
-        mCleanTimer     = 0.0f; // time passed since last schedule cleanup, in seconds
-        mSteps.Reserve(1000);
+        m_cleanTimer     = 0.0f; // time passed since last schedule cleanup, in seconds
+        m_steps.reserve(1000);
     }
 
 
@@ -52,7 +52,7 @@ namespace EMotionFX
     void MultiThreadScheduler::Clear()
     {
         Lock();
-        mSteps.Clear();
+        m_steps.clear();
         Unlock();
     }
 
@@ -78,10 +78,10 @@ namespace EMotionFX
     void MultiThreadScheduler::Print()
     {
         // for all steps
-        const uint32 numSteps = mSteps.GetLength();
-        for (uint32 i = 0; i < numSteps; ++i)
+        const size_t numSteps = m_steps.size();
+        for (size_t i = 0; i < numSteps; ++i)
         {
-            AZ_Printf("EMotionFX", "STEP %.3d - %d", i, mSteps[i].mActorInstances.size());
+            AZ_Printf("EMotionFX", "STEP %.3zu - %zu", i, m_steps[i].m_actorInstances.size());
         }
 
         AZ_Printf("EMotionFX", "---------");
@@ -91,16 +91,15 @@ namespace EMotionFX
     void MultiThreadScheduler::RemoveEmptySteps()
     {
         // process all steps
-        for (uint32 s = 0; s < mSteps.GetLength(); )
+        for (size_t s = 0; s < m_steps.size(); )
         {
-            // if the step isn't empty
-            if (mSteps[s].mActorInstances.size() > 0)
+            if (!m_steps[s].m_actorInstances.empty())
             {
                 s++;
             }
-            else // otherwise remove it
+            else
             {
-                mSteps.Remove(s);
+                m_steps.erase(AZStd::next(begin(m_steps), s));
             }
         }
     }
@@ -109,29 +108,29 @@ namespace EMotionFX
     // execute the schedule
     void MultiThreadScheduler::Execute(float timePassedInSeconds)
     {
-        MCore::LockGuardRecursive guard(mMutex);
+        MCore::LockGuardRecursive guard(m_mutex);
 
-        uint32 numSteps = mSteps.GetLength();
+        size_t numSteps = m_steps.size();
         if (numSteps == 0)
         {
             return;
         }
 
         // check if we need to cleanup the schedule
-        mCleanTimer += timePassedInSeconds;
-        if (mCleanTimer >= 1.0f)
+        m_cleanTimer += timePassedInSeconds;
+        if (m_cleanTimer >= 1.0f)
         {
-            mCleanTimer = 0.0f;
+            m_cleanTimer = 0.0f;
             RemoveEmptySteps();
-            numSteps = mSteps.GetLength();
+            numSteps = m_steps.size();
         }
 
         //-----------------------------------------------------------
 
         // propagate root actor instance visibility to their attachments
         const ActorManager& actorManager = GetActorManager();
-        const uint32 numRootActorInstances = actorManager.GetNumRootActorInstances();
-        for (uint32 i = 0; i < numRootActorInstances; ++i)
+        const size_t numRootActorInstances = actorManager.GetNumRootActorInstances();
+        for (size_t i = 0; i < numRootActorInstances; ++i)
         {
             ActorInstance* rootInstance = actorManager.GetRootActorInstance(i);
             if (rootInstance->GetIsEnabled() == false)
@@ -143,26 +142,21 @@ namespace EMotionFX
         }
 
         // reset stats
-        mNumUpdated.SetValue(0);
-        mNumVisible.SetValue(0);
-        mNumSampled.SetValue(0);
+        m_numUpdated.SetValue(0);
+        m_numVisible.SetValue(0);
+        m_numSampled.SetValue(0);
 
-        for (uint32 s = 0; s < numSteps; ++s)
+        for (const ScheduleStep& currentStep : m_steps)
         {
-            const ScheduleStep& currentStep = mSteps[s];
-
-            // skip empty steps
-            const size_t numStepEntries = currentStep.mActorInstances.size();
-            if (numStepEntries == 0)
+            if (currentStep.m_actorInstances.empty())
             {
                 continue;
             }
 
             // process the actor instances in the current step in parallel
-            AZ::JobCompletion jobCompletion;           
-            for (uint32 c = 0; c < numStepEntries; ++c)
+            AZ::JobCompletion jobCompletion;
+            for (ActorInstance* actorInstance : currentStep.m_actorInstances)
             {
-                ActorInstance* actorInstance = currentStep.mActorInstances[c];
                 if (actorInstance->GetIsEnabled() == false)
                 {
                     continue;
@@ -171,7 +165,7 @@ namespace EMotionFX
                 AZ::JobContext* jobContext = nullptr;
                 AZ::Job* job = AZ::CreateJobFunction([this, timePassedInSeconds, actorInstance]()
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Animation, "MultiThreadScheduler::Execute::ActorInstanceUpdateJob");
+                    AZ_PROFILE_SCOPE(Animation, "MultiThreadScheduler::Execute::ActorInstanceUpdateJob");
 
                     const AZ::u32 threadIndex = AZ::JobContext::GetGlobalContext()->GetJobManager().GetWorkerThreadId();                    
                     actorInstance->SetThreadIndex(threadIndex);
@@ -179,7 +173,7 @@ namespace EMotionFX
                     const bool isVisible = actorInstance->GetIsVisible();
                     if (isVisible)
                     {
-                        mNumVisible.Increment();
+                        m_numVisible.Increment();
                     }
 
                     // check if we want to sample motions
@@ -192,7 +186,7 @@ namespace EMotionFX
 
                         if (isVisible)
                         {
-                            mNumSampled.Increment();
+                            m_numSampled.Increment();
                         }
                     }
 
@@ -203,7 +197,7 @@ namespace EMotionFX
                 job->SetDependent(&jobCompletion);               
                 job->Start();
 
-                mNumUpdated.Increment();
+                m_numUpdated.Increment();
             }
 
             jobCompletion.StartAndWaitForCompletion();
@@ -212,14 +206,14 @@ namespace EMotionFX
 
 
     // find the next free spot in the schedule
-    bool MultiThreadScheduler::FindNextFreeItem(ActorInstance* actorInstance, uint32 startStep, uint32* outStepNr)
+    bool MultiThreadScheduler::FindNextFreeItem(ActorInstance* actorInstance, size_t startStep, size_t* outStepNr)
     {
         // try out all steps
-        const uint32 numSteps = mSteps.GetLength();
-        for (uint32 s = startStep; s < numSteps; ++s)
+        const size_t numSteps = m_steps.size();
+        for (size_t s = startStep; s < numSteps; ++s)
         {
             // if there is a conflicting dependency, skip this step
-            if (CheckIfHasMatchingDependency(actorInstance, &mSteps[s]))
+            if (CheckIfHasMatchingDependency(actorInstance, &m_steps[s]))
             {
                 continue;
             }
@@ -235,11 +229,11 @@ namespace EMotionFX
 
     bool MultiThreadScheduler::HasActorInstanceInSteps(const ActorInstance* actorInstance) const
     {
-        const uint32 numSteps = mSteps.GetLength();
-        for (uint32 s = 0; s < numSteps; ++s)
+        const size_t numSteps = m_steps.size();
+        for (size_t s = 0; s < numSteps; ++s)
         {
-            const ScheduleStep& step = mSteps[s];
-            if (AZStd::find(step.mActorInstances.begin(), step.mActorInstances.end(), actorInstance) != step.mActorInstances.end())
+            const ScheduleStep& step = m_steps[s];
+            if (AZStd::find(step.m_actorInstances.begin(), step.m_actorInstances.end(), actorInstance) != step.m_actorInstances.end())
             {
                 return true;
             }
@@ -248,39 +242,39 @@ namespace EMotionFX
         return false;
     }
 
-    void MultiThreadScheduler::RecursiveInsertActorInstance(ActorInstance* instance, uint32 startStep)
+    void MultiThreadScheduler::RecursiveInsertActorInstance(ActorInstance* instance, size_t startStep)
     {
-        MCore::LockGuardRecursive guard(mMutex);
+        MCore::LockGuardRecursive guard(m_mutex);
         AZ_Assert(!HasActorInstanceInSteps(instance), "Expected the actor instance not being part of another step already.");
 
         // find the first free location that doesn't conflict
-        uint32 outStep = startStep;
+        size_t outStep = startStep;
         if (!FindNextFreeItem(instance, startStep, &outStep))
         {
-            mSteps.Reserve(10);
-            mSteps.AddEmpty();
-            outStep = mSteps.GetLength() - 1;
+            m_steps.reserve(10);
+            m_steps.emplace_back();
+            outStep = m_steps.size() - 1;
         }
 
         // pre-allocate step size
-        if (mSteps[outStep].mActorInstances.size() % 10 == 0)
+        if (m_steps[outStep].m_actorInstances.size() % 10 == 0)
         {
-            mSteps[outStep].mActorInstances.reserve(mSteps[outStep].mActorInstances.size() + 10);
+            m_steps[outStep].m_actorInstances.reserve(m_steps[outStep].m_actorInstances.size() + 10);
         }
 
-        if (mSteps[outStep].mDependencies.GetLength() % 5 == 0)
+        if (m_steps[outStep].m_dependencies.size() % 5 == 0)
         {
-            mSteps[outStep].mDependencies.Reserve(mSteps[outStep].mDependencies.GetLength() + 5);
+            m_steps[outStep].m_dependencies.reserve(m_steps[outStep].m_dependencies.size() + 5);
         }
 
         // add the actor instance and its dependencies
-        mSteps[ outStep ].mActorInstances.reserve(GetEMotionFX().GetNumThreads());
-        mSteps[ outStep ].mActorInstances.emplace_back(instance);
-        AddDependenciesToStep(instance, &mSteps[outStep]);
+        m_steps[ outStep ].m_actorInstances.reserve(GetEMotionFX().GetNumThreads());
+        m_steps[ outStep ].m_actorInstances.emplace_back(instance);
+        AddDependenciesToStep(instance, &m_steps[outStep]);
 
         // recursively add all attachments too
-        const uint32 numAttachments = instance->GetNumAttachments();
-        for (uint32 i = 0; i < numAttachments; ++i)
+        const size_t numAttachments = instance->GetNumAttachments();
+        for (size_t i = 0; i < numAttachments; ++i)
         {
             ActorInstance* attachment = instance->GetAttachment(i)->GetAttachmentActorInstance();
             if (attachment)
@@ -292,29 +286,29 @@ namespace EMotionFX
 
 
     // remove the actor instance from the schedule (excluding attachments)
-    uint32 MultiThreadScheduler::RemoveActorInstance(ActorInstance* actorInstance, uint32 startStep)
+    size_t MultiThreadScheduler::RemoveActorInstance(ActorInstance* actorInstance, size_t startStep)
     {
-        MCore::LockGuardRecursive guard(mMutex);
+        MCore::LockGuardRecursive guard(m_mutex);
 
         // for all scheduler steps, starting from the specified start step number
-        const uint32 numSteps = mSteps.GetLength();
-        for (uint32 s = startStep; s < numSteps; ++s)
+        const size_t numSteps = m_steps.size();
+        for (size_t s = startStep; s < numSteps; ++s)
         {
-            ScheduleStep& step = mSteps[s];
+            ScheduleStep& step = m_steps[s];
 
             // Remove all occurrences of the actor instance.
-            const size_t numActorInstancesPreRemove = step.mActorInstances.size();
-            step.mActorInstances.erase(AZStd::remove(step.mActorInstances.begin(), step.mActorInstances.end(), actorInstance), step.mActorInstances.end());
+            const size_t numActorInstancesPreRemove = step.m_actorInstances.size();
+            step.m_actorInstances.erase(AZStd::remove(step.m_actorInstances.begin(), step.m_actorInstances.end(), actorInstance), step.m_actorInstances.end());
 
             // try to see if there is anything to remove in this step
             // and if so, reconstruct the dependencies of this step
-            if (step.mActorInstances.size() < numActorInstancesPreRemove)
+            if (step.m_actorInstances.size() < numActorInstancesPreRemove)
             {
                 // clear the dependencies (but don't delete the memory)
-                step.mDependencies.Clear(false);
+                step.m_dependencies.clear();
 
                 // calculate the new dependencies for this step
-                for (ActorInstance* stepActorInstance : step.mActorInstances)
+                for (ActorInstance* stepActorInstance : step.m_actorInstances)
                 {
                     AddDependenciesToStep(stepActorInstance, &step);
                 }
@@ -330,16 +324,16 @@ namespace EMotionFX
 
 
     // remove the actor instance (including all of its attachments)
-    void MultiThreadScheduler::RecursiveRemoveActorInstance(ActorInstance* actorInstance, uint32 startStep)
+    void MultiThreadScheduler::RecursiveRemoveActorInstance(ActorInstance* actorInstance, size_t startStep)
     {
-        MCore::LockGuardRecursive guard(mMutex);
+        MCore::LockGuardRecursive guard(m_mutex);
 
         // remove the actual actor instance
-        const uint32 step = RemoveActorInstance(actorInstance, startStep);
+        const size_t step = RemoveActorInstance(actorInstance, startStep);
 
         // recursively remove all attachments as well
-        const uint32 numAttachments = actorInstance->GetNumAttachments();
-        for (uint32 i = 0; i < numAttachments; ++i)
+        const size_t numAttachments = actorInstance->GetNumAttachments();
+        for (size_t i = 0; i < numAttachments; ++i)
         {
             ActorInstance* attachment = actorInstance->GetAttachment(i)->GetAttachmentActorInstance();
             if (attachment)
@@ -352,12 +346,12 @@ namespace EMotionFX
 
     void MultiThreadScheduler::Lock()
     {
-        mMutex.Lock();
+        m_mutex.Lock();
     }
 
 
     void MultiThreadScheduler::Unlock()
     {
-        mMutex.Unlock();
+        m_mutex.Unlock();
     }
 }   // namespace EMotionFX

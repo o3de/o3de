@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -68,7 +69,7 @@ namespace EMotionFX
                 AnimGraphMotionNode* motionNode = aznew AnimGraphMotionNode();
                 motionNode->SetName(AZStd::string::format("MotionNode%zu", i).c_str());
                 m_blendTree->AddChildNode(motionNode);
-                m_blendNNode->AddConnection(motionNode, AnimGraphMotionNode::PORTID_OUTPUT_POSE, i);
+                m_blendNNode->AddConnection(motionNode, AnimGraphMotionNode::PORTID_OUTPUT_POSE, aznumeric_caster(i));
                 m_motionNodes.push_back(motionNode);
             }
             m_blendNNode->UpdateParamWeights();

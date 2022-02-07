@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -74,7 +75,7 @@ namespace EMotionFX
 
         QModelIndex GetModelIndexByObjectIndex(size_t objectIndex);
         QModelIndex FindModelIndex(SimulatedObject* object);
-        void AddJointsToSelection(QItemSelection& selection, size_t objectIndex, const AZStd::vector<AZ::u32>& jointIndices);
+        void AddJointsToSelection(QItemSelection& selection, size_t objectIndex, const AZStd::vector<size_t>& jointIndices);
 
     private:
         // Command callbacks.

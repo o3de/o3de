@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 // A configurable queue that allows for multiple sources to try to control a single value in a configurable way
 // such that each object can control the object independently of the other systems, while still maintaining a reasonable state.

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -60,7 +61,6 @@ namespace PhysX::Benchmarks
             m_defaultScene = physicsSystem->GetScene(m_testSceneHandle);
         }
 
-        m_dummyTerrainComponentDescriptor = DummyTestTerrainComponent::CreateDescriptor();
         Physics::DefaultWorldBus::Handler::BusConnect();
     }
 
@@ -79,9 +79,6 @@ namespace PhysX::Benchmarks
         m_testSceneHandle = AzPhysics::InvalidSceneHandle;
 
         TestUtils::ResetPhysXSystem();
-        
-        m_dummyTerrainComponentDescriptor->ReleaseDescriptor();
-        m_dummyTerrainComponentDescriptor = nullptr;
     }
 
     AzPhysics::SceneHandle PhysXBaseBenchmarkFixture::CreateDefaultTestScene()

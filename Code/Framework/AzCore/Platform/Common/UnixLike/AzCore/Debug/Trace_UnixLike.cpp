@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ namespace AZ
                 {
                     return false;
                 }
-                for (size_t i = tracerPidOffset; i < numRead; ++i)
+                for (size_t i = tracerPidOffset + tracerPidString.length(); i < numRead; ++i)
                 {
                     if (!::isspace(processStatusView[i]))
                     {
@@ -57,6 +58,13 @@ namespace AZ
                     s_detectionPerformed = true;
                 }
                 return s_debuggerDetected;
+            }
+
+            bool AttachDebugger()
+            {
+                // Not supported yet
+                AZ_Assert(false, "AttachDebugger() is not supported for Unix platform yet");
+                return false;
             }
 
             void HandleExceptions(bool)

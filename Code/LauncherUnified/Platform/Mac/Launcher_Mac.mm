@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 #include <O3DEApplication_Mac.h>
 #include <../Common/Apple/Launcher_Apple.h>
 #include <../Common/UnixLike/Launcher_UnixLike.h>
+#include <AzCore/Math/Vector2.h>
 
 #if AZ_TESTS_ENABLED
 
@@ -58,3 +60,5 @@ int main(int argc, char* argv[])
 }
 
 #endif // AZ_TESTS_ENABLED
+
+void CVar_OnViewportPosition([[maybe_unused]] const AZ::Vector2& value) {}

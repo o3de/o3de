@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "ShapeAreaFalloffGradientComponent.h"
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -157,7 +157,7 @@ namespace GradientSignal
 
     float ShapeAreaFalloffGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         float distance = 0.0f;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(distance, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::DistanceFromPoint, sampleParams.m_position);

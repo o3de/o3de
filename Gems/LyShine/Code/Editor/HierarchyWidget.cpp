@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include "AssetDropHelpers.h"
 #include "QtHelpers.h"
@@ -22,7 +21,7 @@
 #include <QDragEnterEvent>
 
 HierarchyWidget::HierarchyWidget(EditorWindow* editorWindow)
-    : QTreeWidget()
+    : AzQtComponents::StyledTreeWidget()
     , m_isDeleting(false)
     , m_editorWindow(editorWindow)
     , m_entityItemMap()
@@ -392,7 +391,7 @@ void HierarchyWidget::startDrag(Qt::DropActions supportedActions)
     // Remember the current selection so that we can revert back to it when the items are dragged back into the hierarchy
     m_dragSelection = selectedItems();
 
-    QTreeView::startDrag(supportedActions);
+    AzQtComponents::StyledTreeWidget::startDrag(supportedActions);
 }
 
 void HierarchyWidget::dragEnterEvent(QDragEnterEvent* event)

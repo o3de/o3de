@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,8 +16,7 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -72,26 +72,18 @@ namespace AZ
 
         void SMAAFeatureProcessor::UpdateConvertToPerceptualPass()
         {
-            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-
-            if (passSystem->HasPassesForTemplateName(m_convertToPerceptualColorPassTemplateNameId))
-            {
-                const AZStd::vector<RPI::Pass*>& convertToPerceptualColorPasses = passSystem->GetPassesForTemplateName(m_convertToPerceptualColorPassTemplateNameId);
-                for (RPI::Pass* pass : convertToPerceptualColorPasses)
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(m_convertToPerceptualColorPassTemplateNameId, GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     pass->SetEnabled(m_data.m_enable);
-                }
-            }
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
 
         void SMAAFeatureProcessor::UpdateEdgeDetectionPass()
-        {
-            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-
-            if (passSystem->HasPassesForTemplateName(m_edgeDetectioPassTemplateNameId))
-            {
-                const AZStd::vector<RPI::Pass*>& edgeDetectionPasses = passSystem->GetPassesForTemplateName(m_edgeDetectioPassTemplateNameId);
-                for (RPI::Pass* pass : edgeDetectionPasses)
+        {            
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(m_edgeDetectioPassTemplateNameId, GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     auto* edgeDetectionPass = azrtti_cast<AZ::Render::SMAAEdgeDetectionPass*>(pass);
 
@@ -107,18 +99,14 @@ namespace AZ
                         edgeDetectionPass->SetPredicationScale(m_data.m_predicationScale);
                         edgeDetectionPass->SetPredicationStrength(m_data.m_predicationStrength);
                     }
-                }
-            }
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
 
         void SMAAFeatureProcessor::UpdateBlendingWeightCalculationPass()
         {
-            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-
-            if (passSystem->HasPassesForTemplateName(m_blendingWeightCalculationPassTemplateNameId))
-            {
-                const AZStd::vector<RPI::Pass*>& blendingWeightCalculationPasses = passSystem->GetPassesForTemplateName(m_blendingWeightCalculationPassTemplateNameId);
-                for (RPI::Pass* pass : blendingWeightCalculationPasses)
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(m_blendingWeightCalculationPassTemplateNameId, GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     auto* blendingWeightCalculationPass = azrtti_cast<AZ::Render::SMAABlendingWeightCalculationPass*>(pass);
 
@@ -131,18 +119,14 @@ namespace AZ
                         blendingWeightCalculationPass->SetDiagonalDetectionEnable(m_data.m_enableDiagonalDetection);
                         blendingWeightCalculationPass->SetCornerDetectionEnable(m_data.m_enableCornerDetection);
                     }
-                }
-            }
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
 
         void SMAAFeatureProcessor::UpdateNeighborhoodBlendingPass()
         {
-            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-
-            if (passSystem->HasPassesForTemplateName(m_neighborhoodBlendingPassTemplateNameId))
-            {
-                const AZStd::vector<RPI::Pass*>& neighborhoodBlendingPasses = passSystem->GetPassesForTemplateName(m_neighborhoodBlendingPassTemplateNameId);
-                for (RPI::Pass* pass : neighborhoodBlendingPasses)
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(m_neighborhoodBlendingPassTemplateNameId, GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     auto* neighborhoodBlendingPass = azrtti_cast<AZ::Render::SMAANeighborhoodBlendingPass*>(pass);
 
@@ -154,13 +138,13 @@ namespace AZ
                     {
                         neighborhoodBlendingPass->SetOutputMode(SMAAOutputMode::PassThrough);
                     }
-                }
-            }
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
 
         void SMAAFeatureProcessor::Render([[maybe_unused]] const SMAAFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SMAAFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "SMAAFeatureProcessor: Render");
 
             UpdateConvertToPerceptualPass();
             UpdateEdgeDetectionPass();

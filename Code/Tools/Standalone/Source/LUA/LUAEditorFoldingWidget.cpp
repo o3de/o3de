@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "LUAEditorFoldingWidget.hxx"
 
 #include "LUAEditorBlockState.h"
@@ -31,10 +31,8 @@ namespace LUAEditor
     {
     }
 
-    void FoldingWidget::paintEvent(QPaintEvent* paintEvent)
+    void FoldingWidget::paintEvent([[maybe_unused]] QPaintEvent* paintEvent)
     {
-        paintEvent;
-
         auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
 
         auto cursor = m_textEdit->textCursor();

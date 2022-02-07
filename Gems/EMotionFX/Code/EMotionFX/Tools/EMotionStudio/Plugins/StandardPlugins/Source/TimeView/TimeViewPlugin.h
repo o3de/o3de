@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,14 +36,12 @@ namespace EMStudio
 
     struct EventSelectionItem
     {
-        MCORE_MEMORYOBJECTCATEGORY(EventSelectionItem, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
-
         EMotionFX::MotionEvent* GetMotionEvent();
         EMotionFX::MotionEventTrack* GetEventTrack();
 
-        uint32                          mEventNr;// the motion event index in its track
-        size_t                          mTrackNr;// the corresponding track in which the event is in
-        EMotionFX::Motion*              mMotion;// the parent motion of the event track
+        size_t                          m_eventNr;// the motion event index in its track
+        size_t                          m_trackNr;// the corresponding track in which the event is in
+        EMotionFX::Motion*              m_motion;// the parent motion of the event track
     };
 
     class TimeViewPlugin
@@ -89,7 +88,7 @@ namespace EMStudio
         void SetMode(TimeViewMode mode);
         TimeViewMode GetMode() const { return m_mode; }
 
-        double GetScrollX() const       { return mScrollX; }
+        double GetScrollX() const       { return m_scrollX; }
 
         void DeltaScrollX(double deltaX, bool animate = true);
 
@@ -109,16 +108,16 @@ namespace EMStudio
         double CalcFitScale(double minScale = 1.0, double maxScale = 100.0) const;
         void MakeTimeVisible(double timeValue, double offsetFactor = 0.95, bool animate = true);
         bool GetIsTimeVisible(double timeValue) const;
-        float GetTimeScale() const                  { return aznumeric_cast<float>(mTimeScale); }
+        float GetTimeScale() const                  { return aznumeric_cast<float>(m_timeScale); }
 
         void RenderElementTimeHandles(QPainter& painter, uint32 dataWindowHeight, const QPen& pen);
         void DisableAllToolTips();
 
         void AddTrack(TimeTrack* track);
         void RemoveAllTracks();
-        TimeTrack* GetTrack(uint32 index)           { return mTracks[index]; }
-        uint32 GetNumTracks() const                 { return mTracks.GetLength(); }
-        AZ::Outcome<AZ::u32> FindTrackIndex(const TimeTrack* track) const;
+        TimeTrack* GetTrack(size_t index)           { return m_tracks[index]; }
+        size_t GetNumTracks() const                 { return m_tracks.size(); }
+        AZ::Outcome<size_t> FindTrackIndex(const TimeTrack* track) const;
         TimeTrack* FindTrackByElement(TimeTrackElement* element) const;
 
         void UnselectAllElements();
@@ -133,15 +132,15 @@ namespace EMStudio
 
         bool FindResizePoint(int32 x, int32 y, TimeTrackElement** outElement, uint32* outID);
 
-        QCursor* GetZoomInCursor() const            { return mZoomInCursor; }
-        QCursor* GetZoomOutCursor() const           { return mZoomOutCursor; }
+        QCursor* GetZoomInCursor() const            { return m_zoomInCursor; }
+        QCursor* GetZoomOutCursor() const           { return m_zoomOutCursor; }
 
         // some getters
-        TrackDataHeaderWidget* GetTrackDataHeaderWidget() { return mTrackDataHeaderWidget; }
-        TrackDataWidget*    GetTrackDataWidget()    { return mTrackDataWidget; }
-        TrackHeaderWidget*  GetTrackHeaderWidget()  { return mTrackHeaderWidget; }
-        TimeInfoWidget*     GetTimeInfoWidget()     { return mTimeInfoWidget; }
-        TimeViewToolBar*    GetTimeViewToolBar()    { return mTimeViewToolBar; }
+        TrackDataHeaderWidget* GetTrackDataHeaderWidget() { return m_trackDataHeaderWidget; }
+        TrackDataWidget*    GetTrackDataWidget()    { return m_trackDataWidget; }
+        TrackHeaderWidget*  GetTrackHeaderWidget()  { return m_trackHeaderWidget; }
+        TimeInfoWidget*     GetTimeInfoWidget()     { return m_timeInfoWidget; }
+        TimeViewToolBar*    GetTimeViewToolBar()    { return m_timeViewToolBar; }
 
         void OnKeyPressEvent(QKeyEvent* event);
         void OnKeyReleaseEvent(QKeyEvent* event);
@@ -152,12 +151,12 @@ namespace EMStudio
 
         void ZoomRect(const QRect& rect);
 
-        uint32 GetNumSelectedEvents()                                                   { return mSelectedEvents.GetLength(); }
-        EventSelectionItem GetSelectedEvent(uint32 index) const                         { return mSelectedEvents[index]; }
+        size_t GetNumSelectedEvents()                                                   { return m_selectedEvents.size(); }
+        EventSelectionItem GetSelectedEvent(size_t index) const                         { return m_selectedEvents[index]; }
 
-        void Select(const MCore::Array<EventSelectionItem>& selection);
+        void Select(const AZStd::vector<EventSelectionItem>& selection);
 
-        MCORE_INLINE EMotionFX::Motion* GetMotion() const                               { return mMotion; }
+        MCORE_INLINE EMotionFX::Motion* GetMotion() const                               { return m_motion; }
         void SetRedrawFlag();
 
         uint32 CalcContentHeight() const;
@@ -181,7 +180,7 @@ namespace EMStudio
         void OnCenterOnCurTime();
         void OnShowNodeHistoryNodeInGraph();
         void OnClickNodeHistoryNode();
-        void MotionEventTrackChanged(uint32 eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName)            { UnselectAllElements(); CommandSystem::CommandHelperMotionEventTrackChanged(eventNr, startTime, endTime, oldTrackName, newTrackName); }
+        void MotionEventTrackChanged(size_t eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName)            { UnselectAllElements(); CommandSystem::CommandHelperMotionEventTrackChanged(eventNr, startTime, endTime, oldTrackName, newTrackName); }
         void OnManualTimeChange(float timeValue);
 
     signals:
@@ -206,66 +205,66 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(UpdateInterfaceCallback);
         AZStd::vector<MCore::Command::Callback*> m_commandCallbacks;
 
-        TrackDataHeaderWidget* mTrackDataHeaderWidget;
-        TrackDataWidget*    mTrackDataWidget;
-        TrackHeaderWidget*  mTrackHeaderWidget;
-        TimeInfoWidget*     mTimeInfoWidget;
-        TimeViewToolBar*    mTimeViewToolBar;
-        QWidget*            mMainWidget;
+        TrackDataHeaderWidget* m_trackDataHeaderWidget;
+        TrackDataWidget*    m_trackDataWidget;
+        TrackHeaderWidget*  m_trackHeaderWidget;
+        TimeInfoWidget*     m_timeInfoWidget;
+        TimeViewToolBar*    m_timeViewToolBar;
+        QWidget*            m_mainWidget;
 
         TimeViewMode m_mode = TimeViewMode::None;
-        EMotionFX::Motion*                  mMotion;
-        MotionWindowPlugin*                 mMotionWindowPlugin;
-        MotionEventsPlugin*                 mMotionEventsPlugin;
-        MotionListWindow*                   mMotionListWindow;
+        EMotionFX::Motion*                  m_motion;
+        MotionWindowPlugin*                 m_motionWindowPlugin;
+        MotionEventsPlugin*                 m_motionEventsPlugin;
+        MotionListWindow*                   m_motionListWindow;
         MotionSetsWindowPlugin*             m_motionSetPlugin;
-        MCore::Array<EventSelectionItem>    mSelectedEvents;
+        AZStd::vector<EventSelectionItem>    m_selectedEvents;
 
-        EMotionFX::Recorder::ActorInstanceData* mActorInstanceData;
-        EMotionFX::Recorder::NodeHistoryItem*   mNodeHistoryItem;
-        EMotionFX::Recorder::EventHistoryItem*  mEventHistoryItem;
-        EMotionFX::AnimGraphNode*              mEventEmitterNode;
+        EMotionFX::Recorder::ActorInstanceData* m_actorInstanceData;
+        EMotionFX::Recorder::NodeHistoryItem*   m_nodeHistoryItem;
+        EMotionFX::Recorder::EventHistoryItem*  m_eventHistoryItem;
+        EMotionFX::AnimGraphNode*              m_eventEmitterNode;
 
         struct MotionInfo
         {
-            uint32      mMotionID;
-            bool        mInitialized;
-            double      mScale;
-            double      mScrollX;
+            uint32      m_motionId;
+            bool        m_initialized;
+            double      m_scale;
+            double      m_scrollX;
         };
 
         MotionInfo* FindMotionInfo(uint32 motionID);
         void UpdateCurrentMotionInfo();
 
-        MCore::Array<MotionInfo*>   mMotionInfos;
-        MCore::Array<TimeTrack*>    mTracks;
+        AZStd::vector<MotionInfo*>   m_motionInfos;
+        AZStd::vector<TimeTrack*>    m_tracks;
 
-        double              mPixelsPerSecond;   // pixels per second
-        double              mScrollX;           // horizontal scroll offset
-        double              mCurTime;           // current time
-        double              mFPS;               // the frame rate, used to snap time values to and to calculate frame numbers
-        double              mCurMouseX;
-        double              mCurMouseY;
-        double              mMaxTime;           // the end time of the full time bar
-        double              mMaxHeight;
-        double              mLastMaxHeight;
-        double              mTimeScale;         // the time zoom scale factor
-        double              mMaxScale;
-        double              mMinScale;
-        float               mTotalTime;
+        double              m_pixelsPerSecond;   // pixels per second
+        double              m_scrollX;           // horizontal scroll offset
+        double              m_curTime;           // current time
+        double              m_fps;               // the frame rate, used to snap time values to and to calculate frame numbers
+        double              m_curMouseX;
+        double              m_curMouseY;
+        double              m_maxTime;           // the end time of the full time bar
+        double              m_maxHeight;
+        double              m_lastMaxHeight;
+        double              m_timeScale;         // the time zoom scale factor
+        double              m_maxScale;
+        double              m_minScale;
+        float               m_totalTime;
 
-        double              mTargetTimeScale;
-        double              mTargetScrollX;
+        double              m_targetTimeScale;
+        double              m_targetScrollX;
 
-        bool                mIsAnimating;
-        bool                mDirty;
+        bool                m_isAnimating;
+        bool                m_dirty;
 
-        QCursor*            mZoomInCursor;
-        QCursor*            mZoomOutCursor;
+        QCursor*            m_zoomInCursor;
+        QCursor*            m_zoomOutCursor;
 
-        QPen                mPenCurTimeHandle;
-        QPen                mPenTimeHandles;
-        QPen                mPenCurTimeHelper;
-        QBrush              mBrushCurTimeHandle;
+        QPen                m_penCurTimeHandle;
+        QPen                m_penTimeHandles;
+        QPen                m_penCurTimeHelper;
+        QBrush              m_brushCurTimeHandle;
     };
 }   // namespace EMStudio

@@ -1,13 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include "CrySystem_precompiled.h"
 #include "SpawnableLevelSystem.h"
-#include <IAudioSystem.h>
 #include "IMovieSystem.h"
 
 #include <LoadScreenBus.h>
@@ -22,21 +22,32 @@
 #include <LyShine/ILyShine.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzCore/Script/ScriptSystemBus.h>
 
 namespace LegacyLevelSystem
 {
+    constexpr AZStd::string_view DeferredLoadLevelKey = "/O3DE/Runtime/SpawnableLevelSystem/DeferredLoadLevel";
     //------------------------------------------------------------------------
     static void LoadLevel(const AZ::ConsoleCommandContainer& arguments)
     {
         AZ_Error("SpawnableLevelSystem", !arguments.empty(), "LoadLevel requires a level file name to be provided.");
         AZ_Error("SpawnableLevelSystem", arguments.size() == 1, "LoadLevel requires a single level file name to be provided.");
 
-        if (!arguments.empty() && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
+        if (!arguments.empty() && gEnv && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
         {
             gEnv->pSystem->GetILevelSystem()->LoadLevel(arguments[0].data());
+        }
+        else if (!arguments.empty())
+        {
+            // The SpawnableLevelSystem isn't available yet.
+            // Defer the level load until later by storing it in the SettingsRegistry
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Set(DeferredLoadLevelKey, arguments.front());
+            }
         }
     }
 
@@ -45,7 +56,7 @@ namespace LegacyLevelSystem
     {
         AZ_Warning("SpawnableLevelSystem", !arguments.empty(), "UnloadLevel doesn't use any arguments.");
 
-        if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
+        if (gEnv && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
         {
             gEnv->pSystem->GetILevelSystem()->UnloadLevel();
         }
@@ -55,10 +66,8 @@ namespace LegacyLevelSystem
     AZ_CONSOLEFREEFUNC(UnloadLevel, AZ::ConsoleFunctorFlags::Null, "Unloads the current level");
 
     //------------------------------------------------------------------------
-    SpawnableLevelSystem::SpawnableLevelSystem(ISystem* pSystem)
-        : m_pSystem(pSystem)
+    SpawnableLevelSystem::SpawnableLevelSystem([[maybe_unused]] ISystem* pSystem)
     {
-        LOADING_TIME_PROFILE_SECTION;
         CRY_ASSERT(pSystem);
 
         m_fLastLevelLoadTime = 0;
@@ -75,6 +84,24 @@ namespace LegacyLevelSystem
         }
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
+
+        // If there were LoadLevel command invocations before the creation of the level system
+        // then those invocations were queued.
+        // load the last level in the queue, since only one level can be loaded at a time
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            if (AZ::SettingsRegistryInterface::FixedValueString deferredLevelName;
+                settingsRegistry->Get(deferredLevelName, DeferredLoadLevelKey) && !deferredLevelName.empty())
+            {
+                // since this is the constructor any derived classes vtables aren't setup yet
+                // call this class LoadLevel function
+                AZ_TracePrintf("SpawnableLevelSystem", "The Level System is now available."
+                    " Loading level %s which could not be loaded earlier\n", deferredLevelName.c_str());
+                SpawnableLevelSystem::LoadLevel(deferredLevelName.c_str());
+                // Delete the key with the deferred level name
+                settingsRegistry->Remove(DeferredLoadLevelKey);
+            }
+        }
     }
 
     //------------------------------------------------------------------------
@@ -174,6 +201,42 @@ namespace LegacyLevelSystem
             return false;
         }
 
+        // Make sure a spawnable level exists that matches levelname
+        AZStd::string validLevelName;
+        AZ::Data::AssetId rootSpawnableAssetId;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+
+        if (rootSpawnableAssetId.IsValid())
+        {
+            validLevelName = levelName;
+        }
+        else
+        {
+            // It's common for users to only provide the level name, but not the full asset path
+            // Example: "MyLevel" instead of "Levels/MyLevel/MyLevel.spawnable"
+            if (!AZ::IO::PathView(levelName).HasExtension())
+            {
+                // Search inside the "Levels" folder for a level spawnable matching levelname
+                const AZStd::string possibleLevelAssetPath = AZStd::string::format("Levels/%s/%s.spawnable", levelName, levelName);
+
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, possibleLevelAssetPath.c_str(),
+                    nullptr, false);
+
+                if (rootSpawnableAssetId.IsValid())
+                {
+                    validLevelName = possibleLevelAssetPath;
+                }
+            }
+        }
+
+        if (validLevelName.empty())
+        {
+            OnLevelNotFound(levelName);
+            return false;
+        }
+
         // If a level is currently loaded, unload it before loading the next one.
         if (IsLevelLoaded())
         {
@@ -181,12 +244,12 @@ namespace LegacyLevelSystem
         }
 
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_PREPARE, 0, 0);
-        PrepareNextLevel(levelName);
+        PrepareNextLevel(validLevelName.c_str());
 
-        bool result = LoadLevelInternal(levelName);
+        bool result = LoadLevelInternal(validLevelName.c_str());
         if (result)
         {
-            OnLoadingComplete(levelName);
+            OnLoadingComplete(validLevelName.c_str());
         }
 
         return result;
@@ -212,8 +275,6 @@ namespace LegacyLevelSystem
 
         // This scope is specifically used for marking a loading time profile section
         {
-            LOADING_TIME_PROFILE_SECTION;
-
             m_bLevelLoaded = false;
             m_lastLevelName = levelName;
             gEnv->pConsole->SetScrollMax(600);
@@ -231,12 +292,6 @@ namespace LegacyLevelSystem
             // This is a workaround until the replacement for GameEntityContext is done
             AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnPreGameEntitiesStarted);
 
-            // Reset the camera to (1,1,1) (not (0,0,0) which is the invalid/uninitialised state,
-            // to avoid the hack in the renderer to not show anything if the camera is at the origin).
-            CCamera defaultCam;
-            defaultCam.SetPosition(Vec3(1.0f));
-            m_pSystem->SetViewCamera(defaultCam);
-
             OnLoadingStart(levelName);
 
             auto pPak = gEnv->pCryPak;
@@ -248,47 +303,6 @@ namespace LegacyLevelSystem
                 spamDelay = pSpamDelay->GetFVal();
                 pSpamDelay->Set(0.0f);
             }
-
-            // Parse level specific config data.
-            AZStd::string const sLevelNameOnly(PathUtil::GetFileName(levelName));
-
-            if (!sLevelNameOnly.empty())
-            {
-                const char* controlsPath = nullptr;
-                Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
-                if (controlsPath)
-                {
-                    AZStd::string sAudioLevelPath(controlsPath);
-                    sAudioLevelPath.append("levels/");
-                    sAudioLevelPath += sLevelNameOnly;
-
-                    Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oAMData(
-                        sAudioLevelPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-                    Audio::SAudioRequest oAudioRequestData;
-                    oAudioRequestData.nFlags =
-                        (Audio::eARF_PRIORITY_HIGH |
-                         Audio::eARF_EXECUTE_BLOCKING); // Needs to be blocking so data is available for next preloading request!
-                    oAudioRequestData.pData = &oAMData;
-                    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-                    Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_PRELOADS_DATA> oAMData2(
-                        sAudioLevelPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-                    oAudioRequestData.pData = &oAMData2;
-                    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-                    Audio::TAudioPreloadRequestID nPreloadRequestID = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-
-                    Audio::AudioSystemRequestBus::BroadcastResult(
-                        nPreloadRequestID, &Audio::AudioSystemRequestBus::Events::GetAudioPreloadRequestID, sLevelNameOnly.c_str());
-                    if (nPreloadRequestID != INVALID_AUDIO_PRELOAD_REQUEST_ID)
-                    {
-                        Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> requestData(nPreloadRequestID, true);
-                        oAudioRequestData.pData = &requestData;
-                        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-                    }
-                }
-            }
-
 
             AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable(
                 rootSpawnableAssetId, azrtti_typeid<AzFramework::Spawnable>(), levelName);
@@ -399,8 +413,6 @@ namespace LegacyLevelSystem
 
         GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START, 0, 0);
 
-        LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
-
         for (auto& listener : m_listeners)
         {
             listener->OnLoadingStart(levelName);
@@ -485,10 +497,7 @@ namespace LegacyLevelSystem
             sChain = " (Chained)";
         }
 
-        AZStd::string text;
-        text.format(
-            "Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
-        gEnv->pLog->Log(text.c_str());
+        gEnv->pLog->Log("Game Level Load Time: [%s] Level %s loaded in %.2f seconds%s", vers, m_lastLevelName.c_str(), m_fLastLevelLoadTime, sChain);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -533,26 +542,6 @@ namespace LegacyLevelSystem
             gEnv->pMovieSystem->Reset(false, false);
             gEnv->pMovieSystem->RemoveAllSequences();
         }
-
-        // Unload level specific audio binary data.
-        Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE> oAMData(Audio::eADS_LEVEL_SPECIFIC);
-        Audio::SAudioRequest oAudioRequestData;
-        oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-        oAudioRequestData.pData = &oAMData;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        // Now unload level specific audio config data.
-        Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_CONTROLS_DATA> oAMData2(Audio::eADS_LEVEL_SPECIFIC);
-        oAudioRequestData.pData = &oAMData2;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_PRELOADS_DATA> oAMData3(Audio::eADS_LEVEL_SPECIFIC);
-        oAudioRequestData.pData = &oAMData3;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        // Reset the camera to (0,0,0) which is the invalid/uninitialised state
-        CCamera defaultCam;
-        m_pSystem->SetViewCamera(defaultCam);
 
         OnUnloadComplete(m_lastLevelName.c_str());
 

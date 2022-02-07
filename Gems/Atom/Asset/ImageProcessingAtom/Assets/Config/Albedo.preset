@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{08A95286-ADB2-41E4-96EB-DB48F4726D6A}",
+            "Name": "Albedo",
+            "RGB_Weight": "CIEXYZ",
+            "PixelFormat": "BC1",
+            "DiscardAlpha": true,
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{08A95286-ADB2-41E4-96EB-DB48F4726D6A}",
+                "Name": "Albedo",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{08A95286-ADB2-41E4-96EB-DB48F4726D6A}",
+                "Name": "Albedo",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "mac": {
+                "UUID": "{08A95286-ADB2-41E4-96EB-DB48F4726D6A}",
+                "Name": "Albedo",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "BC1",
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{08A95286-ADB2-41E4-96EB-DB48F4726D6A}",
+                "Name": "Albedo",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "BC1",
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

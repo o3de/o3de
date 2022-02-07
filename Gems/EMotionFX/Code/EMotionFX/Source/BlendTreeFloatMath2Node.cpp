@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,7 +32,7 @@ namespace EMotionFX
         InitOutputPorts(1);
         SetupOutputPort("Result", OUTPUTPORT_RESULT, MCore::AttributeFloat::TYPE_ID, PORTID_OUTPUT_RESULT);
 
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -130,14 +131,14 @@ namespace EMotionFX
         UpdateAllIncomingNodes(animGraphInstance, timePassedInSeconds);
 
         // if there are no incoming connections, there is nothing to do
-        if (mConnections.empty())
+        if (m_connections.empty())
         {
             return;
         }
 
         // if both x and y inputs have connections
         float x, y;
-        if (mConnections.size() == 2)
+        if (m_connections.size() == 2)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_X));
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_Y));
@@ -148,7 +149,7 @@ namespace EMotionFX
         else // only x or y is connected
         {
             // if only x has something plugged in
-            if (mConnections[0]->GetTargetPort() == INPUTPORT_X)
+            if (m_connections[0]->GetTargetPort() == INPUTPORT_X)
             {
                 OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_X));
                 x = GetInputNumberAsFloat(animGraphInstance, INPUTPORT_X);
@@ -156,7 +157,7 @@ namespace EMotionFX
             }
             else // only y has an input
             {
-                MCORE_ASSERT(mConnections[0]->GetTargetPort() == INPUTPORT_Y);
+                MCORE_ASSERT(m_connections[0]->GetTargetPort() == INPUTPORT_Y);
                 x = m_defaultValue;
                 OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_Y));
                 y = GetInputNumberAsFloat(animGraphInstance, INPUTPORT_Y);
@@ -177,7 +178,7 @@ namespace EMotionFX
     void BlendTreeFloatMath2Node::SetMathFunction(EMathFunction func)
     {
         m_mathFunction = func;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

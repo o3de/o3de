@@ -2,11 +2,27 @@
     "gem_name": "LandscapeCanvas",
     "display_name": "Landscape Canvas",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Tool",
     "summary": "The Landscape Canvas Gem provides the Landscape Canvas editor, a node-based graph tool for authoring workflows to populate landscape with dynamic vegetation.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Environment", "Design", "Tools"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Environment",
+        "Design",
+        "Tools"
+    ],
     "icon_path": "preview.png",
-    "requirements": ""
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/environment/landscape-canvas/",
+    "dependencies": [
+        "GraphModel",
+        "GradientSignal",
+        "SurfaceData",
+        "Vegetation",
+        "LmbrCentral",
+        "GraphCanvas"
+    ]
 }

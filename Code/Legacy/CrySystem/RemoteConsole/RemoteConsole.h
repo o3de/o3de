@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,8 +11,9 @@
 #define CRYINCLUDE_CRYSYSTEM_REMOTECONSOLE_REMOTECONSOLE_H
 #pragma once
 
-#include <IConsole.h>
-#include <CryListenerSet.h>
+#include <CryCommon/IConsole.h>
+#include <CryCommon/CryListenerSet.h>
+#include <CryCommon/StaticInstance.h>
 
 #if !defined(RELEASE) || defined(RELEASE_LOGGING) || defined(ENABLE_PROFILING_CODE)
     #define USE_REMOTE_CONSOLE

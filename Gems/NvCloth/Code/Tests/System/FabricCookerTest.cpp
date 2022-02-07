@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -139,9 +140,6 @@ namespace UnitTest
 
     TEST(NvClothSystem, FactoryCooker_CopyInternalCookedData_CopiedDataMatchesSource)
     {
-        const AZ::u32 data[] = { 0, 2, 45, 64, 125 };
-        const size_t numDataElements = sizeof(data) / sizeof(data[0]);
-
         nv::cloth::CookedData nvCookedData;
         nvCookedData.mNumParticles = 0;
 

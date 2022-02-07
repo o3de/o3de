@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,7 +26,7 @@ namespace EMStudio
 {
     LayoutManager::LayoutManager()
     {
-        mIsSwitching = false;
+        m_isSwitching = false;
     }
 
     LayoutManager::~LayoutManager()
@@ -108,25 +109,25 @@ namespace EMStudio
         }
 
         LayoutHeader header;
-        header.mFileTypeCode[0] = 'E';
-        header.mFileTypeCode[1] = 'M';
-        header.mFileTypeCode[2] = 'S';
-        header.mFileTypeCode[3] = 'L';
-        header.mFileTypeCode[4] = 'A';
-        header.mFileTypeCode[5] = 'Y';
-        header.mFileTypeCode[6] = 'O';
-        header.mFileTypeCode[7] = 'U';
-        header.mFileTypeCode[8] = 'T';
-        header.mEMFXVersionHigh = EMotionFX::GetEMotionFX().GetHighVersion();
-        header.mEMFXVersionLow = EMotionFX::GetEMotionFX().GetLowVersion();
+        header.m_fileTypeCode[0] = 'E';
+        header.m_fileTypeCode[1] = 'M';
+        header.m_fileTypeCode[2] = 'S';
+        header.m_fileTypeCode[3] = 'L';
+        header.m_fileTypeCode[4] = 'A';
+        header.m_fileTypeCode[5] = 'Y';
+        header.m_fileTypeCode[6] = 'O';
+        header.m_fileTypeCode[7] = 'U';
+        header.m_fileTypeCode[8] = 'T';
+        header.m_emfxVersionHigh = EMotionFX::GetEMotionFX().GetHighVersion();
+        header.m_emfxVersionLow = EMotionFX::GetEMotionFX().GetLowVersion();
 
-        azstrcpy(header.mEMFXCompileDate, 64, EMotionFX::GetEMotionFX().GetCompilationDate());
-        azstrcpy(header.mCompileDate, 64, MCORE_DATE);
-        azstrcpy(header.mDescription, 256, "");
+        azstrcpy(header.m_emfxCompileDate, 64, EMotionFX::GetEMotionFX().GetCompilationDate());
+        azstrcpy(header.m_compileDate, 64, MCORE_DATE);
+        azstrcpy(header.m_description, 256, "");
 
-        header.mLayoutVersionHigh = 0;
-        header.mLayoutVersionLow = 1;
-        header.mNumPlugins = GetPluginManager()->GetNumActivePlugins();
+        header.m_layoutVersionHigh = 0;
+        header.m_layoutVersionLow = 1;
+        header.m_numPlugins = aznumeric_caster(GetPluginManager()->GetNumActivePlugins());
         if (file.write((char*)&header, sizeof(LayoutHeader)) == -1)
         {
             MCore::LogWarning("Failed to write layout header to layout file '%s'", filename);
@@ -134,7 +135,7 @@ namespace EMStudio
         }
 
         // For each plugin (window) save the object name.
-        for (uint32 i = 0; i < header.mNumPlugins; ++i)
+        for (uint32 i = 0; i < header.m_numPlugins; ++i)
         {
             EMStudioPlugin* plugin = GetPluginManager()->GetActivePlugin(i);
 
@@ -144,15 +145,13 @@ namespace EMStudio
 
             // Save the plugin header.
             LayoutPluginHeader pluginHeader;
-            pluginHeader.mDataSize = static_cast<uint32>(memFile.GetFileSize());
-            pluginHeader.mDataVersion = plugin->GetLayoutDataVersion();
+            pluginHeader.m_dataSize = static_cast<uint32>(memFile.GetFileSize());
+            pluginHeader.m_dataVersion = plugin->GetLayoutDataVersion();
 
-            azstrcpy(pluginHeader.mObjectName, 128, FromQtString(plugin->GetObjectName()).c_str());
-            azstrcpy(pluginHeader.mPluginName, 128, plugin->GetName());
+            azstrcpy(pluginHeader.m_objectName, 128, FromQtString(plugin->GetObjectName()).c_str());
+            azstrcpy(pluginHeader.m_pluginName, 128, plugin->GetName());
 
             file.write((char*)&pluginHeader, sizeof(LayoutPluginHeader));
-
-            //MCore::LogDetailedInfo("pluginHeader.mDataSize = %d bytes (version=%d) (name=%s)", pluginHeader.mDataSize, pluginHeader.mDataVersion, pluginHeader.mPluginName);
 
             if (memFile.GetMemoryStart())
             {
@@ -194,17 +193,17 @@ namespace EMStudio
     bool LayoutManager::LoadLayout(const char* filename)
     {
         // If we are already switching, skip directly.
-        if (mIsSwitching)
+        if (m_isSwitching)
         {
             return true;
         }
 
-        mIsSwitching = true;
+        m_isSwitching = true;
 
         QFile file(filename);
         if (file.open(QIODevice::ReadOnly) == false)
         {
-            mIsSwitching = false;
+            m_isSwitching = false;
             return false;
         }
 
@@ -217,41 +216,30 @@ namespace EMStudio
         if (file.read((char*)&header, sizeof(LayoutHeader)) == -1)
         {
             MCore::LogWarning("Error reading header from layout file '%s'", filename);
-            mIsSwitching = false;
+            m_isSwitching = false;
             return false;
         }
 
         // Check if this is a valid layout file.
-        if (header.mFileTypeCode[0] != 'E' || header.mFileTypeCode[1] != 'M' || header.mFileTypeCode[2] != 'S' ||
-            header.mFileTypeCode[3] != 'L' || header.mFileTypeCode[4] != 'A' || header.mFileTypeCode[5] != 'Y' || header.mFileTypeCode[6] != 'O' || header.mFileTypeCode[7] != 'U' || header.mFileTypeCode[8] != 'T')
+        if (header.m_fileTypeCode[0] != 'E' || header.m_fileTypeCode[1] != 'M' || header.m_fileTypeCode[2] != 'S' ||
+            header.m_fileTypeCode[3] != 'L' || header.m_fileTypeCode[4] != 'A' || header.m_fileTypeCode[5] != 'Y' || header.m_fileTypeCode[6] != 'O' || header.m_fileTypeCode[7] != 'U' || header.m_fileTypeCode[8] != 'T')
         {
             MCore::LogWarning("Failed to load file '%s' as it is not a valid EMotion Studio layout file.", filename);
-            mIsSwitching = false;
+            m_isSwitching = false;
             return false;
         }
 
-        //MCore::LogDetailedInfo("EMotion FX version          = v%d.%d", header.mEMFXVersionHigh, header.mEMFXVersionLow / 100);
-        //MCore::LogDetailedInfo("EMotion FX compile date     = %s",     header.mEMFXCompileDate);
-        //MCore::LogDetailedInfo("EMStudio compile date = %s",     header.mCompileDate);
-        //MCore::LogDetailedInfo("Layout description    = %s",     header.mDescription);
-        //MCore::LogDetailedInfo("Layout version        = v%d.%d", header.mLayoutVersionHigh, header.mLayoutVersionLow);
-        //MCore::LogDetailedInfo("Num active plugins    = %d",   header.mNumPlugins);
-
         // Iterate through the plugins and try to reuse them.
-        for (uint32 i = 0; i < header.mNumPlugins; ++i)
+        for (uint32 i = 0; i < header.m_numPlugins; ++i)
         {
             // load the plugin header
             LayoutPluginHeader pluginHeader;
             if (file.read((char*)&pluginHeader, sizeof(LayoutPluginHeader)) == -1)
             {
                 MCore::LogWarning("Error reading plugin header from layout file '%s'", filename);
-                mIsSwitching = false;
+                m_isSwitching = false;
                 return false;
             }
-
-            //MCore::LogDetailedInfo("Loading plugin settings for plugin '%s'...", pluginHeader.mPluginName);
-            //MCore::LogDetailedInfo("   + Data size    = %d bytes", pluginHeader.mDataSize);
-            //MCore::LogDetailedInfo("   + Data version = %d", pluginHeader.mDataVersion);
 
             EMStudioPlugin* plugin = nullptr;
 
@@ -263,10 +251,10 @@ namespace EMStudio
                 while (itActivePlugin != activePlugins.end())
                 {
                     // Is the plugin name the same as we need to create?
-                    if (AzFramework::StringFunc::Equal((*itActivePlugin)->GetName(), pluginHeader.mPluginName))
+                    if (AzFramework::StringFunc::Equal((*itActivePlugin)->GetName(), pluginHeader.m_pluginName))
                     {
                         plugin = *itActivePlugin;
-                        plugin->SetObjectName(pluginHeader.mObjectName);
+                        plugin->SetObjectName(pluginHeader.m_objectName);
                         if (plugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_DOCKWIDGET)
                         {
                             DockWidgetPlugin* dockPlugin = static_cast<DockWidgetPlugin*>(plugin);
@@ -288,23 +276,23 @@ namespace EMStudio
             // Try to create the plugin of this type.
             if (!plugin)
             {
-                plugin = GetPluginManager()->CreateWindowOfType(pluginHeader.mPluginName, pluginHeader.mObjectName);
+                plugin = GetPluginManager()->CreateWindowOfType(pluginHeader.m_pluginName, pluginHeader.m_objectName);
 
                 if (!plugin)
                 {
-                    MCore::LogError("Failed to create plugin window of type '%s', with data size %d bytes", pluginHeader.mPluginName, pluginHeader.mDataSize);
+                    MCore::LogError("Failed to create plugin window of type '%s', with data size %d bytes", pluginHeader.m_pluginName, pluginHeader.m_dataSize);
 
                     // Skip the data.
-                    file.seek(file.pos() + pluginHeader.mDataSize);
+                    file.seek(file.pos() + pluginHeader.m_dataSize);
 
                     continue;
                 }
             }
 
-            if (plugin->ReadLayoutSettings(file, pluginHeader.mDataSize, pluginHeader.mDataVersion) == false)
+            if (plugin->ReadLayoutSettings(file, pluginHeader.m_dataSize, pluginHeader.m_dataVersion) == false)
             {
                 MCore::LogWarning("Error reading plugin settings from layout file '%s'", filename);
-                mIsSwitching = false;
+                m_isSwitching = false;
                 return false;
             }
         }
@@ -320,7 +308,7 @@ namespace EMStudio
         if (file.read((char*)&stateLength, sizeof(uint32)) == -1)
         {
             MCore::LogWarning("Error reading main window state length from layout file '%s'", filename);
-            mIsSwitching = false;
+            m_isSwitching = false;
             return false;
         }
 
@@ -329,7 +317,7 @@ namespace EMStudio
         if (layout.size() == 0)
         {
             MCore::LogWarning("Error reading main window state data from layout file '%s'", filename);
-            mIsSwitching = false;
+            m_isSwitching = false;
             return false;
         }
 
@@ -338,13 +326,13 @@ namespace EMStudio
         GetMainWindow()->UpdateCreateWindowMenu(); // update Window->Create menu
 
         // Trigger the OnAfterLoadLayout callbacks.
-        const uint32 numActivePlugins = pluginManager->GetNumActivePlugins();
-        for (uint32 p = 0; p < numActivePlugins; ++p)
+        const size_t numActivePlugins = pluginManager->GetNumActivePlugins();
+        for (size_t p = 0; p < numActivePlugins; ++p)
         {
             GetPluginManager()->GetActivePlugin(p)->OnAfterLoadLayout();
         }
 
-        mIsSwitching = false;
+        m_isSwitching = false;
         return true;
     }
 } // namespace EMStudio

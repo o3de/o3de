@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Distance.h>
 #include "ThreadData.h"
 #include "BaseObject.h"
@@ -123,28 +124,28 @@ namespace EMotionFX
          * This can also be accessed with the GetImporter() macro.
          * @result A pointer to the importer.
          */
-        MCORE_INLINE Importer* GetImporter() const                                  { return mImporter; }
+        MCORE_INLINE Importer* GetImporter() const                                  { return m_importer; }
 
         /**
          * Get the actor manager.
          * This can also be accessed with the GetActorManager() macro.
          * @result A pointer to the actor manager.
          */
-        MCORE_INLINE ActorManager* GetActorManager() const                          { return mActorManager; }
+        MCORE_INLINE ActorManager* GetActorManager() const                          { return m_actorManager; }
 
         /**
          * Get the motion manager.
          * This can also be accessed with the GetMotionManager() macro.
          * @result A pointer to the motion manager.
          */
-        MCORE_INLINE MotionManager* GetMotionManager() const                        { return mMotionManager; }
+        MCORE_INLINE MotionManager* GetMotionManager() const                        { return m_motionManager; }
 
         /**
          * Get the event manager.
          * This can also be accessed with the GetEventManager() macro.
          * @result A pointer to the event manager.
          */
-        MCORE_INLINE EventManager* GetEventManager() const                          { return mEventManager; }
+        MCORE_INLINE EventManager* GetEventManager() const                          { return m_eventManager; }
 
         /**
          * Get the soft-skin manager.
@@ -154,41 +155,34 @@ namespace EMotionFX
          * This can also be accessed with the GetSoftSkinManager() macro.
          * @result A pointer to the soft-skinning manager.
          */
-        MCORE_INLINE SoftSkinManager* GetSoftSkinManager() const                    { return mSoftSkinManager; }
+        MCORE_INLINE SoftSkinManager* GetSoftSkinManager() const                    { return m_softSkinManager; }
 
         /**
          * Get the motion instance pool.
          * This can also be accessed with the GetMotionInstancePool() macro.
          * @result A pointer to the motion instance pool.
          */
-        MCORE_INLINE MotionInstancePool* GetMotionInstancePool()    const           { return mMotionInstancePool; }
+        MCORE_INLINE MotionInstancePool* GetMotionInstancePool()    const           { return m_motionInstancePool; }
 
         /**
          * Get the animgraph manager;
          * This can also be accessed with the GetAnimGraphManager() macro.
          * @result A pointer to the animgraph manager.
          */
-        MCORE_INLINE AnimGraphManager* GetAnimGraphManager() const                { return mAnimGraphManager; }
-
-        /**
-         * Get the rig manager;
-         * This can also be accessed with the GetRigManager() macro.
-         * @result A pointer to the animgraph manager.
-         */
-        //  MCORE_INLINE RigManager* GetRigManager() const                              { return mRigManager; }
+        MCORE_INLINE AnimGraphManager* GetAnimGraphManager() const                { return m_animGraphManager; }
 
         /**
          * Get the recorder.
          * This can also be accessed with the EMFX_RECODRER macro.
          * @result A pointer to the recorder.
          */
-        MCORE_INLINE Recorder* GetRecorder() const                                  { return mRecorder; }
+        MCORE_INLINE Recorder* GetRecorder() const                                  { return m_recorder; }
 
         /**
          * Get the debug drawing class.
          * @result A pointer to the wavelet cache.
          */
-        MCORE_INLINE DebugDraw* GetDebugDraw() const                                { return mDebugDraw; }
+        MCORE_INLINE DebugDraw* GetDebugDraw() const                                { return m_debugDraw; }
 
         /**
          * Set the path of the media root directory.
@@ -242,38 +236,38 @@ namespace EMotionFX
          * Get the path of the media root folder.
          * @result The path of the media root directory.
          */
-        MCORE_INLINE const char* GetMediaRootFolder() const                         { return mMediaRootFolder.c_str(); }
+        MCORE_INLINE const char* GetMediaRootFolder() const                         { return m_mediaRootFolder.c_str(); }
 
         /**
          * Get the path of the media root folder as a string object.
          * @result The path of the media root directory.
          */
-        MCORE_INLINE const AZStd::string& GetMediaRootFolderString() const          { return mMediaRootFolder; }
+        MCORE_INLINE const AZStd::string& GetMediaRootFolderString() const          { return m_mediaRootFolder; }
 
         /**
          * Get the asset source folder path.
          * @result The path of the asset source folder.
          */
-        MCORE_INLINE const AZStd::string& GetAssetSourceFolder() const              { return mAssetSourceFolder; }
+        MCORE_INLINE const AZStd::string& GetAssetSourceFolder() const              { return m_assetSourceFolder; }
 
         /**
          * Get the asset cache folder path.
          * @result The path of the asset cache folder.
          */
-        MCORE_INLINE const AZStd::string& GetAssetCacheFolder() const               { return mAssetCacheFolder; }
+        MCORE_INLINE const AZStd::string& GetAssetCacheFolder() const               { return m_assetCacheFolder; }
 
         /**
          * Get the unique per thread data for a given thread by index.
          * @param threadIndex The thread index, which must be between [0..GetNumThreads()-1].
          * @return The unique thread data for this thread.
          */
-        MCORE_INLINE ThreadData* GetThreadData(uint32 threadIndex) const            { MCORE_ASSERT(threadIndex < mThreadDatas.GetLength()); return mThreadDatas[threadIndex]; }
+        MCORE_INLINE ThreadData* GetThreadData(uint32 threadIndex) const            { MCORE_ASSERT(threadIndex < m_threadDatas.size()); return m_threadDatas[threadIndex]; }
 
         /**
          * Get the number of threads that are internally created.
          * @return The number of threads that we have internally created.
          */
-        MCORE_INLINE uint32 GetNumThreads() const                                   { return mThreadDatas.GetLength(); }
+        MCORE_INLINE size_t GetNumThreads() const                                   { return m_threadDatas.size(); }
 
         /**
          * Shrink the memory pools, to reduce memory usage.
@@ -337,25 +331,25 @@ namespace EMotionFX
         bool GetEnableServerOptimization() const { return m_isInServerMode && m_enableServerOptimization; }
 
     private:
-        AZStd::string               mVersionString;         /**< The version string. */
-        AZStd::string               mCompilationDate;       /**< The compilation date string. */
-        AZStd::string               mMediaRootFolder;       /**< The path of the media root directory. */
-        AZStd::string               mAssetSourceFolder;     /**< The absolute path of the asset source folder. */
-        AZStd::string               mAssetCacheFolder;      /**< The absolute path of the asset cache folder. */
-        uint32                      mHighVersion;           /**< The higher version, which would be 3 in case of v3.01. */
-        uint32                      mLowVersion;            /**< The low version, which would be 100 in case of v3.10 or 10 in case of v3.01. */
-        Importer*                   mImporter;              /**< The importer that can load actors and motions. */
-        ActorManager*               mActorManager;          /**< The actor manager. */
-        MotionManager*              mMotionManager;         /**< The motion manager. */
-        EventManager*               mEventManager;          /**< The motion event manager. */
-        SoftSkinManager*            mSoftSkinManager;       /**< The softskin manager. */
-        AnimGraphManager*           mAnimGraphManager;      /**< The animgraph manager. */
-        Recorder*                   mRecorder;              /**< The recorder. */
-        MotionInstancePool*         mMotionInstancePool;    /**< The motion instance pool. */        
-        DebugDraw*                  mDebugDraw;             /**< The debug drawing system. */
-        MCore::Array<ThreadData*>   mThreadDatas;           /**< The per thread data. */
-        MCore::Distance::EUnitType  mUnitType;              /**< The unit type, on default it is MCore::Distance::UNITTYPE_METERS. */
-        float                       mGlobalSimulationSpeed; /**< The global simulation speed, default is 1.0. */
+        AZStd::string               m_versionString;         /**< The version string. */
+        AZStd::string               m_compilationDate;       /**< The compilation date string. */
+        AZStd::string               m_mediaRootFolder;       /**< The path of the media root directory. */
+        AZStd::string               m_assetSourceFolder;     /**< The absolute path of the asset source folder. */
+        AZStd::string               m_assetCacheFolder;      /**< The absolute path of the asset cache folder. */
+        uint32                      m_highVersion;           /**< The higher version, which would be 3 in case of v3.01. */
+        uint32                      m_lowVersion;            /**< The low version, which would be 100 in case of v3.10 or 10 in case of v3.01. */
+        Importer*                   m_importer;              /**< The importer that can load actors and motions. */
+        ActorManager*               m_actorManager;          /**< The actor manager. */
+        MotionManager*              m_motionManager;         /**< The motion manager. */
+        EventManager*               m_eventManager;          /**< The motion event manager. */
+        SoftSkinManager*            m_softSkinManager;       /**< The softskin manager. */
+        AnimGraphManager*           m_animGraphManager;      /**< The animgraph manager. */
+        Recorder*                   m_recorder;              /**< The recorder. */
+        MotionInstancePool*         m_motionInstancePool;    /**< The motion instance pool. */        
+        DebugDraw*                  m_debugDraw;             /**< The debug drawing system. */
+        AZStd::vector<ThreadData*>   m_threadDatas;           /**< The per thread data. */
+        MCore::Distance::EUnitType  m_unitType;              /**< The unit type, on default it is MCore::Distance::UNITTYPE_METERS. */
+        float                       m_globalSimulationSpeed; /**< The global simulation speed, default is 1.0. */
         bool                        m_isInEditorMode;       /**< True when the runtime requires to support an editor. Optimizations can be made if there is no need for editor support. */
         bool                        m_isInServerMode;       /**< True when emotionfx is running on server. */
         bool                        m_enableServerOptimization; /**< True when optimization can be made when emotionfx is running in server mode. */
@@ -453,11 +447,11 @@ namespace EMotionFX
          */
         struct EMFX_API InitSettings
         {
-            MCore::Distance::EUnitType  mUnitType;      /**< The unit type to use. This specifies the size of one unit. On default this is a meter. */
+            MCore::Distance::EUnitType  m_unitType;      /**< The unit type to use. This specifies the size of one unit. On default this is a meter. */
 
             InitSettings()
             {
-                mUnitType = MCore::Distance::UNITTYPE_METERS;
+                m_unitType = MCore::Distance::UNITTYPE_METERS;
             }
         };
 

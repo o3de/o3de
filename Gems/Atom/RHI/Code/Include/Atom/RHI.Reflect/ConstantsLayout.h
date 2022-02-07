@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -81,6 +82,10 @@ namespace AZ
             //! If validation is disabled, true is always returned.
             bool ValidateAccess(ShaderInputConstantIndex inputIndex) const;
 
+            //! Prints to the console the shader input names specified by input list of indices
+            //! Will ignore any indices outside of the inputs array bounds
+            void DebugPrintNames(AZStd::array_view<ShaderInputConstantIndex> constantList) const;
+
         protected:
             ConstantsLayout() = default;
 
@@ -94,7 +99,6 @@ namespace AZ
 
             AZStd::vector<ShaderInputConstantDescriptor> m_inputs;
             IdReflectionMapForConstants m_idReflection;
-            AZStd::vector<Interval> m_intervals;
             uint32_t m_sizeInBytes = 0;
             HashValue64 m_hash = InvalidHash;
         };

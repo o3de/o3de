@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "ComponentEntityEditorPlugin_precompiled.h"
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <QApplication>
-
-using namespace AZ;
 
 // Handle asserts
 class ToolsFrameworkHook
@@ -21,12 +18,12 @@ class ToolsFrameworkHook
 public:
     void SetupEnvironment() override
     {
-        AllocatorInstance<SystemAllocator>::Create();
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     }
 
     void TeardownEnvironment() override
     {
-        AllocatorInstance<SystemAllocator>::Destroy();
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 };
 

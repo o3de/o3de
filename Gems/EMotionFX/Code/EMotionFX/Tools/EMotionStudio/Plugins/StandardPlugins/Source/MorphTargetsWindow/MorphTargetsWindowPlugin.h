@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,7 +60,7 @@ namespace EMStudio
 
         // creates a new group with several morph targets
         void CreateGroup(const char* name, const AZStd::vector<EMotionFX::MorphTarget*>& morphTargets, const AZStd::vector<EMotionFX::MorphSetupInstance::MorphTarget*>& morphTargetInstances);
-        EMotionFX::ActorInstance* GetActorInstance() const { return mCurrentActorInstance; }
+        EMotionFX::ActorInstance* GetActorInstance() const { return m_currentActorInstance; }
 
         void UpdateInterface();
         void UpdateMorphTarget(const char* name);
@@ -81,15 +82,14 @@ namespace EMStudio
         AZStd::vector<MCore::Command::Callback*> m_callbacks;
 
         // holds the generated groups for the morph targets
-        AZStd::vector<MorphTargetGroupWidget*>  mMorphTargetGroups;
+        AZStd::vector<MorphTargetGroupWidget*>  m_morphTargetGroups;
 
         // holds the currently selected actor instance
-        EMotionFX::ActorInstance*               mCurrentActorInstance;
+        EMotionFX::ActorInstance*               m_currentActorInstance;
 
         // some qt stuff
-        QVBoxLayout*                            mStaticTextLayout;
-        QWidget*                                mStaticTextWidget;
-        MysticQt::DialogStack*                  mDialogStack;
-        QLabel*                                 mInfoText;
+        QVBoxLayout*                            m_staticTextLayout;
+        QWidget*                                m_staticTextWidget;
+        MysticQt::DialogStack*                  m_dialogStack;
     };
 } // namespace EMStudio

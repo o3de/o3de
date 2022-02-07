@@ -1,14 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "precompiled.h"
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -88,10 +89,8 @@ protected:
     AZ::SerializeContext* GetSerializeContext() override { return m_serializeContext; }
     AZ::BehaviorContext*  GetBehaviorContext() override { return nullptr; }
     AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-    const char* GetAppRoot() const override { return nullptr; }
     const char* GetEngineRoot() const override { return nullptr; }
     const char* GetExecutableFolder() const override { return nullptr; }
-    AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
     void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}
     void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
     //////////////////////////////////////////////////////////////////////////

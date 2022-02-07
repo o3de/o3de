@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -197,7 +198,7 @@ namespace AZStd
     AZ_FORCE_INLINE cv_status condition_variable_any::wait_for(Lock& lock, const chrono::duration<Rep, Period>& rel_time)
     {
         chrono::milliseconds toWait = rel_time;
-        EnterCriticalSection(&m_mutex);
+        EnterCriticalSection(AZ_STD_MUTEX_CAST(m_mutex));
         lock.unlock();
 
         // We need to make sure we use CriticalSection based mutex.
@@ -216,7 +217,7 @@ namespace AZStd
                 returnCode = cv_status::timeout;
             }
         }
-        LeaveCriticalSection(&m_mutex);
+        LeaveCriticalSection(AZ_STD_MUTEX_CAST(m_mutex));
         lock.lock();
         return returnCode;
     }

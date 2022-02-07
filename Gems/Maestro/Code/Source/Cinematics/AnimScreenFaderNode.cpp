@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include "AnimScreenFaderNode.h"
@@ -114,7 +114,7 @@ void CAnimScreenFaderNode::Animate(SAnimContext& ac)
 
     for (size_t nFaderTrackNo = 0; nFaderTrackNo < nScreenFaderTracksNumber; ++nFaderTrackNo)
     {
-        CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, nFaderTrackNo));
+        CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, static_cast<uint32>(nFaderTrackNo)));
 
         if (!pTrack)
         {
@@ -298,13 +298,13 @@ void CAnimScreenFaderNode::Reflect(AZ::ReflectContext* context)
 //-----------------------------------------------------------------------------
 unsigned int CAnimScreenFaderNode::GetParamCount() const
 {
-    return s_screenFaderNodeParams.size();
+    return static_cast<unsigned int>(s_screenFaderNodeParams.size());
 }
 
 //-----------------------------------------------------------------------------
 CAnimParamType CAnimScreenFaderNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_screenFaderNodeParams.size())
+    if (nIndex < s_screenFaderNodeParams.size())
     {
         return s_screenFaderNodeParams[nIndex].paramType;
     }
@@ -350,7 +350,7 @@ bool CAnimScreenFaderNode::IsAnyTextureVisible() const
     size_t const paramCount = m_tracks.size();
     for (size_t paramIndex = 0; paramIndex < paramCount; ++paramIndex)
     {
-        CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, paramIndex));
+        CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, static_cast<uint32>(paramIndex)));
 
         if (!pTrack)
         {

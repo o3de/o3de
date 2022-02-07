@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,12 +57,12 @@ namespace GraphCanvas
             GraphCanvasPropertyBus::MultiHandler::BusDisconnect();
         }
 
-        void AddBusId(const AZ::EntityId& busId) override final
+        void AddBusId(const AZ::EntityId& busId) final
         {
             GraphCanvasPropertyBus::MultiHandler::BusConnect(busId);
         }
 
-        void RemoveBusId(const AZ::EntityId& busId) override final
+        void RemoveBusId(const AZ::EntityId& busId) final
         {
             GraphCanvasPropertyBus::MultiHandler::BusDisconnect(busId);
         }
@@ -85,12 +86,12 @@ namespace GraphCanvas
 
         void Init() override {};
 
-        void Activate()
+        void Activate() override
         {
             GraphCanvasPropertyBusHandler::OnActivate(GetEntityId());
         }
 
-        void Deactivate()
+        void Deactivate() override
         {
             GraphCanvasPropertyBusHandler::OnDeactivate();
         }

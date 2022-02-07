@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -86,13 +87,13 @@ namespace AZ
                 // AssImp only has one bitangentStream per mesh.
                 bitangentStream->SetBitangentSetIndex(0);
 
-                bitangentStream->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromSourceScene);
+                bitangentStream->SetGenerationMethod(AZ::SceneAPI::DataTypes::TangentGenerationMethod::FromSourceScene);
                 bitangentStream->ReserveContainerSpace(vertexCount);
-                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
+                for (unsigned int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {
                     const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
 
-                    for (int v = 0; v < mesh->mNumVertices; ++v)
+                    for (unsigned int v = 0; v < mesh->mNumVertices; ++v)
                     {
                         if (!mesh->HasTangentsAndBitangents())
                         {

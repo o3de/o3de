@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,8 @@
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineState.h>
 #include <RHI/MemoryView.h>
+#include <RHI/ShaderResourceGroup.h>
+#include <RHI/Conversions.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/CommandListValidator.h>
@@ -435,7 +438,7 @@ namespace AZ
                     switch (pipelineType)
                     {
                     case RHI::PipelineStateType::Draw:
-                        if (binding.m_resourceTable.IsValid())
+                        if (binding.m_resourceTable.IsValid() && compiledData.m_gpuViewsDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetGraphicsRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
                         }
@@ -445,14 +448,15 @@ namespace AZ
                             GetCommandList()->SetGraphicsRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
                         }
 
-                        if (binding.m_samplerTable.IsValid())
+                        if (binding.m_samplerTable.IsValid() && compiledData.m_gpuSamplersDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetGraphicsRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
 
                         for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                         {
-                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid() &&
+                                compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                             {
                                 GetCommandList()->SetGraphicsRootDescriptorTable(
                                     binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
@@ -462,7 +466,7 @@ namespace AZ
                         break;
 
                     case RHI::PipelineStateType::Dispatch:
-                        if (binding.m_resourceTable.IsValid())
+                        if (binding.m_resourceTable.IsValid() && compiledData.m_gpuViewsDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetComputeRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
                         }
@@ -472,14 +476,15 @@ namespace AZ
                             GetCommandList()->SetComputeRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
                         }
 
-                        if (binding.m_samplerTable.IsValid())
+                        if (binding.m_samplerTable.IsValid() && compiledData.m_gpuSamplersDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetComputeRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
 
                         for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                         {
-                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid() &&
+                                compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                             {
                                 GetCommandList()->SetComputeRootDescriptorTable(
                                     binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),

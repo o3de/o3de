@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -101,7 +102,7 @@ namespace ScriptCanvas
 
                 AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot* /*slot*/) const override;
                 bool IsEBusAddressed() const override;
-                AZStd::optional<size_t> GetEventIndex(AZStd::string eventName) const;
+                AZStd::optional<size_t> GetEventIndex(AZStd::string eventName) const override;
                 const EBusEventEntry* FindEvent(const AZStd::string& name) const;
                 AZStd::string GetEBusName() const override;
                 bool IsAutoConnected() const override;
@@ -137,7 +138,11 @@ namespace ScriptCanvas
 
                 void SetAutoConnectToGraphOwner(bool enabled);
 
+                void OnDeserialize() override;
+
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 void OnWriteEnd();
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
                 AZStd::string GetNodeName() const override
                 {

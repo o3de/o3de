@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/Query.h>
@@ -236,6 +236,15 @@ namespace AZ
             // the range the same value
             static constexpr D3D12_RANGE InvalidRange = {0,0};
             m_readBackBuffer->Unmap(0, &InvalidRange);
+        }
+
+        void QueryPool::ShutdownInternal()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            device.QueueForRelease(m_queryHeap);
+            m_queryHeap = nullptr;
+            device.QueueForRelease(m_readBackBuffer);
+            m_readBackBuffer = nullptr;
         }
     }
 }

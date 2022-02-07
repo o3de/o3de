@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,13 +16,13 @@
 #include <Tests/UI/ModalPopupHandler.h>
 
 #include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 
 namespace EMotionFX
 {
@@ -36,8 +37,11 @@ namespace EMotionFX
         RecordProperty("test_case_id", "C13048819");
 
         // Create an actor
-        AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(5, "SimpleActor");
-        ActorInstance* actorInstance = ActorInstance::Create(actor.get());
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 5, "SimpleActor");
+        ActorInstance* actorInstance = ActorInstance::Create(actorAsset->GetActor());
+        const Actor* actor = actorAsset->GetActor();
 
         // Open simulated objects layout
         EMStudio::GetMainWindow()->ApplicationModeChanged("SimulatedObjects");

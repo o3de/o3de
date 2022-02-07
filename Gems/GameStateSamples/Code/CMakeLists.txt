@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -20,6 +21,7 @@ ly_add_target(
         INTERFACE
             Gem::GameState
             Gem::LocalUser
+            Gem::LyShine.Static
             Gem::SaveData.Static
             Gem::MessagePopup.Static
             Legacy::CryCommon
@@ -46,6 +48,7 @@ ly_add_target(
         Gem::LmbrCentral
 )
 
-# Clients and Servers use the above module.  There is no editor or tools module required.
-ly_create_alias(NAME GameStateSamples.Clients  NAMESPACE Gem TARGETS GameStateSamples)
-ly_create_alias(NAME GameStateSamples.Servers  NAMESPACE Gem TARGETS GameStateSamples)
+# Clients and Servers use the above module, and it contains assets so is needed by builders.
+ly_create_alias(NAME GameStateSamples.Clients  NAMESPACE Gem TARGETS Gem::GameStateSamples)
+ly_create_alias(NAME GameStateSamples.Servers  NAMESPACE Gem TARGETS Gem::GameStateSamples)
+ly_create_alias(NAME GameStateSamples.Builders NAMESPACE Gem TARGETS Gem::UiBasics.Builders Gem::LyShineExamples.Builders)

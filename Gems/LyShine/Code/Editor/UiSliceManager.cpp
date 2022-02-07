@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 
@@ -139,7 +138,7 @@ void UiSliceManager::MakeSliceFromEntities(AzToolsFramework::EntityIdList& entit
     // expand the list of entities to include all child entities
     AzToolsFramework::EntityIdSet entitiesAndDescendants = GatherEntitiesAndAllDescendents(entities);
 
-    const AZStd::string slicesAssetsPath = "@devassets@/UI/Slices";
+    const AZStd::string slicesAssetsPath = "@projectroot@/UI/Slices";
 
     if (!gEnv->pFileIO->Exists(slicesAssetsPath.c_str()))
     {
@@ -159,7 +158,7 @@ bool UiSliceManager::MakeNewSlice(
     bool inheritSlices,
     AZ::SerializeContext* serializeContext)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AzToolsFramework);
 
     if (entities.empty())
     {
@@ -241,7 +240,7 @@ bool UiSliceManager::MakeNewSlice(
     // Setup and execute transaction for the new slice.
     //
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction");
+        AZ_PROFILE_SCOPE(AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction");
 
         using AzToolsFramework::SliceUtilities::SliceTransaction;
 
@@ -250,7 +249,7 @@ bool UiSliceManager::MakeNewSlice(
             [this, &entitiesToInclude, &commonParent, &insertBefore]
         (SliceTransaction::TransactionPtr transaction, const char* fullPath, const SliceTransaction::SliceAssetPtr& /*asset*/) -> void
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "UiSliceManager::MakeNewSlice:PostSaveCallback");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "UiSliceManager::MakeNewSlice:PostSaveCallback");
             // Once the asset is processed and ready, we can replace the source entities with an instance of the new slice.
             UiEditorEntityContextRequestBus::Event(m_entityContextId,
                 &UiEditorEntityContextRequestBus::Events::QueueSliceReplacement,
@@ -261,7 +260,7 @@ bool UiSliceManager::MakeNewSlice(
 
         // Add entities
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction:AddEntities");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction:AddEntities");
             for (const AZ::EntityId& entityId : orderedEntityList)
             {
                 SliceTransaction::Result addResult = transaction->AddEntity(entityId, !inheritSlices ? SliceTransaction::SliceAddEntityFlags::DiscardSliceAncestry : 0);
@@ -349,7 +348,7 @@ AzToolsFramework::SliceUtilities::SliceTransaction::Result SlicePreSaveCallbackF
     [[maybe_unused]] const char* fullPath,
     AzToolsFramework::SliceUtilities::SliceTransaction::SliceAssetPtr& asset)
 {
-    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "SlicePreSaveCallbackForUiEntities");
+    AZ_PROFILE_SCOPE(AzToolsFramework, "SlicePreSaveCallbackForUiEntities");
 
     // we want to ensure that "bad" data never gets pushed to a slice
     // This mostly relates to the m_childEntityIdOrder array since this is something that
@@ -992,13 +991,13 @@ AZStd::string UiSliceManager::MakeTemporaryFilePathForSave(const char* targetFil
     AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
     AZ_Assert(fileIO, "File IO is not initialized.");
 
-    AZStd::string devAssetPath = fileIO->GetAlias("@devassets@");
+    AZStd::string devAssetPath = fileIO->GetAlias("@projectroot@");
     AZStd::string userPath = fileIO->GetAlias("@user@");
     AZStd::string tempPath = targetFilename;
     EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, devAssetPath);
     EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, userPath);
     EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, tempPath);
-    AzFramework::StringFunc::Replace(tempPath, "@devassets@", devAssetPath.c_str());
+    AzFramework::StringFunc::Replace(tempPath, "@projectroot@", devAssetPath.c_str());
     AzFramework::StringFunc::Replace(tempPath, devAssetPath.c_str(), userPath.c_str());
     tempPath.append(".slicetemp");
 

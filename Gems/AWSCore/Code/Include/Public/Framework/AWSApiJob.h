@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,14 +14,12 @@
 
 namespace AWSCore
 {
-
-    /// Base class for all AWS jobs. Primarily exists so that 
+    /// Base class for all AWS jobs. Primarily exists so that
     /// AwsApiJob::s_config can be used for settings that apply to
     /// all AWS jobs.
     class AwsApiJob
         : public AZ::Job
     {
-
     public:
         // To use a different allocator, extend this class and use this macro.
         AZ_CLASS_ALLOCATOR(AwsApiJob, AZ::SystemAllocator, 0);
@@ -32,11 +31,10 @@ namespace AWSCore
 
     protected:
         AwsApiJob(bool isAutoDelete, IConfig* config = GetDefaultConfig());
-        virtual ~AwsApiJob();
+        ~AwsApiJob() override = default;
 
         /// Used for error messages.
         static const char* COMPONENT_DISPLAY_NAME;
-
     };
 
 } // namespace AWSCore

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -54,7 +55,6 @@ namespace ScriptCanvas
             AZStd::vector<AZStd::string> tokens;
             AzFramework::StringFunc::Tokenize(name, tokens, Grammar::k_luaSpecialCharacters);
             AZStd::string joinResult;
-            const size_t length = tokens.size();
             for (auto& token : tokens)
             {
                 joinResult.append(token);
@@ -234,7 +234,7 @@ namespace ScriptCanvas
         const VariableData Source::k_emptyVardata{};
 
         Source::Source
-        (const Graph& graph
+            ( const Graph& graph
             , const AZ::Data::AssetId& id
             , const GraphData& graphData
             , const VariableData& variableData
@@ -276,7 +276,7 @@ namespace ScriptCanvas
                 AzFramework::StringFunc::Path::StripExtension(namespacePath);
 
                 return AZ::Success(Source
-                (*request.graph
+                    (*request.graph
                     , request.scriptAssetId
                     , *graphData
                     , *sourceVariableData

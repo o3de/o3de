@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/base.h>
@@ -209,18 +209,18 @@ namespace ImageProcessingAtom
         /* addition of c-pointers already takes care of datatype-sizes */                                                                                                                      \
         const signed long int dy = /*parm->mirror ? -1 :*/ 1;                                                                                                                                  \
         const unsigned int stridei = parm->incols  * 1 * 1;                                                                                                                                    \
-        const unsigned int stridet = parm->subcols * 1 * 1;                                                                                                                                    \
-        const unsigned int strideo = parm->outcols * 1 * 1;                                                                                                                                    \
+        [[maybe_unused]] const unsigned int stridet = parm->subcols * 1 * 1;                                                                                                                   \
+        [[maybe_unused]] const unsigned int strideo = parm->outcols * 1 * 1;                                                                                                                   \
         /* offset and shift calculations still require the unmodified values */                                                                                                                \
         const unsigned int strideiraw = parm->incols;                                                                                                                                          \
-        const unsigned int stridetraw = parm->subcols;                                                                                                                                         \
+        [[maybe_unused]] const unsigned int stridetraw = parm->subcols;                                                                                                                        \
         const unsigned int strideoraw = parm->outcols;                                                                                                                                         \
                                                                                                                                                                                                \
         class Plane2D<dtyp> tmp(tmpcols, tmprows, 4);                                                                                                                                          \
         dtyp*** t = (dtyp***)tmp;                                                                                                                                                              \
         int srcPos, dstPos;                                                                                                                                                                    \
-        bool plusminush = false; const bool of = true;                                                                                                                                         \
-        bool plusminusv = false; const bool nc = false;                                                                                                                                        \
+        bool plusminush = false; [[maybe_unused]] const bool of = true;                                                                                                                        \
+        bool plusminusv = false; [[maybe_unused]] const bool nc = false;                                                                                                                       \
         FilterWeights<wtyp>* fwh = calculateFilterWeights<wtyp>(parm->resample.colrem, parm->caged ? 0 : 0 - parm->region.subtop, parm->caged ? srccols : parm->subrows - parm->region.subtop, \
             parm->resample.colquo,               0,               dstcols, reps, parm->resample.colblur, parm->resample.wf, parm->resample.operation != eWindowEvaluation_Sum, plusminush);    \
         FilterWeights<wtyp>* fwv = calculateFilterWeights<wtyp>(parm->resample.rowrem, parm->caged ? 0 : 0 - parm->region.intop, parm->caged ? srcrows : parm->inrows  - parm->region.intop,   \
@@ -833,7 +833,7 @@ namespace ImageProcessingAtom
 
     #define filterRowFetch(srcOffs, srcSize, srcSkip, dstOffs, dstSize, dstSkip) \
         /* vertical stride, horizontal fetch */                                  \
-        getCxNFromStreamSwapped(srcSkip, i);                                     \
+        /* getCxNFromStreamSwapped(srcSkip, i); Expands to nothing */            \
         getCxNFromStream(srcSkip, i);                                            \
         getCxNFromPlane(1);                                                      \
                                                                                  \
@@ -935,7 +935,7 @@ namespace ImageProcessingAtom
         comcpyCHistogram();                                                      \
                                                                                  \
         /* horizontal stride, vertical store */                                  \
-        putCxNToStreamSwapped(dstSkip, o);                                       \
+        /* putCxNToStreamSwapped(dstSkip, o); Expands to nothing */              \
         putCxNToStream(dstSkip, o);                                              \
         putCxNToPlane(1);                                                        \
                                                                                  \

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,17 +24,17 @@ namespace EMotionFX
 {
     struct SyncParam
     {
-        void (*eventFactoryA)(MotionEventTrack* track) = MakeNoEvents;
-        void (*eventFactoryB)(MotionEventTrack* track) = MakeNoEvents;
+        void (*m_eventFactoryA)(MotionEventTrack* track) = MakeNoEvents;
+        void (*m_eventFactoryB)(MotionEventTrack* track) = MakeNoEvents;
 
         // 2.0 seconds of simulation, 0.1 increments, 21 playtimes
-        AZStd::array<float, 21> expectedPlayTimeA {};
-        AZStd::array<float, 21> expectedPlayTimeB {};
+        AZStd::array<float, 21> m_expectedPlayTimeA {};
+        AZStd::array<float, 21> m_expectedPlayTimeB {};
 
         // Expected play times will be calculated based on motion event and duration from AnimGraphNode::SyncUsingSyncTracks().
-        AnimGraphObject::ESyncMode syncMode = AnimGraphObject::ESyncMode::SYNCMODE_DISABLED;
-        float weightParam = 0.0f;
-        bool reverseMotion = false;
+        AnimGraphObject::ESyncMode m_syncMode = AnimGraphObject::ESyncMode::SYNCMODE_DISABLED;
+        float m_weightParam = 0.0f;
+        bool m_reverseMotion = false;
     };
 
     class SyncingSystemFixture
@@ -44,7 +45,7 @@ namespace EMotionFX
         void ConstructGraph() override
         {
             const SyncParam param = GetParam();
-            m_syncMode = param.syncMode;
+            m_syncMode = param.m_syncMode;
             AnimGraphFixture::ConstructGraph();
             m_blendTreeAnimGraph = AnimGraphFactory::Create<OneBlendTreeNodeAnimGraph>();
             m_rootStateMachine = m_blendTreeAnimGraph->GetRootStateMachine();
@@ -142,16 +143,16 @@ namespace EMotionFX
     TEST_P(SyncingSystemFixture, SyncingSystemPlaySpeedTests)
     {
         const SyncParam param = GetParam();
-        param.eventFactoryA(m_syncTrackA);
-        param.eventFactoryB(m_syncTrackB);
+        param.m_eventFactoryA(m_syncTrackA);
+        param.m_eventFactoryB(m_syncTrackB);
         GetEMotionFX().Update(0.0f);
 
         MCore::AttributeFloat* weightParam = m_animGraphInstance->GetParameterValueChecked<MCore::AttributeFloat>(0);
-        weightParam->SetValue(param.weightParam);
+        weightParam->SetValue(param.m_weightParam);
 
         // Test reverse motion
-        m_motionNodeA->SetReverse(param.reverseMotion);
-        m_motionNodeB->SetReverse(param.reverseMotion);
+        m_motionNodeA->SetReverse(param.m_reverseMotion);
+        m_motionNodeB->SetReverse(param.m_reverseMotion);
         uint32 playTimeIndex = 0;
         const float tolerance = 0.00001f;
         Simulate(2.0f/*simulationTime*/, 10.0f/*expectedFps*/, 0.0f/*fpsVariance*/,
@@ -179,7 +180,7 @@ namespace EMotionFX
                     float factorB;
                     float interpolatedSpeedA;
                     AZStd::tie(interpolatedSpeedA, factorA, factorB) = AnimGraphNode::SyncPlaySpeeds(
-                        motionPlaySpeedA, durationA, motionPlaySpeedB, durationB, param.weightParam);
+                        motionPlaySpeedA, durationA, motionPlaySpeedB, durationB, param.m_weightParam);
                     EXPECT_FLOAT_EQ(statePlaySpeedA, interpolatedSpeedA * factorA) << "Motion playspeeds should match the set playspeed in the motion node throughout blending.";
                 }
                 else if(m_blend2Node->GetSyncMode() == AnimGraphObject::SYNCMODE_TRACKBASED)
@@ -187,8 +188,8 @@ namespace EMotionFX
                     const float motionPlayTimeA = m_motionNodeA->GetCurrentPlayTime(animGraphInstance);
                     const float motionPlayTimeB = m_motionNodeB->GetCurrentPlayTime(animGraphInstance);
 
-                    EXPECT_NEAR(motionPlayTimeA, param.expectedPlayTimeA[playTimeIndex], tolerance) << "Motion node A playtime should match the expected playtime.";
-                    EXPECT_NEAR(motionPlayTimeB, param.expectedPlayTimeB[playTimeIndex], tolerance) << "Motion node B playtime should match the expected playtime.";
+                    EXPECT_NEAR(motionPlayTimeA, param.m_expectedPlayTimeA[playTimeIndex], tolerance) << "Motion node A playtime should match the expected playtime.";
+                    EXPECT_NEAR(motionPlayTimeB, param.m_expectedPlayTimeB[playTimeIndex], tolerance) << "Motion node B playtime should match the expected playtime.";
                     playTimeIndex++;
                 }
             }

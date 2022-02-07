@@ -1,14 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LyShine_precompiled.h"
 #include "LyShineTest.h"
 
-#include <Mocks/IRendererMock.h>
 #include "UiGameEntityContext.h"
 #include "UiElementComponent.h"
 #include "UiTransform2dComponent.h"
@@ -118,13 +117,10 @@ namespace UnitTest
             m_priorEnv = gEnv;
             gEnv = &m_env->m_stubEnv;
 
-            m_data = AZStd::make_unique<DataMembers>();
-            m_env->m_stubEnv.pRenderer = &m_data->m_renderer;
         }
 
         void TearDown() override
         {
-            m_data.reset();
             m_env.reset();
             gEnv = m_priorEnv;
 
@@ -140,12 +136,7 @@ namespace UnitTest
             SSystemGlobalEnvironment m_stubEnv;
         };
 
-        struct DataMembers
-        {
-            testing::NiceMock<IRendererMock> m_renderer;
-        };
 
-        AZStd::unique_ptr<DataMembers> m_data;
         AZStd::unique_ptr<StubEnv> m_env;
 
         SSystemGlobalEnvironment* m_priorEnv = nullptr;

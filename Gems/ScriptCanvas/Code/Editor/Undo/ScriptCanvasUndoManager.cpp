@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <precompiled.h>
 
 #include <Editor/Undo/ScriptCanvasUndoManager.h>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -29,9 +28,9 @@ namespace ScriptCanvasEditor
     // SceneUndoState
 
     SceneUndoState::SceneUndoState(AzToolsFramework::UndoSystem::IUndoNotify* undoNotify)
-        : m_undoStack(AZStd::make_unique<AzToolsFramework::UndoSystem::UndoStack>(c_undoLimit, undoNotify))
-        , m_undoCache(AZStd::make_unique<UndoCache>())
     {
+        m_undoStack = AZStd::make_unique<AzToolsFramework::UndoSystem::UndoStack>(c_undoLimit, undoNotify);
+        m_undoCache = AZStd::make_unique<UndoCache>();
     }
 
     void SceneUndoState::BeginUndoBatch(AZStd::string_view label)

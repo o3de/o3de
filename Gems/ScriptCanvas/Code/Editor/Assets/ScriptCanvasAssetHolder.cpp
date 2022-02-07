@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <LyViewPaneNames.h>
 
@@ -67,7 +67,7 @@ namespace ScriptCanvasEditor
         {
             AssetTrackerNotificationBus::Handler::BusConnect(m_scriptCanvasAsset.GetId());
 
-            Callbacks::OnAssetReadyCallback onAssetReady = [this](ScriptCanvasMemoryAsset& asset)
+            Callbacks::OnAssetReadyCallback onAssetReady = [](ScriptCanvasMemoryAsset& asset)
             {
                 AssetHelpers::DumpAssetInfo(asset.GetFileAssetId(), "ScriptCanvasAssetHolder::Init");
             };
@@ -82,30 +82,6 @@ namespace ScriptCanvasEditor
 
     void ScriptCanvasAssetHolder::OpenEditor() const
     {
-        AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
-
-        AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-
-        if (m_scriptCanvasAsset.IsReady())
-        {
-            GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, m_scriptCanvasAsset.GetId(), -1);
-
-            if (!openOutcome)
-            {
-                AZ_Warning("Script Canvas", openOutcome, "%s", openOutcome.GetError().data());
-            }
-        }
-        else if (m_ownerId.first.IsValid())
-        {
-            AzToolsFramework::EntityIdList selectedEntityIds;
-            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-            // Going to bypass the multiple selected entities flow for right now.
-            if (selectedEntityIds.size() == 1)
-            {
-                GeneralRequestBus::Broadcast(&GeneralRequests::CreateScriptCanvasAssetFor, m_ownerId);
-            }
-        }
     }
 
     ScriptCanvas::ScriptCanvasId ScriptCanvasAssetHolder::GetScriptCanvasId() const

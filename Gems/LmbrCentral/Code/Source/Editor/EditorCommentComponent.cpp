@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LmbrCentral_precompiled.h"
 #include "EditorCommentComponent.h"
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -30,10 +30,10 @@ namespace LmbrCentral
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Editor")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Comment.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Comment.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level", 0x9aeacc13), AZ_CRC("Game", 0x232b318c), AZ_CRC("Layer", 0xe4db211a) }))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/comment/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/editor/comment/")
                     ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorCommentComponent::m_comment,"", "Comment")
                         ->Attribute(AZ_CRC("PlaceholderText", 0xa23ec278), "Add comment text here");
             }

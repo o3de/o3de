@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,9 +38,9 @@ namespace CommandSystem
 
         bool SetCommandParameters(const MCore::CommandLine& parameters);
 
-        void SetMotionID(int32 motionID) { m_motionID = motionID; }
+        void SetMotionID(uint32 motionID) { m_motionID = motionID; }
     protected:
-        int32 m_motionID = 0;
+        uint32 m_motionID = 0;
     };
 
     // Adjust motion command.
@@ -68,33 +69,33 @@ namespace CommandSystem
 
     private:
         AZStd::optional<bool> m_dirtyFlag;
-        bool mOldDirtyFlag;
+        bool m_oldDirtyFlag;
         AZStd::optional<EMotionFX::EMotionExtractionFlags> m_extractionFlags;
-        EMotionFX::EMotionExtractionFlags mOldExtractionFlags;
+        EMotionFX::EMotionExtractionFlags m_oldExtractionFlags;
         AZStd::optional<AZStd::string> m_name;
-        AZStd::string mOldName;
-        AZStd::string mOldMotionExtractionNodeName;
+        AZStd::string m_oldName;
+        AZStd::string m_oldMotionExtractionNodeName;
     };
 
 
     // Remove motion command.
     MCORE_DEFINECOMMAND_START(CommandRemoveMotion, "Remove motion", true)
     public:
-        uint32          mOldMotionID;
-        AZStd::string   mOldFileName;
-        uint32          mOldIndex;
-        bool            mOldWorkspaceDirtyFlag;
+        uint32          m_oldMotionId;
+        AZStd::string   m_oldFileName;
+        size_t          m_oldIndex;
+        bool            m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 
     // Scale motion data.
     MCORE_DEFINECOMMAND_START(CommandScaleMotionData, "Scale motion data", true)
     public:
-        AZStd::string   mOldUnitType;
-        uint32          mMotionID;
-        float           mScaleFactor;
-        bool            mOldDirtyFlag;
-        bool            mUseUnitType;
+        AZStd::string   m_oldUnitType;
+        uint32          m_motionId;
+        float           m_scaleFactor;
+        bool            m_oldDirtyFlag;
+        bool            m_useUnitType;
     MCORE_DEFINECOMMAND_END
 
 
@@ -128,8 +129,8 @@ namespace CommandSystem
 
     // Adjust default playback info command.
     MCORE_DEFINECOMMAND_START(CommandAdjustDefaultPlayBackInfo, "Adjust default playback info", true)
-    EMotionFX::PlayBackInfo mOldPlaybackInfo;
-    bool                    mOldDirtyFlag;
+    EMotionFX::PlayBackInfo m_oldPlaybackInfo;
+    bool                    m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 

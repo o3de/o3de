@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,12 +29,8 @@ namespace AZ
             //! Creates a new pass without a PassTemplate
             static RPI::Ptr<ReflectionScreenSpaceBlurPass> Create(const RPI::PassDescriptor& descriptor);
 
-            //! Returns the frame buffer image attachment used by the ReflectionFrameBufferCopy pass
-            //! to store the previous frame image
-            Data::Instance<RPI::AttachmentImage>& GetFrameBufferImageAttachment() { return m_frameBufferImageAttachment; }
-
-            //! Returns the number of mip levels in the blur
-            uint32_t GetNumBlurMips() const { return m_numBlurMips; }
+            //! The total number of mip levels in the blur (including mip0)
+            static const uint32_t NumMipLevels = 5;
 
         private:
             explicit ReflectionScreenSpaceBlurPass(const RPI::PassDescriptor& descriptor);
@@ -46,9 +43,6 @@ namespace AZ
 
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_verticalBlurChildPasses;
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_horizontalBlurChildPasses;
-
-            Data::Instance<RPI::AttachmentImage> m_frameBufferImageAttachment;
-            uint32_t m_numBlurMips = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -93,7 +94,7 @@ namespace UnitTest
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         VectorType::StoreUnaligned(testStoreValues, result);
 
-        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        for (uint32_t i = 0; i < VectorType::ElementCount; ++i)
         {
             if (i == replaceIndex)
             {
@@ -1413,7 +1414,6 @@ namespace UnitTest
             typename VectorType::Int32Type testVector = VectorType::ConvertToInt(sourceVector);
             VectorType::StoreUnaligned(testStoreValues, testVector);
 
-            int32_t results[4] = { 0, 1, -1, 2 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
                 EXPECT_THAT(testStoreValues[i], testWholeLoadValues[i]);
@@ -1475,7 +1475,6 @@ namespace UnitTest
             typename VectorType::Int32Type testVector = VectorType::ConvertToIntNearest(sourceVector);
             VectorType::StoreUnaligned(testStoreValues, testVector);
 
-            int32_t results[4] = { 0, 1, -1, 2 };
             for (int32_t i = 0; i < VectorType::ElementCount; ++i)
             {
                 EXPECT_THAT(testStoreValues[i], testWholeLoadValues[i]);

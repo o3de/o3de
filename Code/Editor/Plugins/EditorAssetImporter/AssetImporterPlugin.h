@@ -1,8 +1,9 @@
 #pragma once
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,7 +41,7 @@ public:
         return m_editor;
     }
 
-    const string& GetToolName() const
+    const AZStd::string& GetToolName() const
     {
         return m_toolName;
     }
@@ -87,7 +88,7 @@ private:
     IEditor* const m_editor;
 
     // Tool name
-    string m_toolName;
+    AZStd::string m_toolName;
 
     // Context provider for the Asset Browser
     AZ::AssetBrowserContextProvider m_assetBrowserContextProvider;

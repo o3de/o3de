@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -105,7 +106,7 @@ namespace AWSMetrics
         AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
         m_metricsQueue.AddMetrics(metricsEvent);
 
-        if (m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
+        if (m_metricsQueue.GetSizeInBytes() >= static_cast<size_t>(m_clientConfiguration->GetMaxQueueSizeInBytes()))
         {
             // Flush the metrics queue when the accumulated metrics size hits the limit
             m_waitEvent.release();
@@ -255,7 +256,7 @@ namespace AWSMetrics
                 }
 
                 m_globalStats.m_numSuccesses++;
-                m_globalStats.m_sendSizeInBytes += metricsEvent.GetSizeInBytes();
+                m_globalStats.m_sendSizeInBytes += static_cast<uint32_t>(metricsEvent.GetSizeInBytes());
             }
             else
             {
@@ -430,7 +431,7 @@ namespace AWSMetrics
                 AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
                 m_metricsQueue.AddMetrics(offlineRecords[index]);
 
-                if (m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
+                if (m_metricsQueue.GetSizeInBytes() >= static_cast<size_t>(m_clientConfiguration->GetMaxQueueSizeInBytes()))
                 {
                     // Flush the metrics queue when the accumulated metrics size hits the limit
                     m_waitEvent.release();

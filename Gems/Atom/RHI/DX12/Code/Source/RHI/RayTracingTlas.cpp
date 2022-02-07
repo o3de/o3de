@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <RHI/RayTracingTlas.h>
@@ -66,7 +66,7 @@ namespace AZ
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create TLAS instances buffer");
             
                 MemoryView& tlasInstancesMemoryView = static_cast<Buffer*>(buffers.m_tlasInstancesBuffer.get())->GetMemoryView();
-                tlasInstancesMemoryView.SetName("TLAS Instance");
+                tlasInstancesMemoryView.SetName(L"TLAS Instance");
             
                 RHI::BufferMapResponse mapResponse;
                 resultCode = bufferPools.GetTlasInstancesBufferPool()->MapBuffer(RHI::BufferMapRequest(*buffers.m_tlasInstancesBuffer, 0, instanceDescsSizeInBytes), mapResponse);
@@ -130,7 +130,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create TLAS scratch buffer");
             
             MemoryView& scratchMemoryView = static_cast<Buffer*>(buffers.m_scratchBuffer.get())->GetMemoryView();
-            scratchMemoryView.SetName("TLAS Scratch");
+            scratchMemoryView.SetName(L"TLAS Scratch");
             
             // create TLAS buffer
             buffers.m_tlasBuffer = RHI::Factory::Get().CreateBuffer();
@@ -145,7 +145,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create TLAS buffer");
             
             MemoryView& tlasMemoryView = static_cast<Buffer*>(buffers.m_tlasBuffer.get())->GetMemoryView();
-            tlasMemoryView.SetName("TLAS");
+            tlasMemoryView.SetName(L"TLAS");
 #endif
             return RHI::ResultCode::Success;
         }

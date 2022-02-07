@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,7 +49,7 @@ namespace AWSCore
     {
         m_fileFields.emplace_back(FileField{ std::move(fieldName), std::move(fileName) , AZStd::vector<char>{} });
         m_fileFields.back().m_fileData.reserve(length);
-        m_fileFields.back().m_fileData.assign((const char*)bytes, (const char*)bytes + length);
+        m_fileFields.back().m_fileData.assign(static_cast<const char*>(bytes), static_cast<const char*>(bytes) + length);
     }
 
     void MultipartFormData::SetCustomBoundary(AZStd::string boundary)

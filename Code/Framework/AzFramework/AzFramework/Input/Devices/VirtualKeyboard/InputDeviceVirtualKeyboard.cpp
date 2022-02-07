@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,17 +22,6 @@ namespace AzFramework
     {
         return (inputDeviceId.GetNameCrc32() == Id.GetNameCrc32());
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceVirtualKeyboard::Command::EditEnter("virtual_keyboard_edit_enter");
-    const InputChannelId InputDeviceVirtualKeyboard::Command::EditClear("virtual_keyboard_edit_clear");
-    const InputChannelId InputDeviceVirtualKeyboard::Command::NavigationBack("virtual_keyboard_navigation_back");
-    const AZStd::array<InputChannelId, 3> InputDeviceVirtualKeyboard::Command::All =
-    {{
-        EditClear,
-        EditEnter,
-        NavigationBack
-    }};
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceVirtualKeyboard::Reflect(AZ::ReflectContext* context)

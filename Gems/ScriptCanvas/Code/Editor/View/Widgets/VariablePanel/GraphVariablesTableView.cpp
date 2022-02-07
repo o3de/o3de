@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <precompiled.h>
 
 #include <qaction.h>
 #include <qapplication.h>
@@ -411,10 +411,7 @@ namespace ScriptCanvasEditor
 
         case Qt::TextAlignmentRole:
         {
-            if (index.column() == ColumnIndex::Type)
-            {
-                return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-            }
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
         break;
 
@@ -719,10 +716,7 @@ namespace ScriptCanvasEditor
     void GraphVariablesModel::SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
         ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusDisconnect();
-
-        m_assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::GraphRequestBus::EventResult(m_assetType, scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
-
+        m_assetType = azrtti_typeid<ScriptCanvasAsset>();
         m_scriptCanvasId = scriptCanvasId;
 
         if (m_scriptCanvasId.IsValid())
@@ -878,6 +872,11 @@ namespace ScriptCanvasEditor
         if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         {
             return tr(m_columnNames[section]);
+        }
+
+        if (role == Qt::TextAlignmentRole)
+        {
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
 
         return QAbstractItemModel::headerData(section, orientation, role);

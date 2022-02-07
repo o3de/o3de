@@ -1,0 +1,13 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/Skin.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "wrinkleLayers": {
+            "count": 3,
+            "enable": true,
+            "showBlendValues": true
+        }
+    }
+}

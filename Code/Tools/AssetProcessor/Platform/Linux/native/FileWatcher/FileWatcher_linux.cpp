@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,7 +32,8 @@ struct FolderRootWatch::PlatformImplementation
     {
         if (m_iNotifyHandle < 0)
         {
-            m_iNotifyHandle = inotify_init();
+            // The CLOEXEC flag prevents the inotify watchers from copying on fork/exec
+            m_iNotifyHandle = inotify_init1(IN_CLOEXEC);
         }
         return (m_iNotifyHandle >= 0);
     }
@@ -71,7 +73,7 @@ struct FolderRootWatch::PlatformImplementation
             // Add the folder to watch and track it
             int watchHandle = inotify_add_watch(m_iNotifyHandle, 
                                                 cleanPath.toUtf8().constData(),
-                                                IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY);
+                                                IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
             
             if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
             {
@@ -94,7 +96,7 @@ struct FolderRootWatch::PlatformImplementation
                 
                 int watchHandle = inotify_add_watch(m_iNotifyHandle, 
                                                     dirName.toUtf8().constData(),
-                                                    IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY);
+                                                    IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
 
                 if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
                 {
@@ -191,7 +193,6 @@ void FolderRootWatch::WatchFolderLoop()
             for (size_t index=0; index<bytesRead;)
             {
                 struct inotify_event *event = ( struct inotify_event * ) &eventBuffer[ index ];
-                const char* eventName = event->name;
 
                 if (event->mask & (IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVE ))
                 {

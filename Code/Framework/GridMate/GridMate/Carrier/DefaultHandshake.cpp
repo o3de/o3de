@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -97,7 +98,7 @@ DefaultHandshake::OnConfirmAck(ConnectionID id, ReadBuffer& rb)
 // [11/5/2010]
 //=========================================================================
 bool
-DefaultHandshake::OnNewConnection(const string& address)
+DefaultHandshake::OnNewConnection(const AZStd::string& address)
 {
     (void)address;
     return true; /// We don't have a ban list yet

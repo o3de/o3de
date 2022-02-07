@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,7 +19,7 @@ MCORE_INLINE TCompressedFloat<StorageType>::TCompressedFloat(float value, float 
 {
     // TODO: make sure due to rounding/floating point errors the result is not negative?
     const StorageType f = (1.0f / (maxValue - minValue)) * CONVERT_VALUE;
-    mValue = (value - minValue) * f;
+    m_value = (value - minValue) * f;
 }
 
 
@@ -26,7 +27,7 @@ MCORE_INLINE TCompressedFloat<StorageType>::TCompressedFloat(float value, float 
 template <class StorageType>
 MCORE_INLINE TCompressedFloat<StorageType>::TCompressedFloat(StorageType value)
 {
-    mValue = value;
+    m_value = value;
 }
 
 
@@ -36,7 +37,7 @@ MCORE_INLINE void TCompressedFloat<StorageType>::FromFloat(float value, float mi
 {
     // TODO: make sure due to rounding/floating point errors the result is not negative?
     const StorageType f = (StorageType)(1.0f / (maxValue - minValue)) * CONVERT_VALUE;
-    mValue = (StorageType)((value - minValue) * f);
+    m_value = (StorageType)((value - minValue) * f);
 }
 
 
@@ -46,7 +47,7 @@ MCORE_INLINE void TCompressedFloat<StorageType>::UnCompress(float* output, float
 {
     // unpack and normalize
     const float f = (1.0f / (float)CONVERT_VALUE) * (maxValue - minValue);
-    *output = ((float)mValue * f) + minValue;
+    *output = ((float)m_value * f) + minValue;
 }
 
 
@@ -55,5 +56,5 @@ template <class StorageType>
 MCORE_INLINE float TCompressedFloat<StorageType>::ToFloat(float minValue, float maxValue) const
 {
     const float f = (1.0f / (float)CONVERT_VALUE) * (maxValue - minValue);
-    return ((mValue * f) + minValue);
+    return ((m_value * f) + minValue);
 }

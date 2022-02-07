@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -8,6 +9,9 @@
 set(FILES
     Source/ScriptEventsSystemComponent.h
     Source/ScriptEventsSystemComponent.cpp
+    Source/ScriptEventParameter.cpp
+    Source/ScriptEventsMethod.cpp
+    Source/ScriptEventsAssetRef.cpp
     Include/ScriptEvents/ScriptEventsGem.h
     Include/ScriptEvents/ScriptEventsAsset.h
     Include/ScriptEvents/ScriptEventsAsset.cpp
@@ -19,7 +23,7 @@ set(FILES
     Include/ScriptEvents/ScriptEventDefinition.h
     Include/ScriptEvents/ScriptEventDefinition.cpp
     Include/ScriptEvents/ScriptEvent.h
-    Include/ScriptEvents/ScriptEventMethod.h
+    Include/ScriptEvents/ScriptEventsMethod.h
     Include/ScriptEvents/ScriptEvent.cpp
     Include/ScriptEvents/ScriptEventParameter.h
     Include/ScriptEvents/ScriptEventSystem.h
@@ -38,6 +42,4 @@ set(FILES
     Include/ScriptEvents/Internal/BehaviorContextBinding/ScriptEventsBindingBus.h
     Include/ScriptEvents/Internal/BehaviorContextBinding/ScriptEventBinding.h
     Include/ScriptEvents/Internal/BehaviorContextBinding/ScriptEventBinding.cpp
-    Include/ScriptEvents/Components/ScriptEventReferencesComponent.h
-    Include/ScriptEvents/Components/ScriptEventReferencesComponent.cpp
 )

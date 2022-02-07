@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,8 +70,8 @@ public:                                                                  \
         AnimGraphObjectData(AnimGraphObject* object, AnimGraphInstance* animGraphInstance);
         virtual ~AnimGraphObjectData();
 
-        MCORE_INLINE AnimGraphObject* GetObject() const                { return mObject; }
-        void SetObject(AnimGraphObject* object)                        { mObject = object; }
+        MCORE_INLINE AnimGraphObject* GetObject() const                { return m_object; }
+        void SetObject(AnimGraphObject* object)                        { m_object = object; }
 
         // save and return number of bytes written, when outputBuffer is nullptr only return num bytes it would write
         virtual uint32 Save(uint8* outputBuffer) const;
@@ -90,33 +91,33 @@ public:                                                                  \
         bool IsInvalidated() const { return m_invalidated; }
         void Validate() { m_invalidated = false; }
 
-        MCORE_INLINE uint8 GetObjectFlags() const                       { return mObjectFlags; }
-        MCORE_INLINE void SetObjectFlags(uint8 flags)                   { mObjectFlags = flags; }
-        MCORE_INLINE void EnableObjectFlags(uint8 flagsToEnable)        { mObjectFlags |= flagsToEnable; }
-        MCORE_INLINE void DisableObjectFlags(uint8 flagsToDisable)      { mObjectFlags &= ~flagsToDisable; }
+        MCORE_INLINE uint8 GetObjectFlags() const                       { return m_objectFlags; }
+        MCORE_INLINE void SetObjectFlags(uint8 flags)                   { m_objectFlags = flags; }
+        MCORE_INLINE void EnableObjectFlags(uint8 flagsToEnable)        { m_objectFlags |= flagsToEnable; }
+        MCORE_INLINE void DisableObjectFlags(uint8 flagsToDisable)      { m_objectFlags &= ~flagsToDisable; }
         MCORE_INLINE void SetObjectFlags(uint8 flags, bool enabled)
         {
             if (enabled)
             {
-                mObjectFlags |= flags;
+                m_objectFlags |= flags;
             }
             else
             {
-                mObjectFlags &= ~flags;
+                m_objectFlags &= ~flags;
             }
         }
-        MCORE_INLINE bool GetIsObjectFlagEnabled(uint8 flag) const      { return (mObjectFlags & flag) != 0; }
+        MCORE_INLINE bool GetIsObjectFlagEnabled(uint8 flag) const      { return (m_objectFlags & flag) != 0; }
 
-        MCORE_INLINE bool GetHasError() const                           { return (mObjectFlags & FLAGS_HAS_ERROR); }
+        MCORE_INLINE bool GetHasError() const                           { return (m_objectFlags & FLAGS_HAS_ERROR); }
         MCORE_INLINE void SetHasError(bool hasError)                    { SetObjectFlags(FLAGS_HAS_ERROR, hasError); }
 
-        AnimGraphInstance* GetAnimGraphInstance() { return mAnimGraphInstance; }
-        const AnimGraphInstance* GetAnimGraphInstance() const { return mAnimGraphInstance; }
+        AnimGraphInstance* GetAnimGraphInstance() { return m_animGraphInstance; }
+        const AnimGraphInstance* GetAnimGraphInstance() const { return m_animGraphInstance; }
 
     protected:
-        AnimGraphObject*    mObject;               /**< Pointer to the object where this data belongs to. */
-        AnimGraphInstance*  mAnimGraphInstance;    /**< The animgraph instance where this unique data belongs to. */
-        uint8               mObjectFlags;
+        AnimGraphObject*    m_object;               /**< Pointer to the object where this data belongs to. */
+        AnimGraphInstance*  m_animGraphInstance;    /**< The animgraph instance where this unique data belongs to. */
+        uint8               m_objectFlags;
         bool m_invalidated = true;
     };
 

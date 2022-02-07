@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,6 +18,7 @@
 #include "SandboxAPI.h"
 #include <Cry_Color.h>
 #include <Cry_Geo.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <QColor>
 
@@ -30,6 +32,7 @@ struct IRenderAuxGeom;
 struct IIconManager;
 class CDisplaySettings;
 class CCamera;
+class QPoint;
 
 enum DisplayFlags
 {
@@ -61,7 +64,6 @@ struct SANDBOX_API DisplayContext
 
     CDisplaySettings* settings;
     IDisplayViewport* view;
-    IRenderer* renderer;
     IRenderAuxGeom* pRenderAuxGeom;
     IIconManager* pIconManager;
     CCamera*    camera;
@@ -81,12 +83,12 @@ struct SANDBOX_API DisplayContext
     // Draw functions
     //////////////////////////////////////////////////////////////////////////
     //! Set current materialc color.
-    void SetColor(float r, float g, float b, float a = 1) { m_color4b = ColorB(int(r * 255.0f), int(g * 255.0f), int(b * 255.0f), int(a * 255.0f)); };
-    void SetColor(const Vec3& color, float a = 1) { m_color4b = ColorB(int(color.x * 255.0f), int(color.y * 255.0f), int(color.z * 255.0f), int(a * 255.0f)); };
-    void SetColor(const QColor& rgb, float a) { m_color4b = ColorB(rgb.red(), rgb.green(), rgb.blue(), int(a * 255.0f)); };
-    void SetColor(const QColor& color) { m_color4b = ColorB(color.red(), color.green(), color.blue(), color.alpha()); };
+    void SetColor(float r, float g, float b, float a = 1) { m_color4b = ColorB(static_cast<uint8>(r * 255.0f), static_cast<uint8>(g * 255.0f), static_cast<uint8>(b * 255.0f), static_cast<uint8>(a * 255.0f)); };
+    void SetColor(const Vec3& color, float a = 1) { m_color4b = ColorB(static_cast<uint8>(color.x * 255.0f), static_cast<uint8>(color.y * 255.0f), static_cast<uint8>(color.z * 255.0f), static_cast<uint8>(a * 255.0f)); };
+    void SetColor(const QColor& rgb, float a) { m_color4b = ColorB(static_cast<uint8>(rgb.red()), static_cast<uint8>(rgb.green()), static_cast<uint8>(rgb.blue()), static_cast<uint8>(a * 255.0f)); };
+    void SetColor(const QColor& color) { m_color4b = ColorB(static_cast<uint8>(color.red()), static_cast<uint8>(color.green()), static_cast<uint8>(color.blue()), static_cast<uint8>(color.alpha())); };
     void SetColor(const ColorB& color) { m_color4b = color; };
-    void SetAlpha(float a = 1) { m_color4b.a = int(a * 255.0f); };
+    void SetAlpha(float a = 1) { m_color4b.a = static_cast<uint8>(a * 255.0f); };
     ColorB GetColor() const { return m_color4b; }
 
     void SetSelectedColor(float fAlpha = 1);

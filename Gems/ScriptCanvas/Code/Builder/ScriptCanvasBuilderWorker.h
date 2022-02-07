@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,12 +37,12 @@ namespace ScriptCanvasEditor
 {
     class Graph;
     class ScriptCanvasAsset;
+    class SourceHandle;
 }
 
 namespace ScriptCanvasBuilder
 {
     constexpr const char* s_scriptCanvasBuilder = "ScriptCanvasBuilder";
-    constexpr const char* s_scriptCanvasCopyJobKey = "Script Canvas Copy Job";
     constexpr const char* s_scriptCanvasProcessJobKey = "Script Canvas Process Job";
     constexpr const char* s_unitTestParseErrorPrefix = "LY_SC_UnitTest";
 
@@ -57,6 +58,9 @@ namespace ScriptCanvasBuilder
         AddAssetDependencySearch,
         PrefabIntegration,
         CorrectGraphVariableVersion,
+        ReflectEntityIdNodes,
+        FixExecutionStateNodeableConstruction,
+
         // add new entries above
         Current,
     };
@@ -67,7 +71,6 @@ namespace ScriptCanvasBuilder
 
     struct AssetHandlers
     {
-        AZ::Data::AssetHandler* m_editorAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_editorFunctionAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
@@ -78,7 +81,6 @@ namespace ScriptCanvasBuilder
 
     struct SharedHandlers
     {
-        HandlerOwnership m_editorAssetHandler{};
         HandlerOwnership m_editorFunctionAssetHandler{};
         HandlerOwnership m_runtimeAssetHandler{};
         HandlerOwnership m_subgraphInterfaceHandler{};
@@ -120,13 +122,13 @@ namespace ScriptCanvasBuilder
         }
     };
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& asset);
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const ScriptCanvasEditor::SourceHandle& asset);
 
     AZ::Outcome<ScriptCanvas::GraphData, AZStd::string> CompileGraphData(AZ::Entity* scriptCanvasEntity);
 
     AZ::Outcome<ScriptCanvas::VariableData, AZStd::string> CompileVariableData(AZ::Entity* scriptCanvasEntity);
 
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(AZ::Entity* buildEntity, AZ::Data::AssetId scriptAssetId, AZStd::string_view rawLuaFilePath);
+    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const ScriptCanvasEditor::SourceHandle& editAsset, AZStd::string_view rawLuaFilePath);
 
     int GetBuilderVersion();
 
@@ -167,7 +169,6 @@ namespace ScriptCanvasBuilder
         void ShutDown() override {};
 
     private:
-        AZ::Data::AssetHandler* m_editorAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
 

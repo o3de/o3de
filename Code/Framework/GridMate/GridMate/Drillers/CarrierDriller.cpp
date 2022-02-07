@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -63,7 +64,7 @@ namespace GridMate
         // OnUpdateStatistics
         // [4/14/2011]
         //=========================================================================
-        void CarrierDriller::OnUpdateStatistics(const GridMate::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime)
+        void CarrierDriller::OnUpdateStatistics(const AZStd::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime)
         {
             m_output->BeginTag(m_drillerTag);
             m_output->BeginTag(AZ_CRC("Statistics", 0xe2d38b22));

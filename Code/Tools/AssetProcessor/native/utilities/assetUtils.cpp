@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,9 +57,6 @@
 
 #include <sstream>
 
-// windows headers bring in a macro which conflicts GetCommandLine
-#undef GetCommandLine
-
 namespace AssetUtilsInternal
 {
     static const unsigned int g_RetryWaitInterval = 250; // The amount of time that we are waiting for retry.
@@ -71,11 +69,6 @@ namespace AssetUtilsInternal
 
     bool FileCopyMoveWithTimeout(QString sourceFile, QString outputFile, bool isCopy, unsigned int waitTimeInSeconds)
     {
-        if (waitTimeInSeconds < 0)
-        {
-            AZ_Warning("Asset Processor", waitTimeInSeconds >= 0, "Invalid timeout specified by the user");
-            waitTimeInSeconds = 0;
-        }
         bool failureOccurredOnce = false; // used for logging.
         bool operationSucceeded = false;
         QFile outFile(outputFile);
@@ -171,7 +164,10 @@ namespace AssetUtilsInternal
 
         AZ::SettingsRegistryMergeUtils::DumperSettings apDumperSettings;
         apDumperSettings.m_prettifyOutput = true;
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         apDumperSettings.m_includeFilter = [&AssetProcessorUserSettingsRootKey](AZStd::string_view path)
+        AZ_POP_DISABLE_WARNING
         {
             // The AssetUtils only updates the following keys in the registry
             // Dump them all out to the setreg file
@@ -1025,7 +1021,7 @@ namespace AssetUtilities
 
     AZStd::string ComputeJobLogFileName(const AzToolsFramework::AssetSystem::JobInfo& jobInfo)
     {
-        return AZStd::string::format("%s-%u-%" PRIu64 ".log", jobInfo.m_sourceFile.c_str(), jobInfo.GetHash(), static_cast<uint64_t>(jobInfo.m_jobRunKey));
+        return AZStd::string::format("%s-%u-%llu.log", jobInfo.m_sourceFile.c_str(), jobInfo.GetHash(), jobInfo.m_jobRunKey);
     }
 
     AZStd::string ComputeJobLogFileName(const AssetBuilderSDK::CreateJobsRequest& createJobsRequest)
@@ -1165,7 +1161,7 @@ namespace AssetUtilities
     {
 #ifndef AZ_TESTS_ENABLED
         // Only used for unit tests, speed is critical for GetFileHash.
-        AZ_UNUSED(hashMsDelay);
+        hashMsDelay = 0;
 #endif
         bool useFileHashing = ShouldUseFileHashing();
 
@@ -1174,10 +1170,10 @@ namespace AssetUtilities
             return 0;
         }
 
+        AZ::u64 hash = 0;
         if(!force)
         {
             auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
-            AZ::u64 hash = 0;
 
             if (fileStateInterface && fileStateInterface->GetHash(filePath, &hash))
             {
@@ -1185,67 +1181,11 @@ namespace AssetUtilities
             }
         }
 
-        char buffer[FileHashBufferSize];
-
-        constexpr bool ErrorOnReadFailure = true;
-        AZ::IO::FileIOStream readStream(filePath, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, ErrorOnReadFailure);
-
-        if(readStream.IsOpen() && readStream.CanRead())
-        {
-            AZ::IO::SizeType bytesRead;
-
-            auto* state = XXH64_createState();
-
-            if(state == nullptr)
-            {
-                AZ_Assert(false, "Failed to create hash state");
-                return 0;
-            }
-
-            if (XXH64_reset(state, 0) == XXH_ERROR)
-            {
-                AZ_Assert(false, "Failed to reset hash state");
-                return 0;
-            }
-
-            do
-            {
-                // In edge cases where another process is writing to this file while this hashing is occuring and that file wasn't locked,
-                // the following read check can fail because it performs an end of file check, and asserts and shuts down if the read size
-                // was smaller than the buffer and the read is not at the end of the file. The logic used to check end of file internal to read
-                // will be out of date in the edge cases where another process is actively writing to this file while this hash is running.
-                // The stream's length ends up more accurate in this case, preventing this assert and shut down.
-                // One area this occurs is the navigation mesh file (mnmnavmission0.bai) that's temporarily created when exporting a level,
-                // the navigation system can still be writing to this file when hashing begins, causing the EoF marker to change.
-                AZ::IO::SizeType remainingToRead = AZStd::min(readStream.GetLength() - readStream.GetCurPos(), aznumeric_cast<AZ::IO::SizeType>(AZ_ARRAY_SIZE(buffer)));
-                bytesRead = readStream.Read(remainingToRead, buffer);
-
-                if(bytesReadOut)
-                {
-                    *bytesReadOut += bytesRead;
-                }
-
-                XXH64_update(state, buffer, bytesRead);
-#ifdef AZ_TESTS_ENABLED
-                // Used by unit tests to force the race condition mentioned above, to verify the crash fix.
-                if(hashMsDelay > 0)
-                {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(hashMsDelay));
-                }
-#endif
-
-            } while (bytesRead > 0);
-
-            auto hash = XXH64_digest(state);
-
-            XXH64_freeState(state);
-
-            return hash;
-        }
-        return 0;
+        hash = AssetBuilderSDK::GetFileHash(filePath, bytesReadOut, hashMsDelay);
+        return hash;
     }
 
-    std::uint64_t AdjustTimestamp(QDateTime timestamp)
+    AZ::u64 AdjustTimestamp(QDateTime timestamp)
     {
         timestamp = timestamp.toUTC();
 
@@ -1280,7 +1220,7 @@ namespace AssetUtilities
         else
         {
             bool useHash = ShouldUseFileHashing();
-            std::uint64_t fileIdentifier;
+            AZ::u64 fileIdentifier;
             if(useHash)
             {
                 fileIdentifier = GetFileHash(absolutePath.c_str());
@@ -1294,13 +1234,13 @@ namespace AssetUtilities
             // so we add the size of it too.
             // its also possible that it moved to a different file with the same modtime/hash AND size,
             // but with a different name.  So we add that too.
-            return AZStd::string::format("%" PRIX64 ":%" PRIu64 ":%s", fileIdentifier, aznumeric_cast<uint64_t>(fileStateInfo.m_fileSize), nameToUse.c_str());
+            return AZStd::string::format("%llX:%llu:%s", fileIdentifier, fileStateInfo.m_fileSize, nameToUse.c_str());
         }
     }
 
     AZStd::string ComputeJobLogFileName(const AssetProcessor::JobEntry& jobEntry)
     {
-        return AZStd::string::format("%s-%u-%" PRIu64 ".log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), static_cast<uint64_t>(jobEntry.m_jobRunKey));
+        return AZStd::string::format("%s-%u-%llu.log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
     }
 
     bool CreateTempRootFolder(QString startFolder, QDir& tempRoot)
@@ -1403,7 +1343,6 @@ namespace AssetUtilities
         QString inputName;
         QString platformName;
         QString jobDescription;
-        AZ::Uuid guid = AZ::Uuid::CreateNull();
 
         using namespace AzToolsFramework::AssetDatabase;
 

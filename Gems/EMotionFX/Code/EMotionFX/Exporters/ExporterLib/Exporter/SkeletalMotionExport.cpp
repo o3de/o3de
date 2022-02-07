@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,9 +26,9 @@ namespace ExporterLib
         EMotionFX::MotionData::SaveSettings saveSettings;
         saveSettings.m_targetEndianType = targetEndianType;
         EMotionFX::FileFormat::FileChunk chunkHeader;
-        chunkHeader.mChunkID = EMotionFX::FileFormat::MOTION_CHUNK_MOTIONDATA;
-        chunkHeader.mVersion = 1;
-        chunkHeader.mSizeInBytes = static_cast<AZ::u32>(
+        chunkHeader.m_chunkId = EMotionFX::FileFormat::MOTION_CHUNK_MOTIONDATA;
+        chunkHeader.m_version = 1;
+        chunkHeader.m_sizeInBytes = static_cast<AZ::u32>(
             sizeof(EMotionFX::FileFormat::Motion_MotionData) +
             ExporterLib::GetAzStringChunkSize(uuidString) +
             ExporterLib::GetAzStringChunkSize(nameString) +

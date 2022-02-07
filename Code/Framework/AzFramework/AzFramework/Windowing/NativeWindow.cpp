@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,17 @@
 #include <AzFramework/Windowing/NativeWindow.h>
 
 #include <AzCore/Console/IConsole.h>
+
+void OnVsyncIntervalChanged(uint32_t const& interval)
+{
+    AzFramework::WindowNotificationBus::Broadcast(
+        &AzFramework::WindowNotificationBus::Events::OnVsyncIntervalChanged, AZ::GetClamp(interval, 0u, 4u));
+}
+
+// NOTE: On change, broadcasts the new requested vsync interval to all windows.
+// The value of the vsync interval is constrained between 0 and 4
+// Vsync intervals greater than 1 are not currently supported on the Vulkan RHI (see #2061 for discussion)
+AZ_CVAR(uint32_t, vsync_interval, 1, OnVsyncIntervalChanged, AZ::ConsoleFunctorFlags::Null, "Set swapchain vsync interval");
 
 namespace AzFramework
 {
@@ -119,6 +131,16 @@ namespace AzFramework
     float NativeWindow::GetDpiScaleFactor() const
     {
         return m_pimpl->GetDpiScaleFactor();
+    }
+
+    uint32_t NativeWindow::GetDisplayRefreshRate() const
+    {
+        return m_pimpl->GetDisplayRefreshRate();
+    }
+
+    uint32_t NativeWindow::GetSyncInterval() const
+    {
+        return vsync_interval;
     }
 
     /*static*/ bool NativeWindow::GetFullScreenStateOfDefaultWindow()
@@ -237,6 +259,12 @@ namespace AzFramework
     {
         // For platforms that aren't DPI-aware, we simply return a 1.0 ratio for no scaling
         return 1.0f;
+    }
+
+    uint32_t NativeWindow::Implementation::GetDisplayRefreshRate() const
+    {
+        // Default to 60
+        return 60;
     }
 
 } // namespace AzFramework

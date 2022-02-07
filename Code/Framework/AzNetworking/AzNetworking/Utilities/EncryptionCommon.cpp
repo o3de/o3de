@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,7 +25,7 @@
 
 #if defined(OPENSSL_THREADS)
 //  thread support enabled
-#else
+#elif AZ_TRAIT_USE_OPENSSL
 #   error OpenSSL threading support is not enabled
 #endif
 
@@ -106,7 +107,7 @@ namespace AzNetworking
         if (AZ::IO::FileIOBase::GetInstance() != nullptr)
         {
             char buffer[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@assets@/", buffer, sizeof(buffer));
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@products@/", buffer, sizeof(buffer));
             assetDir = AZStd::string(buffer);
         }
 
@@ -472,7 +473,7 @@ namespace AzNetworking
         {
             const AZ::CVarFixedString contextPassword = (trustZone == TrustZone::ExternalClientToServer) ? net_SslExternalContextPassword : net_SslInternalContextPassword;
 
-            SSL_CTX_set_default_passwd_cb(context, NULL);
+            SSL_CTX_set_default_passwd_cb(context, nullptr);
             SSL_CTX_set_default_passwd_cb_userdata(context, (void*)contextPassword.c_str());
 
             if (SSL_CTX_use_PrivateKey_file(context, privateKeyPath.c_str(), SSL_FILETYPE_PEM) != OpenSslResultSuccess)

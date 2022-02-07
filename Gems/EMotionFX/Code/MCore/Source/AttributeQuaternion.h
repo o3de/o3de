@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,15 +38,15 @@ namespace MCore
         static AttributeQuaternion* Create(float x, float y, float z, float w);
         static AttributeQuaternion* Create(const AZ::Quaternion& value);
 
-        MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&mValue); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return sizeof(AZ::Quaternion); }
+        MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&m_value); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return sizeof(AZ::Quaternion); }
 
         // adjust values
-        MCORE_INLINE const AZ::Quaternion& GetValue() const             { return mValue; }
-        MCORE_INLINE void SetValue(const AZ::Quaternion& value)         { mValue = value; }
+        MCORE_INLINE const AZ::Quaternion& GetValue() const             { return m_value; }
+        MCORE_INLINE void SetValue(const AZ::Quaternion& value)         { m_value = value; }
 
         // overloaded from the attribute base class
-        Attribute* Clone() const override                           { return AttributeQuaternion::Create(mValue); }
+        Attribute* Clone() const override                           { return AttributeQuaternion::Create(m_value); }
         const char* GetTypeString() const override                  { return "AttributeQuaternion"; }
         bool InitFrom(const Attribute* other) override
         {
@@ -53,7 +54,7 @@ namespace MCore
             {
                 return false;
             }
-            mValue = static_cast<const AttributeQuaternion*>(other)->GetValue();
+            m_value = static_cast<const AttributeQuaternion*>(other)->GetValue();
             return true;
         }
         bool InitFromString(const AZStd::string& valueString) override
@@ -63,44 +64,23 @@ namespace MCore
             {
                 return false;
             }
-            mValue.Set(vec4.GetX(), vec4.GetY(), vec4.GetZ(), vec4.GetW());
+            m_value.Set(vec4.GetX(), vec4.GetY(), vec4.GetZ(), vec4.GetW());
             return true;
         }
-        bool ConvertToString(AZStd::string& outString) const override      { AZStd::to_string(outString, mValue); return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeQuaternion); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_DEFAULT; }
+        bool ConvertToString(AZStd::string& outString) const override      { AZStd::to_string(outString, m_value); return true; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeQuaternion); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_DEFAULT; }
 
     private:
-        AZ::Quaternion  mValue;     /**< The Quaternion value. */
+        AZ::Quaternion  m_value;     /**< The Quaternion value. */
 
         AttributeQuaternion()
             : Attribute(TYPE_ID)
-            , mValue(AZ::Quaternion::CreateIdentity())
+            , m_value(AZ::Quaternion::CreateIdentity())
         {}
         AttributeQuaternion(const AZ::Quaternion& value)
             : Attribute(TYPE_ID)
-            , mValue(value) {}
+            , m_value(value) {}
         ~AttributeQuaternion() { }
-
-        uint32 GetDataSize() const override                         { return sizeof(AZ::Quaternion); }
-
-        // read from a stream
-        bool ReadData(MCore::Stream* stream, MCore::Endian::EEndianType streamEndianType, uint8 version) override
-        {
-            MCORE_UNUSED(version);
-
-            // read the value
-            AZ::Quaternion streamValue;
-            if (stream->Read(&streamValue, sizeof(AZ::Quaternion)) == 0)
-            {
-                return false;
-            }
-
-            // convert endian
-            Endian::ConvertQuaternion(&streamValue, streamEndianType);
-            mValue = streamValue;
-            return true;
-        }
-
     };
 }   // namespace MCore

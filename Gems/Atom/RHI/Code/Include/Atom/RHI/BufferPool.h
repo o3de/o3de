@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -221,6 +222,9 @@ namespace AZ
 
             /// Called when a buffer is being streamed asynchronously.
             virtual ResultCode StreamBufferInternal(const BufferStreamRequest& request);
+
+            //Called in order to do a simple mem copy allowing Null rhi to opt out
+            virtual void BufferCopy(void* destination, const void* source, size_t num);
 
             //////////////////////////////////////////////////////////////////////////
 

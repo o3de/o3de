@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -104,7 +105,7 @@ public:
     bool IsEmpty() const;
 
     //! Get number of contained error records.
-    int GetErrorCount() const { return m_errors.size(); };
+    int GetErrorCount() const { return static_cast<int>(m_errors.size()); };
     //! Get access to indexed error record.
     CErrorRecord& GetError(int i);
     //! Clear all error records.
@@ -119,11 +120,6 @@ public:
     void SetCurrentValidatorItem(CBaseLibraryItem* pItem);
     //! Assign current filename.
     void SetCurrentFile(const QString& file);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Implement IValidator interface.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void Report(SValidatorRecord& record);
 
 private:
     //! Array of all error records added to report.

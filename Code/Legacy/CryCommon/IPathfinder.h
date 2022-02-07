@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,13 +15,15 @@ struct IAIPathAgent;
 
 #include <INavigationSystem.h>
 #include <IMNM.h>
-#include <ISerialize.h>
 #include <SerializeFwd.h>
 #include <Cry_Geo.h>
+#include <LegacyAllocator.h>
 
 #include <AzCore/std/functional.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <limits>
+#include <list>
 
 // Hacks to deal with windows header inclusion.
 #ifdef GetObject
@@ -130,8 +133,7 @@ struct NavigationBlocker
     Location location;
 };
 
-typedef DynArray<NavigationBlocker> NavigationBlockers;
-
+using NavigationBlockers = AZStd::vector<NavigationBlocker, AZ::StdLegacyAllocator>;
 
 //====================================================================
 // PathPointDescriptor
@@ -239,8 +241,7 @@ struct PathfindingExtraConstraint
     UConstraint constraint;
 };
 
-typedef DynArray<PathfindingExtraConstraint> PathfindingExtraConstraints;
-
+using PathfindingExtraConstraints = AZStd::vector<PathfindingExtraConstraint, AZ::StdLegacyAllocator>;
 
 struct PathfindRequest
 {
@@ -556,26 +557,6 @@ public:
     virtual void Draw(const Vec3& drawOffset = ZERO) const = 0;
     virtual void Dump(const char* name) const = 0;
 
-    bool ArePathsEqual(const INavPath& otherNavPath)
-    {
-        const TPathPoints& path1 = this->GetPath();
-        const TPathPoints& path2 = otherNavPath.GetPath();
-        const TPathPoints::size_type path1Size = path1.size();
-        const TPathPoints::size_type path2Size = path2.size();
-        if (path1Size != path2Size)
-        {
-            return false;
-        }
-
-        TPathPoints::const_iterator path1It = path1.begin();
-        TPathPoints::const_iterator path1End = path1.end();
-        TPathPoints::const_iterator path2It = path2.begin();
-
-        typedef std::pair<TPathPoints::const_iterator, TPathPoints::const_iterator> TMismatchResult;
-
-        TMismatchResult result = std::mismatch(path1It, path1End, path2It, PathPointDescriptor::ArePointsEquivalent);
-        return result.first == path1.end();
-    }
 };
 using INavPathPtr = AZStd::shared_ptr<INavPath>;
 

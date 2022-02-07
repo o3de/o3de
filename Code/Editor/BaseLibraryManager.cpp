@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,7 +26,7 @@ class CUndoBaseLibraryManager
     : public IUndoObject
 {
 public:
-    CUndoBaseLibraryManager(CBaseLibraryManager* pMngr, const QString& description, const QString& modifiedManager = 0)
+    CUndoBaseLibraryManager(CBaseLibraryManager* pMngr, const QString& description, const QString& modifiedManager = nullptr)
         : m_pMngr(pMngr)
         , m_description(description)
         , m_editorObject(modifiedManager)
@@ -34,16 +35,16 @@ public:
         SerializeTo(m_undos);
     }
 
-    virtual QString GetEditorObjectName()
+    QString GetEditorObjectName() override
     {
         return m_editorObject;
     }
 
 protected:
-    virtual int GetSize() { return sizeof(CUndoBaseLibraryManager); }
-    virtual QString GetDescription() { return m_description; };
+    int GetSize() override { return sizeof(CUndoBaseLibraryManager); }
+    QString GetDescription() override { return m_description; };
 
-    virtual void Undo(bool bUndo)
+    void Undo(bool bUndo) override
     {
         if (bUndo)
         {
@@ -54,7 +55,7 @@ protected:
         GetIEditor()->Notify(eNotify_OnDataBaseUpdate);
     }
 
-    virtual void Redo()
+    void Redo() override
     {
         m_pMngr->ClearAll();
         UnserializeFrom(m_redos);
@@ -83,7 +84,7 @@ private:
         for (int i = 0; i < m_pMngr->GetLibraryCount(); i++)
         {
             IDataBaseLibrary* library = m_pMngr->GetLibrary(i);
-            
+
             const char* tag = library->IsLevelLibrary() ? LEVEL_LIBRARY_TAG : LIBRARY_TAG;
             XmlNodeRef node = GetIEditor()->GetSystem()->CreateXmlNode(tag);
             QString file = library->GetFilename().isEmpty() ? library->GetFilename() : library->GetName();
@@ -202,7 +203,7 @@ int CBaseLibraryManager::FindLibraryIndex(const QString& library)
 //////////////////////////////////////////////////////////////////////////
 IDataBaseItem* CBaseLibraryManager::FindItem(REFGUID guid) const
 {
-    CBaseLibraryItem* pMtl = stl::find_in_map(m_itemsGuidMap, guid, (CBaseLibraryItem*)0);
+    CBaseLibraryItem* pMtl = stl::find_in_map(m_itemsGuidMap, guid, nullptr);
     return pMtl;
 }
 
@@ -225,7 +226,7 @@ void CBaseLibraryManager::SplitFullItemName(const QString& fullItemName, QString
 IDataBaseItem* CBaseLibraryManager::FindItemByName(const QString& fullItemName)
 {
     AZStd::lock_guard<AZStd::mutex> lock(m_itemsNameMapMutex);
-    return stl::find_in_map(m_itemsNameMap, fullItemName, 0);
+    return stl::find_in_map(m_itemsNameMap, fullItemName, nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -397,7 +398,7 @@ void CBaseLibraryManager::DeleteLibrary(const QString& library, bool forceDelete
                     UnregisterItem((CBaseLibraryItem*)pLibrary->GetItem(j));
                 }
                 pLibrary->RemoveAllItems();
-                
+
                 if (pLibrary->IsLevelLibrary())
                 {
                     m_pLevelLibrary = nullptr;
@@ -419,7 +420,7 @@ IDataBaseLibrary* CBaseLibraryManager::GetLibrary(int index) const
 //////////////////////////////////////////////////////////////////////////
 IDataBaseLibrary* CBaseLibraryManager::GetLevelLibrary() const
 {
-    IDataBaseLibrary* pLevelLib = NULL;
+    IDataBaseLibrary* pLevelLib = nullptr;
 
     for (int i = 0; i < GetLibraryCount(); i++)
     {
@@ -525,14 +526,14 @@ void CBaseLibraryManager::Serialize(XmlNodeRef& node, bool bLoading)
 QString CBaseLibraryManager::MakeUniqueItemName(const QString& srcName, const QString& libName)
 {
     // unlikely we'll ever encounter more than 16
-    std::vector<string> possibleDuplicates;
+    std::vector<AZStd::string> possibleDuplicates;
     possibleDuplicates.reserve(16);
 
     // search for strings in the database that might have a similar name (ignore case)
     IDataBaseItemEnumerator* pEnum = GetItemEnumerator();
-    for (IDataBaseItem* pItem = pEnum->GetFirst(); pItem != NULL; pItem = pEnum->GetNext())
+    for (IDataBaseItem* pItem = pEnum->GetFirst(); pItem != nullptr; pItem = pEnum->GetNext())
     {
-        //Check if the item is in the target library first. 
+        //Check if the item is in the target library first.
         IDataBaseLibrary* itemLibrary = pItem->GetLibrary();
         QString itemLibraryName;
         if (itemLibrary)
@@ -549,7 +550,7 @@ QString CBaseLibraryManager::MakeUniqueItemName(const QString& srcName, const QS
         const QString& name = pItem->GetName();
         if (name.startsWith(srcName, Qt::CaseInsensitive))
         {
-            possibleDuplicates.push_back(string(name.toUtf8().data()));
+            possibleDuplicates.push_back(AZStd::string(name.toUtf8().data()));
         }
     }
     pEnum->Release();
@@ -559,7 +560,7 @@ QString CBaseLibraryManager::MakeUniqueItemName(const QString& srcName, const QS
         return srcName;
     }
 
-    std::sort(possibleDuplicates.begin(), possibleDuplicates.end(), [](const string& strOne, const string& strTwo)
+    std::sort(possibleDuplicates.begin(), possibleDuplicates.end(), [](const AZStd::string& strOne, const AZStd::string& strTwo)
         {
             // I can assume size sorting since if the length is different, either one of the two strings doesn't
             // closely match the string we are trying to duplicate, or it's a bigger number (X1 vs X10)
@@ -589,7 +590,7 @@ QString CBaseLibraryManager::MakeUniqueItemName(const QString& srcName, const QS
 void CBaseLibraryManager::Validate()
 {
     IDataBaseItemEnumerator* pEnum = GetItemEnumerator();
-    for (IDataBaseItem* pItem = pEnum->GetFirst(); pItem != NULL; pItem = pEnum->GetNext())
+    for (IDataBaseItem* pItem = pEnum->GetFirst(); pItem != nullptr; pItem = pEnum->GetNext())
     {
         pItem->Validate();
     }
@@ -616,7 +617,7 @@ void CBaseLibraryManager::RegisterItem(CBaseLibraryItem* pItem, REFGUID newGuid)
         {
             return;
         }
-        CBaseLibraryItem* pOldItem = stl::find_in_map(m_itemsGuidMap, newGuid, (CBaseLibraryItem*)0);
+        CBaseLibraryItem* pOldItem = stl::find_in_map(m_itemsGuidMap, newGuid, nullptr);
         if (!pOldItem)
         {
             pItem->m_guid = newGuid;
@@ -676,7 +677,7 @@ void CBaseLibraryManager::RegisterItem(CBaseLibraryItem* pItem)
         {
             return;
         }
-        CBaseLibraryItem* pOldItem = stl::find_in_map(m_itemsGuidMap, pItem->GetGUID(), (CBaseLibraryItem*)0);
+        CBaseLibraryItem* pOldItem = stl::find_in_map(m_itemsGuidMap, pItem->GetGUID(), nullptr);
         if (!pOldItem)
         {
             m_itemsGuidMap[pItem->GetGUID()] = pItem;
@@ -788,7 +789,7 @@ QString CBaseLibraryManager::MakeFullItemName(IDataBaseLibrary* pLibrary, const 
 void CBaseLibraryManager::GatherUsedResources(CUsedResources& resources)
 {
     IDataBaseItemEnumerator* pEnum = GetItemEnumerator();
-    for (IDataBaseItem* pItem = pEnum->GetFirst(); pItem != NULL; pItem = pEnum->GetNext())
+    for (IDataBaseItem* pItem = pEnum->GetFirst(); pItem != nullptr; pItem = pEnum->GetNext())
     {
         pItem->GatherUsedResources(resources);
     }
@@ -814,15 +815,15 @@ void CBaseLibraryManager::OnEditorNotifyEvent(EEditorNotifyEvent event)
     switch (event)
     {
     case eNotify_OnBeginNewScene:
-        SetSelectedItem(0);
+        SetSelectedItem(nullptr);
         ClearAll();
         break;
     case eNotify_OnBeginSceneOpen:
-        SetSelectedItem(0);
+        SetSelectedItem(nullptr);
         ClearAll();
         break;
     case eNotify_OnCloseScene:
-        SetSelectedItem(0);
+        SetSelectedItem(nullptr);
         ClearAll();
         break;
     }
@@ -912,7 +913,7 @@ void CBaseLibraryManager::ChangeLibraryOrder(IDataBaseLibrary* lib, unsigned int
     {
         return;
     }
-    
+
     for (int i = 0; i < m_libs.size(); i++)
     {
         if (lib == m_libs[i])

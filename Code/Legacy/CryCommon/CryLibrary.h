@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,7 +49,7 @@
 */
 
 #include <stdio.h>
-#include <AzCore/PlatformDef.h>
+#include <AzCore/PlatformIncl.h>
 #include <AzCore/Module/Environment.h>
 
 #define INJECT_ENVIRONMENT_FUNCTION "InjectEnvironment"
@@ -62,7 +63,6 @@ using DetachEnvironmentFunction = void(*)();
     #if !defined(WIN32_LEAN_AND_MEAN)
         #define WIN32_LEAN_AND_MEAN
     #endif
-    #include <CryWindows.h>
 
     HMODULE CryLoadLibrary(const char* libName);
     
@@ -92,23 +92,21 @@ using DetachEnvironmentFunction = void(*)();
     #define HMODULE void*
 static const char* gEnvName("MODULE_PATH");
 
-static const char* GetModulePath()
+inline const char* GetModulePath()
 {
     return getenv(gEnvName);
 }
 
-static void SetModulePath(const char* pModulePath)
+inline void SetModulePath(const char* pModulePath)
 {
     setenv(gEnvName, pModulePath ? pModulePath : "", true);
 }
 
 // bInModulePath is only ever set to false in RC, because rc needs to load dlls from a $PATH that
 // it has modified to include ..
-static HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInModulePath = true)
+inline HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInModulePath = true)
 {
     const char* libPath = nullptr;
-    char pathBuffer[MAX_PATH] = {0};
-    
     libPath = libName;
 
 #if !defined(AZ_PLATFORM_ANDROID)
@@ -135,6 +133,7 @@ static HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInM
                 }
             #endif
         }
+        char pathBuffer[MAX_PATH] = {0};
         sprintf_s(pathBuffer, "%s/%s", modulePath, libName);
         libPath = pathBuffer;
     }
@@ -161,7 +160,7 @@ static HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInM
     return module;
 }
 
-static bool CryFreeLibrary(void* lib)
+inline bool CryFreeLibrary(void* lib)
 {
     if (lib)
     {

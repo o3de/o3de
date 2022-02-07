@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,12 +29,12 @@ namespace MCore
         MCORE_INLINE Mutex()                {}
         MCORE_INLINE ~Mutex()               {}
 
-        MCORE_INLINE void Lock()            { mMutex.lock(); }
-        MCORE_INLINE void Unlock()          { mMutex.unlock(); }
-        MCORE_INLINE bool TryLock()         { return mMutex.try_lock(); }
+        MCORE_INLINE void Lock()            { m_mutex.lock(); }
+        MCORE_INLINE void Unlock()          { m_mutex.unlock(); }
+        MCORE_INLINE bool TryLock()         { return m_mutex.try_lock(); }
 
     private:
-        AZStd::mutex  mMutex;
+        AZStd::mutex  m_mutex;
     };
 
 
@@ -43,12 +44,12 @@ namespace MCore
         MCORE_INLINE MutexRecursive()       {}
         MCORE_INLINE ~MutexRecursive()      {}
 
-        MCORE_INLINE void Lock()            { mMutex.lock(); }
-        MCORE_INLINE void Unlock()          { mMutex.unlock(); }
-        MCORE_INLINE bool TryLock()         { return mMutex.try_lock(); }
+        MCORE_INLINE void Lock()            { m_mutex.lock(); }
+        MCORE_INLINE void Unlock()          { m_mutex.unlock(); }
+        MCORE_INLINE bool TryLock()         { return m_mutex.try_lock(); }
 
     private:
-        AZStd::recursive_mutex    mMutex;
+        AZStd::recursive_mutex    m_mutex;
     };
 
 
@@ -58,13 +59,13 @@ namespace MCore
         MCORE_INLINE ConditionVariable()    {}
         MCORE_INLINE ~ConditionVariable()   {}
 
-        MCORE_INLINE void Wait(Mutex& mtx, const AZStd::function<bool()>& predicate)              { AZStd::unique_lock<AZStd::mutex> lock(mtx.mMutex); mVariable.wait(lock, predicate); }
-        MCORE_INLINE void WaitWithTimeout(Mutex& mtx, uint32 microseconds, const AZStd::function<bool()>& predicate)  { AZStd::unique_lock<AZStd::mutex> lock(mtx.mMutex); mVariable.wait_for(lock, AZStd::chrono::microseconds(microseconds), predicate); }
-        MCORE_INLINE void NotifyOne()                                                           { mVariable.notify_one(); }
-        MCORE_INLINE void NotifyAll()                                                           { mVariable.notify_all(); }
+        MCORE_INLINE void Wait(Mutex& mtx, const AZStd::function<bool()>& predicate)              { AZStd::unique_lock<AZStd::mutex> lock(mtx.m_mutex); m_variable.wait(lock, predicate); }
+        MCORE_INLINE void WaitWithTimeout(Mutex& mtx, uint32 microseconds, const AZStd::function<bool()>& predicate)  { AZStd::unique_lock<AZStd::mutex> lock(mtx.m_mutex); m_variable.wait_for(lock, AZStd::chrono::microseconds(microseconds), predicate); }
+        MCORE_INLINE void NotifyOne()                                                           { m_variable.notify_one(); }
+        MCORE_INLINE void NotifyAll()                                                           { m_variable.notify_all(); }
 
     private:
-        AZStd::condition_variable mVariable;
+        AZStd::condition_variable m_variable;
     };
 
 
@@ -74,14 +75,14 @@ namespace MCore
         MCORE_INLINE AtomicInt32()                  { SetValue(0); }
         MCORE_INLINE ~AtomicInt32()                 {}
 
-        MCORE_INLINE void SetValue(int32 value)     { mAtomic.store(value); }
-        MCORE_INLINE int32 GetValue() const         { int32 value = mAtomic.load(); return value; }
+        MCORE_INLINE void SetValue(int32 value)     { m_atomic.store(value); }
+        MCORE_INLINE int32 GetValue() const         { int32 value = m_atomic.load(); return value; }
 
-        MCORE_INLINE int32 Increment()              { return mAtomic++; }
-        MCORE_INLINE int32 Decrement()              { return mAtomic--; }
+        MCORE_INLINE int32 Increment()              { return m_atomic++; }
+        MCORE_INLINE int32 Decrement()              { return m_atomic--; }
 
     private:
-        AZStd::atomic<int32>  mAtomic;
+        AZStd::atomic<int32>  m_atomic;
     };
 
 
@@ -92,14 +93,30 @@ namespace MCore
         MCORE_INLINE AtomicUInt32()                 { SetValue(0); }
         MCORE_INLINE ~AtomicUInt32()                {}
 
-        MCORE_INLINE void SetValue(uint32 value)    { mAtomic.store(value); }
-        MCORE_INLINE uint32 GetValue() const        { uint32 value = mAtomic.load(); return value; }
+        MCORE_INLINE void SetValue(uint32 value)    { m_atomic.store(value); }
+        MCORE_INLINE uint32 GetValue() const        { uint32 value = m_atomic.load(); return value; }
 
-        MCORE_INLINE uint32 Increment()             { return mAtomic++; }
-        MCORE_INLINE uint32 Decrement()             { return mAtomic--; }
+        MCORE_INLINE uint32 Increment()             { return m_atomic++; }
+        MCORE_INLINE uint32 Decrement()             { return m_atomic--; }
 
     private:
-        AZStd::atomic<uint32> mAtomic;
+        AZStd::atomic<uint32> m_atomic;
+    };
+
+
+    class MCORE_API AtomicSizeT
+    {
+    public:
+        MCORE_INLINE AtomicSizeT()                  { SetValue(0); }
+
+        MCORE_INLINE void SetValue(size_t value)    { m_atomic.store(value); }
+        MCORE_INLINE size_t GetValue() const        { size_t value = m_atomic.load(); return value; }
+
+        MCORE_INLINE size_t Increment()             { return m_atomic++; }
+        MCORE_INLINE size_t Decrement()             { return m_atomic--; }
+
+    private:
+        AZStd::atomic<size_t> m_atomic;
     };
 
 
@@ -110,58 +127,58 @@ namespace MCore
         Thread(const AZStd::function<void()>& threadFunction)         { Init(threadFunction); }
         ~Thread() {}
 
-        void Init(const AZStd::function<void()>& threadFunction)      { mThread = AZStd::thread(threadFunction); }
-        void Join()         { mThread.join(); }
+        void Init(const AZStd::function<void()>& threadFunction)      { m_thread = AZStd::thread(threadFunction); }
+        void Join()         { m_thread.join(); }
 
     private:
-        AZStd::thread mThread;
+        AZStd::thread m_thread;
     };
 
 
     class MCORE_API LockGuard
     {
     public:
-        MCORE_INLINE LockGuard(Mutex& mutex)        { mMutex = &mutex; mutex.Lock(); }
-        MCORE_INLINE ~LockGuard()                   { mMutex->Unlock(); }
+        MCORE_INLINE LockGuard(Mutex& mutex)        { m_mutex = &mutex; mutex.Lock(); }
+        MCORE_INLINE ~LockGuard()                   { m_mutex->Unlock(); }
 
     private:
-        Mutex*  mMutex;
+        Mutex*  m_mutex;
     };
 
 
     class MCORE_API LockGuardRecursive
     {
     public:
-        MCORE_INLINE LockGuardRecursive(MutexRecursive& mutex)  { mMutex = &mutex; mutex.Lock(); }
-        MCORE_INLINE ~LockGuardRecursive()                      { mMutex->Unlock(); }
+        MCORE_INLINE LockGuardRecursive(MutexRecursive& mutex)  { m_mutex = &mutex; mutex.Lock(); }
+        MCORE_INLINE ~LockGuardRecursive()                      { m_mutex->Unlock(); }
 
     private:
-        MutexRecursive* mMutex;
+        MutexRecursive* m_mutex;
     };
 
 
     class MCORE_API ConditionEvent
     {
     public:
-        ConditionEvent()            { mConditionValue = false; }
+        ConditionEvent()            { m_conditionValue = false; }
         ~ConditionEvent()           { }
 
-        void Reset()                { mConditionValue = false; }
+        void Reset()                { m_conditionValue = false; }
         void Wait()
         {
-            mCV.Wait(mMutex, [this] { return mConditionValue; });
+            m_cv.Wait(m_mutex, [this] { return m_conditionValue; });
         }
         void WaitWithTimeout(uint32 microseconds)
         {
-            mCV.WaitWithTimeout(mMutex, microseconds, [this] { return mConditionValue; });
+            m_cv.WaitWithTimeout(m_mutex, microseconds, [this] { return m_conditionValue; });
         }
-        void NotifyAll() { { LockGuard lockMutex(mMutex); mConditionValue = true; } mCV.NotifyAll(); }
-        void NotifyOne() { { LockGuard lockMutex(mMutex); mConditionValue = true; } mCV.NotifyOne(); }
+        void NotifyAll() { { LockGuard lockMutex(m_mutex); m_conditionValue = true; } m_cv.NotifyAll(); }
+        void NotifyOne() { { LockGuard lockMutex(m_mutex); m_conditionValue = true; } m_cv.NotifyOne(); }
 
     private:
-        Mutex               mMutex;
-        ConditionVariable   mCV;
-        bool                mConditionValue;
+        Mutex               m_mutex;
+        ConditionVariable   m_cv;
+        bool                m_conditionValue;
     };
 
 }   // namespace MCore

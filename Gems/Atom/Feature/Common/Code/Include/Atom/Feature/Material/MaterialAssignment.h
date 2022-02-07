@@ -1,9 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <Atom/Feature/Material/MaterialAssignmentId.h>
@@ -37,13 +39,24 @@ namespace AZ
             //! Otherwise an attempt will be made to find or create a shared instance.
             void RebuildInstance();
 
+            //! Release asset and instance references
+            void Release();
+
+            //! Return true if contained assets have not been loaded
+            bool RequiresLoading() const;
+
+            //! Applies property overrides to material instance
+            bool ApplyProperties();
+
             //! Returns a string composed of the asset path.
             AZStd::string ToString() const;
 
             Data::Asset<RPI::MaterialAsset> m_materialAsset;
+            Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
             Data::Instance<RPI::Material> m_materialInstance;
             MaterialPropertyOverrideMap m_propertyOverrides;
             RPI::MaterialModelUvOverrideMap m_matModUvOverrides;
+            bool m_materialInstancePreCreated = false;
         };
 
         using MaterialAssignmentMap = AZStd::unordered_map<MaterialAssignmentId, MaterialAssignment>;
@@ -61,6 +74,14 @@ namespace AZ
 
         //! Utility function for generating a set of available material assignments in a model
         MaterialAssignmentMap GetMaterialAssignmentsFromModel(Data::Instance<AZ::RPI::Model> model);
+
+        //! Find an assignment id corresponding to the lod and label substring filters
+        MaterialAssignmentId FindMaterialAssignmentIdInModel(
+            const Data::Instance<AZ::RPI::Model>& model, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter);
+
+        //! Special case handling to convert script values to supported types
+        AZ::RPI::MaterialPropertyValue ConvertMaterialPropertyValueFromScript(
+            const AZ::RPI::MaterialPropertyDescriptor* propertyDescriptor, const AZStd::any& value);
 
     } // namespace Render
 } // namespace AZ

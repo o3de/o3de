@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -72,8 +73,8 @@ namespace EMotionFX
     {
         // Plugins have to be created after both the QApplication object and
         // after the SystemComponent
-        const uint32 numPlugins = EMStudio::GetPluginManager()->GetNumPlugins();
-        for (uint32 i = 0; i < numPlugins; ++i)
+        const size_t numPlugins = EMStudio::GetPluginManager()->GetNumPlugins();
+        for (size_t i = 0; i < numPlugins; ++i)
         {
             EMStudio::EMStudioPlugin* plugin = EMStudio::GetPluginManager()->GetPlugin(i);
             EMStudio::GetPluginManager()->CreateWindowOfType(plugin->GetName());

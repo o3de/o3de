@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,32 +24,32 @@ namespace EMStudio
     ParameterSelectionWindow::ParameterSelectionWindow(QWidget* parent, bool useSingleSelection)
         : QDialog(parent)
     {
-        mAccepted = false;
+        m_accepted = false;
         setWindowTitle("Parameter Selection Window");
 
         QVBoxLayout* layout = new QVBoxLayout();
 
-        mParameterWidget = new ParameterWidget(this, useSingleSelection);
+        m_parameterWidget = new ParameterWidget(this, useSingleSelection);
 
         // create the ok and cancel buttons
         QHBoxLayout* buttonLayout = new QHBoxLayout();
-        mOKButton       = new QPushButton("OK");
-        mCancelButton   = new QPushButton("Cancel");
-        buttonLayout->addWidget(mOKButton);
-        buttonLayout->addWidget(mCancelButton);
+        m_okButton       = new QPushButton("OK");
+        m_cancelButton   = new QPushButton("Cancel");
+        buttonLayout->addWidget(m_okButton);
+        buttonLayout->addWidget(m_cancelButton);
 
-        layout->addWidget(mParameterWidget);
+        layout->addWidget(m_parameterWidget);
         layout->addLayout(buttonLayout);
         setLayout(layout);
 
-        connect(mOKButton, &QPushButton::clicked, this, &ParameterSelectionWindow::accept);
-        connect(mCancelButton, &QPushButton::clicked, this, &ParameterSelectionWindow::reject);
+        connect(m_okButton, &QPushButton::clicked, this, &ParameterSelectionWindow::accept);
+        connect(m_cancelButton, &QPushButton::clicked, this, &ParameterSelectionWindow::reject);
         connect(this, &ParameterSelectionWindow::accepted, this, &ParameterSelectionWindow::OnAccept);
-        connect(mParameterWidget, &ParameterWidget::OnDoubleClicked, this, &ParameterSelectionWindow::OnDoubleClicked);
+        connect(m_parameterWidget, &ParameterWidget::OnDoubleClicked, this, &ParameterSelectionWindow::OnDoubleClicked);
 
         // set the selection mode
-        mParameterWidget->SetSelectionMode(useSingleSelection);
-        mUseSingleSelection = useSingleSelection;
+        m_parameterWidget->SetSelectionMode(useSingleSelection);
+        m_useSingleSelection = useSingleSelection;
     }
 
 
@@ -66,7 +67,7 @@ namespace EMStudio
 
     void ParameterSelectionWindow::OnAccept()
     {
-        mParameterWidget->FireSelectionDoneSignal();
+        m_parameterWidget->FireSelectionDoneSignal();
     }
 } // namespace EMStudio
 

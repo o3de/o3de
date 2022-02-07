@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -135,11 +136,11 @@ void CErrorReport::ReportError(CErrorRecord& err)
     }
     else
     {
-        if (err.pObject == NULL && m_pObject != NULL)
+        if (err.pObject == nullptr && m_pObject != nullptr)
         {
             err.pObject = m_pObject;
         }
-        else if (err.pItem == NULL && m_pItem != NULL)
+        else if (err.pItem == nullptr && m_pItem != nullptr)
         {
             err.pItem = m_pItem;
         }
@@ -246,60 +247,6 @@ void CErrorReport::SetImmediateMode(bool bEnable)
         Clear();
         m_bImmediateMode = bEnable;
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CErrorReport::Report(SValidatorRecord& record)
-{
-    if ((record.flags & VALIDATOR_FLAG_IGNORE_IN_EDITOR))
-    {
-        return;
-    }
-
-    CErrorRecord err;
-    if (record.text)
-    {
-        err.error = record.text;
-    }
-    if (record.description)
-    {
-        err.description = record.description;
-    }
-    if (record.file)
-    {
-        err.file = record.file;
-    }
-    else
-    {
-        err.file = m_currentFilename;
-    }
-    err.severity = (CErrorRecord::ESeverity)record.severity;
-
-    err.assetScope = record.assetScope;
-
-    err.flags = 0;
-    if (record.flags & VALIDATOR_FLAG_FILE)
-    {
-        err.flags |= CErrorRecord::FLAG_NOFILE;
-    }
-    if (record.flags & VALIDATOR_FLAG_TEXTURE)
-    {
-        err.flags |= CErrorRecord::FLAG_TEXTURE;
-    }
-    if (record.flags & VALIDATOR_FLAG_SCRIPT)
-    {
-        err.flags |= CErrorRecord::FLAG_SCRIPT;
-    }
-    if (record.flags & VALIDATOR_FLAG_AI)
-    {
-        err.flags |= CErrorRecord::FLAG_AI;
-    }
-
-    err.module = record.module;
-    err.pObject = m_pObject;
-    err.pItem = m_pItem;
-
-    ReportError(err);
 }
 
 //////////////////////////////////////////////////////////////////////////

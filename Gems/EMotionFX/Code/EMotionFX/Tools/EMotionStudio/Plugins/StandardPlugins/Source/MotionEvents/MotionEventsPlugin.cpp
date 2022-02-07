@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,34 +25,33 @@ namespace EMStudio
 {
     MotionEventsPlugin::MotionEventsPlugin()
         : EMStudio::DockWidgetPlugin()
-        , mAdjustMotionCallback(nullptr)
-        , mSelectCallback(nullptr)
-        , mUnselectCallback(nullptr)
-        , mClearSelectionCallback(nullptr)
-        , mDialogStack(nullptr)
-        , mMotionEventPresetsWidget(nullptr)
-        , mMotionEventWidget(nullptr)
-        , mMotionTable(nullptr)
-        , mTimeViewPlugin(nullptr)
-        , mTrackHeaderWidget(nullptr)
-        , mTrackDataWidget(nullptr)
-        , mMotionWindowPlugin(nullptr)
-        , mMotionListWindow(nullptr)
-        , mMotion(nullptr)
+        , m_adjustMotionCallback(nullptr)
+        , m_selectCallback(nullptr)
+        , m_unselectCallback(nullptr)
+        , m_clearSelectionCallback(nullptr)
+        , m_dialogStack(nullptr)
+        , m_motionEventPresetsWidget(nullptr)
+        , m_motionEventWidget(nullptr)
+        , m_timeViewPlugin(nullptr)
+        , m_trackHeaderWidget(nullptr)
+        , m_trackDataWidget(nullptr)
+        , m_motionWindowPlugin(nullptr)
+        , m_motionListWindow(nullptr)
+        , m_motion(nullptr)
     {
     }
 
 
     MotionEventsPlugin::~MotionEventsPlugin()
     {
-        GetCommandManager()->RemoveCommandCallback(mAdjustMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mSelectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mUnselectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mClearSelectionCallback, false);
-        delete mAdjustMotionCallback;
-        delete mSelectCallback;
-        delete mUnselectCallback;
-        delete mClearSelectionCallback;
+        GetCommandManager()->RemoveCommandCallback(m_adjustMotionCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_selectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_unselectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_clearSelectionCallback, false);
+        delete m_adjustMotionCallback;
+        delete m_selectCallback;
+        delete m_unselectCallback;
+        delete m_clearSelectionCallback;
     }
 
 
@@ -73,12 +73,12 @@ namespace EMStudio
     {
         if (classID == TimeViewPlugin::CLASS_ID)
         {
-            mTimeViewPlugin = nullptr;
+            m_timeViewPlugin = nullptr;
         }
 
         if (classID == MotionWindowPlugin::CLASS_ID)
         {
-            mMotionWindowPlugin = nullptr;
+            m_motionWindowPlugin = nullptr;
         }
     }
 
@@ -90,28 +90,28 @@ namespace EMStudio
         GetEventPresetManager()->Load();
 
         // create callbacks
-        mAdjustMotionCallback = new CommandAdjustMotionCallback(false);
-        mSelectCallback = new CommandSelectCallback(false);
-        mUnselectCallback = new CommandUnselectCallback(false);
-        mClearSelectionCallback = new CommandClearSelectionCallback(false);
-        GetCommandManager()->RegisterCommandCallback("AdjustMotion", mAdjustMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("Select", mSelectCallback);
-        GetCommandManager()->RegisterCommandCallback("Unselect", mUnselectCallback);
-        GetCommandManager()->RegisterCommandCallback("ClearSelection", mClearSelectionCallback);
+        m_adjustMotionCallback = new CommandAdjustMotionCallback(false);
+        m_selectCallback = new CommandSelectCallback(false);
+        m_unselectCallback = new CommandUnselectCallback(false);
+        m_clearSelectionCallback = new CommandClearSelectionCallback(false);
+        GetCommandManager()->RegisterCommandCallback("AdjustMotion", m_adjustMotionCallback);
+        GetCommandManager()->RegisterCommandCallback("Select", m_selectCallback);
+        GetCommandManager()->RegisterCommandCallback("Unselect", m_unselectCallback);
+        GetCommandManager()->RegisterCommandCallback("ClearSelection", m_clearSelectionCallback);
 
         // create the dialog stack
-        assert(mDialogStack == nullptr);
-        mDialogStack = new MysticQt::DialogStack(mDock);
-        mDock->setWidget(mDialogStack);
+        assert(m_dialogStack == nullptr);
+        m_dialogStack = new MysticQt::DialogStack(m_dock);
+        m_dock->setWidget(m_dialogStack);
 
         // create the motion event presets widget
-        mMotionEventPresetsWidget = new MotionEventPresetsWidget(mDialogStack, this);
-        mDialogStack->Add(mMotionEventPresetsWidget, "Motion Event Presets", false, true);
-        connect(mDock, &QDockWidget::visibilityChanged, this, &MotionEventsPlugin::WindowReInit);
+        m_motionEventPresetsWidget = new MotionEventPresetsWidget(m_dialogStack, this);
+        m_dialogStack->Add(m_motionEventPresetsWidget, "Motion Event Presets", false, true);
+        connect(m_dock, &QDockWidget::visibilityChanged, this, &MotionEventsPlugin::WindowReInit);
 
         // create the motion event properties widget
-        mMotionEventWidget = new MotionEventWidget(mDialogStack);
-        mDialogStack->Add(mMotionEventWidget, "Motion Event Properties", false, true);
+        m_motionEventWidget = new MotionEventWidget(m_dialogStack);
+        m_dialogStack->Add(m_motionEventWidget, "Motion Event Properties", false, true);
 
         ValidatePluginLinks();
         UpdateMotionEventWidget();
@@ -122,30 +122,30 @@ namespace EMStudio
 
     void MotionEventsPlugin::ValidatePluginLinks()
     {
-        if (!mTimeViewPlugin)
+        if (!m_timeViewPlugin)
         {
             EMStudioPlugin* timeViewBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(TimeViewPlugin::CLASS_ID);
             if (timeViewBasePlugin)
             {
-                mTimeViewPlugin     = (TimeViewPlugin*)timeViewBasePlugin;
-                mTrackDataWidget    = mTimeViewPlugin->GetTrackDataWidget();
-                mTrackHeaderWidget  = mTimeViewPlugin->GetTrackHeaderWidget();
+                m_timeViewPlugin     = (TimeViewPlugin*)timeViewBasePlugin;
+                m_trackDataWidget    = m_timeViewPlugin->GetTrackDataWidget();
+                m_trackHeaderWidget  = m_timeViewPlugin->GetTrackHeaderWidget();
 
-                connect(mTrackDataWidget, &TrackDataWidget::MotionEventPresetsDropped, this, &MotionEventsPlugin::OnEventPresetDropped);
-                connect(mTimeViewPlugin, &TimeViewPlugin::SelectionChanged, this, &MotionEventsPlugin::UpdateMotionEventWidget);
-                connect(this, &MotionEventsPlugin::OnColorChanged, mTimeViewPlugin, &TimeViewPlugin::ReInit);
+                connect(m_trackDataWidget, &TrackDataWidget::MotionEventPresetsDropped, this, &MotionEventsPlugin::OnEventPresetDropped);
+                connect(m_timeViewPlugin, &TimeViewPlugin::SelectionChanged, this, &MotionEventsPlugin::UpdateMotionEventWidget);
+                connect(this, &MotionEventsPlugin::OnColorChanged, m_timeViewPlugin, &TimeViewPlugin::ReInit);
             }
         }
 
-        if (!mMotionWindowPlugin)
+        if (!m_motionWindowPlugin)
         {
             EMStudioPlugin* motionBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
             if (motionBasePlugin)
             {
-                mMotionWindowPlugin = (MotionWindowPlugin*)motionBasePlugin;
-                mMotionListWindow   = mMotionWindowPlugin->GetMotionListWindow();
+                m_motionWindowPlugin = (MotionWindowPlugin*)motionBasePlugin;
+                m_motionListWindow   = m_motionWindowPlugin->GetMotionListWindow();
 
-                connect(mMotionListWindow, &MotionListWindow::MotionSelectionChanged, this, &MotionEventsPlugin::MotionSelectionChanged);
+                connect(m_motionListWindow, &MotionListWindow::MotionSelectionChanged, this, &MotionEventsPlugin::MotionSelectionChanged);
             }
         }
     }
@@ -154,9 +154,9 @@ namespace EMStudio
     void MotionEventsPlugin::MotionSelectionChanged()
     {
         EMotionFX::Motion* motion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
-        if (mMotion != motion)
+        if (m_motion != motion)
         {
-            mMotion = motion;
+            m_motion = motion;
             ReInit();
         }
     }
@@ -184,7 +184,7 @@ namespace EMStudio
     bool MotionEventsPlugin::CheckIfIsPresetReadyToDrop()
     {
         // get the motion event presets table
-        QTableWidget* eventPresetsTable = mMotionEventPresetsWidget->GetMotionEventPresetsTable();
+        QTableWidget* eventPresetsTable = m_motionEventPresetsWidget->GetMotionEventPresetsTable();
         if (eventPresetsTable == nullptr)
         {
             return false;
@@ -209,18 +209,17 @@ namespace EMStudio
     void MotionEventsPlugin::OnEventPresetDropped(QPoint position)
     {
         // calculate the start time for the motion event
-        double dropTimeInSeconds = mTimeViewPlugin->PixelToTime(position.x());
-        //mTimeViewPlugin->CalcTime( position.x(), &dropTimeInSeconds, nullptr, nullptr, nullptr, nullptr );
+        double dropTimeInSeconds = m_timeViewPlugin->PixelToTime(position.x());
 
         // get the time track on which we dropped the preset
-        TimeTrack* timeTrack = mTimeViewPlugin->GetTrackAt(position.y());
-        if (!timeTrack || !mMotion)
+        TimeTrack* timeTrack = m_timeViewPlugin->GetTrackAt(position.y());
+        if (!timeTrack || !m_motion)
         {
             return;
         }
 
         // get the corresponding motion event track
-        EMotionFX::MotionEventTable* eventTable = mMotion->GetEventTable();
+        EMotionFX::MotionEventTable* eventTable = m_motion->GetEventTable();
         EMotionFX::MotionEventTrack* eventTrack = eventTable->FindTrackByName(timeTrack->GetName());
         if (eventTrack == nullptr)
         {
@@ -228,7 +227,7 @@ namespace EMStudio
         }
 
         // get the motion event presets table
-        QTableWidget* eventPresetsTable = mMotionEventPresetsWidget->GetMotionEventPresetsTable();
+        QTableWidget* eventPresetsTable = m_motionEventPresetsWidget->GetMotionEventPresetsTable();
         if (eventPresetsTable == nullptr)
         {
             return;
@@ -245,7 +244,7 @@ namespace EMStudio
             if (itemName->isSelected())
             {
                 CommandSystem::CommandCreateMotionEvent* createMotionEventCommand = aznew CommandSystem::CommandCreateMotionEvent();
-                createMotionEventCommand->SetMotionID(mMotion->GetID());
+                createMotionEventCommand->SetMotionID(m_motion->GetID());
                 createMotionEventCommand->SetEventTrackName(eventTrack->GetName());
                 createMotionEventCommand->SetStartTime(aznumeric_cast<float>(dropTimeInSeconds));
                 createMotionEventCommand->SetEndTime(aznumeric_cast<float>(dropTimeInSeconds));
@@ -262,20 +261,20 @@ namespace EMStudio
 
     void MotionEventsPlugin::UpdateMotionEventWidget()
     {
-        if (!mMotionEventWidget || !mTimeViewPlugin)
+        if (!m_motionEventWidget || !m_timeViewPlugin)
         {
             return;
         }
 
-        mTimeViewPlugin->UpdateSelection();
-        if (mTimeViewPlugin->GetNumSelectedEvents() != 1)
+        m_timeViewPlugin->UpdateSelection();
+        if (m_timeViewPlugin->GetNumSelectedEvents() != 1)
         {
-            mMotionEventWidget->ReInit();
+            m_motionEventWidget->ReInit();
         }
         else
         {
-            EventSelectionItem selectionItem = mTimeViewPlugin->GetSelectedEvent(0);
-            mMotionEventWidget->ReInit(selectionItem.mMotion, selectionItem.GetMotionEvent());
+            EventSelectionItem selectionItem = m_timeViewPlugin->GetSelectedEvent(0);
+            m_motionEventWidget->ReInit(selectionItem.m_motion, selectionItem.GetMotionEvent());
         }
     }
 

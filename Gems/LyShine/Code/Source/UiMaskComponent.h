@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,7 @@
 #include <LyShine/IRenderGraph.h>
 
 #include <AzCore/Component/Component.h>
+#include <Atom/RHI.Reflect/AttachmentId.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiMaskComponent
@@ -183,15 +185,16 @@ private: // data
     //! This is generated from the entity ID and cached
     AZStd::string m_maskRenderTargetName;
 
-    //! When rendering to a texture this is the texture ID of the render target
-    int m_contentRenderTargetHandle = -1;
+    //! When rendering to a texture this is the attachment image for the render target
+    AZ::RHI::AttachmentId m_contentAttachmentImageId;
 
     //! When rendering to a texture this is our depth surface, we use the same one for rendering the mask elements
     //! and the content elements - it is cleared in between.
     SDepthTexture* m_renderTargetDepthSurface = nullptr;
     
     //! When rendering to a texture this is the texture ID of the render target
-    int m_maskRenderTargetHandle = -1;
+    //! When rendering to a texture this is the attachment image for the render target
+    AZ::RHI::AttachmentId m_maskAttachmentImageId;
 
     //! The positions used for the render to texture viewport and to render the render target to the screen
     AZ::Vector2 m_viewportTopLeft = AZ::Vector2::CreateZero();
@@ -202,7 +205,7 @@ private: // data
     int m_renderTargetHeight = 0;
 
     //! cached rendering data for performance optimization of rendering the render target to screen
-    IRenderer::DynUiPrimitive m_cachedPrimitive;
+    DynUiPrimitive m_cachedPrimitive;
 
 #ifndef _RELEASE
     //! This variable is only used to prevent spamming a warning message each frame (for nested stencil masks)

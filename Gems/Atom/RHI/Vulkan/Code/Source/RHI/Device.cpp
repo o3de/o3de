@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI.Loader/FunctionLoader.h>
+#include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/std/containers/set.h>
@@ -31,6 +33,13 @@ namespace AZ
 {
     namespace Vulkan
     {
+        Device::Device()
+        {
+            RHI::Ptr<PlatformLimitsDescriptor> platformLimitsDescriptor = aznew PlatformLimitsDescriptor();
+            platformLimitsDescriptor->LoadPlatformLimitsDescriptor(RHI::Factory::Get().GetName().GetCStr());
+            m_descriptor.m_platformLimitsDescriptor = RHI::Ptr<RHI::PlatformLimitsDescriptor>(platformLimitsDescriptor);
+        }
+
         RHI::Ptr<Device> Device::Create()
         {
             return aznew Device();
@@ -61,30 +70,7 @@ namespace AZ
             RawStringList requiredLayers = GetRequiredLayers();
             RawStringList requiredExtensions = GetRequiredExtensions();
 
-            StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
-            RawStringList optionalDeviceExtensions = { {
-                VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME,
-                VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
-                VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
-                VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,
-                VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,
-                VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
-                VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
-                VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
-                VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
-
-                // ray tracing extensions
-                VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-                VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
-                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
-                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-                VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
-            } };
-
-            RawStringList optionalExtensions = FilterList(optionalDeviceExtensions, deviceExtensions);
+            RawStringList optionalExtensions = physicalDevice.FilterSupportedOptionalExtensions();
             requiredExtensions.insert(requiredExtensions.end(), optionalExtensions.begin(), optionalExtensions.end());
 
             //We now need to find the queues that the physical device has available and make sure 
@@ -92,7 +78,7 @@ namespace AZ
 
             BuildDeviceQueueInfo(physicalDevice);
 
-            m_supportedPipelineStageFlagsMask = ~0;
+            m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
             const auto& deviceFeatures = physicalDevice.GetPhysicalDeviceFeatures();
             m_enabledDeviceFeatures.samplerAnisotropy = deviceFeatures.samplerAnisotropy;
@@ -159,7 +145,7 @@ namespace AZ
 
             // unbounded array functionality
             VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptorIndexingFeatures = {};
-            descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+            descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
             const VkPhysicalDeviceDescriptorIndexingFeaturesEXT& physicalDeviceDescriptorIndexingFeatures =
                 physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures();
             descriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing = physicalDeviceDescriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing;
@@ -176,10 +162,19 @@ namespace AZ
             descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount;
             descriptorIndexingFeatures.runtimeDescriptorArray = physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray;
 
+            VkPhysicalDeviceBufferDeviceAddressFeaturesEXT bufferDeviceAddressFeatures = {};
+            bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
+            const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& physicalDeviceBufferDeviceAddressFeatures =
+                physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures();
+            bufferDeviceAddressFeatures.bufferDeviceAddress = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddress;
+            bufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddressCaptureReplay;
+            bufferDeviceAddressFeatures.bufferDeviceAddressMultiDevice = physicalDeviceBufferDeviceAddressFeatures.bufferDeviceAddressMultiDevice;
+            descriptorIndexingFeatures.pNext = &bufferDeviceAddressFeatures;
+
             VkPhysicalDeviceDepthClipEnableFeaturesEXT depthClipEnabled = {};
             depthClipEnabled.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
             depthClipEnabled.depthClipEnable = physicalDevice.GetPhysicalDeviceDepthClipEnableFeatures().depthClipEnable;
-            descriptorIndexingFeatures.pNext = &depthClipEnabled;
+            bufferDeviceAddressFeatures.pNext = &depthClipEnabled;
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
@@ -190,6 +185,9 @@ namespace AZ
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR float16Int8 = {};
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR separateDepthStencil = {};
 
+            VkDeviceCreateInfo deviceInfo = {};
+            deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
             // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead
             // of VkPhysicalDeviceShaderFloat16Int8FeaturesKHR or VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.
             if (majorVersion >= 1 && minorVersion >= 2)
@@ -199,7 +197,14 @@ namespace AZ
                 vulkan12Features.shaderFloat16 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16;
                 vulkan12Features.shaderInt8 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderInt8;
                 vulkan12Features.separateDepthStencilLayouts = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorIndexing = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorBindingVariableDescriptorCount = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.bufferDeviceAddress = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddress;
+                vulkan12Features.bufferDeviceAddressMultiDevice = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddressMultiDevice;
+                vulkan12Features.runtimeDescriptorArray = physicalDevice.GetPhysicalDeviceVulkan12Features().runtimeDescriptorArray;
                 robustness2.pNext = &vulkan12Features;
+                deviceInfo.pNext = &depthClipEnabled;
             }
             else
             {
@@ -211,11 +216,11 @@ namespace AZ
                 float16Int8.pNext = &separateDepthStencil;
 
                 robustness2.pNext = &float16Int8;
+
+
+                deviceInfo.pNext = &descriptorIndexingFeatures;
             }
 
-            VkDeviceCreateInfo deviceInfo = {};
-            deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-            deviceInfo.pNext = &descriptorIndexingFeatures;
             deviceInfo.flags = 0;
             deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreationInfo.size());
             deviceInfo.pQueueCreateInfos = queueCreationInfo.data();
@@ -240,21 +245,21 @@ namespace AZ
 
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures();
-
-            InitFeaturesAndLimits(physicalDevice);
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode Device::PostInitInternal( const RHI::DeviceDescriptor& descriptor)
+        RHI::ResultCode Device::InitializeLimits()
         {
             CommandQueueContext::Descriptor commandQueueContextDescriptor;
             commandQueueContextDescriptor.m_frameCountMax = RHI::Limits::Device::FrameCountMax;
             RHI::ResultCode result = m_commandQueueContext.Init(*this, commandQueueContextDescriptor);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
+            InitFeaturesAndLimits(static_cast<const Vulkan::PhysicalDevice&>(GetPhysicalDevice()));
+
             // Initialize member variables.
             ReleaseQueue::Descriptor releaseQueueDescriptor;
-            releaseQueueDescriptor.m_collectLatency = descriptor.m_frameCountMax - 1;
+            releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
             m_releaseQueue.Init(releaseQueueDescriptor);
             
 
@@ -285,7 +290,7 @@ namespace AZ
             poolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
             poolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
             poolDesc.m_bindFlags = RHI::BufferBindFlags::CopyRead;
-            poolDesc.m_budgetInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_stagingBufferBudgetInBytes;
+            poolDesc.m_budgetInBytes = m_descriptor.m_platformLimitsDescriptor->m_platformDefaultValues.m_stagingBufferBudgetInBytes;
             result = m_stagingBufferPool->Init(*this, poolDesc);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
@@ -552,9 +557,9 @@ namespace AZ
             physicalDevice.CompileMemoryStatistics(builder);
         }
 
-        void Device::UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void Device::UpdateCpuTimingStatisticsInternal() const
         {
-            m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
+            m_commandQueueContext.UpdateCpuTimingStatistics();
         }
 
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
@@ -665,6 +670,11 @@ namespace AZ
             return RHI::ResourceMemoryRequirements{ vkRequirements.alignment, vkRequirements.size };
         }
 
+        void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
+        {
+            m_releaseQueue.Notify(notifyFunction);
+        }
+
         void Device::InitFeaturesAndLimits(const PhysicalDevice& physicalDevice)
         {
             m_features.m_tessellationShader = (m_enabledDeviceFeatures.tessellationShader == VK_TRUE);
@@ -740,7 +750,7 @@ namespace AZ
             vkGetPhysicalDeviceQueueFamilyProperties(nativePhysicalDevice, &queueFamilyCount, m_queueFamilyProperties.data());            
         }
 
-        RHI::Ptr<Memory> Device::AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags)
+        RHI::Ptr<Memory> Device::AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags, const RHI::BufferBindFlags bufferBindFlags)
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             const VkPhysicalDeviceMemoryProperties& memProp = physicalDevice.GetMemoryProperties();
@@ -770,6 +780,7 @@ namespace AZ
                         RHI::CheckBitsAll(memoryTypesToUseMask, memoryTypeBit))
                     {
                         memoryDesc.m_memoryTypeIndex = memoryIndex;
+                        memoryDesc.m_bufferBindFlags = bufferBindFlags;
                         auto result = memory->Init(*this, memoryDesc);
                         if (result == RHI::ResultCode::Success)
                         {
@@ -795,6 +806,27 @@ namespace AZ
             return *m_nullDescriptorManager;
         }
 
+        VkBufferUsageFlags Device::GetBufferUsageFlagBitsUnderRestrictions(RHI::BufferBindFlags bindFlags) const
+        {
+            VkBufferUsageFlags bufferUsageFlags = GetBufferUsageFlagBits(bindFlags);
+
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
+
+            // VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT require bufferDeviceAddress enabled.
+            if (!physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddress)
+            {
+                bufferUsageFlags &= ~VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+            }
+            // VK_KHR_acceleration_structure provides VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR
+            // Otherwise unrecognized flag.
+            if (!physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::AccelerationStructure))
+            {
+                bufferUsageFlags &= ~VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
+            }
+
+            return bufferUsageFlags;
+        }
+
         VkBuffer Device::CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const
         {
             AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
@@ -805,9 +837,15 @@ namespace AZ
             createInfo.pNext = nullptr;
             createInfo.flags = 0;
             createInfo.size = descriptor.m_byteCount;
-            createInfo.usage = GetBufferUsageFlagBits(descriptor.m_bindFlags);
+            createInfo.usage = GetBufferUsageFlagBitsUnderRestrictions(descriptor.m_bindFlags);
             // Trying to guess here if the buffers are going to be used as attachments. Maybe it would be better to add an explicit flag in the descriptor.
-            createInfo.sharingMode = RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
+            createInfo.sharingMode = 
+                (RHI::CheckBitsAny(
+                    descriptor.m_bindFlags, 
+                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) || 
+                    (queueFamilies.size()) <= 1) 
+                ? VK_SHARING_MODE_EXCLUSIVE 
+                : VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,15 +47,15 @@ namespace MCore
         struct MCORE_API Parameter
         {
             Parameter(AZStd::string name, AZStd::string description, AZStd::string defaultValue, EParamType paramType, bool required)
-                : mName(AZStd::move(name)), mDescription(AZStd::move(description)), mDefaultValue(AZStd::move(defaultValue)), mParamType(paramType), mRequired(required)
+                : m_name(AZStd::move(name)), m_description(AZStd::move(description)), m_defaultValue(AZStd::move(defaultValue)), m_paramType(paramType), m_required(required)
             {
             }
 
-            AZStd::string      mName;          /**< The name of the parameter. */
-            AZStd::string      mDescription;   /**< The description of the parameter. */
-            AZStd::string      mDefaultValue;  /**< The default value. */
-            EParamType         mParamType;     /**< The parameter type. */
-            bool               mRequired;      /**< Is this parameter required or optional? */
+            AZStd::string      m_name;          /**< The name of the parameter. */
+            AZStd::string      m_description;   /**< The description of the parameter. */
+            AZStd::string      m_defaultValue;  /**< The default value. */
+            EParamType         m_paramType;     /**< The parameter type. */
+            bool               m_required;      /**< Is this parameter required or optional? */
         };
 
     public:
@@ -62,7 +63,7 @@ namespace MCore
          * The constructor.
          * @param numParamsToReserve The amount of parameters to pre-allocate memory for. This can reduce the number of reallocs needed when registering new paramters.
          */
-        CommandSyntax(uint32 numParamsToReserve = 5);
+        CommandSyntax(size_t numParamsToReserve = 5);
 
         /**
          * The destructor.
@@ -73,7 +74,7 @@ namespace MCore
          * Reserve space for a given number of parameters, to prevent memory reallocs when adding new parameters.
          * @param numParamsToReserve The number of parameters to reserve space for.
          */
-        void ReserveParameters(uint32 numParamsToReserve);
+        void ReserveParameters(size_t numParamsToReserve);
 
         /**
          * Add a new optional parameter to this syntax.
@@ -98,28 +99,28 @@ namespace MCore
          * @param index The parameter number to check.
          * @result Returns true when the parameter is required, or false when it is optional.
          */
-        bool GetParamRequired(uint32 index) const;
+        bool GetParamRequired(size_t index) const;
 
         /**
          * Get the name of a given parameter.
          * @param index The parameter number to get the name for.
          * @result The string containing the name of the parameter.
          */
-        const char* GetParamName(uint32 index) const;
+        const char* GetParamName(size_t index) const;
 
         /**
          * Get the description of a given parameter.
          * @param index The parameter number to get the description for.
          * @result A string containing the description of the parameter.
          */
-        const char* GetParamDescription(uint32 index) const;
+        const char* GetParamDescription(size_t index) const;
 
         /**
          * Get the default value for a given parameter.
          * @param index The parameter number to get the default value from.
          * @result The string containing the default value.
          */
-        const AZStd::string& GetDefaultValue(uint32 index) const;
+        const AZStd::string& GetDefaultValue(size_t index) const;
 
         /**
          * Get the default value for a parameter with a given name.
@@ -140,7 +141,7 @@ namespace MCore
          * Get the number of parameters registered to this syntax.
          * @result The number of added/registered parameters.
          */
-        MCORE_INLINE uint32 GetNumParameters() const                { return static_cast<uint32>(m_parameters.size()); }
+        MCORE_INLINE size_t GetNumParameters() const                { return m_parameters.size(); }
 
         /**
          * Get the parameter type string of a given parameter.
@@ -148,7 +149,7 @@ namespace MCore
          * @param index The parameter number to get the type string for.
          * @result The parameter type string.
          */
-        const char* GetParamTypeString(uint32 index) const;
+        const char* GetParamTypeString(size_t index) const;
         const char* GetParamTypeString(const Parameter& parameter) const;
 
         /**
@@ -188,7 +189,7 @@ namespace MCore
          * @param parameter The name of the parameter, non-case-sensitive.
          * @result Returns the index of the parameter, in range of [0..GetNumParameters()-1], or MCORE_INVALIDINDEX32 in case it hasn't been found.
          */
-        uint32 FindParameterIndex(const char* parameter) const;
+        size_t FindParameterIndex(const char* parameter) const;
 
         /**
          * Log the currently registered syntax using MCore::LogInfo(...).

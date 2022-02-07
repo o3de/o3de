@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,7 +23,7 @@ namespace EMotionFX
 {
     void PrintTo(const Recorder::ActorInstanceData& actorInstanceData, ::std::ostream* os)
     {
-        *os << actorInstanceData.mActorInstance->GetActor()->GetName();
+        *os << actorInstanceData.m_actorInstance->GetActor()->GetName();
     }
 
     template<class ReturnType, class StorageType = ReturnType>
@@ -41,8 +42,8 @@ namespace EMotionFX
 
     void PrintTo(const Recorder::TransformTracks& tracks, ::std::ostream* os)
     {
-        PrintTo(tracks.mPositions, os);
-        PrintTo(tracks.mRotations, os);
+        PrintTo(tracks.m_positions, os);
+        PrintTo(tracks.m_rotations, os);
     }
 
     AZ_PUSH_DISABLE_WARNING(4100, "-Wmissing-declarations") // 'result_listener': unreferenced formal parameter
@@ -89,11 +90,11 @@ namespace EMotionFX
 
         bool MatchAndExplain(const KeyTrackLinearDynamic<T>& got, ::testing::MatchResultListener* result_listener) const override
         {
-            const uint32 gotSize = got.GetNumKeys();
-            const uint32 expectedSize = m_expected.GetNumKeys();
-            const uint32 commonSize = AZStd::min(gotSize, expectedSize);
+            const size_t gotSize = got.GetNumKeys();
+            const size_t expectedSize = m_expected.GetNumKeys();
+            const size_t commonSize = AZStd::min(gotSize, expectedSize);
 
-            for (uint32 i = 0; i != commonSize; ++i)
+            for (size_t i = 0; i != commonSize; ++i)
             {
                 const KeyFrame<T>* gotKey = got.GetKey(i);
                 const KeyFrame<T>* expectedKey = m_expected.GetKey(i);
@@ -103,9 +104,9 @@ namespace EMotionFX
                     *result_listener << "where the value pair at index #" << i << " don't match\n";
 
                     const uint32 numContextLines = 2;
-                    const uint32 beginContextLines = i > numContextLines ? i - numContextLines : 0;
-                    const uint32 endContextLines = i > commonSize - numContextLines - 1 ? commonSize : i + numContextLines + 1;
-                    for (uint32 contextIndex = beginContextLines; contextIndex < endContextLines; ++contextIndex)
+                    const size_t beginContextLines = i > numContextLines ? i - numContextLines : 0;
+                    const size_t endContextLines = i > commonSize - numContextLines - 1 ? commonSize : i + numContextLines + 1;
+                    for (size_t contextIndex = beginContextLines; contextIndex < endContextLines; ++contextIndex)
                     {
                         const bool contextLineMatches = ::testing::Matches(innerMatcher)(::testing::make_tuple(got.GetKey(contextIndex), m_expected.GetKey(contextIndex)));
                         if (!contextLineMatches)
@@ -153,14 +154,14 @@ namespace EMotionFX
         return MakeMatcher(new KeyTrackMatcher<T>(expected, nodeName));
     }
 
-    void INTEG_PoseComparisonFixture::SetUp()
+    void PoseComparisonFixture::SetUp()
     {
         SystemComponentFixture::SetUp();
 
         LoadAssets();
     }
 
-    void INTEG_PoseComparisonFixture::TearDown()
+    void PoseComparisonFixture::TearDown()
     {
         m_actorInstance->Destroy();
 
@@ -175,17 +176,17 @@ namespace EMotionFX
         SystemComponentFixture::TearDown();
     }
 
-    void INTEG_PoseComparisonFixture::LoadAssets()
+    void PoseComparisonFixture::LoadAssets()
     {
-        const AZStd::string actorPath = ResolvePath(GetParam().actorFile);
+        const AZStd::string actorPath = ResolvePath(GetParam().m_actorFile);
         m_actor = EMotionFX::GetImporter().LoadActor(actorPath);
         ASSERT_TRUE(m_actor) << "Failed to load actor";
 
-        const AZStd::string animGraphPath = ResolvePath(GetParam().animGraphFile);
+        const AZStd::string animGraphPath = ResolvePath(GetParam().m_animGraphFile);
         m_animGraph = EMotionFX::GetImporter().LoadAnimGraph(animGraphPath);
         ASSERT_TRUE(m_animGraph) << "Failed to load anim graph";
 
-        const AZStd::string motionSetPath = ResolvePath(GetParam().motionSetFile);
+        const AZStd::string motionSetPath = ResolvePath(GetParam().m_motionSetFile);
         m_motionSet = EMotionFX::GetImporter().LoadMotionSet(motionSetPath);
         ASSERT_TRUE(m_motionSet) << "Failed to load motion set";
         m_motionSet->Preload();
@@ -194,9 +195,9 @@ namespace EMotionFX
         m_actorInstance->SetAnimGraphInstance(AnimGraphInstance::Create(m_animGraph, m_actorInstance, m_motionSet));
     }
 
-    TEST_P(INTEG_PoseComparisonFixture, Integ_TestPoses)
+    TEST_P(PoseComparisonFixture, TestPoses)
     {
-        const AZStd::string recordingPath = ResolvePath(GetParam().recordingFile);
+        const AZStd::string recordingPath = ResolvePath(GetParam().m_recordingFile);
         Recorder* recording = EMotionFX::Recorder::LoadFromFile(recordingPath.c_str());
         const EMotionFX::Recorder::ActorInstanceData& expectedActorInstanceData = recording->GetActorInstanceData(0);
 
@@ -221,27 +222,27 @@ namespace EMotionFX
         {
             const Recorder::TransformTracks& gotTrack = gotTracks[trackNum];
             const Recorder::TransformTracks& expectedTrack = expectedTracks[trackNum];
-            const char* nodeName = gotActorInstanceData.mActorInstance->GetActor()->GetSkeleton()->GetNode(static_cast<uint32>(trackNum))->GetName();
+            const char* nodeName = gotActorInstanceData.m_actorInstance->GetActor()->GetSkeleton()->GetNode(trackNum)->GetName();
 
-            EXPECT_THAT(gotTrack.mPositions, MatchesKeyTrack(expectedTrack.mPositions, nodeName));
-            EXPECT_THAT(gotTrack.mRotations, MatchesKeyTrack(expectedTrack.mRotations, nodeName));
+            EXPECT_THAT(gotTrack.m_positions, MatchesKeyTrack(expectedTrack.m_positions, nodeName));
+            EXPECT_THAT(gotTrack.m_rotations, MatchesKeyTrack(expectedTrack.m_rotations, nodeName));
         }
 
         recording->Destroy();
     }
 
-    TEST_P(INTEG_TestPoseComparisonFixture, Integ_TestRecording)
+    TEST_P(TestPoseComparisonFixture, TestRecording)
     {
         // Make one recording, 10 seconds at 60 fps
         Recorder::RecordSettings settings;
-        settings.mFPS                       = 1000000;
-        settings.mRecordTransforms          = true;
-        settings.mRecordAnimGraphStates     = false;
-        settings.mRecordNodeHistory         = false;
-        settings.mRecordScale               = false;
-        settings.mInitialAnimGraphAnimBytes = 4 * 1024 * 1024; // 4 mb
-        settings.mHistoryStatesOnly         = false;
-        settings.mRecordEvents              = false;
+        settings.m_fps                       = 1000000;
+        settings.m_recordTransforms          = true;
+        settings.m_recordAnimGraphStates     = false;
+        settings.m_recordNodeHistory         = false;
+        settings.m_recordScale               = false;
+        settings.m_initialAnimGraphAnimBytes = 4 * 1024 * 1024; // 4 mb
+        settings.m_historyStatesOnly         = false;
+        settings.m_recordEvents              = false;
 
         EMotionFX::GetRecorder().StartRecording(settings);
 
@@ -284,39 +285,39 @@ namespace EMotionFX
         {
             const Recorder::TransformTracks& gotTrack = gotTracks[trackNum];
             const Recorder::TransformTracks& expectedTrack = expectedTracks[trackNum];
-            const char* nodeName = gotActorInstanceData.mActorInstance->GetActor()->GetSkeleton()->GetNode(static_cast<uint32>(trackNum))->GetName();
+            const char* nodeName = gotActorInstanceData.m_actorInstance->GetActor()->GetSkeleton()->GetNode(trackNum)->GetName();
 
-            EXPECT_THAT(gotTrack.mPositions, MatchesKeyTrack(expectedTrack.mPositions, nodeName));
-            EXPECT_THAT(gotTrack.mRotations, MatchesKeyTrack(expectedTrack.mRotations, nodeName));
+            EXPECT_THAT(gotTrack.m_positions, MatchesKeyTrack(expectedTrack.m_positions, nodeName));
+            EXPECT_THAT(gotTrack.m_rotations, MatchesKeyTrack(expectedTrack.m_rotations, nodeName));
         }
 
         recording->Destroy();
     }
 
-    INSTANTIATE_TEST_CASE_P(Integ_TestPoses, INTEG_PoseComparisonFixture,
+    INSTANTIATE_TEST_CASE_P(DISABLED_TestPoses, PoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
             ),
             PoseComparisonFixtureParams (
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.actor",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.animgraph",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.motionset",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.emfxrecording"
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.actor",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.animgraph",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.motionset",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Pendulum/pendulum.emfxrecording"
             )
         )
     );
 
-    INSTANTIATE_TEST_CASE_P(Integ_TestPoseComparison, INTEG_TestPoseComparisonFixture,
+    INSTANTIATE_TEST_CASE_P(DISABLED_TestPoseComparison, TestPoseComparisonFixture,
         ::testing::Values(
             PoseComparisonFixtureParams (
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
-                "@assets@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.animgraph",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.motionset",
+                "@exefolder@/Test.Assets/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.emfxrecording"
             )
         )
     );

@@ -1,19 +1,24 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <ExpressionEvaluationSystemComponent.h>
-
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <ExpressionEngine/InternalTypes.h>
 #include <ExpressionEngine/MathOperators/MathExpressionOperators.h>
 #include <ExpressionEngine/Utils.h>
+#include <ExpressionEvaluationSystemComponent.h>
+#include <ExpressionPrimitivesSerializers.inl>
+#include <ElementInformationSerializer.inl>
+
+AZ_DEFINE_BUDGET(ExpressionEvaluation);
 
 namespace ExpressionEvaluation
 {
@@ -32,12 +37,12 @@ namespace ExpressionEvaluation
 
             }
 
-            ExpressionParserId GetParserId() const
+            ExpressionParserId GetParserId() const override
             {
                 return InternalTypes::Interfaces::InternalParser;
             }
 
-            ParseResult ParseElement(const AZStd::string& inputText, size_t offset) const
+            ParseResult ParseElement(const AZStd::string& inputText, size_t offset) const override
             {
                 ParseResult result;
                 AZStd::smatch match;
@@ -64,7 +69,7 @@ namespace ExpressionEvaluation
                 return result;
             }
 
-            void EvaluateToken(const ElementInformation& parseResult, ExpressionResultStack& evaluationStack) const
+            void EvaluateToken(const ElementInformation& parseResult, ExpressionResultStack& evaluationStack) const override
             {
                 AZ_UNUSED(parseResult);
                 AZ_UNUSED(evaluationStack);
@@ -143,6 +148,12 @@ namespace ExpressionEvaluation
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
+        }
+
+        if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<AZ::ExpressionTreeVariableDescriptorSerializer>()->HandlesType<ExpressionTree::VariableDescriptor>();
+            jsonContext->Serializer<AZ::ElementInformationSerializer>()->HandlesType<ElementInformation>();
         }
     }
 
@@ -250,7 +261,7 @@ namespace ExpressionEvaluation
 
     AZ::Outcome<void, ParsingError> ExpressionEvaluationSystemComponent::ParseRestrictedExpressionInPlace(const AZStd::unordered_set<ExpressionParserId>& parsers, AZStd::string_view expressionString, ExpressionTree& expressionTree) const
     {
-        AZ_PROFILE_TIMER("ExpressionEvaluation", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ExpressionEvaluation);
 
         expressionTree.ClearTree();
 
@@ -512,7 +523,7 @@ namespace ExpressionEvaluation
 
     ExpressionResult ExpressionEvaluationSystemComponent::Evaluate(const ExpressionTree& expressionTree) const
     {
-        AZ_PROFILE_TIMER("ExpressionEvaluation", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ExpressionEvaluation);
 
         ExpressionResultStack resultStack;
 

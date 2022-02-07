@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -43,7 +44,7 @@ namespace EMotionFX
 
         m_totalTime = 0;
         m_actionCompletionCallback = completionCallback;
-        m_MenuActiveCallback = menuCallback;
+        m_menuActiveCallback = menuCallback;
         m_timeout = timeout;
 
         // Kick a timer off to check whether the menu is open.
@@ -83,7 +84,7 @@ namespace EMotionFX
         }
 
         // The menu is now active, inform the calling object.
-        m_MenuActiveCallback(menu);
+        m_menuActiveCallback(menu);
     }
 
     void ModalPopupHandler::CheckForPopupWidget()

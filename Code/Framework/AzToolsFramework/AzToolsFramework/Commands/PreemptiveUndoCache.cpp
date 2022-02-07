@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Debug/Profiler.h>
@@ -86,7 +86,7 @@ namespace AzToolsFramework
 
     void PreemptiveUndoCache::UpdateCache(const AZ::EntityId& entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // capture it
 
@@ -103,7 +103,7 @@ namespace AzToolsFramework
         newData.clear();
         AZ::IO::ByteContainerStream<CacheLineType> ms(&newData);
 
-        AZ::SerializeContext* sc = NULL;
+        AZ::SerializeContext* sc = nullptr;
         EBUS_EVENT_RESULT(sc, AZ::ComponentApplicationBus, GetSerializeContext);
         AZ_Assert(sc, "Serialization context not found!");
 

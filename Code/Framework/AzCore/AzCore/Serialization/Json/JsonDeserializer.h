@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,6 +27,11 @@ namespace AZ
         {
             FullyProcessed,
             ContinueProcessing
+        };
+        enum class UseTypeDeserializer : bool
+        {
+            No,
+            Yes
         };
         enum class TypeIdDetermination : u8
         {
@@ -54,10 +60,11 @@ namespace AZ
         JsonDeserializer(JsonDeserializer&& rhs) = delete;
 
         static JsonSerializationResult::ResultCode Load(
-            void* object, const Uuid& typeId, const rapidjson::Value& value, bool isNewInstance, JsonDeserializerContext& context);
+            void* object, const Uuid& typeId, const rapidjson::Value& value, bool isNewInstance, UseTypeDeserializer useCustom,
+            JsonDeserializerContext& context);
 
         static JsonSerializationResult::ResultCode LoadToPointer(void* object, const Uuid& typeId, const rapidjson::Value& value,
-            JsonDeserializerContext& context);
+            UseTypeDeserializer useCustom, JsonDeserializerContext& context);
 
         static JsonSerializationResult::ResultCode LoadWithClassElement(void* object, const rapidjson::Value& value,
             const SerializeContext::ClassElement& classElement, JsonDeserializerContext& context);

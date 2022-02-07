@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -110,13 +111,19 @@ namespace AZ
         {
             AZStd::lock_guard<AZStd::shared_mutex> lock(m_groupsToCompileMutex);
 
-            AZ_Assert(!shaderResourceGroup.IsQueuedForCompile(), "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");            
+            bool isQueuedForCompile = shaderResourceGroup.IsQueuedForCompile();
+            AZ_Warning(
+                "ShaderResourceGroupPool", !isQueuedForCompile,
+                "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");            
 
-            CalculateGroupDataDiff(shaderResourceGroup, groupData);
+            if (!isQueuedForCompile)
+            {
+                CalculateGroupDataDiff(shaderResourceGroup, groupData);
 
-            shaderResourceGroup.SetData(groupData);
+                shaderResourceGroup.SetData(groupData);
 
-            QueueForCompileNoLock(shaderResourceGroup);
+                QueueForCompileNoLock(shaderResourceGroup);
+            }
         }
 
         void ShaderResourceGroupPool::QueueForCompile(ShaderResourceGroup& group)

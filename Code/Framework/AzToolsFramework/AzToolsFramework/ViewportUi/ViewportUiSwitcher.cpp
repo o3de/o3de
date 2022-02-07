@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,8 +22,6 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         // Add am empty active button (is set in the call to SetActiveMode)
         m_activeButton = new QToolButton();
-        // No hover effect for the main button as it's not clickable
-        m_activeButton->setProperty("IconHasHoverEffect", false);
         m_activeButton->setCheckable(false);
         m_activeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         addWidget(m_activeButton);
@@ -55,17 +54,18 @@ namespace AzToolsFramework::ViewportUi::Internal
             return;
         }
 
-        // set hover to true by default
-        action->setProperty("IconHasHoverEffect", true);
-
         // add the action
         addAction(action);
 
         // resize to fit new action with minimum extra space
         resize(minimumSizeHint());
 
-        const AZStd::function<void()>& callback = [this, button]() { m_buttonGroup->PressButton(button->m_buttonId); };
-        const AZStd::function<void(QAction*)>& updateCallback = [button](QAction* action) {
+        const AZStd::function<void()>& callback = [this, button]()
+        {
+            m_buttonGroup->PressButton(button->m_buttonId);
+        };
+        const AZStd::function<void(QAction*)>& updateCallback = [button](QAction* action)
+        {
             action->setChecked(button->m_state == Button::State::Selected);
         };
 
@@ -77,9 +77,13 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         // register the action
         m_widgetCallbacks.AddWidget(
-            action, [updateCallback](QPointer<QObject> object) { updateCallback(static_cast<QAction*>(object.data())); });
+            action,
+            [updateCallback](QPointer<QObject> object)
+            {
+                updateCallback(static_cast<QAction*>(object.data()));
+            });
 
-        m_buttonActionMap.insert({button->m_buttonId, action});
+        m_buttonActionMap.insert({ button->m_buttonId, action });
     }
 
     void ViewportUiSwitcher::RemoveButton(ButtonId buttonId)
@@ -120,9 +124,12 @@ namespace AzToolsFramework::ViewportUi::Internal
         // Check if it is the first active mode to be set
         bool initialActiveMode = (m_activeButtonId == ButtonId(0));
 
-        // Change the toolbutton's name and icon to that button
+        // Change the tool button's name and icon to that button
         const AZStd::vector<Button*> buttons = m_buttonGroup->GetButtons();
-        auto found = [buttonId](Button* button) { return (button->m_buttonId == buttonId); };
+        auto found = [buttonId](Button* button)
+        {
+            return (button->m_buttonId == buttonId);
+        };
 
         if (auto buttonIt = AZStd::find_if(buttons.begin(), buttons.end(), found); buttonIt != buttons.end())
         {

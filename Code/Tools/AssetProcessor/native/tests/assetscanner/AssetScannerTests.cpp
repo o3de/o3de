@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -122,7 +123,7 @@ namespace AssetProcessor
         ExcludeAssetRecognizer excludeRecogniser;
         excludeRecogniser.m_name = "backup";
         // we are excluding all the files in the folder but not the folder itself
-        excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(".*\\/subfolder2\\/aaa\\/.*", AssetBuilderSDK::AssetBuilderPattern::Regex);
+        excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("(^|[^/]+/)aaa/.*", AssetBuilderSDK::AssetBuilderPattern::Regex);
         m_platformConfig.get()->AddExcludeRecognizer(excludeRecogniser);
         m_assetScanner.get()->StartScan();
 
@@ -143,7 +144,7 @@ namespace AssetProcessor
         ExcludeAssetRecognizer excludeRecogniser;
         excludeRecogniser.m_name = "backup";
         // we are excluding the complete folder here
-        excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(".*\\/subfolder2\\/aaa", AssetBuilderSDK::AssetBuilderPattern::Regex);
+        excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("(^|[^/]+/)aaa", AssetBuilderSDK::AssetBuilderPattern::Regex);
         m_platformConfig.get()->AddExcludeRecognizer(excludeRecogniser);
         m_assetScanner.get()->StartScan();
 

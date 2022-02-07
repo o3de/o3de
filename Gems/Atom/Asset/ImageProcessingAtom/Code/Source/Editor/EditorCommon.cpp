@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 #include <ImageProcessing_Traits_Platform.h>
 #include <Editor/EditorCommon.h>
 #include <Processing/ImageToProcess.h>
@@ -57,10 +57,10 @@ namespace ImageProcessingAtomEditor
         static double mb = kb * 1024.0;
         static double gb = mb * 1024.0;
 
-        static AZStd::string byteStr = "B";
-        static AZStd::string kbStr = "KB";
-        static AZStd::string mbStr = "MB";
-        static AZStd::string gbStr = "GB";
+        static AZStd::fixed_string<2> byteStr = "B";
+        static AZStd::fixed_string<3> kbStr = "KB";
+        static AZStd::fixed_string<3> mbStr = "MB";
+        static AZStd::fixed_string<3> gbStr = "GB";
 
 #if AZ_TRAIT_IMAGEPROCESSING_USE_BASE10_BYTE_PREFIX
         kb = 1000.0;
@@ -102,6 +102,10 @@ namespace ImageProcessingAtomEditor
         if (platformStrLowerCase == "pc")
         {
             readableString = "PC";
+        }
+        else if (platformStrLowerCase == "linux")
+        {
+            readableString = "Linux";
         }
         else if (platformStrLowerCase == "android")
         {
@@ -161,17 +165,17 @@ namespace ImageProcessingAtomEditor
 
         // Get the preset id from one platform. The preset id for each platform should always be same
         AZ_Assert(m_settingsMap.size() > 0, "There is no platform information");
-        AZ::Uuid presetId = m_settingsMap.begin()->second.m_preset;
-        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(presetId);
+        PresetName presetName = m_settingsMap.begin()->second.m_preset;
+        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(presetName);
 
         if (!preset)
         {
-            AZ_Warning("Texture Editor", false, "Cannot find preset %s! Will assign a suggested one for the texture.", presetId.ToString<AZStd::string>().c_str());
-            presetId = BuilderSettingManager::Instance()->GetSuggestedPreset(m_fullPath, m_img);
+            AZ_Warning("Texture Editor", false, "Cannot find preset %s! Will assign a suggested one for the texture.", presetName.GetCStr());
+            presetName = BuilderSettingManager::Instance()->GetSuggestedPreset(m_fullPath);
 
             for (auto& settingIter : m_settingsMap)
             {
-                settingIter.second.ApplyPreset(presetId);
+                settingIter.second.ApplyPreset(presetName);
             }
         }
     }
@@ -194,25 +198,18 @@ namespace ImageProcessingAtomEditor
             }
             else
             {
-                AZ_Error("Texture Editor", false, "Texture Preset %s is not found!", textureSetting.m_preset.ToString<AZStd::string>().c_str());
+                AZ_Error("Texture Editor", false, "Texture Preset %s is not found!", textureSetting.m_preset.GetCStr());
             }
         }
     }
 
-    void EditorTextureSetting::SetToPreset(const AZStd::string& presetName)
+    void EditorTextureSetting::SetToPreset(const PresetName& presetName)
     {
         m_overrideFromPreset = false;
 
-        AZ::Uuid presetId = BuilderSettingManager::Instance()->GetPresetIdFromName(presetName);
-        if (presetId.IsNull())
-        {
-            AZ_Error("Texture Editor", false, "Texture Preset %s has no associated UUID.", presetName.c_str());
-            return;
-        }
-
         for (auto& settingIter : m_settingsMap)
         {
-            settingIter.second.ApplyPreset(presetId);
+            settingIter.second.ApplyPreset(presetName);
         }
     }
     
@@ -260,15 +257,22 @@ namespace ImageProcessingAtomEditor
             // Update input width and height if it's a cubemap
             if (presetSetting->m_cubemapSetting != nullptr)
             {
-                CubemapLayout *srcCubemap = CubemapLayout::CreateCubemapLayout(m_img);
-                if (srcCubemap == nullptr)
+                if (IsValidLatLongMap(m_img))
                 {
-                    return false;
+                    inputWidth = inputWidth/4;
                 }
-                inputWidth = srcCubemap->GetFaceSize();
+                else
+                {
+                    CubemapLayout *srcCubemap = CubemapLayout::CreateCubemapLayout(m_img);
+                    if (srcCubemap == nullptr)
+                    {
+                        return false;
+                    }
+                    inputWidth = srcCubemap->GetFaceSize();
+                    delete srcCubemap;
+                }
                 inputHeight = inputWidth;
                 outResolutionInfo.arrayCount = 6;
-                delete srcCubemap;
             }
 
             GetOutputExtent(inputWidth, inputHeight, outResolutionInfo.width, outResolutionInfo.height, outResolutionInfo.reduce, &textureSetting, presetSetting);
@@ -301,7 +305,7 @@ namespace ImageProcessingAtomEditor
                 {
                     it.second.m_enableMipmap = false;
                     enabled = false;
-                    AZ_Error("Texture Editor", false, "Preset %s does not support mipmap!", preset->m_name.c_str());
+                    AZ_Error("Texture Editor", false, "Preset %s does not support mipmap!", preset->m_name.GetCStr());
                 }
             }
             else

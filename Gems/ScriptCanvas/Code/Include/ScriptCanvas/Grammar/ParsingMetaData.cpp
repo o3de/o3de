@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -151,19 +152,19 @@ namespace ScriptCanvas
             {
                 if (azrtti_istypeof<Nodes::String::Format>(execution->GetId().m_node))
                 {
-                    return MetaDataPtr(aznew FormatStringMetaData());
+                    return AZStd::make_shared<FormatStringMetaData>();
                 }
                 else if (azrtti_istypeof<Nodes::String::Print>(execution->GetId().m_node))
                 {
-                    return MetaDataPtr(aznew PrintMetaData());
+                    return AZStd::make_shared<PrintMetaData>();
                 }
                 else if (azrtti_istypeof<Nodes::Math::MathExpression>(execution->GetId().m_node))
                 {
-                    return MetaDataPtr(aznew MathExpressionMetaData());
+                    return AZStd::make_shared<MathExpressionMetaData>();
                 }
                 else if (execution->GetSymbol() == Symbol::FunctionCall)
                 {
-                    return MetaDataPtr(aznew FunctionCallDefaultMetaData());
+                    return AZStd::make_shared<FunctionCallDefaultMetaData>();
                 }
             }
 

@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -8,12 +9,12 @@
 set(FILES
     3rdParty.cmake
     3rdPartyPackages.cmake
+    AzAutoGen.py
     CMakeFiles.cmake
     CommandExecution.cmake
     Configurations.cmake
     Dependencies.cmake
     Deployment.cmake
-    EngineJson.cmake
     FileUtil.cmake
     Findo3de.cmake
     Gems.cmake
@@ -26,12 +27,12 @@ set(FILES
     LYPython.cmake
     LYWrappers.cmake
     Monolithic.cmake
+    O3DEJson.cmake
     OutputDirectory.cmake
     Packaging.cmake
     PAL.cmake
     PALTools.cmake
     Projects.cmake
-    run_epbtest.cmake
     RuntimeDependencies.cmake
     SettingsRegistry.cmake
     UnitTest.cmake

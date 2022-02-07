@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,9 @@
 #pragma once
 
 #include <ScriptCanvas/Core/Attributes.h>
+
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace ScriptCanvasTestingNodes
 {
@@ -44,6 +48,7 @@ namespace ScriptCanvasTestingNodes
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<BehaviorContextObjectTest>()
+                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::Script::Attributes::Category, "Tests/Behavior Context")
                     ->Method("SetString", &BehaviorContextObjectTest::SetString)
                     ->Method("GetString", &BehaviorContextObjectTest::GetString)

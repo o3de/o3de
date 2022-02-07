@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,9 +11,11 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/condition_variable.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/string.h>
 
-#include <CryThread.h>
 
 extern const int defaultRemoteConsolePort;
 
@@ -57,6 +60,7 @@ enum EConsoleEventType
 
     eCET_Strobo_FrameInfoStart,
     eCET_Strobo_FrameInfoAdd,
+    eCET_ConnectMessage,
 };
 
 struct SRemoteEventFactory;
@@ -90,11 +94,11 @@ struct SNoDataEvent
 {
     SNoDataEvent()
         : IRemoteEvent(T) {};
-    virtual IRemoteEvent* Clone() { return new SNoDataEvent<T>(); }
+    IRemoteEvent* Clone() override { return new SNoDataEvent<T>(); }
 
 protected:
-    virtual void WriteToBuffer([[maybe_unused]] char* buffer, int& size, [[maybe_unused]] int maxsize) {  size = 0; }
-    virtual IRemoteEvent* CreateFromBuffer([[maybe_unused]] const char* buffer, [[maybe_unused]] int size) { return Clone(); }
+    void WriteToBuffer([[maybe_unused]] char* buffer, int& size, [[maybe_unused]] int maxsize) override {  size = 0; }
+    IRemoteEvent* CreateFromBuffer([[maybe_unused]] const char* buffer, [[maybe_unused]] int size) override { return Clone(); }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -105,17 +109,17 @@ struct SStringEvent
     SStringEvent(const char* data)
         : IRemoteEvent(T)
         , m_data(data) {};
-    virtual IRemoteEvent* Clone() { return new SStringEvent<T>(GetData()); }
+    IRemoteEvent* Clone() override { return new SStringEvent<T>(GetData()); }
     const char* GetData() const { return m_data.c_str(); }
 
 protected:
-    virtual void WriteToBuffer(char* buffer, int& size, int maxsize)
+    void WriteToBuffer(char* buffer, int& size, int maxsize) override
     {
         const char* data = GetData();
         size = min((int)strlen(data), maxsize);
         memcpy(buffer, data, size);
     }
-    virtual IRemoteEvent* CreateFromBuffer(const char* buffer, [[maybe_unused]] int size) { return new SStringEvent<T>(buffer); }
+    IRemoteEvent* CreateFromBuffer(const char* buffer, [[maybe_unused]] int size) override { return new SStringEvent<T>(buffer); }
 
 private:
     AZStd::string m_data;
@@ -145,6 +149,30 @@ private:
 
 typedef AZStd::list<IRemoteEvent*> TEventBuffer;
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// SRemoteThreadedObject
+//
+// Simple runnable-like threaded object
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+struct SRemoteThreadedObject
+{
+    virtual ~SRemoteThreadedObject() = default;
+
+    void Start(const char* name);
+
+    void WaitForThread();
+
+    virtual void Run() = 0;
+    virtual void Terminate() = 0;
+
+private:
+    void ThreadFunction();
+
+    AZStd::thread m_thread;
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 // SRemoteServer
 //
@@ -153,10 +181,10 @@ typedef AZStd::list<IRemoteEvent*> TEventBuffer;
 /////////////////////////////////////////////////////////////////////////////////////////////
 struct SRemoteClient;
 struct SRemoteServer
-    : public CrySimpleThread<>
+    : public SRemoteThreadedObject
 {
     SRemoteServer()
-        : m_socket(AZ_SOCKET_INVALID) { m_stopEvent.Set(); }
+        : m_socket(AZ_SOCKET_INVALID) {}
 
     void StartServer();
     void StopServer();
@@ -164,10 +192,8 @@ struct SRemoteServer
     void AddEvent(IRemoteEvent* pEvent);
     void GetEvents(TEventBuffer& buffer);
 
-    // CrySimpleThread
     void Terminate() override;
     void Run() override;
-    // ~CrySimpleThread
 
 private:
     bool WriteBuffer(SRemoteClient* pClient,  char* buffer, int& size);
@@ -188,9 +214,9 @@ private:
     typedef AZStd::vector<SRemoteClientInfo> TClients;
     TClients m_clients;
     AZSOCKET m_socket;
-    CryMutex m_lock;
+    AZStd::recursive_mutex m_mutex;
     TEventBuffer m_eventBuffer;
-    CryEvent m_stopEvent;
+    AZStd::condition_variable_any m_stopCondition;
     volatile bool m_bAcceptClients;
     friend struct SRemoteClient;
 };
@@ -203,7 +229,7 @@ private:
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 struct SRemoteClient
-    : public CrySimpleThread<>
+    : public SRemoteThreadedObject
 {
     SRemoteClient(SRemoteServer* pServer)
         : m_pServer(pServer)
@@ -212,10 +238,8 @@ struct SRemoteClient
     void StartClient(AZSOCKET socket);
     void StopClient();
 
-    // CrySimpleThread
     void Terminate() override;
     void Run() override;
-    // ~CrySimpleThread
 
 private:
     bool RecvPackage(char* buffer, int& size);

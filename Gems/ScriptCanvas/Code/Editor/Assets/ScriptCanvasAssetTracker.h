@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,6 +16,7 @@
 #include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
 
 #include <GraphCanvas/Editor/EditorTypes.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
 
 
 namespace ScriptCanvasEditor
@@ -60,6 +62,7 @@ namespace ScriptCanvasEditor
         void CreateView(AZ::Data::AssetId assetId, QWidget* parent) override;
         void ClearView(AZ::Data::AssetId assetId) override;
         void UntrackAsset(AZ::Data::AssetId assetId) override;
+        void RefreshAll() override;
 
         // Getters
 
@@ -85,7 +88,7 @@ namespace ScriptCanvasEditor
         void UpdateFileState(AZ::Data::AssetId assetId, Tracker::ScriptCanvasFileState state) override;
 
         AssetTrackerRequests::AssetList GetUnsavedAssets() override;
-        AssetTrackerRequests::AssetList GetAssets();
+        AssetTrackerRequests::AssetList GetAssets() override;
         AssetTrackerRequests::AssetList GetAssetsIf(AZStd::function<bool(ScriptCanvasMemoryAsset::pointer asset)> pred = []() { return true; }) override;
 
         AZ::EntityId GetSceneEntityIdFromEditorEntityId(AZ::Data::AssetId assetId, AZ::EntityId editorEntityId) override;
@@ -117,10 +120,5 @@ namespace ScriptCanvasEditor
         // Invoked when an asset is loaded from file and becomes ready
         Callbacks::OnAssetReadyCallback m_onAssetReadyCallback;
 
-        // Internal::MemoryAssetNotificationBus
-        void OnAssetReady(const ScriptCanvasMemoryAsset* asset) override;
-        void OnAssetReloaded(const ScriptCanvasMemoryAsset* asset) override;
-        void OnAssetSaved(const ScriptCanvasMemoryAsset* asset, bool isSuccessful) override;
-        void OnAssetError(const ScriptCanvasMemoryAsset* asset) override;
     };
 }

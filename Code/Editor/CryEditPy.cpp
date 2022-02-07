@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,6 +28,7 @@
 #include "GameEngine.h"
 #include "UndoConfigSpec.h"
 #include "ViewManager.h"
+#include "EditorViewportCamera.h"
 
 // Atom
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -75,10 +77,6 @@ namespace
             // This closes the current document (level)
             currentLevel->OnNewDocument();
 
-            // Then we freeze the viewport's input
-            AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Broadcast(
-                &AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Events::FreezeViewportInput, true);
-
             // Then we need to tell the game engine there is no level to render anymore
             if (GetIEditor()->GetGameEngine())
             {
@@ -93,11 +91,6 @@ namespace
                 }
             }
         }
-    }
-
-    const char* PyGetGameFolder()
-    {
-        return Path::GetEditingGameDataFolder().c_str();
     }
 
     AZStd::string PyGetGameFolderAsString()
@@ -150,20 +143,11 @@ namespace
                 return false;
             }
         }
+        const bool addToMostRecentFileList = false;
+        auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.toUtf8().data(),
+            addToMostRecentFileList, COpenSameLevelOptions::ReopenLevelIfSame);
 
-        auto previousDocument = GetIEditor()->GetDocument();
-        QString previousPathName = (previousDocument != nullptr) ? previousDocument->GetLevelPathName() : "";
-        auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.toUtf8().data());
-
-        // the underlying document pointer doesn't change, so we can't check that; use the path name's instead
-
-        bool result = true;
-        if (newDocument == nullptr || newDocument->IsLevelLoadFailed() || (newDocument->GetLevelPathName() == previousPathName))
-        {
-            result = false;
-        }
-
-        return result;
+        return newDocument != nullptr && !newDocument->IsLevelLoadFailed();
     }
 
     bool PyOpenLevelNoPrompt(const char* pLevelName)
@@ -208,7 +192,7 @@ namespace
     const char* PyGetCurrentLevelName()
     {
         // Using static member to capture temporary data
-        static string tempLevelName;
+        static AZ::IO::FixedMaxPathString tempLevelName;
         tempLevelName = GetIEditor()->GetGameEngine()->GetLevelName().toUtf8().data();
         return tempLevelName.c_str();
     }
@@ -216,7 +200,7 @@ namespace
     const char* PyGetCurrentLevelPath()
     {
         // Using static member to capture temporary data
-        static string tempLevelPath;
+        static AZ::IO::FixedMaxPathString tempLevelPath;
         tempLevelPath = GetIEditor()->GetGameEngine()->GetLevelPath().toUtf8().data();
         return tempLevelPath.c_str();
     }
@@ -262,7 +246,7 @@ namespace
         }
     }
 
-    void PySetCurrentViewRotation(float x, float y, float z)
+    void PySetCurrentViewRotation(float x, [[maybe_unused]] float y, float z)
     {
         auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
         if (viewportContextRequests)
@@ -274,7 +258,6 @@ namespace
         }
     }
 }
-
 
 namespace
 {
@@ -358,7 +341,7 @@ namespace
             {
                 AZ::TickBus::Handler::BusConnect();
             }
-            ~Ticker()
+            ~Ticker() override
             {
                 AZ::TickBus::Handler::BusDisconnect();
             }
@@ -405,79 +388,22 @@ inline namespace Commands
     {
         return static_cast<int>(GetIEditor()->GetEditorConfigPlatform());
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangeGameSpec(UINT nID)
-{
-    switch (nID)
+    bool PyAttachDebugger()
     {
-    case ID_GAME_PC_ENABLELOWSPEC:
-        Commands::PySetConfigSpec(CONFIG_LOW_SPEC, CONFIG_PC);
-        break;
-    case ID_GAME_PC_ENABLEMEDIUMSPEC:
-        Commands::PySetConfigSpec(CONFIG_MEDIUM_SPEC, CONFIG_PC);
-        break;
-    case ID_GAME_PC_ENABLEHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_HIGH_SPEC, CONFIG_PC);
-        break;
-    case ID_GAME_PC_ENABLEVERYHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_VERYHIGH_SPEC, CONFIG_PC);
-        break;
-    case ID_GAME_OSXMETAL_ENABLELOWSPEC:
-        Commands::PySetConfigSpec(CONFIG_LOW_SPEC, CONFIG_OSX_METAL);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC:
-        Commands::PySetConfigSpec(CONFIG_MEDIUM_SPEC, CONFIG_OSX_METAL);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_HIGH_SPEC, CONFIG_OSX_METAL);
-        break;
-    case ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_VERYHIGH_SPEC, CONFIG_OSX_METAL);
-        break;
-    case ID_GAME_ANDROID_ENABLELOWSPEC:
-        Commands::PySetConfigSpec(CONFIG_LOW_SPEC, CONFIG_ANDROID);
-        break;
-    case ID_GAME_ANDROID_ENABLEMEDIUMSPEC:
-        Commands::PySetConfigSpec(CONFIG_MEDIUM_SPEC, CONFIG_ANDROID);
-        break;
-    case ID_GAME_ANDROID_ENABLEHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_HIGH_SPEC, CONFIG_ANDROID);
-        break;
-    case ID_GAME_ANDROID_ENABLEVERYHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_VERYHIGH_SPEC, CONFIG_ANDROID);
-        break;
-    case ID_GAME_IOS_ENABLELOWSPEC:
-        Commands::PySetConfigSpec(CONFIG_LOW_SPEC, CONFIG_IOS);
-        break;
-    case ID_GAME_IOS_ENABLEMEDIUMSPEC:
-        Commands::PySetConfigSpec(CONFIG_MEDIUM_SPEC, CONFIG_IOS);
-        break;
-    case ID_GAME_IOS_ENABLEHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_HIGH_SPEC, CONFIG_IOS);
-        break;
-    case ID_GAME_IOS_ENABLEVERYHIGHSPEC:
-        Commands::PySetConfigSpec(CONFIG_VERYHIGH_SPEC, CONFIG_IOS);
-        break;
-#if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
-#define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
-    case ID_GAME_##CODENAME##_ENABLELOWSPEC:\
-        Commands::PySetConfigSpec(CONFIG_LOW_SPEC, CONFIG_##CODENAME);\
-        break;\
-    case ID_GAME_##CODENAME##_ENABLEMEDIUMSPEC:\
-        Commands::PySetConfigSpec(CONFIG_MEDIUM_SPEC, CONFIG_##CODENAME);\
-        break;\
-    case ID_GAME_##CODENAME##_ENABLEHIGHSPEC:\
-        Commands::PySetConfigSpec(CONFIG_HIGH_SPEC, CONFIG_##CODENAME);\
-        break;
-    AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-#undef AZ_RESTRICTED_PLATFORM_EXPANSION
-#endif
+        return AZ::Debug::Trace::AttachDebugger();
+    }
+
+    bool PyWaitForDebugger(float timeoutSeconds = -1.f)
+    {
+        return AZ::Debug::Trace::WaitForDebugger(timeoutSeconds);
+    }
+
+    AZStd::string PyGetFileAlias(AZStd::string alias)
+    {
+        return AZ::IO::FileIOBase::GetInstance()->GetAlias(alias.c_str());
     }
 }
-
-
 
 namespace AzToolsFramework
 {
@@ -503,9 +429,9 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("load_all_plugins", ::Command_LoadPlugins, nullptr, "Loads all available plugins."));
             addLegacyGeneral(behaviorContext->Method("get_current_view_position", PyGetCurrentViewPosition, nullptr, "Returns the position of the current view as a Vec3."));
-            addLegacyGeneral(behaviorContext->Method("get_current_view_rotation", PyGetCurrentViewRotation, nullptr, "Returns the rotation of the current view as a Vec3 of Euler angles."));
+            addLegacyGeneral(behaviorContext->Method("get_current_view_rotation", PyGetCurrentViewRotation, nullptr, "Returns the rotation of the current view as a Vec3 of Euler angles in degrees."));
             addLegacyGeneral(behaviorContext->Method("set_current_view_position", PySetCurrentViewPosition, nullptr, "Sets the position of the current view as given x, y, z coordinates."));
-            addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles."));
+            addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles in degrees."));
 
             addLegacyGeneral(behaviorContext->Method("export_to_engine", CCryEditApp::Command_ExportToEngine, nullptr, "Exports the current level to the engine."));
             addLegacyGeneral(behaviorContext->Method("set_config_spec", PySetConfigSpec, nullptr, "Sets the system config spec and platform."));
@@ -523,6 +449,11 @@ namespace AzToolsFramework
 
             addLegacyGeneral(behaviorContext->Method("start_process_detached", PyStartProcessDetached, nullptr, "Launches a detached process with an optional space separated list of arguments."));
             addLegacyGeneral(behaviorContext->Method("launch_lua_editor", PyLaunchLUAEditor, nullptr, "Launches the Lua editor, may receive a list of space separate file paths, or an empty string to only open the editor."));
+
+            addLegacyGeneral(behaviorContext->Method("attach_debugger", PyAttachDebugger, nullptr, "Prompts for attaching the debugger"));
+            addLegacyGeneral(behaviorContext->Method("wait_for_debugger", PyWaitForDebugger, behaviorContext->MakeDefaultValues(-1.f), "Pauses this thread execution until the debugger has been attached"));
+
+            addLegacyGeneral(behaviorContext->Method("get_file_alias", PyGetFileAlias, nullptr, "Retrieves path for IO alias"));
 
             // this will put these methods into the 'azlmbr.legacy.checkout_dialog' module
             auto addCheckoutDialog = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)

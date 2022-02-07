@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,7 +17,7 @@
 
 #include <Integration/Assets/MotionAsset.h>
 #include <Integration/ActorComponentBus.h>
-
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 namespace EMotionFX
 {
@@ -43,7 +44,7 @@ namespace EMotionFX
                 void Reset();
 
                 // Generate the default value based on LOD level.
-                void GenerateDefaultValue(AZ::u32 numLODs);
+                void GenerateDefaultValue(size_t numLODs);
                 bool GetEnableLodSampling();
 
                 static void Reflect(AZ::ReflectContext* context);
@@ -87,11 +88,14 @@ namespace EMotionFX
             // AZ::TickBus::Handler
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-            static AZ::u32 GetLodByDistance(const AZStd::vector<float>& distances, float distance);
+            static size_t GetLodByDistance(const AZStd::vector<float>& distances, float distance);
             static void UpdateLodLevelByDistance(EMotionFX::ActorInstance* actorInstance, const Configuration& configuration, AZ::EntityId entityId);
 
             Configuration                               m_configuration;        // Component configuration.
             EMotionFX::ActorInstance*                   m_actorInstance;        // Associated actor instance (retrieved from Actor Component).
+
+            AZ::RPI::Cullable::LodType m_previousLodType = AZ::RPI::Cullable::LodType::Default;
+            size_t m_previousLodLevel = 0;
         };
 
     } // namespace Integration

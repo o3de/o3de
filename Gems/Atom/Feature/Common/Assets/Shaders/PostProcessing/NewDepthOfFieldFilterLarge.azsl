@@ -1,0 +1,170 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include "DepthOfField.azsli"
+#include "NewDepthOfFieldCommon.azsli"
+
+#include <viewsrg.srgi>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_colorAndCoc;
+    Texture2D<float2> m_minMaxCocTile;
+
+    // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
+    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
+    float4 m_textureDimensions;
+
+    NewDepthOfFieldConstants m_dofConstants;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+float3 GetOffset(uint index, float2 offsetUVMultiplier)
+{
+    float3 offset = PassSrg::m_dofConstants.samplePositions[index].xyz;
+    offset.xy *= offsetUVMultiplier;
+    return offset;
+}
+
+float CalculateWeight(float offsetRadius, float samplingRadius, float sampleCoc, float centerCoc)
+{
+    // The maximum distance for which samples are valid is the min of the sample CoC and the center CoC
+    float maxRadius = abs(min(sampleCoc, centerCoc));
+    
+    // Easy human readable calculations: 
+    // radius = samplingRadius * offsetRadius;
+    // falloff = maxRadius - radius;
+    // weight = 1 + (4 * falloff)
+    //
+    // The same thing in mad form:
+    float falloff = mad(-samplingRadius, offsetRadius, maxRadius);
+    return saturate(mad(4, falloff, 1));
+}
+
+// This shader blurs by sampling 48 pixels in a circle around the center pixel
+// See http://advances.realtimerendering.com/s2013/Sousa_Graphics_Gems_CryENGINE3.pptx
+// for a detailed explanation.
+PSOutput MainPS(VSOutput IN)
+{
+    // Get center sample
+    float2 pixelUV = IN.m_texCoord;
+    float4 color = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV).rgba;
+    float centerCoc = color.a;
+
+    // Get tile min CoC
+    int2 tile = int2(IN.m_position.xy) / 16;
+    float minCoc = PassSrg::m_minMaxCocTile[tile].x;
+
+    // Aspect ratio is needed because sample offsets are calculated in a perfect circle, but
+    // UV space is stretched due to normalized device coordinates. Correct this with aspect ratio
+    // Aspect ratio = texture.x / texture.y = dimensions.x * dimensions.w
+    float aspectRatio = PassSrg::m_textureDimensions.x * PassSrg::m_textureDimensions.w;
+
+    // Sampling radius
+    float cocRadius = max( abs(centerCoc), -minCoc);
+    float screenRadius = cocRadius * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
+    float2 offsetMultiplier = float2(screenRadius / aspectRatio, screenRadius);
+
+    // Background samples are samples behind the current pixel. Because of how depth of field works,
+    // these pixels can contribute to the center pixel even if they are out of range of the center pixel's CoC
+    // We accumulate them seperately and calculate a new estimated alpha value based on the ratio of samples
+    // that were background pixels.
+    float4 backgroundColor = float4(0, 0, 0, 0);
+    
+    // If there are only positive CoCs in our region, we don't need to consider background blur
+    // Do the faster and nicer approach
+    if(minCoc >= 0)
+    {
+        for(uint i = 0; i < SAMPLES_LOOP_TOTAL; ++i)
+        {
+            // Calculate sample offset
+            float3 offset = GetOffset(i, offsetMultiplier);
+            
+            // Get sample
+            float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV + offset.xy).rgba;
+
+            // Calculate weight for sample
+            float weight = CalculateWeight(offset.z, cocRadius, sampleColorCoc.a, centerCoc);
+
+            // Accumulate
+            color += weight * sampleColorCoc;
+        }
+    }
+    else    // Some CoCs in the region are negative, need to consider possible background bokeh contribution
+    {
+        // Distance behind which samples are considered background samples
+        float backgroundMin = min(0, centerCoc);
+
+        // Linear sampling colors pre-multiplied with CoC yields artefacts when combined with this background technique
+        // We therefore do point sampling and unpack the original color value per sample
+        color.rgb /= abs(color.a);
+        color.a = 1;
+        
+        for(uint i = 0; i < SAMPLES_LOOP_TOTAL; ++i)
+        {
+            // Calculate sample offset
+            float3 offset = GetOffset(i, offsetMultiplier);
+            
+            // Get sample + unpack
+            float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::PointSampler, pixelUV + offset.xy).rgba;
+            sampleColorCoc.rgb /= abs(sampleColorCoc.a);
+            
+            // Calculate weight for sample
+            float weight = CalculateWeight(offset.z, cocRadius, sampleColorCoc.a, centerCoc);
+            sampleColorCoc.rgb *= weight;
+            
+            bool isBackground = (sampleColorCoc.a < backgroundMin);
+            
+            // We accumulate weight in alpha channel of color and backgroundColor
+            sampleColorCoc.a = weight;
+            
+            // Accumulate
+            backgroundColor += isBackground * sampleColorCoc;
+            color += !isBackground * sampleColorCoc;
+        }
+
+        // Average background samples
+        backgroundColor.rgb /= max(backgroundColor.a, COC_EPSILON);
+    }
+    
+    // Calculate background ratio. If greater than the current CoC, replace the current CoC with
+    // background ratio. This is so background bokeh effects will still render on in-focus objects
+    float backgroundRatio = saturate( backgroundColor.a / float(SAMPLES_LOOP_TOTAL) );
+    float alpha = backgroundRatio > abs(centerCoc) ? -backgroundRatio : centerCoc;
+
+    // Average accumulated color samples and combine with background samples
+    color.rgb /= max(color.a, COC_EPSILON);
+    color = lerp(color, backgroundColor, backgroundRatio);
+
+    PSOutput OUT = (PSOutput)0;
+    OUT.m_color.rgb = color.rgb;
+    OUT.m_color.a = alpha;
+    return OUT;
+}
+

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,10 @@
 
 #include "UiAnimUndoObject.h"
 #include "UiAnimUndo.h"
+
+#include <QtCore/QString>
+
+class QWidget;
 
 class CUiAnimViewNode;
 class CUiAnimViewSequence;
@@ -299,7 +304,7 @@ class CUndoAnimNodeRename
     : public UiAnimUndoObject
 {
 public:
-    CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const string& oldName);
+    CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const AZStd::string& oldName);
 
 protected:
     virtual int GetSize() override { return sizeof(*this); };
@@ -310,8 +315,8 @@ protected:
 
 private:
     CUiAnimViewAnimNode* m_pNode;
-    string m_newName;
-    string m_oldName;
+    AZStd::string m_newName;
+    AZStd::string m_oldName;
 };
 
 /** Base class for track event transactions

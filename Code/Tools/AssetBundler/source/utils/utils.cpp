@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -109,7 +110,6 @@ namespace AssetBundler
     const char RestrictedDirectoryName[] = "restricted";
     const char PlatformsDirectoryName[] = "Platforms";
     const char GemsDirectoryName[] = "Gems";
-    const char GemsAssetsDirectoryName[] = "Assets";
     const char GemsSeedFileName[] = "seedList";
     const char EngineSeedFileName[] = "SeedAssetList";
 
@@ -377,7 +377,6 @@ namespace AssetBundler
 
     AzFramework::PlatformFlags GetEnabledPlatformFlags(
         AZStd::string_view engineRoot,
-        AZStd::string_view assetRoot,
         AZStd::string_view projectPath)
     {
         auto settingsRegistry = AZ::SettingsRegistry::Get();
@@ -387,7 +386,7 @@ namespace AssetBundler
             return AzFramework::PlatformFlags::Platform_NONE;
         }
 
-        auto configFiles = AzToolsFramework::AssetUtils::GetConfigFiles(engineRoot, assetRoot, projectPath, true, true, settingsRegistry);
+        auto configFiles = AzToolsFramework::AssetUtils::GetConfigFiles(engineRoot, projectPath, true, true, settingsRegistry);
         auto enabledPlatformList = AzToolsFramework::AssetUtils::GetEnabledPlatforms(*settingsRegistry, configFiles);
         AzFramework::PlatformFlags platformFlags = AzFramework::PlatformFlags::Platform_NONE;
         for (const auto& enabledPlatform : enabledPlatformList)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,6 +29,8 @@
 
 #include <Editor/View/Widgets/CanvasWidget.h>
 #include <Editor/Undo/ScriptCanvasUndoManager.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
+
 
 namespace ScriptCanvasEditor
 {
@@ -171,7 +174,6 @@ namespace ScriptCanvasEditor
 
         bool IsSourceInError() const;
 
-        void OnSourceAssetFinalized(const AZStd::string& fullPath, AZ::Uuid sourceAssetId);
         void SavingComplete(const AZStd::string& fullPath, AZ::Uuid sourceAssetId);
 
         AZ::Data::AssetId GetSourceUuid() const { return m_sourceUuid; }
@@ -319,7 +321,6 @@ namespace ScriptCanvasEditor
         //! The undo helper is an object that implements the Undo behaviors
         AZStd::unique_ptr<UndoHelper> m_undoHelper;
 
-        bool m_isSaving;
         bool m_sourceInError;
 
         AZ::Data::AssetId m_sourceUuid;

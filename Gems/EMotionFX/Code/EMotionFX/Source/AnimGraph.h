@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,7 +20,7 @@
 #include <EMotionFX/Source/Parameter/GroupParameter.h>
 #include <EMotionFX/Source/Parameter/ValueParameter.h>
 #include <MCore/Source/Distance.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace EMotionFX
 {
@@ -64,31 +65,31 @@ namespace EMotionFX
         AnimGraphStateTransition* RecursiveFindTransitionById(AnimGraphConnectionId transitionId) const;
 
         void RecursiveCollectNodesOfType(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>* outNodes) const; // note: outNodes is NOT cleared internally, nodes are added to the array
-        void RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, MCore::Array<AnimGraphTransitionCondition*>* outConditions) const; // note: outNodes is NOT cleared internally, nodes are added to the array
+        void RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, AZStd::vector<AnimGraphTransitionCondition*>* outConditions) const; // note: outNodes is NOT cleared internally, nodes are added to the array
 
         // Collects all objects of type and/or derived type
         void RecursiveCollectObjectsOfType(const AZ::TypeId& objectType, AZStd::vector<AnimGraphObject*>& outObjects);
 
         void RecursiveCollectObjectsAffectedBy(AnimGraph* animGraph, AZStd::vector<AnimGraphObject*>& outObjects);
 
-        uint32 RecursiveCalcNumNodes() const;
+        size_t RecursiveCalcNumNodes() const;
 
         struct Statistics
         {
-            AZ::u32 m_maxHierarchyDepth;
-            AZ::u32 m_numStateMachines;
-            AZ::u32 m_numStates;
-            AZ::u32 m_numTransitions;
-            AZ::u32 m_numWildcardTransitions;
-            AZ::u32 m_numTransitionConditions;
+            size_t m_maxHierarchyDepth;
+            size_t m_numStateMachines;
+            size_t m_numStates;
+            size_t m_numTransitions;
+            size_t m_numWildcardTransitions;
+            size_t m_numTransitionConditions;
 
             Statistics();
         };
 
         void RecursiveCalcStatistics(Statistics& outStatistics) const;
-        uint32 RecursiveCalcNumNodeConnections() const;
+        size_t RecursiveCalcNumNodeConnections() const;
 
-        void DecreaseInternalAttributeIndices(uint32 decreaseEverythingHigherThan);
+        void DecreaseInternalAttributeIndices(size_t decreaseEverythingHigherThan);
 
         AZStd::string GenerateNodeName(const AZStd::unordered_set<AZStd::string>& nameReserveList, const char* prefix = "Node") const;
 
@@ -312,13 +313,13 @@ namespace EMotionFX
          * Get the number of node groups.
          * @result The number of node groups.
          */
-        uint32 GetNumNodeGroups() const;
+        size_t GetNumNodeGroups() const;
 
         /**
          * Get a pointer to the given node group.
          * @param index The node group index, which must be in range of [0..GetNumNodeGroups()-1].
          */
-        AnimGraphNodeGroup* GetNodeGroup(uint32 index) const;
+        AnimGraphNodeGroup* GetNodeGroup(size_t index) const;
 
         /**
          * Find a node group based on the name and return a pointer.
@@ -332,7 +333,7 @@ namespace EMotionFX
          * @param groupName The group name to search for.
          * @result The index of the node group inside this anim graph, MCORE_INVALIDINDEX32 in case the node group wasn't found.
          */
-        uint32 FindNodeGroupIndexByName(const char* groupName) const;
+        size_t FindNodeGroupIndexByName(const char* groupName) const;
 
         /**
          * Add the given node group.
@@ -345,7 +346,7 @@ namespace EMotionFX
          * @param index The node group index to remove. This value must be in range of [0..GetNumNodeGroups()-1].
          * @param delFromMem Set to true (default) when you wish to also delete the specified group from memory.
          */
-        void RemoveNodeGroup(uint32 index, bool delFromMem = true);
+        void RemoveNodeGroup(size_t index, bool delFromMem = true);
 
         /**
          * Remove all node groups.
@@ -376,14 +377,14 @@ namespace EMotionFX
         void AddObject(AnimGraphObject* object);       // registers the object in the array and modifies the object's object index value
         void RemoveObject(AnimGraphObject* object);    // doesn't actually remove it from memory, just removes it from the list
 
-        uint32 GetNumObjects() const                                                          { return static_cast<uint32>(mObjects.size()); }
-        AnimGraphObject* GetObject(uint32 index) const                                        { return mObjects[index]; }
-        void ReserveNumObjects(uint32 numObjects);
+        size_t GetNumObjects() const                                                          { return m_objects.size(); }
+        AnimGraphObject* GetObject(size_t index) const                                        { return m_objects[index]; }
+        void ReserveNumObjects(size_t numObjects);
 
-        uint32 GetNumNodes() const                                                            { return mNodes.GetLength(); }
-        AnimGraphNode* GetNode(uint32 index) const                                            { return mNodes[index]; }
-        void ReserveNumNodes(uint32 numNodes);
-        uint32 CalcNumMotionNodes() const;
+        size_t GetNumNodes() const                                                            { return m_nodes.size(); }
+        AnimGraphNode* GetNode(size_t index) const                                            { return m_nodes[index]; }
+        void ReserveNumNodes(size_t numNodes);
+        size_t CalcNumMotionNodes() const;
 
         size_t GetNumAnimGraphInstances() const                                               { return m_animGraphInstances.size(); }
         AnimGraphInstance* GetAnimGraphInstance(size_t index) const                           { return m_animGraphInstances[index]; }
@@ -404,7 +405,7 @@ namespace EMotionFX
         void RemoveInvalidConnections(bool logWarnings=false);
 
     private:
-        void RecursiveCalcStatistics(Statistics& outStatistics, AnimGraphNode* animGraphNode, uint32 currentHierarchyDepth = 0) const;
+        void RecursiveCalcStatistics(Statistics& outStatistics, AnimGraphNode* animGraphNode, size_t currentHierarchyDepth = 0) const;
 
         void OnRetargetingEnabledChanged();
 
@@ -414,21 +415,21 @@ namespace EMotionFX
         GroupParameter                                  m_rootParameter;   /**< root group parameter. */
         ValueParameterVector                            m_valueParameters;      /**< Cached version of all parameters with values. */
         AZStd::unordered_map<AZStd::string_view, size_t> m_valueParameterIndexByName; /**< Cached version of parameter index by name to accelerate lookups. */
-        AZStd::vector<AnimGraphNodeGroup*>              mNodeGroups;
-        AZStd::vector<AnimGraphObject*>                 mObjects;
-        MCore::Array<AnimGraphNode*>                    mNodes;
+        AZStd::vector<AnimGraphNodeGroup*>              m_nodeGroups;
+        AZStd::vector<AnimGraphObject*>                 m_objects;
+        AZStd::vector<AnimGraphNode*>                    m_nodes;
         AZStd::vector<AnimGraphInstance*>               m_animGraphInstances;
-        AZStd::string                                   mFileName;
-        AnimGraphStateMachine*                          mRootStateMachine;
-        AnimGraphGameControllerSettings*                mGameControllerSettings;
-        MCore::Mutex                                    mLock;
-        uint32                                          mID;                    /**< The unique identification number for this anim graph. */
-        bool                                            mAutoUnregister;        /**< Specifies whether we will automatically unregister this anim graph set from this anim graph manager or not, when deleting this object. */
-        bool                                            mRetarget;              /**< Is retargeting enabled on default? */
-        bool                                            mDirtyFlag;             /**< The dirty flag which indicates whether the user has made changes to this anim graph since the last file save operation. */
+        AZStd::string                                   m_fileName;
+        AnimGraphStateMachine*                          m_rootStateMachine;
+        AnimGraphGameControllerSettings*                m_gameControllerSettings;
+        MCore::Mutex                                    m_lock;
+        uint32                                          m_id;                    /**< The unique identification number for this anim graph. */
+        bool                                            m_autoUnregister;        /**< Specifies whether we will automatically unregister this anim graph set from this anim graph manager or not, when deleting this object. */
+        bool                                            m_retarget;              /**< Is retargeting enabled on default? */
+        bool                                            m_dirtyFlag;             /**< The dirty flag which indicates whether the user has made changes to this anim graph since the last file save operation. */
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        bool                                            mIsOwnedByRuntime;      /**< Set if the anim graph is used/owned by the engine runtime. */
+        bool                                            m_isOwnedByRuntime;      /**< Set if the anim graph is used/owned by the engine runtime. */
         bool                                            m_isOwnedByAsset;        /**< Set if the anim graph is used/owned by an asset. */
 #endif // EMFX_DEVELOPMENT_BUILD
     };

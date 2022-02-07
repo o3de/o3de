@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineLayout.h>
@@ -139,8 +139,8 @@ namespace AZ
                 const RHI::ShaderResourceGroupLayout& groupLayout = *descriptor.GetShaderResourceGroupLayout(groupLayoutIndex);
 
                 const uint32_t srgLayoutSlot = groupLayout.GetBindingSlot();
-                m_slotToIndexTable[srgLayoutSlot] = groupLayoutIndex;
-                m_indexToSlotTable[groupLayoutIndex] = srgLayoutSlot;
+                m_slotToIndexTable[srgLayoutSlot] = static_cast<uint8_t>(groupLayoutIndex);
+                m_indexToSlotTable[groupLayoutIndex] = static_cast<uint8_t>(srgLayoutSlot);
             }
 
             // Construct a list of indexes sorted by frequency.

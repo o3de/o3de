@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -136,8 +137,10 @@ namespace AzQtComponents
 
         int pixelMetric(QStyle::PixelMetric metric, const QStyleOption* option, const QWidget* widget) const override;
 
+        using QProxyStyle::polish;
         void polish(QApplication* application) override;
         void polish(QWidget* widget) override;
+        using QProxyStyle::unpolish;
         void unpolish(QWidget* widget) override;
 
         QPalette standardPalette() const override;

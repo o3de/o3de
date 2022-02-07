@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "EditorCommon_precompiled.h"
 #include <SaveUtilities/AsyncSaveRunner.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzCore/IO/SystemFile.h>
@@ -76,6 +76,7 @@ namespace AZ
                     else if (info.m_status == AzToolsFramework::SourceControlStatus::SCS_ProviderIsDown)
                     {
                         message = "Failed to put entries/dependencies into source control as the provider is not available.\n";
+                        reportAsWarning = true;
                     }
                     else if (info.m_status == AzToolsFramework::SourceControlStatus::SCS_CertificateInvalid)
                     {

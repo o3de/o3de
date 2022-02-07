@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -120,24 +121,6 @@ public:
 
     void CompressInput(const uint8* const pInput, const size_t numBytes, uint8* const pOutput, size_t* const outputSize);
     size_t UncompressInput(const uint8* const pInput, const size_t numBytes, uint8* const pOutput, const size_t maxOutputSize);
-
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(this, sizeof(*this));
-
-        if (m_Counts != NULL)
-        {
-            pSizer->AddObject(m_Counts, sizeof(uint32), MAX_NUM_SYMBOLS);
-        }
-        if (m_TreeNodes != NULL)
-        {
-            pSizer->AddObject(m_TreeNodes, sizeof(HuffmanTreeNode), MAX_NUM_NODES);
-        }
-        if (m_Codes != NULL)
-        {
-            pSizer->AddObject(m_Codes, sizeof(HuffmanSymbolCode), MAX_NUM_CODES);
-        }
-    }
 
 private:
     void ScaleCountsAndUpdateNodes();

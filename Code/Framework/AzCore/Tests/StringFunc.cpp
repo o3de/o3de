@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -362,7 +363,10 @@ namespace AZ
     {
         constexpr AZStd::array visitTokens = { "Hello", "World", "", "More", "", "", "Tokens" };
         size_t visitIndex{};
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         auto visitor = [&visitIndex, &visitTokens](AZStd::string_view token)
+        AZ_POP_DISABLE_WARNING
         {
             if (visitIndex > visitTokens.size())
             {
@@ -388,7 +392,10 @@ namespace AZ
     {
         constexpr AZStd::array visitTokens = { "Hello", "World", "", "More", "", "", "Tokens" };
         size_t visitIndex = visitTokens.size() - 1;
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         auto visitor = [&visitIndex, &visitTokens](AZStd::string_view token)
+        AZ_POP_DISABLE_WARNING
         {
             if (visitIndex > visitTokens.size())
             {
@@ -965,7 +972,7 @@ namespace AZ
     {
     public:
         StringPathFuncTest() = default;
-        virtual ~StringPathFuncTest() = default;
+        ~StringPathFuncTest() override = default;
     };
 
 

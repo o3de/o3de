@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,7 @@ namespace CrashHandler
         if (fileIO)
         {
             // If our devroot alias is available, use that
-            const char* devAlias = fileIO->GetAlias("@devroot@");
+            const char* devAlias = fileIO->GetAlias("@engroot@");
             if (devAlias)
             {
                 return devAlias;

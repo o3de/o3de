@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -16,7 +17,7 @@ import azlmbr.vegetation as vegetation
 import azlmbr.areasystem as areasystem
 import azlmbr.paths
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
+sys.path.append(os.path.join(azlmbr.paths.projectroot, 'Gem', 'PythonTests'))
 import editor_python_test_tools.hydra_editor_utils as hydra
 
 
@@ -24,7 +25,7 @@ def create_surface_entity(name, center_point, box_size_x, box_size_y, box_size_z
     # Create a "flat surface" entity to use as a plantable vegetation surface
     surface_entity = hydra.Entity(name)
     surface_entity.create_entity(
-        center_point, 
+        center_point,
         ["Box Shape", "Shape Surface Tag Emitter"]
         )
     if surface_entity.id.IsValid():
@@ -34,7 +35,7 @@ def create_surface_entity(name, center_point, box_size_x, box_size_y, box_size_z
     return surface_entity
 
 
-def create_mesh_surface_entity_with_slopes(name, center_point, scale_x, scale_y, scale_z):
+def create_mesh_surface_entity_with_slopes(name, center_point, uniform_scale):
     # Creates an entity with the assigned mesh_asset as the specified scale and sets up as a planting surface
     mesh_asset_path = os.path.join("models", "sphere.azmodel")
     mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(),
@@ -47,7 +48,7 @@ def create_mesh_surface_entity_with_slopes(name, center_point, scale_x, scale_y,
     if surface_entity.id.IsValid():
         print(f"'{surface_entity.name}' created")
     hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Mesh Asset", mesh_asset)
-    components.TransformBus(bus.Event, "SetLocalScale", surface_entity.id, math.Vector3(scale_x, scale_y, scale_z))
+    components.TransformBus(bus.Event, "SetLocalUniformScale", surface_entity.id, uniform_scale)
     return surface_entity
 
 
@@ -55,7 +56,7 @@ def create_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_
     # Create a vegetation area entity to use as our test vegetation spawner
     spawner_entity = hydra.Entity(name)
     spawner_entity.create_entity(
-        center_point, 
+        center_point,
         ["Vegetation Layer Spawner", "Box Shape", "Vegetation Asset List"]
         )
     if spawner_entity.id.IsValid():

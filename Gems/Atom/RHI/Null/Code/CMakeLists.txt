@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -28,7 +29,6 @@ ly_add_target(
     NAME Atom_RHI_Null.Private.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        atom_rhi_null_common_files.cmake
         atom_rhi_null_private_common_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE

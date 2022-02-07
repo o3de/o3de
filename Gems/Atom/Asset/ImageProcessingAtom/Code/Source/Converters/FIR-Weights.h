@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,11 +23,7 @@ namespace ImageProcessingAtom
     inline DataType minimum(const DataType& ths, const DataType& tht) { return (ths < tht ? ths : tht); }
     template<class DataType>
     inline DataType maximum(const DataType& ths, const DataType& tht) { return (ths > tht ? ths : tht); }
-
-    #ifndef round
-    #define round(x)    ((x) >= 0) ? floor((x) + 0.5) : ceil((x) - 0.5)
-    #endif
-
+   
     /* ####################################################################################################################
      */
 

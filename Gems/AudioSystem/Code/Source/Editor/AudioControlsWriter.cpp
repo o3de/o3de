@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,28 +9,27 @@
 
 #include <AudioControlsWriter.h>
 
+#include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/IO/TextStreamWriters.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/XML/rapidxml_print.h>
 
 #include <ACEEnums.h>
 #include <ATLControlsModel.h>
-#include <CryFile.h>
 #include <IAudioSystem.h>
 #include <IAudioSystemControl.h>
 #include <IAudioSystemEditor.h>
+
 #include <IEditor.h>
 #include <Include/IFileUtil.h>
 #include <Include/ISourceControl.h>
-#include <ISystem.h>
-#include <StringUtils.h>
-#include <Util/PathUtil.h>
 
 #include <QModelIndex>
 #include <QStandardItemModel>
 #include <QFileInfo>
 
-
-using namespace PathUtil;
 
 namespace AudioControls
 {
@@ -79,6 +79,18 @@ namespace AudioControls
                 index = index.sibling(++i, 0);
             }
 
+            auto fileIO = AZ::IO::FileIOBase::GetInstance();
+            AZStd::for_each(
+                m_foundLibraryPaths.begin(), m_foundLibraryPaths.end(),
+                [fileIO](AZStd::string& libraryPath) -> void
+                {
+                    if (auto newPathOpt = fileIO->ConvertToAlias(AZ::IO::PathView{ libraryPath });
+                        newPathOpt.has_value())
+                    {
+                        libraryPath = newPathOpt.value().Native();
+                    }
+                    AZStd::to_lower(libraryPath.begin(), libraryPath.end());
+                });
 
             // Delete libraries that don't exist anymore from disk
             FilepathSet librariesToDelete;
@@ -102,7 +114,10 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     void CAudioControlsWriter::WriteLibrary(const AZStd::string_view libraryName, QModelIndex root)
     {
-        if (root.isValid())
+        const char* controlsPath = nullptr;
+        Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
+
+        if (root.isValid() && controlsPath)
         {
             TLibraryStorage library;
             int i = 0;
@@ -113,68 +128,63 @@ namespace AudioControls
                 child = root.model()->index(++i, 0, root);
             }
 
-            const char* controlsPath = nullptr;
-            Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
-
             for (auto& libraryPair : library)
             {
-                AZStd::string libraryPath;
+                AZ::IO::FixedMaxPath libraryPath{ controlsPath };
                 const AZStd::string& scope = libraryPair.first;
                 if (scope.empty())
                 {
                     // no scope, file at the root level
-                    libraryPath.append(controlsPath);
-                    AZ::StringFunc::Path::Join(libraryPath.c_str(), libraryName.data(), libraryPath);
-                    libraryPath.append(WriterStrings::LibraryExtension);
+                    libraryPath /= libraryName;
+                    libraryPath.ReplaceExtension(WriterStrings::LibraryExtension);
                 }
                 else
                 {
                     // with scope, inside level folder
-                    libraryPath.append(controlsPath);
-                    libraryPath.append(WriterStrings::LevelsSubFolder);
-                    AZ::StringFunc::Path::Join(libraryPath.c_str(), scope.c_str(), libraryPath);
-                    AZ::StringFunc::Path::Join(libraryPath.c_str(), libraryName.data(), libraryPath);
-                    libraryPath.append(WriterStrings::LibraryExtension);
+                    libraryPath /= AZ::IO::FixedMaxPath{ WriterStrings::LevelsSubFolder } / scope / libraryName;
+                    libraryPath.ReplaceExtension(WriterStrings::LibraryExtension);
                 }
 
-                // should be able to change this back to GamePathToFullPath once a path normalization bug has been fixed:
-                AZStd::string fullFilePath;
-                AZ::StringFunc::Path::Join(Path::GetEditingGameDataFolder().c_str(), libraryPath.c_str(), fullFilePath);
-                AZStd::to_lower(fullFilePath.begin(), fullFilePath.end());
+                AZ::IO::FixedMaxPath fullFilePath = AZ::Utils::GetProjectPath();
+                fullFilePath /= libraryPath;
                 m_foundLibraryPaths.insert(fullFilePath.c_str());
 
                 const SLibraryScope& libScope = libraryPair.second;
                 if (libScope.m_isDirty)
                 {
-                    XmlNodeRef fileNode = GetISystem()->CreateXmlNode(Audio::ATLXmlTags::RootNodeTag);
-                    fileNode->setAttr(Audio::ATLXmlTags::ATLNameAttribute, libraryName.data());
+                    XmlAllocator& xmlAlloc(AudioControls::s_xmlAllocator);
+                    AZ::rapidxml::xml_node<char>* fileNode =
+                        xmlAlloc.allocate_node(AZ::rapidxml::node_element, xmlAlloc.allocate_string(Audio::ATLXmlTags::RootNodeTag));
+
+                    AZ::rapidxml::xml_attribute<char>* nameAttr = xmlAlloc.allocate_attribute(
+                        xmlAlloc.allocate_string(Audio::ATLXmlTags::ATLNameAttribute), xmlAlloc.allocate_string(libraryName.data()));
+
+                    fileNode->append_attribute(nameAttr);
 
                     for (int ii = 0; ii < eACET_NUM_TYPES; ++ii)
                     {
-                        if (ii != eACET_SWITCH_STATE) // switch_states are written inside the switches
+                        if (libScope.m_nodes[ii] && libScope.m_nodes[ii]->first_node() != nullptr)
                         {
-                            if (libScope.m_nodes[ii]->getChildCount() > 0)
-                            {
-                                fileNode->addChild(libScope.m_nodes[ii]);
-                            }
+                            fileNode->append_node(libScope.m_nodes[ii]);
                         }
                     }
 
-                    if (QFileInfo::exists(fullFilePath.c_str()))
+                    if (auto fileInfo = QFileInfo(fullFilePath.c_str());
+                        fileInfo.exists())
                     {
-                        const DWORD fileAttributes = GetFileAttributes(fullFilePath.c_str());
-                        if (fileAttributes & FILE_ATTRIBUTE_READONLY)
+                        if (!fileInfo.isWritable())
                         {
-                            // file is read-only
-                            CheckOutFile(fullFilePath);
+                            // file exists and is read-only
+                            CheckOutFile(fullFilePath.Native());
                         }
-                        fileNode->saveToFile(fullFilePath.c_str());
+
+                        [[maybe_unused]] bool writeOk = WriteXmlToFile(fullFilePath.Native(), fileNode);
                     }
                     else
                     {
-                        // save the file, CheckOutFile will add it, since it's new
-                        fileNode->saveToFile(fullFilePath.c_str());
-                        CheckOutFile(fullFilePath);
+                        // since it's a new file, save the file first, CheckOutFile will add it
+                        [[maybe_unused]] bool writeOk = WriteXmlToFile(fullFilePath.Native(), fileNode);
+                        CheckOutFile(fullFilePath.Native());
                     }
                 }
             }
@@ -248,14 +258,63 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
-    void CAudioControlsWriter::WriteControlToXml(XmlNodeRef node, CATLControl* control, const AZStd::string_view path)
+    bool CAudioControlsWriter::WriteXmlToFile(const AZStd::string_view filepath, AZ::rapidxml::xml_node<char>* rootNode)
     {
+        if (!rootNode)
+        {
+            return false;
+        }
+
+        using namespace AZ::IO;
+        AZStd::string docString;
+        ByteContainerStream stringStream(&docString);
+
+        AZ::rapidxml::xml_document<char> xmlDoc;
+        xmlDoc.append_node(rootNode);
+
+        RapidXMLStreamWriter streamWriter(&stringStream);
+        AZ::rapidxml::print(streamWriter.Iterator(), xmlDoc);
+        streamWriter.FlushCache();
+
+        constexpr int openMode =
+            (SystemFile::SF_OPEN_WRITE_ONLY | SystemFile::SF_OPEN_CREATE | SystemFile::SF_OPEN_CREATE_PATH);
+
+        if (SystemFile fileOut;
+            fileOut.Open(filepath.data(), openMode))
+        {
+            auto bytesWritten = fileOut.Write(docString.data(), docString.size());
+            return (bytesWritten == docString.size());
+        }
+        return false;
+    }
+
+    //-------------------------------------------------------------------------------------------//
+    void CAudioControlsWriter::WriteControlToXml(AZ::rapidxml::xml_node<char>* node, CATLControl* control, const AZStd::string_view path)
+    {
+        if (!node || !control)
+        {
+            return;
+        }
+
+        XmlAllocator& xmlAlloc(AudioControls::s_xmlAllocator);
+
         const EACEControlType type = control->GetType();
-        XmlNodeRef childNode = node->createNode(TypeToTag(type).data());
-        childNode->setAttr(Audio::ATLXmlTags::ATLNameAttribute, control->GetName().c_str());
+        AZStd::string_view typeName = TypeToTag(type);
+
+        AZ::rapidxml::xml_node<char>* childNode =
+            xmlAlloc.allocate_node(AZ::rapidxml::node_element, xmlAlloc.allocate_string(typeName.data()));
+
+        AZ::rapidxml::xml_attribute<char>* nameAttr = xmlAlloc.allocate_attribute(
+            xmlAlloc.allocate_string(Audio::ATLXmlTags::ATLNameAttribute), xmlAlloc.allocate_string(control->GetName().c_str()));
+
+        childNode->append_attribute(nameAttr);
+
         if (!path.empty())
         {
-            childNode->setAttr("path", path.data());
+            AZ::rapidxml::xml_attribute<char>* pathAttr = xmlAlloc.allocate_attribute(
+                xmlAlloc.allocate_string(Audio::ATLXmlTags::ATLPathAttribute), xmlAlloc.allocate_string(path.data()));
+
+            childNode->append_attribute(pathAttr);
         }
 
         if (type == eACET_SWITCH)
@@ -270,7 +329,11 @@ namespace AudioControls
         {
             if (control->IsAutoLoad())
             {
-                childNode->setAttr(Audio::ATLXmlTags::ATLTypeAttribute, Audio::ATLXmlTags::ATLDataLoadType);
+                AZ::rapidxml::xml_attribute<char>* loadAttr = xmlAlloc.allocate_attribute(
+                    xmlAlloc.allocate_string(Audio::ATLXmlTags::ATLTypeAttribute),
+                    xmlAlloc.allocate_string(Audio::ATLXmlTags::ATLDataLoadType));
+
+                childNode->append_attribute(loadAttr);
             }
 
             // New Preloads XML...
@@ -281,39 +344,34 @@ namespace AudioControls
             WriteConnectionsToXml(childNode, control);
         }
 
-        node->addChild(childNode);
+        node->append_node(childNode);
     }
 
     //-------------------------------------------------------------------------------------------//
-    void CAudioControlsWriter::WriteConnectionsToXml(XmlNodeRef node, CATLControl* control)
+    void CAudioControlsWriter::WriteConnectionsToXml(AZ::rapidxml::xml_node<char>* node, CATLControl* control)
     {
-        if (control && m_audioSystemImpl)
+        if (node && control && m_audioSystemImpl)
         {
-            TXmlNodeList otherNodes = control->m_connectionNodes;
-            auto end = AZStd::remove_if(otherNodes.begin(), otherNodes.end(),
-                [](const SRawConnectionData& node)
-                {
-                    return node.m_isValid;
-                }
-            );
-            otherNodes.erase(end, otherNodes.end());
-
-            for (auto& connectionNode : otherNodes)
+            for (auto& connectionNode : control->m_connectionNodes)
             {
-                node->addChild(connectionNode.m_xmlNode);
+                if (!connectionNode.m_isValid)
+                {
+                    XmlAllocator& xmlAlloc(AudioControls::s_xmlAllocator);
+                    node->append_node(xmlAlloc.clone_node(connectionNode.m_xmlNode));
+                }
             }
 
             const size_t size = control->ConnectionCount();
             for (size_t i = 0; i < size; ++i)
             {
-                TConnectionPtr connection = control->GetConnectionAt(i);
-                if (connection)
+                if (TConnectionPtr connection = control->GetConnectionAt(i);
+                    connection != nullptr)
                 {
-                    XmlNodeRef childNode = m_audioSystemImpl->CreateXMLNodeFromConnection(connection, control->GetType());
-                    if (childNode)
+                    if (auto childNode = m_audioSystemImpl->CreateXMLNodeFromConnection(connection, control->GetType());
+                        childNode != nullptr)
                     {
-                        node->addChild(childNode);
-                        control->m_connectionNodes.push_back(SRawConnectionData(childNode, true));
+                        node->append_node(childNode);
+                        control->m_connectionNodes.emplace_back(childNode, true);
                     }
                 }
             }
@@ -321,24 +379,24 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
-    void CAudioControlsWriter::CheckOutFile(const AZStd::string& filepath)
+    void CAudioControlsWriter::CheckOutFile(const AZStd::string_view filepath)
     {
         IEditor* editor = GetIEditor();
         IFileUtil* fileUtil = editor ? editor->GetFileUtil() : nullptr;
         if (fileUtil)
         {
-            fileUtil->CheckoutFile(filepath.c_str(), nullptr);
+            fileUtil->CheckoutFile(AZ::IO::FixedMaxPath{ filepath }.c_str(), nullptr);
         }
     }
 
     //-------------------------------------------------------------------------------------------//
-    void CAudioControlsWriter::DeleteLibraryFile(const AZStd::string& filepath)
+    void CAudioControlsWriter::DeleteLibraryFile(const AZStd::string_view filepath)
     {
         IEditor* editor = GetIEditor();
         IFileUtil* fileUtil = editor ? editor->GetFileUtil() : nullptr;
         if (fileUtil)
         {
-            fileUtil->DeleteFromSourceControl(filepath.c_str(), nullptr);
+            fileUtil->DeleteFromSourceControl(AZ::IO::FixedMaxPath{ filepath }.c_str(), nullptr);
         }
     }
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,9 +32,9 @@ namespace MCore
          * Sets the sphere center to (0,0,0) and makes the radius 0.
          */
         MCORE_INLINE BoundingSphere()
-            : mCenter(AZ::Vector3::CreateZero())
-            , mRadius(0.0f)
-            , mRadiusSq(0.0f) {}
+            : m_center(AZ::Vector3::CreateZero())
+            , m_radius(0.0f)
+            , m_radiusSq(0.0f) {}
 
         /**
          * Constructor which sets the center of the sphere and it's radius.
@@ -42,9 +43,9 @@ namespace MCore
          * @param rad The radius of the sphere.
          */
         MCORE_INLINE BoundingSphere(const AZ::Vector3& pos, float rad)
-            : mCenter(pos)
-            , mRadius(rad)
-            , mRadiusSq(rad * rad) {}
+            : m_center(pos)
+            , m_radius(rad)
+            , m_radiusSq(rad * rad) {}
 
         /**
          * Constructor which sets the center, radius and squared radius.
@@ -54,16 +55,16 @@ namespace MCore
          * @param radSq The squared radius of the sphere (rad*rad).
          */
         MCORE_INLINE BoundingSphere(const AZ::Vector3& pos, float rad, float radSq)
-            : mCenter(pos)
-            , mRadius(rad)
-            , mRadiusSq(radSq)  {}
+            : m_center(pos)
+            , m_radius(rad)
+            , m_radiusSq(radSq)  {}
 
         /**
          * Initialize the spheres center, radius and square radius.
          * This will set the center position to (0,0,0) and both the radius and squared radius to 0.
          * Call this method when you want to reset the sphere. Note that this is already done by the default constructor.
          */
-        MCORE_INLINE void Init()                                                                { mCenter = AZ::Vector3::CreateZero(); mRadius = mRadiusSq = 0.0f; }
+        MCORE_INLINE void Init()                                                                { m_center = AZ::Vector3::CreateZero(); m_radius = m_radiusSq = 0.0f; }
 
         /**
          * Encapsulate a 3D point to the sphere.
@@ -74,12 +75,12 @@ namespace MCore
          */
         MCORE_INLINE void EncapsulateFast(const AZ::Vector3& v)
         {
-            AZ::Vector3 diff = (mCenter - v);
+            AZ::Vector3 diff = (m_center - v);
             const float dist = diff.Dot(diff);
-            if (dist > mRadiusSq)
+            if (dist > m_radiusSq)
             {
-                mRadiusSq = dist;
-                mRadius = Math::Sqrt(dist);
+                m_radiusSq = dist;
+                m_radius = Math::Sqrt(dist);
             }
         }
 
@@ -89,7 +90,7 @@ namespace MCore
          * @param v The vector representing the 3D point to perform the test with.
          * @result Returns true when 'v' is inside the spheres volume, otherwise false is returned.
          */
-        MCORE_INLINE bool Contains(const AZ::Vector3& v)                                        { return ((mCenter - v).GetLengthSq() <= mRadiusSq); }
+        MCORE_INLINE bool Contains(const AZ::Vector3& v)                                        { return ((m_center - v).GetLengthSq() <= m_radiusSq); }
 
         /**
          * Check if the sphere COMPLETELY contains a given other sphere.
@@ -97,7 +98,7 @@ namespace MCore
          * @param s The sphere to perform the test with.
          * @result Returns true when 's' is completely inside this sphere. False is returned in any other case.
          */
-        MCORE_INLINE bool Contains(const BoundingSphere& s) const                               { return ((mCenter - s.mCenter).GetLengthSq() <= (mRadiusSq - s.mRadiusSq)); }
+        MCORE_INLINE bool Contains(const BoundingSphere& s) const                               { return ((m_center - s.m_center).GetLengthSq() <= (m_radiusSq - s.m_radiusSq)); }
 
         /**
          * Check if a given sphere intersects with this sphere.
@@ -105,7 +106,7 @@ namespace MCore
          * @param s The sphere to perform the intersection test with.
          * @result Returns true when 's' intersects this sphere. So if it's partially or completely inside this sphere or if the borders overlap.
          */
-        MCORE_INLINE bool Intersects(const BoundingSphere& s) const                             { return ((mCenter - s.mCenter).GetLengthSq() <= (mRadiusSq + s.mRadiusSq)); }
+        MCORE_INLINE bool Intersects(const BoundingSphere& s) const                             { return ((m_center - s.m_center).GetLengthSq() <= (m_radiusSq + s.m_radiusSq)); }
 
         /**
          * Encapsulate a given 3D point with this sphere.
@@ -137,36 +138,36 @@ namespace MCore
          * Get the radius of the sphere.
          * @result Returns the radius of the sphere.
          */
-        MCORE_INLINE float GetRadius() const                                                    { return mRadius; }
+        MCORE_INLINE float GetRadius() const                                                    { return m_radius; }
 
         /**
          * Get the squared radius of the sphere.
          * @result Returns the squared radius of the sphere (no calculations done for this), since it's already known.
          */
-        MCORE_INLINE float GetRadiusSquared() const                                             { return mRadiusSq; }
+        MCORE_INLINE float GetRadiusSquared() const                                             { return m_radiusSq; }
 
         /**
          * Get the center of the sphere. So the position of the sphere.
          * @result Returns the center position of the sphere.
          */
-        MCORE_INLINE const AZ::Vector3& GetCenter() const                                       { return mCenter; }
+        MCORE_INLINE const AZ::Vector3& GetCenter() const                                       { return m_center; }
 
         /**
          * Set the center of the sphere.
          * @param center The center position of the sphere.
          */
-        MCORE_INLINE void SetCenter(const AZ::Vector3& center)                                  { mCenter = center; }
+        MCORE_INLINE void SetCenter(const AZ::Vector3& center)                                  { m_center = center; }
 
         /**
          * Set the radius of the sphere.
          * The squared radius will automatically be updated inside this method.
          * @param radius The radius of the sphere.
          */
-        MCORE_INLINE void SetRadius(float radius)                                               { mRadius = radius; mRadiusSq = radius * radius; }
+        MCORE_INLINE void SetRadius(float radius)                                               { m_radius = radius; m_radiusSq = radius * radius; }
 
     private:
-        AZ::Vector3     mCenter;    /**< The center of the sphere. */
-        float           mRadius;    /**< The radius of the sphere. */
-        float           mRadiusSq;  /**< The squared radius of the sphere (mRadius*mRadius).*/
+        AZ::Vector3     m_center;    /**< The center of the sphere. */
+        float           m_radius;    /**< The radius of the sphere. */
+        float           m_radiusSq;  /**< The squared radius of the sphere (m_radius*m_radius).*/
     };
 } // namespace MCore

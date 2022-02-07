@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -549,7 +550,7 @@ void CTimer::Serialize(TSerialize ser)
 
         if (m_TimeDebug)
         {
-            const int64 now = CryGetTicks();
+            [[maybe_unused]] const int64 now = CryGetTicks();
             CryLogAlways("[CTimer]: Serialize: Last=%lld Now=%lld Off=%lld Async=%f CurrTime=%f UI=%f", (long long)m_lLastTime, (long long)now, (long long)m_lOffsetTime, GetAsyncCurTime(), GetCurrTime(ETIMER_GAME), GetCurrTime(ETIMER_UI));
         }
     }
@@ -699,8 +700,8 @@ void CTimer::EnableFixedTimeMode([[maybe_unused]] bool enable, [[maybe_unused]] 
 
 void CTimer::SetOffsetToMatchGameTime(int64 ticks)
 {
-    const int64 previousOffset = m_lOffsetTime;
-    const float previousGameTime = GetCurrTime(ETIMER_GAME);
+    [[maybe_unused]] const int64 previousOffset = m_lOffsetTime;
+    [[maybe_unused]] const float previousGameTime = GetCurrTime(ETIMER_GAME);
 
     m_lOffsetTime = ticks - m_lLastTime;
     RefreshGameTime(m_lLastTime);

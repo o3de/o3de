@@ -1,11 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ProjectSettingsTool_precompiled.h"
+#include <EditorDefs.h>
 #include "ProjectSettingsToolWindow.h"
 #include "ui_ProjectSettingsToolWidget.h"
 
@@ -20,12 +21,12 @@
 #include "ValidationHandler.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/IO/Path/Path.h>
 
-#include "AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h"
+#include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <Util/FileUtil.h>
 
 #include <QMessageBox>
 #include <QCloseEvent>
@@ -45,14 +46,13 @@ namespace ProjectSettingsTool
         , LastPathBus::Handler()
         , m_ui(new Ui::ProjectSettingsToolWidget())
         , m_reconfigureProcess()
-        , m_devRoot(GetDevRoot())
         , m_projectRoot(GetProjectRoot())
         , m_projectName(GetProjectName())
         , m_plistsInitVector(
             PlatformEnabled(PlatformId::Ios) ?
             ProjectSettingsContainer::PlistInitVector({
                 ProjectSettingsContainer::PlatformAndPath
-                { PlatformId::Ios, m_projectRoot + PlatformResourcesFolder(PlatformId::Ios) }
+                { PlatformId::Ios, GetPlatformResource(PlatformId::Ios) }
                 })
             :
                 ProjectSettingsContainer::PlistInitVector())
@@ -585,31 +585,11 @@ namespace ProjectSettingsTool
                     ShowAllErrorsThenExitIfInvalid();
 
                     m_ui->reconfigureLog->setText("");
-                    int result = QMessageBox::question
-                        (
-                        this,
-                        tr("Reconfigure Project"),
-                        tr("For new settings to be applied the project must be reconfigured. Would you like run configure now?"),
-                        QMessageBox::Yes,
-                        QMessageBox::No
-                        );
+                    QMessageBox::information(this, tr("Project Settings Saved"),
+                        tr("The project may need to be manually reconfigured for the new settings to be applied."));
 
-                    if (QMessageBox::Yes == result)
-                    {
-                        m_ui->reconfigureLog->show();
-                    #if defined(AZ_PLATFORM_WINDOWS)
-                        m_reconfigureProcess.start("cmd.exe", { QString("/C %1").arg("lmbr_waf.bat configure") });
-                    #elif defined(AZ_PLATFORM_MAC) || defined(AZ_PLATFORM_LINUX)
-                        m_reconfigureProcess.start("/bin/sh", { QString("%1").arg("lmbr_waf.sh configure") });
-                    #else
-                        #error "Needs to be implemented"
-                    #endif
-                    }
-                    else
-                    {
-                        m_ui->reloadButton->setEnabled(true);
-                        m_ui->saveButton->setEnabled(true);
-                    }
+                    m_ui->reloadButton->setEnabled(true);
+                    m_ui->saveButton->setEnabled(true);
                 }
                 // Show a message box telling user settings failed to save
                 else
@@ -667,33 +647,38 @@ namespace ProjectSettingsTool
         // iOS can be disabled if the plist file is missing
         if (platformId == PlatformId::Ios)
         {
-            const AZStd::string filename = m_projectRoot + PlatformResourcesFolder(platformId);
-            return CFileUtil::FileExists(filename.c_str());
+            AZStd::string plistPath = GetPlatformResource(platformId);
+            return !plistPath.empty();
         }
 
         return true;
     }
 
-    const char* ProjectSettingsToolWindow::PlatformResourcesFolder(PlatformId platformId)
+    AZStd::string ProjectSettingsToolWindow::GetPlatformResource(PlatformId platformId)
     {
         if (platformId == PlatformId::Ios)
         {
-            const AZStd::string firstfilename = m_projectRoot + "/Gem/Resources/Platform/iOS/Info.plist";
-            if (CFileUtil::FileExists(firstfilename.c_str()))
+            const char* searchPaths[] = {
+                "Resources/Platform/iOS/Info.plist",
+
+                // legacy paths
+                "Gem/Resources/Platform/iOS/Info.plist",
+                "Gem/Resources/IOSLauncher/Info.plist",
+            };
+
+            for (auto relPath : searchPaths)
             {
-                return "/Gem/Resources/Platform/iOS/Info.plist";
-            }
-            else
-            {
-                const AZStd::string filename = m_projectRoot + "/Gem/Resources/IOSLauncher/Info.plist";
-                if (CFileUtil::FileExists(filename.c_str()))
+                AZ::IO::FixedMaxPath projectPlist{ m_projectRoot };
+                projectPlist /= relPath;
+
+                if (AZ::IO::SystemFile::Exists(projectPlist.c_str()))
                 {
-                    return "/Gem/Resources/IOSLauncher/Info.plist";
+                    return projectPlist.LexicallyNormal().String();
                 }
             }
         }
 
-        return nullptr;
+        return AZStd::string();
     }
 
 #include <moc_ProjectSettingsToolWindow.cpp>

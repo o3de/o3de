@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -79,6 +80,7 @@ namespace ScriptCanvas
                 ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
                 ->Attribute(AZ::Script::Attributes::UseClassIndexAllowNil, AZ::AttributeIsValid::IfPresent)
                 ->Constructor<ExecutionStateWeakPtr>()
+                    ->Attribute(AZ::Script::Attributes::DefaultConstructorOverrideIndex, 0)
                 ->Method("Deactivate", &Nodeable::Deactivate)
                 ->Method("InitializeExecutionState", &Nodeable::InitializeExecutionState)
                 ->Method("InitializeExecutionOuts", &Nodeable::InitializeExecutionOuts)

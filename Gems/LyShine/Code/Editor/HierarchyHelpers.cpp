@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
 
 #include <QMessageBox>
@@ -187,16 +186,20 @@ namespace HierarchyHelpers
                 if (listOfNewlyCreatedTopLevelElements.empty())
                 {
                     // This happens when the serialization version numbers DON'T match.
-                    QMessageBox(QMessageBox::Critical,
-                        "Error",
-                        QString("Failed to load elements. The serialization format is incompatible."),
-                        QMessageBox::Ok, widget->GetEditorWindow()).exec();
+                    QMessageBox(
+                        QMessageBox::Critical, "Error", QString("Failed to load elements. The serialization format is incompatible."), QMessageBox::Ok,
+                        widget->GetEditorWindow())
+                        .exec();
 
                     // Nothing more to do.
                     return LyShine::EntityArray();
                 }
 
-                completeListOfNewlyCreatedTopLevelElements.push_back(listOfNewlyCreatedTopLevelElements);
+                completeListOfNewlyCreatedTopLevelElements.insert(
+                    completeListOfNewlyCreatedTopLevelElements.end(),
+                    listOfNewlyCreatedTopLevelElements.begin(),
+                    listOfNewlyCreatedTopLevelElements.end()
+                );
             }
         }
 

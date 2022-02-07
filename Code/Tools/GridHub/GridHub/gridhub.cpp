@@ -1,11 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <AzCore/PlatformDef.h>
+#include <AzCore/PlatformIncl.h>
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QtGui>
 #include <QtWidgets/QMenu>
@@ -13,8 +14,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 
 #ifdef AZ_PLATFORM_WINDOWS
-// windows include must be first so we get the full version (AZCore bring the trimmed one)
-#include <Windows.h>
+#include <AzCore/PlatformIncl.h>
 #else
 #include <signal.h>
 #endif
@@ -358,17 +358,11 @@ GridHubComponent::GridHubComponent()
     m_isLogToFile = false;
     
 #ifdef AZ_PLATFORM_WINDOWS
-    TCHAR name[MAX_COMPUTERNAME_LENGTH + 1];
+    wchar_t name[MAX_COMPUTERNAME_LENGTH + 1];
     DWORD dwCompNameLen = AZ_ARRAY_SIZE(name);
-    if ( GetComputerName(name, &dwCompNameLen) != 0 ) 
+    if (GetComputerName(name, &dwCompNameLen) != 0) 
     {
-#ifdef _UNICODE
-        char c[MAX_COMPUTERNAME_LENGTH + 1];
-        wcstombs(c, name, AZ_ARRAY_SIZE(c));
-        m_hubName = c;
-#else
-        m_hubName = name;
-#endif
+        AZStd::to_string(m_hubName, name);
     }
     else
 #endif
@@ -549,7 +543,7 @@ GridHubComponent::OnMemberJoined([[maybe_unused]] GridMate::GridSession* session
     case AZ::PlatformID::PLATFORM_WINDOWS_64:
     case AZ::PlatformID::PLATFORM_APPLE_MAC:
         {
-            GridMate::string localMachineName = GridMate::Utils::GetMachineAddress();
+            AZStd::string localMachineName = GridMate::Utils::GetMachineAddress();
             if( member->GetMachineName() == localMachineName )
             {
                 ExternalProcessMonitor mi;
@@ -635,7 +629,7 @@ bool GridHubComponent::StartSession(bool isRestarting)
     AZ_Assert(GridMate::HasGridMateService<GridMate::LANSessionService>(m_gridMate), "Failed to start multiplayer service for LAN!");
 
     // if we get an address 169.X.X.X (AZCP is NOT ready) or 127.0.0.1 when network is not ready
-    GridMate::string machineIP = GridMate::Utils::GetMachineAddress();
+    AZStd::string machineIP = GridMate::Utils::GetMachineAddress();
     if( machineIP == "127.0.0.1" || machineIP.compare(0,4,"169.") == 0 )
     {
         AZ_Warning("GridHub", false, "\nCurrent IP %s might be invalid.\n",machineIP.c_str());

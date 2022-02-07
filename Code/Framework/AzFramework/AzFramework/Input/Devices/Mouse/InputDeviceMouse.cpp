@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,35 +32,6 @@ namespace AzFramework
     {
         return (inputDeviceId.GetNameCrc32() == Id.GetNameCrc32());
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMouse::Button::Left("mouse_button_left");
-    const InputChannelId InputDeviceMouse::Button::Right("mouse_button_right");
-    const InputChannelId InputDeviceMouse::Button::Middle("mouse_button_middle");
-    const InputChannelId InputDeviceMouse::Button::Other1("mouse_button_other1");
-    const InputChannelId InputDeviceMouse::Button::Other2("mouse_button_other2");
-    const AZStd::array<InputChannelId, 5> InputDeviceMouse::Button::All =
-    {{
-        Left,
-        Right,
-        Middle,
-        Other1,
-        Other2
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMouse::Movement::X("mouse_delta_x");
-    const InputChannelId InputDeviceMouse::Movement::Y("mouse_delta_y");
-    const InputChannelId InputDeviceMouse::Movement::Z("mouse_delta_z");
-    const AZStd::array<InputChannelId, 3> InputDeviceMouse::Movement::All =
-    {{
-        X,
-        Y,
-        Z
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMouse::SystemCursorPosition("mouse_system_cursor_position");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceMouse::Reflect(AZ::ReflectContext* context)
@@ -95,8 +67,8 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::InputDeviceMouse()
-        : InputDevice(Id)
+    InputDeviceMouse::InputDeviceMouse(AzFramework::InputDeviceId id)
+        : InputDevice(id)
         , m_allChannelsById()
         , m_buttonChannelsById()
         , m_movementChannelsById()

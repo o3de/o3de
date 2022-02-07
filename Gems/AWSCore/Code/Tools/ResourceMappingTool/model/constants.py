@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -23,6 +24,7 @@ AWS_RESOURCE_REGIONS: List[str] = ["us-east-2", "us-east-1", "us-west-1", "us-we
 # Default client&server config file name
 RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX: str = "_aws_resource_mappings.json"
 RESOURCE_MAPPING_DEFAULT_CONFIG_FILE_NAME: str = "default" + RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX
+RESOURCE_MAPPING_DEFAULT_CONFIG_FILE_REGION: str = "us-east-1"
 
 # View related constants
 SEARCH_TYPED_RESOURCES_VERSION: str = "Import AWS Resources"

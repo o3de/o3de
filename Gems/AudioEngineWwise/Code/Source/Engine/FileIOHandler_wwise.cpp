@@ -1,27 +1,25 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include <AzCore/PlatformIncl.h>
 #include <FileIOHandler_wwise.h>
+
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/Debug/Profiler.h>
 
 #include <IAudioInterfacesCommonData.h>
 #include <AkPlatformFuncs_Platform.h>
 #include <AudioEngineWwise_Traits_Platform.h>
+#include <cinttypes>
 
-#include <platform.h>
-#include <ISystem.h>
-#include <AzFramework/Archive/IArchive.h>
-
-#define MAX_NUMBER_STRING_SIZE      (10)    // 4G
-#define ID_TO_STRING_FORMAT_BANK    AKTEXT("%u.bnk")
-#define ID_TO_STRING_FORMAT_WEM     AKTEXT("%u.wem")
+#define MAX_NUMBER_STRING_SIZE      (10)    // max digits in u32 base-10 number
 #define MAX_EXTENSION_SIZE          (4)     // .xxx
 #define MAX_FILETITLE_SIZE          (MAX_NUMBER_STRING_SIZE + MAX_EXTENSION_SIZE + 1)   // null-terminated
 
@@ -70,7 +68,7 @@ namespace Audio
 
         AkDeviceSettings deviceSettings;
         AK::StreamMgr::GetDefaultDeviceSettings(deviceSettings);
-        deviceSettings.uIOMemorySize = poolSize;
+        deviceSettings.uIOMemorySize = aznumeric_cast<AkUInt32>(poolSize);
         deviceSettings.uSchedulerTypeFlags = AK_SCHEDULER_BLOCKING;
         Platform::SetThreadProperties(deviceSettings.threadProperties);
 
@@ -89,34 +87,36 @@ namespace Audio
 
     bool CBlockingDevice_wwise::Open(const char* filename, AkOpenMode openMode, AkFileDesc& fileDesc)
     {
-        const char* openModeString = nullptr;
+        AZ::IO::OpenMode azOpenMode = AZ::IO::OpenMode::ModeBinary;
         switch (openMode)
         {
         case AK_OpenModeRead:
-            openModeString = "rbx";
+            azOpenMode |= AZ::IO::OpenMode::ModeRead;
             break;
         case AK_OpenModeWrite:
-            openModeString = "wbx";
+            azOpenMode |= AZ::IO::OpenMode::ModeWrite;
             break;
         case AK_OpenModeWriteOvrwr:
-            openModeString = "w+bx";
+            azOpenMode |= (AZ::IO::OpenMode::ModeUpdate | AZ::IO::OpenMode::ModeWrite);
             break;
         case AK_OpenModeReadWrite:
-            openModeString = "abx";
+            azOpenMode |= (AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeWrite);
             break;
         default:
             AZ_Assert(false, "Unknown Wwise file open mode.");
             return false;
         }
 
-        const size_t fileSize = gEnv->pCryPak->FGetSize(filename);
-        if (fileSize > 0)
+        auto fileIO = AZ::IO::FileIOBase::GetInstance();
+        if (AZ::u64 fileSize = 0;
+            fileIO->Size(filename, fileSize) && fileSize != 0)
         {
-            AZ::IO::HandleType fileHandle = gEnv->pCryPak->FOpen(filename, openModeString, AZ::IO::IArchive::FOPEN_HINT_DIRECT_OPERATION);
+            AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
+            fileIO->Open(filename, azOpenMode, fileHandle);
             if (fileHandle != AZ::IO::InvalidHandle)
             {
                 fileDesc.hFile = GetAkFileHandle(fileHandle);
-                fileDesc.iFileSize = static_cast<AkInt64>(fileSize);
+                fileDesc.iFileSize = aznumeric_cast<AkInt64>(fileSize);
                 fileDesc.uSector = 0;
                 fileDesc.deviceID = m_deviceID;
                 fileDesc.pCustomParam = nullptr;
@@ -131,50 +131,58 @@ namespace Audio
 
     AKRESULT CBlockingDevice_wwise::Read(AkFileDesc& fileDesc, const AkIoHeuristics&, void* buffer, AkIOTransferInfo& transferInfo)
     {
-        AZ_Assert(buffer, "Wwise didn't provide a valid buffer to write to.");
+        AZ_Assert(buffer, "Wwise didn't provide a valid desination buffer to Read into.");
 
         AZ::IO::HandleType fileHandle = GetRealFileHandle(fileDesc.hFile);
-        const uint64_t currentFileReadPos = gEnv->pCryPak->FTell(fileHandle);
-        const uint64_t wantedFileReadPos = static_cast<uint64_t>(transferInfo.uFilePosition);
+        auto fileIO = AZ::IO::FileIOBase::GetInstance();
 
-        if (currentFileReadPos != wantedFileReadPos)
+        AZ::u64 currentFileReadPos = 0;
+        fileIO->Tell(fileHandle, currentFileReadPos);
+
+        if (currentFileReadPos != transferInfo.uFilePosition)
         {
-            gEnv->pCryPak->FSeek(fileHandle, wantedFileReadPos, SEEK_SET);
+            fileIO->Seek(fileHandle, aznumeric_cast<AZ::s64>(transferInfo.uFilePosition), AZ::IO::SeekType::SeekFromStart);
         }
 
-        const size_t bytesRead = gEnv->pCryPak->FReadRaw(buffer, 1, transferInfo.uRequestedSize, fileHandle);
-        AZ_Assert(bytesRead == static_cast<size_t>(transferInfo.uRequestedSize), 
-            "Number of bytes read (%zu) for Wwise request doesn't match the requested size (%u).", bytesRead, transferInfo.uRequestedSize);
-        return (bytesRead > 0) ? AK_Success : AK_Fail;
+        AZ::u64 bytesRead = 0;
+        fileIO->Read(fileHandle, buffer, aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize), &bytesRead);
+        const bool readOk = (bytesRead == aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize));
+
+        AZ_Assert(readOk, 
+            "Number of bytes read (%" PRIu64 ") for read request doesn't match the requested size (%u).",
+            bytesRead, transferInfo.uRequestedSize);
+        return readOk ? AK_Success : AK_Fail;
     }
 
     AKRESULT CBlockingDevice_wwise::Write(AkFileDesc& fileDesc, const AkIoHeuristics&, void* data, AkIOTransferInfo& transferInfo)
     {
-        AZ_Assert(data, "Wwise didn't provide a valid buffer to read from.");
+        AZ_Assert(data, "Wwise didn't provide a valid source buffer to Write from.");
 
         AZ::IO::HandleType fileHandle = GetRealFileHandle(fileDesc.hFile);
+        auto fileIO = AZ::IO::FileIOBase::GetInstance();
 
-        const uint64_t currentFileWritePos = gEnv->pCryPak->FTell(fileHandle);
-        const uint64_t wantedFileWritePos = static_cast<uint64_t>(transferInfo.uFilePosition);
+        AZ::u64 currentFileWritePos = 0;
+        fileIO->Tell(fileHandle, currentFileWritePos);
 
-        if (currentFileWritePos != wantedFileWritePos)
+        if (currentFileWritePos != transferInfo.uFilePosition)
         {
-            gEnv->pCryPak->FSeek(fileHandle, wantedFileWritePos, SEEK_SET);
+            fileIO->Seek(fileHandle, aznumeric_cast<AZ::s64>(transferInfo.uFilePosition), AZ::IO::SeekType::SeekFromStart);
         }
 
-        const size_t bytesWritten = gEnv->pCryPak->FWrite(data, 1, static_cast<size_t>(transferInfo.uRequestedSize), fileHandle);
-        if (bytesWritten != static_cast<size_t>(transferInfo.uRequestedSize))
-        {
-            AZ_Error("Wwise", false, "Number of bytes written (%zu) for Wwise request doesn't match the requested size (%u).",
+        AZ::u64 bytesWritten = 0;
+        fileIO->Write(fileHandle, data, aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize), &bytesWritten);
+        const bool writeOk = (bytesWritten == aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize));
+
+        AZ_Error("Wwise", writeOk,
+                "Number of bytes written (%" PRIu64 ") for write request doesn't match the requested size (%u).",
                 bytesWritten, transferInfo.uRequestedSize);
-            return AK_Fail;
-        }
-        return AK_Success;
+        return writeOk ? AK_Success : AK_Fail;
     }
 
     AKRESULT CBlockingDevice_wwise::Close(AkFileDesc& fileDesc)
     {
-        return gEnv->pCryPak->FClose(GetRealFileHandle(fileDesc.hFile)) ? AK_Success : AK_Fail;
+        auto fileIO = AZ::IO::FileIOBase::GetInstance();
+        return fileIO->Close(GetRealFileHandle(fileDesc.hFile)) ? AK_Success : AK_Fail;
     }
 
     AkUInt32 CBlockingDevice_wwise::GetBlockSize([[maybe_unused]] AkFileDesc& fileDesc)
@@ -188,8 +196,8 @@ namespace Audio
         deviceDesc.bCanRead = true;
         deviceDesc.bCanWrite = true;
         deviceDesc.deviceID = m_deviceID;
-        AK_CHAR_TO_UTF16(deviceDesc.szDeviceName, "CryPak", AZ_ARRAY_SIZE(deviceDesc.szDeviceName));
-        deviceDesc.uStringSize = AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName);
+        AK_CHAR_TO_UTF16(deviceDesc.szDeviceName, "IO::IArchive", AZ_ARRAY_SIZE(deviceDesc.szDeviceName));
+        deviceDesc.uStringSize = aznumeric_cast<AkUInt32>(AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName));
     }
     
     AkUInt32 CBlockingDevice_wwise::GetDeviceData()
@@ -210,7 +218,7 @@ namespace Audio
 
         AkDeviceSettings deviceSettings;
         AK::StreamMgr::GetDefaultDeviceSettings(deviceSettings);
-        deviceSettings.uIOMemorySize = poolSize;
+        deviceSettings.uIOMemorySize = aznumeric_cast<AkUInt32>(poolSize);
         deviceSettings.uSchedulerTypeFlags = AK_SCHEDULER_DEFERRED_LINED_UP;
         Platform::SetThreadProperties(deviceSettings.threadProperties);
 
@@ -230,12 +238,13 @@ namespace Audio
     bool CStreamingDevice_wwise::Open(const char* filename, [[maybe_unused]] AkOpenMode openMode, AkFileDesc& fileDesc)
     {
         AZ_Assert(openMode == AK_OpenModeRead, "Wwise Async File IO - Only supports opening files for reading.\n");
-        const size_t fileSize = gEnv->pCryPak->FGetSize(filename);
-        if (fileSize)
+        auto fileIO = AZ::IO::FileIOBase::GetInstance();
+        if (AZ::u64 fileSize = 0;
+            fileIO->Size(filename, fileSize) && fileSize != 0)
         {
             AZStd::string* filenameStore = azcreate(AZStd::string, (filename));
             fileDesc.hFile = AkFileHandle();
-            fileDesc.iFileSize = static_cast<AkInt64>(fileSize);
+            fileDesc.iFileSize = aznumeric_cast<AkInt64>(fileSize);
             fileDesc.uSector = 0;
             fileDesc.deviceID = m_deviceID;
             fileDesc.pCustomParam = filenameStore;
@@ -255,7 +264,7 @@ namespace Audio
 
         auto callback = [&transferInfo](AZ::IO::FileRequestHandle request)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+            AZ_PROFILE_FUNCTION(Audio);
             AZ::IO::IStreamerTypes::RequestStatus status = AZ::Interface<AZ::IO::IStreamer>::Get()->GetRequestStatus(request);
             switch (status)
             {
@@ -325,8 +334,8 @@ namespace Audio
         deviceDesc.bCanRead = true;
         deviceDesc.bCanWrite = false;
         deviceDesc.deviceID = m_deviceID;
-        AK_CHAR_TO_UTF16(deviceDesc.szDeviceName, "Streamer", AZ_ARRAY_SIZE(deviceDesc.szDeviceName));
-        deviceDesc.uStringSize = AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName);
+        AK_CHAR_TO_UTF16(deviceDesc.szDeviceName, "IO::IStreamer", AZ_ARRAY_SIZE(deviceDesc.szDeviceName));
+        deviceDesc.uStringSize = aznumeric_cast<AkUInt32>(AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName));
     }
 
     AkUInt32 CStreamingDevice_wwise::GetDeviceData()
@@ -431,11 +440,16 @@ namespace Audio
                 }
             }
 
-            AkOSChar fileName[MAX_FILETITLE_SIZE] = { '\0' };
+            AkOSChar fileName[MAX_FILETITLE_SIZE] = { 0 };
 
-            const AkOSChar* const filenameFormat = (flags->uCodecID == AKCODECID_BANK ? ID_TO_STRING_FORMAT_BANK : ID_TO_STRING_FORMAT_WEM);
-
-            AK_OSPRINTF(fileName, MAX_FILETITLE_SIZE, filenameFormat, static_cast<int unsigned>(fileID));
+            if (flags->uCodecID == AKCODECID_BANK)
+            {
+                AK_OSPRINTF(fileName, MAX_FILETITLE_SIZE, AKTEXT("%u.bnk"), static_cast<unsigned int>(fileID));
+            }
+            else
+            {
+                AK_OSPRINTF(fileName, MAX_FILETITLE_SIZE, AKTEXT("%u.wem"), static_cast<unsigned int>(fileID));
+            }
 
             AKPLATFORM::SafeStrCat(finalFilePath, fileName, AK_MAX_PATH);
 

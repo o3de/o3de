@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -362,8 +363,8 @@ namespace MCore
     bool ReflectionSerializer::Deserialize(const AZ::TypeId& classTypeId, void* classPtr, const MCore::CommandLine& sourceCommandLine)
     {
         bool someError = false;
-        const uint32 numParameters = sourceCommandLine.GetNumParameters();
-        for (uint32 i = 0; i < numParameters; ++i)
+        const size_t numParameters = sourceCommandLine.GetNumParameters();
+        for (size_t i = 0; i < numParameters; ++i)
         {
             someError |= !DeserializeIntoMember(classTypeId, classPtr, sourceCommandLine.GetParameterName(i).c_str(), sourceCommandLine.GetParameterValue(i).c_str());
         }

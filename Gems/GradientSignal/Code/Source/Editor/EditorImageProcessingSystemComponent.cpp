@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "EditorImageProcessingSystemComponent.h"
 
 #include <AzCore/Asset/AssetManager.h>
@@ -108,7 +108,7 @@ namespace GradientSignal
 
         if(settingsExist)
         {
-            menu->addAction("Edit Gradient Image Settings...", [this, source, settingsPath]()
+            menu->addAction("Edit Gradient Image Settings...", [settingsPath]()
             {
                 bool result = false;
                 AZ::Data::AssetInfo assetInfo;
@@ -123,7 +123,7 @@ namespace GradientSignal
         }
         else
         {
-            menu->addAction("Enable Gradient Image Settings", [this, source, settingsPath]()
+            menu->addAction("Enable Gradient Image Settings", [settingsPath]()
             {
                 GradientSignal::ImageSettings imageSettings;
                 AZ::Utils::SaveObjectToFile(settingsPath, AZ::DataStream::ST_XML, &imageSettings);

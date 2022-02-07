@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
+#include <AzCore/base.h>
 #include <AzCore/PlatformDef.h>
 #include <AzCore/Debug/Trace.h>
 
@@ -215,22 +217,6 @@ typedef uintptr_t uintPointer;
     #define NULL 0
 #endif
 
-// alignment macro
-#if (MCORE_COMPILER == MCORE_COMPILER_MSVC || MCORE_COMPILER == MCORE_COMPILER_INTELC)
-    #define MCORE_ALIGN(NUMBYTES, X) __declspec(align(NUMBYTES)) X
-    #define MCORE_ALIGN_PRE(NUMBYTES) __declspec(align(NUMBYTES))
-    #define MCORE_ALIGN_POST(NUMBYTES)
-#elif (MCORE_COMPILER == MCORE_COMPILER_GCC)
-    #define MCORE_ALIGN(NUMBYTES, X) X __attribute__((aligned(NUMBYTES)))
-    #define MCORE_ALIGN_PRE(NUMBYTES)
-    #define MCORE_ALIGN_POST(NUMBYTES) __attribute__((aligned(NUMBYTES)))
-#else
-    #define MCORE_ALIGN(NUMBYTES, X) X
-    #define MCORE_ALIGN_PRE(NUMBYTES)
-    #define MCORE_ALIGN_POST(NUMBYTES)
-#endif
-
-
 // detect and enable OpenMP support
 #if defined(_OPENMP)
     #define MCORE_OPENMP_ENABLED
@@ -274,23 +260,35 @@ typedef uintptr_t uintPointer;
 // mark as unused to prevent compiler warnings
 #define MCORE_UNUSED(x) static_cast<void>(x)
 
+namespace MCore
+{
+    template<class IndexType>
+    inline static constexpr IndexType InvalidIndexT = static_cast<IndexType>(-1);
+
+    inline static constexpr const size_t InvalidIndex = InvalidIndexT<size_t>;
+    inline static constexpr const AZ::u64 InvalidIndex64 = InvalidIndexT<AZ::u64>;
+    inline static constexpr const AZ::u32 InvalidIndex32 = InvalidIndexT<AZ::u32>;
+    inline static constexpr const AZ::u16 InvalidIndex16 = InvalidIndexT<AZ::u16>;
+    inline static constexpr const AZ::u8 InvalidIndex8 = InvalidIndexT<AZ::u8>;
+} // namespace MCore
+
 /**
  * Often there are functions that allow you to search for objects. Such functions return some index value that points
  * inside for example the array of objects. However, in case the object we are searching for cannot be found, some
  * value has to be returned that identifies that the object cannot be found. The MCORE_INVALIDINDEX32 value is used
  * used as this value. The real value is 0xFFFFFFFF.
  */
-#define MCORE_INVALIDINDEX32 0xFFFFFFFF
+#define MCORE_INVALIDINDEX32 MCore::InvalidIndex32
 
 /**
  * The 16 bit index variant of MCORE_INVALIDINDEX32.
  * The real value is 0xFFFF.
  */
-#define MCORE_INVALIDINDEX16 0xFFFF
+#define MCORE_INVALIDINDEX16 MCore::InvalidIndex16
 
 /**
  * The 8 bit index variant of MCORE_INVALIDINDEX32.
  * The real value is 0xFF.
  */
-#define MCORE_INVALIDINDEX8 0xFF
+#define MCORE_INVALIDINDEX8 MCore::InvalidIndex8
 

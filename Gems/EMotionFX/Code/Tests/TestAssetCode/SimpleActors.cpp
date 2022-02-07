@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,7 +31,7 @@ namespace EMotionFX
             AddNode(i, ("joint" + AZStd::to_string(i)).c_str(), i - 1);
 
             Transform transform = Transform::CreateIdentity();
-            transform.mPosition = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
+            transform.m_position = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
             GetBindPose()->SetLocalSpaceTransform(i, transform);
         }
     }
@@ -43,7 +44,7 @@ namespace EMotionFX
             AddNode(i, ("rootJoint" + AZStd::to_string(i)).c_str());
 
             Transform transform = Transform::CreateIdentity();
-            transform.mPosition = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
+            transform.m_position = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
             GetBindPose()->SetLocalSpaceTransform(i, transform);
         }
     }
@@ -86,7 +87,7 @@ namespace EMotionFX
             AddNode(i, ("joint" + AZStd::to_string(i)).c_str(), i - 1);
 
             Transform transform = Transform::CreateIdentity();
-            transform.mPosition = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
+            transform.m_position = AZ::Vector3(static_cast<float>(i), 0.0f, 0.0f);
             GetBindPose()->SetLocalSpaceTransform(i, transform);
         }
     }

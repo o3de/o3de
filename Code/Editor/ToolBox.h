@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -128,7 +129,6 @@ public:
     void Save() const;
     // Load macros configuration from registry.
     void Load(ActionManager* actionManager = nullptr);
-    void LoadShelves(QString scriptPath, QString shelvesPath, ActionManager* actionManager);
 
     //! Get the number of managed macros.
     int GetMacroCount(bool bToolbox) const;
@@ -137,7 +137,7 @@ public:
     CToolBoxMacro* GetMacro(int iIndex, bool bToolbox);
     //! Get the index of a macro from its title.
     int GetMacroIndex(const QString& title, bool bToolbox) const;
-    //! Creates a new macro in the manager. If the title is duplicate, this returns NULL.
+    //! Creates a new macro in the manager. If the title is duplicate, this returns nullptr.
     CToolBoxMacro* NewMacro(const QString& title, bool bToolbox, int* newIdx);
     //! Try to change the title of a macro. If the title is duplicate, the change is aborted and this returns false.
     bool SetMacroTitle(int index, const QString& title, bool bToolbox);

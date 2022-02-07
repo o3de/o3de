@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,8 +10,8 @@
 
 // include the required headers
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
 #include "StandardHeaders.h"
-#include "Array.h"
 #include "MultiThreadManager.h"
 
 
@@ -74,7 +75,7 @@ namespace MCore
          * To check if a log level is enabled use logical bitwise and comparison, example: if (GetLogLevels() & LOGLEVEL_EXAMPLE).
          * @result The log levels packed as bit flags which are enabled on the callback.
          */
-        MCORE_INLINE ELogLevel GetLogLevels() const                             { return mLogLevels; }
+        MCORE_INLINE ELogLevel GetLogLevels() const                             { return m_logLevels; }
 
         /**
          * Set the log levels this callback will accept and pass through.
@@ -85,7 +86,7 @@ namespace MCore
         void SetLogLevels(ELogLevel logLevels);
 
     protected:
-        ELogLevel   mLogLevels; /**< The log levels that will pass the callback. All messages from log flags which are disabled won't be logged. The default value of the log level will be LOGLEVEL_DEFAULT. */
+        ELogLevel   m_logLevels; /**< The log levels that will pass the callback. All messages from log flags which are disabled won't be logged. The default value of the log level will be LOGLEVEL_DEFAULT. */
     };
 
     //----------------------------------------------------------------------------
@@ -186,7 +187,7 @@ namespace MCore
          * Remove the given callback from the stack.
          * @param index The index of the callback to remove.
          */
-        void RemoveLogCallback(uint32 index);
+        void RemoveLogCallback(size_t index);
 
         /**
          * Remove all given log callbacks by type from the stack.
@@ -204,20 +205,20 @@ namespace MCore
          * @param index The index of the callback.
          * @return A pointer to the callback.
          */
-        LogCallback* GetLogCallback(uint32 index);
+        LogCallback* GetLogCallback(size_t index);
 
         /**
          * Find the index of a given callback.
          * @param callback The callback object to find.
          * @result Returns the index value, or MCORE_INVALIDINDEX32 when not found.
          */
-        uint32 FindLogCallback(LogCallback* callback) const;
+        size_t FindLogCallback(LogCallback* callback) const;
 
         /**
          * Return the number of log callbacks managed by this class.
          * @return Number of log callbacks.
          */
-        uint32 GetNumLogCallbacks() const;
+        size_t GetNumLogCallbacks() const;
 
         /**
          * Force set the log levels of all callbacks in the log manager.
@@ -231,7 +232,7 @@ namespace MCore
          * To check if a log level is enabled by one of the callbacks use logical bitwise and comparison, example: if (GetLogLevels() & LOGLEVEL_EXAMPLE).
          * @result The log levels packed as bit flags which are enabled on the callback.
          */
-        MCORE_INLINE LogCallback::ELogLevel GetLogLevels() const                                    { return mLogLevels; }
+        MCORE_INLINE LogCallback::ELogLevel GetLogLevels() const                                    { return m_logLevels; }
 
         /**
          * Iterate over all callbacks and collect the enabled log levels.
@@ -248,11 +249,11 @@ namespace MCore
         void LogMessage(const char* message, LogCallback::ELogLevel logLevel = LogCallback::LOGLEVEL_INFO);
 
     public:
-        static Mutex            mGlobalMutex;       /**< The multithread mutex, used by some global Log functions. */
+        static Mutex            s_globalMutex;       /**< The multithread mutex, used by some global Log functions. */
 
     private:
-        Array<LogCallback*>     mLogCallbacks;      /**< A collection of log callback instances. */
-        LogCallback::ELogLevel  mLogLevels;         /**< The log levels that will pass one of the callbacks. All messages from log flags which are disabled won't be logged. */
-        Mutex                   mMutex;             /**< The mutex for logging locally. */
+        AZStd::vector<LogCallback*>     m_logCallbacks;      /**< A collection of log callback instances. */
+        LogCallback::ELogLevel  m_logLevels;         /**< The log levels that will pass one of the callbacks. All messages from log flags which are disabled won't be logged. */
+        Mutex                   m_mutex;             /**< The mutex for logging locally. */
     };
 } // namespace MCore

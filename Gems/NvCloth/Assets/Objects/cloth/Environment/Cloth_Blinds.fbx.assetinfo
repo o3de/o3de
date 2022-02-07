@@ -1,0 +1,41 @@
+{
+    "values": [
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "cloth_blinds",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    "RootNode",
+                    "RootNode.pPlane1",
+                    "RootNode.pPlane1.pPlane1_1",
+                    "RootNode.pPlane1.pPlane1_2",
+                    "RootNode.pPlane1.pPlane1_1.Col0",
+                    "RootNode.pPlane1.pPlane1_1.map1",
+                    "RootNode.pPlane1.pPlane1_1.lambert1",
+                    "RootNode.pPlane1.pPlane1_2.Col0",
+                    "RootNode.pPlane1.pPlane1_2.map1",
+                    "RootNode.pPlane1.pPlane1_2.lambert1"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "StaticMeshAdvancedRule",
+                        "vertexColorStreamName": "Disabled"
+                    },
+                    {
+                        "$type": "MaterialRule"
+                    },
+                    {
+                        "$type": "ClothRule",
+                        "meshNodeName": "RootNode.pPlane1.pPlane1_1",
+                        "inverseMassesStreamName": "Col0",
+                        "motionConstraintsStreamName": "Default: 1.0",
+                        "backstopStreamName": "None"
+                    }
+                ]
+            },
+            "id": "{9D0F5F7F-FB90-5C00-97A7-C55F9180CE4E}"
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,17 +39,22 @@ namespace AzFramework
         struct Command
         {
             //!< The clear command used to indicate the user wants to clear the active text field
-            static const InputChannelId EditClear;
+            static constexpr inline InputChannelId EditClear{"virtual_keyboard_edit_enter"};
 
             //!< The enter/return/close command used to indicate the user has finished text editing
-            static const InputChannelId EditEnter;
+            static constexpr inline InputChannelId EditEnter{"virtual_keyboard_edit_clear"};
 
             //!< The back command used to indicate the user wants to navigate 'backwards'.
             //!< This is specific to android devices, and does not have an ios equivalent.
-            static const InputChannelId NavigationBack;
+            static constexpr inline InputChannelId NavigationBack{"virtual_keyboard_navigation_back"};
 
             //!< All virtual keyboard command ids
-            static const AZStd::array<InputChannelId, 3> All;
+            static constexpr inline AZStd::array All
+            {
+                EditClear,
+                EditEnter,
+                NavigationBack
+            };
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////

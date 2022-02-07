@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,7 +25,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        LinkLabel(const QString& text = {}, const QUrl& url = {}, QWidget* parent = nullptr);
+        LinkLabel(const QString& text = {}, const QUrl& url = {}, int fontSize = 10, QWidget* parent = nullptr);
 
         void SetUrl(const QUrl& url);
 
@@ -39,5 +40,6 @@ namespace O3DE::ProjectManager
 
     private:
         QUrl m_url;
+        int m_fontSize;
     };
 } // namespace O3DE::ProjectManager

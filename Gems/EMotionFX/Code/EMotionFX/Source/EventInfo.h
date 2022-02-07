@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,13 +37,13 @@ namespace EMotionFX
             END
         };
 
-        float           mTimeValue;         /**< The time value of the event, in seconds. */
-        ActorInstance*  mActorInstance;     /**< The actor instance that triggered this event. */
-        const MotionInstance* mMotionInstance;    /**< The motion instance which triggered this event, can be nullptr. */
-        AnimGraphNode*  mEmitter;           /**< The animgraph node which originally did emit this event. This parameter can be nullptr. */
-        const MotionEvent*    mEvent;       /**< The event itself. */
-        float           mGlobalWeight;      /**< The global weight of the event. */
-        float           mLocalWeight;       /**< The local weight of the event. */
+        float           m_timeValue;         /**< The time value of the event, in seconds. */
+        ActorInstance*  m_actorInstance;     /**< The actor instance that triggered this event. */
+        const MotionInstance* m_motionInstance;    /**< The motion instance which triggered this event, can be nullptr. */
+        AnimGraphNode*  m_emitter;           /**< The animgraph node which originally did emit this event. This parameter can be nullptr. */
+        const MotionEvent*    m_event;       /**< The event itself. */
+        float           m_globalWeight;      /**< The global weight of the event. */
+        float           m_localWeight;       /**< The local weight of the event. */
         EventState      m_eventState;      /**< Is this the start of a ranged event? Ticked events will always have this set to true. */
 
         bool IsEventStart() const
@@ -57,13 +58,13 @@ namespace EMotionFX
                 MotionEvent* event = nullptr,
                 EventState eventState = START
         )
-            : mTimeValue(timeValue)
-            , mActorInstance(actorInstance)
-            , mMotionInstance(motionInstance)
-            , mEmitter(nullptr)
-            , mEvent(event)
-            , mGlobalWeight(1.0f)
-            , mLocalWeight(1.0f)
+            : m_timeValue(timeValue)
+            , m_actorInstance(actorInstance)
+            , m_motionInstance(motionInstance)
+            , m_emitter(nullptr)
+            , m_event(event)
+            , m_globalWeight(1.0f)
+            , m_localWeight(1.0f)
             , m_eventState(eventState)
         {
         }

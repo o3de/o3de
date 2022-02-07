@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,7 +59,7 @@ void CUIEnumsDatabase::SetEnumStrings(const QString& enumName, const QStringList
 {
     int nStringCount = sStringsArray.size();
 
-    CUIEnumsDatabase_SEnum* pEnum = stl::find_in_map(m_enums, enumName, 0);
+    CUIEnumsDatabase_SEnum* pEnum = stl::find_in_map(m_enums, enumName, nullptr);
     if (!pEnum)
     {
         pEnum = new CUIEnumsDatabase_SEnum;
@@ -85,6 +86,6 @@ void CUIEnumsDatabase::SetEnumStrings(const QString& enumName, const QStringList
 //////////////////////////////////////////////////////////////////////////
 CUIEnumsDatabase_SEnum* CUIEnumsDatabase::FindEnum(const QString& enumName) const
 {
-    CUIEnumsDatabase_SEnum* pEnum = stl::find_in_map(m_enums, enumName, 0);
+    CUIEnumsDatabase_SEnum* pEnum = stl::find_in_map(m_enums, enumName, nullptr);
     return pEnum;
 }

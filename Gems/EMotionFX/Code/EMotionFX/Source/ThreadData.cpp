@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,14 +19,14 @@ namespace EMotionFX
     ThreadData::ThreadData()
         : BaseObject()
     {
-        mThreadIndex    = MCORE_INVALIDINDEX32;
+        m_threadIndex    = MCORE_INVALIDINDEX32;
     }
 
 
     // constructor
     ThreadData::ThreadData(uint32 threadIndex)
     {
-        mThreadIndex    = threadIndex;
+        m_threadIndex    = threadIndex;
     }
 
 
@@ -51,12 +52,12 @@ namespace EMotionFX
 
     void ThreadData::SetThreadIndex(uint32 index)
     {
-        mThreadIndex = index;
+        m_threadIndex = index;
     }
 
 
     uint32 ThreadData::GetThreadIndex() const
     {
-        return mThreadIndex;
+        return m_threadIndex;
     }
 }   // namespace EMotionFX

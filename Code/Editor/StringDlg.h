@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,7 @@
 
 #include <QInputDialog>
 #include <QMessageBox>
+#include <SandboxAPI.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // StringDlg Qt dialog
@@ -23,7 +25,7 @@ typedef bool (StringDlgPredicate)(QString input);
 class StringDlg : public QInputDialog
 {
 public:
-    StringDlg(const QString &title, QWidget* pParent = NULL, bool bFileNameLimitation = false);
+    StringDlg(const QString &title, QWidget* pParent = nullptr, bool bFileNameLimitation = false);
 
     void SetCheckCallback(const std::function<StringDlgPredicate>& Check) {
         m_Check = Check;

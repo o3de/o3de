@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -20,6 +21,8 @@ set(FILES
     Source/RHI/CommandQueue.h
     Source/RHI/Device.cpp
     Source/RHI/Device.h
+    Source/RHI/Fence.cpp
+    Source/RHI/Fence.h
     Source/RHI/FrameGraphCompiler.cpp
     Source/RHI/FrameGraphCompiler.h
     Source/RHI/FrameGraphExecuter.cpp

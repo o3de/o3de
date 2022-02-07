@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,9 +13,32 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/MathScriptHelpers.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
+    namespace 
+    {
+        class TransformSerializer
+            : public SerializeContext::IDataSerializer
+        {
+        public:
+            // number of floats in the serialized representation, 4 for rotation, 1 for scale and 3 for translation
+            static constexpr int NumFloats = 8;
+
+            // number of floats in version 1, which used 4 for rotation, 3 for scale and 3 for translation
+            static constexpr int NumFloatsVersion1 = 10;
+
+            // number of floats in version 0, which stored a 3x4 matrix
+            static constexpr int NumFloatsVersion0 = 12;
+
+            size_t Save(const void* classPtr, IO::GenericStream& stream, bool isDataBigEndian) override;
+            size_t DataToText(IO::GenericStream& in, IO::GenericStream& out, bool isDataBigEndian) override;
+            size_t TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian) override;
+            bool Load(void* classPtr, IO::GenericStream& stream, unsigned int version, bool isDataBigEndian) override;
+            bool CompareValueData(const void* lhs, const void* rhs) override;
+        };
+    }
     namespace Internal
     {
         void TransformDefaultConstructor(Transform* thisPtr)
@@ -329,6 +353,7 @@ namespace AZ
                 Method("CreateFromMatrix3x3AndTranslation", &Transform::CreateFromMatrix3x3AndTranslation)->
                 Method("CreateUniformScale", &Transform::CreateUniformScale)->
                 Method("CreateTranslation", &Transform::CreateTranslation)->
+                Method("CreateLookAt", &Transform::CreateLookAt)->
                 Method("ConstructFromValuesNumeric", &Internal::ConstructTransformFromValues);
         }
     }

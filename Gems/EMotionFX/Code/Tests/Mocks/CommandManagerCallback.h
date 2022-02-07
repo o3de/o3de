@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,8 +21,8 @@ namespace MCore
         MOCK_METHOD2(OnPreExecuteCommandGroup, void(MCore::CommandGroup*, bool));
         MOCK_METHOD2(OnPostExecuteCommandGroup, void(MCore::CommandGroup*, bool));
 
-        MOCK_METHOD4(OnAddCommandToHistory, void(uint32, MCore::CommandGroup*, MCore::Command*, const MCore::CommandLine&));
-        MOCK_METHOD1(OnRemoveCommand, void(uint32));
-        MOCK_METHOD1(OnSetCurrentCommand, void(uint32));
+        MOCK_METHOD4(OnAddCommandToHistory, void(size_t, MCore::CommandGroup*, MCore::Command*, const MCore::CommandLine&));
+        MOCK_METHOD1(OnRemoveCommand, void(size_t));
+        MOCK_METHOD1(OnSetCurrentCommand, void(size_t));
     };
 } // namespace MCore

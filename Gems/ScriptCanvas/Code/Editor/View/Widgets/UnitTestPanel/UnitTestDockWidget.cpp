@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <precompiled.h>
 
 #include <QCompleter>
 #include <QEvent>
@@ -433,7 +433,10 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetId sourceAssetId(sourceUuid, 0);
 
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-        GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAssetId, sourceAssetId);
+        GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAssetId
+            , ScriptCanvasEditor::SourceHandle(nullptr, sourceUuid, {})
+            , Tracker::ScriptCanvasFileState::UNMODIFIED);
+
         if (!openOutcome)
         {
             AZ_Warning("Script Canvas", openOutcome, "%s", openOutcome.GetError().data());

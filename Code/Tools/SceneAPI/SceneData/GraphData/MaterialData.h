@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include <SceneAPI/SceneData/SceneDataConfiguration.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMaterialData.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/string/fixed_string.h>
 
 namespace AZ
 {
@@ -95,10 +97,7 @@ namespace AZ
 
                 bool m_isNoDraw;
 
-                const static AZStd::string s_DiffuseMapName;
-                const static AZStd::string s_SpecularMapName;
-                const static AZStd::string s_BumpMapName;
-                const static AZStd::string s_emptyString;
+                const AZStd::string m_emptyString;
 
                 // A unique id which is used to identify a material in a fbx. 
                 // This is the same as the ID in the fbx file's FbxNode

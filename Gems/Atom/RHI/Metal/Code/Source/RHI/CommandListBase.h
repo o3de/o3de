@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -88,18 +89,22 @@ namespace AZ
             /// Cache multisample state. Used mainly to validate the MSAA image descriptor against the one passed into the pipelinestate
             RHI::MultisampleState       m_renderPassMultiSampleState;
             
+            //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
+            void MakeHeapsResident(MTLRenderStages renderStages);
         private:
             
-            //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
-            void MakeHeapsResident();
+            
 
             bool m_isEncoded                                    = false;
+            bool m_isNullDescHeapBound                          = false;
             RHI::HardwareQueueClass m_hardwareQueueClass        = RHI::HardwareQueueClass::Graphics;
             NSString* m_encoderScopeName                        = nullptr;
             id <MTLCommandBuffer> m_mtlCommandBuffer            = nil;
             MTLRenderPassDescriptor* m_renderPassDescriptor     = nil;
             
             const AZStd::set<id<MTLHeap>>* m_residentHeaps = nullptr;
+
+            bool m_supportsInterDrawTimestamps                  = AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING; // iOS/TVOS = false, MacOS = defaults to true
 
 #if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
             struct TimeStampData

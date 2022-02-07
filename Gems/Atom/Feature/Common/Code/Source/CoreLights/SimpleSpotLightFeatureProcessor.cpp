@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,6 @@
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/CpuProfiler.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -48,7 +48,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_simpleSpotLights";
             desc.m_elementCountSrgName = "m_simpleSpotLightCount";
             desc.m_elementSize = sizeof(SimpleSpotLightData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
         }
@@ -101,7 +101,7 @@ namespace AZ
 
         void SimpleSpotLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SimpleSpotLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "SimpleSpotLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -113,7 +113,7 @@ namespace AZ
 
         void SimpleSpotLightFeatureProcessor::Render(const SimpleSpotLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SimpleSpotLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "SimpleSpotLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {

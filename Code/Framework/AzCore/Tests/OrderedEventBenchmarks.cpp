@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -73,7 +74,7 @@ namespace Benchmark
     {
     public:
         EBusPerfBaselineImplEmpty() { EBusPerfBaselineBus::Handler::BusConnect(); }
-        ~EBusPerfBaselineImplEmpty() { EBusPerfBaselineBus::Handler::BusDisconnect(); }
+        ~EBusPerfBaselineImplEmpty() override { EBusPerfBaselineBus::Handler::BusDisconnect(); }
         void OnSignal(int32_t) override {}
     };
 
@@ -93,7 +94,7 @@ namespace Benchmark
     {
     public:
         EBusPerfBaselineImplIncrement() { EBusPerfBaselineBus::Handler::BusConnect(); }
-        ~EBusPerfBaselineImplIncrement() { EBusPerfBaselineBus::Handler::BusDisconnect(); }
+        ~EBusPerfBaselineImplIncrement() override { EBusPerfBaselineBus::Handler::BusDisconnect(); }
         void SetIncrementCounter(int32_t* incrementCounter) { m_incrementCounter = incrementCounter; }
         void OnSignal(int32_t) override { ++(*m_incrementCounter); }
         int32_t* m_incrementCounter;

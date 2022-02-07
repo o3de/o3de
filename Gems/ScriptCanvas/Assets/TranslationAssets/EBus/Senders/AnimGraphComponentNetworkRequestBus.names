@@ -1,0 +1,125 @@
+{
+    "entries": [
+        {
+            "base": "AnimGraphComponentNetworkRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Anim Graph",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "base": "GetActiveStates",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Active States"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Active States is invoked"
+                    },
+                    "details": {
+                        "name": "Get Active States"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3349AACD-BE04-50BC-9478-528BF2ACFD55}",
+                            "details": {
+                                "name": "Active States"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CreateSnapshot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Snapshot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Snapshot is invoked"
+                    },
+                    "details": {
+                        "name": "Create Snapshot"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Authoritative"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetActiveStates",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetActiveStates"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetActiveStates is invoked"
+                    },
+                    "details": {
+                        "name": "Set Active States"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3349AACD-BE04-50BC-9478-528BF2ACFD55}",
+                            "details": {
+                                "name": "Active States"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsAssetReady",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Asset Ready"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Asset Ready is invoked"
+                    },
+                    "details": {
+                        "name": "Is Asset Ready"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Asset Ready"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "HasSnapshot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has Snapshot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has Snapshot is invoked"
+                    },
+                    "details": {
+                        "name": "Has Snapshot"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Has Snapshot"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

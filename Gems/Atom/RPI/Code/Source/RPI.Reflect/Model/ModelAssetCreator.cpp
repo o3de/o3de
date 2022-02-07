@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,6 +27,33 @@ namespace AZ
             if (ValidateIsReady())
             {
                 m_asset->m_name = name;
+            }
+        }
+        
+        void ModelAssetCreator::AddMaterialSlot(const ModelMaterialSlot& materialSlot)
+        {
+            if (ValidateIsReady())
+            {
+                auto iter = m_asset->m_materialSlots.find(materialSlot.m_stableId);
+
+                if (iter == m_asset->m_materialSlots.end())
+                {
+                    m_asset->m_materialSlots[materialSlot.m_stableId] = materialSlot;
+                }
+                else
+                {
+                    if (materialSlot.m_displayName != iter->second.m_displayName)
+                    {
+                        ReportWarning("Material slot %u was already added with a different name.", materialSlot.m_stableId);
+                    }
+
+                    if (materialSlot.m_defaultMaterialAsset != iter->second.m_defaultMaterialAsset)
+                    {
+                        ReportWarning("Material slot %u was already added with a different default MaterialAsset.", materialSlot.m_stableId);
+                    }
+
+                    iter->second = materialSlot;
+                }
             }
         }
 
@@ -88,6 +116,12 @@ namespace AZ
                 {
                     creator.AddLodAsset(AZStd::move(lodAsset));
                 }
+            }
+
+            const ModelMaterialSlotMap &sourceMaterialSlotMap = sourceAsset->GetMaterialSlots();
+            for (const auto& sourceMaterialSlot : sourceMaterialSlotMap)
+            {
+                creator.AddMaterialSlot(sourceMaterialSlot.second);
             }
 
             return creator.End(clonedResult);

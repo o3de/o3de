@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #include <Vegetation/PrefabInstanceSpawner.h>
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -324,7 +326,7 @@ namespace Vegetation
 
         // Create a callback for SpawnAllEntities that will set the transform of the root entity to the correct position / rotation / scale
         // for our spawned instance.
-        auto preSpawnCB = [this, world](
+        auto preSpawnCB = [world](
              [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableEntityContainerView view)
         {
             AZ::Entity* rootEntity = *view.begin();

@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -156,10 +157,12 @@ set(FILES
     Source/RHI/ScopeAttachment.cpp
     Include/Atom/RHI/ShaderResourceGroup.h
     Include/Atom/RHI/ShaderResourceGroupData.h
+    Include/Atom/RHI/ShaderResourceGroupDebug.h
     Include/Atom/RHI/ShaderResourceGroupInvalidateRegistry.h
     Include/Atom/RHI/ShaderResourceGroupPool.h
     Source/RHI/ShaderResourceGroup.cpp
     Source/RHI/ShaderResourceGroupData.cpp
+    Source/RHI/ShaderResourceGroupDebug.cpp
     Source/RHI/ShaderResourceGroupInvalidateRegistry.cpp
     Source/RHI/ShaderResourceGroupPool.cpp
     Include/Atom/RHI/MemoryStatisticsBuilder.h
@@ -194,8 +197,5 @@ set(FILES
     Include/Atom/RHI/interval_map.h
     Include/Atom/RHI/ImageProperty.h
     Include/Atom/RHI/BufferProperty.h
-    Include/Atom/RHI/CpuProfiler.h
-    Include/Atom/RHI/CpuProfilerImpl.h
-    Source/RHI/CpuProfilerImpl.cpp
     Include/Atom/RHI/TagRegistry.h
 )

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,6 +16,7 @@
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/CommandSystem/Source/ParameterMixins.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+#include <EMotionFX/Source/EMotionFXConfig.h>
 
 
 namespace AZ
@@ -33,11 +35,11 @@ namespace EMotionFX
     public:
         static bool AddSimulatedObject(AZ::u32 actorId, AZStd::optional<AZStd::string> name = AZStd::nullopt, MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
         static bool RemoveSimulatedObject(AZ::u32 actorId, size_t objectIndex, MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
-        static bool AddSimulatedJoints(AZ::u32 actorId, const AZStd::vector<AZ::u32>& jointIndices, size_t objectIndex, bool addChildren, MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
-        static bool RemoveSimulatedJoints(AZ::u32 actorId, const AZStd::vector<AZ::u32>& jointIndices, size_t objectIndex, bool removeChildren, MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+        static bool AddSimulatedJoints(AZ::u32 actorId, const AZStd::vector<size_t>& jointIndices, size_t objectIndex, bool addChildren, MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
+        static bool RemoveSimulatedJoints(AZ::u32 actorId, const AZStd::vector<size_t>& jointIndices, size_t objectIndex, bool removeChildren, MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false);
 
-        static void JointIndicesToString(const AZStd::vector<AZ::u32>& jointIndices, AZStd::string& outJointIndicesString);
-        static void StringToJointIndices(const AZStd::string& jointIndicesString, AZStd::vector<AZ::u32>& outJointIndices);
+        static void JointIndicesToString(const AZStd::vector<size_t>& jointIndices, AZStd::string& outJointIndicesString);
+        static void StringToJointIndices(const AZStd::string& jointIndicesString, AZStd::vector<size_t>& outJointIndices);
 
         static void ReplaceTag(const Actor* actor, const PhysicsSetup::ColliderConfigType colliderType, const AZStd::string& oldTag, const AZStd::string& newTag, MCore::CommandGroup& outCommandGroup);
 
@@ -202,8 +204,8 @@ namespace EMotionFX
         const char* GetDescription() const override { return "Add simulated joints to a simulated object"; }
         MCore::Command* Create() override { return aznew CommandAddSimulatedJoints(this); }
 
-        const AZStd::vector<AZ::u32>& GetJointIndices() const { return m_jointIndices; }
-        void SetJointIndices(AZStd::vector<AZ::u32> newJointIndices) { m_jointIndices = AZStd::move(newJointIndices); }
+        const AZStd::vector<size_t>& GetJointIndices() const { return m_jointIndices; }
+        void SetJointIndices(AZStd::vector<size_t> newJointIndices) { m_jointIndices = AZStd::move(newJointIndices); }
 
         size_t GetObjectIndex() { return m_objectIndex; }
         void SetObjectIndex(size_t newObjectIndex ) { m_objectIndex = newObjectIndex; }
@@ -214,8 +216,8 @@ namespace EMotionFX
         static const char* s_addChildrenParameterName;
         static const char* s_contentsParameterName;
     private:
-        size_t                                  m_objectIndex = MCORE_INVALIDINDEX32;
-        AZStd::vector<AZ::u32>                  m_jointIndices;
+        size_t                                  m_objectIndex = InvalidIndex;
+        AZStd::vector<size_t>                   m_jointIndices;
         AZStd::optional<AZStd::string>          m_contents;
         bool                                    m_addChildren = false;
         bool                                    m_oldDirtyFlag = false;
@@ -244,7 +246,7 @@ namespace EMotionFX
         const char* GetDescription() const override { return "Remove simulated joints from a simulated object"; }
         MCore::Command* Create() override { return aznew CommandRemoveSimulatedJoints(this); }
 
-        const AZStd::vector<AZ::u32>& GetJointIndices() const { return m_jointIndices; }
+        const AZStd::vector<size_t>& GetJointIndices() const { return m_jointIndices; }
         size_t GetObjectIndex() { return m_objectIndex; }
 
         static const char* s_commandName;
@@ -253,8 +255,8 @@ namespace EMotionFX
 
         static const char* s_removeChildrenParameterName;
     private:
-        size_t                                  m_objectIndex = MCORE_INVALIDINDEX32;
-        AZStd::vector<AZ::u32>                  m_jointIndices;
+        size_t                                  m_objectIndex = InvalidIndex;
+        AZStd::vector<size_t>                   m_jointIndices;
         AZStd::optional<AZStd::string>          m_oldContents;
         bool                                    m_removeChildren = false;
         bool                                    m_oldDirtyFlag = false;

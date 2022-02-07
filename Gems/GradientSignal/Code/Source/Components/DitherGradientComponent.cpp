@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "GradientSignal_precompiled.h"
 #include "DitherGradientComponent.h"
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
@@ -224,7 +224,7 @@ namespace GradientSignal
 
     float DitherGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const AZ::Vector3& coordinate = sampleParams.m_position;
 

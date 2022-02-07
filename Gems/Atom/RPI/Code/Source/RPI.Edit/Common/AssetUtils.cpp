@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/IO/IOUtils.h>
+#include <AzCore/IO/Path/Path.h>
 
 namespace AZ
 {
@@ -16,12 +18,6 @@ namespace AZ
     {
         namespace AssetUtils
         {
-            uint32_t CalcSrgProductSubId(const Name& srgName)
-            {
-                //[GFX TODO] Make SrgLayoutBuilder share this code after the gems reorg is complete
-                return static_cast<uint32_t>(AZStd::hash<AZStd::string>()(srgName.GetStringView()) & 0xFFFFFFFF);
-            }
-
             AZStd::string GetProductPathByAssetId(const AZ::Data::AssetId& assetId)
             {
                 AZStd::string productPath;
@@ -51,6 +47,12 @@ namespace AZ
 
             AZStd::string ResolvePathReference(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
+                // The IsAbsolute part prevents "second join parameter is an absolute path" warnings in StringFunc::Path::Join below
+                if (referencedSourceFilePath.empty() || AZ::IO::PathView{referencedSourceFilePath}.IsAbsolute())
+                {
+                    return referencedSourceFilePath;
+                }
+
                 AZStd::string normalizedReferencedPath = referencedSourceFilePath;
                 AzFramework::StringFunc::Path::Normalize(normalizedReferencedPath);
 
@@ -118,7 +120,7 @@ namespace AZ
                 return results;
             }
 
-            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& sourcePath, uint32_t productSubId)
+            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& sourcePath, uint32_t productSubId, TraceLevel reporting)
             {
                 bool assetFound = false;
                 AZ::Data::AssetInfo sourceInfo;
@@ -127,7 +129,7 @@ namespace AZ
 
                 if (!assetFound)
                 {
-                    AZ_Error("AssetUtils", false, "Could not find asset [%s]", sourcePath.c_str());
+                    AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not find asset [%s]", sourcePath.c_str()).c_str());
                     return AZ::Failure();
                 }
                 else
@@ -136,10 +138,10 @@ namespace AZ
                 }
             }
 
-            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId)
+            Outcome<Data::AssetId> MakeAssetId(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId, TraceLevel reporting)
             {
                 AZStd::string resolvedPath = ResolvePathReference(originatingSourcePath, referencedSourceFilePath);
-                return MakeAssetId(resolvedPath, productSubId);
+                return MakeAssetId(resolvedPath, productSubId, reporting);
             }
         } // namespace AssetUtils
     } // namespace RPI

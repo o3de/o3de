@@ -1,0 +1,124 @@
+{
+    "entries": [
+        {
+            "base": "PosterizeGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Posterize Gradient"
+            },
+            "methods": [
+                {
+                    "base": "GetGradientSampler",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetGradientSampler"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetGradientSampler is invoked"
+                    },
+                    "details": {
+                        "name": "GetGradientSampler"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+                            "details": {
+                                "name": "Gradient Sampler"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetModeType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetModeType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetModeType is invoked"
+                    },
+                    "details": {
+                        "name": "GetModeType"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetModeType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetModeType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetModeType is invoked"
+                    },
+                    "details": {
+                        "name": "SetModeType"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetBands",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetBands"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetBands is invoked"
+                    },
+                    "details": {
+                        "name": "SetBands"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBands",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetBands"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetBands is invoked"
+                    },
+                    "details": {
+                        "name": "GetBands"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

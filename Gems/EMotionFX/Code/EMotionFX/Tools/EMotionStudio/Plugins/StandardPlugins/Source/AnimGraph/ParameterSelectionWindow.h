@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,9 +26,9 @@ namespace EMStudio
      * 2. Use the itemSelectionChanged() signal of the GetNodeHierarchyWidget()->GetTreeWidget() to detect when the user adjusts the selection in the node hierarchy widget.
      * 3. Use the OnSelectionDone() in the GetNodeHierarchyWidget() to detect when the user finished selecting and pressed the OK button.
      * Example:
-     * connect( mParameterSelectionWindow,                                              SIGNAL(rejected()),             this, SLOT(UserWantsToCancel_1()) );
-     * connect( mParameterSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(),   SIGNAL(itemSelectionChanged()), this, SLOT(SelectionChanged_2()) );
-     * connect( mParameterSelectionWindow->GetNodeHierarchyWidget(),                    SIGNAL(OnSelectionDone(MCore::Array<SelectionItem>)), this, SLOT(FinishedSelectionAndPressedOK_3(MCore::Array<SelectionItem>)) );
+     * connect( m_parameterSelectionWindow,                                              SIGNAL(rejected()),             this, SLOT(UserWantsToCancel_1()) );
+     * connect( m_parameterSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(),   SIGNAL(itemSelectionChanged()), this, SLOT(SelectionChanged_2()) );
+     * connect( m_parameterSelectionWindow->GetNodeHierarchyWidget(),                    SIGNAL(OnSelectionDone(AZStd::vector<SelectionItem>)), this, SLOT(FinishedSelectionAndPressedOK_3(AZStd::vector<SelectionItem>)) );
     */
     class ParameterSelectionWindow
         : public QDialog
@@ -39,18 +40,18 @@ namespace EMStudio
         ParameterSelectionWindow(QWidget* parent, bool useSingleSelection);
         virtual ~ParameterSelectionWindow();
 
-        MCORE_INLINE ParameterWidget* GetParameterWidget()                                                      { return mParameterWidget; }
-        void Update(EMotionFX::AnimGraph* animGraph, const AZStd::vector<AZStd::string>& selectedParameters)    { mParameterWidget->Update(animGraph, selectedParameters); }
+        MCORE_INLINE ParameterWidget* GetParameterWidget()                                                      { return m_parameterWidget; }
+        void Update(EMotionFX::AnimGraph* animGraph, const AZStd::vector<AZStd::string>& selectedParameters)    { m_parameterWidget->Update(animGraph, selectedParameters); }
 
     public slots:
         void OnAccept();
         void OnDoubleClicked(const AZStd::string& item);
 
     private:
-        ParameterWidget*                    mParameterWidget;
-        QPushButton*                        mOKButton;
-        QPushButton*                        mCancelButton;
-        bool                                mUseSingleSelection;
-        bool                                mAccepted;
+        ParameterWidget*                    m_parameterWidget;
+        QPushButton*                        m_okButton;
+        QPushButton*                        m_cancelButton;
+        bool                                m_useSingleSelection;
+        bool                                m_accepted;
     };
 } // namespace EMStudio

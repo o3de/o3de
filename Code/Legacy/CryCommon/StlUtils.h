@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,14 +9,14 @@
 
 // Description : Various convenience utility functions for STL and alike
 //               Used in Animation subsystem, and in some tools
-#ifndef CRYINCLUDE_CRYCOMMON_STLUTILS_H
-#define CRYINCLUDE_CRYCOMMON_STLUTILS_H
 #pragma once
 
 #include <unordered_map>
 #include <unordered_set>
+#include <AzCore/std/allocator_stateless.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/string/string.h>
 
 #if (defined(LINUX) || defined(APPLE))
     #include "platform.h"
@@ -493,7 +494,14 @@ namespace stl
 
     //! Specialization of string to const char cast.
     template <>
-    inline const char* constchar_cast(const string& type)
+    inline const char* constchar_cast(const AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator>& type)
+    {
+        return type.c_str();
+    }
+
+    //! Specialization of string to const char cast.
+    template <>
+    inline const char* constchar_cast(const AZStd::string& type)
     {
         return type.c_str();
     }
@@ -525,58 +533,6 @@ namespace stl
     // Hash map usage:
     // typedef AZStd::unordered_map<string,int, stl::hash_string_insensitve<string>, stl::equality_string_insensitive<string> > StringToIntHash;
     //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // useful when the key is already the result of an hash function
-    // key needs to be convertible to size_t
-    //////////////////////////////////////////////////////////////////////////
-    template <class Key>
-    class hash_simple
-    {
-    public:
-        enum    // parameters for hash table
-        {
-            bucket_size = 4,    // 0 < bucket_size
-            min_buckets = 8
-        };// min_buckets = 2 ^^ N, 0 < N
-
-        size_t operator()(const Key& key) const
-        {
-            return size_t(key);
-        };
-        bool operator()(const Key& key1, const Key& key2) const
-        {
-            return key1 < key2;
-        }
-    };
-
-    // simple hash class that has the avalanche property (a change in one bit affects all others)
-    // ... use this if you have uint32 key values!
-    class hash_uint32
-    {
-    public:
-        enum    // parameters for hash table
-        {
-            bucket_size = 4,    // 0 < bucket_size
-            min_buckets = 8  // min_buckets = 2 ^^ N, 0 < N
-        };
-
-        ILINE size_t operator()(uint32 a) const
-        {
-            a = (a + 0x7ed55d16) + (a << 12);
-            a = (a ^ 0xc761c23c) ^ (a >> 19);
-            a = (a + 0x165667b1) + (a << 5);
-            a = (a + 0xd3a2646c) ^ (a << 9);
-            a = (a + 0xfd7046c5) + (a << 3);
-            a = (a ^ 0xb55a4f09) ^ (a >> 16);
-            return a;
-        };
-        bool operator()(uint32 key1, uint32 key2) const
-        {
-            return key1 < key2;
-        }
-    };
-
 
     //////////////////////////////////////////////////////////////////////////
     //! Case sensitive string hash
@@ -652,130 +608,6 @@ namespace stl
         {
             return _stricmp(constchar_cast(key1), constchar_cast(key2)) == 0;
         }
-    };
-
-
-    // Support for both Microsoft and SGI kind of hash_map.
-
-#if defined(_STLP_HASH_MAP) || defined(APPLE) || defined(LINUX)
-    // STL Port
-    template <class _Key, class _Predicate = std::less<_Key> >
-    struct hash_compare
-    {
-        enum
-        {   // parameters for hash table
-            bucket_size = 4,    // 0 < bucket_size
-            min_buckets = 8   // min_buckets = 2 ^^ N, 0 < N
-        };
-
-        size_t operator()(const _Key& _Keyval) const
-        {
-            // return hash value.
-            uint32 a = _Keyval;
-            a = (a + 0x7ed55d16) + (a << 12);
-            a = (a ^ 0xc761c23c) ^ (a >> 19);
-            a = (a + 0x165667b1) + (a << 5);
-            a = (a + 0xd3a2646c) ^ (a << 9);
-            a = (a + 0xfd7046c5) + (a << 3);
-            a = (a ^ 0xb55a4f09) ^ (a >> 16);
-            return a;
-        }
-
-        // Less then function.
-        bool operator()(const _Key& _Keyval1, const _Key& _Keyval2) const
-        {   // test if _Keyval1 ordered before _Keyval2
-            _Predicate comp;
-            return (comp(_Keyval1, _Keyval2));
-        }
-    };
-
-    template <class Key, class HashFunc>
-    struct stlport_hash_equal
-    {
-        // Equal function.
-        bool operator()(const Key& k1, const Key& k2) const
-        {
-            HashFunc less;
-            // !(k1 < k2) && !(k2 < k1)
-            return !less(k1, k2) && !less(k2, k1);
-        }
-    };
-
-    template <class Key, class Value, class HashFunc = hash_compare<Key>, class Alloc = std::allocator< std::pair<const Key, Value> > >
-    struct hash_map
-        : public std__hash_map<Key, Value, HashFunc, stlport_hash_equal<Key, HashFunc>, Alloc>
-    {
-        hash_map()
-            : std__hash_map<Key, Value, HashFunc, stlport_hash_equal<Key, HashFunc>, Alloc>(HashFunc::min_buckets) {}
-    };
-
-    template <class Key, class Value, class HashFunc = hash_compare<Key>, class Alloc = std::allocator< std::pair<const Key, Value> > >
-    struct hash_multimap
-        : public std__hash_multimap<Key, Value, HashFunc, stlport_hash_equal<Key, HashFunc>, Alloc>
-    {
-        hash_multimap()
-            : std__hash_multimap<Key, Value, HashFunc, stlport_hash_equal<Key, HashFunc>, Alloc>(HashFunc::min_buckets) {}
-    };
-#endif
-
-    //////////////////////////////////////////////////////////////////////////
-    template<class T>
-    class intrusive_linked_list_node
-    {
-    public:
-        intrusive_linked_list_node()  { link_to_intrusive_list(static_cast<T*>(this)); }
-        // Not virtual by design
-        ~intrusive_linked_list_node() { unlink_from_intrusive_list(static_cast<T*>(this)); }
-
-        static T* get_intrusive_list_root() { return m_root_intrusive; };
-
-        static void link_to_intrusive_list(T* pNode)
-        {
-            if (m_root_intrusive)
-            {
-                // Add to the beginning of the list.
-                T* head = m_root_intrusive;
-                pNode->m_prev_intrusive = 0;
-                pNode->m_next_intrusive = head;
-                head->m_prev_intrusive = pNode;
-                m_root_intrusive = pNode;
-            }
-            else
-            {
-                m_root_intrusive = pNode;
-                pNode->m_prev_intrusive = 0;
-                pNode->m_next_intrusive = 0;
-            }
-        }
-        static void unlink_from_intrusive_list(T* pNode)
-        {
-            if (pNode == m_root_intrusive) // if head of list.
-            {
-                m_root_intrusive = pNode->m_next_intrusive;
-                if (m_root_intrusive)
-                {
-                    m_root_intrusive->m_prev_intrusive = 0;
-                }
-            }
-            else
-            {
-                if (pNode->m_prev_intrusive)
-                {
-                    pNode->m_prev_intrusive->m_next_intrusive = pNode->m_next_intrusive;
-                }
-                if (pNode->m_next_intrusive)
-                {
-                    pNode->m_next_intrusive->m_prev_intrusive = pNode->m_prev_intrusive;
-                }
-            }
-            pNode->m_next_intrusive = 0;
-            pNode->m_prev_intrusive = 0;
-        }
-
-    public:
-        static T* m_root_intrusive;
-        T* m_next_intrusive;
-        T* m_prev_intrusive;
     };
 
     template <class T>
@@ -859,30 +691,6 @@ namespace stl
         }
     };
 
-    template <typename T>
-    struct scoped_set
-    {
-        scoped_set(T& ref, T val)
-            : m_ref(&ref)
-            , m_oldVal(ref)
-        {
-            ref = val;
-        }
-
-        ~scoped_set()
-        {
-            (*m_ref) = m_oldVal;
-        }
-
-    private:
-        scoped_set(const scoped_set<T>& other);
-        scoped_set<T>& operator = (const scoped_set<T>& other);
-
-    private:
-        T* m_ref;
-        T m_oldVal;
-    };
-
     template <typename T, size_t Length, typename Func>
     inline void for_each_array(T (&buffer)[Length], Func func)
     {
@@ -909,64 +717,6 @@ namespace stl
     template<>                              \
     Class * stl::intrusive_linked_list_node<Class>::m_root_intrusive = nullptr;
 
-
-// Performs a less-than compare on a serial sequence space, such that earlier values compare less-than later values.
-// Unlike a normal integral value, this accounts for overflowing the limit of the underlying type.
-// For example, assuming a 2-bit unsigned underlying type (with possible values 0, 1, 2 and 3), the following will hold: 0 < 1 && 1 < 2 && 2 < 3 && 3 < 0
-// Assuming two equal values V1 and V2, V2 can be incremented up to "(2 ^ (bits - 1) - 1)" times and V1 < V2 will continue to hold.
-// See also RFC-1982 that documents this http://tools.ietf.org/html/rfc1982
-template<typename T>
-struct SSerialCompare
-{
-    static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
-
-    static const T limit = (T(1) << (sizeof(T) * 8 - 1));
-
-    bool operator()(T lhs, T rhs)
-    {
-        return ((lhs < rhs) && (rhs - lhs < limit)) || ((lhs > rhs) && (lhs - rhs > limit));
-    }
-};
-
-template <class Container>
-unsigned sizeOfVP(Container& arr)
-{
-    int i;
-    unsigned size = 0;
-    for (i = 0; i < (int)arr.size(); i++)
-    {
-        typename Container::value_type& T = arr[i];
-        size += T->Size();
-    }
-    size += (arr.capacity() - arr.size()) * sizeof(typename Container::value_type);
-    return size;
-}
-
-template <class Container>
-unsigned sizeOfV(Container& arr)
-{
-    int i;
-    unsigned size = 0;
-    for (i = 0; i < (int)arr.size(); i++)
-    {
-        typename Container::value_type& T = arr[i];
-        size += T.Size();
-    }
-    size += (arr.capacity() - arr.size()) * sizeof(typename Container::value_type);
-    return size;
-}
-template <class Container>
-unsigned sizeOfA(Container& arr)
-{
-    int i;
-    unsigned size = 0;
-    for (i = 0; i < arr.size(); i++)
-    {
-        typename Container::value_type& T = arr[i];
-        size += T.Size();
-    }
-    return size;
-}
 // define the maplikestruct, used to approximate the memory requirements for a map node
 namespace stl
 {
@@ -1026,5 +776,3 @@ unsigned sizeOfMapS(Map& map)
     size += map.size() * sizeof(stl::MapLikeStruct);
     return size;
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_STLUTILS_H

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,6 +19,7 @@ namespace AWSCore
     {
 
     public:
+        virtual ~JsonReaderHandler() = default;
 
         using Ch = char;
         using SizeType = rapidjson::SizeType;
@@ -442,7 +444,7 @@ namespace AWSCore
             msg += AZStd::string::format(" at character %zu: ", result.Offset());
 
             const int snippet_size = 40;
-            int start = result.Offset() - snippet_size / 2;
+            int start = static_cast<int>(result.Offset() - snippet_size / 2);
             int length = snippet_size;
             int offset = snippet_size / 2;
             if (start < 0) {

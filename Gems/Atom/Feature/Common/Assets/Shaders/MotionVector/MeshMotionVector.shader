@@ -1,5 +1,5 @@
 {
-    "Source" : "MeshMotionVector",
+    "Source" : "MeshMotionVector.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }

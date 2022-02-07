@@ -370,7 +370,7 @@
 									<Class name="int" field="SpriteType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
 									<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="SpritePath" version="1" type="{68E92460-5C0C-4031-9620-6F1A08763243}">
 										<Class name="SimpleAssetReferenceBase" field="BaseClass1" version="1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
-											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.dds" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
+											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.tif.streamingimage" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
 										</Class>
 									</Class>
 									<Class name="AZStd::string" field="RenderTargetName" value="" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
@@ -475,7 +475,7 @@
 									<Class name="int" field="SpriteType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
 									<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="SpritePath" version="1" type="{68E92460-5C0C-4031-9620-6F1A08763243}">
 										<Class name="SimpleAssetReferenceBase" field="BaseClass1" version="1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
-											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.dds" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
+											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.tif.streamingimage" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
 										</Class>
 									</Class>
 									<Class name="AZStd::string" field="RenderTargetName" value="" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
@@ -616,7 +616,7 @@
 									<Class name="int" field="SpriteType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
 									<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="SpritePath" version="1" type="{68E92460-5C0C-4031-9620-6F1A08763243}">
 										<Class name="SimpleAssetReferenceBase" field="BaseClass1" version="1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
-											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.dds" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
+											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.tif.streamingimage" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
 										</Class>
 									</Class>
 									<Class name="AZStd::string" field="RenderTargetName" value="" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
@@ -757,7 +757,7 @@
 									<Class name="int" field="SpriteType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
 									<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="SpritePath" version="1" type="{68E92460-5C0C-4031-9620-6F1A08763243}">
 										<Class name="SimpleAssetReferenceBase" field="BaseClass1" version="1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
-											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.dds" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
+											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.tif.streamingimage" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
 										</Class>
 									</Class>
 									<Class name="AZStd::string" field="RenderTargetName" value="" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
@@ -898,7 +898,7 @@
 									<Class name="int" field="SpriteType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
 									<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="SpritePath" version="1" type="{68E92460-5C0C-4031-9620-6F1A08763243}">
 										<Class name="SimpleAssetReferenceBase" field="BaseClass1" version="1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
-											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.dds" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
+											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.tif.streamingimage" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
 										</Class>
 									</Class>
 									<Class name="AZStd::string" field="RenderTargetName" value="" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
@@ -1118,7 +1118,7 @@
 									<Class name="int" field="SpriteType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
 									<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="SpritePath" version="1" type="{68E92460-5C0C-4031-9620-6F1A08763243}">
 										<Class name="SimpleAssetReferenceBase" field="BaseClass1" version="1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
-											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.dds" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
+											<Class name="AZStd::string" field="AssetPath" value="textures/basic/button_sliced_normal.tif.streamingimage" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>
 										</Class>
 									</Class>
 									<Class name="AZStd::string" field="RenderTargetName" value="" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}"/>

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,7 +72,7 @@ protected: // member functions
     // ~AZ::Component
 
     // UiLayoutControllerInterface
-    unsigned int GetPriority() const;
+    unsigned int GetPriority() const override;
     // ~UiLayoutControllerInterface
 
     AZ_DISABLE_COPY_MOVE(UiLayoutFitterComponent);

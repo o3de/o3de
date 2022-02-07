@@ -206,8 +206,107 @@
                         "$type": "RasterPassData",
                         "DrawListTag": "forward",
                         "PipelineViewTag": "MainCamera",
-                        "PassSrgAsset": {
-                            "FilePath": "shaderlib/atom/features/pbr/forwardpasssrg.azsli:PassSrg"
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/ForwardPassSrg.shader"
+                        }
+                    }
+                },
+                {
+                    "Name": "ForwardSubsurfaceMSAAPass",
+                    "TemplateName": "EnvironmentCubeMapForwardSubsurfaceMSAAPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DirectionalLightShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "CascadedShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapDirectional",
+                            "AttachmentRef": {
+                                "Pass": "EsmShadowmapsPassDirectional",
+                                "Attachment": "EsmShadowmaps"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "ProjectedShadowmapsPass",
+                                "Attachment": "Shadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapProjected",
+                            "AttachmentRef": {
+                                "Pass": "EsmShadowmapsPassProjected",
+                                "Attachment": "EsmShadowmaps"
+                            }
+                        },
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "LightCullingPass",
+                                "Attachment": "LightListRemapped"
+                            }
+                        },
+                        // Input/Outputs...
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DiffuseOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "DiffuseOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "SpecularOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "AlbedoOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "AlbedoOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularF0Output",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "SpecularF0Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "NormalOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "NormalOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "forwardWithSubsurfaceOutput",
+                        "PipelineViewTag": "MainCamera",
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
                     }
                 },
@@ -326,13 +425,82 @@
                     ]
                 },
                 {
+                    "Name": "MSAAResolveScatterDistancePass",
+                    "TemplateName": "MSAAResolveColorTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "ForwardSubsurfaceMSAAPass",
+                                "Attachment": "ScatterDistanceOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SubsurfaceScatteringPass",
+                    "TemplateName": "SubsurfaceScatteringPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDiffuse",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveDiffusePass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputScatterDistance",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveScatterDistancePass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "ComputePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/ScreenSpaceSubsurfaceScatteringCS.shader"
+                        },
+                        "Make Fullscreen Pass": true,
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "Ssao",
+                    "TemplateName": "SsaoParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Modulate",
+                            "AttachmentRef": {
+                                "Pass": "SubsurfaceScatteringPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "DiffuseSpecularMergePass",
                     "TemplateName": "DiffuseSpecularMergeTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "InputDiffuse",
                             "AttachmentRef": {
-                                "Pass": "MSAAResolveDiffusePass",
+                                "Pass": "Ssao",
                                 "Attachment": "Output"
                             }
                         },

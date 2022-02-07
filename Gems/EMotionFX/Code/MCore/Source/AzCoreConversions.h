@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,7 +17,7 @@
 #include <AzCore/Math/PackedVector3.h>
 #include <MCore/Source/Algorithms.h>
 #include <MCore/Source/Color.h>
-#include <MCore/Source/Quaternion.h>
+#include <MCore/Source/Vector.h>
 #include <EMotionFX/Source/Transform.h>
 
 // This file is "glue" code to convert math back-forward between MCore and AZ. It also has functions that MCore used to 
@@ -28,7 +29,7 @@ namespace MCore
 {
     AZ_FORCE_INLINE AZ::Color EmfxColorToAzColor(const RGBAColor& emfxColor)
     {
-        return AZ::Color(emfxColor.r, emfxColor.g, emfxColor.b, emfxColor.a);
+        return AZ::Color(emfxColor.m_r, emfxColor.m_g, emfxColor.m_b, emfxColor.m_a);
     }
 
     AZ_FORCE_INLINE RGBAColor AzColorToEmfxColor(const AZ::Color& azColor)
@@ -36,24 +37,12 @@ namespace MCore
         return RGBAColor(static_cast<float>(azColor.GetR()), static_cast<float>(azColor.GetG()), static_cast<float>(azColor.GetB()), static_cast<float>(azColor.GetA()));
     }
 
-    // Deprecated
-    AZ_FORCE_INLINE AZ::Quaternion EmfxQuatToAzQuat(const MCore::Quaternion& emfxQuat)
-    {
-        return AZ::Quaternion(emfxQuat.x, emfxQuat.y, emfxQuat.z, emfxQuat.w);
-    }
-
-    // Deprecated
-    AZ_FORCE_INLINE MCore::Quaternion AzQuatToEmfxQuat(const AZ::Quaternion& azQuat)
-    {
-        return MCore::Quaternion(azQuat.GetX(), azQuat.GetY(), azQuat.GetZ(), azQuat.GetW());
-    }
-
     AZ_FORCE_INLINE AZ::Transform EmfxTransformToAzTransform(const EMotionFX::Transform& emfxTransform)
     {
-        AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(emfxTransform.mRotation, emfxTransform.mPosition);
+        AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(emfxTransform.m_rotation, emfxTransform.m_position);
         EMFX_SCALECODE
         (
-            transform.MultiplyByUniformScale(emfxTransform.mScale.GetMaxElement());
+            transform.MultiplyByUniformScale(emfxTransform.m_scale.GetMaxElement());
         )
         return transform;
     }
@@ -528,92 +517,5 @@ namespace MCore
             AZ::Vector3ToVector4(m33.GetRow(1), translation.GetY()),
             AZ::Vector3ToVector4(m33.GetRow(2), translation.GetZ()),
             mat.GetRow(3));
-    }
-
-    // Deprecated. Please use AZ::Transform instead of MCore::Matrix.
-    MCORE_INLINE AZ::Quaternion MCoreMatrixToQuaternion(const MCore::Matrix& m)
-    {
-        const float trace = MMAT(m, 0, 0) + MMAT(m, 1, 1) + MMAT(m, 2, 2);
-        if (trace > 0.0f /*Math::epsilon*/)
-        {
-            const float s = 0.5f / Math::Sqrt(trace + 1.0f);
-            return AZ::Quaternion((MMAT(m, 1, 2) - MMAT(m, 2, 1)) * s,
-                (MMAT(m, 2, 0) - MMAT(m, 0, 2)) * s,
-                (MMAT(m, 0, 1) - MMAT(m, 1, 0)) * s,
-                0.25f / s);
-        }
-        else
-        {
-            if (MMAT(m, 0, 0) > MMAT(m, 1, 1) && MMAT(m, 0, 0) > MMAT(m, 2, 2))
-            {
-                const float s = 2.0f * Math::Sqrt(1.0f + MMAT(m, 0, 0) - MMAT(m, 1, 1) - MMAT(m, 2, 2));
-                const float oneOverS = 1.0f / s;
-                return AZ::Quaternion(0.25f * s,
-                    (MMAT(m, 1, 0) + MMAT(m, 0, 1)) * oneOverS,
-                    (MMAT(m, 2, 0) + MMAT(m, 0, 2)) * oneOverS,
-                    (MMAT(m, 1, 2) - MMAT(m, 2, 1)) * oneOverS);
-            }
-            else if (MMAT(m, 1, 1) > MMAT(m, 2, 2))
-            {
-                const float s = 2.0f * Math::Sqrt(1.0f + MMAT(m, 1, 1) - MMAT(m, 0, 0) - MMAT(m, 2, 2));
-                const float oneOverS = 1.0f / s;
-                return AZ::Quaternion((MMAT(m, 1, 0) + MMAT(m, 0, 1)) * oneOverS,
-                    0.25f * s,
-                    (MMAT(m, 2, 1) + MMAT(m, 1, 2)) * oneOverS,
-                    (MMAT(m, 2, 0) - MMAT(m, 0, 2)) * oneOverS);
-            }
-            else
-            {
-                const float s = 2.0f * Math::Sqrt(1.0f + MMAT(m, 2, 2) - MMAT(m, 0, 0) - MMAT(m, 1, 1));
-                const float oneOverS = 1.0f / s;
-                return AZ::Quaternion((MMAT(m, 2, 0) + MMAT(m, 0, 2)) * oneOverS,
-                    (MMAT(m, 2, 1) + MMAT(m, 1, 2)) * oneOverS,
-                    0.25f * s,
-                    (MMAT(m, 0, 1) - MMAT(m, 1, 0)) * oneOverS);
-            }
-        }
-
-        /*
-            const float trace = MMAT(m,0,0) + MMAT(m,1,1) + MMAT(m,2,2) + 1.0f;
-            if (trace > Math::epsilon)
-            {
-                const float s = 0.5f / Math::Sqrt(trace);
-                result.w = 0.25f / s;
-                result.x = ( MMAT(m,1,2) - MMAT(m,2,1) ) * s;
-                result.y = ( MMAT(m,2,0) - MMAT(m,0,2) ) * s;
-                result.z = ( MMAT(m,0,1) - MMAT(m,1,0) ) * s;
-            }
-            else
-            {
-                if (MMAT(m,0,0) > MMAT(m,1,1) && MMAT(m,0,0) > MMAT(m,2,2))
-                {
-                    const float s = 2.0f * Math::Sqrt( 1.0f + MMAT(m,0,0) - MMAT(m,1,1) - MMAT(m,2,2));
-                    const float oneOverS = 1.0f / s;
-                    result.x = 0.25f * s;
-                    result.y = (MMAT(m,1,0) + MMAT(m,0,1) ) * oneOverS;
-                    result.z = (MMAT(m,2,0) + MMAT(m,0,2) ) * oneOverS;
-                    result.w = (MMAT(m,2,1) - MMAT(m,1,2) ) * oneOverS;
-                }
-                else
-                if (MMAT(m,1,1) > MMAT(m,2,2))
-                {
-                    const float s = 2.0f * Math::Sqrt( 1.0f + MMAT(m,1,1) - MMAT(m,0,0) - MMAT(m,2,2));
-                    const float oneOverS = 1.0f / s;
-                    result.x = (MMAT(m,1,0) + MMAT(m,0,1) ) * oneOverS;
-                    result.y = 0.25f * s;
-                    result.z = (MMAT(m,2,1) + MMAT(m,1,2) ) * oneOverS;
-                    result.w = (MMAT(m,2,0) - MMAT(m,0,2) ) * oneOverS;
-                }
-                else
-                {
-                    const float s = 2.0f * Math::Sqrt( 1.0f + MMAT(m,2,2) - MMAT(m,0,0) - MMAT(m,1,1) );
-                    const float oneOverS = 1.0f / s;
-                    result.x = (MMAT(m,2,0) + MMAT(m,0,2) ) * oneOverS;
-                    result.y = (MMAT(m,2,1) + MMAT(m,1,2) ) * oneOverS;
-                    result.z = 0.25f * s;
-                    result.w = (MMAT(m,1,0) - MMAT(m,0,1) ) * oneOverS;
-                }
-            }
-        */
     }
 } // namespace MCore

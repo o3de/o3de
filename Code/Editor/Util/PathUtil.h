@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -43,9 +44,6 @@ namespace Path
     //! always returns a full path
     EDITOR_CORE_API AZStd::string GetEditingGameDataFolder();
 
-    //! Get the root folder (in source control or other writable assets) where you should save root data.
-    EDITOR_CORE_API AZStd::string GetEditingRootFolder();
-
     //! Set the current mod NAME for editing purposes.  After doing this the above functions will take this into account
     //! name only, please!
     EDITOR_CORE_API void SetModName(const char* input);
@@ -66,93 +64,6 @@ namespace Path
             }
         }
         return strPath;
-    }
-
-    //! Split full file name to path and filename
-    //! @param filepath [IN] Full file name inclusing path.
-    //! @param path [OUT] Extracted file path.
-    //! @param file [OUT] Extracted file (with extension).
-    inline void Split(const QString& filepath, QString& path, QString& file)
-    {
-        char path_buffer[_MAX_PATH];
-        char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-        char fname[_MAX_FNAME];
-        char ext[_MAX_EXT];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.toUtf8().data(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), fname, AZ_ARRAY_SIZE(fname), ext, AZ_ARRAY_SIZE(ext));
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
-        path = path_buffer;
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), 0, 0, fname, ext);
-#else
-        _splitpath(filepath.toUtf8().data(), drive, dir, fname, ext);
-        _makepath(path_buffer, drive, dir, 0, 0);
-        path = path_buffer;
-        _makepath(path_buffer, 0, 0, fname, ext);
-#endif
-        file = path_buffer;
-    }
-    inline void Split(const string& filepath, string& path, string& file)
-    {
-        char path_buffer[_MAX_PATH];
-        char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-        char fname[_MAX_FNAME];
-        char ext[_MAX_EXT];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath, drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), 0, 0, 0, 0);
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
-        path = path_buffer;
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), 0, 0, fname, ext);
-#else
-        _splitpath(filepath, drive, dir, fname, ext);
-        _makepath(path_buffer, drive, dir, 0, 0);
-        path = path_buffer;
-        _makepath(path_buffer, 0, 0, fname, ext);
-#endif
-        file = path_buffer;
-    }
-
-    //! Split full file name to path and filename
-    //! @param filepath [IN] Full file name inclusing path.
-    //! @param path [OUT] Extracted file path.
-    //! @param filename [OUT] Extracted file (without extension).
-    //! @param ext [OUT] Extracted files extension.
-    inline void Split(const QString& filepath, QString& path, QString& filename, QString& fext)
-    {
-        char path_buffer[_MAX_PATH];
-        char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-        char fname[_MAX_FNAME];
-        char ext[_MAX_EXT];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.toUtf8().data(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), fname, AZ_ARRAY_SIZE(fname), ext, AZ_ARRAY_SIZE(ext));
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
-#else
-        _splitpath(filepath.toUtf8().data(), drive, dir, fname, ext);
-        _makepath(path_buffer, drive, dir, 0, 0);
-#endif
-        path = path_buffer;
-        filename = fname;
-        fext = ext;
-    }
-    inline void Split(const string& filepath, string& path, string& filename, string& fext)
-    {
-        char path_buffer[_MAX_PATH];
-        char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-        char fname[_MAX_FNAME];
-        char ext[_MAX_EXT];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath, drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), fname, AZ_ARRAY_SIZE(fname), ext, AZ_ARRAY_SIZE(ext));
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
-#else
-        _splitpath(filepath, drive, dir, fname, ext);
-        _makepath(path_buffer, drive, dir, 0, 0);
-#endif
-        path = path_buffer;
-        filename = fname;
-        fext = ext;
     }
 
     //! Split path into segments
@@ -227,23 +138,23 @@ namespace Path
     {
         return (path.endsWith(QStringLiteral("\\")) || path.endsWith(QStringLiteral("/")));
     }
-    
+
     template<size_t size>
-    inline bool EndsWithSlash(CryStackStringT<char, size>* path)
+    inline bool EndsWithSlash(AZStd::fixed_string<size>* path)
     {
         if ((!path) || (path->empty()))
         {
             return false;
         }
-        
+
         if (
             ((*path)[path->size() - 1] != '\\') ||
-            ((*path)[path->size() - 1] != '/') 
+            ((*path)[path->size() - 1] != '/')
             )
         {
             return true;
         }
-        
+
         return false;
     }
 
@@ -270,7 +181,7 @@ namespace Path
     }
 
     template<size_t size>
-    inline void AddBackslash(CryStackStringT<char, size>* path)
+    inline void AddBackslash(AZStd::fixed_string<size>* path)
     {
         if (path->empty())
         {
@@ -283,7 +194,7 @@ namespace Path
     }
 
     template<size_t size>
-    inline void AddSlash(CryStackStringT<char, size>* path)
+    inline void AddSlash(AZStd::fixed_string<size>* path)
     {
         if (path->empty())
         {
@@ -335,9 +246,9 @@ namespace Path
     {
         char path_buffer[_MAX_PATH];
 #ifdef AZ_COMPILER_MSVC
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), NULL, dir.toUtf8().data(), filename.toUtf8().data(), ext.toUtf8().data());
+        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), nullptr, dir.toUtf8().data(), filename.toUtf8().data(), ext.toUtf8().data());
 #else
-        _makepath(path_buffer, NULL, dir.toUtf8().data(), filename.toUtf8().data(), ext.toUtf8().data());
+        _makepath(path_buffer, nullptr, dir.toUtf8().data(), filename.toUtf8().data(), ext.toUtf8().data());
 #endif
         return CaselessPaths(path_buffer);
     }
@@ -356,7 +267,7 @@ namespace Path
     {
         return CaselessPaths(GetRelativePath(path, true));
     }
-    inline string FullPathToGamePath(const char* path)
+    inline AZStd::string FullPathToGamePath(const char* path)
     {
         return CaselessPaths(GetRelativePath(path, true)).toUtf8().data();
     }
@@ -393,7 +304,7 @@ namespace Path
     inline QString GetAudioLocalizationFolder(bool returnAbsolutePath)
     {
         // Omit the trailing slash!
-        QString sLocalizationFolder(QString(PathUtil::GetLocalizationFolder()).left(static_cast<int>(PathUtil::GetLocalizationFolder().size()) - 1));
+        QString sLocalizationFolder(QString(PathUtil::GetLocalizationFolder().c_str()).left(static_cast<int>(PathUtil::GetLocalizationFolder().size()) - 1));
 
         if (!sLocalizationFolder.isEmpty())
         {

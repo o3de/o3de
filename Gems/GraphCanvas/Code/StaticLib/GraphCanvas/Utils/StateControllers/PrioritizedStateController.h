@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,7 +45,7 @@ namespace GraphCanvas
             m_valueSet.clear();
         }
 
-        bool HasState() const
+        bool HasState() const override
         {
             return !m_valueSet.empty();
         }
@@ -84,7 +85,7 @@ namespace GraphCanvas
             return releasedValue;
         }
 
-        const T& GetCalculatedState() const
+        const T& GetCalculatedState() const override
         {
             auto valueIter = m_valueSet.begin();
             return (*valueIter);

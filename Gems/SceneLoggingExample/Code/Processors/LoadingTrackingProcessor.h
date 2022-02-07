@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,7 +34,7 @@ namespace SceneLoggingExample
             RequestingApplication requester) override;
         AZ::SceneAPI::Events::LoadingResult LoadAsset(AZ::SceneAPI::Containers::Scene& scene, 
             const AZStd::string& path, const AZ::Uuid& guid, RequestingApplication requester) override;
-        void FinalizeAssetLoading(AZ::SceneAPI::Containers::Scene& scene, RequestingApplication requester);
+        void FinalizeAssetLoading(AZ::SceneAPI::Containers::Scene& scene, RequestingApplication requester) override;
         AZ::SceneAPI::Events::ProcessingResult UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, ManifestAction action,
             RequestingApplication requester) override;
 

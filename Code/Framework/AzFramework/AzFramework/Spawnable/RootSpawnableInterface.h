@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -60,6 +61,10 @@ namespace AzFramework
         //! be deleted and the spawnable asset to be released. This call is automatically done when
         //! AssignRootSpawnable is called while a root spawnable is assigned.
         virtual void ReleaseRootSpawnable() = 0;
+        //! Force processing all SpawnableEntitiesManager requests immediately
+        //! This is useful when loading a different level while SpawnableEntitiesManager still has
+        //! pending requests
+        virtual void ProcessSpawnableQueue() = 0;
     };
 
     using RootSpawnableInterface = AZ::Interface<RootSpawnableDefinition>;

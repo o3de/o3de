@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,7 +23,7 @@ namespace EMStudio
     UnitScaleWindow::UnitScaleWindow(QWidget* parent)
         : QDialog(parent)
     {
-        mScaleFactor = 1.0f;
+        m_scaleFactor = 1.0f;
         setModal(true);
 
         setWindowTitle("Scale Factor Setup");
@@ -46,27 +47,27 @@ namespace EMStudio
 
         scaleLayout->addWidget(new QLabel("Scale Factor:"));
 
-        mScaleSpinBox = new AzQtComponents::DoubleSpinBox();
-        mScaleSpinBox->setRange(0.00001, 100000.0f);
-        mScaleSpinBox->setSingleStep(0.01);
-        mScaleSpinBox->setDecimals(7);
-        mScaleSpinBox->setValue(1.0f);
-        scaleLayout->addWidget(mScaleSpinBox);
+        m_scaleSpinBox = new AzQtComponents::DoubleSpinBox();
+        m_scaleSpinBox->setRange(0.00001, 100000.0f);
+        m_scaleSpinBox->setSingleStep(0.01);
+        m_scaleSpinBox->setDecimals(7);
+        m_scaleSpinBox->setValue(1.0f);
+        scaleLayout->addWidget(m_scaleSpinBox);
 
         layout->addLayout(scaleLayout);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setContentsMargins(9, 0, 9, 9);
 
-        mOK     = new QPushButton("OK");
-        mCancel = new QPushButton("Cancel");
-        hLayout->addWidget(mOK);
-        hLayout->addWidget(mCancel);
+        m_ok     = new QPushButton("OK");
+        m_cancel = new QPushButton("Cancel");
+        hLayout->addWidget(m_ok);
+        hLayout->addWidget(m_cancel);
 
         layout->addLayout(hLayout);
 
-        connect(mOK, &QPushButton::clicked, this, &UnitScaleWindow::OnOKButton);
-        connect(mCancel, &QPushButton::clicked, this, &UnitScaleWindow::OnCancelButton);
+        connect(m_ok, &QPushButton::clicked, this, &UnitScaleWindow::OnOKButton);
+        connect(m_cancel, &QPushButton::clicked, this, &UnitScaleWindow::OnCancelButton);
     }
 
 
@@ -79,7 +80,7 @@ namespace EMStudio
     // accept
     void UnitScaleWindow::OnOKButton()
     {
-        mScaleFactor = static_cast<float>(mScaleSpinBox->value());
+        m_scaleFactor = static_cast<float>(m_scaleSpinBox->value());
         emit accept();
     }
 

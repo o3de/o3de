@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@ template <class T>
 void Array2D<T>::Resize(size_t numRows, bool autoShrink)
 {
     // get the current (old) number of rows
-    const size_t oldNumRows = mIndexTable.size();
+    const size_t oldNumRows = m_indexTable.size();
 
     // don't do anything when we don't need to
     if (numRows == oldNumRows)
@@ -19,7 +20,7 @@ void Array2D<T>::Resize(size_t numRows, bool autoShrink)
     }
 
     // resize the index table
-    mIndexTable.resize(numRows);
+    m_indexTable.resize(numRows);
 
     // check if we decreased the number of rows or not
     if (numRows < oldNumRows)
@@ -35,13 +36,13 @@ void Array2D<T>::Resize(size_t numRows, bool autoShrink)
         // init the new table entries
         for (size_t i = oldNumRows; i < numRows; ++i)
         {
-            mIndexTable[i].mStartIndex  = mData.size() + (i * mNumPreCachedElements);
-            mIndexTable[i].mNumElements = 0;
+            m_indexTable[i].m_startIndex  = m_data.size() + (i * m_numPreCachedElements);
+            m_indexTable[i].m_numElements = 0;
         }
 
         // grow the data array
         const size_t numNewRows = numRows - oldNumRows;
-        mData.resize(mData.size() + numNewRows * mNumPreCachedElements);
+        m_data.resize(m_data.size() + numNewRows * m_numPreCachedElements);
     }
 }
 
@@ -50,20 +51,20 @@ void Array2D<T>::Resize(size_t numRows, bool autoShrink)
 template <class T>
 void Array2D<T>::Add(size_t rowIndex, const T& element)
 {
-    AZ_Assert(rowIndex < mIndexTable.size(), "Array index out of bounds");
+    AZ_Assert(rowIndex < m_indexTable.size(), "Array index out of bounds");
 
     // find the insert location inside the data array
-    size_t insertPos = mIndexTable[rowIndex].mStartIndex + mIndexTable[rowIndex].mNumElements;
-    if (insertPos >= mData.size())
+    size_t insertPos = m_indexTable[rowIndex].m_startIndex + m_indexTable[rowIndex].m_numElements;
+    if (insertPos >= m_data.size())
     {
-        mData.resize(insertPos + 1);
+        m_data.resize(insertPos + 1);
     }
 
     // check if we need to insert for real
     bool needRealInsert = true;
-    if (rowIndex < mIndexTable.size() - 1)                 // if there are still entries coming after the one we have to add to
+    if (rowIndex < m_indexTable.size() - 1)                 // if there are still entries coming after the one we have to add to
     {
-        if (insertPos < mIndexTable[rowIndex + 1].mStartIndex)    // if basically there are empty unused element we can use
+        if (insertPos < m_indexTable[rowIndex + 1].m_startIndex)    // if basically there are empty unused element we can use
         {
             needRealInsert = false;                             // then we don't need to do any reallocs
         }
@@ -71,9 +72,9 @@ void Array2D<T>::Add(size_t rowIndex, const T& element)
     else
     {
         // if we're dealing with the last row
-        if (rowIndex == mIndexTable.size() - 1)
+        if (rowIndex == m_indexTable.size() - 1)
         {
-            if (insertPos < mData.size())  // if basically there are empty unused element we can use
+            if (insertPos < m_data.size())  // if basically there are empty unused element we can use
             {
                 needRealInsert = false;
             }
@@ -84,22 +85,22 @@ void Array2D<T>::Add(size_t rowIndex, const T& element)
     if (needRealInsert)
     {
         // insert the element inside the data array
-        mData.insert(AZStd::next(begin(mData), insertPos), element);
+        m_data.insert(AZStd::next(begin(m_data), insertPos), element);
 
         // adjust the index table entries
-        const size_t numRows = mIndexTable.size();
+        const size_t numRows = m_indexTable.size();
         for (size_t i = rowIndex + 1; i < numRows; ++i)
         {
-            mIndexTable[i].mStartIndex++;
+            m_indexTable[i].m_startIndex++;
         }
     }
     else
     {
-        mData[insertPos] = element;
+        m_data[insertPos] = element;
     }
 
     // increase the number of elements in the index table
-    mIndexTable[rowIndex].mNumElements++;
+    m_indexTable[rowIndex].m_numElements++;
 }
 
 
@@ -107,21 +108,21 @@ void Array2D<T>::Add(size_t rowIndex, const T& element)
 template <class T>
 void Array2D<T>::Remove(size_t rowIndex, size_t elementIndex)
 {
-    AZ_Assert(rowIndex < mIndexTable.size(), "Array2D<>::Remove: array index out of bounds");
-    AZ_Assert(elementIndex < mIndexTable[rowIndex].mNumElements, "Array2D<>::Remove: element index out of bounds");
-    AZ_Assert(mIndexTable[rowIndex].mNumElements > 0, "Array2D<>::Remove: array index out of bounds");
+    AZ_Assert(rowIndex < m_indexTable.size(), "Array2D<>::Remove: array index out of bounds");
+    AZ_Assert(elementIndex < m_indexTable[rowIndex].m_numElements, "Array2D<>::Remove: element index out of bounds");
+    AZ_Assert(m_indexTable[rowIndex].m_numElements > 0, "Array2D<>::Remove: array index out of bounds");
 
-    const size_t startIndex         = mIndexTable[rowIndex].mStartIndex;
-    const size_t maxElementIndex    = mIndexTable[rowIndex].mNumElements - 1;
+    const size_t startIndex         = m_indexTable[rowIndex].m_startIndex;
+    const size_t maxElementIndex    = m_indexTable[rowIndex].m_numElements - 1;
 
     // swap the last element with the one to be removed
     if (elementIndex != maxElementIndex)
     {
-        mData[startIndex + elementIndex] = mData[startIndex + maxElementIndex];
+        m_data[startIndex + elementIndex] = m_data[startIndex + maxElementIndex];
     }
 
     // decrease the number of elements
-    mIndexTable[rowIndex].mNumElements--;
+    m_indexTable[rowIndex].m_numElements--;
 }
 
 
@@ -129,8 +130,8 @@ void Array2D<T>::Remove(size_t rowIndex, size_t elementIndex)
 template <class T>
 void Array2D<T>::RemoveRow(size_t rowIndex, bool autoShrink)
 {
-    AZ_Assert(rowIndex < mIndexTable.GetLength(), "Array2D<>::RemoveRow: rowIndex out of bounds");
-    mIndexTable.Remove(rowIndex);
+    AZ_Assert(rowIndex < m_indexTable.GetLength(), "Array2D<>::RemoveRow: rowIndex out of bounds");
+    m_indexTable.Remove(rowIndex);
 
     // optimize memory usage when desired
     if (autoShrink)
@@ -144,19 +145,19 @@ void Array2D<T>::RemoveRow(size_t rowIndex, bool autoShrink)
 template <class T>
 void Array2D<T>::RemoveRows(size_t startRow, size_t endRow, bool autoShrink)
 {
-    AZ_Assert(startRow < mIndexTable.size(), "Array2D<>::RemoveRows: startRow out of bounds");
-    AZ_Assert(endRow < mIndexTable.size(), "Array2D<>::RemoveRows: endRow out of bounds");
+    AZ_Assert(startRow < m_indexTable.size(), "Array2D<>::RemoveRows: startRow out of bounds");
+    AZ_Assert(endRow < m_indexTable.size(), "Array2D<>::RemoveRows: endRow out of bounds");
 
     // check if the start row is smaller than the end row
     if (startRow < endRow)
     {
         const size_t numToRemove = (endRow - startRow) + 1;
-        mIndexTable.erase(AZStd::next(begin(mIndexTable), startRow), AZStd::next(AZStd::next(begin(mIndexTable), startRow), numToRemove));
+        m_indexTable.erase(AZStd::next(begin(m_indexTable), startRow), AZStd::next(AZStd::next(begin(m_indexTable), startRow), numToRemove));
     }
     else    // if the end row is smaller than the start row
     {
         const size_t numToRemove = (startRow - endRow) + 1;
-        mIndexTable.erase(AZStd::next(begin(mIndexTable), endRow), AZStd::next(AZStd::next(begin(mIndexTable), endRow), numToRemove));
+        m_indexTable.erase(AZStd::next(begin(m_indexTable), endRow), AZStd::next(AZStd::next(begin(m_indexTable), endRow), numToRemove));
     }
 
     // optimize memory usage when desired
@@ -172,7 +173,7 @@ template <class T>
 void Array2D<T>::Shrink()
 {
     // for all attributes, except for the last one
-    const size_t numRows = mIndexTable.size();
+    const size_t numRows = m_indexTable.size();
     if (numRows == 0)
     {
         return;
@@ -182,20 +183,20 @@ void Array2D<T>::Shrink()
     const size_t numRowsMinusOne = numRows - 1;
     for (size_t a = 0; a < numRowsMinusOne; ++a)
     {
-        const size_t firstUnusedIndex  = mIndexTable[a  ].mStartIndex + mIndexTable[a].mNumElements;
-        const size_t numUnusedElements = mIndexTable[a + 1].mStartIndex - firstUnusedIndex;
+        const size_t firstUnusedIndex  = m_indexTable[a  ].m_startIndex + m_indexTable[a].m_numElements;
+        const size_t numUnusedElements = m_indexTable[a + 1].m_startIndex - firstUnusedIndex;
 
         // if we have pre-cached/unused elements, remove those by moving memory to remove the "holes"
         if (numUnusedElements > 0)
         {
             // remove the unused elements from the array
-            mData.erase(AZStd::next(begin(mData), firstUnusedIndex), AZStd::next(AZStd::next(begin(mData), firstUnusedIndex), numUnusedElements));
+            m_data.erase(AZStd::next(begin(m_data), firstUnusedIndex), AZStd::next(AZStd::next(begin(m_data), firstUnusedIndex), numUnusedElements));
 
             // change the start indices for all the rows coming after the current one
-            const size_t numTotalRows = mIndexTable.size();
+            const size_t numTotalRows = m_indexTable.size();
             for (size_t i = a + 1; i < numTotalRows; ++i)
             {
-                mIndexTable[i].mStartIndex -= numUnusedElements;
+                m_indexTable[i].m_startIndex -= numUnusedElements;
             }
         }
     }
@@ -206,25 +207,25 @@ void Array2D<T>::Shrink()
     for (size_t row = 0; row < numRows; ++row)
     {
         // if the data starts after the place where it could start, move it to the place where it could start
-        if (mIndexTable[row].mStartIndex > dataPos)
+        if (m_indexTable[row].m_startIndex > dataPos)
         {
-            AZStd::move(AZStd::next(begin(mData), this->mIndexTable[row].mStartIndex), AZStd::next(AZStd::next(begin(mData), this->mIndexTable[row].mStartIndex), this->mIndexTable[row].mNumElements), AZStd::next(begin(mData), dataPos));
-            mIndexTable[row].mStartIndex = dataPos;
+            AZStd::move(AZStd::next(begin(m_data), this->m_indexTable[row].m_startIndex), AZStd::next(AZStd::next(begin(m_data), this->m_indexTable[row].m_startIndex), this->m_indexTable[row].m_numElements), AZStd::next(begin(m_data), dataPos));
+            m_indexTable[row].m_startIndex = dataPos;
         }
 
         // increase the data pos
-        dataPos += mIndexTable[row].mNumElements;
+        dataPos += m_indexTable[row].m_numElements;
     }
 
     // remove all unused data items
-    if (dataPos < mData.size())
+    if (dataPos < m_data.size())
     {
-        mData.erase(AZStd::next(begin(mData), dataPos), end(mData));
+        m_data.erase(AZStd::next(begin(m_data), dataPos), end(m_data));
     }
 
     // shrink the arrays
-    mData.shrink_to_fit();
-    mIndexTable.shrink_to_fit();
+    m_data.shrink_to_fit();
+    m_indexTable.shrink_to_fit();
 }
 
 
@@ -235,10 +236,10 @@ size_t Array2D<T>::CalcTotalNumElements() const
     size_t totalElements = 0;
 
     // add all number of row elements together
-    const size_t numRows = mIndexTable.size();
+    const size_t numRows = m_indexTable.size();
     for (size_t i = 0; i < numRows; ++i)
     {
-        totalElements += mIndexTable[i].mNumElements;
+        totalElements += m_indexTable[i].m_numElements;
     }
 
     return totalElements;
@@ -250,14 +251,14 @@ template <class T>
 void Array2D<T>::Swap(size_t rowA, size_t rowB)
 {
     // get the original number of elements from both rows
-    const size_t numElementsA = mIndexTable[rowA].mNumElements;
-    const size_t numElementsB = mIndexTable[rowB].mNumElements;
+    const size_t numElementsA = m_indexTable[rowA].m_numElements;
+    const size_t numElementsB = m_indexTable[rowB].m_numElements;
 
     // move the element data of rowA into a temp buffer
     AZStd::vector<T> tempData(numElementsA);
     AZStd::move(
-        AZStd::next(mData.begin(), mIndexTable[rowA].mStartIndex),
-        AZStd::next(mData.begin(), mIndexTable[rowA].mStartIndex + numElementsA),
+        AZStd::next(m_data.begin(), m_indexTable[rowA].m_startIndex),
+        AZStd::next(m_data.begin(), m_indexTable[rowA].m_startIndex + numElementsA),
         tempData.begin()
     );
 

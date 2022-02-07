@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,6 +16,7 @@
 #include <Components/EditorClothComponent.h>
 #include <Components/ClothComponent.h>
 #include <Components/ClothComponentMesh/ClothComponentMesh.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <Utils/AssetHelper.h>
 
@@ -45,9 +47,9 @@ namespace NvCloth
                      ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Cloth.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Cloth.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Cloth.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/cloth/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/cloth/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->UIElement(AZ::Edit::UIHandlers::CheckBox, "Simulate in editor",

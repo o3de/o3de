@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -66,22 +67,20 @@ namespace AZ
 
             // Shadows
 
-            //! Sets if shadows should be enabled 
+            //! Sets if shadows should be enabled
             virtual void SetEnableShadow(bool enabled) = 0;
+            //! Sets the shadow bias
+            virtual void SetShadowBias(float bias) = 0;
             //! Sets the maximum resolution of the shadow map
             virtual void SetShadowmapMaxSize(ShadowmapSize size) = 0;
             //! Sets the filter method for the shadow
             virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
-            //! Sets the width of boundary between shadowed area and lit area in degrees.
-            virtual void SetSofteningBoundaryWidthAngle(float widthInDegrees) = 0;
-            //! Sets the sample count to predict the boundary of the shadow. Max 16, should be less than filtering sample count.
-            virtual void SetPredictionSampleCount(uint32_t count) = 0;
             //! Sets the sample count for filtering of the shadow boundary, max 64.
             virtual void SetFilteringSampleCount(uint32_t count) = 0;
-            //! Sets the Pcf (Percentage closer filtering) method to use.
-            virtual void SetPcfMethod(PcfMethod method) = 0;
             //! Sets the Esm exponent to use. Higher values produce a steeper falloff between light and shadow.
             virtual void SetEsmExponent(float exponent) = 0;
+            //! Sets the normal bias. Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            virtual void SetNormalShadowBias(float bias) = 0;
         };
     } //  namespace Render
 } // namespace AZ

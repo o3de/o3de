@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -66,7 +67,7 @@ bool COBJExporter::ExportToFile(const char* filename, const Export::IData* pExpo
         while (nParent >= 0 && nParent < pExportData->GetObjectCount())
         {
             const Export::Object* pParentObj = pExportData->GetObject(nParent);
-            assert(NULL != pParentObj);
+            assert(nullptr != pParentObj);
 
             Vec3 pos2(pParentObj->pos.x, pParentObj->pos.y, pParentObj->pos.z);
             Quat rot2(pParentObj->rot.w, pParentObj->rot.v.x, pParentObj->rot.v.y, pParentObj->rot.v.z);
@@ -226,7 +227,7 @@ QString COBJExporter::MakeRelativePath(const char* pMainFileName, const char* pF
     const char* ch = strrchr(pMainFileName, '\\');
     if (ch)
     {
-        if (strlen(pFileName) > ch - pMainFileName && !_strnicmp(pMainFileName, pFileName, ch - pMainFileName))
+        if (strlen(pFileName) > static_cast<size_t>(ch - pMainFileName) && !_strnicmp(pMainFileName, pFileName, ch - pMainFileName))
         {
             return QString(pFileName + (ch - pMainFileName) + 1);
         }
@@ -255,7 +256,7 @@ const char* COBJExporter::TrimFloat(float fValue) const
     ++nCurBuf;
     sprintf_s(pBuf, bufSize, "%f", fValue);
 
-    for (int i = strlen(pBuf) - 1; i > 0; --i)
+    for (int i = static_cast<int>(strlen(pBuf)) - 1; i > 0; --i)
     {
         if (pBuf[i] == '0')
         {

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "EditorPropertyTypes.h"
 
 #include <LyShine/Bus/UiIndexableImageBus.h>
@@ -17,8 +17,9 @@ LyShine::AZu32ComboBoxVec LyShine::GetEnumSpriteIndexList(AZ::EntityId entityId,
 
     int indexCount = 0;
     EBUS_EVENT_ID_RESULT(indexCount, entityId, UiIndexableImageBus, GetImageIndexCount);
+    const AZ::u32 indexCountu32 = static_cast<AZ::u32>(indexCount);
 
-    if (indexCount > 0 && (indexMax <= indexCount - 1) && indexMin <= indexMax)
+    if (indexCount > 0 && (indexMax <= indexCountu32 - 1) && indexMin <= indexMax)
     {
         for (AZ::u32 i = indexMin; i <= indexMax; ++i)
         {

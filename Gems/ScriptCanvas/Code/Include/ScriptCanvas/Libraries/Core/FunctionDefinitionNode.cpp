@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,7 @@
 #include <ScriptCanvas/Libraries/Core/FunctionBus.h>
 
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidPropertyEvent.h>
+#include <AzCore/std/string/regex.h>
 
 namespace FunctionDefinitionNodeCpp
 {
@@ -165,7 +167,7 @@ namespace ScriptCanvas
                                 } 
                             },
                             {
-                                [this]()
+                                []()
                                 {
                                     DisallowReentrantExecutionContract* reentrantContract = aznew DisallowReentrantExecutionContract();
                                     return reentrantContract;

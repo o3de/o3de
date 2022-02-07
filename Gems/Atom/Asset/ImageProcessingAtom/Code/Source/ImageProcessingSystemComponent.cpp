@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
@@ -16,6 +16,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/string/wildcard.h>
+
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/EBusFindAssetTypeByName.h>
@@ -202,7 +204,7 @@ namespace ImageProcessingAtom
                 AZ::Data::AssetId assetId = product->GetAssetId();
                 menu->addAction("Save as DDS...", [assetId, this]()
                     {
-                        QString filePath = QFileDialog::getSaveFileName(nullptr, QString("Save to file"), m_lastSavedPath, QString("DDS file (*.dds)"));
+                        QString filePath = AzQtComponents::FileDialog::GetSaveFileName(nullptr, QString("Save to file"), m_lastSavedPath, QString("DDS file (*.dds)"));
                         if (filePath.isEmpty())
                         {
                             return;

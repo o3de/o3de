@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,7 +19,7 @@ namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(AttachmentNode, AttachmentAllocator, 0)
 
-    AttachmentNode::AttachmentNode(ActorInstance* attachToActorInstance, AZ::u32 attachToNodeIndex, ActorInstance* attachment, bool managedExternally)
+    AttachmentNode::AttachmentNode(ActorInstance* attachToActorInstance, size_t attachToNodeIndex, ActorInstance* attachment, bool managedExternally)
         : Attachment(attachToActorInstance, attachment)
         , m_attachedToNode(attachToNodeIndex)
         , m_isManagedExternally(managedExternally)
@@ -32,7 +33,7 @@ namespace EMotionFX
     }
 
 
-    AttachmentNode* AttachmentNode::Create(ActorInstance* attachToActorInstance, AZ::u32 attachToNodeIndex, ActorInstance* attachment, bool managedExternally)
+    AttachmentNode* AttachmentNode::Create(ActorInstance* attachToActorInstance, size_t attachToNodeIndex, ActorInstance* attachment, bool managedExternally)
     {
         return aznew AttachmentNode(attachToActorInstance, attachToNodeIndex, attachment, managedExternally);
     }
@@ -54,7 +55,7 @@ namespace EMotionFX
     }
 
 
-    uint32 AttachmentNode::GetAttachToNodeIndex() const
+    size_t AttachmentNode::GetAttachToNodeIndex() const
     {
         return m_attachedToNode;
     }

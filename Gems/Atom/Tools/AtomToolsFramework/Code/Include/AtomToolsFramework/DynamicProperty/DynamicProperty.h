@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,8 +42,8 @@ namespace AtomToolsFramework
         AZ_CLASS_ALLOCATOR(DynamicPropertyConfig, AZ::SystemAllocator, 0);
 
         DynamicPropertyType m_dataType = DynamicPropertyType::Invalid;
-        AZ::Name m_id;
-        AZStd::string m_nameId;
+        AZ::Name m_id; //!< The full property ID, which will normally be "groupName.propertyName"
+        AZStd::string m_name;
         AZStd::string m_displayName;
         AZStd::string m_groupName;
         AZStd::string m_description;

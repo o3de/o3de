@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,11 +35,11 @@ public:
 
     /** Get type of this viewport.
     */
-    virtual EViewportType GetType() const { return ET_ViewportMap; }
-    virtual void SetType(EViewportType type);
+    EViewportType GetType() const override { return ET_ViewportMap; }
+    void SetType(EViewportType type) override;
 
-    virtual void ResetContent();
-    virtual void UpdateContent(int flags);
+    void ResetContent() override;
+    void UpdateContent(int flags) override;
 
     //! Map viewport position to world space position.
     virtual Vec3    ViewToWorld(const QPoint& vp, bool* collideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override;
@@ -51,7 +52,7 @@ public:
 
 protected:
     // Draw everything.
-    virtual void Draw(DisplayContext& dc);
+    void Draw(DisplayContext& dc) override;
 
 private:
     bool m_bContentsUpdated;

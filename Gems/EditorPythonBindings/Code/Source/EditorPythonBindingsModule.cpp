@@ -1,12 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
+
+#include <AzToolsFramework/API/PythonLoader.h>
 
 #include <PythonSystemComponent.h>
 #include <PythonReflectionComponent.h>
@@ -17,6 +20,7 @@ namespace EditorPythonBindings
 {
     class EditorPythonBindingsModule
         : public AZ::Module
+        , public AzToolsFramework::EmbeddedPython::PythonLoader
     {
     public:
         AZ_RTTI(EditorPythonBindingsModule, "{851B9E35-4FD5-49B1-8207-E40D4BBA36CC}", AZ::Module);

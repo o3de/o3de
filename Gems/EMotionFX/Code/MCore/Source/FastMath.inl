@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -309,19 +310,10 @@ MCORE_INLINE float Math::FastSqrt(float x)
 
 
 // align a value
-MCORE_INLINE void Math::Align(uint32* inOutValue, uint32 alignment)
+template<typename T>
+MCORE_INLINE T Math::Align(T inValue, T alignment)
 {
-    const uint32 modValue = *inOutValue % alignment;
-    if (modValue > 0)
-    {
-        *inOutValue += alignment - modValue;
-    }
-}
-
-// align a value
-MCORE_INLINE uint32 Math::Align(uint32 inValue, uint32 alignment)
-{
-    const uint32 modValue = inValue % alignment;
+    const T modValue = inValue % alignment;
     if (modValue > 0)
     {
         return inValue + (alignment - modValue);

@@ -1,17 +1,16 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <RHI/StreamingImagePool.h>
 #include <RHI/Conversions.h>
 #include <RHI/CommandList.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ResourcePoolResolver.h>
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/Debug/EventTrace.h>
 
@@ -130,7 +129,7 @@ namespace AZ
             residentImageDescriptor.m_size = imageDescriptor.m_size.GetReducedMip(residentMipLevel);
             residentImageDescriptor.m_size.m_width = RHI::AlignUp(residentImageDescriptor.m_size.m_width, alignment);
             residentImageDescriptor.m_size.m_height = RHI::AlignUp(residentImageDescriptor.m_size.m_height, alignment);
-            residentImageDescriptor.m_mipLevels = imageDescriptor.m_mipLevels - residentMipLevel;
+            residentImageDescriptor.m_mipLevels = static_cast<uint16_t>(imageDescriptor.m_mipLevels - residentMipLevel);
 
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             GetDevice().GetImageAllocationInfo(residentImageDescriptor, allocationInfo);
@@ -145,7 +144,7 @@ namespace AZ
 
 #ifdef AZ_RHI_USE_TILED_RESOURCES
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "StreamImagePool::CreateHeap");
+                AZ_PROFILE_SCOPE(RHI, "StreamImagePool::CreateHeap");
 
                 CD3DX12_HEAP_DESC heapDesc(descriptor.m_budgetInBytes, D3D12_HEAP_TYPE_DEFAULT, 0, D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES);
 

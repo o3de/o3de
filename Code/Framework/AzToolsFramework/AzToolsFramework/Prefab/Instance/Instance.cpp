@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 
@@ -27,24 +29,52 @@ namespace AzToolsFramework
         }
 
         Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity)
+            : Instance(AZStd::move(containerEntity), AZStd::nullopt, GenerateInstanceAlias())
         {
-            m_instanceEntityMapper = AZ::Interface<InstanceEntityMapperInterface>::Get();
+        }
 
+        Instance::Instance(InstanceOptionalReference parent)
+            : Instance(nullptr, parent, GenerateInstanceAlias())
+        {
+        }
+
+        Instance::Instance(InstanceAlias alias)
+            : Instance(nullptr, AZStd::nullopt, AZStd::move(alias))
+        {
+        }
+
+        Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent)
+            : Instance(AZStd::move(containerEntity), parent, GenerateInstanceAlias())
+        {
+        }
+
+        Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias)
+            : m_parent(parent.has_value() ? &parent->get() : nullptr)
+            , m_alias(AZStd::move(alias))
+            , m_containerEntity(containerEntity ? AZStd::move(containerEntity) : AZStd::make_unique<AZ::Entity>())
+            , m_instanceEntityMapper(AZ::Interface<InstanceEntityMapperInterface>::Get())
+            , m_templateInstanceMapper(AZ::Interface<TemplateInstanceMapperInterface>::Get())
+        {
             AZ_Assert(m_instanceEntityMapper,
                 "Instance Entity Mapper Interface could not be found. "
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
-
-            m_templateInstanceMapper = AZ::Interface<TemplateInstanceMapperInterface>::Get();
 
             AZ_Assert(m_templateInstanceMapper,
                 "Template Instance Mapper Interface could not be found. "
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
-            m_alias = GenerateInstanceAlias();
-            m_containerEntity = containerEntity ? AZStd::move(containerEntity)
-                                                : AZStd::make_unique<AZ::Entity>();
+            if (parent)
+            {
+                AliasPath absoluteInstancePath = m_parent->GetAbsoluteInstanceAliasPath();
+                absoluteInstancePath.Append(m_alias);
+                absoluteInstancePath.Append(PrefabDomUtils::ContainerEntityName);
+
+                AZ::EntityId newContainerEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteInstancePath);
+                m_containerEntity->SetId(newContainerEntityId);
+            }
+
             RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
         }
 
@@ -68,12 +98,12 @@ namespace AzToolsFramework
             }
         }
 
-        const TemplateId& Instance::GetTemplateId() const
+        TemplateId Instance::GetTemplateId() const
         {
             return m_templateId;
         }
 
-        void Instance::SetTemplateId(const TemplateId& templateId)
+        void Instance::SetTemplateId(TemplateId templateId)
         {
             // If we aren't changing the template Id, there's no need to unregister / re-register
             if (templateId == m_templateId)
@@ -81,16 +111,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            // If this instance's templateId is valid, we should be able to unregister this instance from 
-            // Template to Instance mapping successfully.
-            if (m_templateId != InvalidTemplateId &&
-                !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(false,
-                    "Prefab - Attempted to Unregister Instance from Template with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateId);
-            }
+            m_templateInstanceMapper->UnregisterInstance(*this);
 
             m_templateId = templateId;
 
@@ -220,15 +241,7 @@ namespace AzToolsFramework
 
         void Instance::Reset()
         {
-            // Clean up Instance associations.
-            if (m_templateId != InvalidTemplateId && !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(
-                    false,
-                    "Prefab - Attempted to unregister Instance from Template on file path '%s' with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateSourcePath.c_str(), m_templateId);
-            }
+            m_templateInstanceMapper->UnregisterInstance(*this);
 
             ClearEntities();
 
@@ -236,7 +249,6 @@ namespace AzToolsFramework
 
             if (m_containerEntity)
             {
-                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
                 m_containerEntity.reset(aznew AZ::Entity());
                 RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
             }
@@ -264,6 +276,11 @@ namespace AzToolsFramework
 
         void Instance::ClearEntities()
         {
+            if (m_containerEntity)
+            {
+                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+            }
+
             for (const auto&[entityAlias, entity] : m_entities)
             {
                 if (entity)
@@ -308,19 +325,20 @@ namespace AzToolsFramework
 
         Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance)
         {
-            InstanceAlias newInstanceAlias = GenerateInstanceAlias();
-            return AddInstance(AZStd::move(instance), newInstanceAlias);
-        }
-
-        Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance, InstanceAlias newInstanceAlias)
-        {
             AZ_Assert(instance.get(), "instance argument is nullptr");
+
+            if (instance->GetInstanceAlias().empty())
+            {
+                instance->m_alias = GenerateInstanceAlias();
+            }
+
             AZ_Assert(
-                m_nestedInstances.find(newInstanceAlias) == m_nestedInstances.end(),
+                m_nestedInstances.find(instance->GetInstanceAlias()) == m_nestedInstances.end(),
                 "InstanceAlias' unique id collision, this should never happen.");
+
             instance->m_parent = this;
-            instance->m_alias = newInstanceAlias;
-            return *(m_nestedInstances[newInstanceAlias] = std::move(instance));
+            auto& alias = instance->GetInstanceAlias();
+            return *(m_nestedInstances[alias] = AZStd::move(instance));
         }
 
         void Instance::DetachNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>)>& callback)
@@ -662,7 +680,10 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AZ::Entity> Instance::DetachContainerEntity()
         {
-            m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+            if (m_containerEntity)
+            {
+                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+            }
             return AZStd::move(m_containerEntity);
         }
     }

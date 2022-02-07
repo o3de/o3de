@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,22 +71,22 @@ namespace EMStudio
 
             MotionTableEntry(EMotionFX::Motion* motion);
 
-            EMotionFX::Motion*          mMotion;
-            uint32                      mMotionID;
+            EMotionFX::Motion*          m_motion;
+            uint32                      m_motionId;
         };
 
         MotionTableEntry* FindMotionEntryByID(uint32 motionID);
-        MCORE_INLINE size_t GetNumMotionEntries()                                                   { return mMotionEntries.size(); }
-        MCORE_INLINE MotionTableEntry* GetMotionEntry(size_t index)                                 { return mMotionEntries[index]; }
+        MCORE_INLINE size_t GetNumMotionEntries()                                                   { return m_motionEntries.size(); }
+        MCORE_INLINE MotionTableEntry* GetMotionEntry(size_t index)                                 { return m_motionEntries[index]; }
         bool AddMotion(uint32 motionID);
         bool RemoveMotionByIndex(size_t index);
         bool RemoveMotionById(uint32 motionID);
 
         static AZStd::vector<EMotionFX::MotionInstance*>& GetSelectedMotionInstances();
 
-        MCORE_INLINE MotionRetargetingWindow* GetMotionRetargetingWindow()                          { return mMotionRetargetingWindow; }
-        MCORE_INLINE MotionExtractionWindow* GetMotionExtractionWindow()                            { return mMotionExtractionWindow; }
-        MCORE_INLINE MotionListWindow* GetMotionListWindow()                                        { return mMotionListWindow; }
+        MCORE_INLINE MotionRetargetingWindow* GetMotionRetargetingWindow()                          { return m_motionRetargetingWindow; }
+        MCORE_INLINE MotionExtractionWindow* GetMotionExtractionWindow()                            { return m_motionExtractionWindow; }
+        MCORE_INLINE MotionListWindow* GetMotionListWindow()                                        { return m_motionListWindow; }
         MCORE_INLINE const char* GetDefaultNodeSelectionLabelText()                                 { return "Click to select node"; }
 
         int OnSaveDirtyMotions();
@@ -120,21 +121,21 @@ namespace EMStudio
 
         AZStd::vector<MCore::Command::Callback*> m_callbacks;
 
-        AZStd::vector<MotionTableEntry*>                mMotionEntries;
+        AZStd::vector<MotionTableEntry*>                m_motionEntries;
 
-        MysticQt::DialogStack*                          mDialogStack;
-        MotionListWindow*                               mMotionListWindow;
-        MotionPropertiesWindow*                         mMotionPropertiesWindow;
-        MotionExtractionWindow*                         mMotionExtractionWindow;
-        MotionRetargetingWindow*                        mMotionRetargetingWindow;
+        MysticQt::DialogStack*                          m_dialogStack;
+        MotionListWindow*                               m_motionListWindow;
+        MotionPropertiesWindow*                         m_motionPropertiesWindow;
+        MotionExtractionWindow*                         m_motionExtractionWindow;
+        MotionRetargetingWindow*                        m_motionRetargetingWindow;
 
-        SaveDirtyMotionFilesCallback*                   mDirtyFilesCallback;
+        SaveDirtyMotionFilesCallback*                   m_dirtyFilesCallback;
 
-        QAction*                                        mAddMotionsAction;
-        QAction*                                        mSaveAction;
+        QAction*                                        m_addMotionsAction;
+        QAction*                                        m_saveAction;
 
-        QLabel*                                         mMotionNameLabel;
+        QLabel*                                         m_motionNameLabel;
 
-        static AZStd::vector<EMotionFX::MotionInstance*> mInternalMotionInstanceSelection;
+        static AZStd::vector<EMotionFX::MotionInstance*> s_internalMotionInstanceSelection;
     };
 } // namespace EMStudio

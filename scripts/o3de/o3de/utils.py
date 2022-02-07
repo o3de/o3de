@@ -1,17 +1,47 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 """
 This file contains utility functions
 """
-
+import sys
 import uuid
+import os
 import pathlib
 import shutil
 import urllib.request
+import logging
+import zipfile
+
+logger = logging.getLogger()
+logging.basicConfig()
+
+COPY_BUFSIZE = 64 * 1024
+
+def copyfileobj(fsrc, fdst, callback, length=0):
+    # This is functionally the same as the python shutil copyfileobj but
+    # allows for a callback to return the download progress in blocks and allows
+    # to early out to cancel the copy.
+    if not length:
+        length = COPY_BUFSIZE
+
+    fsrc_read = fsrc.read
+    fdst_write = fdst.write
+
+    copied = 0
+    while True:
+        buf = fsrc_read(length)
+        if not buf:
+            break
+        fdst_write(buf)
+        copied += len(buf)
+        if callback(copied):
+            return 1
+    return 0
 
 def validate_identifier(identifier: str) -> bool:
     """
@@ -87,20 +117,45 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
-
-def download_file(parsed_uri, download_path: pathlib.Path) -> int:
+def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_path: location path on disk to download file
+    :download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
     if download_path.is_file():
-        logger.warn(f'File already downloaded to {download_path}.')
-    elif parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
-        with urllib.request.urlopen(url) as s:
-            with download_path.open('wb') as f:
-                shutil.copyfileobj(s, f)
+        if not force_overwrite:
+            logger.error(f'File already downloaded to {download_path} and force_overwrite is not set.')
+            return 1
+        else:
+            try:
+                os.unlink(download_path)
+            except OSError:
+                logger.error(f'Could not remove existing download path {download_path}.')
+                return 1
+
+    if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
+        try:
+            with urllib.request.urlopen(parsed_uri.geturl()) as s:
+                download_file_size = 0
+                try:
+                    download_file_size = s.headers['content-length']
+                except KeyError:
+                    pass
+                def download_progress(downloaded_bytes):
+                    if download_progress_callback:
+                        return download_progress_callback(int(downloaded_bytes), int(download_file_size))
+                    return False
+                with download_path.open('wb') as f:
+                    download_cancelled = copyfileobj(s, f, download_progress)
+                    if download_cancelled:
+                        logger.info(f'Download of file to {download_path} cancelled.')
+                        return 1
+        except urllib.error.HTTPError as e:
+            logger.error(f'HTTP Error {e.code} opening {parsed_uri.geturl()}')
+            return 1
     else:
-        origin_file = pathlib.Path(url).resolve()
+        origin_file = pathlib.Path(parsed_uri.geturl()).resolve()
         if not origin_file.is_file():
             return 1
         shutil.copy(origin_file, download_path)
@@ -108,18 +163,65 @@ def download_file(parsed_uri, download_path: pathlib.Path) -> int:
     return 0
 
 
-def download_zip_file(parsed_uri, download_zip_path: pathlib.Path) -> int:
+def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_zip_path: path to output zip file
     """
-    download_file_result = download_file(parsed_uri, download_zip_path)
+    download_file_result = download_file(parsed_uri, download_zip_path, force_overwrite, download_progress_callback)
     if download_file_result != 0:
         return download_file_result
 
     if not zipfile.is_zipfile(download_zip_path):
-        logger.error(f"File zip {download_zip_path} is invalid.")
+        logger.error(f"File zip {download_zip_path} is invalid. Try re-downloading the file.")
         download_zip_path.unlink()
         return 1
 
     return 0
+
+
+def find_ancestor_file(target_file_name: pathlib.PurePath, start_path: pathlib.Path,
+                       max_scan_up_range: int=0) -> pathlib.Path or None:
+    """
+    Find a file with the given name in the ancestor directories by walking up the starting path until the file is found.
+
+    :param target_file_name: Name of the file to find.
+    :param start_path: path to start looking for the file.
+    :param max_scan_up_range: maximum number of directories to scan upwards when searching for target file
+           if the value is 0, then there is no max
+    :return: Path to the file or None if not found.
+    """
+    current_path = pathlib.Path(start_path)
+    candidate_path = current_path / target_file_name
+
+    max_scan_up_range = max_scan_up_range if max_scan_up_range else sys.maxsize
+
+    # Limit the number of directories to traverse, to avoid infinite loop in path cycles
+    for _ in range(max_scan_up_range):
+        if candidate_path.exists():
+            # Found the file we wanted
+            break
+
+        parent_path = current_path.parent
+        if parent_path == current_path:
+            # Only true when we are at the directory root, can't keep searching
+            break
+        candidate_path = parent_path / target_file_name
+        current_path = parent_path
+
+    return candidate_path if candidate_path.exists() else None
+
+def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_path: pathlib.Path,
+                                      max_scan_up_range: int=0) -> pathlib.Path or None:
+    """
+    Find nearest ancestor directory that contains the file with the given name by walking up
+    from the starting path.
+
+    :param target_file_name: Name of the file to find.
+    :param start_path: path to start looking for the file.
+    :param max_scan_up_range: maximum number of directories to scan upwards when searching for target file
+           if the value is 0, then there is no max
+    :return: Path to the directory containing file or None if not found.
+    """
+    ancestor_file = find_ancestor_file(target_file_name, start_path, max_scan_up_range)
+    return ancestor_file.parent if ancestor_file else None

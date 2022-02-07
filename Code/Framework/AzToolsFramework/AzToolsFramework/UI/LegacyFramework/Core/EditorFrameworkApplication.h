@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,7 +25,7 @@ namespace LegacyFramework
 {
     struct ApplicationDesc
     {
-        HMODULE m_applicationModule;  // only necessary if you want to attach your application as a DLL plugin to another application, hosting it
+        void* m_applicationModule;  // only necessary if you want to attach your application as a DLL plugin to another application, hosting it
         bool m_enableGUI; // false if you want none of the QT or GUI functionality to exist.  You cannot use project manager if you do this.
         bool m_enableGridmate; // false if you want to not activate the network communications module.
         bool m_enablePerforce; // false if you want to not activate perforce SCM integration.  note that this will eventually become a plugin anyway
@@ -35,7 +36,7 @@ namespace LegacyFramework
         int m_argc;
         char** m_argv;
 
-        char m_applicationName[_MAX_PATH];
+        char m_applicationName[AZ_MAX_PATH_LEN];
 
         ApplicationDesc(const char* name = "Application", int argc = 0, char** argv = nullptr);
         ApplicationDesc(const ApplicationDesc& other);
@@ -62,23 +63,23 @@ namespace LegacyFramework
 
         // ------------------------------------------------------------------
         // implementation of FrameworkApplicationMessages::Handler
-        virtual bool IsRunningInGUIMode() { return m_desc.m_enableGUI; }
-        virtual bool RequiresGameProject() { return m_desc.m_enableProjectManager; }
-        virtual bool ShouldRunAssetProcessor() { return m_desc.m_shouldRunAssetProcessor; }
-        virtual HMODULE GetMainModule();
-        virtual const char* GetApplicationName();
-        virtual const char* GetApplicationModule();
-        virtual const char* GetApplicationDirectory();
-        virtual const AzFramework::CommandLine* GetCommandLineParser();
-        virtual void TeardownApplicationComponent();
-        virtual void RunAssetProcessor() override;
+        bool IsRunningInGUIMode() override { return m_desc.m_enableGUI; }
+        bool RequiresGameProject() override { return m_desc.m_enableProjectManager; }
+        bool ShouldRunAssetProcessor() override { return m_desc.m_shouldRunAssetProcessor; }
+        void* GetMainModule() override;
+        const char* GetApplicationName() override;
+        const char* GetApplicationModule() override;
+        const char* GetApplicationDirectory() override;
+        const AzFramework::CommandLine* GetCommandLineParser() override;
+        void TeardownApplicationComponent() override;
+        void RunAssetProcessor() override;
         // ------------------------------------------------------------------
 
         void SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations) override;
 
         // ------------------------------------------------------------------
         // implementation of CoreMessageBus::Handler
-        virtual void OnProjectSet(const char*  /*pathToProject*/);
+        void OnProjectSet(const char*  /*pathToProject*/) override;
         // ------------------------------------------------------------------
 
         // This is called during the bootstrap and makes all the components we should have for SYSTEM minimal functionality.
@@ -113,17 +114,17 @@ namespace LegacyFramework
          * ComponentApplication::RegisterCoreComponents and then register the application
          * specific core components.
          */
-        virtual void RegisterCoreComponents();
+        void RegisterCoreComponents() override;
         AZ::Entity* m_ptrSystemEntity;
 
-        virtual int GetDesiredExitCode() override { return m_desiredExitCode; }
-        virtual void SetDesiredExitCode(int code) override { m_desiredExitCode = code; }
-        virtual bool GetAbortRequested() override { return m_abortRequested; }
-        virtual void SetAbortRequested() override { m_abortRequested = true; }
-        virtual AZStd::string GetApplicationGlobalStoragePath() override;
-        virtual bool IsPrimary() override { return m_isPrimary; }
+        int GetDesiredExitCode() override { return m_desiredExitCode; }
+        void SetDesiredExitCode(int code) override { m_desiredExitCode = code; }
+        bool GetAbortRequested() override { return m_abortRequested; }
+        void SetAbortRequested() override { m_abortRequested = true; }
+        AZStd::string GetApplicationGlobalStoragePath() override;
+        bool IsPrimary() override { return m_isPrimary; }
 
-        virtual bool IsAppConfigWritable() override;
+        bool IsAppConfigWritable() override;
 
         AZ::Entity* m_applicationEntity;
 
@@ -131,11 +132,11 @@ namespace LegacyFramework
         void CreateApplicationComponent();
         void SaveApplicationEntity();
 
-        char m_applicationModule[_MAX_PATH];
+        char m_applicationModule[AZ_MAX_PATH_LEN];
         int m_desiredExitCode;
         bool m_isPrimary;
         volatile bool m_abortRequested; // if you CTRL+C in a console app, this becomes true.  its up to you to check...
-        char m_applicationFilePath[_MAX_PATH];
+        char m_applicationFilePath[AZ_MAX_PATH_LEN];
         ApplicationDesc m_desc;
         AzFramework::CommandLine* m_ptrCommandLineParser;
     };

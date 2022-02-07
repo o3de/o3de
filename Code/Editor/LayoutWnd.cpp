@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -97,7 +98,7 @@ CLayoutWnd::CLayoutWnd(QSettings* settings, QWidget* parent)
     , m_settings(settings)
 {
     m_bMaximized = false;
-    m_maximizedView = 0;
+    m_maximizedView = nullptr;
     m_layout = (EViewLayout) - 1;
 
     m_maximizedViewId = 0;
@@ -182,7 +183,6 @@ void CLayoutWnd::MaximizeViewport(int paneId)
 
     QString viewClass = m_viewType[paneId];
 
-    const QRect rc = rect();
     if (!m_bMaximized)
     {
         CLayoutViewPane* pViewPane = GetViewPane(paneId);
@@ -728,7 +728,7 @@ void CLayoutWnd::OnDestroy()
     if (m_maximizedView)
     {
         delete m_maximizedView;
-        m_maximizedView = 0;
+        m_maximizedView = nullptr;
     }
 }
 

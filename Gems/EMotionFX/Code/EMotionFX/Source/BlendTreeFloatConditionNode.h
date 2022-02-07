@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,7 +26,7 @@ namespace EMotionFX
         AZ_CLASS_ALLOCATOR_DECL
 
         //
-        enum
+        enum : uint16
         {
             INPUTPORT_X         = 0,
             INPUTPORT_Y         = 1,
@@ -33,7 +34,7 @@ namespace EMotionFX
             OUTPUTPORT_BOOL     = 1
         };
 
-        enum
+        enum : uint16
         {
             PORTID_INPUT_X      = 0,
             PORTID_INPUT_Y      = 1,

@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "AzToolsFramework_precompiled.h"
 
 #include "ViewportUiTextField.h"
 
@@ -16,7 +15,11 @@
 namespace AzToolsFramework::ViewportUi::Internal
 {
     AZ_CVAR(
-        int, ViewportUiTextFieldLength, 35, nullptr, AZ::ConsoleFunctorFlags::Null,
+        int,
+        ViewportUiTextFieldLength,
+        35,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
         "The pixel length of the text field part of a ViewportUiTextField");
 
     ViewportUiTextField::ViewportUiTextField(AZStd::shared_ptr<TextField> textField)
@@ -56,11 +59,14 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         m_lineEdit.setValidator(m_validator);
 
-        connect(&m_lineEdit, &QLineEdit::textEdited, &m_lineEdit, [textField](QString text) {
-            // convert the text using toLocal8Bit().data() as recommended by Qt, then emit signal
-            textField->m_fieldText = text.toLocal8Bit().data();
-            textField->m_textEditedEvent.Signal(textField->m_fieldText);
-        });
+        connect(
+            &m_lineEdit, &QLineEdit::textEdited, &m_lineEdit,
+            [textField](QString text)
+            {
+                // convert the text using toLocal8Bit().data() as recommended by Qt, then emit signal
+                textField->m_fieldText = text.toLocal8Bit().data();
+                textField->m_textEditedEvent.Signal(textField->m_fieldText);
+            });
     }
 
     void ViewportUiTextField::Update()

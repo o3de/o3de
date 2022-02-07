@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "ShapeAreaFalloffGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ShapeAreaFalloffGradientConfig"
+            }
+        }
+    ]
+}

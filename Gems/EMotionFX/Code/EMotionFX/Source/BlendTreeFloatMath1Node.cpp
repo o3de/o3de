@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,7 +29,7 @@ namespace EMotionFX
         InitOutputPorts(1);
         SetupOutputPort("Result", OUTPUTPORT_RESULT, MCore::AttributeFloat::TYPE_ID, PORTID_OUTPUT_RESULT);
 
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -191,12 +192,12 @@ namespace EMotionFX
         UpdateAllIncomingNodes(animGraphInstance, timePassedInSeconds);
 
         // If there are no incoming connections, there is nothing to do.
-        if (mConnections.empty())
+        if (m_connections.empty())
         {
             return;
         }
         // Pass the input value as output in case we are disabled and have connected inputs.
-        else if (mDisabled)
+        else if (m_disabled)
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_X));
             GetOutputFloat(animGraphInstance, OUTPUTPORT_RESULT)->SetValue(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_X));
@@ -218,7 +219,7 @@ namespace EMotionFX
     void BlendTreeFloatMath1Node::SetMathFunction(EMathFunction func)
     {
         m_mathFunction = func;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

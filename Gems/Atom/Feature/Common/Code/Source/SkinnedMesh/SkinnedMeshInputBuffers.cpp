@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,6 +22,8 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Math/PackedVector3.h>
+
+AZ_DECLARE_BUDGET(AzRender);
 
 namespace AZ
 {
@@ -444,8 +447,8 @@ namespace AZ
                     MorphTargetInstanceMetaData instanceMetaData;
 
                     // Positions start at the beginning of the allocation
-                    instanceMetaData.m_accumulatedPositionDeltaOffsetInBytes = allocation->GetVirtualAddress().m_ptr;
-                    uint32_t deltaStreamSizeInBytes = vertexCount * MorphTargetConstants::s_unpackedMorphTargetDeltaSizeInBytes;
+                    instanceMetaData.m_accumulatedPositionDeltaOffsetInBytes = static_cast<int32_t>(allocation->GetVirtualAddress().m_ptr);
+                    uint32_t deltaStreamSizeInBytes = static_cast<uint32_t>(vertexCount * MorphTargetConstants::s_unpackedMorphTargetDeltaSizeInBytes);
 
                     // Followed by normals, tangents, and bitangents
                     instanceMetaData.m_accumulatedNormalDeltaOffsetInBytes = instanceMetaData.m_accumulatedPositionDeltaOffsetInBytes + deltaStreamSizeInBytes;
@@ -531,7 +534,7 @@ namespace AZ
             //            lod0 Positions[^                         ^]             lod0Normals[^                         ^]   lod1Positions[^     ^]     lod1Normals[^     ^]
             // lod0 subMesh0+1 Positions[^             ^^          ^] lod0 subMesh0+1 Normals[^             ^^          ^]  lod1 sm0+1 pos[^  ^^ ^] lod1 sm0+1 norm[^  ^^ ^]
 
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "SkinnedMeshInputBuffers: CreateSkinnedMeshInstance");
             AZStd::intrusive_ptr<SkinnedMeshInstance> instance = aznew SkinnedMeshInstance;
 
             // Each model gets a unique, random ID, so if the same source model is used for multiple instances, multiple target models will be created.
@@ -639,7 +642,8 @@ namespace AZ
                     Aabb localAabb = lod.m_subMeshProperties[i].m_aabb;
                     modelLodCreator.SetMeshAabb(AZStd::move(localAabb));
 
-                    modelLodCreator.SetMeshMaterialAsset(lod.m_subMeshProperties[i].m_material);
+                    modelCreator.AddMaterialSlot(lod.m_subMeshProperties[i].m_materialSlot);
+                    modelLodCreator.SetMeshMaterialSlot(lod.m_subMeshProperties[i].m_materialSlot.m_stableId);
 
                     modelLodCreator.EndMesh();
                 }

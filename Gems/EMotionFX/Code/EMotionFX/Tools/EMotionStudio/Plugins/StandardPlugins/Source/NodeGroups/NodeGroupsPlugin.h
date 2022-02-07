@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -73,22 +74,22 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandAddNodeGroupCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandRemoveNodeGroupCallback);
 
-        CommandSelectCallback*                  mSelectCallback;
-        CommandUnselectCallback*                mUnselectCallback;
-        CommandClearSelectionCallback*          mClearSelectionCallback;
-        CommandAdjustNodeGroupCallback*         mAdjustNodeGroupCallback;
-        CommandAddNodeGroupCallback*            mAddNodeGroupCallback;
-        CommandRemoveNodeGroupCallback*         mRemoveNodeGroupCallback;
+        CommandSelectCallback*                  m_selectCallback;
+        CommandUnselectCallback*                m_unselectCallback;
+        CommandClearSelectionCallback*          m_clearSelectionCallback;
+        CommandAdjustNodeGroupCallback*         m_adjustNodeGroupCallback;
+        CommandAddNodeGroupCallback*            m_addNodeGroupCallback;
+        CommandRemoveNodeGroupCallback*         m_removeNodeGroupCallback;
 
         // current selected actor
-        EMotionFX::Actor*                       mCurrentActor;
+        EMotionFX::Actor*                       m_currentActor;
 
         // the dialog stack widgets
-        NodeGroupWidget*                        mNodeGroupWidget;
-        NodeGroupManagementWidget*              mNodeGroupManagementWidget;
+        NodeGroupWidget*                        m_nodeGroupWidget;
+        NodeGroupManagementWidget*              m_nodeGroupManagementWidget;
 
         // some qt stuff
-        MysticQt::DialogStack*                  mDialogStack;
-        QLabel*                                 mInfoText;
+        MysticQt::DialogStack*                  m_dialogStack;
+        QLabel*                                 m_infoText;
     };
 } // namespace EMStudio

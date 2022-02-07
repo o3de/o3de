@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -482,9 +483,9 @@ namespace AZ
             }
         private:
             static void ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
-                const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
+                [[maybe_unused]] const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
             {
-                auto alternativeVisitor = [&callContext, &variantClassData, variantClassElement](auto&& elementAlt)
+                auto alternativeVisitor = [&callContext, variantClassElement](auto&& elementAlt)
                 {
                     using AltType = AZStd::remove_cvref_t<decltype(elementAlt)>;
                     const SerializeContext& context = *callContext.m_context;

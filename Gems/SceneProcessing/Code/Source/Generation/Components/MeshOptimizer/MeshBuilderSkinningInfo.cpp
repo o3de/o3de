@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,8 +25,11 @@ namespace AZ::MeshBuilder
     // constructor
     MeshBuilderSkinningInfo::MeshBuilderSkinningInfo(size_t numOrgVertices)
     {
-        mInfluences.SetNumPreCachedElements(4); // TODO: verify if this is the fastest
-        mInfluences.Resize(numOrgVertices);
+        mInfluences.resize(numOrgVertices);
+        for (auto& subArray : mInfluences)
+        {
+            subArray.reserve(4);
+        }
     }
 
 
@@ -99,13 +103,13 @@ namespace AZ::MeshBuilder
             // remove all influences
             for (size_t i = 0; i < numInfluences; ++i)
             {
-                mInfluences.Remove(v, 0);
+                RemoveInfluence(v, 0);
             }
 
             // re-add them
             for (const Influence& influence : influences)
             {
-                mInfluences.Add(v, influence);
+                AddInfluence(v, influence);
             }
         }
     }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,7 +71,6 @@
 #if defined(USE_CRY_ASSERT) && CRYASSERT_H_TRAIT_USE_CRY_ASSERT_MESSAGE
 void CryAssertTrace(const char*, ...);
 bool CryAssert(const char*, const char*, unsigned int, bool*);
-void CryDebugBreak();
 
     #define CRY_ASSERT(condition) CRY_ASSERT_MESSAGE(condition, NULL)
 
@@ -85,7 +85,7 @@ void CryDebugBreak();
             CryAssertTrace parenthese_message;                               \
             if (CryAssert(#condition, __FILE__, __LINE__, &s_bIgnoreAssert)) \
             {                                                                \
-                DEBUG_BREAK;                                                 \
+                AZ::Debug::Trace::Break();                                   \
             }                                                                \
         }                                                                    \
     } while (0)

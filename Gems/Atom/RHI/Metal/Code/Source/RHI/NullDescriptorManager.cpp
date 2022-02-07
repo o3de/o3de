@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 #include <RHI/NullDescriptorManager.h>
 #include <RHI/Device.h>
 
@@ -42,8 +42,6 @@ namespace AZ
 
         void NullDescriptorManager::Shutdown()
         {
-            const Device& device = static_cast<Device&>(GetDevice());
-
             m_nullImages.clear();
             m_nullBuffer.m_memoryView = {};
             m_nullMtlSamplerState = nil;
@@ -94,7 +92,6 @@ namespace AZ
                 textureSizeAndAlign.size = memoryRequirements.m_sizeInBytes;
                 
                 const size_t alignedHeapSize = RHI::AlignUp(heapSize, textureSizeAndAlign.align);
-                const uint32_t bytesPerPixel = RHI::GetFormatSize(m_nullImages[imageIndex].m_imageDescriptor.m_format);
                 if(imageIndex == static_cast<uint32_t>(NullDescriptorManager::ImageTypes::TextureBuffer))
                 {
                     m_nullImages[imageIndex].m_memoryView = device.CreateImagePlaced(m_nullImages[imageIndex].m_imageDescriptor, m_nullDescriptorHeap, alignedHeapSize, textureSizeAndAlign, MTLTextureTypeTextureBuffer);
@@ -126,10 +123,10 @@ namespace AZ
             Device& device = static_cast<Device&>(GetDevice());
             
             m_nullBuffer.m_name = "NULL_DESCRIPTOR_BUFFER";
-            m_nullBuffer.m_bufferDescriptor.m_byteCount = 64;
+            m_nullBuffer.m_bufferDescriptor.m_byteCount = 1024;
             m_nullBuffer.m_bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderWrite;
             m_nullBuffer.m_memoryView = device.CreateBufferCommitted(m_nullBuffer.m_bufferDescriptor);
-            
+            m_nullBuffer.m_memoryView.SetName( m_nullBuffer.m_name.c_str());
             if(!m_nullBuffer.m_memoryView.IsValid())
             {
                 AZ_Assert(false, "Couldnt create a null buffer for ArgumentTable");

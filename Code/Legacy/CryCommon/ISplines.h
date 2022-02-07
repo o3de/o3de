@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,8 +11,8 @@
 #define CRYINCLUDE_CRYCOMMON_ISPLINES_H
 #pragma once
 
-#include <CrySizer.h>
 #include <IXml.h>
+#include <AzCore/std/containers/vector.h>
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -346,8 +347,6 @@ namespace spline
                 m_c[3] = T((2.0f * v0 - 2.0f * v1 + s0 + s1) * idt * idt * idt);
             }
         }
-
-        void GetMemoryUsage(ICrySizer* pSizer) const {}
     };
 
     inline float fast_fmod(float x, float y)
@@ -409,7 +408,7 @@ namespace spline
 
     //! TCB spline key used in quaternion spline with angle axis as input.
     struct TCBAngAxisKey
-        :  public TCBSplineKey<CryQuat>
+        :  public TCBSplineKey<Quat>
     {
         float angle;
         Vec3 axis;
@@ -465,7 +464,7 @@ namespace spline
         ILINE void flag_clr(int flag) { m_flags &= ~flag; };
         ILINE int  flag(int flag)  { return m_flags & flag; };
 
-        ILINE void ORT(int ort) { m_ORT = ort; };
+        ILINE void ORT(int ort) { m_ORT = static_cast<uint8>(ort); };
         ILINE int  ORT() const { return m_ORT; };
         ILINE int  isORT(int o) const { return (m_ORT == o); };
 
@@ -637,7 +636,7 @@ namespace spline
         //////////////////////////////////////////////////////////////////////////
 
         static void Reflect(AZ::SerializeContext* serializeContext) {}
-     
+
         inline void add_ref()
         {
             ++m_refCount;

@@ -1,13 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferPoolBase.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImagePoolBase.h>
@@ -72,7 +72,7 @@ namespace AZ
 
         void FrameGraph::Clear()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraph: Clear");
+            AZ_PROFILE_SCOPE(RHI, "FrameGraph: Clear");
             for (Scope* scope : m_scopes)
             {
                 scope->Deactivate();
@@ -109,13 +109,11 @@ namespace AZ
                 {
                     if (attachment->GetFirstScopeAttachment() == nullptr)
                     {
+                        //We allow the rendering to continue even if an attachment is not used.
                         AZ_Error(
                             "FrameGraph", false,
                             "Invalid State: attachment '%s' was added but never used!",
                             attachment->GetId().GetCStr());
-
-                        Clear();
-                        return ResultCode::InvalidOperation;
                     }
                 }
             }
@@ -125,6 +123,7 @@ namespace AZ
 
         ResultCode FrameGraph::End()
         {
+            AZ_PROFILE_SCOPE(RHI, "FrameGraph: End");
             ResultCode resultCode = ValidateEnd();
             if (resultCode != ResultCode::Success)
             {
@@ -495,7 +494,7 @@ namespace AZ
                 for (const uint32_t edgeIndex : graphEdges[producerIndex])
                 {
                     const GraphEdge& graphEdge = m_graphEdges[edgeIndex];
-                    const uint16_t consumerIndex = graphEdge.m_consumerIndex;
+                    const uint16_t consumerIndex = static_cast<uint16_t>(graphEdge.m_consumerIndex);
                     if (--m_graphNodes[consumerIndex].m_unsortedProducerCount == 0)
                     {
                         NodeId newNode;

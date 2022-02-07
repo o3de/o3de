@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Pass/PassAttachment.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
@@ -58,6 +60,7 @@ namespace AZ
         struct PassRequest;
         struct PassValidationResults;
         class AttachmentReadback;
+        class ImageAttachmentCopy;
 
         using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
@@ -92,6 +95,8 @@ namespace AZ
             : public AZStd::intrusive_base
         {
             AZ_RPI_PASS(Pass);
+
+            friend class ImageAttachmentPreviewPass;
 
         public:
             using ChildPassIndex = RHI::Handle<uint32_t, class ChildPass>;
@@ -137,6 +142,10 @@ namespace AZ
 
             //! Returns the number of output attachment bindings
             uint32_t GetOutputCount() const;
+
+            //! Returns the pass template which was used for create this pass.
+            //! It may return nullptr if the pass wasn't create from a template
+            const PassTemplate* GetPassTemplate() const;
 
             //! Enable/disable this pass
             //! If the pass is disabled, it (and any children if it's a ParentPass) won't be rendered.  
@@ -364,6 +373,9 @@ namespace AZ
 
             void UpdateReadbackAttachment(FramePrepareParams params, bool beforeAddScopes);
 
+            // Setup ImageAttachmentCopy
+            void UpdateAttachmentCopy(FramePrepareParams params);
+
             // --- Protected Members ---
 
             const Name PassNameThis{"This"};
@@ -460,6 +472,9 @@ namespace AZ
             // For read back attachment
             AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
             PassAttachmentReadbackOption m_readbackOption;
+
+            // For image attachment preview
+            AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
 
         private:
             // Return the Timestamp result of this pass

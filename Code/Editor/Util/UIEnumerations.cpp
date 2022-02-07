@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -54,15 +55,15 @@ CUIEnumerations::TDValuesContainer& CUIEnumerations::GetStandardNameContainer()
             {
                 oEnumerationItem = oEnumaration->getChild(nCurrentEnumarationItem);
 
-                const char* szKey(NULL);
-                const char* szValue(NULL);
+                const char* szKey(nullptr);
+                const char* szValue(nullptr);
                 oEnumerationItem->getAttributeByIndex(0, &szKey, &szValue);
 
                 cValues.push_back(szValue);
             }
 
-            const char* szKey(NULL);
-            const char* szValue(NULL);
+            const char* szKey(nullptr);
+            const char* szValue(nullptr);
             oEnumaration->getAttributeByIndex(0, &szKey, &szValue);
 
             cValuesContainer.insert(TDValuesContainer::value_type(szValue, cValues));

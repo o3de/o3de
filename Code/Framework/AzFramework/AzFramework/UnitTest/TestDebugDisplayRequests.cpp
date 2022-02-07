@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,7 +32,7 @@ namespace UnitTest
 
     void TestDebugDisplayRequests::DrawWireBox(const AZ::Vector3& min, const AZ::Vector3& max)
     {
-        const AZ::Transform& tm = m_transforms.back();
+        const AZ::Transform& tm = m_transforms.top();
         m_points.push_back(tm.TransformPoint(AZ::Vector3(min.GetX(), min.GetY(), min.GetZ())));
         m_points.push_back(tm.TransformPoint(AZ::Vector3(min.GetX(), min.GetY(), max.GetZ())));
         m_points.push_back(tm.TransformPoint(AZ::Vector3(min.GetX(), max.GetY(), min.GetZ())));
@@ -49,7 +50,7 @@ namespace UnitTest
 
     void TestDebugDisplayRequests::DrawWireQuad(float width, float height)
     {
-        const AZ::Transform& tm = m_transforms.back();
+        const AZ::Transform& tm = m_transforms.top();
         m_points.push_back(tm.TransformPoint(AZ::Vector3(-0.5f * width, 0.0f, -0.5f * height)));
         m_points.push_back(tm.TransformPoint(AZ::Vector3(-0.5f * width, 0.0f, 0.5f * height)));
         m_points.push_back(tm.TransformPoint(AZ::Vector3(0.5f * width, 0.0f, -0.5f * height)));
@@ -63,7 +64,7 @@ namespace UnitTest
 
     void TestDebugDisplayRequests::DrawPoints(const AZStd::vector<AZ::Vector3>& points)
     {
-        const AZ::Transform& tm = m_transforms.back();
+        const AZ::Transform& tm = m_transforms.top();
         for (const auto& point : points)
         {
             m_points.push_back(tm.TransformPoint(point));
@@ -99,7 +100,7 @@ namespace UnitTest
 
     void TestDebugDisplayRequests::PushMatrix(const AZ::Transform& tm)
     {
-        m_transforms.push(m_transforms.back() * tm);
+        m_transforms.push(m_transforms.top() * tm);
     }
 
     void TestDebugDisplayRequests::PopMatrix()

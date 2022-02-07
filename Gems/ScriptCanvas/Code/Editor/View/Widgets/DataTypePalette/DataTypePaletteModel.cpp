@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <precompiled.h>
 
 #include <qaction.h>
 #include <qevent.h>
@@ -16,7 +16,6 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/UserSettings/UserSettings.h>
 
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/StyleBus.h>
 
@@ -244,7 +243,16 @@ namespace ScriptCanvasEditor
 
     AZStd::string DataTypePaletteModel::FindTypeNameForTypeId(const AZ::TypeId& typeId) const
     {
-        return TranslationHelper::GetSafeTypeName(ScriptCanvas::Data::FromAZType(typeId));
+        GraphCanvas::TranslationKey key;
+        key << "BehaviorType" << typeId.ToString<AZStd::string>() << "details";
+
+        GraphCanvas::TranslationRequests::Details details;
+
+        details.m_name = TranslationHelper::GetSafeTypeName(ScriptCanvas::Data::FromAZType(typeId));
+
+        GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+        return details.m_name;
     }
 
     void DataTypePaletteModel::TogglePendingPinChange(const AZ::Uuid& azVarType)

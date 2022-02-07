@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -158,8 +159,8 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     , m_viewportTitleDlg(this)
     , m_expanderWatcher(new ViewportTitleExpanderWatcher(this, &m_viewportTitleDlg))
 {
-    m_viewport = 0;
-    m_active = 0;
+    m_viewport = nullptr;
+    m_active = false;
     m_nBorder = VIEW_BORDER;
 
     m_bFullscreen = false;
@@ -304,10 +305,6 @@ void CLayoutViewPane::AttachViewport(QWidget* pViewport)
         {
             vp->SetViewportId(GetId());
             vp->SetViewPane(this);
-            if (CRenderViewport* renderViewport = viewport_cast<CRenderViewport*>(vp))
-            {
-                renderViewport->ConnectViewportInteractionRequestBus();
-            }
             if (EditorViewportWidget* renderViewport = viewport_cast<EditorViewportWidget*>(vp))
             {
                 renderViewport->ConnectViewportInteractionRequestBus();
@@ -337,7 +334,7 @@ void CLayoutViewPane::DetachViewport()
 {
     DisconnectRenderViewportInteractionRequestBus();
     OnFOVChanged(gSettings.viewports.fDefaultFov);
-    m_viewport = 0;
+    m_viewport = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -347,7 +344,7 @@ void CLayoutViewPane::ReleaseViewport()
     {
         DisconnectRenderViewportInteractionRequestBus();
         m_viewport->deleteLater();
-        m_viewport = 0;
+        m_viewport = nullptr;
     }
 }
 
@@ -355,10 +352,6 @@ void CLayoutViewPane::DisconnectRenderViewportInteractionRequestBus()
 {
     if (QtViewport* vp = qobject_cast<QtViewport*>(m_viewport))
     {
-        if (CRenderViewport* renderViewport = viewport_cast<CRenderViewport*>(vp))
-        {
-            renderViewport->DisconnectViewportInteractionRequestBus();
-        }
         if (EditorViewportWidget* renderViewport = viewport_cast<EditorViewportWidget*>(vp))
         {
             renderViewport->DisconnectViewportInteractionRequestBus();
@@ -468,16 +461,6 @@ void CLayoutViewPane::SetAspectRatio(unsigned int x, unsigned int y)
 //////////////////////////////////////////////////////////////////////////
 void CLayoutViewPane::SetViewportFOV(float fov)
 {
-    if (CRenderViewport* pRenderViewport = qobject_cast<CRenderViewport*>(m_viewport))
-    {
-        pRenderViewport->SetFOV(DEG2RAD(fov));
-
-        // if viewport camera is active, make selected fov new default
-        if (pRenderViewport->GetViewManager()->GetCameraObjectId() == GUID_NULL)
-        {
-            gSettings.viewports.fDefaultFov = DEG2RAD(fov);
-        }
-    }
     if (EditorViewportWidget* pRenderViewport = qobject_cast<EditorViewportWidget*>(m_viewport))
     {
         pRenderViewport->SetFOV(DEG2RAD(fov));
@@ -663,7 +646,7 @@ namespace
         if (viewPane && viewPane->GetViewport())
         {
             const QRect rcViewport = viewPane->GetViewport()->rect();
-            return AZ::Vector2(rcViewport.width(), rcViewport.height());
+            return AZ::Vector2(static_cast<float>(rcViewport.width()), static_cast<float>(rcViewport.height()));
         }
         else
         {
@@ -786,7 +769,9 @@ namespace
 
     void PySetViewPaneLayout(unsigned int layoutId)
     {
+        AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
         if ((layoutId >= ET_Layout0) && (layoutId <= ET_Layout8))
+        AZ_POP_DISABLE_WARNING
         {
             CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
             if (layout)

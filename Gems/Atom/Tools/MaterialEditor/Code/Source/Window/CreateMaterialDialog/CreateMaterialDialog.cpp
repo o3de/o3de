@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,8 @@
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
+
 #include <AtomToolsFramework/Util/Util.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
@@ -18,12 +21,10 @@
 
 #include <Atom/Document/MaterialDocumentSettings.h>
 
-#include <QFileDialog>
-
 namespace MaterialEditor
 {
     CreateMaterialDialog::CreateMaterialDialog(QWidget* parent)
-        : CreateMaterialDialog(QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials", parent)
+        : CreateMaterialDialog(QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@")) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials", parent)
     {
     }
 
@@ -94,7 +95,7 @@ namespace MaterialEditor
 
         //When the file selection button is pressed, open a file dialog to select where the material will be saved
         QObject::connect(m_ui->m_materialFilePicker, &AzQtComponents::BrowseEdit::attachedButtonTriggered, m_ui->m_materialFilePicker, [this]() {
-            QFileInfo fileInfo = QFileDialog::getSaveFileName(this,
+            QFileInfo fileInfo = AzQtComponents::FileDialog::GetSaveFileName(this,
                 QString("Select Material Filename"),
                 m_materialFileInfo.absoluteFilePath(),
                 QString("Material (*.material)"));

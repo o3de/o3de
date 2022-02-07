@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include <dlfcn.h>
 #include <iostream>
+#include <AzCore/IO/Path/Path.h>
 #include <AzTest/Platform.h>
 
 #include <sys/types.h>
@@ -19,11 +21,16 @@ public:
     explicit ModuleHandle(const std::string& lib)
         : m_libHandle(nullptr)
     {
-        std::string libext = lib;
-        if (!AZ::Test::EndsWith(libext, ".dylib"))
+        AZ::IO::FixedMaxPath libext = AZStd::string_view{ lib.c_str(), lib.size() };
+        if (!libext.Stem().Native().starts_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX))
         {
-            libext += ".dylib";
+           libext = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + libext.Native();
         }
+        if (libext.Extension() != AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION)
+        {
+            libext.Native() += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+        }
+
         m_libHandle = dlopen(libext.c_str(), RTLD_NOW);
         const char* error = dlerror();
         if (error)

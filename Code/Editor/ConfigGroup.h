@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,22 +37,22 @@ namespace Config
             , m_description(szDescription)
             , m_type(varType)
             , m_flags(flags)
-            , m_ptr(NULL)
+            , m_ptr(nullptr)
         {};
 
         virtual ~IConfigVar() = default;
-        
+
         ILINE EType GetType() const
         {
             return m_type;
         }
 
-        ILINE const string& GetName() const
+        ILINE const AZStd::string& GetName() const
         {
             return m_name;
         }
 
-        ILINE const string& GetDescription() const
+        ILINE const AZStd::string& GetDescription() const
         {
             return m_description;
         }
@@ -70,13 +71,13 @@ namespace Config
         static EType TranslateType(const bool&) { return eType_BOOL; }
         static EType TranslateType(const int&) { return eType_INT; }
         static EType TranslateType(const float&) { return eType_FLOAT; }
-        static EType TranslateType(const string&) { return eType_STRING; }
+        static EType TranslateType(const AZStd::string&) { return eType_STRING; }
 
     protected:
         EType m_type;
         uint8 m_flags;
-        string m_name;
-        string m_description;
+        AZStd::string m_name;
+        AZStd::string m_description;
         void* m_ptr;
         ICVar* m_pCVar;
     };

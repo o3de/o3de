@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -460,6 +461,24 @@ namespace AZ
     AZ_MATH_INLINE bool Vector4::IsGreaterEqualThan(const Vector4& rhs) const
     {
         return Simd::Vec4::CmpAllGtEq(m_value, rhs.m_value);
+    }
+
+
+    AZ_MATH_INLINE Vector4 Vector4::GetFloor() const
+    {
+        return Vector4(Simd::Vec4::Floor(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector4 Vector4::GetCeil() const
+    {
+        return Vector4(Simd::Vec4::Ceil(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector4 Vector4::GetRound() const
+    {
+        return Vector4(Simd::Vec4::Round(m_value));
     }
 
 

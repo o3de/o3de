@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -93,7 +94,7 @@ namespace GraphCanvas
         ////
 
         // GeometryNotifications
-        void OnBoundsChanged();
+        void OnBoundsChanged() override;
         void OnPositionChanged(const AZ::EntityId& targetEntity, const AZ::Vector2& position) override;
         ////
 
@@ -116,7 +117,7 @@ namespace GraphCanvas
 
         AZ::EntityId GetSourceGroup() const override;
 
-        AZStd::vector< Endpoint > GetRedirectedEndpoints() const;
+        AZStd::vector< Endpoint > GetRedirectedEndpoints() const override;
         void ForceEndpointRedirection(const AZStd::vector< Endpoint >& endpoints) override;
         ////
 

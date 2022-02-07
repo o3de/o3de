@@ -1,652 +1,142 @@
-<ObjectStream version="3">
-	<Class name="SceneManifest" version="1" type="{9274AD17-3212-4651-9F3B-7DCCB080E467}">
-		<Class name="AZStd::vector" field="values" type="{5D6A7C67-11CA-59A4-829B-0B20B781B292}">
-			<Class name="AZStd::shared_ptr" field="element" type="{EB7522F9-0E87-55A9-A191-E924DC5AE867}">
-				<Class name="MotionGroup" field="element" version="3" type="{1B0ABB1E-F6DF-4534-9A35-2DD8244BF58C}">
-					<Class name="IMotionGroup" field="BaseClass1" version="1" type="{1CA400A8-2C3E-423D-B8A3-C457EF88E533}">
-						<Class name="IGroup" field="BaseClass1" version="1" type="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}">
-							<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-						</Class>
-					</Class>
-					<Class name="AZStd::string" field="name" value="rin_jump" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-					<Class name="AZStd::string" field="selectedRootBone" value="RootNode.root" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-					<Class name="AZ::Uuid" field="id" value="{A816A306-96C4-523C-87D9-0784EE509817}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-					<Class name="RuleContainer" field="rules" version="1" type="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}">
-						<Class name="AZStd::vector" field="rules" type="{B5BDB053-178F-5D55-8663-70897A71B7C9}">
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="CoordinateSystemRule" field="element" version="1" type="{603207E2-4F55-4C33-9AAB-98CA75C1E351}">
-									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
-										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-									</Class>
-									<Class name="int" field="targetCoordinateSystem" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-								</Class>
-							</Class>
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="MetaDataRule" field="element" version="1" type="{8D759063-7D2E-4543-8EB3-AB510A5886CF}">
-									<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-									<Class name="AZStd::string" field="metaData" value='AdjustMotion -motionID $(MOTIONID) -motionExtractionFlags 0
-ClearMotionEvents -motionID $(MOTIONID)
-CreateMotionEventTrack -motionID $(MOTIONID) -eventTrackName "Sync"
-AdjustMotionEventTrack -motionID $(MOTIONID) -eventTrackName "Sync" -enabled true
-CreateMotionEventTrack -motionID $(MOTIONID) -eventTrackName "sound"
-AdjustMotionEventTrack -motionID $(MOTIONID) -eventTrackName "sound" -enabled true
-CreateMotionEvent -motionID $(MOTIONID) -eventTrackName "sound" -startTime 0.000000 -endTime 0.000000 -eventType "Mvt_Walk" -parameters "" -mirrorType ""
-CreateMotionEvent -motionID $(MOTIONID) -eventTrackName "sound" -startTime 0.305165 -endTime 0.305165 -eventType "Ftsp_Walk" -parameters "" -mirrorType ""
-CreateMotionEvent -motionID $(MOTIONID) -eventTrackName "sound" -startTime 0.331551 -endTime 0.331551 -eventType "Mvt_Run" -parameters "" -mirrorType ""
-CreateMotionEvent -motionID $(MOTIONID) -eventTrackName "sound" -startTime 0.357938 -endTime 0.357938 -eventType "Ftsp_Run" -parameters "" -mirrorType ""
-CreateMotionEvent -motionID $(MOTIONID) -eventTrackName "sound" -startTime 0.962532 -endTime 0.962532 -eventType "Ftsp_Walk" -parameters "" -mirrorType ""
-CreateMotionEvent -motionID $(MOTIONID) -eventTrackName "sound" -startTime 1.006127 -endTime 1.006127 -eventType "Ftsp_Run" -parameters "" -mirrorType ""
-CreateMotionEvent -motionID $(MOTIONID) -eventTrackName "sound" -startTime 1.134617 -endTime 1.134617 -eventType "Mvt_Walk" -parameters "" -mirrorType ""
-CreateMotionEventTrack -motionID $(MOTIONID) -eventTrackName "Event Track 3"
-AdjustMotionEventTrack -motionID $(MOTIONID) -eventTrackName "Event Track 3" -enabled true
-CreateMotionEvent -motionID $(MOTIONID) -eventTrackName "Event Track 3" -startTime 0.000564 -endTime 0.000564 -eventType "RightFoot" -parameters "" -mirrorType ""
-CreateMotionEvent -motionID $(MOTIONID) -eventTrackName "Event Track 3" -startTime 0.363185 -endTime 0.363185 -eventType "JumpStart" -parameters "" -mirrorType ""
-CreateMotionEvent -motionID $(MOTIONID) -eventTrackName "Event Track 3" -startTime 1.059928 -endTime 1.059928 -eventType "DoneJump" -parameters "" -mirrorType ""
-' type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-								</Class>
-							</Class>
-						</Class>
-					</Class>
-				</Class>
-			</Class>
-			<Class name="AZStd::shared_ptr" field="element" type="{EB7522F9-0E87-55A9-A191-E924DC5AE867}">
-				<Class name="ActorGroup" field="element" version="3" type="{D1AC3803-8282-46C5-8610-93CD39B0F843}">
-					<Class name="IActorGroup" field="BaseClass1" version="2" type="{C86945A8-AEE8-4CFC-8FBF-A20E9BC71348}">
-						<Class name="ISceneNodeGroup" field="BaseClass1" version="1" type="{1D20FA11-B184-429E-8C86-745852234845}">
-							<Class name="IGroup" field="BaseClass1" version="1" type="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}">
-								<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-							</Class>
-						</Class>
-					</Class>
-					<Class name="AZStd::string" field="name" value="rin_jump" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-					<Class name="AZStd::string" field="selectedRootBone" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-					<Class name="SceneNodeSelectionList" field="nodeSelectionList" version="1" type="{D0CE66CE-1BAD-42F5-86ED-3923573B3A02}">
-						<Class name="ISceneNodeSelectionList" field="BaseClass1" version="1" type="{DC3F9996-E550-4780-A03B-80B0DDA1DA45}"/>
-						<Class name="AZStd::vector" field="selectedNodes" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}"/>
-						<Class name="AZStd::vector" field="unselectedNodes" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}">
-							<Class name="AZStd::string" field="element" value="RootNode" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_ribbon_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_ribbon_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_legArmor_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_sword_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_leg_twist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_leg_twist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_ribbon_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_ribbon_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_ribbon_01_JNT.L_ribbon_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_ribbon_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_ribbon_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_ribbon_01_JNT.R_ribbon_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_legArmor_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_legArmor_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_sword_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_sword_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.L_foot_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.L_knee_twist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_leg_twist_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_leg_twist_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.R_foot_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.R_knee_twist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_leg_twist_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_leg_twist_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_ribbon_01_JNT.L_ribbon_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_ribbon_01_JNT.L_ribbon_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_ribbon_01_JNT.R_ribbon_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_ribbon_01_JNT.R_ribbon_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.L_foot_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.L_foot_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.L_foot_JNT.L_toe_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.L_knee_twist_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.L_knee_twist_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.R_foot_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.R_foot_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.R_foot_JNT.R_toe_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.R_knee_twist_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.R_knee_twist_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_hood_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neckCollar_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_neckCollar_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_neckCollar_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_neckCollar_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_neckCollar_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.L_foot_JNT.L_toe_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.L_leg_JNT.L_knee_JNT.L_foot_JNT.L_toe_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.R_foot_JNT.R_toe_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.R_leg_JNT.R_knee_JNT.R_foot_JNT.R_toe_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassle_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassleLoop_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_armPit_corr_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassle_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassleLoop_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_armPit_corr_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_hood_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_hood_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_hood_01_JNT.C_hood_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neckCollar_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neckCollar_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_neckCollar_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_neckCollar_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_neckCollar_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_neckCollar_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_neckCollar_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_neckCollar_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_neckCollar_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_neckCollar_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_arm_twist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_armBulge_corr_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassle_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassle_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassle_01_JNT.L_tassle_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassleLoop_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassleLoop_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassleLoop_01_JNT.L_tassleLoop_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_armPit_corr_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_armPit_corr_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_throat_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_arm_twist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_armBulge_corr_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassle_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassle_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassle_01_JNT.R_tassle_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassleLoop_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassleLoop_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassleLoop_01_JNT.R_tassleLoop_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_armPit_corr_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_armPit_corr_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_hood_01_JNT.C_hood_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_hood_01_JNT.C_hood_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_hood_01_JNT.C_hood_02_JNT.C_hood_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_elbow_twist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_arm_twist_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_arm_twist_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_armBulge_corr_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_armBulge_corr_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassle_01_JNT.L_tassle_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassle_01_JNT.L_tassle_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassle_01_JNT.L_tassle_02_JNT.L_tassle_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassleLoop_01_JNT.L_tassleLoop_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassleLoop_01_JNT.L_tassleLoop_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_brow_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_brow_mid_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_brow_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_corrugator_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_noseBridge_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_nostril_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_nostril_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekUpper_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_squint_mid_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_squint_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_squint_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_zygomatic_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekBone_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_ear_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_nose_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_chin_below_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_chin_below_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_lower_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_upper_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_levator_mid_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eye_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_lipLevator_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipUpper_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_lipUpper_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipLevator_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipLevator_corner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekUpper_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekUpper_mid_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eyelid_upper_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eyelid_lower_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_nostril_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipLevator_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekBone_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_zygomatic_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipUpper_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_chin_below_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_ear_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_nose_slide_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eye_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_brow_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_brow_mid_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_brow_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipLevator_corner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekUpper_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekUpper_mid_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_nostril_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekUpper_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_squint_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_squint_mid_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_squint_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipUpper_corner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipUpper_corner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_frontalis_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_frontalis_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_frontalis_outer_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_frontalis_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eyelid_fold_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_fold_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eye_bulge_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eye_bulge_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_throat_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_throat_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_elbow_twist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_arm_twist_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_arm_twist_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_armBulge_corr_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_armBulge_corr_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassle_01_JNT.R_tassle_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassle_01_JNT.R_tassle_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassle_01_JNT.R_tassle_02_JNT.R_tassle_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassleLoop_01_JNT.R_tassleLoop_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassleLoop_01_JNT.R_tassleLoop_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_hood_01_JNT.C_hood_02_JNT.C_hood_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_hood_01_JNT.C_hood_02_JNT.C_hood_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_thumb_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_elbow_twist_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_elbow_twist_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassle_01_JNT.L_tassle_02_JNT.L_tassle_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_tassle_01_JNT.L_tassle_02_JNT.L_tassle_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_brow_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_brow_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_brow_mid_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_brow_mid_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_brow_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_brow_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_corrugator_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_corrugator_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_noseBridge_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_noseBridge_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_nostril_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_nostril_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_nostril_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_nostril_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekUpper_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekUpper_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_squint_mid_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_squint_mid_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_squint_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_squint_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_squint_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_squint_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_zygomatic_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_zygomatic_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekBone_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekBone_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_ear_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_ear_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_nose_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_nose_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_chin_below_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_chin_below_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_chin_below_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_chin_below_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_lower_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_lower_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_upper_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_upper_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_levator_mid_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_levator_mid_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eye_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eye_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_lipLevator_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_lipLevator_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipUpper_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipUpper_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_lipUpper_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_lipUpper_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipLevator_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipLevator_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipLevator_corner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipLevator_corner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_mentalis_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_depressor_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_depressor_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_lip_nasolabial_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_mouth_corner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_lip_below_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_lip_nasolabial_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_lipLower_corner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_lipLower_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_lipLower_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_lipLower_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_mouth_corner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_lipLower_corner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_jaw_clench_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_jaw_clench_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_zygomatic_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_zygomatic_inner_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_tongue_root_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekUpper_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekUpper_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekUpper_mid_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_cheekUpper_mid_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eyelid_upper_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eyelid_upper_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eyelid_lower_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eyelid_lower_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_nostril_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_nostril_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipLevator_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipLevator_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekBone_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekBone_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_zygomatic_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_zygomatic_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipUpper_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipUpper_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_chin_below_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_chin_below_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_ear_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_ear_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_nose_slide_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_nose_slide_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eye_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eye_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_brow_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_brow_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_brow_mid_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_brow_mid_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_brow_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_brow_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipLevator_corner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipLevator_corner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekUpper_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekUpper_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekUpper_mid_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekUpper_mid_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_nostril_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_nostril_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekUpper_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_cheekUpper_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_squint_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_squint_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_squint_mid_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_squint_mid_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_squint_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_squint_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipUpper_corner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_lipUpper_corner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipUpper_corner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_lipUpper_corner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_frontalis_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_frontalis_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_frontalis_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_frontalis_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_frontalis_outer_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_frontalis_outer_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_frontalis_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_frontalis_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eyelid_fold_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eyelid_fold_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_fold_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eyelid_fold_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eye_bulge_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.L_eye_bulge_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eye_bulge_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.R_eye_bulge_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_thumb_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_elbow_twist_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_elbow_twist_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassle_01_JNT.R_tassle_02_JNT.R_tassle_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_tassle_01_JNT.R_tassle_02_JNT.R_tassle_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_thumb_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_thumb_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_thumb_01_JNT.L_thumb_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.L_index_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.L_middle_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.L_ring_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.L_pinky_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_mentalis_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_mentalis_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_depressor_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_depressor_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_depressor_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_depressor_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_lip_nasolabial_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_lip_nasolabial_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_mouth_corner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_mouth_corner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_lip_below_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_lip_below_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_lip_nasolabial_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_lip_nasolabial_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_lipLower_corner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_lipLower_corner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_lipLower_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_lipLower_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_lipLower_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_lipLower_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_lipLower_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_lipLower_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_mouth_corner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_mouth_corner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_lipLower_corner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_lipLower_corner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_jaw_clench_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_jaw_clench_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_jaw_clench_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_jaw_clench_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_zygomatic_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.L_zygomatic_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_zygomatic_inner_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.R_zygomatic_inner_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_tongue_root_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_tongue_root_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_tongue_root_JNT.C_tongue_mid_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_thumb_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_thumb_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_thumb_01_JNT.R_thumb_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.R_index_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.R_middle_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.R_ring_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.R_pinky_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_thumb_01_JNT.L_thumb_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_thumb_01_JNT.L_thumb_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_thumb_01_JNT.L_thumb_02_JNT.L_thumb_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.L_index_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.L_index_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.L_index_01_JNT.L_index_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.L_middle_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.L_middle_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.L_middle_01_JNT.L_middle_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.L_ring_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.L_ring_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.L_ring_01_JNT.L_ring_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.L_pinky_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.L_pinky_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.L_pinky_01_JNT.L_pinky_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_tongue_root_JNT.C_tongue_mid_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_tongue_root_JNT.C_tongue_mid_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_tongue_root_JNT.C_tongue_mid_JNT.C_tongue_tip_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_thumb_01_JNT.R_thumb_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_thumb_01_JNT.R_thumb_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_thumb_01_JNT.R_thumb_02_JNT.R_thumb_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.R_index_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.R_index_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.R_index_01_JNT.R_index_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.R_middle_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.R_middle_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.R_middle_01_JNT.R_middle_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.R_ring_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.R_ring_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.R_ring_01_JNT.R_ring_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.R_pinky_01_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.R_pinky_01_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.R_pinky_01_JNT.R_pinky_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_thumb_01_JNT.L_thumb_02_JNT.L_thumb_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_thumb_01_JNT.L_thumb_02_JNT.L_thumb_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.L_index_01_JNT.L_index_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.L_index_01_JNT.L_index_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.L_index_01_JNT.L_index_02_JNT.L_index_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.L_middle_01_JNT.L_middle_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.L_middle_01_JNT.L_middle_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.L_middle_01_JNT.L_middle_02_JNT.L_middle_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.L_ring_01_JNT.L_ring_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.L_ring_01_JNT.L_ring_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.L_ring_01_JNT.L_ring_02_JNT.L_ring_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.L_pinky_01_JNT.L_pinky_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.L_pinky_01_JNT.L_pinky_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.L_pinky_01_JNT.L_pinky_02_JNT.L_pinky_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_tongue_root_JNT.C_tongue_mid_JNT.C_tongue_tip_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.C_neck_01_JNT.C_neck_02_JNT.C_head_JNT.C_jaw_JNT.C_tongue_root_JNT.C_tongue_mid_JNT.C_tongue_tip_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_thumb_01_JNT.R_thumb_02_JNT.R_thumb_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_thumb_01_JNT.R_thumb_02_JNT.R_thumb_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.R_index_01_JNT.R_index_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.R_index_01_JNT.R_index_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.R_index_01_JNT.R_index_02_JNT.R_index_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.R_middle_01_JNT.R_middle_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.R_middle_01_JNT.R_middle_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.R_middle_01_JNT.R_middle_02_JNT.R_middle_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.R_ring_01_JNT.R_ring_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.R_ring_01_JNT.R_ring_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.R_ring_01_JNT.R_ring_02_JNT.R_ring_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.R_pinky_01_JNT.R_pinky_02_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.R_pinky_01_JNT.R_pinky_02_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.R_pinky_01_JNT.R_pinky_02_JNT.R_pinky_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.L_index_01_JNT.L_index_02_JNT.L_index_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_index_root_JNT.L_index_01_JNT.L_index_02_JNT.L_index_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.L_middle_01_JNT.L_middle_02_JNT.L_middle_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_middle_root_JNT.L_middle_01_JNT.L_middle_02_JNT.L_middle_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.L_ring_01_JNT.L_ring_02_JNT.L_ring_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_ring_root_JNT.L_ring_01_JNT.L_ring_02_JNT.L_ring_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.L_pinky_01_JNT.L_pinky_02_JNT.L_pinky_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.L_clavicle_JNT.L_arm_JNT.L_elbow_JNT.L_wrist_JNT.L_pinky_root_JNT.L_pinky_01_JNT.L_pinky_02_JNT.L_pinky_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.R_index_01_JNT.R_index_02_JNT.R_index_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_index_root_JNT.R_index_01_JNT.R_index_02_JNT.R_index_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.R_middle_01_JNT.R_middle_02_JNT.R_middle_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_middle_root_JNT.R_middle_01_JNT.R_middle_02_JNT.R_middle_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.R_ring_01_JNT.R_ring_02_JNT.R_ring_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_ring_root_JNT.R_ring_01_JNT.R_ring_02_JNT.R_ring_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.R_pinky_01_JNT.R_pinky_02_JNT.R_pinky_03_JNT.animation" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-							<Class name="AZStd::string" field="element" value="RootNode.root.C_pelvis_JNT.C_spine_01_JNT.C_spine_02_JNT.C_spine_03_JNT.C_spine_04_JNT.R_clavicle_JNT.R_arm_JNT.R_elbow_JNT.R_wrist_JNT.R_pinky_root_JNT.R_pinky_01_JNT.R_pinky_02_JNT.R_pinky_03_JNT.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						</Class>
-					</Class>
-					<Class name="AZ::Uuid" field="id" value="{D45AF06A-0914-5352-A86E-0755A76664CD}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-					<Class name="RuleContainer" field="rules" version="1" type="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}">
-						<Class name="AZStd::vector" field="rules" type="{B5BDB053-178F-5D55-8663-70897A71B7C9}">
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="MeshRule" field="element" version="2" type="{7F115A73-28A2-4E35-8C87-1A1982773034}">
-									<Class name="IMeshRule" field="BaseClass1" version="1" type="{299934A2-22EC-48AF-AB2B-953AFF8E0B19}">
-										<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
-											<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-										</Class>
-									</Class>
-									<Class name="bool" field="optimizeTriangleList" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-								</Class>
-							</Class>
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="SkinRule" field="element" version="2" type="{B26E7FC9-86A1-4711-8415-8BE4861C08BA}">
-									<Class name="ISkinRule" field="BaseClass1" version="1" type="{5496ECAF-B096-4455-AE72-D55C5B675443}">
-										<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
-											<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-										</Class>
-									</Class>
-									<Class name="unsigned int" field="maxWeightsPerVertex" value="4" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-									<Class name="float" field="weightThreshold" value="0.0010000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-								</Class>
-							</Class>
-							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
-								<Class name="CoordinateSystemRule" field="element" version="1" type="{603207E2-4F55-4C33-9AAB-98CA75C1E351}">
-									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
-										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
-									</Class>
-									<Class name="int" field="targetCoordinateSystem" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-								</Class>
-							</Class>
-						</Class>
-					</Class>
-				</Class>
-			</Class>
-		</Class>
-	</Class>
-</ObjectStream>
-
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "rin_jump",
+            "selectedRootBone": "RootNode.root",
+            "id": "{A816A306-96C4-523C-87D9-0784EE509817}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "CoordinateSystemRule",
+                        "targetCoordinateSystem": 1
+                    },
+                    {
+                        "$type": "EMotionFX::Pipeline::Rule::MotionMetaDataRule",
+                        "data": {
+                            "motionEventTable": {
+                                "tracks": [
+                                    {
+                                        "name": "Sync",
+                                        "deletable": false
+                                    },
+                                    {
+                                        "name": "sound",
+                                        "events": [
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "TwoStringEventData",
+                                                        "subject": "Mvt_Walk"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "TwoStringEventData",
+                                                        "subject": "Ftsp_Walk"
+                                                    }
+                                                ],
+                                                "startTime": 0.30516499280929568,
+                                                "endTime": 0.30516499280929568
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "TwoStringEventData",
+                                                        "subject": "Mvt_Run"
+                                                    }
+                                                ],
+                                                "startTime": 0.3315509855747223,
+                                                "endTime": 0.3315509855747223
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "TwoStringEventData",
+                                                        "subject": "Ftsp_Run"
+                                                    }
+                                                ],
+                                                "startTime": 0.3579379916191101,
+                                                "endTime": 0.3579379916191101
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "TwoStringEventData",
+                                                        "subject": "Ftsp_Walk"
+                                                    }
+                                                ],
+                                                "startTime": 0.9625319838523865,
+                                                "endTime": 0.9625319838523865
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "TwoStringEventData",
+                                                        "subject": "Ftsp_Run"
+                                                    }
+                                                ],
+                                                "startTime": 1.0061269998550416,
+                                                "endTime": 1.0061269998550416
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "TwoStringEventData",
+                                                        "subject": "Mvt_Walk"
+                                                    }
+                                                ],
+                                                "startTime": 1.1346169710159302,
+                                                "endTime": 1.1346169710159302
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "name": "Event Track 3",
+                                        "events": [
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "TwoStringEventData",
+                                                        "subject": "RightFoot"
+                                                    }
+                                                ],
+                                                "startTime": 0.0005639999872073531,
+                                                "endTime": 0.0005639999872073531
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "TwoStringEventData",
+                                                        "subject": "JumpStart"
+                                                    }
+                                                ],
+                                                "startTime": 0.36318498849868777,
+                                                "endTime": 0.36318498849868777
+                                            },
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "TwoStringEventData",
+                                                        "subject": "DoneJump"
+                                                    }
+                                                ],
+                                                "startTime": 1.059928059577942,
+                                                "endTime": 1.059928059577942
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$type": "MotionSamplingRule"
+                    }
+                ]
+            }
+        }
+    ]
+}

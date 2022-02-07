@@ -7,12 +7,7 @@
         "ShaderAssetFileName": "diffuseprobegridrender.azshader",
         "PlatformIdentifiers": 
         [
-            "pc"
-        ],
-        "ShaderResourceGroupAssets": 
-        [
-            "diffuseprobegridrender_passsrg.azsrg",
-            "diffuseprobegridrender_objectsrg.azsrg"
+            "pc", "linux"
         ],
         "RootShaderVariantAssets":
         [

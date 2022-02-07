@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,9 @@
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
 
@@ -26,7 +29,7 @@ namespace AZ
 
             ModelLodIndex SelectLod(const View* view, const Vector3& position, const Model& model, ModelLodIndex lodOverride)
             {
-                AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+                AZ_PROFILE_SCOPE(RPI, "ModelLodUtils: SelectLod");
                 ModelLodIndex lodIndex;
                 if (model.GetLodCount() == 1)
                 {
@@ -44,7 +47,7 @@ namespace AZ
 
                         With that percentage we can determine which Lod we want to use.
                     */
-                    Aabb modelAabb = model.GetAabb();
+                    Aabb modelAabb = model.GetModelAsset()->GetAabb();
                     modelAabb.Translate(position);
 
                     Vector3 center; 

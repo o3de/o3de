@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -97,16 +98,52 @@ class TestAWSUtils(TestCase):
         mocked_s3_client.list_buckets.assert_called_once()
         assert not actual_buckets
 
-    def test_list_s3_buckets_return_expected_buckets(self) -> None:
+    def test_list_s3_buckets_return_empty_list_with_no_matching_region(self) -> None:
+        expected_region: str = "us-east-1"
         mocked_s3_client: MagicMock = self._mock_client.return_value
         expected_buckets: List[str] = [f"{TestAWSUtils._expected_bucket}1", f"{TestAWSUtils._expected_bucket}2"]
         mocked_s3_client.list_buckets.return_value = {"Buckets": [{"Name": expected_buckets[0]},
                                                                   {"Name": expected_buckets[1]}]}
+        mocked_s3_client.get_bucket_location.side_effect = [{"LocationConstraint": "us-east-2"},
+                                                            {"LocationConstraint": "us-west-1"}]
 
-        actual_buckets: List[str] = aws_utils.list_s3_buckets()
-        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.S3_SERVICE_NAME)
+        actual_buckets: List[str] = aws_utils.list_s3_buckets(expected_region)
+        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.S3_SERVICE_NAME,
+                                                  region_name=expected_region)
         mocked_s3_client.list_buckets.assert_called_once()
-        assert actual_buckets == expected_buckets
+        assert not actual_buckets
+
+    def test_list_s3_buckets_return_expected_buckets_matching_region(self) -> None:
+        expected_region: str = "us-west-2"
+        mocked_s3_client: MagicMock = self._mock_client.return_value
+        expected_buckets: List[str] = [f"{TestAWSUtils._expected_bucket}1", f"{TestAWSUtils._expected_bucket}2"]
+        mocked_s3_client.list_buckets.return_value = {"Buckets": [{"Name": expected_buckets[0]},
+                                                                  {"Name": expected_buckets[1]}]}
+        mocked_s3_client.get_bucket_location.side_effect = [{"LocationConstraint": "us-west-2"},
+                                                            {"LocationConstraint": "us-west-1"}]
+
+        actual_buckets: List[str] = aws_utils.list_s3_buckets(expected_region)
+        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.S3_SERVICE_NAME,
+                                                  region_name=expected_region)
+        mocked_s3_client.list_buckets.assert_called_once()
+        assert len(actual_buckets) == 1
+        assert actual_buckets[0] == expected_buckets[0]
+
+    def test_list_s3_buckets_return_expected_iad_buckets(self) -> None:
+        expected_region: str = "us-east-1"
+        mocked_s3_client: MagicMock = self._mock_client.return_value
+        expected_buckets: List[str] = [f"{TestAWSUtils._expected_bucket}1", f"{TestAWSUtils._expected_bucket}2"]
+        mocked_s3_client.list_buckets.return_value = {"Buckets": [{"Name": expected_buckets[0]},
+                                                                  {"Name": expected_buckets[1]}]}
+        mocked_s3_client.get_bucket_location.side_effect = [{"LocationConstraint": None},
+                                                            {"LocationConstraint": "us-west-1"}]
+
+        actual_buckets: List[str] = aws_utils.list_s3_buckets(expected_region)
+        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.S3_SERVICE_NAME,
+                                                  region_name=expected_region)
+        mocked_s3_client.list_buckets.assert_called_once()
+        assert len(actual_buckets) == 1
+        assert actual_buckets[0] == expected_buckets[0]
 
     def test_list_lambda_functions_return_empty_list(self) -> None:
         mocked_lambda_client: MagicMock = self._mock_client.return_value

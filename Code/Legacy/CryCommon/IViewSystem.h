@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,12 +9,8 @@
 
 // Description : View System interfaces.
 
-
-#ifndef CRYINCLUDE_CRYACTION_IVIEWSYSTEM_H
-#define CRYINCLUDE_CRYACTION_IVIEWSYSTEM_H
 #pragma once
 
-#include <ISerialize.h>
 #include <Cry_Camera.h>
 #include <AzCore/Component/EntityId.h>
 
@@ -232,7 +229,6 @@ struct IView
     virtual CCamera& GetCamera() = 0;
     virtual const CCamera& GetCamera() const = 0;
 
-    virtual void Serialize(TSerialize ser) = 0;
     virtual void PostSerialize() = 0;
     virtual void SetCurrentParams(SViewParams& params) = 0;
     virtual const SViewParams* GetCurrentParams() = 0;
@@ -245,7 +241,6 @@ struct IView
     virtual void SetScale(const float scale) = 0;
     virtual void SetZoomedScale(const float scale) = 0;
     virtual void SetActive(const bool bActive) = 0;
-    virtual void UpdateAudioListener(const Matrix34& rMatrix) = 0;
 };
 
 struct IViewSystemListener
@@ -281,7 +276,6 @@ struct IViewSystem
     virtual bool AddListener(IViewSystemListener* pListener) = 0;
     virtual bool RemoveListener(IViewSystemListener* pListener) = 0;
 
-    virtual void Serialize(TSerialize ser) = 0;
     virtual void PostSerialize() = 0;
 
     // Get default distance to near clipping plane.
@@ -294,12 +288,8 @@ struct IViewSystem
 
     virtual bool IsPlayingCutScene() const = 0;
 
-    virtual void UpdateSoundListeners() = 0;
-
     virtual void SetDeferredViewSystemUpdate(bool const bDeferred) = 0;
     virtual bool UseDeferredViewSystemUpdate() const = 0;
     virtual void SetControlAudioListeners(bool const bActive) = 0;
     virtual void ForceUpdate(float elapsed) = 0;
 };
-
-#endif // CRYINCLUDE_CRYACTION_IVIEWSYSTEM_H

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -93,7 +94,6 @@ namespace ScriptCanvas
             RuntimeAsset* runtimeAsset = asset.GetAs<RuntimeAsset>();
             AZ_Assert(runtimeAsset, "RuntimeAssetHandler::InitAsset This should be a Script Canvas runtime asset, as this is the only type this handler processes!");
             Execution::Context::InitializeActivationData(runtimeAsset->GetData());
-            Execution::InitializeInterpretedStatics(runtimeAsset->GetData());
         }
     }
 
@@ -156,4 +156,5 @@ namespace ScriptCanvas
             }
         }
     }
+
 }

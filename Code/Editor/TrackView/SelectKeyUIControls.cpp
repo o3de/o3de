@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,7 +22,7 @@ class CSelectKeyUIControls
     , protected AZ::EntitySystemBus::Handler
 {
 public:
-    CSelectKeyUIControls() {}
+    CSelectKeyUIControls() = default;
 
     ~CSelectKeyUIControls() override;
 
@@ -29,7 +30,7 @@ public:
     CSmartVariableEnum<QString> mv_camera;
     CSmartVariable<float> mv_BlendTime;
 
-    virtual void OnCreateVars()
+    void OnCreateVars() override
     {
         AddVariable(mv_table, "Key Properties");
         AddVariable(mv_table, mv_camera, "Camera");
@@ -38,14 +39,14 @@ public:
         Camera::CameraNotificationBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
     }
-    bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const
+    bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
     {
         return valueType == AnimValueType::Select;
     }
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
+    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {
@@ -97,7 +98,7 @@ bool CSelectKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKey
             ResetCameraEntries();
 
             // Get All cameras.
-            mv_camera.SetEnumList(NULL);
+            mv_camera.SetEnumList(nullptr);
 
             mv_camera->AddEnumItem(QObject::tr("<None>"), QString::number(static_cast<AZ::u64>(AZ::EntityId::InvalidEntityId)));
 
@@ -216,7 +217,7 @@ void CSelectKeyUIControls::OnCameraRemoved(const AZ::EntityId & cameraId)
     // We can't iterate or remove an item from the enum list, and Camera::CameraRequests::GetCameras
     // still includes the deleted camera at this point. Reset the list anyway and filter out the
     // deleted camera.
-    mv_camera->SetEnumList(NULL);
+    mv_camera->SetEnumList(nullptr);
     mv_camera->AddEnumItem(QObject::tr("<None>"), QString::number(static_cast<AZ::u64>(AZ::EntityId::InvalidEntityId)));
 
     AZ::EBusAggregateResults<AZ::EntityId> cameraComponentEntities;
@@ -255,7 +256,7 @@ void CSelectKeyUIControls::OnEntityNameChanged(const AZ::EntityId & entityId, [[
 
 void CSelectKeyUIControls::ResetCameraEntries()
 {
-    mv_camera.SetEnumList(NULL);
+    mv_camera.SetEnumList(nullptr);
     mv_camera->AddEnumItem(QObject::tr("<None>"), QString::number(static_cast<AZ::u64>(AZ::EntityId::InvalidEntityId)));
 
     // Find all Component Entity Cameras

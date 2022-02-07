@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,6 +18,9 @@ void CryFatalError(const char*, ...) PRINTF_PARAMS(1, 2);
 #if defined(APPLE)
     #include <cstddef>
 #endif
+
+#include <AzCore/std/parallel/atomic.h>
+
 //////////////////////////////////////////////////////////////////
 // SMART POINTER
 //////////////////////////////////////////////////////////////////
@@ -142,8 +146,6 @@ public:
     {
         std::swap(p, other.p);
     }
-
-    AUTO_STRUCT_INFO
 };
 
 template <typename T>
@@ -170,13 +172,13 @@ public:
 
     void AddRef()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter >= 0);
+        AZ_Assert(m_nRefCounter >= 0, "Invalid ref count");
         ++m_nRefCounter;
     }
 
     void Release()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter > 0);
+        AZ_Assert(m_nRefCounter > 0, "Invalid ref count");
         if (--m_nRefCounter == 0)
         {
             delete static_cast<TDerived*>(this);
@@ -214,13 +216,13 @@ public:
 
     void AddRef()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter >= 0);
+        AZ_Assert(m_nRefCounter >= 0, "Invalid ref count");
         ++m_nRefCounter;
     }
 
     void Release()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter > 0);
+        AZ_Assert(m_nRefCounter > 0, "Invalid ref count");
         if (--m_nRefCounter == 0)
         {
             delete this;
@@ -271,13 +273,13 @@ public:
 
     void AddRef()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter >= 0);
+        AZ_Assert(m_nRefCounter >= 0, "Invalid ref count");
         ++m_nRefCounter;
     }
 
     void Release()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter > 0);
+        AZ_Assert(m_nRefCounter > 0, "Invalid ref count");
         if (--m_nRefCounter == 0)
         {
             assert(m_pDeleteFnc);
@@ -351,38 +353,32 @@ protected:
 class CMultiThreadRefCount
 {
 public:
-    CMultiThreadRefCount()
-        : m_cnt(0) {}
+    CMultiThreadRefCount() {}
     virtual ~CMultiThreadRefCount() {}
 
     inline int AddRef()
     {
-        return CryInterlockedIncrement(&m_cnt);
+        return m_count.fetch_add(1, AZStd::memory_order_acq_rel) + 1; // because we get the original value back
     }
     inline int Release()
     {
-        const int nCount = CryInterlockedDecrement(&m_cnt);
-        assert(nCount >= 0);
+        const int nCount = m_count.fetch_sub(1, AZStd::memory_order_acq_rel) - 1; // because we get the original value back
+        AZ_Assert(nCount >= 0, "Deleting Reference Counted Object Twice");
         if (nCount == 0)
         {
             delete this;
         }
-        else if (nCount < 0)
-        {
-            assert(0);
-            CryFatalError("Deleting Reference Counted Object Twice");
-        }
         return nCount;
     }
 
-    inline int GetRefCount()    const { return m_cnt; }
+    inline int GetRefCount()    const { return m_count.load(AZStd::memory_order_acquire); }
 
 protected:
     // Allows the memory for the object to be deallocated in the dynamic module where it was originally constructed, as it may use different memory manager (Debug/Release configurations)
     virtual void DeleteThis() { delete this; }
 
 private:
-    volatile int m_cnt;
+    AZStd::atomic_int m_count{ 0 };
 };
 
 // base class for interfaces implementing reference counting that needs to be thread-safe
@@ -403,29 +399,24 @@ public:
 
     virtual void AddRef()
     {
-        CryInterlockedIncrement(&m_nRefCounter);
+        m_nRefCounter.fetch_add(1, AZStd::memory_order_acq_rel);
     }
 
     virtual void Release()
     {
-        const int nCount = CryInterlockedDecrement(&m_nRefCounter);
-        assert(nCount >= 0);
+        const int nCount = m_nRefCounter.fetch_sub(1, AZStd::memory_order_acq_rel) - 1; // because we get the original value back
+        AZ_Assert(nCount >= 0, "Deleting Reference Counted Object Twice");
         if (nCount == 0)
         {
             delete this;
         }
-        else if (nCount < 0)
-        {
-            assert(0);
-            CryFatalError("Deleting Reference Counted Object Twice");
-        }
     }
 
-    Counter NumRefs()   const { return m_nRefCounter; }
+    Counter NumRefs()   const { return m_nRefCounter.load(AZStd::memory_order_acquire); }
 
 protected:
 
-    volatile Counter m_nRefCounter;
+    AZStd::atomic<Counter> m_nRefCounter{ 0 };
 };
 
 typedef _i_reference_target<int> _i_reference_target_t;

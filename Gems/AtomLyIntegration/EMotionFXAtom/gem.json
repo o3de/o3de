@@ -2,13 +2,21 @@
     "gem_name": "EMotionFX_Atom",
     "display_name": "EMotionFX Atom",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "",
     "canonical_tags": [
         "Gem"
     ],
-    "user_tags": [
-    ],
-    "requirements": ""
+    "user_tags": [],
+    "requirements": "",
+    "dependencies": [
+        "EMotionFX",
+        "Atom",
+        "Atom_Feature_Common",
+        "Atom_RPI",
+        "Atom_RHI",
+        "CommonFeaturesAtom"
+    ]
 }

@@ -1,35 +1,28 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include "CommonSettingsConfigurations.h"
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace ScriptCanvasEditor
 {
     AZStd::string GetEditingGameDataFolder()
     {
-        const char* resultValue = nullptr;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(resultValue, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAbsoluteDevGameFolderPath);
-        if (!resultValue)
+        AZ::IO::Path projectPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            if (AZ::IO::FileIOBase::GetInstance())
-            {
-                resultValue = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
-            }
+            settingsRegistry->Get(projectPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
         }
 
-        if (!resultValue)
-        {
-            resultValue = ".";
-        }
-
-        return resultValue;
+        return projectPath.Native();
     }
 }

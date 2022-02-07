@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,7 +14,6 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAssetCreator.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantTreeAssetCreator.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantAssetCreator.h>
 
@@ -235,11 +235,11 @@ namespace UnitTest
 
             for (size_t i = 0; i < RHI::Limits::Pipeline::ShaderResourceGroupCountMax; ++i)
             {
-                Data::Asset<RPI::ShaderResourceGroupAsset> srgAsset = CreateShaderResourceGroupAsset(i);
+                RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = CreateShaderResourceGroupLayout(i);
                 AZ::RHI::ShaderResourceGroupBindingInfo bindingInfo = CreateShaderResouceGroupBindingInfo(i);
 
-                m_pipelineLayoutDescriptor->AddShaderResourceGroupLayoutInfo(*srgAsset->GetLayout(), bindingInfo);
-                m_srgAssets.push_back(srgAsset);
+                m_pipelineLayoutDescriptor->AddShaderResourceGroupLayoutInfo(*srgLayout.get(), bindingInfo);
+                m_srgLayouts.push_back(srgLayout);
             }
 
             m_pipelineLayoutDescriptor->Finalize();
@@ -255,7 +255,7 @@ namespace UnitTest
                 m_bindings[i] = {};
             }
 
-            m_srgAssets.clear();
+            m_srgLayouts.clear();
             m_pipelineLayoutDescriptor = nullptr;
             m_shaderOptionGroupLayoutForAsset = nullptr;
             m_shaderOptionGroupLayoutForVariants = nullptr;
@@ -288,7 +288,7 @@ namespace UnitTest
             return Name{ AZStd::to_string(index) };
         }
 
-        AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> CreateShaderResourceGroupAsset(size_t index)
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> CreateShaderResourceGroupLayout(size_t index)
         {
             using namespace AZ;
 
@@ -296,18 +296,15 @@ namespace UnitTest
 
             // Creates a simple SRG asset with a unique SRG layout hash (based on the index).
 
-            RPI::ShaderResourceGroupAssetCreator creator;
-            creator.Begin(Uuid::CreateRandom(), srgId);
-            creator.BeginAPI(RHI::Factory::Get().GetType());
-            creator.SetBindingSlot(aznumeric_caster(index));
-            creator.AddShaderInput(RHI::ShaderInputBufferDescriptor{ srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index) });
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = RHI::ShaderResourceGroupLayout::Create();
+            srgLayout->SetName(srgId);
+            srgLayout->SetBindingSlot(aznumeric_caster(index));
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
+                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index) });
 
-            Data::Asset<RPI::ShaderResourceGroupAsset> srgAsset;
-            EXPECT_TRUE(creator.EndAPI());
-            bool success = creator.End(srgAsset);
-            EXPECT_TRUE(success);
+            EXPECT_TRUE(srgLayout->Finalize());
 
-            return srgAsset;
+            return srgLayout;
         }
 
         AZ::RHI::ShaderResourceGroupBindingInfo CreateShaderResouceGroupBindingInfo(size_t index)
@@ -395,20 +392,18 @@ namespace UnitTest
         }
 
         Data::Asset<RPI::ShaderVariantAsset> CreateTestShaderVariantAsset(RPI::ShaderVariantId id, RPI::ShaderVariantStableId stableId,
+            bool isFullyBaked,
             const AZStd::vector<RHI::ShaderStage>& stagesToActivate = {RHI::ShaderStage::Vertex, RHI::ShaderStage::Fragment})
         {
             RPI::ShaderVariantAssetCreator shaderVariantAssetCreator;
-            shaderVariantAssetCreator.Begin(Uuid::CreateRandom(), id, stableId, m_shaderOptionGroupLayoutForAsset.get());
+            shaderVariantAssetCreator.Begin(Uuid::CreateRandom(), id, stableId, isFullyBaked);
+            shaderVariantAssetCreator.SetBuildTimestamp(AZStd::sys_time_t(1)); //Make non-zero
 
             for (RHI::ShaderStage rhiStage : stagesToActivate)
             {
                 RHI::Ptr<RHI::ShaderStageFunction> vertexStageFunction = aznew TestShaderStageFunction(rhiStage);
                 shaderVariantAssetCreator.SetShaderFunction(rhiStage, vertexStageFunction);
             }
-
-            shaderVariantAssetCreator.SetRenderStates(m_renderStates);
-            shaderVariantAssetCreator.SetInputContract(CreateSimpleShaderInputContract());
-            shaderVariantAssetCreator.SetOutputContract(CreateSimpleShaderOutputContract());
 
             Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset;
             shaderVariantAssetCreator.End(shaderVariantAsset);
@@ -426,21 +421,26 @@ namespace UnitTest
             creator.SetDrawListName(m_drawListName);
             creator.SetShaderOptionGroupLayout(m_shaderOptionGroupLayoutForAsset);
 
-            for (auto& srgAsset : m_srgAssets)
-            {
-                creator.AddShaderResourceGroupAsset(srgAsset);
-            }
-
             creator.BeginAPI(RHI::Factory::Get().GetType());
+
+            creator.BeginSupervariant(AZ::Name{}); // The default (first) supervariant MUST be nameless.
+
+            creator.SetSrgLayoutList(m_srgLayouts);
+            creator.SetPipelineLayout(m_pipelineLayoutDescriptor);
+
+            creator.SetRenderStates(m_renderStates);
+            creator.SetInputContract(CreateSimpleShaderInputContract());
+            creator.SetOutputContract(CreateSimpleShaderOutputContract());
 
             RHI::ShaderStageAttributeMapList attributeMaps;
             attributeMaps.resize(RHI::ShaderStageCount);
             creator.SetShaderStageAttributeMapList(attributeMaps);
 
-            Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset = CreateTestShaderVariantAsset(RPI::ShaderVariantId{}, RPI::ShaderVariantStableId{0}, stagesToActivate);
+            Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset = CreateTestShaderVariantAsset(RPI::ShaderVariantId{}, RPI::ShaderVariantStableId{0}, false, stagesToActivate);
 
             creator.SetRootShaderVariantAsset(shaderVariantAsset);
-            creator.SetPipelineLayout(m_pipelineLayoutDescriptor);
+
+            creator.EndSupervariant();
         }
 
         //! Used to finish creating a shader that began with BeginCreatingTestShaderAsset(). Call this after adding all the desired shader variants.
@@ -521,11 +521,11 @@ namespace UnitTest
             EXPECT_EQ(shaderAsset->GetShaderOptionGroupLayout()->GetHash(), m_shaderOptionGroupLayoutForAsset->GetHash());
             EXPECT_EQ(shaderAsset->GetPipelineLayoutDescriptor()->GetHash(), m_pipelineLayoutDescriptor->GetHash());
 
-            for (size_t i = 0; i < shaderAsset->GetShaderResourceGroupAssets().size(); ++i)
+            for (size_t i = 0; i < shaderAsset->GetShaderResourceGroupLayouts().size(); ++i)
             {
-                auto& srgAsset = shaderAsset->GetShaderResourceGroupAssets()[i];
-                EXPECT_EQ(srgAsset, m_srgAssets[i]);
-                EXPECT_EQ(shaderAsset->FindShaderResourceGroupAsset(CreateShaderResourceGroupId(i)), srgAsset);
+                auto& srgLayout = shaderAsset->GetShaderResourceGroupLayouts()[i];
+                EXPECT_EQ(srgLayout->GetHash(), m_srgLayouts[i]->GetHash());
+                EXPECT_EQ(shaderAsset->FindShaderResourceGroupLayout(CreateShaderResourceGroupId(i))->GetHash(), srgLayout->GetHash());
             }
         }
 
@@ -538,7 +538,7 @@ namespace UnitTest
 
             auto shaderAsset = shader->GetAsset();
             EXPECT_EQ(shader->GetPipelineStateType(), shaderAsset->GetPipelineStateType());
-            EXPECT_EQ(shader->GetShaderResourceGroupAssets(), shaderAsset->GetShaderResourceGroupAssets());
+            EXPECT_EQ(shader->GetShaderResourceGroupLayouts(), shaderAsset->GetShaderResourceGroupLayouts());
             
             const RPI::ShaderVariant& rootShaderVariant = shader->GetVariant( RPI::ShaderVariantStableId{0} );
             
@@ -575,7 +575,7 @@ namespace UnitTest
 
         AZ::RHI::RenderStates m_renderStates;
 
-        AZStd::fixed_vector<AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset>, AZ::RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgAssets;
+        AZStd::fixed_vector<AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout>, AZ::RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgLayouts;
     };
 
     TEST_F(ShaderTests, ShaderOptionBindingTest)
@@ -1197,6 +1197,7 @@ namespace UnitTest
     {
         ErrorMessageFinder messageFinder("both Draw functions and Dispatch functions");
         messageFinder.AddExpectedErrorMessage("Invalid root variant");
+        messageFinder.AddExpectedErrorMessage("Cannot continue building ShaderAsset because 1 error(s) reported");
     
         AZ::RPI::ShaderAssetCreator creator;
         BeginCreatingTestShaderAsset(creator,
@@ -1211,6 +1212,7 @@ namespace UnitTest
     {
         ErrorMessageFinder messageFinder("fragment function but no vertex function");
         messageFinder.AddExpectedErrorMessage("Invalid root variant");
+        messageFinder.AddExpectedErrorMessage("Cannot continue building ShaderAsset because 1 error(s) reported");
 
         AZ::RPI::ShaderAssetCreator creator;
         BeginCreatingTestShaderAsset(creator, {AZ::RHI::ShaderStage::Fragment});
@@ -1226,6 +1228,7 @@ namespace UnitTest
     {
         ErrorMessageFinder messageFinder("tessellation function but no vertex function");
         messageFinder.AddExpectedErrorMessage("Invalid root variant");
+        messageFinder.AddExpectedErrorMessage("Cannot continue building ShaderAsset because 1 error(s) reported");
 
         AZ::RPI::ShaderAssetCreator creator;
         BeginCreatingTestShaderAsset(creator, { AZ::RHI::ShaderStage::Tessellation });
@@ -1259,56 +1262,7 @@ namespace UnitTest
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         Data::Asset<RPI::ShaderAsset> shaderAsset = CreateShaderAsset();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-
-        EXPECT_FALSE(shaderAsset);
-    }
-
-    TEST_F(ShaderTests, ShaderAsset_PipelineLayout_SrgCountMismatch_Test)
-    {
-        using namespace AZ;
-
-        m_pipelineLayoutDescriptor->Reset();
-        // No SRGs.
-        m_pipelineLayoutDescriptor->Finalize();
-
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        Data::Asset<RPI::ShaderAsset> shaderAsset = CreateShaderAsset();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-
-        EXPECT_FALSE(shaderAsset);
-    }
-
-    TEST_F(ShaderTests, ShaderAsset_PipelineLayout_SrgHashMismatch_Test)
-    {
-        using namespace AZ;
-
-        m_pipelineLayoutDescriptor->Reset();
-        for (size_t i = 0; i < RHI::Limits::Pipeline::ShaderResourceGroupCountMax; ++i)
-        {
-            // Shift SRGs by one. This will make the hashes no longer match.
-            size_t shiftedIndex = (i + 1) % RHI::Limits::Pipeline::ShaderResourceGroupCountMax;
-            AZ::RHI::ShaderResourceGroupBindingInfo bindingInfo = CreateShaderResouceGroupBindingInfo(shiftedIndex);
-            m_pipelineLayoutDescriptor->AddShaderResourceGroupLayoutInfo(*m_srgAssets[shiftedIndex]->GetLayout(), bindingInfo);
-        }
-        m_pipelineLayoutDescriptor->Finalize();
-
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        Data::Asset<RPI::ShaderAsset> shaderAsset = CreateShaderAsset();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-
-        EXPECT_FALSE(shaderAsset);
-    }
-
-    TEST_F(ShaderTests, ShaderAsset_ShaderOptionGroupLayout_Missing_Test)
-    {
-        using namespace AZ;
-
-        m_shaderOptionGroupLayoutForAsset = nullptr;
-
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        Data::Asset<RPI::ShaderAsset> shaderAsset = CreateShaderAsset();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
         EXPECT_FALSE(shaderAsset);
     }
@@ -1856,7 +1810,7 @@ namespace UnitTest
 
         Data::Asset<ShaderVariantAsset> shaderVariantAsset;
 
-        shaderVariantAsset = CreateTestShaderVariantAsset(shaderOptions.GetShaderVariantId(), RPI::ShaderVariantStableId{0});
+        shaderVariantAsset = CreateTestShaderVariantAsset(shaderOptions.GetShaderVariantId(), RPI::ShaderVariantStableId{0}, false);
         EXPECT_FALSE(shaderVariantAsset->IsFullyBaked());
         EXPECT_FALSE(ShaderOptionGroup(m_shaderOptionGroupLayoutForAsset, shaderVariantAsset->GetShaderVariantId()).IsFullySpecified());
 
@@ -1864,12 +1818,12 @@ namespace UnitTest
         shaderOptions.SetValue(AZ::Name{"Quality"}, AZ::Name{"Quality::Average"});
         shaderOptions.SetValue(AZ::Name{"NumberSamples"}, AZ::Name{"100"});
         shaderOptions.SetValue(AZ::Name{"Raytracing"}, AZ::Name{"On"});
-        shaderVariantAsset = CreateTestShaderVariantAsset(shaderOptions.GetShaderVariantId(), RPI::ShaderVariantStableId{0});
+        shaderVariantAsset = CreateTestShaderVariantAsset(shaderOptions.GetShaderVariantId(), RPI::ShaderVariantStableId{0}, true);
         EXPECT_TRUE(shaderVariantAsset->IsFullyBaked());
         EXPECT_TRUE(ShaderOptionGroup(m_shaderOptionGroupLayoutForAsset, shaderVariantAsset->GetShaderVariantId()).IsFullySpecified());
 
         shaderOptions.ClearValue(AZ::Name{"NumberSamples"});
-        shaderVariantAsset = CreateTestShaderVariantAsset(shaderOptions.GetShaderVariantId(), RPI::ShaderVariantStableId{0});
+        shaderVariantAsset = CreateTestShaderVariantAsset(shaderOptions.GetShaderVariantId(), RPI::ShaderVariantStableId{0}, false);
         EXPECT_FALSE(shaderVariantAsset->IsFullyBaked());
         EXPECT_FALSE(ShaderOptionGroup(m_shaderOptionGroupLayoutForAsset, shaderVariantAsset->GetShaderVariantId()).IsFullySpecified());
     }

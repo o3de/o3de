@@ -1,0 +1,70 @@
+{
+    "entries": [
+        {
+            "base": "AudioSwitchComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Audio Switch",
+                "category": "Audio"
+            },
+            "methods": [
+                {
+                    "base": "SetState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set State is invoked"
+                    },
+                    "details": {
+                        "name": "Set State",
+                        "tooltip": "Sets the specified state of the default switch"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "State Name",
+                                "tooltip": "Name of the state to set"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSwitchState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Switch State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Switch State is invoked"
+                    },
+                    "details": {
+                        "name": "Set Switch State",
+                        "tooltip": "Sets a specified switch to a specified state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Switch Name",
+                                "tooltip": "Name of the switch to set"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "State Name",
+                                "tooltip": "Name of the state to set"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

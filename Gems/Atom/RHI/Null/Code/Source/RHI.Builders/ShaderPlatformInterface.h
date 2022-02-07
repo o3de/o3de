@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,7 +34,7 @@ namespace AZ
                 const AssetBuilderSDK::PlatformInfo& platform, const AZStd::string& shaderSourcePath, const AZStd::string& functionName,
                 RHI::ShaderHardwareStage shaderStage, const AZStd::string& tempFolderPath, StageDescriptor& outputDescriptor,
                 const RHI::ShaderCompilerArguments& shaderCompilerArguments) const override;
-            AZStd::string GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const;
+            AZStd::string GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const override;
             bool BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const override;
             const char* GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const override;
             bool BuildPipelineLayoutDescriptor(

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,13 +30,13 @@ class CDockWidgetTitleButton
 public:
     CDockWidgetTitleButton(QWidget* parent);
 
-    QSize sizeHint() const;
-    QSize minimumSizeHint() const { return sizeHint(); }
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override { return sizeHint(); }
 
 protected:
-    void enterEvent(QEvent* ev);
-    void leaveEvent(QEvent* ev);
-    void paintEvent(QPaintEvent* ev);
+    void enterEvent(QEvent* ev) override;
+    void leaveEvent(QEvent* ev) override;
+    void paintEvent(QPaintEvent* ev) override;
 };
 
 class CTitleBarText
@@ -84,10 +85,10 @@ QSize CDockWidgetTitleButton::sizeHint() const
 {
     ensurePolished();
 
-    int size = 2 * style()->pixelMetric(QStyle::PM_DockWidgetTitleBarButtonMargin, 0, this);
+    int size = 2 * style()->pixelMetric(QStyle::PM_DockWidgetTitleBarButtonMargin, nullptr, this);
     if (!icon().isNull())
     {
-        int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
+        int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, this);
         QSize sz = icon().actualSize(QSize(iconSize, iconSize));
         size += qMax(sz.width(), sz.height());
     }
@@ -144,7 +145,7 @@ void CDockWidgetTitleButton::paintEvent([[maybe_unused]] QPaintEvent* ev)
     opt.activeSubControls = QStyle::SubControls();
     opt.features = QStyleOptionToolButton::None;
     opt.arrowType = Qt::NoArrow;
-    int size = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
+    int size = style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, this);
     opt.iconSize = QSize(size, size);
     style()->drawComplexControl(QStyle::CC_ToolButton, &opt, &painter, this);
 }

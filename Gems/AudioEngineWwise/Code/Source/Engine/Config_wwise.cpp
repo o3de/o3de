@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,8 +11,8 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 
 // For AZ_Printf statements...
 #define WWISE_CONFIG_WINDOW "WwiseConfig"
@@ -55,7 +56,7 @@ namespace Audio::Wwise
     bool ConfigurationSettings::Load(const AZStd::string& filePath)
     {
         AZ::IO::Path fileIoPath(filePath);
-        auto outcome = AzFramework::FileFunc::ReadJsonFile(fileIoPath);
+        auto outcome = AZ::JsonSerializationUtils::ReadJsonFile(fileIoPath.Native());
         if (!outcome)
         {
             AZ_Printf(WWISE_CONFIG_WINDOW, "ERROR: %s\n", outcome.GetError().c_str());
@@ -91,7 +92,7 @@ namespace Audio::Wwise
             return false;
         }
 
-        auto outcome = AzFramework::FileFunc::WriteJsonFile(jsonDoc, filePath);
+        auto outcome = AZ::JsonSerializationUtils::WriteJsonFile(jsonDoc, filePath);
         if (!outcome)
         {
             AZ_Printf(WWISE_CONFIG_WINDOW, "ERROR: %s\n", outcome.GetError().c_str());

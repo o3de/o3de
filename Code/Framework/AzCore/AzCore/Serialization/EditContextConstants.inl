@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -132,6 +133,8 @@ namespace AZ
             const static AZ::Crc32 AllowClearAsset = AZ_CRC("AllowClearAsset", 0x24827182);
             // Show the name of the asset that was produced from the source asset
             const static AZ::Crc32 ShowProductAssetFileName = AZ_CRC("ShowProductAssetFileName");
+            //! Regular expression pattern filter for source files
+            const static AZ::Crc32 SourceAssetFilterPattern = AZ_CRC_CE("SourceAssetFilterPattern");
 
             //! Component icon attributes
             const static AZ::Crc32 Icon = AZ_CRC("Icon", 0x659429db);

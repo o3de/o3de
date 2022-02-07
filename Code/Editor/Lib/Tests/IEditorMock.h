@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,6 @@
 
 #include <AzTest/AzTest.h>
 #include <IEditor.h>
-#include <SFunctor.h>
 #include <RenderHelpers/AxisHelper.h>
 
 class CEditorMock
@@ -25,6 +25,8 @@ public:
     }
 
 public:
+    virtual ~CEditorMock() = default;
+
     MOCK_METHOD0(DeleteThis, void());
     MOCK_METHOD0(GetSystem, ISystem*());
     MOCK_METHOD0(GetClassFactory, IEditorClassFactory* ());
@@ -84,8 +86,8 @@ public:
     MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
     MOCK_METHOD1(GetDBItemManager, IDataBaseManager* (EDataBaseItemType));
-    MOCK_METHOD0(GetMaterialManagerLibrary, IBaseLibraryManager* ()); 
-    MOCK_METHOD0(GetIEditorMaterialManager, IEditorMaterialManager* ()); 
+    MOCK_METHOD0(GetMaterialManagerLibrary, IBaseLibraryManager* ());
+    MOCK_METHOD0(GetIEditorMaterialManager, IEditorMaterialManager* ());
     MOCK_METHOD0(GetIconManager, IIconManager* ());
     MOCK_METHOD0(GetMusicManager, CMusicManager* ());
     MOCK_METHOD2(GetTerrainElevation, float(float , float ));
@@ -170,20 +172,18 @@ public:
     MOCK_METHOD0(IsSourceControlConnected, bool());
     MOCK_METHOD0(GetUIEnumsDatabase, CUIEnumsDatabase* ());
     MOCK_METHOD0(AddUIEnums, void());
-    MOCK_METHOD1(GetMemoryUsage, void(ICrySizer* ));
     MOCK_METHOD0(ReduceMemory, void());
     MOCK_METHOD0(GetExportManager, IExportManager* ());
     MOCK_METHOD2(SetEditorConfigSpec, void(ESystemConfigSpec , ESystemConfigPlatform ));
     MOCK_CONST_METHOD0(GetEditorConfigSpec, ESystemConfigSpec());
     MOCK_CONST_METHOD0(GetEditorConfigPlatform, ESystemConfigPlatform());
     MOCK_METHOD0(ReloadTemplates, void());
-    MOCK_METHOD0(GetResourceSelectorHost, IResourceSelectorHost* ());
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD1(RegisterObjectContextMenuExtension, void(TContextMenuExtensionFunc ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());
     MOCK_METHOD0(GetImageUtil, IImageUtil* ());
     MOCK_METHOD0(GetEditorSettings, SEditorSettings* ());
-    MOCK_METHOD0(GetLogFile, ILogFile* ());  
+    MOCK_METHOD0(GetLogFile, ILogFile* ());
     MOCK_METHOD0(UnloadPlugins, void());
     MOCK_METHOD0(LoadPlugins, void());
     MOCK_METHOD1(GetSearchPath, QString(EEditorPathName));

@@ -1,0 +1,7 @@
+{
+  "gems": {
+    [
+${enumerated_gem_targets}
+    ]
+  }
+}

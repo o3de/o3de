@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -57,23 +58,10 @@ namespace MCore
     AZ::Vector3 MCORE_API StereographicUnproject(const AZ::Vector2& uv);
 
     //
-    bool MCORE_API PointInPoly(AZ::Vector2* verts, uint32 numVerts, const AZ::Vector2& point);
+    bool MCORE_API PointInPoly(AZ::Vector2* verts, size_t numVerts, const AZ::Vector2& point);
     float MCORE_API DistanceToEdge(const AZ::Vector2& edgePointA, const AZ::Vector2& edgePointB, const AZ::Vector2& testPoint);
-    AZ::Vector2 MCORE_API ClosestPointToPoly(const AZ::Vector2* polyPoints, uint32 numPoints, const AZ::Vector2& testPoint);
+    AZ::Vector2 MCORE_API ClosestPointToPoly(const AZ::Vector2* polyPoints, size_t numPoints, const AZ::Vector2& testPoint);
 
-
-    /**
-     * Calculates the CRC value of a given byte.
-     * It inputs and modifies the current CRC value passed as parameter.
-     * @param byteValue The byte value to generate the CRC for.
-     * @param CRC The CRC value to modify.
-     *
-     * The calculation performed is:
-     * <pre>
-     * CRC = ((CRC) >> 8) ^ MCore::CRC32Table[(byteValue) ^ ((CRC) & 0x000000FF)];
-     * </pre>
-     */
-    //void MCORE_API CalcCRC32(uint8 byteValue, uint32& CRC);
 
     /**
      * Calculate the cube root, which basically is pow(x, 1/3).

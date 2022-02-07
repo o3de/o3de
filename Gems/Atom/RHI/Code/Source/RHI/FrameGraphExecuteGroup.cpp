@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,7 +71,7 @@ namespace AZ
         {
             EndContextInternal(m_contexts[contextIndex], contextIndex);
 
-            const int32_t activeCount = --m_contextCountActive;
+            [[maybe_unused]] const int32_t activeCount = --m_contextCountActive;
             AZ_Assert(activeCount >= 0, "Asymmetric calls to FrameSchedulerExecuteContext:: Begin / End.");
             ++m_contextCountCompleted;
         }

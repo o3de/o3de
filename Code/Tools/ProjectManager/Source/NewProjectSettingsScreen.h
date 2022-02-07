@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,8 +40,14 @@ namespace O3DE::ProjectManager
     signals:
         void OnTemplateSelectionChanged(int oldIndex, int newIndex);
 
+    protected:
+        void OnProjectNameUpdated() override;
+        void OnProjectPathUpdated() override;
+
     private:
+        QString GetDefaultProjectName();
         QString GetDefaultProjectPath();
+        QString GetProjectAutoPath();
         QFrame* CreateTemplateDetails(int margin);
         void UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo);
 
@@ -50,6 +57,7 @@ namespace O3DE::ProjectManager
         TagContainerWidget* m_templateIncludedGems;
         QVector<ProjectTemplateInfo> m_templates;
         int m_selectedTemplateIndex = -1;
+        bool m_userChangedProjectPath = false;
 
         inline constexpr static int s_spacerSize = 20;
         inline constexpr static int s_templateDetailsContentMargin = 20;

@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -16,14 +17,13 @@ set(FILES
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessCommunicator_Linux.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
-    ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     ../Common/Default/AzFramework/TargetManagement/TargetManagementComponent_Default.cpp
     AzFramework/Windowing/NativeWindow_Linux.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Unimplemented.cpp
-    ../Common/Unimplemented/AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_Unimplemented.cpp
+    AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_Linux.cpp
+    AzFramework/Input/Devices/Mouse/InputDeviceMouse_Linux.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Motion/InputDeviceMotion_Unimplemented.cpp
-    ../Common/Unimplemented/AzFramework/Input/Devices/Mouse/InputDeviceMouse_Unimplemented.cpp
     ../Common/Unimplemented/AzFramework/Input/Devices/Touch/InputDeviceTouch_Unimplemented.cpp
     AzFramework/Input/User/LocalUserId_Platform.h
     ../Common/Default/AzFramework/Input/User/LocalUserId_Default.h

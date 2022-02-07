@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,16 +30,16 @@ namespace EMStudio
         UnitScaleWindow(QWidget* parent);
         ~UnitScaleWindow();
 
-        float GetScaleFactor() const            { return mScaleFactor; }
+        float GetScaleFactor() const            { return m_scaleFactor; }
 
     private slots:
         void OnOKButton();
         void OnCancelButton();
 
     private:
-        float                           mScaleFactor;
-        QPushButton*                    mOK;
-        QPushButton*                    mCancel;
-        AzQtComponents::DoubleSpinBox*  mScaleSpinBox;
+        float                           m_scaleFactor;
+        QPushButton*                    m_ok;
+        QPushButton*                    m_cancel;
+        AzQtComponents::DoubleSpinBox*  m_scaleSpinBox;
     };
 } // namespace EMStudio

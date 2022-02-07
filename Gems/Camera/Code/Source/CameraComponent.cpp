@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Camera_precompiled.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -14,9 +14,7 @@
 
 #include "CameraComponent.h"
 
-#include <MathConversion.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <IRenderer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 namespace Camera
@@ -103,9 +101,16 @@ namespace Camera
                 ->Event("SetNearClipDistance", &CameraRequestBus::Events::SetNearClipDistance)
                 ->Event("SetFarClipDistance", &CameraRequestBus::Events::SetFarClipDistance)
                 ->Event("MakeActiveView", &CameraRequestBus::Events::MakeActiveView)
+                ->Event("IsActiveView", &CameraRequestBus::Events::IsActiveView)
+                ->Event("IsOrthographic", &CameraRequestBus::Events::IsOrthographic)
+                ->Event("SetOrthographic", &CameraRequestBus::Events::SetOrthographic)
+                ->Event("GetOrthographicHalfWidth", &CameraRequestBus::Events::GetOrthographicHalfWidth)
+                ->Event("SetOrthographicHalfWidth", &CameraRequestBus::Events::SetOrthographicHalfWidth)
                 ->VirtualProperty("FieldOfView","GetFovDegrees","SetFovDegrees")
                 ->VirtualProperty("NearClipDistance", "GetNearClipDistance", "SetNearClipDistance")
                 ->VirtualProperty("FarClipDistance", "GetFarClipDistance", "SetFarClipDistance")
+                ->VirtualProperty("Orthographic", "IsOrthographic", "SetOrthographic")
+                ->VirtualProperty("OrthographicHalfWidth", "GetOrthographicHalfWidth", "SetOrthographicHalfWidth")
                 ;
 
             behaviorContext->Class<CameraComponent>()->RequestBus("CameraRequestBus");

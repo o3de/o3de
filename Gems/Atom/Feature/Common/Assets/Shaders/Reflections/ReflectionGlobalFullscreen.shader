@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionGlobalFullscreen",
+    "Source" : "ReflectionGlobalFullscreen.azsl",
 
     "RasterState" :
     {
@@ -40,5 +40,14 @@
                 "type": "Fragment"
             }
         ]
-    }
+    },
+
+    "Supervariants":
+    [
+        {
+            "Name": "NoMSAA",
+            "PlusArguments": "--no-ms",
+            "MinusArguments": ""
+        }
+    ]  
 }

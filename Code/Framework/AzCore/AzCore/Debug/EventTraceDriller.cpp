@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,7 +26,6 @@ namespace AZ
             const u32 Timestamp = AZ_CRC("Timestamp", 0xa5d6e63e);
             const u32 Duration = AZ_CRC("Duration", 0x865f80c0);
             const u32 Instant = AZ_CRC("Instant", 0x0e9047ad);
-            const u32 InstantScope = AZ_CRC("InstantScope", 0xed4bfb0e);
         }
 
         EventTraceDriller::EventTraceDriller()

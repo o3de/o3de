@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -15,7 +16,7 @@ import os
 import pathlib
 import sys
 
-from o3de import cmake, manifest, validation
+from o3de import cmake, manifest, register, validation
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -86,8 +87,7 @@ def enable_gem_in_project(gem_name: str = None,
         if not enabled_gem_file.is_file():
             logger.error(f'Enabled gem file {enabled_gem_file} is not present.')
             return 1
-        # add the gem
-        ret_val = cmake.add_gem_dependency(enabled_gem_file, gem_json_data['gem_name'])
+        project_enabled_gem_file = enabled_gem_file
 
     else:
         # Find the path to enabled gem file.
@@ -95,8 +95,21 @@ def enable_gem_in_project(gem_name: str = None,
         project_enabled_gem_file = cmake.get_enabled_gem_cmake_file(project_path=project_path)
         if not project_enabled_gem_file.is_file():
             project_enabled_gem_file.touch()
-        # add the gem
-        ret_val = cmake.add_gem_dependency(project_enabled_gem_file, gem_json_data['gem_name'])
+
+    # Before adding the gem_dependency check if the project is registered in either the project or engine
+    # manifest
+    buildable_gems = manifest.get_engine_gems()
+    buildable_gems.extend(manifest.get_project_gems(project_path))
+    # Convert each path to pathlib.Path object and filter out duplictes using dict.fromkeys
+    buildable_gems = list(dict.fromkeys(map(lambda gem_path_string: pathlib.Path(gem_path_string), buildable_gems)))
+
+    ret_val = 0
+    # If the gem is not part of buildable set, it needs to be registered
+    if not gem_path in buildable_gems:
+        ret_val = register.register(gem_path=gem_path, external_subdir_project_path=project_path)
+
+    # add the gem if it is registered in either the project.json or engine.json
+    ret_val = ret_val or cmake.add_gem_dependency(project_enabled_gem_file, gem_json_data['gem_name'])
 
     return ret_val
 

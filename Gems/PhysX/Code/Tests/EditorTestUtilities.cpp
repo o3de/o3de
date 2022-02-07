@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "PhysX_precompiled.h"
 
 #include <Tests/EditorTestUtilities.h>
 
@@ -53,14 +52,10 @@ namespace PhysXEditorTests
             m_defaultScene = physicsSystem->GetScene(m_defaultSceneHandle);
         }
         Physics::DefaultWorldBus::Handler::BusConnect();
-        m_dummyTerrainComponentDescriptor = PhysX::DummyTestTerrainComponent::CreateDescriptor();
     }
 
     void PhysXEditorFixture::TearDown()
     {
-        m_dummyTerrainComponentDescriptor->ReleaseDescriptor();
-        m_dummyTerrainComponentDescriptor = nullptr;
-
         Physics::DefaultWorldBus::Handler::BusDisconnect();
 
         // prevents warnings from the undo cache on subsequent tests

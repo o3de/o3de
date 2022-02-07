@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,11 +9,11 @@
 #pragma once
 
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
-#include <MathConversion.h>
 
 namespace AZ
 {
@@ -32,7 +33,7 @@ namespace SurfaceData
         AZ::Vector3& outPosition,
         AZ::Vector3& outNormal)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const size_t vertexCount = vertices.size();
         if (vertexCount > 0 && vertexCount % 4 == 0)

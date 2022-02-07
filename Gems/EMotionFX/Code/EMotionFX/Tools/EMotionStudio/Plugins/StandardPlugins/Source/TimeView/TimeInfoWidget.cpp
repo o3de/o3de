@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,20 +23,19 @@ namespace EMStudio
     {
         setObjectName("TimeInfoWidget");
 
-        mPlugin = plugin;
+        m_plugin = plugin;
 
         // init font
-        mFont.setPixelSize(mShowOverwriteStartTime ? 22 : 18);
-        mOverwriteFont.setPixelSize(12);
-        //mFont.setBold( true );
+        m_font.setPixelSize(m_showOverwriteStartTime ? 22 : 18);
+        m_overwriteFont.setPixelSize(12);
 
-        mOverwriteStartTime = 0;
-        mOverwriteEndTime   = 0;
-        mOverwriteMode      = false;
+        m_overwriteStartTime = 0;
+        m_overwriteEndTime   = 0;
+        m_overwriteMode      = false;
 
         // init brushes and pens
-        mPenText            = QPen(QColor(200, 200, 200));
-        mPenTextFocus       = QPen(QColor(244, 156, 28));
+        m_penText            = QPen(QColor(200, 200, 200));
+        m_penTextFocus       = QPen(QColor(244, 156, 28));
 
         setFocusPolicy(Qt::StrongFocus);
     }
@@ -57,8 +57,8 @@ namespace EMStudio
     // set the overwrite time which will be displayed when the overwrite mode is active
     void TimeInfoWidget::SetOverwriteTime(double startTime, double endTime)
     {
-        mOverwriteStartTime = startTime;
-        mOverwriteEndTime   = endTime;
+        m_overwriteStartTime = startTime;
+        m_overwriteEndTime   = endTime;
     }
 
 
@@ -74,91 +74,84 @@ namespace EMStudio
         QTextOption options;
         options.setAlignment(Qt::AlignCenter);
 
-        if (mPlugin->GetTrackDataWidget()->hasFocus())
+        if (m_plugin->GetTrackDataWidget()->hasFocus())
         {
-            painter.setPen(mPenTextFocus);
+            painter.setPen(m_penTextFocus);
         }
         else
         {
-            painter.setPen(mPenText);
+            painter.setPen(m_penText);
         }
 
-        painter.setFont(mFont);
-
-        // use the time of the plugin in case we are not in overwrite mode, if we are use the overwrite time
-        //uint32 usedTime = mPlugin->mCurTimeX;
-        //if (mOverwriteMode)
-        //  usedTime = mOverwriteTime;
+        painter.setFont(m_font);
 
         // calculate the time values for this pixel
         uint32 minutes;
         uint32 seconds;
         uint32 milSecs;
         uint32 frameNumber;
-        //  mPlugin->CalcTime(mPlugin->mCurTimeX/mPlugin->mTimeScale, nullptr, &minutes, &seconds, &milSecs, &frameNumber, false);
-        mPlugin->DecomposeTime(mPlugin->mCurTime, &minutes, &seconds, &milSecs, &frameNumber);
-        mCurTimeString = AZStd::string::format("%.2d:%.2d:%.2d", minutes, seconds, milSecs);
+        m_plugin->DecomposeTime(m_plugin->m_curTime, &minutes, &seconds, &milSecs, &frameNumber);
+        m_curTimeString = AZStd::string::format("%.2d:%.2d:%.2d", minutes, seconds, milSecs);
 
         QRect upperTextRect = event->rect();
-        if (mShowOverwriteStartTime)
+        if (m_showOverwriteStartTime)
         {
             upperTextRect.setTop(upperTextRect.top() + 1);
             upperTextRect.setHeight(upperTextRect.height() - 17);
         }
         else
         {
-            mPlugin->DecomposeTime(mOverwriteEndTime, &minutes, &seconds, &milSecs, &frameNumber);
-            mCurTimeString += AZStd::string::format(" / %.2d:%.2d:%.2d", minutes, seconds, milSecs);
+            m_plugin->DecomposeTime(m_overwriteEndTime, &minutes, &seconds, &milSecs, &frameNumber);
+            m_curTimeString += AZStd::string::format(" / %.2d:%.2d:%.2d", minutes, seconds, milSecs);
         }
-        painter.drawText(upperTextRect, mCurTimeString.c_str(), options);
+        painter.drawText(upperTextRect, m_curTimeString.c_str(), options);
 
-        if (!mShowOverwriteStartTime)
+        if (!m_showOverwriteStartTime)
         {
             return;
         }
 
-        if (mOverwriteStartTime < 0)
+        if (m_overwriteStartTime < 0)
         {
-            mOverwriteStartTime = 0;
+            m_overwriteStartTime = 0;
         }
 
-        if (mOverwriteEndTime < 0)
+        if (m_overwriteEndTime < 0)
         {
-            mOverwriteEndTime = 0;
+            m_overwriteEndTime = 0;
         }
 
         // calculate the time values for the overwrite time
         uint32 minutesStart, minutesEnd;
         uint32 secondsStart, secondsEnd;
         uint32 milSecsStart, milSecsEnd;
-        mPlugin->DecomposeTime(mOverwriteStartTime, &minutesStart, &secondsStart, &milSecsStart, &frameNumber);
-        mPlugin->DecomposeTime(mOverwriteEndTime, &minutesEnd, &secondsEnd, &milSecsEnd, &frameNumber);
+        m_plugin->DecomposeTime(m_overwriteStartTime, &minutesStart, &secondsStart, &milSecsStart, &frameNumber);
+        m_plugin->DecomposeTime(m_overwriteEndTime, &minutesEnd, &secondsEnd, &milSecsEnd, &frameNumber);
 
         // use the duration of the motion or recording
         if (minutesStart == minutesEnd && secondsStart == secondsEnd && milSecsStart == milSecsEnd)
         {
-            //mOverwriteTimeString = AZStd::string::format("%.2d:%.2d:%.2d", minutesStart, secondsStart, milSecsStart);
             uint32 dummyFrame;
             double duration;
-            mPlugin->GetDataTimes(&duration, nullptr, nullptr);
-            mPlugin->DecomposeTime(duration, &minutesEnd, &secondsEnd, &milSecsEnd, &dummyFrame);
+            m_plugin->GetDataTimes(&duration, nullptr, nullptr);
+            m_plugin->DecomposeTime(duration, &minutesEnd, &secondsEnd, &milSecsEnd, &dummyFrame);
         }
 
-        mOverwriteTimeString = AZStd::string::format("%.2d:%.2d:%.2d / %.2d:%.2d:%.2d", minutesStart, secondsStart, milSecsStart, minutesEnd, secondsEnd, milSecsEnd);
+        m_overwriteTimeString = AZStd::string::format("%.2d:%.2d:%.2d / %.2d:%.2d:%.2d", minutesStart, secondsStart, milSecsStart, minutesEnd, secondsEnd, milSecsEnd);
 
         QRect lowerTextRect = event->rect();
         lowerTextRect.setTop(upperTextRect.height());
-        painter.setFont(mOverwriteFont);
-        painter.drawText(lowerTextRect, mOverwriteTimeString.c_str(), options);
+        painter.setFont(m_overwriteFont);
+        painter.drawText(lowerTextRect, m_overwriteTimeString.c_str(), options);
     }
 
 
     // propagate key events to the plugin and let it handle by a shared function
     void TimeInfoWidget::keyPressEvent(QKeyEvent* event)
     {
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->OnKeyPressEvent(event);
+            m_plugin->OnKeyPressEvent(event);
         }
     }
 
@@ -166,9 +159,9 @@ namespace EMStudio
     // propagate key events to the plugin and let it handle by a shared function
     void TimeInfoWidget::keyReleaseEvent(QKeyEvent* event)
     {
-        if (mPlugin)
+        if (m_plugin)
         {
-            mPlugin->OnKeyReleaseEvent(event);
+            m_plugin->OnKeyReleaseEvent(event);
         }
     }
 }   // namespace EMStudio

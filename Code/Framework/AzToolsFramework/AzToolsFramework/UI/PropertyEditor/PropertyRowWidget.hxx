@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformDef.h>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // class '...' needs to have dll-interface to be used by clients of class '...'
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -43,11 +45,19 @@ namespace AzToolsFramework
         Q_PROPERTY(bool appendDefaultLabelToName READ GetAppendDefaultLabelToName WRITE AppendDefaultLabelToName)
     public:
         AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator, 0)
+
+        enum class DragImageType
+        {
+            SingleRow,
+            IncludeVisibleChildren
+        };
+
         PropertyRowWidget(QWidget* pParent);
         virtual ~PropertyRowWidget();
 
         virtual void Initialize(PropertyRowWidget* pParent, InstanceDataNode* dataNode, int depth, int labelWidth = 200);
         virtual void Initialize(const char* groupName, PropertyRowWidget* pParent, int depth, int labelWidth = 200);
+        virtual void InitializeToggleGroup(const char* groupName, PropertyRowWidget* pParent, int depth, InstanceDataNode* node, int labelWidth = 200);
         virtual void Clear(); // for pooling
 
         // --- NOT A UNIQUE IDENTIFIER ---
@@ -82,6 +92,9 @@ namespace AzToolsFramework
         // Remove the default label and append the text to the name label.
         bool GetAppendDefaultLabelToName();
         void AppendDefaultLabelToName(bool doAppend);
+
+        AZ::u32 GetChildRowCount() const;
+        PropertyRowWidget* GetChildRowByIndex(AZ::u32 index) const;
 
         AZStd::vector<PropertyRowWidget*>& GetChildrenRows() { return m_childrenRows; }
         bool HasChildRows() const;
@@ -121,6 +134,7 @@ namespace AzToolsFramework
 
         void SetSelectionEnabled(bool selectionEnabled);
         void SetSelected(bool selected);
+        bool GetSelected();
         bool eventFilter(QObject *watched, QEvent *event) override;
         void paintEvent(QPaintEvent*) override;
 
@@ -141,13 +155,25 @@ namespace AzToolsFramework
         QVBoxLayout* GetLeftHandSideLayoutParent() { return m_leftHandSideLayoutParent; }
         QToolButton* GetIndicatorButton() { return m_indicatorButton; }
         QLabel* GetNameLabel() { return m_nameLabel; }
+        QWidget* GetToggle() { return m_toggleSwitch; }
+        const QWidget* GetToggle() const { return m_toggleSwitch; }
         void SetIndentSize(int w);
         void SetAsCustom(bool custom) { m_custom = custom; }
 
         bool CanChildrenBeReordered() const;
         bool CanBeReordered() const;
+
+        int GetIndexInParent() const;
+        bool CanMoveUp() const;
+        bool CanMoveDown() const;
+
+        int GetContainingEditorFrameWidth();
+        QPixmap createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, DragImageType imageType);
     protected:
         int CalculateLabelWidth() const;
+
+        int GetHeightOfRowAndVisibleChildren();
+        int DrawDragImageAndVisibleChildrenInto(QPainter& painter, int xpos, int ypos);
 
         bool IsHidden(InstanceDataNode* node) const;
 
@@ -174,6 +200,8 @@ namespace AzToolsFramework
         AzQtComponents::ElidingLabel* m_nameLabel;
         QLabel* m_defaultLabel; // if there is no handler, we use a m_defaultLabel label
         InstanceDataNode* m_sourceNode;
+
+        QWidget* m_toggleSwitch = nullptr;
 
         QString m_currentFilterString;
 
@@ -208,6 +236,7 @@ namespace AzToolsFramework
         bool m_isMultiSizeContainer = false;
         bool m_isFixedSizeOrSmartPtrContainer = false;
         bool m_custom = false;
+        bool m_canChildrenBeReordered = false;
 
         bool m_isSelected = false;
         bool m_selectionEnabled = false;
@@ -239,6 +268,8 @@ namespace AzToolsFramework
         void mouseDoubleClickEvent(QMouseEvent* event) override;
 
         void UpdateDropDownArrow();
+        void CreateGroupToggleSwitch();
+        void ChangeSourceNode(InstanceDataNode* node);
         void UpdateDefaultLabel(InstanceDataNode* node);
 
         void createContainerButtons();
@@ -257,6 +288,7 @@ namespace AzToolsFramework
     private slots:
         void OnClickedExpansionButton();
 
+        void OnClickedToggleButton(bool checked);
         void OnClickedAddElementButton();
         void OnClickedRemoveElementButton();
         void OnClickedClearContainerButton();

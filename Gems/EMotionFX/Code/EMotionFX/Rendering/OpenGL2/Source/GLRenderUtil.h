@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -53,7 +54,7 @@ namespace RenderGL
 
         // triangle rendering
         void RenderTriangle(const AZ::Vector3& v1, const AZ::Vector3& v2, const AZ::Vector3& v3, const MCore::RGBAColor& color) override;
-        void RenderTriangles(const MCore::Array<TriangleVertex>& triangleVertices) override;
+        void RenderTriangles(const AZStd::vector<TriangleVertex>& triangleVertices) override;
 
         // text rendering (do not use until really needed, needs to do runtime allocations)
         void RenderTextPeriod(uint32 x, uint32 y, const char* text, float lifeTime, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 1.0f, 1.0f), float fontSize = 11.0f, bool centered = false);
@@ -72,45 +73,45 @@ namespace RenderGL
         void CleanUp();
 
         #define MAX_LINE_VERTEXBUFFERS 2
-        GraphicsManager*            mGraphicsManager;
-        VertexBuffer*               mLineVertexBuffers[MAX_LINE_VERTEXBUFFERS];
-        uint16                      mCurrentLineVB;
-        GLSLShader*                 mLineShader;
-        GLSLShader*                 mMeshShader;
-        VertexBuffer*               mMeshVertexBuffer;
-        IndexBuffer*                mMeshIndexBuffer;
+        GraphicsManager*            m_graphicsManager;
+        VertexBuffer*               m_lineVertexBuffers[MAX_LINE_VERTEXBUFFERS]{};
+        uint16                      m_currentLineVb;
+        GLSLShader*                 m_lineShader;
+        GLSLShader*                 m_meshShader;
+        VertexBuffer*               m_meshVertexBuffer;
+        IndexBuffer*                m_meshIndexBuffer;
 
         // vertex and index buffers for rendering triangles
-        VertexBuffer*               mTriangleVertexBuffer;
-        IndexBuffer*                mTriangleIndexBuffer;
+        VertexBuffer*               m_triangleVertexBuffer;
+        IndexBuffer*                m_triangleIndexBuffer;
 
         // texture rendering
         struct TextureEntry
         {
             MCORE_MEMORYOBJECTCATEGORY(GLRenderUtil::TextureEntry, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
-            Texture*                texture;
-            AZ::Vector2         pos;
+            Texture*                m_texture;
+            AZ::Vector2         m_pos;
             TextureEntry()
-                : pos(0.0f, 0.0f)
-                , texture(nullptr) {}
+                : m_pos(0.0f, 0.0f)
+                , m_texture(nullptr) {}
         };
 
         struct TextEntry
         {
             MCORE_MEMORYOBJECTCATEGORY(GLRenderUtil::TextEntry, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
-            uint32                  mX;
-            uint32                  mY;
-            AZStd::string           mText;
-            float                   mLifeTime;
-            MCore::RGBAColor        mColor;
-            float                   mFontSize;
-            bool                    mCentered;
+            uint32                  m_x;
+            uint32                  m_y;
+            AZStd::string           m_text;
+            float                   m_lifeTime;
+            MCore::RGBAColor        m_color;
+            float                   m_fontSize;
+            bool                    m_centered;
         };
 
-        MCore::Array<TextEntry*>    mTextEntries;
-        TextureEntry*               mTextures;
-        uint32                      mNumTextures;
-        uint32                      mMaxNumTextures;
+        AZStd::vector<TextEntry*>    m_textEntries;
+        TextureEntry*               m_textures;
+        uint32                      m_numTextures;
+        uint32                      m_maxNumTextures;
     };
 } // namespace RenderGL
 

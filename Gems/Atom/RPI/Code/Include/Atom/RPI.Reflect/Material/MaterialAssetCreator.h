@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,11 +26,13 @@ namespace AZ
         public:
             friend class MaterialSourceData;
 
-            void Begin(const Data::AssetId& assetId, MaterialAsset& parentMaterial);
-            void Begin(const Data::AssetId& assetId, MaterialTypeAsset& materialType);
+            void Begin(const Data::AssetId& assetId, MaterialAsset& parentMaterial, bool includeMaterialPropertyNames = true);
+            void Begin(const Data::AssetId& assetId, MaterialTypeAsset& materialType, bool includeMaterialPropertyNames = true);
             bool End(Data::Asset<MaterialAsset>& result);
 
         private:
+            void PopulatePropertyNameList();
+
             const MaterialPropertiesLayout* m_materialPropertiesLayout = nullptr;
         };
     } // namespace RPI

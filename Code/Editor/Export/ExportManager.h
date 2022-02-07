@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,8 +36,8 @@ namespace Export
     public:
         CMesh();
 
-        virtual int GetFaceCount() const { return m_faces.size(); }
-        virtual const Face* GetFaceBuffer() const { return m_faces.size() ? &m_faces[0] : 0; }
+        int GetFaceCount() const override { return static_cast<int>(m_faces.size()); }
+        const Face* GetFaceBuffer() const override { return !m_faces.empty() ? &m_faces[0] : nullptr; }
 
     private:
         std::vector<Face> m_faces;
@@ -52,24 +53,24 @@ namespace Export
     public:
         CObject(const char* pName);
 
-        virtual int GetVertexCount() const { return m_vertices.size(); }
-        virtual const Vector3D* GetVertexBuffer() const{ return m_vertices.size() ? &m_vertices[0] : 0; }
+        int GetVertexCount() const override { return static_cast<int>(m_vertices.size()); }
+        const Vector3D* GetVertexBuffer() const override { return !m_vertices.empty() ? &m_vertices[0] : nullptr; }
 
-        virtual int GetNormalCount() const { return m_normals.size(); }
-        virtual const Vector3D* GetNormalBuffer() const { return m_normals.size() ? &m_normals[0] : 0; }
+        int GetNormalCount() const override { return static_cast<int>(m_normals.size()); }
+        const Vector3D* GetNormalBuffer() const override { return !m_normals.empty() ? &m_normals[0] : nullptr; }
 
-        virtual int GetTexCoordCount() const { return m_texCoords.size(); }
-        virtual const UV* GetTexCoordBuffer() const { return m_texCoords.size() ? &m_texCoords[0] : 0; }
+        int GetTexCoordCount() const override { return static_cast<int>(m_texCoords.size()); }
+        const UV* GetTexCoordBuffer() const override { return !m_texCoords.empty() ? &m_texCoords[0] : nullptr; }
 
-        virtual int GetMeshCount() const { return m_meshes.size(); }
-        virtual Mesh* GetMesh(int index) const { return m_meshes[index]; }
+        int GetMeshCount() const override { return static_cast<int>(m_meshes.size()); }
+        Mesh* GetMesh(int index) const override { return m_meshes[index]; }
 
-        virtual size_t  MeshHash() const{return m_MeshHash; }
+        size_t  MeshHash() const override{return m_MeshHash; }
 
         void SetMaterialName(const char* pName);
-        virtual int GetEntityAnimationDataCount() const {return m_entityAnimData.size(); }
-        virtual const EntityAnimData* GetEntityAnimationData(int index) const {return &m_entityAnimData[index]; }
-        virtual void SetEntityAnimationData(EntityAnimData entityData){ m_entityAnimData.push_back(entityData); };
+        int GetEntityAnimationDataCount() const override {return static_cast<int>(m_entityAnimData.size()); }
+        const EntityAnimData* GetEntityAnimationData(int index) const override {return &m_entityAnimData[index]; }
+        void SetEntityAnimationData(EntityAnimData entityData) override{ m_entityAnimData.push_back(entityData); };
         void SetLastPtr(CBaseObject* pObject){m_pLastObject = pObject; };
         CBaseObject* GetLastObjectPtr(){return m_pLastObject; };
 
@@ -91,9 +92,11 @@ namespace Export
         : public IData
     {
     public:
-        virtual int GetObjectCount() const { return m_objects.size(); }
-        virtual Object* GetObject(int index) const { return m_objects[index]; }
-        virtual Object* AddObject(const char* objectName);
+        virtual ~CData() = default;
+
+        int GetObjectCount() const override { return static_cast<int>(m_objects.size()); }
+        Object* GetObject(int index) const override { return m_objects[index]; }
+        Object* AddObject(const char* objectName) override;
         void Clear();
 
     private:
@@ -116,7 +119,7 @@ public:
 
     //! Register exporter
     //! return true if succeed, otherwise false
-    virtual bool RegisterExporter(IExporter* pExporter);
+    bool RegisterExporter(IExporter* pExporter) override;
 
     //! Export specified geometry
     //! return true if succeed, otherwise false
@@ -138,15 +141,15 @@ public:
 
     //! Exports the stat obj to the obj file specified
     //! returns true if succeeded, otherwise false
-    virtual bool ExportSingleStatObj(IStatObj* pStatObj, const char* filename);
+    bool ExportSingleStatObj(IStatObj* pStatObj, const char* filename) override;
 
     void SetBakedKeysSequenceExport(bool bBaked){m_bBakedKeysSequenceExport = bBaked; };
 
     void SaveNodeKeysTimeToXML();
 
 private:
-    void AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh, Matrix34A* pTm = 0);
-    bool AddStatObj(Export::CObject* pObj, IStatObj* pStatObj, Matrix34A* pTm = 0);
+    void AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh, Matrix34A* pTm = nullptr);
+    bool AddStatObj(Export::CObject* pObj, IStatObj* pStatObj, Matrix34A* pTm = nullptr);
     bool AddMeshes(Export::CObject* pObj);
     bool AddObject(CBaseObject* pBaseObj);
     void SolveHierarchy();

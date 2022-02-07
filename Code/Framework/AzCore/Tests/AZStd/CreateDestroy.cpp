@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -132,5 +133,49 @@ namespace UnitTest
         EXPECT_EQ(22, testValue);
         EXPECT_FLOAT_EQ(4.0f, resultAddress->m_floatValue);
         AZStd::destroy_at(resultAddress);
+    }
+
+    TEST(CreateDestroy, UninitializedDefaultConstruct_IsAbleToConstructMultipleElements_Succeeds)
+    {
+        struct RefWrapper
+        {
+            RefWrapper()
+            {}
+            int m_intValue{ 2 };
+        };
+        constexpr size_t ArraySize = 2;
+        AZStd::aligned_storage_for_t<RefWrapper> testArray[ArraySize];
+        RefWrapper(&uninitializedAddress)[2] = reinterpret_cast<RefWrapper(&)[2]>(testArray);
+        AZStd::uninitialized_default_construct(AZStd::begin(uninitializedAddress), AZStd::end(uninitializedAddress));
+
+
+        EXPECT_EQ(2, uninitializedAddress[0].m_intValue);
+        EXPECT_EQ(2, uninitializedAddress[1].m_intValue);
+        // Reset uninitializedAddress to Debug pattern
+        memset(uninitializedAddress, 0xCD, ArraySize * sizeof(RefWrapper));
+        AZStd::uninitialized_default_construct_n(AZStd::data(uninitializedAddress), AZStd::size(uninitializedAddress));
+        EXPECT_EQ(2, uninitializedAddress[0].m_intValue);
+        EXPECT_EQ(2, uninitializedAddress[1].m_intValue);
+    }
+
+    TEST(CreateDestroy, UninitializedValueConstruct_IsAbleToConstructMultipleElements_Succeeds)
+    {
+        struct RefWrapper
+        {
+            int m_intValue;
+        };
+        constexpr size_t ArraySize = 2;
+        AZStd::aligned_storage_for_t<RefWrapper> testArray[ArraySize];
+        RefWrapper(&uninitializedAddress)[2] = reinterpret_cast<RefWrapper(&)[2]>(testArray);
+        AZStd::uninitialized_value_construct(AZStd::begin(uninitializedAddress), AZStd::end(uninitializedAddress));
+
+
+        EXPECT_EQ(0, uninitializedAddress[0].m_intValue);
+        EXPECT_EQ(0, uninitializedAddress[1].m_intValue);
+        // Reset uninitializedAddress to Debug pattern
+        memset(uninitializedAddress, 0xCD, ArraySize * sizeof(RefWrapper));
+        AZStd::uninitialized_value_construct_n(AZStd::data(uninitializedAddress), AZStd::size(uninitializedAddress));
+        EXPECT_EQ(0, uninitializedAddress[0].m_intValue);
+        EXPECT_EQ(0, uninitializedAddress[1].m_intValue);
     }
 }

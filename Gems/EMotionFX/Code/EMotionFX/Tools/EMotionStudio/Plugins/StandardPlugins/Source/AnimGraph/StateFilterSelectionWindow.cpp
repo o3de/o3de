@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,16 +33,16 @@ namespace EMStudio
         setLayout(mainLayout);
         mainLayout->setAlignment(Qt::AlignTop);
 
-        mTableWidget = new QTableWidget();
-        mTableWidget->setAlternatingRowColors(true);
-        mTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mTableWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        mTableWidget->horizontalHeader()->setStretchLastSection(true);
-        mTableWidget->setCornerButtonEnabled(false);
-        mTableWidget->setContextMenuPolicy(Qt::DefaultContextMenu);
-        connect(mTableWidget, &QTableWidget::itemSelectionChanged, this, &StateFilterSelectionWindow::OnSelectionChanged);
+        m_tableWidget = new QTableWidget();
+        m_tableWidget->setAlternatingRowColors(true);
+        m_tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_tableWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        m_tableWidget->horizontalHeader()->setStretchLastSection(true);
+        m_tableWidget->setCornerButtonEnabled(false);
+        m_tableWidget->setContextMenuPolicy(Qt::DefaultContextMenu);
+        connect(m_tableWidget, &QTableWidget::itemSelectionChanged, this, &StateFilterSelectionWindow::OnSelectionChanged);
 
-        mainLayout->addWidget(mTableWidget);
+        mainLayout->addWidget(m_tableWidget);
 
         QHBoxLayout* buttonLayout = new QHBoxLayout();
         mainLayout->addLayout(buttonLayout);
@@ -68,25 +69,25 @@ namespace EMStudio
     void StateFilterSelectionWindow::ReInit(EMotionFX::AnimGraphStateMachine* stateMachine, const AZStd::vector<EMotionFX::AnimGraphNodeId>& oldNodeSelection, const AZStd::vector<AZStd::string>& oldGroupSelection)
     {
         m_stateMachine          = stateMachine;
-        mSelectedGroupNames     = oldGroupSelection;
+        m_selectedGroupNames     = oldGroupSelection;
         m_selectedNodeIds       = oldNodeSelection;
 
         // clear the table widget
-        mWidgetTable.clear();
-        mTableWidget->clear();
-        mTableWidget->setColumnCount(2);
+        m_widgetTable.clear();
+        m_tableWidget->clear();
+        m_tableWidget->setColumnCount(2);
 
         // set header items for the table
         QTableWidgetItem* headerItem = new QTableWidgetItem("Name");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mTableWidget->setHorizontalHeaderItem(0, headerItem);
+        m_tableWidget->setHorizontalHeaderItem(0, headerItem);
 
         headerItem = new QTableWidgetItem("Type");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mTableWidget->setHorizontalHeaderItem(1, headerItem);
+        m_tableWidget->setHorizontalHeaderItem(1, headerItem);
 
-        mTableWidget->resizeColumnsToContents();
-        QHeaderView* horizontalHeader = mTableWidget->horizontalHeader();
+        m_tableWidget->resizeColumnsToContents();
+        QHeaderView* horizontalHeader = m_tableWidget->horizontalHeader();
         horizontalHeader->setStretchLastSection(true);
 
         if (!m_stateMachine)
@@ -97,15 +98,15 @@ namespace EMStudio
         const EMotionFX::AnimGraph* animGraph = m_stateMachine->GetAnimGraph();
 
         // get the number of nodes inside the active node, the number node groups and set table size and add header items
-        const uint32 numNodeGroups  = animGraph->GetNumNodeGroups();
-        const uint32 numNodes       = m_stateMachine->GetNumChildNodes();
-        const uint32 numRows        = numNodeGroups + numNodes;
-        mTableWidget->setRowCount(numRows);
+        const size_t numNodeGroups  = animGraph->GetNumNodeGroups();
+        const size_t numNodes       = m_stateMachine->GetNumChildNodes();
+        const int numRows           = aznumeric_caster(numNodeGroups + numNodes);
+        m_tableWidget->setRowCount(numRows);
 
         // Block signals for the table widget to not reach OnSelectionChanged() when adding rows as that
         // clears m_selectedNodeIds and thus breaks the 'is node selected' check in the following loop.
         {
-            QSignalBlocker signalBlocker(mTableWidget);
+            QSignalBlocker signalBlocker(m_tableWidget);
 
             // iterate the nodes and add them all
             uint32 currentRowIndex = 0;
@@ -160,9 +161,9 @@ namespace EMStudio
         }
 
         // resize to contents and adjust header
-        QHeaderView* verticalHeader = mTableWidget->verticalHeader();
+        QHeaderView* verticalHeader = m_tableWidget->verticalHeader();
         verticalHeader->setVisible(false);
-        mTableWidget->resizeColumnsToContents();
+        m_tableWidget->resizeColumnsToContents();
         horizontalHeader->setStretchLastSection(true);
     }
 
@@ -184,10 +185,10 @@ namespace EMStudio
         nameItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
         // add the name item in the table
-        mTableWidget->setItem(rowIndex, 0, nameItem);
+        m_tableWidget->setItem(rowIndex, 0, nameItem);
 
         // add a lookup
-        mWidgetTable.emplace_back(WidgetLookup(nameItem, name, isGroup));
+        m_widgetTable.emplace_back(WidgetLookup(nameItem, name, isGroup));
 
         // create the type item
         QTableWidgetItem* typeItem = nullptr;
@@ -204,10 +205,10 @@ namespace EMStudio
         typeItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
         // add the type item in the table
-        mTableWidget->setItem(rowIndex, 1, typeItem);
+        m_tableWidget->setItem(rowIndex, 1, typeItem);
 
         // add a lookup
-        mWidgetTable.emplace_back(WidgetLookup(typeItem, name, isGroup));
+        m_widgetTable.emplace_back(WidgetLookup(typeItem, name, isGroup));
 
         // set backgroundcolor of the row
         if (isGroup)
@@ -226,7 +227,7 @@ namespace EMStudio
         }
 
         // set the row height
-        mTableWidget->setRowHeight(rowIndex, 21);
+        m_tableWidget->setRowHeight(rowIndex, 21);
     }
 
 
@@ -241,12 +242,12 @@ namespace EMStudio
         const EMotionFX::AnimGraph* animGraph = m_stateMachine->GetAnimGraph();
 
         // for all table entries
-        const size_t numWidgets = mWidgetTable.size();
+        const size_t numWidgets = m_widgetTable.size();
         for (size_t i = 0; i < numWidgets; ++i)
         {
-            if (mWidgetTable[i].mIsGroup && mWidgetTable[i].mWidget == widget)
+            if (m_widgetTable[i].m_isGroup && m_widgetTable[i].m_widget == widget)
             {
-                return animGraph->FindNodeGroupByName(mWidgetTable[i].mName.c_str());
+                return animGraph->FindNodeGroupByName(m_widgetTable[i].m_name.c_str());
             }
         }
 
@@ -266,12 +267,12 @@ namespace EMStudio
         const EMotionFX::AnimGraph* animGraph = m_stateMachine->GetAnimGraph();
 
         // for all table entries
-        const size_t numWidgets = mWidgetTable.size();
+        const size_t numWidgets = m_widgetTable.size();
         for (size_t i = 0; i < numWidgets; ++i)
         {
-            if (mWidgetTable[i].mIsGroup == false && mWidgetTable[i].mWidget == widget)
+            if (m_widgetTable[i].m_isGroup == false && m_widgetTable[i].m_widget == widget)
             {
-                return animGraph->RecursiveFindNodeByName(mWidgetTable[i].mName.c_str());
+                return animGraph->RecursiveFindNodeByName(m_widgetTable[i].m_name.c_str());
             }
         }
 
@@ -284,11 +285,11 @@ namespace EMStudio
     void StateFilterSelectionWindow::OnSelectionChanged()
     {
         // reset the selection arrays
-        mSelectedGroupNames.clear();
+        m_selectedGroupNames.clear();
         m_selectedNodeIds.clear();
 
         // get the selected items and the number of them
-        QList<QTableWidgetItem*> selectedItems = mTableWidget->selectedItems();
+        QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
         const int numSelectedItems = selectedItems.count();
 
         // iterate through the selected items
@@ -310,9 +311,9 @@ namespace EMStudio
             if (nodeGroup)
             {
                 // add the node group name in case it is not in yet
-                if (AZStd::find(mSelectedGroupNames.begin(), mSelectedGroupNames.end(), nodeGroup->GetName()) == mSelectedGroupNames.end())
+                if (AZStd::find(m_selectedGroupNames.begin(), m_selectedGroupNames.end(), nodeGroup->GetName()) == m_selectedGroupNames.end())
                 {
-                    mSelectedGroupNames.emplace_back(nodeGroup->GetName());
+                    m_selectedGroupNames.emplace_back(nodeGroup->GetName());
                 }
             }
         }

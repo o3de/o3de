@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,16 +28,16 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     // IUnkown implementation.
-    virtual HRESULT STDMETHODCALLTYPE QueryInterface(const IID& riid, void** ppvObj);
-    virtual ULONG STDMETHODCALLTYPE AddRef();
-    virtual ULONG STDMETHODCALLTYPE Release();
+    HRESULT STDMETHODCALLTYPE QueryInterface(const IID& riid, void** ppvObj) override;
+    ULONG STDMETHODCALLTYPE AddRef() override;
+    ULONG STDMETHODCALLTYPE Release() override;
     //////////////////////////////////////////////////////////////////////////
 
-    virtual REFGUID ClassID();
+    REFGUID ClassID() override;
 
     //////////////////////////////////////////////////////////////////////////
-    virtual int GetPagesCount();
-    virtual IPreferencesPage* CreateEditorPreferencesPage(int index) override;
+    int GetPagesCount() override;
+    IPreferencesPage* CreateEditorPreferencesPage(int index) override;
 };
 
 #endif // CRYINCLUDE_EDITOR_PREFERENCESSTDPAGES_H

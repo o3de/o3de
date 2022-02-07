@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -830,7 +831,6 @@ namespace AZStd
         // find first element that value is before, using operator<
         typename iterator_traits<ForwardIterator>::difference_type count = AZStd::distance(first, last);
         typename iterator_traits<ForwardIterator>::difference_type step{};
-        count = AZStd::distance(first, last);
         for (; 0 < count; )
         {   // divide and conquer, find half that contains answer
             step = count / 2;

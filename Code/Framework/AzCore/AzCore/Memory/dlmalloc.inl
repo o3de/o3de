@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -1293,14 +1294,6 @@ int mspace_mallopt(int, int);
 
 /*------------------------------ internal #includes ---------------------- */
 
-#ifdef WIN32
-#pragma warning(push)
-#pragma warning( disable : 4146 ) /* no "unsigned" warnings */
-#   ifdef AZ_PLATFORM_WINDOWS
-#       pragma warning( disable : 4267 )
-#   endif
-#endif /* WIN32 */
-
 #include <stdio.h>       /* for printing in malloc_stats */
 
 #ifndef LACKS_ERRNO_H
@@ -2169,7 +2162,7 @@ typedef unsigned int flag_t;           /* The type of various bit flag sets */
 #define align_as_chunk(A)   (mchunkptr)((A) + align_offset(chunk2mem(A)))
 
 /* Bounds on request (not chunk) sizes. */
-#define MAX_REQUEST         ((-MIN_CHUNK_SIZE) << 2)
+#define MAX_REQUEST         ((~MIN_CHUNK_SIZE + 1) << 2)
 #define MIN_REQUEST         (MIN_CHUNK_SIZE - CHUNK_OVERHEAD - SIZE_T_ONE)
 
 /* pad request bytes into a usable size */
@@ -2880,10 +2873,10 @@ static size_t traverse_and_check(mstate m);
 #define treemap_is_marked(M, i)  ((M)->treemap  &   idx2bit(i))
 
 /* isolate the least set bit of a bitmap */
-#define least_bit(x)         ((x) & - (x))
+#define least_bit(x)         ((x) & (~(x)+1))
 
 /* mask with all bits to left of least bit of x on */
-#define left_bits(x)         ((x << 1) | -(x << 1))
+#define left_bits(x)         ((x << 1) | (~(x << 1)+1))
 
 /* mask with all bits to left of or equal to least bit of x on */
 #define same_or_left_bits(x) ((x) | -(x))
@@ -4527,7 +4520,7 @@ static int sys_trim(mstate m, size_t pad)
 static void* tmalloc_large(mstate m, size_t nb)
 {
     tchunkptr v = 0;
-    size_t rsize = -nb; /* Unsigned negation */
+    size_t rsize = ~nb+1; /* Unsigned negation */
     tchunkptr t;
     bindex_t idx;
     compute_tree_index(nb, idx);
@@ -4806,7 +4799,7 @@ static void* internal_memalign(mstate m, size_t alignment, size_t bytes)
                 char* br = (char*)mem2chunk((size_t)(((size_t)(mem +
                                                                alignment -
                                                                SIZE_T_ONE)) &
-                                                     - alignment));
+                                                     (~alignment+1)));
                 char* pos = ((size_t)(br - (char*)(p)) >= MIN_CHUNK_SIZE) ?
                     br : br + alignment;
                 mchunkptr newp = (mchunkptr)pos;
@@ -5488,7 +5481,7 @@ postaction:
         size_t msize;
         ensure_initialization();
         msize = pad_request(sizeof(struct malloc_state));
-        if (capacity < (size_t) -(msize + TOP_FOOT_SIZE + mparams.page_size))
+        if (capacity < (~(msize + TOP_FOOT_SIZE + mparams.page_size)+1))
         {
             size_t rs = ((capacity == 0) ? mparams.granularity :
                          (capacity + TOP_FOOT_SIZE + msize));
@@ -5511,7 +5504,7 @@ postaction:
         ensure_initialization();
         msize = pad_request(sizeof(struct malloc_state));
         if (capacity > msize + TOP_FOOT_SIZE &&
-            capacity < (size_t) -(msize + TOP_FOOT_SIZE + mparams.page_size))
+            capacity < (~(msize + TOP_FOOT_SIZE + mparams.page_size)+1))
         {
             m = init_user_mstate((char*)base, capacity);
             m->seg.sflags = EXTERN_BIT;
@@ -6366,6 +6359,3 @@ postaction:
 
     */
 
-#ifdef WIN32
-#pragma warning(pop)
-#endif /* WIN32 */

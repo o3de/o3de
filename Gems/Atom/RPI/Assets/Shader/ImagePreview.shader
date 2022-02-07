@@ -1,5 +1,5 @@
 {
-    "Source" : "ImagePreview",
+    "Source" : "ImagePreview.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : false, "CompareFunc" : "GreaterEqual" }

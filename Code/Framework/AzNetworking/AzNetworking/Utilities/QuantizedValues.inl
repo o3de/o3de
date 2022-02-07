@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -217,14 +218,7 @@ namespace AzNetworking
         {
             SerializeType serializedValue = static_cast<SerializeType>(m_serializeValues[i]);
 
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(push)
-#   pragma warning(disable: 4127) // conditional expression is constant
-#endif
-            if (NUM_BYTES == 3)
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(pop)
-#endif
+            if constexpr (NUM_BYTES == 3)
             {
                 uint8_t lowByte = static_cast<uint8_t>((serializedValue & 0x000000FF)      );
                 uint8_t midByte = static_cast<uint8_t>((serializedValue & 0x0000FF00) >>  8);

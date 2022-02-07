@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,21 +21,34 @@
 namespace UnitTest
 {
     class VegetationComponentTests
-        : public ::testing::Test
+        : public ScopedAllocatorSetupFixture
     {
     protected:
+        VegetationComponentTests()
+            : ScopedAllocatorSetupFixture(
+                []() {
+                    AZ::SystemAllocator::Descriptor desc;
+                    desc.m_heap.m_fixedMemoryBlocksByteSize[0] = 20 * 1024 * 1024;
+                    desc.m_stackRecordLevels = 20;
+                    return desc;
+                }()
+            )
+        {
+        }
+
         AZ::ComponentApplication m_app;
 
         virtual void RegisterComponentDescriptors() {}
 
         void SetUp() override
         {
-            AZ::ComponentApplication::Descriptor appDesc;
-            appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
-            appDesc.m_stackRecordLevels = 20;
+            if (AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords();
+                records != nullptr)
+            {
+                records->SetMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            }
 
-            m_app.Create(appDesc);
+            m_app.Create({});
             RegisterComponentDescriptors();
         }
 
@@ -76,7 +90,6 @@ namespace UnitTest
 
             claimContext.m_existedCallback = [this](const Vegetation::ClaimPoint&, const Vegetation::InstanceData&) 
             { 
-                m_existedCallbackCount;
                 return m_existedCallbackOutput;
             };
 

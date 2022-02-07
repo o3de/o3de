@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -66,9 +67,9 @@ namespace AZ
             {
                 // We use the max error from a single channel instead of accumulating the error from each channel.
                 // This normalizes differences so that for example black vs red has the same weight as black vs yellow.
-                const int16_t diffR = abs(aznumeric_cast<int16_t>(bufferA[i]) - aznumeric_cast<int16_t>(bufferB[i]));
-                const int16_t diffG = abs(aznumeric_cast<int16_t>(bufferA[i + 1]) - aznumeric_cast<int16_t>(bufferB[i + 1]));
-                const int16_t diffB = abs(aznumeric_cast<int16_t>(bufferA[i + 2]) - aznumeric_cast<int16_t>(bufferB[i + 2]));
+                const int16_t diffR = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[i]) - aznumeric_cast<int16_t>(bufferB[i])));
+                const int16_t diffG = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[i + 1]) - aznumeric_cast<int16_t>(bufferB[i + 1])));
+                const int16_t diffB = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[i + 2]) - aznumeric_cast<int16_t>(bufferB[i + 2])));
                 const int16_t maxDiff = AZ::GetMax(AZ::GetMax(diffR, diffG), diffB);
 
                 const float finalDiffNormalized = maxDiff / 255.0f;

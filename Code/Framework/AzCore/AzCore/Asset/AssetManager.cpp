@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,8 +71,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // EBusTraits overrides
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-            typedef AssetId                 BusIdType;
-            typedef AZStd::recursive_mutex  MutexType;
+            using BusIdType = AssetId;
+            using MutexType = AZStd::recursive_mutex;
 
             template <class Bus>
             struct AssetJobConnectionPolicy
@@ -106,7 +107,7 @@ namespace AZ
             virtual void OnLoadCanceled(AssetId assetId) = 0;
         };
 
-        typedef EBus<BlockingAssetLoadEvents> BlockingAssetLoadBus;
+        using BlockingAssetLoadBus = EBus<BlockingAssetLoadEvents>;
 
         /*
          * This class processes async AssetDatabase load jobs
@@ -162,7 +163,7 @@ namespace AZ
                 else
                 {
 
-                    AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "AZ::Data::LoadAssetJob::Process: %s",
+                    AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetJob::Process: %s",
                         asset.GetHint().c_str());
 
                     AZ_ASSET_ATTACH_TO_SCOPE(this);
@@ -197,7 +198,7 @@ namespace AZ
 
                 if(cl_assetLoadDelay > 0)
                 {
-                    AZ_PROFILE_SCOPE_IDLE(AZ::Debug::ProfileCategory::AzCore, "LoadData suspended");
+                    AZ_PROFILE_SCOPE(AzCore, "LoadData suspended");
                     AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(cl_assetLoadDelay));
                 }
 
@@ -313,7 +314,7 @@ namespace AZ
         protected:
             void Wait()
             {
-                AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "WaitForAsset - %s", m_assetData.GetHint().c_str());
+                AZ_PROFILE_SCOPE(AzCore, "WaitForAsset - %s", m_assetData.GetHint().c_str());
 
                 // Continue to loop until the load completes.  (Most of the time in the loop will be spent in a thread-blocking state)
                 while (!m_loadCompleted)
@@ -339,11 +340,19 @@ namespace AZ
                     // (Load jobs will attempt to reuse blocked threads before spinning off new job threads)
                     ProcessLoadJob();
                 }
+
+                // Pump the AssetBus function queue once more after the load has completed in case additional
+                // functions have been queued between the last call to DispatchEvents and the completion
+                // of the current load job
+                if (m_shouldDispatchEvents)
+                {
+                    AssetManager::Instance().DispatchEvents();
+                }
             }
 
             void Finish()
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                AZ_PROFILE_FUNCTION(AzCore);
                 m_loadCompleted = true;
                 m_waitEvent.release();
             }
@@ -402,7 +411,7 @@ namespace AZ
             void SaveAsset()
             {
                 auto asset = m_asset.GetStrongReference();
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                AZ_PROFILE_FUNCTION(AzCore);
                 bool isSaved = false;
                 AssetStreamInfo saveInfo = m_owner->GetSaveStreamInfoForAsset(asset.GetId(), asset.GetType());
                 if (saveInfo.IsValid())
@@ -542,8 +551,6 @@ namespace AZ
         {
             PrepareShutDown();
 
-            DispatchEvents();
-
             // Acquire the asset lock to make sure nobody else is trying to do anything fancy with assets
             AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
 
@@ -564,9 +571,12 @@ namespace AZ
         //=========================================================================
         void AssetManager::DispatchEvents()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
             AssetManagerNotificationBus::Broadcast(&AssetManagerNotificationBus::Events::OnAssetEventsDispatchBegin);
-            AssetBus::ExecuteQueuedEvents();
+            while (AssetBus::QueuedEventCount())
+            {
+                AssetBus::ExecuteQueuedEvents();
+            }
             AssetManagerNotificationBus::Broadcast(&AssetManagerNotificationBus::Events::OnAssetEventsDispatchEnd);
         }
 
@@ -936,14 +946,14 @@ namespace AZ
         Asset<AssetData> AssetManager::GetAssetInternal(const AssetId& assetId, [[maybe_unused]] const AssetType& assetType,
             AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams, AssetInfo assetInfo /*= () */, bool signalLoaded /*= false */)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             AZ_Error("AssetDatabase", assetId.IsValid(), "GetAsset called with invalid asset Id.");
             AZ_Error("AssetDatabase", !assetType.IsNull(), "GetAsset called with invalid asset type.");
             bool assetMissing = false;
 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "GetAsset: GetAssetInfo");
+                AZ_PROFILE_SCOPE(AzCore, "GetAsset: GetAssetInfo");
 
                 // Attempt to look up asset info from catalog
                 // This is so that when assetId is a legacy id, we're operating on the canonical id anyway
@@ -973,7 +983,7 @@ namespace AZ
                 }
             }
 
-            AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "GetAsset: %s", assetInfo.m_relativePath.c_str());
+            AZ_PROFILE_SCOPE(AzCore, "GetAsset: %s", assetInfo.m_relativePath.c_str());
             AZ_ASSET_NAMED_SCOPE("GetAsset: %s", assetInfo.m_relativePath.c_str());
 
             AZStd::shared_ptr<AssetDataStream> dataStream;
@@ -991,7 +1001,7 @@ namespace AZ
 
                 // check if asset already exists
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "GetAsset: FindAsset");
+                    AZ_PROFILE_SCOPE(AzCore, "GetAsset: FindAsset");
 
                     AssetMap::iterator it = m_assets.find(assetInfo.m_assetId);
                     if (it != m_assets.end())
@@ -1006,7 +1016,7 @@ namespace AZ
                 }
 
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "GetAsset: FindAssetHandler");
+                    AZ_PROFILE_SCOPE(AzCore, "GetAsset: FindAssetHandler");
 
                     // find the asset type handler
                     AssetHandlerMap::iterator handlerIt = m_handlers.find(assetInfo.m_assetType);
@@ -1018,7 +1028,7 @@ namespace AZ
                         handler = handlerIt->second;
                         if (isNewEntry)
                         {
-                            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "GetAsset: CreateAsset");
+                            AZ_PROFILE_SCOPE(AzCore, "GetAsset: CreateAsset");
 
                             assetData = handler->CreateAsset(assetInfo.m_assetId, assetInfo.m_assetType);
                             if (assetData)
@@ -1042,7 +1052,7 @@ namespace AZ
                 {
                     if (isNewEntry && assetData->IsRegisterReadonlyAndShareable())
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "GetAsset: RegisterAsset");
+                        AZ_PROFILE_SCOPE(AzCore, "GetAsset: RegisterAsset");
                         m_assets.insert(AZStd::make_pair(assetInfo.m_assetId, assetData));
                     }
                     if (assetData->GetStatus() == AssetData::AssetStatus::NotLoaded)
@@ -1477,7 +1487,7 @@ namespace AZ
 
                     // Resolve the asset handler and account for the new asset instance.
                     {
-                        AssetHandlerMap::iterator handlerIt = m_handlers.find(newData->GetType());
+                        [[maybe_unused]] AssetHandlerMap::iterator handlerIt = m_handlers.find(newData->GetType());
                         AZ_Assert(
                             handlerIt != m_handlers.end(), "No handler was registered for this asset [type:%s id:%s]!",
                             newData->GetType().ToString<AZ::OSString>().c_str(), newData->GetId().ToString<AZ::OSString>().c_str());
@@ -1595,7 +1605,7 @@ namespace AZ
             const AZ::Data::AssetStreamInfo& streamInfo, bool isReload,
             AssetHandler* handler, const AssetLoadParameters& loadParams, bool signalLoaded)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             // Set up the callback that will process the asset data once the raw file load is finished.
             // The callback is declared as mutable so that we can clear weakAsset within the callback.  The refcount in weakAsset
@@ -1612,7 +1622,7 @@ namespace AZ
 
                 if (loadingAsset)
                 {
-                    AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "AZ::Data::LoadAssetStreamerCallback %s",
+                    AZ_PROFILE_SCOPE(AzCore, "AZ::Data::LoadAssetStreamerCallback %s",
                         loadingAsset.GetHint().c_str());
                     {
                         AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
@@ -1667,9 +1677,13 @@ namespace AZ
                 // they will trigger a ReleaseAsset call sometime after the AssetManager has begun to shut down, which can lead to
                 // race conditions.
 
+                // Make sure the streamer request is removed first before the asset is released
+                // If the asset is released first it could lead to a race condition where another thread starts loading the asset
+                // again and attempts to add a new streamer request with the same ID before the old one has been removed, causing
+                // that load request to fail
+                RemoveActiveStreamerRequest(assetId);
                 weakAsset = {};
                 loadingAsset.Reset();
-                RemoveActiveStreamerRequest(assetId);
             };
 
             auto&& [deadline, priority] = GetEffectiveDeadlineAndPriority(*handler, asset.GetType(), loadParams);
@@ -1787,7 +1801,7 @@ namespace AZ
         //=========================================================================
         void AssetManager::RegisterAssetLoading(const Asset<AssetData>& asset)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             AssetData* data = asset.Get();
             if (data)
@@ -1802,7 +1816,7 @@ namespace AZ
         //=========================================================================
         void AssetManager::UnregisterAssetLoading([[maybe_unused]] const Asset<AssetData>& asset)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
         }
 
         //=========================================================================
@@ -1868,7 +1882,7 @@ namespace AZ
         {
             AZStd::scoped_lock<AZStd::recursive_mutex> requestLock(m_activeBlockingRequestMutex);
 
-            auto inserted = m_activeBlockingRequests.insert(AZStd::make_pair(assetId, blockingRequest));
+            [[maybe_unused]] auto inserted = m_activeBlockingRequests.insert(AZStd::make_pair(assetId, blockingRequest));
             AZ_Assert(inserted.second, "Failed to track blocking request for asset %s", assetId.ToString<AZStd::string>().c_str());
         }
 
@@ -2049,7 +2063,7 @@ namespace AZ
             AZStd::shared_ptr<AssetDataStream> stream,
             const AssetFilterCB& assetLoadFilterCB)
         {
-            AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "AssetHandler::LoadAssetData - %s", asset.GetHint().c_str());
+            AZ_PROFILE_SCOPE(AzCore, "AssetHandler::LoadAssetData - %s", asset.GetHint().c_str());
 
 #ifdef AZ_ENABLE_TRACING
             auto start = AZStd::chrono::system_clock::now();
@@ -2118,7 +2132,7 @@ namespace AZ
         void AssetManager::PostLoad(AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadSucceeded,
                                     bool isReload, AZ::Data::AssetHandler* assetHandler)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
             if (!assetHandler)
             {
                 assetHandler = GetHandler(asset.GetType());
@@ -2131,7 +2145,7 @@ namespace AZ
             }
             else
             {
-                AZ_Warning("AssetManager", false, "Couldn't find handler for asset %s (%s)", asset.GetId().ToString<AZStd::string>().c_str(), asset.GetHint().c_str())
+                AZ_Warning("AssetManager", false, "Couldn't find handler for asset %s (%s)", asset.GetId().ToString<AZStd::string>().c_str(), asset.GetHint().c_str());
             }
 
             // Notify any dependent jobs.

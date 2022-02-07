@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,14 +68,14 @@ namespace AZ::IO::ZipDir
     {
         for (FileEntryTree::SubdirMap::iterator it = pTree->GetDirBegin(); it != pTree->GetDirEnd(); ++it)
         {
-            AddAllFiles(it->second.get(), AZStd::string::format("%.*s%.*s/", aznumeric_cast<int>(strRoot.size()), strRoot.data(), aznumeric_cast<int>(it->first.size()), it->first.data()));
+            AddAllFiles(it->second.get(), (AZ::IO::Path(strRoot, AZ::IO::PosixPathSeparator) / it->first).Native());
         }
 
         for (FileEntryTree::FileMap::iterator it = pTree->GetFileBegin(); it != pTree->GetFileEnd(); ++it)
         {
             FileRecord rec;
             rec.pFileEntryBase = pTree->GetFileEntry(it);
-            rec.strPath = AZStd::string::format("%.*s%.*s", aznumeric_cast<int>(strRoot.size()), strRoot.data(), aznumeric_cast<int>(it->first.size()), it->first.data());
+            rec.strPath = (AZ::IO::Path(strRoot, AZ::IO::PosixPathSeparator) / it->first).Native();
             push_back(rec);
         }
     }

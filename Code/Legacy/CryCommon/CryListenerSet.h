@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,7 +21,8 @@
 #pragma once
 
 
-#include <CrySizer.h>
+#include "Cry_Math.h"
+#include <StlUtils.h>
 /************************************************************************
 
 Core elements:
@@ -150,13 +152,6 @@ public:
     // Allow TListeners::Notifier style usage
     typedef class CListenerNotifier<T> Notifier;
 
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddContainer(m_listeners);
-#if defined(CRY_LISTENERSET_DEBUG)
-        pSizer->AddContainer(m_allocatedNames);
-#endif
-    }
 private:    // DO NOT REMOVE - following methods only to be accessed only via CNotifier
 
     struct ListenerRecord
@@ -181,7 +176,7 @@ private:    // DO NOT REMOVE - following methods only to be accessed only via CN
     };
 
     typedef std::vector<ListenerRecord> TListenerVec;
-    typedef std::vector<string> TAllocatedNameVec;
+    typedef std::vector<AZStd::string> TAllocatedNameVec;
 
     inline void StartNotificationScope();
     inline void EndNotificationScope();
@@ -417,7 +412,7 @@ inline size_t CListenerSet<T>::MemSize() const
     size += sizeof(typename TAllocatedNameVec::value_type);
     for (typename TAllocatedNameVec::const_iterator iter(m_allocatedNames.begin()); iter != m_allocatedNames.end(); ++iter)
     {
-        size += iter->GetAllocatedMemory();
+        size += iter->capacity() * sizeof(char) + sizeof(AZStd::string);
     }
 #endif
 

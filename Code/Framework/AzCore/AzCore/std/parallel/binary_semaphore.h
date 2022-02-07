@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,13 +38,13 @@ namespace AZStd
 
         binary_semaphore(bool initialState = false)
         {
-            m_event = CreateEvent(nullptr, false, initialState, nullptr);
+            m_event = CreateEventW(nullptr, false, initialState, nullptr);
             AZ_Assert(m_event != NULL, "CreateEvent error: %d\n", GetLastError());
         }
         binary_semaphore(const char* name, bool initialState = false)
         {
             (void)name; // name is used only for debug, if we pass it to the semaphore it will become named semaphore
-            m_event = CreateEvent(nullptr, false, initialState, nullptr);
+            m_event = CreateEventW(nullptr, false, initialState, nullptr);
             AZ_Assert(m_event != NULL, "CreateEvent error: %d\n", GetLastError());
         }
 
@@ -69,11 +70,11 @@ namespace AZStd
         bool try_acquire_until(const chrono::time_point<Clock, Duration>& abs_time)
         {
             auto timeNow = chrono::system_clock::now();
-            if (timeNow >= absTime)
+            if (timeNow >= abs_time)
             {
                 return false; // we timed out already!
             }
-            auto deltaTime = absTime - timeNow;
+            auto deltaTime = abs_time - timeNow;
             auto timeToTry = chrono::duration_cast<chrono::milliseconds>(deltaTime);
             return (WaitForSingleObject(m_event, aznumeric_cast<DWORD>(timeToTry.count())) == AZ_WAIT_OBJECT_0);
         }

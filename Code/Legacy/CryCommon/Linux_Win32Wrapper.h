@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,8 @@
 #include <CryAssert.h>
 #include <dirent.h>
 #include <vector>
+#include <AzCore/std/string/string.h>
+
 /* Memory block identification */
 #define _FREE_BLOCK      0
 #define _NORMAL_BLOCK    1
@@ -144,9 +147,6 @@ inline void MemoryBarrier() {
 typedef int64 __m128;
 #endif
 
-#if defined(LINUX64) || defined(APPLE)
-unsigned char _InterlockedCompareExchange128(int64 volatile* dst, int64 exchangehigh, int64 exchangelow, int64* comperand);
-#endif
 //////////////////////////////////////////////////////////////////////////
 // io.h stuff
 #if !defined(ANDROID)
@@ -326,11 +326,6 @@ inline uint32 GetTickCount()
 #define _strlwr_s(BUF, SIZE) strlwr(BUF)
 #define _strups strupr
 
-#define _wtof(str) wcstod(str, 0)
-
-// Need to include this before using it's used in finddata, but after the strnicmp definition
-#include "CryString.h"
-
 typedef struct __finddata64_t
 {
     //!< atributes set by find request
@@ -346,7 +341,7 @@ private:
     char                                m_DirectoryName[260];           //!< directory name, needed when getting file attributes on the fly
     char                                m_ToMatch[260];                     //!< pattern to match with
     DIR*                                m_Dir;                                  //!< directory handle
-    std::vector<string> m_Entries;                      //!< all file entries in the current directories
+    std::vector<AZStd::string> m_Entries;                      //!< all file entries in the current directories
 public:
 
     inline __finddata64_t()
@@ -378,7 +373,7 @@ typedef struct _finddata_t
 extern int _findnext64(intptr_t last, __finddata64_t* pFindData);
 extern intptr_t _findfirst64(const char* pFileName, __finddata64_t* pFindData);
 
-extern DWORD GetFileAttributes(LPCSTR lpFileName);
+extern DWORD GetFileAttributesW(LPCWSTR lpFileName);
 
 extern const bool GetFilenameNoCase(const char* file, char*, const bool cCreateNew = false);
 
@@ -419,65 +414,10 @@ inline void SetLastError(DWORD dwErrCode) { errno = dwErrCode; }
 extern threadID GetCurrentThreadId();
 
 //////////////////////////////////////////////////////////////////////////
-extern HANDLE CreateEvent(
-    LPSECURITY_ATTRIBUTES lpEventAttributes,
-    BOOL bManualReset,
-    BOOL bInitialState,
-    LPCSTR lpName
-    );
-
-//////////////////////////////////////////////////////////////////////////
 extern DWORD Sleep(DWORD dwMilliseconds);
 
 //////////////////////////////////////////////////////////////////////////
 extern DWORD SleepEx(DWORD dwMilliseconds, BOOL bAlertable);
-
-//////////////////////////////////////////////////////////////////////////
-extern DWORD WaitForSingleObjectEx(
-    HANDLE hHandle,
-    DWORD dwMilliseconds,
-    BOOL bAlertable);
-
-//////////////////////////////////////////////////////////////////////////
-extern DWORD WaitForMultipleObjectsEx(
-    DWORD nCount,
-    const HANDLE* lpHandles,
-    BOOL bWaitAll,
-    DWORD dwMilliseconds,
-    BOOL bAlertable);
-
-//////////////////////////////////////////////////////////////////////////
-extern DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
-
-//////////////////////////////////////////////////////////////////////////
-extern BOOL SetEvent(HANDLE hEvent);
-
-//////////////////////////////////////////////////////////////////////////
-extern BOOL ResetEvent(HANDLE hEvent);
-
-//////////////////////////////////////////////////////////////////////////
-extern HANDLE CreateMutex(
-    LPSECURITY_ATTRIBUTES lpMutexAttributes,
-    BOOL bInitialOwner,
-    LPCSTR lpName
-    );
-
-//////////////////////////////////////////////////////////////////////////
-extern BOOL ReleaseMutex(HANDLE hMutex);
-
-//////////////////////////////////////////////////////////////////////////
-typedef DWORD (* PTHREAD_START_ROUTINE)(LPVOID lpThreadParameter);
-typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
-
-//////////////////////////////////////////////////////////////////////////
-extern HANDLE CreateThread(
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    SIZE_T dwStackSize,
-    LPTHREAD_START_ROUTINE lpStartAddress,
-    LPVOID lpParameter,
-    DWORD dwCreationFlags,
-    LPDWORD lpThreadId
-    );
 
 extern BOOL GetComputerName(LPSTR lpBuffer, LPDWORD lpnSize); //required for CryOnline
 extern DWORD GetCurrentProcessId(void);
@@ -489,11 +429,8 @@ extern DWORD GetCurrentProcessId(void);
 
 //helper function
 extern void adaptFilenameToLinux(char* rAdjustedFilename);
-extern const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned int len);//returns 0 if identical
 extern void replaceDoublePathFilename(char* szFileName);//removes "\.\" to "\" and "/./" to "/"
 
-//////////////////////////////////////////////////////////////////////////
-extern char* _fullpath(char* absPath, const char* relPath, size_t maxLength);
 //////////////////////////////////////////////////////////////////////////
 extern void _makepath(char* path, const char* drive, const char* dir, const char* filename, const char* ext);
 

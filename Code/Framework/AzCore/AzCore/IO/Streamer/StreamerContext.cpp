@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,10 +17,11 @@ namespace AZ
     namespace IO
     {
         static constexpr char ContextName[] = "Context";
+#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         static constexpr char PredictionAccuracyName[] = "Prediction accuracy (ms)";
         static constexpr char LatePredictionName[] = "Early completions";
         static constexpr char MissedDeadlinesName[] = "Missed deadlines";
-
+#endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
         StreamerContext::~StreamerContext()
         {
             for (FileRequest* entry : m_internalRecycleBin)
@@ -152,7 +154,7 @@ namespace AZ
 
         bool StreamerContext::FinalizeCompletedRequests()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
             auto now = AZStd::chrono::system_clock::now();
@@ -217,10 +219,10 @@ namespace AZ
                     bool isInternal = top->m_usage == FileRequest::Usage::Internal;
 
                     {
-                        AZ_PROFILE_SCOPE_STALL(AZ::Debug::ProfileCategory::AzCore,
+                        AZ_PROFILE_SCOPE(AzCore,
                             isInternal ? "Completion callback internal" : "Completion callback external");
                         top->m_onCompletion(*top);
-                        AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::AzCore, top);
+                        AZ_PROFILE_INTERVAL_END(AzCore, top);
                     }
                     
                     if (parent)

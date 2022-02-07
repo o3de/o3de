@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,7 @@
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiEditorAnimationBus.h"
 #include "UiAnimUndoManager.h"
+#include "CryCommon/StlUtils.h"
 
 #include <IEditor.h>
 
@@ -33,9 +35,9 @@ public:
     CUiAnimViewSequenceManager();
     ~CUiAnimViewSequenceManager();
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
-    unsigned int GetCount() const { return m_sequences.size(); }
+    unsigned int GetCount() const { return static_cast<unsigned int>(m_sequences.size()); }
 
     void CreateSequence(QString name);
     void DeleteSequence(CUiAnimViewSequence* pSequence);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -74,6 +75,23 @@ namespace AZ
 
 namespace AWSMetrics
 {
+    class MetricsManagerMock
+        : public MetricsManager
+    {
+    private:
+        AZ::Outcome<void, AZStd::string> SendMetricsToFile(AZStd::shared_ptr<MetricsQueue> metricsQueue) override
+        {
+            if (AZ::IO::FileIOBase::GetInstance())
+            {
+                return AZ::Success();
+            }
+            else
+            {
+                return AZ::Failure(AZStd::string{ "Invalid File IO" });
+            }
+        }
+    };
+
     class AWSMetricsNotificationBusMock
         : protected AWSMetricsNotificationBus::Handler
     {
@@ -133,13 +151,11 @@ namespace AWSMetrics
             AWSMetricsGemAllocatorFixture::SetUp();
             AWSMetricsRequestBus::Handler::BusConnect();
 
-            m_metricsManager = AZStd::make_unique<MetricsManager>();
+            m_metricsManager = AZStd::make_unique<MetricsManagerMock>();
             AZStd::string configFilePath = CreateClientConfigFile(true, (double) TestMetricsEventSizeInBytes / MbToBytes * 2, DefaultFlushPeriodInSeconds, 0);
             m_settingsRegistry->MergeSettingsFile(configFilePath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {});
             m_metricsManager->Init();
 
-            RemoveFile(m_metricsManager->GetMetricsFilePath());
-            
             ReplaceLocalFileIOWithMockIO();
         }
 
@@ -148,8 +164,6 @@ namespace AWSMetrics
             RevertMockIOToLocalFileIO();
 
             RemoveFile(GetDefaultTestFilePath());
-            RemoveFile(m_metricsManager->GetMetricsFilePath());
-            RemoveDirectory(m_metricsManager->GetMetricsFileDirectory());
 
             m_metricsManager.reset();
 
@@ -232,7 +246,7 @@ namespace AWSMetrics
             }   
         }
 
-        AZStd::unique_ptr<MetricsManager> m_metricsManager;
+        AZStd::unique_ptr<MetricsManagerMock> m_metricsManager;
         AWSMetricsNotificationBusMock m_notifications;
 
         AZ::IO::FileIOBase* m_fileIOMock;
@@ -289,7 +303,7 @@ namespace AWSMetrics
 
         for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
-            producers.emplace_back(AZStd::thread([this, index]()
+            producers.emplace_back(AZStd::thread([index]()
             {
                 AZStd::vector<MetricsAttribute> metricsAttributes;
                 metricsAttributes.emplace_back(AZStd::move(MetricsAttribute(AwsMetricsAttributeKeyEventName, AttrValue)));
@@ -451,7 +465,7 @@ namespace AWSMetrics
         EXPECT_EQ(stats.m_numErrors, MaxNumMetricsEvents / 2);
         EXPECT_EQ(stats.m_numDropped, 0);
 
-        int metricsEventSize = sizeof(AwsMetricsAttributeKeyEventName) - 1 + strlen(AttrValue);
+        int metricsEventSize = static_cast<int>(sizeof(AwsMetricsAttributeKeyEventName) - 1 + strlen(AttrValue));
         EXPECT_EQ(stats.m_sendSizeInBytes, metricsEventSize * MaxNumMetricsEvents / 2);
 
         ASSERT_EQ(m_metricsManager->GetNumBufferedMetrics(), MaxNumMetricsEvents / 2);

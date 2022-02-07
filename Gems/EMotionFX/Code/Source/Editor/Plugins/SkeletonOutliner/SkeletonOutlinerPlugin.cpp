@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,7 +42,7 @@ namespace EMotionFX
 
     bool SkeletonOutlinerPlugin::Init()
     {
-        m_mainWidget = new QWidget(mDock);
+        m_mainWidget = new QWidget(m_dock);
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
         m_mainWidget->setLayout(mainLayout);
@@ -111,7 +112,7 @@ namespace EMotionFX
         connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &SkeletonOutlinerPlugin::OnTypeFilterChanged);
 
         mainLayout->addWidget(m_treeView);
-        mDock->setWidget(m_mainWidget);
+        m_dock->setWidget(m_mainWidget);
 
         EMotionFX::SkeletonOutlinerRequestBus::Handler::BusConnect();
         Reinit();
@@ -210,15 +211,15 @@ namespace EMotionFX
 
     AZ::Outcome<const QModelIndexList&> SkeletonOutlinerPlugin::GetSelectedRowIndices()
     {
-        return AZ::Success(m_selectedRows);
+        return AZ::Success(m_treeView->selectionModel()->selectedRows());
     }
 
     void SkeletonOutlinerPlugin::OnSelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
     {
-        m_selectedRows = m_treeView->selectionModel()->selectedRows();
-        if (m_selectedRows.size() == 1)
+        QModelIndexList selectedRows = m_treeView->selectionModel()->selectedRows();
+        if (selectedRows.size() == 1)
         {
-            const QModelIndex& modelIndex = m_selectedRows[0];
+            const QModelIndex& modelIndex = selectedRows[0];
             Node* selectedNode = modelIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
             Actor* selectedActor = modelIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
             SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::SingleNodeSelectionChanged, selectedActor, selectedNode);

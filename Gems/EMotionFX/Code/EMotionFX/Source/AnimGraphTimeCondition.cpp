@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -72,7 +73,7 @@ namespace EMotionFX
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
 
         // increase the elapsed time of the condition
-        uniqueData->mElapsedTime += timePassedInSeconds;
+        uniqueData->m_elapsedTime += timePassedInSeconds;
     }
 
 
@@ -83,7 +84,7 @@ namespace EMotionFX
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
 
         // reset the elapsed time
-        uniqueData->mElapsedTime = 0.0f;
+        uniqueData->m_elapsedTime = 0.0f;
 
         // use randomized count downs?
         if (m_useRandomization)
@@ -92,17 +93,17 @@ namespace EMotionFX
             if (animGraphInstance->IsNetworkEnabled())
             {
                 // using a seeded random in order to generate predictable result in network. 
-                uniqueData->mCountDownTime = MCore::Random::RandF(m_minRandomTime, m_maxRandomTime, animGraphInstance->GetLcgRandom());
+                uniqueData->m_countDownTime = MCore::Random::RandF(m_minRandomTime, m_maxRandomTime, animGraphInstance->GetLcgRandom());
             }
             else
             {
-                uniqueData->mCountDownTime = MCore::Random::RandF(m_minRandomTime, m_maxRandomTime);
+                uniqueData->m_countDownTime = MCore::Random::RandF(m_minRandomTime, m_maxRandomTime);
             }
         }
         else
         {
             // get the fixed count down value from the attribute
-            uniqueData->mCountDownTime = m_countDownTime;
+            uniqueData->m_countDownTime = m_countDownTime;
         }
     }
 
@@ -114,7 +115,7 @@ namespace EMotionFX
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
 
         // in case the elapsed time is bigger than the count down time, we can trigger the condition
-        if (uniqueData->mElapsedTime + 0.0001f >= uniqueData->mCountDownTime)   // The 0.0001f is to counter floating point inaccuracies. The AZ float epsilon is too small.
+        if (uniqueData->m_elapsedTime + 0.0001f >= uniqueData->m_countDownTime)   // The 0.0001f is to counter floating point inaccuracies. The AZ float epsilon is too small.
         {
             return true;
         }
@@ -161,8 +162,8 @@ namespace EMotionFX
     AnimGraphTimeCondition::UniqueData::UniqueData(AnimGraphObject* object, AnimGraphInstance* animGraphInstance)
         : AnimGraphObjectData(object, animGraphInstance)
     {
-        mElapsedTime    = 0.0f;
-        mCountDownTime  = 0.0f;
+        m_elapsedTime    = 0.0f;
+        m_countDownTime  = 0.0f;
     }
 
 

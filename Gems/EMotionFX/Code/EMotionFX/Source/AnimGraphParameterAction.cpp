@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -45,10 +46,10 @@ namespace EMotionFX
     void AnimGraphParameterAction::Reinit()
     {
         // Find the parameter index for the given parameter name, to prevent string based lookups every frame
-        m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+        m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
         if (m_parameterIndex.IsSuccess())
         {
-            m_valueParameter = mAnimGraph->FindValueParameter(m_parameterIndex.GetValue());
+            m_valueParameter = m_animGraph->FindValueParameter(m_parameterIndex.GetValue());
         }
         else
         {
@@ -122,7 +123,7 @@ namespace EMotionFX
     void AnimGraphParameterAction::SetParameterName(const AZStd::string& parameterName)
     {
         m_parameterName = parameterName;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -141,7 +142,7 @@ namespace EMotionFX
         if (m_parameterIndex.IsSuccess())
         {
             // get access to the parameter info and return the type of its default value
-            const ValueParameter* valueParameter = mAnimGraph->FindValueParameter(m_parameterIndex.GetValue());
+            const ValueParameter* valueParameter = m_animGraph->FindValueParameter(m_parameterIndex.GetValue());
             return azrtti_typeid(valueParameter);
         }
         else
@@ -185,7 +186,7 @@ namespace EMotionFX
     {
         AZ_UNUSED(beforeChange);
         AZ_UNUSED(afterChange);
-        m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+        m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
     }
 
     void AnimGraphParameterAction::ParameterRemoved(const AZStd::string& oldParameterName)
@@ -197,7 +198,7 @@ namespace EMotionFX
         }
         else
         {
-            m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+            m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
         }
     }
 

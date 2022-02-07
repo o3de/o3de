@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "LyShine_precompiled.h"
 #include "CompoundSplineTrack.h"
 #include "AnimSplineTrack.h"
 
@@ -386,10 +386,10 @@ IUiAnimTrack* UiCompoundSplineTrack::GetSubTrack(int nIndex) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* UiCompoundSplineTrack::GetSubTrackName(int nIndex) const
+AZStd::string UiCompoundSplineTrack::GetSubTrackName(int nIndex) const
 {
     assert(nIndex >= 0 && nIndex < m_nDimensions);
-    return m_subTrackNames[nIndex].c_str();
+    return m_subTrackNames[nIndex];
 }
 
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,7 @@ namespace ScriptCanvas
         {
             void TimerNodeable::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint time)
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
+                AZ_PROFILE_FUNCTION(ScriptCanvas);
                 SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(GetScriptCanvasId(), GetAssetId());
                 double milliseconds = time.GetMilliseconds() - m_start.GetMilliseconds();
                 double seconds = time.GetSeconds() - m_start.GetSeconds();

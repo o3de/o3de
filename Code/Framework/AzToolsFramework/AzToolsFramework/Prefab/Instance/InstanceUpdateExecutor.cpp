@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,6 +20,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
+#include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
 
 namespace AzToolsFramework
 {
@@ -96,7 +98,7 @@ namespace AzToolsFramework
                 m_updatingTemplateInstancesInQueue = true;
 
                 const int instanceCountToUpdateInBatch =
-                    m_instanceCountToUpdateInBatch == 0 ? m_instancesUpdateQueue.size() : m_instanceCountToUpdateInBatch;
+                    m_instanceCountToUpdateInBatch == 0 ? static_cast<int>(m_instancesUpdateQueue.size()) : m_instanceCountToUpdateInBatch;
                 TemplateId currentTemplateId = InvalidTemplateId;
                 TemplateReference currentTemplateReference = AZStd::nullopt;
 
@@ -243,10 +245,10 @@ namespace AzToolsFramework
                             selectedEntityIds.erase(entityIdIterator--);
                         }
                     }
-                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
 
-                    // Notify Propagation has ended
+                    // Notify Propagation has ended, then update selection (which is frozen during propagation, so this order matters)
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
+                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
                 }
 
                 m_updatingTemplateInstancesInQueue = false;

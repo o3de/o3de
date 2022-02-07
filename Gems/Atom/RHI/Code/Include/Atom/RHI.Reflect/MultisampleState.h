@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,8 +19,6 @@ namespace AZ
 
     namespace RHI
     {
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-        
         // Defines a custom sample position when doing Multisample rendering.
         // Sample positions have the origin(0, 0) at the pixel top left.
         // Each of the X and Y coordinates are unsigned values in the range 0 (top / left) to Limits::Pipeline::MultiSampleCustomLocationGridSize - 1 (bottom / right).
@@ -55,7 +54,5 @@ namespace AZ
             uint16_t m_samples = 1;
             uint16_t m_quality = 0;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
     }
 }

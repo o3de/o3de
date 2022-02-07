@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,6 +37,15 @@ namespace UnitTest
         using EvaluationMap = AZStd::unordered_map<int, int>; // tag to count
         EvaluationMap m_evaluationMap;
 
+        AZStd::mutex m_lock;
+
+        void CleanUp()
+        {
+            AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
+            m_evaluateMessage = {};
+            m_evaluationMap.clear();
+        }
+
         //////////////////////////////////////////////////////////////////////////
         // TraceMessageDrillerBus
         void OnPrintf(const char* window, const char* message) override
@@ -45,6 +55,8 @@ namespace UnitTest
 
         void OnOutput(const char* window, const char* message) override
         {
+            AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
+
             if (m_evaluateMessage)
             {
                 int key = m_evaluateMessage(window, message);

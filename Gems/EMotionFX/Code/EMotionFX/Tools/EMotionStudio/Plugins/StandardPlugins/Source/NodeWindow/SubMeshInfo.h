@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,7 +26,7 @@ namespace EMStudio
         AZ_CLASS_ALLOCATOR_DECL
 
         SubMeshInfo() {}
-        SubMeshInfo(EMotionFX::Actor* actor, unsigned int lodLevel, EMotionFX::SubMesh* subMesh);
+        SubMeshInfo(EMotionFX::Actor* actor, size_t lodLevel, EMotionFX::SubMesh* subMesh);
         ~SubMeshInfo() = default;
 
         static void Reflect(AZ::ReflectContext* context);
@@ -35,7 +36,7 @@ namespace EMStudio
         unsigned int    m_verticesCount;
         unsigned int    m_indicesCount;
         unsigned int    m_polygonsCount;
-        unsigned int    m_bonesCount;
+        size_t m_bonesCount;
         
     };
 } // namespace EMStudio

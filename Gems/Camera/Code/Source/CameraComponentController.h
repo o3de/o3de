@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,15 +16,12 @@
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 
-#include <IViewSystem.h>
-#include <ISystem.h>
-#include <Cry_Camera.h>
-
 namespace Camera
 {
     static constexpr float DefaultFoV = 75.0f;
     static constexpr float MinFoV = std::numeric_limits<float>::epsilon();
     static constexpr float MaxFoV = AZ::RadToDeg(AZ::Constants::Pi);
+    static constexpr float MinimumNearPlaneDistance = 0.001f;
     static constexpr float DefaultNearPlaneDistance = 0.2f;
     static constexpr float DefaultFarClipPlaneDistance = 1024.0f;
     static constexpr float DefaultFrustumDimension = 256.f;
@@ -39,6 +37,9 @@ namespace Camera
         float GetNearClipDistance() const;
         AZ::EntityId GetEditorEntityId() const;
 
+        AZ::u32 GetPerspectiveParameterVisibility() const;
+        AZ::u32 GetOrthographicParameterVisibility() const;
+
         // Reflected members
         float m_fov = DefaultFoV;
         float m_nearClipDistance = DefaultNearPlaneDistance;
@@ -48,6 +49,8 @@ namespace Camera
         bool m_specifyFrustumDimensions = false;
         AZ::u64 m_editorEntityId = AZ::EntityId::InvalidEntityId;
         bool m_makeActiveViewOnActivation = true;
+        bool m_orthographic = false;
+        float m_orthographicHalfWidth = 5.f;
     };
 
     class CameraComponentController
@@ -63,8 +66,9 @@ namespace Camera
         CameraComponentController() = default;
         explicit CameraComponentController(const CameraComponentConfig& config);
 
-        void ActivateAtomView();
-        void DeactivateAtomView();
+        //! Defines a callback for determining whether this camera should push itself to the top of the Atom camera stack.
+        //! Used by the Editor to disable undesirable camera changes in edit mode.
+        void SetShouldActivateFunction(AZStd::function<bool()> shouldActivateFunction);
 
         // Controller interface
         static void Reflect(AZ::ReflectContext* context);
@@ -77,6 +81,7 @@ namespace Camera
         void Deactivate();
         void SetConfiguration(const CameraComponentConfig& config);
         const CameraComponentConfig& GetConfiguration() const;
+        AZ::RPI::ViewportContextPtr GetViewportContext();
 
         // CameraBus::Handler interface
         AZ::EntityId GetCameras() override;
@@ -88,19 +93,26 @@ namespace Camera
         float GetFarClipDistance() override;
         float GetFrustumWidth() override;
         float GetFrustumHeight() override;
+        bool IsOrthographic() override;
+        float GetOrthographicHalfWidth() override;
         void SetFovDegrees(float fov) override;
         void SetFovRadians(float fov) override;
         void SetNearClipDistance(float nearClipDistance) override;
         void SetFarClipDistance(float farClipDistance) override;
         void SetFrustumWidth(float width) override;
         void SetFrustumHeight(float height) override;
+        void SetOrthographic(bool orthographic) override;
+        void SetOrthographicHalfWidth(float halfWidth) override;
+
         void MakeActiveView() override;
+        bool IsActiveView() override;
 
         // AZ::TransformNotificationBus::Handler interface
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         // AZ::RPI::ViewportContextNotificationBus::Handler interface
         void OnViewportSizeChanged(AzFramework::WindowSize size) override;
+        void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view) override;
 
         // AZ::RPI::ViewProviderBus::Handler interface
         AZ::RPI::ViewPtr GetView() const override;
@@ -108,6 +120,8 @@ namespace Camera
     private:
         AZ_DISABLE_COPY(CameraComponentController);
 
+        void ActivateAtomView();
+        void DeactivateAtomView();
         void UpdateCamera();
         void SetupAtomAuxGeom(AZ::RPI::ViewportContextPtr viewportContext);
 
@@ -119,11 +133,8 @@ namespace Camera
         AZ::RPI::AuxGeomDrawPtr m_atomAuxGeom;
         AZ::Event<const AZ::Matrix4x4&>::Handler m_onViewMatrixChanged;
         bool m_updatingTransformFromEntity = false;
+        bool m_isActiveView = false;
 
-        // Cry view integration
-        IView* m_view = nullptr;
-        AZ::u32 m_prevViewId = 0;
-        IViewSystem* m_viewSystem = nullptr;
-        ISystem* m_system = nullptr;
+        AZStd::function<bool()> m_shouldActivateFn;
     };
 } // namespace Camera

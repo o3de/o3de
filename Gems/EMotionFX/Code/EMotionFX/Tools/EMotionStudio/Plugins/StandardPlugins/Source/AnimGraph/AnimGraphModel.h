@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -312,7 +313,7 @@ namespace EMStudio
         bool Execute(MCore::Command * command, const MCore::CommandLine& commandLine) override;                 \
         bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine) override;                     \
     private:                                                                                                    \
-        AnimGraphModel& m_animGraphModel;                                                                       \
+        [[maybe_unused]] AnimGraphModel& m_animGraphModel;                                                      \
     };                                                                                                          \
     friend class CLASSNAME;
 

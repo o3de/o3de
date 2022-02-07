@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,8 +15,6 @@ namespace AZ
     {
         namespace SrgLayoutUtility
         {
-            static constexpr char SrgLayoutUtilityName[] = "SrgLayoutUtility";
-
             RHI::ShaderInputImageType ToShaderInputImageType(TextureType textureType)
             {
                 switch (textureType)
@@ -104,6 +103,7 @@ namespace AZ
                 {
                     RHI::Ptr<RHI::ShaderResourceGroupLayout> newSrgLayout = RHI::ShaderResourceGroupLayout::Create();
                     newSrgLayout->SetName(AZ::Name{srgData.m_name.c_str()});
+                    newSrgLayout->SetUniqueId(srgData.m_containingFileName);
                     newSrgLayout->SetBindingSlot(srgData.m_bindingSlot.m_index);
 
                     // Samplers

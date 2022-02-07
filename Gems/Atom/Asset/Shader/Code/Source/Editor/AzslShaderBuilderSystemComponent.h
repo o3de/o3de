@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,8 +14,6 @@
 
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
-#include "AzslBuilder.h"
-#include "SrgLayoutBuilder.h"
 #include "ShaderAssetBuilder.h"
 #include "ShaderVariantAssetBuilder.h"
 #include "PrecompiledShaderBuilder.h"
@@ -61,10 +60,18 @@ namespace AZ
             AZStd::vector<RHI::ShaderPlatformInterface*> GetShaderPlatformInterface(const AssetBuilderSDK::PlatformInfo& platformInfo) override;
 
         private:
-            AzslBuilder m_azslBuilder;
-            SrgLayoutBuilder m_srgLayoutBuilder;
             ShaderAssetBuilder m_shaderAssetBuilder;
+
+            // The ShaderVariantAssetBuilder can be disabled with this registry key.
+            // By default it is enabled. A user might want to disable it when doing look development
+            // work with shaders or doing lots of iterative changes to shaders. In these cases
+            // GPU performance doesn't matter at all so it is important to not waste time
+            // building ShaderVariantAssets (Other than the Root ShaderVariantAsset, of course.).
+            static constexpr char EnableShaderVariantAssetBuilderRegistryKey[] = "/O3DE/Atom/Shaders/BuildVariants";
+            bool m_enableShaderVariantAssetBuilder = true;
+
             ShaderVariantAssetBuilder m_shaderVariantAssetBuilder;
+
             PrecompiledShaderBuilder m_precompiledShaderBuilder;
 
             /// Contains the ShaderPlatformInterface for all registered RHIs

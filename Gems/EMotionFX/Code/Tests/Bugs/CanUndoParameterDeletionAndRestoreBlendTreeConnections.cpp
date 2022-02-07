@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -141,7 +142,7 @@ namespace EMotionFX
 
                 for (const AnimGraphNode::Port& outputPort : outputPorts)
                 {
-                    ASSERT_TRUE(outputPort.mConnection) << "Expected a valid connection at the output port.";
+                    ASSERT_TRUE(outputPort.m_connection) << "Expected a valid connection at the output port.";
                 }
             }
 
@@ -172,7 +173,7 @@ namespace EMotionFX
 
                 for (const AnimGraphNode::Port& outputPort : outputPorts)
                 {
-                    ASSERT_TRUE(outputPort.mConnection) << "Expected a valid connection at the output port.";
+                    ASSERT_TRUE(outputPort.m_connection) << "Expected a valid connection at the output port.";
                 }
             }
         }

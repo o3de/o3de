@@ -1,0 +1,3 @@
+[General]
+version=1
+startScript="ImportActor -filename \"@products@/characters/cowboy/actor/cowboy_01.actor\"\nCreateActorInstance -actorID %LASTRESULT% -xPos 0.000000 -yPos 0.000000 -zPos 0.000000 -xScale 1.000000 -yScale 1.000000 -zScale 1.000000 -rot 0.00000000,0.00000000,0.00000000,1.00000000\n"

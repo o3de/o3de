@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/bitset.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -39,7 +41,9 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpBlendShapeImporter, SceneCore::LoadingComponent>()->Version(3); // LYN-2576
+                    // Revision 3: Fixed an issue where jack.fbx was failing to process
+                    // Revision 4: Handle duplicate blend shape animations
+                    serializeContext->Class<AssImpBlendShapeImporter, SceneCore::LoadingComponent>()->Version(4);
                 }
             }
 
@@ -79,28 +83,90 @@ namespace AZ
                 // AssImp separates meshes that have multiple materials.
                 // This code re-combines them to match previous FBX SDK behavior,
                 // so they can be separated by engine code instead.
-                AZStd::map<AZStd::string_view, AZStd::vector<AZStd::pair<int, int>>> animToMeshToAnimMeshIndices;
+                // Can't de-dupe nodes in the first loop because we can't generate names until we create nodes later.
+                // Because meshes are split on material at this point and need to be recombined, we can be in a position where
+                // There is a legit duped anim mesh that needs to be combined based on the outer non-anim mesh,
+                // or this is a duplicately named anim mesh that needs to be de-duped. There is also the case where both are true,
+                // it's a duplicate name and the non-anim mesh has to be deduped.
+
+                // Helper struct to track an anim mesh and its associated mesh.
+                struct AnimMeshAndSceneMeshIndex
+                {
+                    AnimMeshAndSceneMeshIndex(const aiAnimMesh* aiAnimMesh, const aiMesh* aiMesh)
+                        : m_aiAnimMesh(aiAnimMesh)
+                        , m_aiMesh(aiMesh)
+                    {
+                    }
+                    const aiAnimMesh* m_aiAnimMesh = nullptr;
+                    const aiMesh* m_aiMesh = nullptr;
+                };
+
+                // Helper struct to track all anim meshes at an index for all scene meshes.
+                struct AnimMeshAndSceneMeshes
+                {
+                    AZStd::vector<AnimMeshAndSceneMeshIndex> m_animMeshAndSceneMeshIndex;
+                };
+
+                // Map the animation index to the list of anim meshes at that index, and the mesh associated with those anim meshes.
+                AZStd::map<int, AnimMeshAndSceneMeshes> animMeshIndexToSceneMeshes;
                 for (int nodeMeshIdx = 0; nodeMeshIdx < numMesh; nodeMeshIdx++)
                 {
                     int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
                     const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
-                    for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
+                    for (unsigned int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
                     {
                         aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
-                        animToMeshToAnimMeshIndices[aiAnimMesh->mName.C_Str()].emplace_back(nodeMeshIdx, animIdx);
+
+                        // This code executes if:
+                        //  A mesh in the FBX file had multiple materials and blend shapes.
+                        //  This means that AssImp splits that mesh to one material per mesh.
+                        //  AssImp creates a set of anim meshes for each mesh based on that split.
+                        // This verifies that those anim mesh arrays are in the same order across all split meshes, if it fails
+                        // it means this logic needs to be updated, but it also catches that here earlier in an obvious way,
+                        // instead of failing later in a harder to track way.
+                        if (animMeshIndexToSceneMeshes.contains(animIdx))
+                        {
+                            const AnimMeshAndSceneMeshIndex& firstExistingAnim(
+                                animMeshIndexToSceneMeshes[animIdx].m_animMeshAndSceneMeshIndex[0]);
+                            if (strcmp(
+                                    firstExistingAnim.m_aiAnimMesh->mName.C_Str(),
+                                    aiAnimMesh->mName.C_Str()) != 0)
+                            {
+                                AZ_Error(
+                                    Utilities::ErrorWindow, false,
+                                    "Meshes %s and %s on node %s have mismatched animations %s and %s at index %d. This can be resolved by "
+                                    "either manually separating meshes by material in the source scene file, or by updating this logic to "
+                                    "handle out of order animation indices.",
+                                    firstExistingAnim.m_aiMesh->mName.C_Str(),
+                                    aiMesh->mName.C_Str(),
+                                    context.m_sourceNode.GetName(),
+                                    firstExistingAnim.m_aiAnimMesh->mName.C_Str(),
+                                    aiAnimMesh->mName.C_Str(), animIdx);
+                                return Events::ProcessingResult::Failure;
+                            }
+                        }
+
+                        animMeshIndexToSceneMeshes[animIdx].m_animMeshAndSceneMeshIndex.emplace_back(
+                            AnimMeshAndSceneMeshIndex(aiAnimMesh, aiMesh));
                     }
                 }
 
-                for (const auto& animToMeshIndex : animToMeshToAnimMeshIndices)
+                for (const auto& animMeshToSceneMeshes : animMeshIndexToSceneMeshes)
                 {
                     AZStd::shared_ptr<SceneData::GraphData::BlendShapeData> blendShapeData =
                         AZStd::make_shared<SceneData::GraphData::BlendShapeData>();
 
+                    if (animMeshToSceneMeshes.second.m_animMeshAndSceneMeshIndex.size() == 0)
+                    {
+                        AZ_Error(Utilities::ErrorWindow, false, "Blend shape animations were expected but missing on node %s.",
+                            context.m_sourceNode.GetName());
+                        return Events::ProcessingResult::Failure;
+                    }
                     // Some DCC tools, like Maya, include a full path separated by '.' in the node names.
                     // For example, "cone_skin_blendShapeNode.cone_squash"
                     // Downstream processing doesn't want anything but the last part of that node name,
                     // so find the last '.' and remove anything before it.
-                    AZStd::string nodeName(animToMeshIndex.first);
+                    AZStd::string nodeName(animMeshToSceneMeshes.second.m_animMeshAndSceneMeshIndex[0].m_aiAnimMesh->mName.C_Str());
                     size_t dotIndex = nodeName.rfind('.');
                     if (dotIndex != AZStd::string::npos)
                     {
@@ -108,12 +174,11 @@ namespace AZ
                     }
                     int vertexOffset = 0;
                     RenamedNodesMap::SanitizeNodeName(nodeName, context.m_scene.GetGraph(), context.m_currentGraphPosition, "BlendShape");
-                    AZ_TraceContext("Blend shape name", nodeName);
-                    for (const auto& meshIndex : animToMeshIndex.second)
+
+                    for (const auto& animMeshAndSceneIndex : animMeshToSceneMeshes.second.m_animMeshAndSceneMeshIndex)
                     {
-                        int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[meshIndex.first];
-                        const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
-                        const aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[meshIndex.second];
+                        const aiAnimMesh* aiAnimMesh = animMeshAndSceneIndex.m_aiAnimMesh;
+                        const aiMesh* aiMesh = animMeshAndSceneIndex.m_aiMesh;
 
                         AZStd::bitset<SceneData::GraphData::BlendShapeData::MaxNumUVSets> uvSetUsedFlags;
                         for (AZ::u8 uvSetIndex = 0; uvSetIndex < SceneData::GraphData::BlendShapeData::MaxNumUVSets; ++uvSetIndex)
@@ -129,7 +194,7 @@ namespace AZ
                         blendShapeData->ReserveData(
                             aiAnimMesh->mNumVertices, aiAnimMesh->HasTangentsAndBitangents(), uvSetUsedFlags, colorSetUsedFlags);
 
-                        for (int vertIdx = 0; vertIdx < aiAnimMesh->mNumVertices; ++vertIdx)
+                        for (unsigned int vertIdx = 0; vertIdx < aiAnimMesh->mNumVertices; ++vertIdx)
                         {
                             AZ::Vector3 vertex(AssImpSDKWrapper::AssImpTypeConverter::ToVector3(aiAnimMesh->mVertices[vertIdx]));
                    
@@ -183,7 +248,7 @@ namespace AZ
                         }
 
                         // aiAnimMesh just has a list of positions for vertices. The face indices are on the original mesh.
-                        for (int faceIdx = 0; faceIdx < aiMesh->mNumFaces; ++faceIdx)
+                        for (unsigned int faceIdx = 0; faceIdx < aiMesh->mNumFaces; ++faceIdx)
                         {
                             aiFace face = aiMesh->mFaces[faceIdx];
                             DataTypes::IBlendShapeData::Face blendFace;
@@ -198,7 +263,8 @@ namespace AZ
                                     face.mNumIndices);
                                 continue;
                             }
-                            for (int idx = 0; idx < face.mNumIndices; ++idx)
+
+                            for (unsigned int idx = 0; idx < face.mNumIndices; ++idx)
                             {
                                 blendFace.vertexIndex[idx] = face.mIndices[idx] + vertexOffset;
                             }
@@ -206,10 +272,7 @@ namespace AZ
                             blendShapeData->AddFace(blendFace);
                         }
                         vertexOffset += aiMesh->mNumVertices;
-
-
                     }
-
 
                     // Report problem if no vertex or face converted to MeshData
                     if (blendShapeData->GetVertexCount() <= 0 || blendShapeData->GetFaceCount() <= 0)

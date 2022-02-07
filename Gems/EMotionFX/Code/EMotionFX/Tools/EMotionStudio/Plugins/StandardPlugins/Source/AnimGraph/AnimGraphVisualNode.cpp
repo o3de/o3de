@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,10 +23,10 @@ namespace EMStudio
     AnimGraphVisualNode::AnimGraphVisualNode(const QModelIndex& modelIndex, AnimGraphPlugin* plugin, EMotionFX::AnimGraphNode* node)
         : GraphNode(modelIndex, node->GetName(), 0, 0)
     {
-        mEMFXNode           = node;
-        mCanHaveChildren    = node->GetCanHaveChildren();
-        mHasVisualGraph     = node->GetHasVisualGraph();
-        mPlugin             = plugin;
+        m_emfxNode           = node;
+        m_canHaveChildren    = node->GetCanHaveChildren();
+        m_hasVisualGraph     = node->GetHasVisualGraph();
+        m_plugin             = plugin;
         SetSubTitle(node->GetPaletteName(), false);
     }
 
@@ -44,24 +45,24 @@ namespace EMStudio
 
     void AnimGraphVisualNode::Sync()
     {
-        SetName(mEMFXNode->GetName());
-        SetNodeInfo(mEMFXNode->GetNodeInfo());
+        SetName(m_emfxNode->GetName());
+        SetNodeInfo(m_emfxNode->GetNodeInfo());
         
-        SetDeletable(mEMFXNode->GetIsDeletable());
-        SetBaseColor(AzColorToQColor(mEMFXNode->GetVisualColor()));
-        SetHasChildIndicatorColor(AzColorToQColor(mEMFXNode->GetHasChildIndicatorColor()));
-        SetIsCollapsed(mEMFXNode->GetIsCollapsed());
+        SetDeletable(m_emfxNode->GetIsDeletable());
+        SetBaseColor(AzColorToQColor(m_emfxNode->GetVisualColor()));
+        SetHasChildIndicatorColor(AzColorToQColor(m_emfxNode->GetHasChildIndicatorColor()));
+        SetIsCollapsed(m_emfxNode->GetIsCollapsed());
 
         // Update position
         UpdateRects();
-        MoveAbsolute(QPoint(mEMFXNode->GetVisualPosX(), mEMFXNode->GetVisualPosY()));
+        MoveAbsolute(QPoint(m_emfxNode->GetVisualPosX(), m_emfxNode->GetVisualPosY()));
 
-        SetIsVisualized(mEMFXNode->GetIsVisualizationEnabled());
-        SetCanVisualize(mEMFXNode->GetSupportsVisualization());
-        SetIsEnabled(mEMFXNode->GetIsEnabled());
-        SetVisualizeColor(AzColorToQColor(mEMFXNode->GetVisualizeColor()));
-        SetHasVisualOutputPorts(mEMFXNode->GetHasVisualOutputPorts());
-        mHasVisualGraph = mEMFXNode->GetHasVisualGraph();
+        SetIsVisualized(m_emfxNode->GetIsVisualizationEnabled());
+        SetCanVisualize(m_emfxNode->GetSupportsVisualization());
+        SetIsEnabled(m_emfxNode->GetIsEnabled());
+        SetVisualizeColor(AzColorToQColor(m_emfxNode->GetVisualizeColor()));
+        SetHasVisualOutputPorts(m_emfxNode->GetHasVisualOutputPorts());
+        m_hasVisualGraph = m_emfxNode->GetHasVisualGraph();
 
         UpdateTextPixmap();
     }
@@ -71,30 +72,6 @@ namespace EMStudio
     void AnimGraphVisualNode::RenderDebugInfo(QPainter& painter)
     {
         MCORE_UNUSED(painter);
-        /*  // get the selected actor instance
-            EMotionFX::ActorInstance* actorInstance = EMotionFX::GetCommandManager()->GetCurrentSelection().GetSingleActorInstance();
-            if (actorInstance == nullptr)
-                return;
-
-            // get the anim graph instance
-            EMotionFX::AnimGraphInstance* animGraphInstance = actorInstance->GetAnimGraphInstance();
-            if (animGraphInstance == nullptr)
-                return;
-
-            QRect rect( mRect.left(), mRect.bottom(), mRect.width(), 10 );
-
-            // draw header text
-            QTextOption textOptions;
-            textOptions.setAlignment( Qt::AlignCenter|Qt::AlignTop );
-            painter.setPen( QColor(0,255,0) );
-
-            QString s;
-            //s.sprintf("%.3f  %.3f", mEMFXNode->FindUniqueData(animGraphInstance)->GetInternalPlaySpeed(), mEMFXNode->FindUniqueData(animGraphInstance)->GetPlaySpeed());
-            //painter.drawText( rect, s, textOptions );
-
-            //rect.translate(0, 12);
-            s.sprintf("%.3f  %.3f", mEMFXNode->FindUniqueData(animGraphInstance)->GetGlobalWeight(), mEMFXNode->FindUniqueData(animGraphInstance)->GetLocalWeight());
-            painter.drawText( rect, s, textOptions );*/
     }
 
 
@@ -102,7 +79,7 @@ namespace EMStudio
     void AnimGraphVisualNode::RenderTracks(QPainter& painter, const QColor bgColor, const QColor bgColor2, int32 heightOffset)
     {
         // get the sync track
-        QRect rect(mRect.left() + 5, mRect.bottom() - 13 + heightOffset, mRect.width() - 10, 8);
+        QRect rect(m_rect.left() + 5, m_rect.bottom() - 13 + heightOffset, m_rect.width() - 10, 8);
 
         painter.setPen(bgColor.darker(185));
         painter.setBrush(bgColor2);
@@ -115,7 +92,7 @@ namespace EMStudio
             return;
         }
 
-        const float duration = mEMFXNode->GetDuration(animGraphInstance);
+        const float duration = m_emfxNode->GetDuration(animGraphInstance);
         if (duration < MCore::Math::epsilon)
         {
             return;
@@ -123,7 +100,7 @@ namespace EMStudio
 
         // draw the background rect
         QRect playRect = rect;
-        int32 x = aznumeric_cast<int32>(rect.left() + 1 + (rect.width() - 2) * (mEMFXNode->GetCurrentPlayTime(animGraphInstance) / duration));
+        int32 x = aznumeric_cast<int32>(rect.left() + 1 + (rect.width() - 2) * (m_emfxNode->GetCurrentPlayTime(animGraphInstance) / duration));
         playRect.setRight(x);
         playRect.setLeft(rect.left() + 1);
         playRect.setTop(rect.top() + 1);
@@ -133,7 +110,7 @@ namespace EMStudio
         painter.drawRect(playRect);
 
         // draw the sync keys
-        const EMotionFX::AnimGraphNodeData* uniqueData = mEMFXNode->FindOrCreateUniqueNodeData(animGraphInstance);
+        const EMotionFX::AnimGraphNodeData* uniqueData = m_emfxNode->FindOrCreateUniqueNodeData(animGraphInstance);
         const EMotionFX::AnimGraphSyncTrack* syncTrack = uniqueData->GetSyncTrack();
 
         const size_t numSyncPoints = syncTrack ? syncTrack->GetNumEvents() : 0;
@@ -168,7 +145,7 @@ namespace EMStudio
 
         // draw the current play time
         painter.setPen(Qt::yellow);
-        x = aznumeric_cast<int32>(rect.left() + 1 + (rect.width() - 2) * (mEMFXNode->GetCurrentPlayTime(animGraphInstance) / duration));
+        x = aznumeric_cast<int32>(rect.left() + 1 + (rect.width() - 2) * (m_emfxNode->GetCurrentPlayTime(animGraphInstance) / duration));
         painter.drawLine(x, rect.top() + 1, x, rect.bottom());
     }
 
@@ -186,7 +163,7 @@ namespace EMStudio
         // extract anim graph instance
         EMotionFX::AnimGraphInstance* animGraphInstance = ExtractAnimGraphInstance();
 
-        return (animGraphInstance == nullptr) || (animGraphInstance->GetIsOutputReady(mEMFXNode->GetParentNode()->GetObjectIndex()) == false);
+        return (animGraphInstance == nullptr) || (animGraphInstance->GetIsOutputReady(m_emfxNode->GetParentNode()->GetObjectIndex()) == false);
     }
 
 
@@ -201,7 +178,7 @@ namespace EMStudio
         }
 
         // return the error state of the emfx node
-        EMotionFX::AnimGraphObjectData* uniqueData = mEMFXNode->FindOrCreateUniqueNodeData(animGraphInstance);
-        return mEMFXNode->HierarchicalHasError(uniqueData);
+        EMotionFX::AnimGraphObjectData* uniqueData = m_emfxNode->FindOrCreateUniqueNodeData(animGraphInstance);
+        return m_emfxNode->HierarchicalHasError(uniqueData);
     }
 }   // namespace EMStudio

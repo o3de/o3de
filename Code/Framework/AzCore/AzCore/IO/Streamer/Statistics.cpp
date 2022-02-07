@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,7 +48,7 @@ namespace AZ
             [[maybe_unused]] AZStd::string_view name,
             [[maybe_unused]] double value)
         {
-            AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::AzCore, value,
+            AZ_PROFILE_DATAPOINT(AzCore, value,
                 "Streamer/%.*s/%.*s (Raw)",
                 aznumeric_cast<int>(owner.size()), owner.data(),
                 aznumeric_cast<int>(name.size()), name.data());

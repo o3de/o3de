@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,16 +25,23 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //! executes a Python script using a string, prints the result if printResult is true and script is an expression
-        virtual void ExecuteByString(AZStd::string_view script, bool printResult) { AZ_UNUSED(script); AZ_UNUSED(printResult); }
+        virtual void ExecuteByString([[maybe_unused]] AZStd::string_view script, [[maybe_unused]] bool printResult) {}
 
         //! executes a Python script using a filename
-        virtual void ExecuteByFilename(AZStd::string_view filename) { AZ_UNUSED(filename); }
+        virtual void ExecuteByFilename([[maybe_unused]] AZStd::string_view filename) {}
 
         //! executes a Python script using a filename and args
-        virtual void ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args) { AZ_UNUSED(filename); AZ_UNUSED(args);  }
+        virtual void ExecuteByFilenameWithArgs(
+            [[maybe_unused]] AZStd::string_view filename, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args) {}
 
         //! executes a Python script as a test
-        virtual void ExecuteByFilenameAsTest(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args) { AZ_UNUSED(filename); AZ_UNUSED(args); }
+        virtual bool ExecuteByFilenameAsTest(
+            [[maybe_unused]] AZStd::string_view filename,
+            [[maybe_unused]] AZStd::string_view testCase,
+            [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
+        {
+            return false;
+        }
     };
     using EditorPythonRunnerRequestBus = AZ::EBus<EditorPythonRunnerRequests>;
 

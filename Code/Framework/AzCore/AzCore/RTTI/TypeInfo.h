@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -1005,12 +1006,6 @@ namespace AZ
     AZ_TYPE_INFO_INTERNAL_FUNCTION_VARIATION_SPECIALIZATION(AZStd::function, "{C9F9C644-CCC3-4F77-A792-F5B5DBCA746E}");
 } // namespace AZ
 
-#define AZ_TYPE_INFO_INTERNAL_1(_ClassName) static_assert(false, "You must provide a ClassName,ClassUUID")
-#define AZ_TYPE_INFO_INTERNAL_2(_ClassName, _ClassUuid)        \
-    void TYPEINFO_Enable(){}                                   \
-    static const char* TYPEINFO_Name() { return #_ClassName; } \
-    static const AZ::TypeId& TYPEINFO_Uuid() { static AZ::TypeId s_uuid(_ClassUuid); return s_uuid; }
-
 // Template class type info
 #define AZ_TYPE_INFO_INTERNAL_TEMPLATE(_ClassName, _ClassUuid, ...)\
     void TYPEINFO_Enable() {}\
@@ -1049,39 +1044,11 @@ namespace AZ
 #define AZ_TYPE_INFO_INTERNAL_17 AZ_TYPE_INFO_INTERNAL_TEMPLATE
 #define AZ_TYPE_INFO_INTERNAL(...) AZ_MACRO_SPECIALIZE(AZ_TYPE_INFO_INTERNAL_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
-#define AZ_TYPE_INFO_1 AZ_TYPE_INFO_INTERNAL_1
-#define AZ_TYPE_INFO_2 AZ_TYPE_INFO_INTERNAL_2
-#define AZ_TYPE_INFO_3 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_4 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_5 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_6 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_7 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_8 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_9 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_10 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_11 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_12 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_13 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_14 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_15 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_16 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-#define AZ_TYPE_INFO_17 AZ_TYPE_INFO_INTERNAL_TEMPLATE_DEPRECATED
-
 // Fall-back for the original version of AZ_TYPE_INFO that accepted template arguments. This should not be used, unless
 // to fix issues where AZ_TYPE_INFO was incorrectly used and the old UUID has to be maintained.
 #define AZ_TYPE_INFO_LEGACY AZ_TYPE_INFO_INTERNAL
 
-/**
-* Use this macro inside a class to allow it to be identified across modules and serialized (in different contexts).
-* The expected input is the class and the assigned uuid as a string or an instance of a uuid.
-* Example:
-*   class MyClass
-*   {
-*   public:
-*       AZ_TYPE_INFO(MyClass, "{BD5B1568-D232-4EBF-93BD-69DB66E3773F}");
-*       ...
-*/
-#define AZ_TYPE_INFO(...) AZ_MACRO_SPECIALIZE(AZ_TYPE_INFO_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 /**
 * Use this macro outside a class to allow it to be identified across modules and serialized (in different contexts).

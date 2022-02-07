@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -83,7 +84,7 @@ namespace AZ
                 else
                 {
                     AZ::Debug::Trace::Instance().Assert(__FILE__, __LINE__, AZ_FUNCTION_SIGNATURE,
-                        "Bus has multiple threads in its callstack records. Configure MutexType on the bus, or don't send to it from multiple threads");
+                        "Bus %s has multiple threads in its callstack records. Configure MutexType on the bus, or don't send to it from multiple threads", BusType::GetName());
                 }
             }
 

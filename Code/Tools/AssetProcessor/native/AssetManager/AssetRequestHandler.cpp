@@ -1,15 +1,17 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include "AssetRequestHandler.h"
 
 
+#include <AzCore/Asset/AssetSerializer.h>
+#include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 #include <QDir>
 #include <QTimer>
-#include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 
 using namespace AssetProcessor;
 

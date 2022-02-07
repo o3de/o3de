@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -78,6 +79,8 @@ CPythonScriptsDialog::CPythonScriptsDialog(QWidget* parent)
         GetGemSourcePathsVisitor(AZ::SettingsRegistryInterface& settingsRegistry)
             : m_settingsRegistry(settingsRegistry)
         {}
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
             AZStd::string_view value) override
         {
@@ -88,7 +91,7 @@ CPythonScriptsDialog::CPythonScriptsDialog(QWidget* parent)
             {
                 AZ::IO::Path newSourcePath = jsonSourcePathPointer;
                 // Resolve any file aliases first - Do not use ResolvePath() as that assumes
-                // any relative path is underneath the @assets@ alias
+                // any relative path is underneath the @products@ alias
                 if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
                 {
                     AZ::IO::FixedMaxPath replacedAliasPath;
@@ -158,7 +161,7 @@ void CPythonScriptsDialog::OnExecute()
     QList<QStandardItem*> selectedItems = ui->treeView->GetSelectedItems();
     QStandardItem* selectedItem = selectedItems.empty() ? nullptr : selectedItems.first();
 
-    if (selectedItem == NULL)
+    if (selectedItem == nullptr)
     {
         return;
     }

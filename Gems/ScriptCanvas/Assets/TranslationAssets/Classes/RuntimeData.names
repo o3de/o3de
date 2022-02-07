@@ -1,0 +1,37 @@
+{
+    "entries": [
+        {
+            "base": "RuntimeData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Runtime Data"
+            },
+            "methods": [
+                {
+                    "base": "GetRequiredAssets",
+                    "context": "RuntimeData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Required Assets"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Required Assets is invoked"
+                    },
+                    "details": {
+                        "name": "Get Required Assets"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{5600E444-1E66-5CB4-81A9-053AD1F4453E}",
+                            "details": {
+                                "name": "AZ Std::vector< Asset< Runtime Asset>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -73,6 +74,12 @@ namespace AzFramework
         //! to a "standard" value of 96, the default for Windows in a DPI unaware setting. This can
         //! be used to scale user interface elements to ensure legibility on high density displays.
         virtual float GetDpiScaleFactor() const = 0;
+
+        //! Returns the sync interval which tells the drivers the number of v-blanks to synchronize with
+        virtual uint32_t GetSyncInterval() const = 0;
+
+        //! Returns the refresh rate of the main display
+        virtual uint32_t GetDisplayRefreshRate() const = 0;
     };
     using WindowRequestBus = AZ::EBus<WindowRequests>;
 
@@ -97,6 +104,12 @@ namespace AzFramework
 
         //! This is called when the window is deactivated from code or if the user closes the window.
         virtual void OnWindowClosed() {};
+
+        //! This is called when vsync interval is changed.
+        virtual void OnVsyncIntervalChanged(uint32_t interval) { AZ_UNUSED(interval); };
+
+        //! This is called if the main display's refresh rate changes
+        virtual void OnRefreshRateChanged([[maybe_unused]] uint32_t refreshRate) {}
     };
     using WindowNotificationBus = AZ::EBus<WindowNotifications>;
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,6 @@
 
 #pragma once
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
@@ -36,7 +36,7 @@ namespace AtomFontInternal
         ELEMENT_PASS_BLEND      = 14
     };
 
-    inline int GetBlendModeFromString(const string& str, bool dst)
+    inline int GetBlendModeFromString(const AZStd::string& str, bool dst)
     {
         int blend = GS_BLSRC_ONE;
 
@@ -100,7 +100,7 @@ namespace AtomFontInternal
             );
     }
 
-    inline AZ::FontSmoothMethod TranslateSmoothMethod(const string& value)
+    inline AZ::FontSmoothMethod TranslateSmoothMethod(const AZStd::string& value)
     {
         AZ::FontSmoothMethod smoothMethod = AZ::FontSmoothMethod::None;
         if (value == "blur")
@@ -179,9 +179,8 @@ namespace AtomFontInternal
         void FoundElementImpl();
 
         // notify methods
-        void FoundElement(const string& name)
+        void FoundElement(const AZStd::string& name)
         {
-            //MessageBox(NULL, string("[" + name + "]").c_str(), "FoundElement", MB_OK);
             // process the previous element
             switch (m_nElement)
             {
@@ -246,9 +245,8 @@ namespace AtomFontInternal
             }
         }
 
-        void FoundAttribute(const string& name, const string& value)
+        void FoundAttribute(const AZStd::string& name, const AZStd::string& value)
         {
-            //MessageBox(NULL, string(name + "\n" + value).c_str(), "FoundAttribute", MB_OK);
             switch (m_nElement)
             {
             case ELEMENT_FONT:
@@ -388,8 +386,8 @@ namespace AtomFontInternal
         AZ::FFont::FontEffect*  m_effect;
         AZ::FFont::FontRenderingPass* m_pass;
 
-        string                  m_strFontPath;
-        string                  m_strFontEffectPath;
+        AZStd::string           m_strFontPath;
+        AZStd::string           m_strFontEffectPath;
         vector2l                m_FontTexSize;
         AZ::AtomFont::GlyphSize m_slotSizes;
         float                   m_SizeRatio = IFFontConstants::defaultSizeRatio;

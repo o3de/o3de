@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 #define AZFRAMEWORK_TARGETMANAGEMENTAPI_H
 
 #include <AzCore/base.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/deque.h>
@@ -19,6 +21,8 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/OSAllocator.h>
+
+AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AZ
 {
@@ -191,7 +195,7 @@ namespace AzFramework
         TmMsgCallback(const MsgCB& cb = NULL)
             : m_cb(cb) {}
 
-        virtual void OnReceivedMsg(TmMsgPtr msg)
+        void OnReceivedMsg(TmMsgPtr msg) override
         {
             if (m_cb)
             {

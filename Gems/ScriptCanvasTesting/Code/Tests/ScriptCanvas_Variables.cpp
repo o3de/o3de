@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -206,28 +207,24 @@ TEST_F(ScriptCanvasTestFixture, RemoveVariableTest)
         GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "FirstVector3", vector3Datum1, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
-        const VariableId firstVector3Id = addPropertyOutcome.GetValue();
         ++numVariablesAdded;
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
         GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "SecondVector3", vector3Datum2, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
-        const VariableId secondVector3Id = addPropertyOutcome.GetValue();
         ++numVariablesAdded;
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
         GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "FirstVector4", vector4Datum, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
-        const VariableId firstVector4Id = addPropertyOutcome.GetValue();
         ++numVariablesAdded;
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
         GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "ProjectionMatrix", behaviorMatrix4x4Datum, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
-        const VariableId projectionMatrixId = addPropertyOutcome.GetValue();
         ++numVariablesAdded;
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));

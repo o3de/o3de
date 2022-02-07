@@ -1,16 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/PlatformDef.h>
-
-#define MCPP_DLL_IMPORT 1
-#define MCPP_DONT_USE_SHORT_NAMES 1
-#include <mcpp_lib.h>
-#undef MCPP_DLL_IMPORT
 
 #include <CommonFiles/Preprocessor.h>
 
@@ -18,19 +14,17 @@
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Utils/Utils.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
-
-#include <sstream>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace AZ
 {
@@ -62,7 +56,7 @@ namespace AZ
                         m_predefinedMacros.begin(), m_predefinedMacros.end(),
                         [&](const AZStd::string& predefinedMacro) {
                             //                                       Haystack,        needle,    bCaseSensitive
-                            if (!AzFramework::StringFunc::StartsWith(predefinedMacro, macroName, true))
+                            if (!AZ::StringFunc::StartsWith(predefinedMacro, macroName, true))
                             {
                                 return false;
                             }
@@ -82,123 +76,125 @@ namespace AZ
             }
         }
 
-        //! Binder helper to Matsui C-Pre-Processor library
-        class McppBinder
+        ///////////////////////////////////////////////////////////////////////
+        // McppBinder starts
+        bool McppBinder::StartPreprocessWithCommandLine(int argc, const char* argv[])
         {
-        public:
-            McppBinder(PreprocessorData& out, bool plugERR)
-                : m_outputData(out),
-                  m_plugERR(plugERR)
+            int errorCode = mcpp_lib_main(argc, argv);
+            // convert from std::ostringstring to AZStd::string
+            m_outputData.code = m_outStream.str().c_str();
+            m_outputData.diagnostics = m_errStream.str().c_str();
+            return errorCode == 0;
+        }
+
+        int McppBinder::Putc_StaticHinge(int c, MCPP_OUTDEST od)
+        {
+            char asString[2] = { aznumeric_cast<char>(c), 0 };
+            return Fputs_StaticHinge(asString, od);
+        }
+
+        int McppBinder::Fputs_StaticHinge(const char* s, MCPP_OUTDEST od)
+        {
+            if (!OkToLog(od))
             {
-                // single live instance
-                s_mcppExclusiveProtection.lock();
-                s_currentInstance = this;
-                SetupMcppCallbacks();
+                return 0;
             }
-            ~McppBinder()
+            // chose the proper stream
+            auto& selectedStream = od == MCPP_OUT ? s_currentInstance->m_outStream : s_currentInstance->m_errStream;
+            auto tellBefore = selectedStream.tellp();
+            // append that message to it
+            selectedStream << s;
+            return aznumeric_cast<int>(selectedStream.tellp() - tellBefore);
+        }
+
+        int McppBinder::Fprintf_StaticHinge(MCPP_OUTDEST od, const char* format, ...)
+        {
+            if (!OkToLog(od))
             {
-                s_currentInstance = nullptr;
-                s_mcppExclusiveProtection.unlock();
+                return 0;
             }
+            // run the formatting on stack memory first, in case it's enough
+            char localBuffer[DefaultFprintfBufferSize];
 
-            bool StartPreprocessWithCommandLine(int argc, const char* argv[])
+            va_list args;
+
+            va_start(args, format);
+            int count = azvsnprintf(localBuffer, DefaultFprintfBufferSize, format, args);
+            va_end(args);
+
+            char* result = localBuffer;
+
+            // @result will be bound to @biggerData in case @localBuffer is not big enough.
+            std::unique_ptr<char[]> biggerData;
+            // ">=" is the right comparison because in case count == bufferSize
+            // We will need an extra byte to accomodate the '\0' ending character.
+            if (count >= DefaultFprintfBufferSize)
             {
-                int errorCode = mcpp_lib_main(argc, argv);
-                // convert from std::ostringstring to AZStd::string
-                m_outputData.code = m_outStream.str().c_str();
-                m_outputData.diagnostics = m_errStream.str().c_str();
-                return errorCode == 0;
-            }
+                // There wasn't enough space in the local store.
+                count++; // vsnprintf returns a size that doesn't include the null character.
+                biggerData.reset(new char[count]);
+                result = &biggerData[0];
 
-        private:
-
-            // ====== C-API compatible "Static Hinges" (plain free functions) ======
-            // : capturing-lambdas, function-objects, bind-expression; can't be decayed to function pointers,
-            // because they hold runtime-dynamic type-erased states. So we need intermediates
-
-            // entry point from mcpp. hijacking its output
-            static int Putc_StaticHinge(int c, MCPP_OUTDEST od)
-            {
-                char asString[2] = { aznumeric_cast<char>(c), 0 };
-                return Fputs_StaticHinge(asString, od);
-            }
-
-            // entry point from mcpp. hijacking its output
-            static int Fputs_StaticHinge(const char* s, MCPP_OUTDEST od)
-            {
-                if (!OkToLog(od))
-                {
-                    return 0;
-                }
-                // chose the proper stream
-                auto& selectedStream = od == MCPP_OUT ? s_currentInstance->m_outStream : s_currentInstance->m_errStream;
-                auto tellBefore = selectedStream.tellp();
-                // append that message to it
-                selectedStream << s;
-                return aznumeric_cast<int>(selectedStream.tellp() - tellBefore);
-            }
-
-            // entry point from mcpp. hijacking its output
-            static int Fprintf_StaticHinge(MCPP_OUTDEST od, const char* format, ...)
-            {
-                if (!OkToLog(od))
-                {
-                    return 0;
-                }
-                // run the formatting on stack memory first, in case it's enough
-                constexpr int bufferSize = 256;
-                char localBuffer[bufferSize];
-                va_list args;
+                // Remark: for MacOS & Linux it is important to call va_start again before
+                // each call to azvsnprintf. Not required for Windows.
                 va_start(args, format);
-                int count = azvsnprintf(localBuffer, 256, format, args);
-                AZStd::unique_ptr<char[]> biggerData;  // will be bound to a bigger array if necessary.
-                char* result = localBuffer;
-                if (count > bufferSize)
-                {   // there wasn't enough space in the local store.
-                    biggerData.reset(new char[count]);
-                    result = &biggerData[0];  // change `result`'s pointee
-                    count = azvsnprintf(result, count, format, args);
-                }
-                AZ_Error("Preprocessor", count >= 0, "String formatting of pre-precessor output failed");
+                count = azvsnprintf(result, count, format, args);
                 va_end(args);
-                return Fputs_StaticHinge(result, od);
             }
-
-            static void IncludeReport_StaticHinge(FILE*, const char*, const char*, const char* path)
+            else if (count == -1)
             {
-                s_currentInstance->m_outputData.includedPaths.insert(path);
+                // In Windows azvsnprintf will always return -1 if  @localBuffer is not big enough,
+                // But it will write in @localBuffer what it could.
+                // See:
+                // https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/vsnprintf-vsnprintf-vsnprintf-l-vsnwprintf-vsnwprintf-l?view=msvc-160
+                // In particular: "If the number of characters to write is greater than count,
+                // these functions return -1 indicating that output has been truncated."
+
+                // There wasn't enough space in the local store.
+                // Remark: for MacOS & Linux it is important to call va_start again before
+                // each call to azvsnprintf. Not required for Windows.
+                va_start(args, format);
+                count = azvscprintf(format, args);
+                count += 1; // vscprintf returns a size that doesn't include the null character.
+                va_end(args);
+
+                biggerData.reset(new char[count]);
+                result = &biggerData[0];
+
+                va_start(args, format);
+                count = azvsnprintf(result, count, format, args);
+                va_end(args);
             }
 
-            // ====== utility methods =====
+            AZ_Error("Preprocessor", count >= 0, "String formatting of pre-precessor output failed");
+            return Fputs_StaticHinge(result, od);
+        }
 
-            static bool OkToLog(MCPP_OUTDEST od)
-            {
-                bool isErrButOk = od == MCPP_ERR && s_currentInstance->m_plugERR;
-                return od == MCPP_OUT || isErrButOk;
-            }
+        void McppBinder::IncludeReport_StaticHinge(FILE*, const char*, const char*, const char* path)
+        {
+            s_currentInstance->m_outputData.includedPaths.insert(path);
+        }
 
-            static void SetupMcppCallbacks()
-            {
-                // callback for header included notification
-                mcpp_set_report_include_callback(IncludeReport_StaticHinge);
-                // callback for output redirection
-                mcpp_set_out_func(Putc_StaticHinge, Fputs_StaticHinge, Fprintf_StaticHinge);
-            }
+        bool McppBinder::OkToLog(MCPP_OUTDEST od)
+        {
+            bool isErrButOk = od == MCPP_ERR && s_currentInstance->m_plugERR;
+            return od == MCPP_OUT || isErrButOk;
+        }
 
-            // ====== instance data ======
-            PreprocessorData& m_outputData;
-            std::ostringstream m_outStream, m_errStream;
-            bool m_plugERR;
-
-            // ======  shared data  ======
-            // MCPP is a library with tons of non TLS global states, it can only be accessed by one client at a time.
-            static AZStd::mutex s_mcppExclusiveProtection;
-            static McppBinder* s_currentInstance;
-        };
+        void McppBinder::SetupMcppCallbacks()
+        {
+            // callback for header included notification
+            mcpp_set_report_include_callback(IncludeReport_StaticHinge);
+            // callback for output redirection
+            mcpp_set_out_func(Putc_StaticHinge, Fputs_StaticHinge, Fprintf_StaticHinge);
+        }
 
         // definitions for the linker
         AZStd::mutex McppBinder::s_mcppExclusiveProtection;
-        McppBinder*  McppBinder::s_currentInstance = nullptr;
+        McppBinder* McppBinder::s_currentInstance = nullptr;
+
+        // McppBinder ends
+        ///////////////////////////////////////////////////////////////////////
 
         bool PreprocessFile(const AZStd::string& fullPath, PreprocessorData& outputData, const PreprocessorOptions& options
             , bool collectDiagnostics, bool preprocessIncludedFiles)
@@ -208,7 +204,7 @@ namespace AZ
 
             // create the argc/argv
             const char* processName = "builder";
-            const char* inputPath  = fullPath.c_str();
+            const char* inputPath = fullPath.c_str();
             // let's create the equivalent of that expression but in dynamic form:
             //const char* argv[] = { processName, szInPath, "-C", "-+", "-D macro1"..., "-I path"..., NULL };
             AZStd::vector< const char* > argv;
@@ -234,7 +230,7 @@ namespace AZ
             argv.push_back(nullptr); // usual argv terminator
             // output the command line:
             AZStd::string stringifiedCommandLine;
-            AzFramework::StringFunc::Join(stringifiedCommandLine, argv.begin(), argv.end() - 1, " ");
+            AZ::StringFunc::Join(stringifiedCommandLine, argv.begin(), argv.end() - 1, " ");
             AZ_TracePrintf("Preprocessor", "%s", stringifiedCommandLine.c_str());
             // when we don't specify an -o outfile, mcpp uses stdout.
             // the trick is that since we hijacked putc & puts, stdout will not be written. 
@@ -242,17 +238,12 @@ namespace AZ
             return result;
         }
 
-        static void VerifySameFolder(const AZStd::string& path1, const AZStd::string& path2)
+        static void VerifySameFolder([[maybe_unused]] AZStd::string_view path1, [[maybe_unused]] AZStd::string_view path2)
         {
-            AZStd::string folder1, folder2;
-            AzFramework::StringFunc::Path::GetFolderPath(path1.c_str(), folder1);
-            AzFramework::StringFunc::Path::GetFolderPath(path2.c_str(), folder2);
-            AzFramework::StringFunc::Path::Normalize(folder1);
-            AzFramework::StringFunc::Path::Normalize(folder2);
             AZ_Warning("Preprocessing",
-                folder1 == folder2,
-                "The preprocessed file %s is in a different folder than its origin %s. Watch for #include problems with relative paths.",
-                path1.c_str(), path2.c_str()
+                AZ::IO::PathView(path1).ParentPath().LexicallyNormal() == AZ::IO::PathView(path2).ParentPath().LexicallyNormal(),
+                "The preprocessed file %.*s is in a different folder than its origin %.*s. Watch for #include problems with relative paths.",
+                AZ_STRING_ARG(path1), AZ_STRING_ARG(path2)
             );
         }
 
@@ -264,7 +255,7 @@ namespace AZ
         // containing file names, to match the ORIGINAL source, and not the actual source in use by azslc.
         // That gymnastic is better for error messages anyway, so instead of making the SRG layout builder more intelligent,
         // we'll fake the origin of the file, by setting the original source as a filename
-        //  note that it is not possible to build a file in a different folder and fake it to a file eslewhere because relative includes will fail.
+        //  note that it is not possible to build a file in a different folder and fake it to a file elsewhere because relative includes will fail.
         void MutateLineDirectivesFileOrigin(
             AZStd::string& sourceCode,
             AZStd::string newFileOrigin)
@@ -276,36 +267,16 @@ namespace AZ
             // we will use that as the information of the source path to mutate.
             if (sourceCode.starts_with("#line"))
             {
-                auto firstQuote  = sourceCode.find('"');
-                auto secondQuote = sourceCode.find('"', firstQuote + 1);
+                auto firstQuote = sourceCode.find('"');
+                auto secondQuote = firstQuote != AZStd::string::npos ? sourceCode.find('"', firstQuote + 1) : AZStd::string::npos;
                 auto originalFile = sourceCode.substr(firstQuote + 1, secondQuote - firstQuote - 1);  // start +1, count -1 because we don't want the quotes included.
                 VerifySameFolder(originalFile, newFileOrigin);
-                [[maybe_unused]] bool didReplace = AzFramework::StringFunc::Replace(sourceCode, originalFile.c_str(), newFileOrigin.c_str(), true /*case sensitive*/);
+                [[maybe_unused]] bool didReplace = AZ::StringFunc::Replace(sourceCode, originalFile.c_str(), newFileOrigin.c_str(), true /*case sensitive*/);
                 AZ_Assert(didReplace, "Failed to replace %s for %s in preprocessed source.", originalFile.c_str(), newFileOrigin.c_str());
             }
             else
             {
                 AZ_Assert(false, "preprocessed sources must start with #line directive, otherwise it's impossible to auto-detect the original file to mutate.")
-            }
-        }
-
-        namespace
-        {
-            template< typename Container1, typename Container2 >
-            void TransferContent(Container1& destination, Container2&& source)
-            {
-                destination.insert(AZStd::end(destination),
-                                   AZStd::make_move_iterator(AZStd::begin(source)),
-                                   AZStd::make_move_iterator(AZStd::end(source)));
-            }
-
-            void DeleteFromSet(const AZStd::string& string, AZStd::set<AZStd::string>& set)
-            {
-                auto iter = set.find(string);
-                if (iter != set.end())
-                {
-                    set.erase(iter);
-                }
             }
         }
 
@@ -319,44 +290,61 @@ namespace AZ
             bool success = true;
             AZStd::vector<AZStd::string> scanFoldersVector;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(success,
-                                                                     &AzToolsFramework::AssetSystemRequestBus::Events::GetScanFolders,
-                                                                     scanFoldersVector);
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetScanFolders,
+                scanFoldersVector);
             AZ_Warning(builderName, success, "Preprocessor option: Could not acquire a list of scan folders from the database.");
 
-            // we transfer to a set, to order the folders, uniquify them, and ensure deterministic build behavior
-            AZStd::set<AZStd::string> scanFoldersSet;
             // Add the project path to list of include paths
-            AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
-            scanFoldersSet.emplace(projectPath.c_str(), projectPath.size());
+            AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+            auto FindPath = [](AZ::IO::PathView searchPath)
+            {
+                return [searchPath](AZStd::string_view includePathView)
+                {
+                    return searchPath == AZ::IO::PathView(includePathView);
+                };
+            };
+            if (auto it = AZStd::find_if(options.m_projectIncludePaths.begin(), options.m_projectIncludePaths.end(), FindPath(projectPath));
+                it == options.m_projectIncludePaths.end())
+            {
+                options.m_projectIncludePaths.emplace_back(projectPath.c_str(), projectPath.Native().size());
+            }
             if (optionalIncludeFolder)
             {
-                scanFoldersSet.emplace(optionalIncludeFolder, strnlen(optionalIncludeFolder, AZ::IO::MaxPathLength));
+                if (auto it = AZStd::find_if(options.m_projectIncludePaths.begin(), options.m_projectIncludePaths.end(), FindPath(optionalIncludeFolder));
+                    it == options.m_projectIncludePaths.end())
+                {
+                    if (AZ::IO::SystemFile::Exists(optionalIncludeFolder))
+                    {
+                        options.m_projectIncludePaths.emplace_back(AZStd::move(AZ::IO::Path(optionalIncludeFolder).LexicallyNormal().Native()));
+                    }
+                }
             }
             // but while we transfer to the set, we're going to keep only folders where +/ShaderLib exists
-            for (AZStd::string folder : scanFoldersVector)
+            for (AZ::IO::Path shaderScanFolder : scanFoldersVector)
             {
-                AzFramework::StringFunc::Path::Join(folder.c_str(), "ShaderLib", folder);
-                if (AZ::IO::SystemFile::Exists(folder.c_str()))
+                shaderScanFolder /= "ShaderLib";
+                if (auto it = AZStd::find_if(options.m_projectIncludePaths.begin(), options.m_projectIncludePaths.end(), FindPath(shaderScanFolder));
+                    it == options.m_projectIncludePaths.end())
                 {
-                    scanFoldersSet.emplace(std::move(folder));
+                    // the folders constructed this fashion constitute the base of automatic include search paths
+                    if (AZ::IO::SystemFile::Exists(shaderScanFolder.c_str()))
+                    {
+                        options.m_projectIncludePaths.emplace_back(AZStd::move(shaderScanFolder.LexicallyNormal().Native()));
+                    }
                 }
-            } // the folders constructed this fashion constitute the base of automatic include search paths
-
-            // get the engine root:
-            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
-
-            // add optional additional options
-            for (AZStd::string& path : options.m_projectIncludePaths)
-            {
-                path = (engineRoot / path).String();
-                DeleteFromSet(path, scanFoldersSet);  // no need to add a path two times.
             }
-            // back-insert the default paths (after the config-read paths we just read)
-            TransferContent(/*to:*/options.m_projectIncludePaths, /*from:*/scanFoldersSet);
+
             // finally the <engineroot>/Gems fallback
-            AZStd::string gemsFolder;
-            AzFramework::StringFunc::Path::Join(engineRoot.c_str(), "Gems", gemsFolder);
-            options.m_projectIncludePaths.push_back(gemsFolder);
+            AZ::IO::Path engineGemsFolder(AZStd::string_view{ AZ::Utils::GetEnginePath() });
+            engineGemsFolder /= "Gems";
+            if (auto it = AZStd::find_if(options.m_projectIncludePaths.begin(), options.m_projectIncludePaths.end(), FindPath(engineGemsFolder));
+                it == options.m_projectIncludePaths.end())
+            {
+                if (AZ::IO::SystemFile::Exists(engineGemsFolder.c_str()))
+                {
+                    options.m_projectIncludePaths.emplace_back(AZStd::move(engineGemsFolder.Native()));
+                }
+            }
         }
 
     } // namespace ShaderBuilder

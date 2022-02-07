@@ -1,0 +1,84 @@
+{
+    "entries": [
+        {
+            "base": "ShaderVariantId",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ShaderVariantId"
+            },
+            "methods": [
+                {
+                    "base": "Equal",
+                    "context": "ShaderVariantId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "ShaderVariantId::Equal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{27B1FEC2-8C8A-47D7-A034-6609FA092B34}",
+                            "details": {
+                                "name": "ShaderVariantId*"
+                            }
+                        },
+                        {
+                            "typeid": "{27B1FEC2-8C8A-47D7-A034-6609FA092B34}",
+                            "details": {
+                                "name": "const ShaderVariantId&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsEmpty",
+                    "context": "ShaderVariantId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsEmpty"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsEmpty is invoked"
+                    },
+                    "details": {
+                        "name": "ShaderVariantId::IsEmpty",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{27B1FEC2-8C8A-47D7-A034-6609FA092B34}",
+                            "details": {
+                                "name": "ShaderVariantId*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

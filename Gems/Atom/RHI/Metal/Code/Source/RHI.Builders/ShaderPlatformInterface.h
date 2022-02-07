@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,6 +41,8 @@ namespace AZ
                 const ShaderResourceGroupInfoList& srgInfoList,
                 const RootConstantsInfo& rootConstantsInfo,
                 const RHI::ShaderCompilerArguments& shaderCompilerArguments) override;
+            
+            bool VariantCompilationRequiresSrgLayoutData() const override { return true; }
 
             bool CompilePlatformInternal(
                 const AssetBuilderSDK::PlatformInfo& platform,

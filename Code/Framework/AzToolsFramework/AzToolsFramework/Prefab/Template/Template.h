@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,12 +59,14 @@ namespace AzToolsFramework
             PrefabDom& GetPrefabDom();
             const PrefabDom& GetPrefabDom() const;
 
-            bool CopyTemplateIntoPrefabFileFormat(PrefabDom& output);
-
             PrefabDomValueReference GetInstancesValue();
             PrefabDomValueConstReference GetInstancesValue() const;
 
             const AZ::IO::Path& GetFilePath() const;
+            void SetFilePath(const AZ::IO::PathView& path);
+
+            // To tell if this Template was created from an product asset
+            bool IsProcedural() const;
 
         private:
             // Container for keeping links representing the Template's nested instances.
@@ -80,6 +83,9 @@ namespace AzToolsFramework
 
             // Flag to tell if this Template has changes that have yet to be saved to file.
             bool m_isDirty = false;
+
+            // Flag to tell if this Template was generated outside the Editor
+            mutable AZStd::optional<bool> m_isProcedural;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

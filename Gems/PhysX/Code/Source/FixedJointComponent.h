@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,9 +21,13 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         FixedJointComponent() = default;
-        explicit FixedJointComponent(const GenericJointConfiguration& config);
-        FixedJointComponent(const GenericJointConfiguration& config, 
-            const GenericJointLimitsConfiguration& limitConfig);
+        FixedJointComponent(
+            const JointComponentConfiguration& configuration, 
+            const JointGenericProperties& genericProperties);
+        FixedJointComponent(
+            const JointComponentConfiguration& configuration, 
+            const JointGenericProperties& genericProperties,
+            const JointLimitProperties& limitProperties);
         ~FixedJointComponent() = default;
 
     protected:

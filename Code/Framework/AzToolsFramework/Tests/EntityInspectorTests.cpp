@@ -1,13 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,6 +22,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 // Inspector Test Includes
@@ -65,7 +68,7 @@ namespace UnitTest
             services.push_back(AZ_CRC("InspectorTestService1"));
         }
 
-        virtual ~Inspector_TestComponent1() override
+        ~Inspector_TestComponent1() override
         {
         }
 
@@ -134,7 +137,7 @@ namespace UnitTest
             services.push_back(AZ_CRC("InspectorTestService2"));
         }
 
-        virtual ~Inspector_TestComponent2() override
+        ~Inspector_TestComponent2() override
         {
         }
 
@@ -203,7 +206,7 @@ namespace UnitTest
             services.push_back(AZ_CRC("InspectorTestService3"));
         }
 
-        virtual ~Inspector_TestComponent3() override
+        ~Inspector_TestComponent3() override
         {
         }
 
@@ -311,17 +314,17 @@ namespace UnitTest
         AZ_TEST_ASSERT(testComponent1_ProvidedServices.size() == 1);
         const AZ::SerializeContext::ClassData* testComponent1_ClassData = context->FindClassData(testComponent1_typeId);
 
-        EXPECT_TRUE(AzToolsFramework::ComponentPaletteUtil::OffersRequiredServices(testComponent1_ClassData, testComponent1_ProvidedServices));
+        EXPECT_TRUE(AzToolsFramework::OffersRequiredServices(testComponent1_ClassData, testComponent1_ProvidedServices));
 
         // Verify that OffersRequiredServices returns when given services provided by a different component
         AZ::ComponentDescriptor::DependencyArrayType testComponent2_ProvidedServices;
         Inspector_TestComponent2::GetProvidedServices(testComponent2_ProvidedServices);
         AZ_TEST_ASSERT(testComponent2_ProvidedServices.size() == 1);
         AZ_TEST_ASSERT(testComponent1_ProvidedServices != testComponent2_ProvidedServices);
-        EXPECT_FALSE(AzToolsFramework::ComponentPaletteUtil::OffersRequiredServices(testComponent1_ClassData, testComponent2_ProvidedServices));
+        EXPECT_FALSE(AzToolsFramework::OffersRequiredServices(testComponent1_ClassData, testComponent2_ProvidedServices));
 
         // verify that OffersRequiredServices returns true when provided with an empty list of services
-        EXPECT_TRUE(AzToolsFramework::ComponentPaletteUtil::OffersRequiredServices(testComponent1_ClassData, AZ::ComponentDescriptor::DependencyArrayType()));
+        EXPECT_TRUE(AzToolsFramework::OffersRequiredServices(testComponent1_ClassData, AZ::ComponentDescriptor::DependencyArrayType()));
 
         //////////////////////////////////////////////////////////////////////////
         // TEST IsAddableByUser()
@@ -348,7 +351,6 @@ namespace UnitTest
         EXPECT_FALSE(AzToolsFramework::ComponentPaletteUtil::ContainsEditableComponents(context, &Filter_IsTestComponent2, AZ::ComponentDescriptor::DependencyArrayType()));
 
         // Reflect Test Component 2 for subsequent tests
-        Inspector_TestComponent2::Reflect(context);
         m_application->RegisterComponentDescriptor(Inspector_TestComponent2Descriptor);
 
         // Verify that there is now a component that satisfies the AppearsInGameComponentMenu filter without service dependency conditions

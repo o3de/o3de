@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -116,7 +117,6 @@ namespace GraphCanvas
     
     void ParticleGraphicsItem::paint([[maybe_unused]] QPainter* painter, [[maybe_unused]] const QStyleOptionGraphicsItem* option, [[maybe_unused]] QWidget* widget)
     {
-        static const float k_pulseWidth = 60.0f;
         painter->save();
 
         float alpha = m_configuration.m_alphaStart;

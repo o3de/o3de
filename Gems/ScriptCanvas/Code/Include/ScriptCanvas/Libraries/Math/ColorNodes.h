@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,7 +19,7 @@ namespace ScriptCanvas
     {
         using namespace Data;
         using namespace MathNodeUtilities;
-        static const char* k_categoryName = "Math/Color";
+        static constexpr const char* k_categoryName = "Math/Color";
 
         AZ_INLINE ColorType Add(ColorType a, ColorType b)
         {

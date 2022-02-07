@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -158,7 +159,7 @@ namespace AZ
 
         void LightCullingPass::ResetInternal()
         {
-            m_tileDataIndex = -1;
+            m_tileDataIndex = std::numeric_limits<uint32_t>::max();
             m_constantDataIndex.Reset();
 
             for (auto& elem : m_lightdata)
@@ -233,7 +234,7 @@ namespace AZ
                     return i;
                 }
             }
-            return -1;
+            return std::numeric_limits<uint32_t>::max();
         }
 
         AZ::RHI::Size LightCullingPass::GetTileDataBufferResolution()

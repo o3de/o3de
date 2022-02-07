@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,7 +72,7 @@ namespace EMotionFX
             const ConditionSetUpFunc& func,
             const ActiveNodesMap& activeNodesMap,
             const FrameCallback& frameCallback = [] (AnimGraphInstance*, int) {}
-        ) : m_setUpFunction(func), activeNodes(activeNodesMap), callback(frameCallback)
+        ) : m_setUpFunction(func), m_activeNodes(activeNodesMap), m_callback(frameCallback)
         {
         }
 
@@ -79,9 +80,9 @@ namespace EMotionFX
         const ConditionSetUpFunc m_setUpFunction;
 
         // List of nodes that are active on each frame
-        const ActiveNodesMap activeNodes;
+        const ActiveNodesMap m_activeNodes;
 
-        const FrameCallback callback;
+        const FrameCallback m_callback;
     };
 
     template<class ConditionType>
@@ -89,14 +90,14 @@ namespace EMotionFX
                                         public ::testing::WithParamInterface<ConditionFixtureParams<ConditionType>>
     {
     public:
-        const float fps;
-        const float updateInterval;
-        const int numUpdates;
+        const float m_fps;
+        const float m_updateInterval;
+        const int m_numUpdates;
 
         TransitionConditionFixtureP()
-            : fps(60.0f)
-            , updateInterval(1.0f / fps)
-            , numUpdates(static_cast<int>(3.0f * fps))
+            : m_fps(60.0f)
+            , m_updateInterval(1.0f / m_fps)
+            , m_numUpdates(static_cast<int>(3.0f * m_fps))
         {
         }
 
@@ -129,14 +130,14 @@ namespace EMotionFX
     protected:
         void RunEMotionFXUpdateLoop()
         {
-            const ActiveNodesMap& activeNodes = this->GetParam().activeNodes;
-            const FrameCallback& callback = this->GetParam().callback;
+            const ActiveNodesMap& activeNodes = this->GetParam().m_activeNodes;
+            const FrameCallback& callback = this->GetParam().m_callback;
 
             // Allow tests to set starting values for parameters
             callback(m_animGraphInstance, -1);
 
             // Run the EMotionFX update loop for 3 seconds at 60 fps
-            for (int frameNum = 0; frameNum < numUpdates; ++frameNum)
+            for (int frameNum = 0; frameNum < m_numUpdates; ++frameNum)
             {
                 // Allow for test-data defined updates to the graph state
                 callback(m_animGraphInstance, frameNum);
@@ -153,7 +154,7 @@ namespace EMotionFX
                 }
                 else
                 {
-                    GetEMotionFX().Update(updateInterval);
+                    GetEMotionFX().Update(m_updateInterval);
                 }
 
                 // Check the state for the current frame
@@ -167,7 +168,7 @@ namespace EMotionFX
 
                     const AZStd::vector<AnimGraphNode*>& gotActiveNodes = m_stateMachine->GetActiveStates(m_animGraphInstance);
 
-                    EXPECT_EQ(gotActiveNodes, expectedActiveNodes) << "on frame " << frameNum << ", time " << frameNum * updateInterval;
+                    EXPECT_EQ(gotActiveNodes, expectedActiveNodes) << "on frame " << frameNum << ", time " << frameNum * m_updateInterval;
                 }
             }
             {
@@ -236,28 +237,28 @@ namespace EMotionFX
             motionToExitTransition->SetBlendTime(0.0f);
             motionToExitTransition->AddCondition(motionToExitCondition);
 
-            mChildState = aznew AnimGraphStateMachine();
-            mChildState->SetName("ChildStateMachine");
-            mChildState->AddChildNode(childMotionNode);
-            mChildState->AddChildNode(childExitNode);
-            mChildState->SetEntryState(childMotionNode);
-            mChildState->AddTransition(motionToExitTransition);
+            m_childState = aznew AnimGraphStateMachine();
+            m_childState->SetName("ChildStateMachine");
+            m_childState->AddChildNode(childMotionNode);
+            m_childState->AddChildNode(childExitNode);
+            m_childState->SetEntryState(childMotionNode);
+            m_childState->AddTransition(motionToExitTransition);
 
             AnimGraphTimeCondition* motion0ToChildStateCondition = aznew AnimGraphTimeCondition();
             motion0ToChildStateCondition->SetCountDownTime(0.5f);
 
             AnimGraphStateTransition* motion0ToChildStateTransition = aznew AnimGraphStateTransition();
             motion0ToChildStateTransition->SetSourceNode(m_motionNodeA);
-            motion0ToChildStateTransition->SetTargetNode(mChildState);
+            motion0ToChildStateTransition->SetTargetNode(m_childState);
             motion0ToChildStateTransition->SetBlendTime(0.5f);
             motion0ToChildStateTransition->AddCondition(motion0ToChildStateCondition);
 
             AnimGraphStateTransition* childStateToMotion1Transition = aznew AnimGraphStateTransition();
-            childStateToMotion1Transition->SetSourceNode(mChildState);
+            childStateToMotion1Transition->SetSourceNode(m_childState);
             childStateToMotion1Transition->SetTargetNode(m_motionNodeB);
             childStateToMotion1Transition->SetBlendTime(0.5f);
 
-            m_stateMachine->AddChildNode(mChildState);
+            m_stateMachine->AddChildNode(m_childState);
             m_stateMachine->AddTransition(motion0ToChildStateTransition);
             m_stateMachine->AddTransition(childStateToMotion1Transition);
 
@@ -271,7 +272,7 @@ namespace EMotionFX
         }
 
     protected:
-        AnimGraphStateMachine* mChildState;
+        AnimGraphStateMachine* m_childState;
     };
 
     class RangedMotionEventConditionFixture

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,6 +21,9 @@ namespace AzToolsFramework::ViewportUi
     using ClusterId = IdType<struct ClusterIdType>;
     using SwitcherId = IdType<struct SwitcherIdType>;
     using TextFieldId = IdType<struct TextFieldIdType>;
+
+    //! Callback function for viewport UI back button.
+    using ViewportUiBackButtonCallback = AZStd::function<void()>;
 
     inline const ViewportUiElementId InvalidViewportUiElementId = ViewportUiElementId(0);
     inline const ButtonId InvalidButtonId = ButtonId(0);
@@ -58,10 +62,14 @@ namespace AzToolsFramework::ViewportUi
         virtual const SwitcherId CreateSwitcher(Alignment align) = 0;
         //! Sets the active button of the cluster. This is the button which will display as highlighted.
         virtual void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) = 0;
+        //! Clears the active button of the cluster if one is active. The button will no longer display as highlighted.
+        virtual void ClearClusterActiveButton(ClusterId clusterId) = 0;
         //! Sets the active button of the switcher. This is the button which has a text label.
         virtual void SetSwitcherActiveButton(SwitcherId clusterId, ButtonId buttonId) = 0;
         //! Adds a locked overlay to the cluster button's icon.
         virtual void SetClusterButtonLocked(ClusterId clusterId, ButtonId buttonId, bool isLocked) = 0;
+        //! Updates/sets the cluster button's tooltip to the passed string.
+        virtual void SetClusterButtonTooltip(ClusterId clusterId, ButtonId buttonId, const AZStd::string& tooltip) = 0;
         //! Registers a new button onto a cluster.
         virtual const ButtonId CreateClusterButton(const ClusterId clusterId, const AZStd::string& icon) = 0;
         //! Registers a new button onto a switcher.
@@ -73,7 +81,7 @@ namespace AzToolsFramework::ViewportUi
         virtual void RegisterSwitcherEventHandler(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler) = 0;
         //! Removes a cluster from the Viewport UI system.
         virtual void RemoveCluster(ClusterId clusterId) = 0;
-        //!
+        //! Removes a switcher from the Viewport UI system.
         virtual void RemoveSwitcher(SwitcherId switcherId) = 0;
         //! Sets the visibility of the cluster.
         virtual void SetClusterVisible(ClusterId clusterId, bool visible) = 0;
@@ -90,13 +98,13 @@ namespace AzToolsFramework::ViewportUi
         virtual void RemoveTextField(TextFieldId textFieldId) = 0;
         //! Sets the visibility of the text field.
         virtual void SetTextFieldVisible(TextFieldId textFieldId, bool visible) = 0;
-        //! Create the highlight border for Component Mode.
-        virtual void CreateComponentModeBorder(const AZStd::string& borderTitle) = 0;
-        //! Remove the highlight border for Component Mode.
-        virtual void RemoveComponentModeBorder() = 0;
-        //! Invoke a button press in a cluster.
+        //! Create the highlight border with optional back button to exit the given editor mode.
+        virtual void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback) = 0;
+        //! Remove the highlight border.
+        virtual void RemoveViewportBorder() = 0;
+        //! Invoke a button press on a cluster.
         virtual void PressButton(ClusterId clusterId, ButtonId buttonId) = 0;
-        //!
+        //! Invoke a button press on a switcher.
         virtual void PressButton(SwitcherId switcherId, ButtonId buttonId) = 0;
     };
 

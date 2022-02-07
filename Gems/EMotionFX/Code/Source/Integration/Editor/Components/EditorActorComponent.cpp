@@ -1,13 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "EMotionFX_precompiled.h"
-
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -29,6 +29,8 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/NodeSelectionWindow.h>
 #include <EMotionFX/CommandSystem/Source/SelectionList.h>
+#include <EMotionFX/Source/TransformData.h>
+#include <EMotionFX/Source/AttachmentNode.h>
 #include <MCore/Source/AzCoreConversions.h>
 
 namespace EMotionFX
@@ -53,20 +55,59 @@ namespace EMotionFX
                     ->Field("SkinningMethod", &EditorActorComponent::m_skinningMethod)
                     ->Field("UpdateJointTransformsWhenOutOfView", &EditorActorComponent::m_forceUpdateJointsOOV)
                     ->Field("LodLevel", &EditorActorComponent::m_lodLevel)
+                    ->Field("BBoxConfig", &EditorActorComponent::m_bboxConfig)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
+                    editContext->Class<ActorComponent::BoundingBoxConfiguration>("Actor Bounding Box Config", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ActorComponent::BoundingBoxConfiguration::m_boundsType,
+                                      "Bounds type",
+                                      "The method used to compute the Actor bounding box. NOTE: ordered by least expensive to compute to most expensive to compute.")
+                            ->EnumAttribute(ActorInstance::BOUNDS_STATIC_BASED, "Static (Recommended)")
+                            ->EnumAttribute(ActorInstance::BOUNDS_NODE_BASED, "Bone position-based")
+                            ->EnumAttribute(ActorInstance::BOUNDS_MESH_BASED, "Mesh vertex-based (VERY EXPENSIVE)")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_expandBy,
+                            "Expand by",
+                            "Percentage that the calculated bounding box should be automatically expanded with. "
+                            "This can be used to add a tolerance area to the calculated bounding box to avoid clipping the character too early. "
+                            "A static bounding box together with the expansion is the recommended way for maximum performance. (Default = 25%)")
+                            ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                            ->Attribute(AZ::Edit::Attributes::Min, -100.0f + AZ::Constants::Tolerance)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds,
+                                      "Automatically update bounds?",
+                                      "If true, bounds are automatically updated based on some frequency. Otherwise bounds are computed only at creation or when triggered manually")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdate)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_updateTimeFrequency,
+                                      "Update frequency",
+                                      "How often to update bounds automatically")
+                            ->Attribute(AZ::Edit::Attributes::Suffix, " Hz")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, FLT_MAX)
+                            ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdateSettings)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_updateItemFrequency,
+                                      "Update item skip factor",
+                                      "How many items (bones or vertices) to skip when automatically updating bounds."
+                                      " <br> i.e. =1 uses every single item, =2 uses every 2nd item, =3 uses every 3rd item...")
+                            ->Attribute(AZ::Edit::Attributes::Suffix, " items")
+                            ->Attribute(AZ::Edit::Attributes::Min, (AZ::u32)1)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdateSettings)
+                        ;
+
                     editContext->Class<EditorActorComponent>("Actor", "The Actor component manages an instance of an Actor")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                         ->Attribute(AZ::Edit::Attributes::Icon, ":/EMotionFX/ActorComponent.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, azrtti_typeid<ActorAsset>())
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/ActorComponent.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/Viewport/ActorComponent.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/actor/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/actor/")
                         ->DataElement(0, &EditorActorComponent::m_actorAsset,
                             "Actor asset", "Assigned actor asset")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAssetSelected)
@@ -113,6 +154,9 @@ namespace EMotionFX
                         ->DataElement(0, &EditorActorComponent::m_forceUpdateJointsOOV,
                             "Force update joints", "Force update the joint transforms of actor, even when the character is out of the camera view.")
 
+                        ->DataElement(0, &EditorActorComponent::m_bboxConfig,
+                                      "Bounding box configuration", "")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnBBoxConfigChanged)
                         ;
                 }
             }
@@ -151,6 +195,8 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::Activate()
         {
+            AzToolsFramework::Components::EditorComponentBase::Activate();
+
             LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();
@@ -181,6 +227,8 @@ namespace EMotionFX
 
             DestroyActorInstance();
             m_actorAsset.Release();
+
+            AzToolsFramework::Components::EditorComponentBase::Deactivate();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -200,6 +248,14 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
+        bool EditorActorComponent::GetRenderActorVisible() const
+        {
+            if (m_renderActorInstance)
+            {
+                return m_renderActorInstance->IsVisible();
+            }
+            return false;
+        }
         size_t EditorActorComponent::GetNumJoints() const
         {
             const Actor* actor = m_actorAsset->GetActor();
@@ -428,6 +484,14 @@ namespace EMotionFX
             return refreshLevel;
         }
 
+        void EditorActorComponent::OnBBoxConfigChanged()
+        {
+            if (m_actorInstance)
+            {
+                m_bboxConfig.SetAndUpdate(m_actorInstance.get());
+            }
+        }
+
         void EditorActorComponent::LaunchAnimationEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
         {
             // call to open must be done before LoadCharacter
@@ -527,7 +591,15 @@ namespace EMotionFX
             if (asset)
             {
                 m_actorAsset = asset;
-                OnAssetSelected();
+
+                // SetPrimaryAsset function can be called while this component is not activated
+                // due to incompatible services. For example by dragging and dropping a FBX to an
+                // entity that already has an actor or mesh component in it. Only proceed to load actor
+                // asset if the component is activated (by checking if it's connected to EditorActorComponentRequestBus).
+                if (EditorActorComponentRequestBus::Handler::BusIsConnected())
+                {
+                    OnAssetSelected();
+                }
             }
         }
 
@@ -565,6 +637,7 @@ namespace EMotionFX
             cfg.m_attachmentJointIndex = m_attachmentJointIndex;
             cfg.m_lodLevel = m_lodLevel;
             cfg.m_skinningMethod = m_skinningMethod;
+            cfg.m_bboxConfig = m_bboxConfig;
             cfg.m_forceUpdateJointsOOV = m_forceUpdateJointsOOV;
 
             gameEntity->AddComponent(aznew ActorComponent(&cfg));
@@ -628,11 +701,10 @@ namespace EMotionFX
             bool isHit = false;
 
             // Iterate through the meshes in the actor, looking for the closest hit
-            const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();
+            const size_t lodLevel = m_actorInstance->GetLODLevel();
             Actor* actor = m_actorAsset.Get()->GetActor();
-            const uint32 numNodes = actor->GetNumNodes();
-            const uint32 numLods = actor->GetNumLODLevels();
-            for (uint32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
+            const size_t numNodes = actor->GetNumNodes();
+            for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
             {
                 Mesh* mesh = actor->GetMesh(lodLevel, nodeIndex);
                 if (!mesh || mesh->GetIsCollisionMesh())
@@ -751,7 +823,7 @@ namespace EMotionFX
                 Node* node = jointName ? targetActorInstance->GetActor()->GetSkeleton()->FindNodeByName(jointName) : targetActorInstance->GetActor()->GetSkeleton()->GetNode(0);
                 if (node)
                 {
-                    const AZ::u32 jointIndex = node->GetNodeIndex();
+                    const size_t jointIndex = node->GetNodeIndex();
                     Attachment* attachment = AttachmentNode::Create(targetActorInstance, jointIndex, m_actorInstance.get(), true /* Managed externally, by this component. */);
                     targetActorInstance->AddAttachment(attachment);
                 }
@@ -840,6 +912,7 @@ namespace EMotionFX
 
             // Force an update of node transforms so we can get an accurate bounding box.
             m_actorInstance->UpdateTransformations(0.0f, true, false);
+            OnBBoxConfigChanged(); // Apply BBox config
 
             // Creating the render actor AFTER both actor asset and mesh asset loaded.
             RenderBackend* renderBackend = AZ::Interface<RenderBackendManager>::Get()->GetRenderBackend();
@@ -892,4 +965,3 @@ namespace EMotionFX
         }
     } //namespace Integration
 } // namespace EMotionFX
-

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,8 +59,6 @@ namespace EMStudio
         static const char* s_nodeAABBColorOptionName;
         static const char* s_staticAABBColorOptionName;
         static const char* s_meshAABBColorOptionName;
-        static const char* s_collisionMeshAABBColorOptionName;
-        static const char* s_OBBsColorOptionName;
         static const char* s_lineSkeletonColorOptionName;
         static const char* s_skeletonColorOptionName;
         static const char* s_selectionColorOptionName;
@@ -115,7 +114,7 @@ namespace EMStudio
         float GetFarClipPlaneDistance() const { return m_farClipPlaneDistance; }
         void SetFarClipPlaneDistance(float farClipPlaneDistance);
 
-        float GetFOV() const { return m_FOV; }
+        float GetFOV() const { return m_fov; }
         void SetFOV(float FOV);
 
         float GetMainLightIntensity() const { return m_mainLightIntensity; }
@@ -189,12 +188,6 @@ namespace EMStudio
 
         AZ::Color GetMeshAABBColor() const { return m_meshAABBColor; }
         void SetMeshAABBColor(const AZ::Color& meshAABBColor);
-
-        AZ::Color GetCollisionMeshAABBColor() const { return m_collisionMeshAABBColor; }
-        void SetCollisionMeshAABBColor(const AZ::Color& collisionMeshAABBColor);
-
-        AZ::Color GetOBBsColor() const { return m_OBBsColor; }
-        void SetOBBsColor(const AZ::Color& OBBsColor);
 
         AZ::Color GetLineSkeletonColor() const { return m_lineSkeletonColor; }
         void SetLineSkeletonColor(const AZ::Color& lineSkeletonColor);
@@ -302,8 +295,6 @@ namespace EMStudio
         void OnNodeAABBColorChangedCallback() const;
         void OnStaticAABBColorChangedCallback() const;
         void OnMeshAABBColorChangedCallback() const;
-        void OnCollisionMeshAABBColorChangedCallback() const;
-        void OnOBBsColorChangedCallback() const;
         void OnLineSkeletonColorChangedCallback() const;
         void OnSkeletonColorChangedCallback() const;
         void OnSelectionColorChangedCallback() const;
@@ -333,7 +324,7 @@ namespace EMStudio
         bool             m_scaleBonesOnLength;
         float            m_nearClipPlaneDistance;
         float            m_farClipPlaneDistance;
-        float            m_FOV;
+        float            m_fov;
         float            m_mainLightIntensity;
         float            m_mainLightAngleA;
         float            m_mainLightAngleB;
@@ -360,8 +351,6 @@ namespace EMStudio
         AZ::Color        m_nodeAABBColor;
         AZ::Color        m_staticAABBColor;
         AZ::Color        m_meshAABBColor;
-        AZ::Color        m_collisionMeshAABBColor;
-        AZ::Color        m_OBBsColor;
         AZ::Color        m_lineSkeletonColor;
         AZ::Color        m_skeletonColor;
         AZ::Color        m_selectionColor;

@@ -1,19 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "EditorDefs.h"
 #include "UiAnimViewFindDlg.h"
 #include "UiAnimViewDialog.h"
 #include "UiAnimViewSequenceManager.h"
 
 #include <LyShine/Animation/IUiAnimation.h>
-#include <StringUtils.h>
 #include <QtUtilWin.h>
 
 #include <QListWidgetItem>
@@ -62,9 +61,9 @@ void CUiAnimViewFindDlg::FillData()
         {
             IUiAnimNode* pNode = seq->GetNode(i);
             ObjName obj;
-            obj.m_objName = pNode->GetName();
-            obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
-            string fullname = seq->GetName();
+            obj.m_objName = QString::fromUtf8(pNode->GetName().c_str());
+            obj.m_directorName = pNode->HasDirectorAsParent() ? QString::fromUtf8(pNode->HasDirectorAsParent()->GetName().c_str()) : "";
+            AZStd::string fullname = seq->GetName();
             obj.m_seqName = fullname.c_str();
             m_objs.push_back(obj);
         }

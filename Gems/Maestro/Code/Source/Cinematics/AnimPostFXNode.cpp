@@ -1,18 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/allocator_stateless.h>
 #include "AnimPostFXNode.h"
 #include "AnimSplineTrack.h"
 #include "CompoundSplineTrack.h"
 #include "BoolTrack.h"
-#include "IPostEffectGroup.h"
 #include "Maestro/Types/AnimNodeType.h"
 #include "Maestro/Types/AnimParamType.h"
 #include "Maestro/Types/AnimValueType.h"
@@ -39,7 +39,7 @@ public:
         virtual void GetDefault(bool& val) const = 0;
         virtual void GetDefault(Vec4& val) const = 0;
 
-        string m_name;
+        AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator> m_name;
 
     protected:
         virtual ~CControlParamBase(){}
@@ -236,7 +236,7 @@ CAnimNode* CAnimPostFXNode::CreateNode(const int id, AnimNodeType nodeType)
         retNode = aznew CAnimPostFXNode(id, nodeType, pDesc);
         static_cast<CAnimPostFXNode*>(retNode)->m_nodeType = nodeType;
     }
-    
+
     return retNode;
 }
 
@@ -288,13 +288,13 @@ void CAnimPostFXNode::SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bL
 //-----------------------------------------------------------------------------
 unsigned int CAnimPostFXNode::GetParamCount() const
 {
-    return m_pDescription->m_nodeParams.size();
+    return static_cast<unsigned int>(m_pDescription->m_nodeParams.size());
 }
 
 //-----------------------------------------------------------------------------
 CAnimParamType CAnimPostFXNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)m_pDescription->m_nodeParams.size())
+    if (nIndex < m_pDescription->m_nodeParams.size())
     {
         return m_pDescription->m_nodeParams[nIndex].paramType;
     }

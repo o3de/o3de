@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -62,11 +63,11 @@ namespace EMotionFX
             ~UniqueData() = default;
 
         public:
-            AnimGraphNode* mSourceNode = nullptr;
-            float mBlendWeight = 0.0f;
-            float mBlendProgress = 0.0f;
-            float mTotalSeconds = 0.0f;
-            bool mIsDone = false;
+            AnimGraphNode* m_sourceNode = nullptr;
+            float m_blendWeight = 0.0f;
+            float m_blendProgress = 0.0f;
+            float m_totalSeconds = 0.0f;
+            bool m_isDone = false;
         };
 
         class StateFilterLocal final
@@ -119,7 +120,7 @@ namespace EMotionFX
         AnimGraphObjectData* CreateUniqueData(AnimGraphInstance* animGraphInstance) override { return aznew UniqueData(this, animGraphInstance); }
         void InvalidateUniqueData(AnimGraphInstance* animGraphInstance) override;
 
-        void RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const override;
+        void RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const override;
         void ExtractMotion(AnimGraphInstance* animGraphInstance, AnimGraphRefCountedData* sourceData, Transform* outTransform, Transform* outTransformMirrored) const;
 
         void OnStartTransition(AnimGraphInstance* animGraphInstance);
@@ -217,14 +218,14 @@ namespace EMotionFX
          * to the destination state. It is basically a transition from all nodes to the destination node of the wildcard transition. A wildcard transition does not have a fixed source node.
          * @result True in case the transition is a wildcard transition, false if not.
          */
-        bool GetIsWildcardTransition() const                                                    { return mIsWildcardTransition; }
+        bool GetIsWildcardTransition() const                                                    { return m_isWildcardTransition; }
 
         bool CanWildcardTransitionFrom(AnimGraphNode* sourceNode) const;
 
         AnimGraphStateMachine* GetStateMachine() const;
 
-        MCORE_INLINE size_t GetNumConditions() const                                            { return mConditions.size(); }
-        MCORE_INLINE AnimGraphTransitionCondition* GetCondition(size_t index) const            { return mConditions[index]; }
+        MCORE_INLINE size_t GetNumConditions() const                                            { return m_conditions.size(); }
+        MCORE_INLINE AnimGraphTransitionCondition* GetCondition(size_t index) const            { return m_conditions[index]; }
         AZ::Outcome<size_t> FindConditionIndex(AnimGraphTransitionCondition* condition) const;
 
         void AddCondition(AnimGraphTransitionCondition* condition);
@@ -261,12 +262,12 @@ namespace EMotionFX
         AZ::Crc32 GetVisibilityCanBeInterruptedBy() const;
         AZ::Crc32 GetVisibilityMaxInterruptionBlendWeight() const;
 
-        AZStd::vector<AnimGraphTransitionCondition*>    mConditions{};
+        AZStd::vector<AnimGraphTransitionCondition*>    m_conditions{};
         StateFilterLocal                                m_allowTransitionsFrom;
 
         TriggerActionSetup                              m_actionSetup;
-        AnimGraphNode*                                  mSourceNode = nullptr;
-        AnimGraphNode*                                  mTargetNode = nullptr;
+        AnimGraphNode*                                  m_sourceNode = nullptr;
+        AnimGraphNode*                                  m_targetNode = nullptr;
         AZ::u64                                         m_sourceNodeId = AnimGraphNodeId::InvalidId;
         AZ::u64                                         m_targetNodeId = AnimGraphNodeId::InvalidId;
         AZ::u64                                         m_id = AnimGraphConnectionId::Create();                        /**< The unique identification number. */
@@ -274,16 +275,16 @@ namespace EMotionFX
         float                                           m_transitionTime = 0.3f;
         float                                           m_easeInSmoothness = 0.0f;
         float                                           m_easeOutSmoothness = 1.0f;
-        AZ::s32                                         mStartOffsetX = 0;
-        AZ::s32                                         mStartOffsetY = 0;
-        AZ::s32                                         mEndOffsetX = 0;
-        AZ::s32                                         mEndOffsetY = 0;
+        AZ::s32                                         m_startOffsetX = 0;
+        AZ::s32                                         m_startOffsetY = 0;
+        AZ::s32                                         m_endOffsetX = 0;
+        AZ::s32                                         m_endOffsetY = 0;
         AZ::u32                                         m_priority = 0;
         AnimGraphObject::ESyncMode                      m_syncMode = AnimGraphObject::SYNCMODE_DISABLED;
         AnimGraphObject::EEventMode                     m_eventMode = AnimGraphObject::EVENTMODE_BOTHNODES;
         AnimGraphObject::EExtractionMode                m_extractionMode = AnimGraphObject::EXTRACTIONMODE_BLEND;
         EInterpolationType                              m_interpolationType = INTERPOLATIONFUNCTION_LINEAR;
-        bool                                            mIsWildcardTransition = false;      /**< Flag which indicates if the state transition is a wildcard transition or not. */
+        bool                                            m_isWildcardTransition = false;      /**< Flag which indicates if the state transition is a wildcard transition or not. */
         bool                                            m_isDisabled = false;
         bool                                            m_canBeInterruptedByOthers = false;
         AZStd::vector<AZ::u64>                          m_canBeInterruptedByTransitionIds{};

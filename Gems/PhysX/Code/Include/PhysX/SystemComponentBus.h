@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,19 +16,21 @@ namespace AzPhysics
 {
     class CollisionGroup;
     class CollisionLayer;
-}
+} // namespace AzPhysics
 
 namespace physx
 {
     class PxScene;
     class PxSceneDesc;
     class PxConvexMesh;
+    class PxHeightField;
     class PxTriangleMesh;
     class PxShape;
     class PxCooking;
     class PxControllerManager;
     struct PxFilterData;
-}
+    struct PxHeightFieldSample;
+} // namespace physx
 
 namespace PhysX
 {
@@ -61,6 +64,13 @@ namespace PhysX
         /// @param bufferSize Size of the cookedMeshData buffer in bytes.
         /// @return Pointer to the created mesh.
         virtual physx::PxTriangleMesh* CreateTriangleMeshFromCooked(const void* cookedMeshData, AZ::u32 bufferSize) = 0;
+
+        /// Creates a new heightfield.
+        /// @param samples Pointer to beginning of heightfield sample data.
+        /// @param numRows Number of rows in the heightfield.
+        /// @param numColumns Number of columns in the heightfield.
+        /// @return Pointer to the created heightfield.
+        virtual physx::PxHeightField* CreateHeightField(const physx::PxHeightFieldSample* samples, AZ::u32 numRows, AZ::u32 numColumns) = 0;
 
         /// Creates PhysX collision filter data from generic collision filtering settings.
         /// @param layer The collision layer the object belongs to.

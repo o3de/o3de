@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,15 +25,10 @@ namespace AZ
     namespace AssImpSDKWrapper
     {
         AssImpSceneWrapper::AssImpSceneWrapper()
-            : SDKScene::SceneWrapperBase()
         {
         }
         AssImpSceneWrapper::AssImpSceneWrapper(aiScene* aiScene)
-            : SDKScene::SceneWrapperBase(aiScene)
-        {
-        }
-
-        AssImpSceneWrapper::~AssImpSceneWrapper()
+            : m_assImpScene(aiScene)
         {
         }
 
@@ -69,6 +65,9 @@ namespace AZ
             // This results in the loss of the offset matrix data for nodes without a mesh which is required for the Transform Importer.
             m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
             m_importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, false);
+            // The remove empty bones flag is on by default, but doesn't do anything internal to AssImp right now.
+            // This is here as a bread crumb to save others times investigating issues with empty bones.
+            // m_importer.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);
             m_sceneFileName = fileName;
             m_assImpScene = m_importer.ReadFile(fileName,
                 aiProcess_Triangulate //Triangulates all faces of all meshes
@@ -108,6 +107,11 @@ namespace AZ
         void AssImpSceneWrapper::Clear()
         {
             m_importer.FreeScene();
+        }
+
+        const aiScene* AssImpSceneWrapper::GetAssImpScene() const
+        {
+            return m_assImpScene;
         }
 
         AZStd::pair<AssImpSceneWrapper::AxisVector, int32_t> AssImpSceneWrapper::GetUpVectorAndSign() const

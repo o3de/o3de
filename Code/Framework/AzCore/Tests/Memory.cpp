@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -89,7 +90,7 @@ namespace UnitTest
 #else
             static const int numAllocations = 10000;
 #endif
-            void* addresses[numAllocations] = {0};
+            void* addresses[numAllocations] = {nullptr};
 
             IAllocatorAllocate& sysAlloc = AllocatorInstance<SystemAllocator>::Get();
 
@@ -150,7 +151,7 @@ namespace UnitTest
                     AZStd::thread m_threads[m_maxNumThreads];
                     for (unsigned int i = 0; i < m_maxNumThreads; ++i)
                     {
-                        m_threads[i] = AZStd::thread(AZStd::bind(&SystemAllocatorTest::ThreadFunc, this), &m_desc[i]);
+                        m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&SystemAllocatorTest::ThreadFunc, this));
                         // give some time offset to the threads so we can test alloc and dealloc at the same time.
                         //AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(500));
                     }
@@ -241,7 +242,7 @@ namespace UnitTest
 
             //////////////////////////////////////////////////////////////////////////
             // realloc test
-            address[0] = NULL;
+            address[0] = nullptr;
             static const unsigned int checkValue = 0x0badbabe;
             // create tree (non pool) allocation (we usually pool < 256 bytes)
             address[0] = sysAlloc.Allocate(2048, 16);
@@ -285,7 +286,7 @@ namespace UnitTest
                 AZStd::thread m_threads[m_maxNumThreads];
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&SystemAllocatorTest::ThreadFunc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&SystemAllocatorTest::ThreadFunc, this));
                     // give some time offset to the threads so we can test alloc and dealloc at the same time.
                     AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(500));
                 }
@@ -371,7 +372,7 @@ namespace UnitTest
                 poolAllocator.GetRecords()->unlock();
             }
 
-            for (i = 0; address[i] != 0; ++i)
+            for (i = 0; address[i] != nullptr; ++i)
             {
                 poolAlloc.DeAllocate(address[i]);
             }
@@ -543,7 +544,7 @@ namespace UnitTest
 #else
             static const int numAllocations = 10000;
 #endif
-            void* addresses[numAllocations] = {0};
+            void* addresses[numAllocations] = {nullptr};
 
             IAllocatorAllocate& poolAlloc = AllocatorInstance<ThreadPoolAllocator>::Get();
 
@@ -664,7 +665,7 @@ namespace UnitTest
                 poolAllocator.GetRecords()->unlock();
             }
 
-            for (int i = 0; address[i] != 0; ++i)
+            for (int i = 0; address[i] != nullptr; ++i)
             {
                 poolAlloc.DeAllocate(address[i]);
             }
@@ -723,7 +724,7 @@ namespace UnitTest
                 AZStd::thread m_threads[m_maxNumThreads];
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&ThreadPoolAllocatorTest::AllocDeallocFunc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::AllocDeallocFunc, this));
                 }
 
                 for (unsigned int i = 0; i < m_maxNumThreads; ++i)
@@ -742,12 +743,12 @@ namespace UnitTest
 
                 for (unsigned int i = m_maxNumThreads/2; i <m_maxNumThreads; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&ThreadPoolAllocatorTest::SharedDeAlloc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::SharedDeAlloc, this));
                 }
 
                 for (unsigned int i = 0; i < m_maxNumThreads/2; ++i)
                 {
-                    m_threads[i] = AZStd::thread(AZStd::bind(&ThreadPoolAllocatorTest::SharedAlloc, this), &m_desc[i]);
+                    m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::SharedAlloc, this));
                 }
 
                 for (unsigned int i = 0; i < m_maxNumThreads/2; ++i)
@@ -819,7 +820,7 @@ namespace UnitTest
         AllocatorInstance<SystemAllocator>::Create(sysDesc);
 
         BestFitExternalMapAllocator::Descriptor desc;
-        desc.m_mapAllocator = NULL; // use the system allocator
+        desc.m_mapAllocator = nullptr; // use the system allocator
         desc.m_memoryBlockByteSize = 4 * 1024 * 1024;
         desc.m_memoryBlock = azmalloc(desc.m_memoryBlockByteSize, desc.m_memoryBlockAlignment);
 
@@ -981,7 +982,7 @@ namespace UnitTest
                 : m_data(data) {}
             ~MyClass() {}
 
-            AZ_ALIGN(int m_data, 32);
+            alignas(32) int m_data;
         };
         // Explicitly doesn't have AZ_CLASS_ALLOCATOR
         class MyDerivedClass
@@ -1178,6 +1179,8 @@ namespace UnitTest
             size_type               Capacity() const override                             { return 1 * 1024 * 1024 * 1024; }
             /// Returns max allocation size if possible. If not returned value is 0
             size_type               GetMaxAllocationSize() const override                 { return 1 * 1024 * 1024 * 1024; }
+            /// Returns max allocation size of a single contiguous allocation
+            size_type               GetMaxContiguousAllocationSize() const override       { return 1 * 1024 * 1024 * 1024; }
             /// Returns a pointer to a sub-allocator or NULL.
             IAllocatorAllocate*     GetSubAllocator() override                            { return NULL; }
         };

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,11 +23,11 @@ namespace AzToolsFramework
     /// @name Reverse URLs.
     /// Used to identify common actions and override them when necessary.
     //@{
-    static const AZ::Crc32 s_backAction = AZ_CRC("com.amazon.action.common.back", 0xd772a2af);
-    static const AZ::Crc32 s_deleteAction = AZ_CRC("com.amazon.action.common.delete", 0x5731f6cb);
-    static const AZ::Crc32 s_duplicateAction = AZ_CRC("com.amazon.action.common.duplicate", 0x08ccf461);
-    static const AZ::Crc32 s_nextComponentMode = AZ_CRC("com.amazon.action.common.nextComponentMode", 0xcc26094f);
-    static const AZ::Crc32 s_previousComponentMode = AZ_CRC("com.amazon.action.common.previousComponentMode", 0x0d18ff39);
+    static const AZ::Crc32 s_backAction = AZ_CRC("com.o3de.action.common.back", 0xd772a2af);
+    static const AZ::Crc32 s_deleteAction = AZ_CRC("com.o3de.action.common.delete", 0x5731f6cb);
+    static const AZ::Crc32 s_duplicateAction = AZ_CRC("com.o3de.action.common.duplicate", 0x08ccf461);
+    static const AZ::Crc32 s_nextComponentMode = AZ_CRC("com.o3de.action.common.nextComponentMode", 0xcc26094f);
+    static const AZ::Crc32 s_previousComponentMode = AZ_CRC("com.o3de.action.common.previousComponentMode", 0x0d18ff39);
     //@}
 
     /// Specific Action properties to be sent to a type implementing
@@ -150,6 +151,8 @@ namespace AzToolsFramework
 
         /// Allow default actions to be added to the Action Manager via a Bus call.
         virtual void AddActionViaBus(int id, QAction* action) = 0;
+        /// Allow default actions to be added to the Action Manager via a Bus call and using the CRC id method.
+        virtual void AddActionViaBusCrc(AZ::Crc32 id, QAction* action) = 0;
         /// Remove default actions added to the Action Manager via a Bus Call.
         virtual void RemoveActionViaBus(QAction* action) = 0;
         /// Enable all default actions that are active during the normal Editor state.

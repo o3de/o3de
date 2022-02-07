@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,49 +27,6 @@ namespace AzFramework
 {
     namespace FileFunc
     {
-        struct WriteJsonSettings
-        {
-            int m_maxDecimalPlaces = -1; // -1 means use default
-        };
-
-        /*
-        * Read a string into a JSON document
-        *
-        * \param[in] jsonText The string of JSON to parse into a JSON document.
-        * \return Outcome<rapidjson::Document) Returns a failure with error message if the content is not valid JSON.
-        */
-        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonFromString(AZStd::string_view jsonText);
-
-        /*
-        * Read a text file into a JSON document
-        *
-        * \param[in] jsonFilePath     The path to the JSON file path to open
-        * \param[in] overrideFileIO   Optional file IO instance to use.  If null, use the Singleton instead
-        * \param[in] maxFileSize      The maximum size, in bytes, of the file to read. Defaults to 1 MB.
-        * \return Outcome(rapidjson::Document) Returns a failure with error message if the content is not valid JSON. 
-        */
-        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonFile(const AZ::IO::Path& jsonFilePath, AZ::IO::FileIOBase* overrideFileIO = nullptr, size_t maxFileSize = AZ::Utils::DefaultMaxFileSize);
-
-        /**
-        * Write a JSON document to a string
-        *
-        * \param[in]  jsonDoc        The JSON document to write to a text file
-        * \param[out] jsonFilePath   The string that the JSON text will be written to.
-        * \param[in]  settings       Settings to pass along to the JSON writer. 
-        * \return StringOutcome Saves the JSON document to text. Otherwise returns a failure with error message.
-        */
-        AZ::Outcome<void, AZStd::string> WriteJsonToString(const rapidjson::Document& document, AZStd::string& jsonText, WriteJsonSettings settings = WriteJsonSettings{});
-
-        /**
-        * Write a JSON document to a text file
-        *
-        * \param[in] jsonDoc        The JSON document to write to a text file
-        * \param[in] jsonFilePath   The path to the JSON file path to write to
-        * \param[in] settings       Settings to pass along to the JSON writer.
-        * \return StringOutcome Saves the JSON document to a file. Otherwise returns a failure with error message.
-        */
-        AZ::Outcome<void, AZStd::string> WriteJsonFile(const rapidjson::Document& jsonDoc, const AZ::IO::Path& jsonFilePath, WriteJsonSettings settings = WriteJsonSettings{});
-
         /**
         * Find all the files in a path based on an optional filter.  Recurse if requested.
         *
@@ -89,38 +47,6 @@ namespace AzFramework
         * \return true if the file was open and read successfully, false if not
         */
         AZ::Outcome<void, AZStd::string> ReadTextFileByLine(const AZStd::string& filePath, AZStd::function<bool(const char* line)> perLineCallback);
-
-        /**
-        * Replaces a value in an ini-style file.
-        *
-        * \param[in] filePath          The path to the config file to update
-        * \param[in] updateRules    The update rules (list of update strings, see below) to apply
-        *
-        * The replace string rule format follows the following:
-        *       ([header]/)[key]=[value]
-        *
-        *    where:
-        *       header (optional) : Optional group title for the key
-        *       key               : The key to lookup or create for the value
-        *       value             : The value to update or create
-        */
-        AZ::Outcome<void, AZStd::string> ReplaceInCfgFile(const AZStd::string& filePath, const AZStd::list<AZStd::string>& updateRules);
-
-        /**
-        * Replaces a value in an ini-style file.
-        *
-        * \param[in] filePath       The path to the config file to update
-        * \param[in] updateRule     The update rule (list of update strings, see below) to apply
-        *
-        * The replace string rule format follows the following:
-        *       ([header]/)[key]=[value]
-        *
-        *    where:
-        *       header (optional) : Optional group title for the key
-        *       key               : The key to lookup or create for the value
-        *       value             : The value to update or create
-        */
-        AZ::Outcome<void, AZStd::string> ReplaceInCfgFile(const AZStd::string& filePath, const char* header, const AZStd::string& key, const AZStd::string& newValue);
 
         /**
         * Gets the value(s) for a key in an INI style config file.

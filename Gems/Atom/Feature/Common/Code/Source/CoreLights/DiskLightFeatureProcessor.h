@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
 #include <Atom/Feature/CoreLights/DiskLightFeatureProcessorInterface.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <CoreLights/IndexedDataVector.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 namespace AZ
@@ -49,12 +50,11 @@ namespace AZ
             void SetConstrainToConeLight(LightHandle handle, bool useCone) override;
             void SetConeAngles(LightHandle handle, float innerDegrees, float outerDegrees) override;
             void SetShadowsEnabled(LightHandle handle, bool enabled) override;
+            void SetShadowBias(LightHandle handle, float bias) override;
+            void SetNormalShadowBias(LightHandle handle, float bias) override;
             void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) override;
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
-            void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) override;
-            void SetPredictionSampleCount(LightHandle handle, uint16_t count) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
-            void SetPcfMethod(LightHandle handle, PcfMethod method) override;
             void SetEsmExponent(LightHandle handle, float esmExponent) override;
 
             void SetDiskData(LightHandle handle, const DiskLightData& data) override;

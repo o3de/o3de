@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,14 +68,14 @@ namespace EMotionFX
          * @param node The node where the mesh belongs to during this initialization.
          * @param lodLevel The LOD level of the mesh the mesh deformer works on.
          */
-        void Reinitialize(Actor* actor, Node* node, uint32 lodLevel) override;
+        void Reinitialize(Actor* actor, Node* node, size_t lodLevel) override;
 
         /**
          * Creates an exact clone (copy) of this deformer, and returns a pointer to it.
          * @param mesh The mesh to apply the deformer on.
          * @result A pointer to the newly created clone of this deformer.
          */
-        MeshDeformer* Clone(Mesh* mesh) override;
+        MeshDeformer* Clone(Mesh* mesh) const override;
 
         /**
          * Returns the unique type ID of the deformer.
@@ -96,21 +97,21 @@ namespace EMotionFX
          * This is the number of different bones that the skinning information of the mesh where this deformer works on uses.
          * @result The number of bones.
          */
-        MCORE_INLINE uint32 GetNumLocalBones() const                        { return static_cast<uint32>(m_bones.size()); }
+        MCORE_INLINE size_t GetNumLocalBones() const                        { return m_bones.size(); }
 
         /**
          * Get the node number of a given local bone.
          * @param index The local bone number, which must be in range of [0..GetNumLocalBones()-1].
          * @result The node number, which is in range of [0..Actor::GetNumNodes()-1], depending on the actor where this deformer works on.
          */
-        MCORE_INLINE uint32 GetLocalBone(uint32 index) const                { return m_bones[index].mNodeNr; }
+        MCORE_INLINE size_t GetLocalBone(size_t index) const                { return m_bones[index].m_nodeNr; }
 
         /**
          * Pre-allocate space for a given number of local bones.
          * This does not alter the value returned by GetNumLocalBones().
          * @param numBones The number of bones to pre-allocate space for.
          */
-        MCORE_INLINE void ReserveLocalBones(uint32 numBones)                { m_bones.reserve(numBones); }
+        MCORE_INLINE void ReserveLocalBones(size_t numBones)                { m_bones.reserve(numBones); }
 
     protected:
         /**
@@ -118,11 +119,11 @@ namespace EMotionFX
          */
         struct EMFX_API BoneInfo
         {
-            uint32                  mNodeNr;        /**< The node number. */
-            MCore::DualQuaternion   mDualQuat;      /**< The dual quat of the pre-calculated matrix that contains the "globalMatrix * inverse(bindPoseMatrix)". */
+            size_t                  m_nodeNr;        /**< The node number. */
+            MCore::DualQuaternion   m_dualQuat;      /**< The dual quat of the pre-calculated matrix that contains the "globalMatrix * inverse(bindPoseMatrix)". */
 
             MCORE_INLINE BoneInfo()
-                : mNodeNr(MCORE_INVALIDINDEX32) {}
+                : m_nodeNr(InvalidIndex) {}
         };
         AZStd::vector<BoneInfo> m_bones; /**< The array of bone information used for pre-calculation. */
 
@@ -152,8 +153,8 @@ namespace EMotionFX
         /**
          * Find the entry number that uses a specified node number.
          * @param nodeIndex The node number to search for.
-         * @result The index inside the mBones member array, which uses the given node.
+         * @result The index inside the m_bones member array, which uses the given node.
          */
-        AZ::Outcome<size_t> FindLocalBoneIndex(uint32 nodeIndex) const;
+        AZ::Outcome<size_t> FindLocalBoneIndex(size_t nodeIndex) const;
     };
 } // namespace EMotionFX

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -68,7 +69,7 @@ namespace AzFramework
         // EntityContext
         AZ::Entity* CreateEntity(const char* name) override;
         void OnRootEntityReloaded() override;
-        void OnContextEntitiesAdded(const EntityList& entities);
+        void OnContextEntitiesAdded(const EntityList& entities) override;
         void OnContextReset() override;
         bool ValidateEntitiesAreValidForContext(const EntityList& entities) override;
         //////////////////////////////////////////////////////////////////////////
@@ -89,11 +90,6 @@ namespace AzFramework
         }
 
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // GameEntityContextRequestBus
-        void DestroyGameEntityOnlyInSliceMode(const AZ::EntityId&) override;
-        void DestroyGameEntityAndDescendantsOnlyInSliceMode(const AZ::EntityId&) override;
-        /////////////////////////////////////////////////////////////////////////
 
         AzFramework::EntityVisibilityBoundsUnionSystem m_entityVisibilityBoundsUnionSystem;
     };

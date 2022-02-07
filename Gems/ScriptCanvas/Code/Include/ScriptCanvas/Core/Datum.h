@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -7,18 +8,20 @@
 
 #pragma once
 
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/string/string_view.h>
 #include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Core/SerializationListener.h>
+#include <ScriptCanvas/Data/BehaviorContextObject.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Data/DataTrait.h>
-#include <ScriptCanvas/Data/BehaviorContextObject.h>
-#include <AzCore/Outcome/Outcome.h>
 
 namespace AZ
 {
     class ReflectContext;
+    class DatumSerializer;
 }
 
 namespace ScriptCanvas
@@ -31,9 +34,12 @@ namespace ScriptCanvas
     /// A Datum is used to provide generic storage for all data types in ScriptCanvas, and provide a common interface to accessing, modifying, and displaying them 
     /// in the editor, regardless of their actual ScriptCanvas or BehaviorContext type.
     class Datum final
+        : public SerializationListener
     {
+        friend class AZ::DatumSerializer;
+
     public:
-        AZ_TYPE_INFO(Datum, "{8B836FC0-98A8-4A81-8651-35C7CA125451}");
+        AZ_RTTI(Datum, "{8B836FC0-98A8-4A81-8651-35C7CA125451}", SerializationListener);
         AZ_CLASS_ALLOCATOR(Datum, AZ::SystemAllocator, 0);
 
         enum class eOriginality : int
@@ -230,6 +236,7 @@ namespace ScriptCanvas
             }
         };
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
         class SerializeContextEventHandler : public AZ::SerializeContext::IEventHandler
         {
         public:
@@ -240,6 +247,7 @@ namespace ScriptCanvas
                 datum->OnWriteEnd();
             }
         };
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
         friend class SerializeContextEventHandler;
 
@@ -337,9 +345,11 @@ namespace ScriptCanvas
 
         void OnDatumEdited();
 
-        void OnReadBegin();
-
+        void OnDeserialize() override;
+               
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
         void OnWriteEnd();
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
         AZ_INLINE bool SatisfiesTraits(AZ::u8 behaviorValueTraits) const;
 

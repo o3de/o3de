@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -333,12 +334,12 @@ struct IAssetItem
     virtual void OnEndPreview() = 0;
     // Description:
     //      If the asset has a special preview panel with utility controls, to be placed at the top of the Preview window, it can return an child dialog window
-    //      otherwise it can return NULL, if no panel is available
+    //      otherwise it can return nullptr, if no panel is available
     // Arguments:
-    //      pParentWnd - a valid CDialog*, or NULL
+    //      pParentWnd - a valid CDialog*, or nullptr
     // Return Value:
     //      A valid child dialog window handle, if this asset wants to have a custom panel in the top side of the Asset Preview window,
-    //      otherwise it can return NULL, if no panel is available
+    //      otherwise it can return nullptr, if no panel is available
     // See Also:
     //      OnBeginPreview(), OnEndPreview()
     virtual QWidget* GetCustomPreviewPanelHeader(QWidget* pParentWnd) = 0;

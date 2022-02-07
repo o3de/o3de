@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QGraphicsWidget>
 #include <QTimer>
@@ -1007,20 +1007,16 @@ namespace GraphCanvas
         {
             if (!configuration.m_name.empty())
             {
-                cloneConfiguration->m_name.Clear();
-                cloneConfiguration->m_name.SetFallback(configuration.m_name);
+                cloneConfiguration->m_name = configuration.m_name;
             }
             else
             {
                 AZStd::string nodeTitle;
                 NodeTitleRequestBus::EventResult(nodeTitle, configuration.m_targetEndpoint.GetNodeId(), &NodeTitleRequests::GetTitle);
 
-                AZStd::string displayName = AZStd::string::format("%s:%s", nodeTitle.c_str(), cloneConfiguration->m_name.GetDisplayString().c_str());
+                AZStd::string displayName = AZStd::string::format("%s:%s", nodeTitle.c_str(), cloneConfiguration->m_name.c_str());
 
-                // Gain some context. Lost the ability to refresh the strings.
-                // Should be fixable once we get an actual use case for this setup.
-                cloneConfiguration->m_name.Clear();
-                cloneConfiguration->m_name.SetFallback(displayName);
+                cloneConfiguration->m_name = displayName;
             }
 
             AZ::Entity* slotEntity = nullptr;

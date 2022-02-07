@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,21 +25,31 @@ namespace AZ
             AZ_CLASS_ALLOCATOR_DECL;
 
             JsonSerializationResult::Result Load(
-                void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+                void* outputValue,
+                const Uuid& outputValueTypeId,
+                const rapidjson::Value& inputValue,
                 JsonDeserializerContext& context) override;
 
             JsonSerializationResult::Result Store(
-                rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue, const Uuid& valueTypeId,
+                rapidjson::Value& outputValue,
+                const void* inputValue,
+                const void* defaultValue,
+                const Uuid& valueTypeId,
                 JsonSerializerContext& context) override;
 
         private:
             template<typename T>
             bool LoadAny(
-                AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
+                AZStd::any& propertyValue,
+                const rapidjson::Value& inputPropertyValue,
+                AZ::JsonDeserializerContext& context,
                 AZ::JsonSerializationResult::ResultCode& result);
+
             template<typename T>
             bool StoreAny(
-                const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
+                const AZStd::any& propertyValue,
+                rapidjson::Value& outputPropertyValue,
+                AZ::JsonSerializerContext& context,
                 AZ::JsonSerializationResult::ResultCode& result);
         };
     } // namespace Render

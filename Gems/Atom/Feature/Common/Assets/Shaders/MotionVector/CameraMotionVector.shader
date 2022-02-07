@@ -1,5 +1,5 @@
 {
-    "Source": "CameraMotionVector",
+    "Source": "CameraMotionVector.azsl",
     
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

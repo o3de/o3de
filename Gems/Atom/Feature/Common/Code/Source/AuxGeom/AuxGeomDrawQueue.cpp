@@ -1,14 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
 #include "AuxGeomDrawQueue.h"
-
-#include <Atom/RHI/CpuProfiler.h>
 
 #include <Atom/RPI.Public/Scene.h>
 
@@ -315,15 +314,40 @@ namespace AZ
             AddShape(style, shape);
         }
 
-        void AuxGeomDrawQueue::DrawSphere(
-            const AZ::Vector3& center, 
+        Matrix3x3 CreateMatrix3x3FromDirection(const AZ::Vector3& direction)
+        {
+            Vector3 unitDirection(direction.GetNormalized());
+            Vector3 unitOrthogonal(direction.GetOrthogonalVector().GetNormalized());
+            Vector3 unitCross(unitOrthogonal.Cross(unitDirection));
+            return Matrix3x3::CreateFromColumns(unitOrthogonal, unitDirection, unitCross);
+        }
+
+        void AuxGeomDrawQueue::DrawSphere(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawSphereCommon(center, direction, radius, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, false);
+        }
+
+        void AuxGeomDrawQueue::DrawSphere(const AZ::Vector3& center, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawSphereCommon(center, AZ::Vector3::CreateAxisZ(), radius, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, false);
+        }
+
+        void AuxGeomDrawQueue::DrawHemisphere(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawSphereCommon(center, direction, radius, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, true);
+        }
+
+        void AuxGeomDrawQueue::DrawSphereCommon(
+            const AZ::Vector3& center,
+            const AZ::Vector3& direction,
             float radius, 
             const AZ::Color& color, 
             DrawStyle style, 
             DepthTest depthTest, 
             DepthWrite depthWrite, 
             FaceCullMode faceCull, 
-            int32_t viewProjOverrideIndex) 
+            int32_t viewProjOverrideIndex,
+            bool isHemisphere) 
         {
             if (radius <= 0.0f)
             {
@@ -331,12 +355,12 @@ namespace AZ
             }
 
             ShapeBufferEntry shape;
-            shape.m_shapeType = ShapeType_Sphere;
+            shape.m_shapeType = isHemisphere ? ShapeType_Hemisphere : ShapeType_Sphere;
             shape.m_depthRead  = ConvertRPIDepthTestFlag(depthTest);
             shape.m_depthWrite = ConvertRPIDepthWriteFlag(depthWrite);
             shape.m_faceCullMode = ConvertRPIFaceCullFlag(faceCull);
             shape.m_color = color;
-            shape.m_rotationMatrix = Matrix3x3::CreateIdentity();
+            shape.m_rotationMatrix = CreateMatrix3x3FromDirection(direction);
             shape.m_position = center;
             shape.m_scale = AZ::Vector3(radius, radius, radius);
             shape.m_pointSize = m_pointSize;
@@ -363,13 +387,9 @@ namespace AZ
             shape.m_faceCullMode = ConvertRPIFaceCullFlag(faceCull);
             shape.m_color = color;
 
-            Vector3 unitDirection(direction.GetNormalized());
-            Vector3 unitOrthogonal(direction.GetOrthogonalVector().GetNormalized());
-            Vector3 unitCross(unitOrthogonal.Cross(unitDirection));
-
             // The disk mesh is created with the top of the disk pointing along the positive Y axis. This creates a
             // rotation so that the top of the disk will point along the given direction vector.
-            shape.m_rotationMatrix = Matrix3x3::CreateFromColumns(unitOrthogonal, unitDirection, unitCross);
+            shape.m_rotationMatrix = CreateMatrix3x3FromDirection(direction);
             shape.m_position = center;
             shape.m_scale = AZ::Vector3(radius, 1.0f, radius);
             shape.m_pointSize = m_pointSize;
@@ -402,13 +422,7 @@ namespace AZ
             shape.m_faceCullMode = ConvertRPIFaceCullFlag(faceCull);
             shape.m_color = color;
 
-            Vector3 unitDirection(direction.GetNormalized());
-            Vector3 unitOrthogonal(direction.GetOrthogonalVector().GetNormalized());
-            Vector3 unitCross(unitOrthogonal.Cross(unitDirection));
-
-            // The cone mesh is created with the tip of the cone pointing along the positive Y axis. This creates a
-            // rotation so that the tip of the cone will point along the given direction vector.
-            shape.m_rotationMatrix = Matrix3x3::CreateFromColumns(unitOrthogonal, unitDirection, unitCross);
+            shape.m_rotationMatrix = CreateMatrix3x3FromDirection(direction);
             shape.m_position = center;
             shape.m_scale = AZ::Vector3(radius, height, radius);
             shape.m_pointSize = m_pointSize;
@@ -417,17 +431,30 @@ namespace AZ
             AddShape(style, shape);
         }
 
-        void AuxGeomDrawQueue::DrawCylinder(
-            const AZ::Vector3& center, 
-            const AZ::Vector3& direction, 
-            float radius, 
-            float height, 
-            const AZ::Color& color, 
-            DrawStyle style, 
-            DepthTest depthTest, 
-            DepthWrite depthWrite, 
-            FaceCullMode faceCull, 
-            int32_t viewProjOverrideIndex) 
+        void AuxGeomDrawQueue::DrawCylinder(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color,
+            DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawCylinderCommon(center, direction, radius, height, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, true);
+        }
+
+        void AuxGeomDrawQueue::DrawCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color,
+            DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawCylinderCommon(center, direction, radius, height, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, false);
+        }
+
+        void AuxGeomDrawQueue::DrawCylinderCommon(
+            const AZ::Vector3& center,
+            const AZ::Vector3& direction,
+            float radius,
+            float height,
+            const AZ::Color& color,
+            DrawStyle style,
+            DepthTest depthTest,
+            DepthWrite depthWrite,
+            FaceCullMode faceCull,
+            int32_t viewProjOverrideIndex,
+            bool drawEnds)
         {
             if (radius <= 0.0f || height <= 0.0f)
             {
@@ -435,19 +462,15 @@ namespace AZ
             }
 
             ShapeBufferEntry shape;
-            shape.m_shapeType = ShapeType_Cylinder;
-            shape.m_depthRead  = ConvertRPIDepthTestFlag(depthTest);
+            shape.m_shapeType = drawEnds ? ShapeType_Cylinder : ShapeType_CylinderNoEnds;
+            shape.m_depthRead = ConvertRPIDepthTestFlag(depthTest);
             shape.m_depthWrite = ConvertRPIDepthWriteFlag(depthWrite);
             shape.m_faceCullMode = ConvertRPIFaceCullFlag(faceCull);
             shape.m_color = color;
 
-            Vector3 unitDirection(direction.GetNormalized());
-            Vector3 unitOrthogonal(direction.GetOrthogonalVector().GetNormalized());
-            Vector3 unitCross(unitOrthogonal.Cross(unitDirection));
-
             // The cylinder mesh is created with the top end cap of the cylinder facing along the positive Y axis. This creates a
             // rotation so that the top face of the cylinder will face along the given direction vector.
-            shape.m_rotationMatrix = Matrix3x3::CreateFromColumns(unitOrthogonal, unitDirection, unitCross);
+            shape.m_rotationMatrix = CreateMatrix3x3FromDirection(direction);
             shape.m_position = center;
             shape.m_scale = AZ::Vector3(radius, height, radius);
             shape.m_pointSize = m_pointSize;
@@ -564,7 +587,7 @@ namespace AZ
 
         AuxGeomBufferData* AuxGeomDrawQueue::Commit()
         {
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: Commit");
+            AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: Commit");
             // get a mutually exclusive lock and then switch to the next buffer, returning a pointer to the current buffer (before the switch)
 
             // grab the lock
@@ -584,7 +607,7 @@ namespace AZ
 
         void AuxGeomDrawQueue::ClearCurrentBufferData()
         {
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: ClearCurrentBufferData");
+            AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: ClearCurrentBufferData");
             // no need for mutex here, this function is only called from a function holding a lock
             AuxGeomBufferData& data = m_buffers[m_currentBufferIndex];
 
@@ -648,7 +671,7 @@ namespace AZ
             AZ::u8 width,
             int32_t viewProjOverrideIndex)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: DrawPrimitiveWithSharedVerticesCommon");
 
             // grab a mutex lock for the rest of this function so that a commit cannot happen during it and
             // other threads can't add geometry during it
@@ -719,8 +742,7 @@ namespace AZ
             AZ::u8 width,
             int32_t viewProjOverrideIndex)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: DrawPrimitiveWithSharedVerticesCommon");
+            AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: DrawPrimitiveWithSharedVerticesCommon");
 
             AZ_Assert(indexCount >= verticesPerPrimitiveType && (indexCount % verticesPerPrimitiveType == 0),
                 "Index count must be at least %d and must be a multiple of %d",

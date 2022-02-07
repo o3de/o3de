@@ -1,7 +1,0 @@
-<Material MtlFlags="524288" Shader="Distanceclouds" GenMask="2" StringGenMask="" SurfaceType="" Diffuse="1,1,1" Specular="0,0,0" Emittance="1,1,1,40" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="materials/pbs_reference/skydomes/night.tif"/>
-  <Texture Map="Emittance" File="materials/pbs_reference/skydomes/night.tif"/>
- </Textures>
- <PublicParams Opacity="1" Exposure="0.50099999"/>
-</Material>

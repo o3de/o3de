@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -149,10 +150,7 @@ namespace AzToolsFramework
             TypeBeingHandled actualValue = instance;
             for (int idx = 0; idx < m_common.GetElementCount(); ++idx)
             {
-                if (elements[idx]->wasValueEditedByUser())
-                {
-                    actualValue.SetElement(idx, static_cast<float>(elements[idx]->getValue()));
-                }
+                actualValue.SetElement(idx, static_cast<float>(elements[idx]->getValue()));
             }
             instance = actualValue;
         }

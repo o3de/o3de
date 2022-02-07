@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,13 +29,29 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ButtonGroup::SetHighlightedButton(ButtonId buttonId)
     {
+        if (buttonId == m_highlightedButtonId) // the requested button is highlighted, so do nothing.
+        {
+            return;
+        }
+
         if (auto buttonEntry = m_buttons.find(buttonId); buttonEntry != m_buttons.end())
         {
-            for (auto& button : m_buttons)
-            {
-                button.second->m_state = Button::State::Deselected;
-            }
+            ClearHighlightedButton();
             buttonEntry->second->m_state = Button::State::Selected;
+            m_highlightedButtonId = buttonId;
+        }
+    }
+
+    void ButtonGroup::ClearHighlightedButton()
+    {
+        if (m_highlightedButtonId == InvalidButtonId)
+        {
+            return;
+        }
+        if (auto buttonEntry = m_buttons.find(m_highlightedButtonId); buttonEntry != m_buttons.end())
+        {
+            buttonEntry->second->m_state = Button::State::Deselected;
+            m_highlightedButtonId = InvalidButtonId;
         }
     }
 
@@ -44,11 +61,11 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         if (name.empty())
         {
-            m_buttons.insert({buttonId, AZStd::make_unique<Button>(icon, buttonId)});
+            m_buttons.insert({ buttonId, AZStd::make_unique<Button>(icon, buttonId) });
         }
         else
         {
-            m_buttons.insert({buttonId, AZStd::make_unique<Button>(icon, name, buttonId)});
+            m_buttons.insert({ buttonId, AZStd::make_unique<Button>(icon, name, buttonId) });
         }
         return buttonId;
     }
@@ -72,7 +89,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         return buttons;
     }
 
-    void ButtonGroup::ConnectEventHandler(AZ::Event<ButtonId>::Handler& handler) {
+    void ButtonGroup::ConnectEventHandler(AZ::Event<ButtonId>::Handler& handler)
+    {
         handler.Connect(m_buttonTriggeredEvent);
     }
 

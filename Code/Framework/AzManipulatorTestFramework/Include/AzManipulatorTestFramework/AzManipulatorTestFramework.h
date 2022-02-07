@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,7 @@ namespace AzFramework
 {
     class DebugDisplayRequests;
     struct CameraState;
-}
+} // namespace AzFramework
 
 namespace AzManipulatorTestFramework
 {
@@ -30,20 +31,23 @@ namespace AzManipulatorTestFramework
         virtual void SetCameraState(const AzFramework::CameraState& cameraState) = 0;
         //! Retrieve the debug display.
         virtual AzFramework::DebugDisplayRequests& GetDebugDisplay() = 0;
-        //! Enable grid snapping.
-        virtual void EnableGridSnaping() = 0;
-        //! Disable grid snapping.
-        virtual void DisableGridSnaping() = 0;
-        //! Enable grid snapping.
-        virtual void EnableAngularSnaping() = 0;
-        //! Disable grid snapping.
-        virtual void DisableAngularSnaping() = 0;
+        //! Set if grid snapping is enabled or not.
+        virtual void SetGridSnapping(bool enabled) = 0;
+        //! Set if angular snapping is enabled or not.
+        virtual void SetAngularSnapping(bool enabled) = 0;
         //! Set the grid size.
         virtual void SetGridSize(float size) = 0;
         //! Set the angular step.
         virtual void SetAngularStep(float step) = 0;
         //! Get the viewport id.
         virtual int GetViewportId() const = 0;
+        //! Updates the visibility state.
+        //! Updates which entities are currently visible given the current camera state.
+        virtual void UpdateVisibility() = 0;
+        //! Set if sticky select is enabled or not.
+        virtual void SetStickySelect(bool enabled) = 0;
+        //! Get default Editor Camera Position.
+        virtual AZ::Vector3 DefaultEditorCameraPosition() const = 0;
     };
 
     //! This interface is used to simulate the manipulator manager while the manipulators are under test.
@@ -78,15 +82,15 @@ namespace AzManipulatorTestFramework
         //! Return the representation of the viewport interaction model.
         ViewportInteractionInterface& GetViewportInteraction()
         {
-            return const_cast<
-                ViewportInteractionInterface&>(const_cast<const ManipulatorViewportInteraction*>(this)->GetViewportInteraction());
+            return const_cast<ViewportInteractionInterface&>(
+                const_cast<const ManipulatorViewportInteraction*>(this)->GetViewportInteraction());
         }
 
         //! Return the const representation of the manipulator manager.
         ManipulatorManagerInterface& GetManipulatorManager()
         {
-            return const_cast<
-                ManipulatorManagerInterface&>(const_cast<const ManipulatorViewportInteraction*>(this)->GetManipulatorManager());
+            return const_cast<ManipulatorManagerInterface&>(
+                const_cast<const ManipulatorViewportInteraction*>(this)->GetManipulatorManager());
         }
     };
 } // namespace AzManipulatorTestFramework

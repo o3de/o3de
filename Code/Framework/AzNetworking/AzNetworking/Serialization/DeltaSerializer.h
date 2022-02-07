@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -89,8 +90,6 @@ namespace AzNetworking
         DeltaSerializerCreate(const DeltaSerializerCreate&) = delete;
         DeltaSerializerCreate& operator=(const DeltaSerializerCreate&) = delete;
 
-        AZStd::string GetNextObjectName(const char* name);
-
         template <typename T>
         bool SerializeHelper(T& value, uint32_t bufferCapacity, bool isString, uint32_t& outSize, const char* name);
 
@@ -104,9 +103,7 @@ namespace AzNetworking
 
         bool m_gatheringRecords = false;
         uint32_t m_objectCounter = 0;
-        AZStd::string m_namePrefix;
-        AZStd::vector<size_t> m_nameLengthStack;
-        AZStd::unordered_map<AZ::HashValue32, AbstractValue::BaseValue*> m_records;
+        AZStd::vector<AbstractValue::BaseValue*> m_records;
         NetworkInputSerializer m_dataSerializer;
     };
 

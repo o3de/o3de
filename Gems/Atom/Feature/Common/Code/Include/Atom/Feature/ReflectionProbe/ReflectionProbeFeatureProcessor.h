@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,6 +39,8 @@ namespace AZ
             bool IsCubeMapReferenced(const AZStd::string& relativePath) override;
             bool IsValidProbeHandle(const ReflectionProbeHandle& probe) const override { return (probe.get() != nullptr); }
             void ShowProbeVisualization(const ReflectionProbeHandle& probe, bool showVisualization) override;
+            void SetRenderExposure(const ReflectionProbeHandle& probe, float renderExposure) override;
+            void SetBakeExposure(const ReflectionProbeHandle& probe, float bakeExposure) override;
 
             // FeatureProcessor overrides
             void Activate() override;
@@ -55,8 +58,10 @@ namespace AZ
             // create the box vertex and index streams, which are used to render the probe volumes
             void CreateBoxMesh();
 
-            // load the shader and retrieve pipeline state, Srg, and drawListTag
-            void LoadShader(const char* filePath, RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState, Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset, RHI::DrawListTag& drawListTag);
+            // load the shader and retrieve pipeline state, shader, Srg Layout, and drawListTag
+            void LoadShader(
+                const char* filePath, RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState, Data::Instance<RPI::Shader>& shader,
+                RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, RHI::DrawListTag& drawListTag);
 
             // RPI::SceneNotificationBus::Handler overrides
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;

@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -50,8 +51,8 @@ class TestAutomationBase:
         cls.asset_processor.teardown()
         cls._kill_ly_processes()
 
-
-    def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[], use_null_renderer=True):
+    def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[], batch_mode=True,
+                  autotest_mode=True, use_null_renderer=True):
         test_starttime = time.time()
         self.logger = logging.getLogger(__name__)
         errors = []
@@ -89,9 +90,13 @@ class TestAutomationBase:
         editor_starttime = time.time()
         self.logger.debug("Running automated test")
         testcase_module_filepath = self._get_testcase_module_filepath(testcase_module)
-        pycmd = ["--runpythontest", testcase_module_filepath, "-BatchMode", "-autotest_mode"]
+        pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={request.node.name}"]
         if use_null_renderer:
             pycmd += ["-rhi=null"]
+        if batch_mode:
+            pycmd += ["-BatchMode"]
+        if autotest_mode:
+            pycmd += ["-autotest_mode"]
         pycmd += extra_cmdline_args
         editor.args.extend(pycmd) # args are added to the WinLauncher start command
         editor.start(backupFiles = False, launch_ap = False)

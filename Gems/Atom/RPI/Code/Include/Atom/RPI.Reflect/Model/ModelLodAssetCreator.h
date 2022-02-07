@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Reflect/AssetCreator.h>
 
@@ -44,9 +46,9 @@ namespace AZ
             //! Begin and BeginMesh must be called first.
             void SetMeshAabb(AZ::Aabb&& aabb);
 
-            //! Sets the material asset for the current SubMesh.
+            //! Sets the ID of the model's material slot that this mesh uses.
             //! Begin and BeginMesh must be called first
-            void SetMeshMaterialAsset(const Data::Asset<MaterialAsset>& materialAsset);
+            void SetMeshMaterialSlot(ModelMaterialSlot::StableId id);
 
             //! Sets the given BufferAssetView to the current SubMesh as the index buffer.
             //! Begin and BeginMesh must be called first

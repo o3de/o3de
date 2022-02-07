@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,7 +26,7 @@ namespace EMotionFX
         SimulatedJoint([[maybe_unused]] const SimulatedJoint& simulatedJoint) {}
 
         MOCK_METHOD1(SetSimulatedObject, void (SimulatedObject* object));
-        MOCK_METHOD1(SetSkeletonJointIndex, void (AZ::u32 jointIndex));
+        MOCK_METHOD1(SetSkeletonJointIndex, void (size_t jointIndex));
         MOCK_METHOD1(SetConeAngleLimit, void (float degrees));
         MOCK_METHOD1(SetMass, void (float mass));
         MOCK_METHOD1(SetStiffness, void (float stiffness));
@@ -35,7 +36,7 @@ namespace EMotionFX
         MOCK_METHOD1(SetPinned, void (bool pinned));
         MOCK_METHOD1(InitAfterLoading, bool (SimulatedObject* object));
 
-        MOCK_CONST_METHOD0(GetSkeletonJointIndex, AZ::u32());
+        MOCK_CONST_METHOD0(GetSkeletonJointIndex, size_t());
         MOCK_CONST_METHOD0(GetConeAngleLimit, float());
         MOCK_CONST_METHOD0(GetMass, float());
         MOCK_CONST_METHOD0(GetStiffness, float());

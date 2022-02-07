@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/Math/Sfmt.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Math/Vector4.h>
 
 using namespace AZ;
 
@@ -26,8 +28,8 @@ namespace UnitTest
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
-            array1 = (AZ::u64*)azmalloc(sizeof(AZ::u64) * 2 * (BLOCK_SIZE / 4), AZStd::alignment_of<AZ::u64>::value);
-            array2 = (AZ::u64*)azmalloc(sizeof(AZ::u64) * 2 * (10000 / 4), AZStd::alignment_of<AZ::u64>::value);
+            array1 = (AZ::u64*)azmalloc(sizeof(AZ::u64) * 2 * (BLOCK_SIZE / 4), AZStd::alignment_of<AZ::Vector4>::value);
+            array2 = (AZ::u64*)azmalloc(sizeof(AZ::u64) * 2 * (10000 / 4), AZStd::alignment_of<AZ::Vector4>::value);
         }
 
         void TearDown() override

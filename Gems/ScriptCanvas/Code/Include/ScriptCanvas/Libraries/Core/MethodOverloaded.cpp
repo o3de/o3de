@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,7 +60,9 @@ namespace ScriptCanvas
                 {
                     serializeContext->Class<MethodOverloaded, Method>()
                         ->Version(MethodOverloadedCpp::Version::Current, &MethodOverloadedVersionConverter)
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                         ->EventHandler<SerializeContextReadWriteHandler<MethodOverloaded>>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                         ->Field("orderedInputSlotIds", &MethodOverloaded::m_orderedInputSlotIds)
                         ->Field("outputSlotIds", &MethodOverloaded::m_outputSlotIds)
                         ;
@@ -185,6 +188,7 @@ namespace ScriptCanvas
                 RefreshActiveIndexes();
 
                 ConfigureContracts();
+                SetWarnOnMissingFunction(true);
             }
 
             SlotId MethodOverloaded::AddMethodInputSlot(const MethodConfiguration& config, size_t argumentIndex)
@@ -396,20 +400,14 @@ namespace ScriptCanvas
                 return signature;
             }
 
-            void MethodOverloaded::OnReadBegin()
-            {
-            }
-
-            void MethodOverloaded::OnReadEnd()
-            {
-            }
-
-            void MethodOverloaded::OnWriteBegin()
-            {
-                SetWarnOnMissingFunction(false);
-            }
-
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             void MethodOverloaded::OnWriteEnd()
+            {
+                OnDeserialize();
+            }
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
+
+            void MethodOverloaded::OnDeserialize()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(GetMutex());
 
@@ -461,6 +459,7 @@ namespace ScriptCanvas
                 }
 
                 SetWarnOnMissingFunction(true);
+                Node::OnDeserialize();
             }
 
             void MethodOverloaded::SetupMethodData(const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorClass* behaviorClass)

@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include <Atom/RHI/ShaderResourceGroupData.h>
 #include <Atom/RHI/ShaderResourceGroupPool.h>
+#include <Atom/RHI.Reflect/Bits.h>
 
 namespace AZ
 {
@@ -125,6 +127,12 @@ namespace AZ
                     }
                     isValidAll &= isValid;
                 }
+
+                if(!imageViews.empty())
+                {
+                    EnableResourceTypeCompilation(ResourceTypeMask::ImageViewMask, ResourceType::ImageView);
+                }
+                
                 return isValidAll;
             }
             return false;
@@ -138,12 +146,17 @@ namespace AZ
                 bool isValidAll = true;
                 for (size_t i = 0; i < imageViews.size(); ++i)
                 {
-                    const bool isValid = ValidateImageViewAccess<ShaderInputImageUnboundedArrayIndex, ShaderInputImageUnboundedArrayDescriptor>(inputIndex, imageViews[i], i);
+                    const bool isValid = ValidateImageViewAccess<ShaderInputImageUnboundedArrayIndex, ShaderInputImageUnboundedArrayDescriptor>(inputIndex, imageViews[i], static_cast<uint32_t>(i));
                     if (isValid)
                     {
                         m_imageViewsUnboundedArray.push_back(imageViews[i]);
                     }
                     isValidAll &= isValid;
+                }
+
+                if (!imageViews.empty())
+                {
+                    EnableResourceTypeCompilation(ResourceTypeMask::ImageViewUnboundedArrayMask, ResourceType::ImageViewUnboundedArray);
                 }
                 return isValidAll;
             }
@@ -171,6 +184,11 @@ namespace AZ
                     }
                     isValidAll &= isValid;
                 }
+
+                if (!bufferViews.empty())
+                {
+                    EnableResourceTypeCompilation(ResourceTypeMask::BufferViewMask, ResourceType::BufferView);
+                }
                 return isValidAll;
             }
             return false;
@@ -184,12 +202,17 @@ namespace AZ
                 bool isValidAll = true;
                 for (size_t i = 0; i < bufferViews.size(); ++i)
                 {
-                    const bool isValid = ValidateBufferViewAccess<ShaderInputBufferUnboundedArrayIndex, ShaderInputBufferUnboundedArrayDescriptor>(inputIndex, bufferViews[i], i);
+                    const bool isValid = ValidateBufferViewAccess<ShaderInputBufferUnboundedArrayIndex, ShaderInputBufferUnboundedArrayDescriptor>(inputIndex, bufferViews[i], static_cast<uint32_t>(i));
                     if (isValid)
                     {
                         m_bufferViewsUnboundedArray.push_back(bufferViews[i]);
                     }
                     isValidAll &= isValid;
+                }
+
+                if (!bufferViews.empty())
+                {
+                    EnableResourceTypeCompilation(ResourceTypeMask::BufferViewUnboundedArrayMask, ResourceType::BufferViewUnboundedArray);
                 }
                 return isValidAll;
             }
@@ -210,6 +233,11 @@ namespace AZ
                 {
                     m_samplers[interval.m_min + arrayIndex + i] = samplers[i];
                 }
+
+                if (!samplers.empty())
+                {
+                    EnableResourceTypeCompilation(ResourceTypeMask::SamplerMask, ResourceType::Sampler);
+                }
                 return true;
             }
             return false;
@@ -222,16 +250,19 @@ namespace AZ
 
         bool ShaderResourceGroupData::SetConstantRaw(ShaderInputConstantIndex inputIndex, const void* bytes, uint32_t byteOffset, uint32_t byteCount)
         {
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
             return m_constantsData.SetConstantRaw(inputIndex, bytes, byteOffset, byteCount);
         }
 
         bool ShaderResourceGroupData::SetConstantData(const void* bytes, uint32_t byteCount)
         {
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
             return m_constantsData.SetConstantData(bytes, byteCount);
         }
 
         bool ShaderResourceGroupData::SetConstantData(const void* bytes, uint32_t byteOffset, uint32_t byteCount)
         {
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
             return m_constantsData.SetConstantData(bytes, byteOffset, byteCount);
         }
         
@@ -329,10 +360,51 @@ namespace AZ
             return m_samplers;
         }
 
+        void ShaderResourceGroupData::ResetViews()
+        {
+            m_imageViews.assign(m_imageViews.size(), nullptr);
+            m_bufferViews.assign(m_bufferViews.size(), nullptr);
+            m_imageViewsUnboundedArray.assign(m_imageViewsUnboundedArray.size(), nullptr);
+            m_bufferViewsUnboundedArray.assign(m_bufferViewsUnboundedArray.size(), nullptr);
+        }
+
         AZStd::array_view<uint8_t> ShaderResourceGroupData::GetConstantData() const
         {
             return m_constantsData.GetConstantData();
         }
 
+        const ConstantsData& ShaderResourceGroupData::GetConstantsData() const
+        {
+            return m_constantsData;
+        }
+
+        bool ShaderResourceGroupData::IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const
+        {
+            return RHI::CheckBitsAny(m_updateMask, resourceTypeMask);
+        }
+
+        bool ShaderResourceGroupData::IsAnyResourceTypeUpdated() const
+        {
+            return m_updateMask != 0;
+        }
+
+        void ShaderResourceGroupData::EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask, ResourceType resourceType)
+        {
+            AZ_Assert(static_cast<uint32_t>(resourceTypeMask) == AZ_BIT(static_cast<uint32_t>(resourceType)), "resourceType and resourceTypeMask should point to the same ResourceType");
+            m_updateMask = RHI::SetBits(m_updateMask, static_cast<uint32_t>(resourceTypeMask));
+            m_resourceTypeIteration[static_cast<uint32_t>(resourceType)] = 0;
+        }
+
+        void ShaderResourceGroupData::DisableCompilationForAllResourceTypes()
+        {
+            for (uint32_t i = 0; i < static_cast<uint32_t>(ResourceType::Count); i++)
+            {
+                if (m_resourceTypeIteration[i] == m_updateMaskResetLatency)
+                {
+                    m_updateMask = RHI::ResetBits(m_updateMask, AZ_BIT(i));
+                }
+                m_resourceTypeIteration[i]++;
+            }
+        }
     } // namespace RHI
 } // namespace AZ

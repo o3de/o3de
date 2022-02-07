@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,7 +48,6 @@ namespace ScriptCanvasBuilder
     SharedHandlers HandleAssetTypes()
     {
         SharedHandlers handlers;
-        handlers.m_editorAssetHandler = RegisterHandler<ScriptCanvasEditor::ScriptCanvasAsset, ScriptCanvasEditor::ScriptCanvasAssetHandler>("scriptcanvas", false);
         handlers.m_subgraphInterfaceHandler = RegisterHandler<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler>("scriptcanvas_fn_compiled", true);
         handlers.m_runtimeAssetHandler = RegisterHandler<ScriptCanvas::RuntimeAsset, JobDependencyVerificationHandler>("scriptcanvas_compiled", true);
 

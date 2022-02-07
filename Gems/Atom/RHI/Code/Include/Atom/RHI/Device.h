@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
+#include <Atom/RHI/ObjectCollector.h>
 #include <Atom/RHI.Reflect/DeviceDescriptor.h>
 #include <Atom/RHI.Reflect/DeviceFeatures.h>
 #include <Atom/RHI.Reflect/DeviceLimits.h>
@@ -25,9 +27,6 @@ namespace AZ
 {
     namespace RHI
     {
-        struct CpuTimingStatistics;
-
-        
         //! The Device is a context for managing GPU state and memory on a physical device. The user creates
         //! a device instance from a PhysicalDevice. Each device has its own capabilities and limits, and can
         //! be configured to buffer a specific number of frames.
@@ -58,10 +57,6 @@ namespace AZ
             //! been called), and an error code is returned.
             ResultCode Init(PhysicalDevice& physicalDevice);
             
-            //! Called to initialize anything that wasn't done as part of Init. DeviceDescriptor is passed down
-            //! as part of this API. This is called after AssetCatalog is loaded and hence any file can be loaded at this point
-            ResultCode PostInit(const DeviceDescriptor& descriptor);
-
             //! Begins execution of a frame. The device internally manages a set of command queues. This
             //! method will synchronize the CPU with the GPU according to the number of in-light frames
             //! configured on the device. This means you should make sure any manipulation of N-buffered
@@ -93,10 +88,10 @@ namespace AZ
             //! scope. Otherwise, an error code is returned.
             ResultCode CompileMemoryStatistics(MemoryStatistics& memoryStatistics, MemoryStatisticsReportFlags reportFlags);
 
-            //! Fills the provided data structure with cpu timing statistics specific to this device. This
-            //! method can only be called on an initialized device, and outside of the BeginFrame / EndFrame
-            //! scope. Otherwise, an error code is returned.
-            ResultCode UpdateCpuTimingStatistics(CpuTimingStatistics& cpuTimingStatistics) const;
+            //! Pushes internally recorded timing statistics upwards into the global stats profiler, under the RHI section.
+            //! This method can only be called on an initialized device, and outside of the BeginFrame / EndFrame scope.
+            //! Otherwise, an error code is returned.
+            ResultCode UpdateCpuTimingStatistics() const;
 
             //! Returns the physical device associated with this device.
             const PhysicalDevice& GetPhysicalDevice() const;
@@ -123,7 +118,6 @@ namespace AZ
             Format GetNearestSupportedFormat(Format requestedFormat, FormatCapabilities requestedCapabilities) const;
 
             //! Small API to support getting supported/working swapchain formats for a window.
-            //! [GFX TODO]ATOM-1125] [RHI] Device::GetValidSwapChainImageFormats()
             //! Returns the set of supported formats for swapchain images.
             virtual AZStd::vector<Format> GetValidSwapChainImageFormats(const WindowHandle& windowHandle) const;
 
@@ -139,11 +133,22 @@ namespace AZ
             //! Get the memory requirements for allocating a buffer resource.
             virtual ResourceMemoryRequirements GetResourceMemoryRequirements(const BufferDescriptor& descriptor) = 0;
 
+            //! Notifies after all objects currently in the platform release queue are released
+            virtual void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) = 0;
+
+            //! Allows the back-ends to compact SRG related memory if applicable
+            virtual RHI::ResultCode CompactSRGMemory()
+            {
+                return RHI::ResultCode::Success;
+            };
+
         protected:
             DeviceFeatures m_features;
             DeviceLimits m_limits;
             ResourcePoolDatabase m_resourcePoolDatabase;
-            
+
+            DeviceDescriptor m_descriptor;
+
             using FormatCapabilitiesList = AZStd::array<FormatCapabilities, static_cast<uint32_t>(Format::Count)>;
 
         private:
@@ -161,10 +166,6 @@ namespace AZ
 
             //! Called when just the device is being initialized.
             virtual ResultCode InitInternal(PhysicalDevice& physicalDevice) = 0;
-             
-            //! Called to initialize anything that wasnt done as part of InitInternal.
-            //! This is called after AssetCatalog is loaded and hence any file can be loaded at this point
-            virtual ResultCode PostInitInternal(const DeviceDescriptor& descriptor) = 0;
 
             //! Called when the device is being shutdown.
             virtual void ShutdownInternal() = 0;
@@ -182,10 +183,13 @@ namespace AZ
             virtual void CompileMemoryStatisticsInternal(MemoryStatisticsBuilder& builder) = 0;
 
             //! Called when the device is reporting cpu timing statistics.
-            virtual void UpdateCpuTimingStatisticsInternal(CpuTimingStatistics& cpuTimingStatistics) const = 0;
+            virtual void UpdateCpuTimingStatisticsInternal() const = 0;
 
             //! Fills the capabilities for each format.
             virtual void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) = 0;
+
+            //! Initialize limits and resources associated with them.
+            virtual ResultCode InitializeLimits() = 0;
             ///////////////////////////////////////////////////////////////////
 
             void CalculateDepthStencilNearestSupportedFormats();
@@ -193,8 +197,6 @@ namespace AZ
             //! Fills the remainder of nearest supported formats map so that formats that have not yet been set point to themselves
             //! All platform specific format mappings should be executed before this function is called
             void FillRemainingSupportedFormats();
-
-            DeviceDescriptor m_descriptor;
 
             // The physical device backing this logical device instance.
             Ptr<PhysicalDevice> m_physicalDevice;

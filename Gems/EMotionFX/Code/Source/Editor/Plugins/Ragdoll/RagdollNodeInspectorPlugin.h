@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,14 +56,16 @@ namespace EMotionFX
 
         void Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
         void RenderRagdoll(ActorInstance* actorInstance, bool renderColliders, bool renderJointLimits, EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo);
-        void RenderJointLimit(const Physics::JointLimitConfiguration& jointConfiguration,
+        void RenderJointLimit(
+            const AzPhysics::JointConfiguration& jointConfiguration,
             const ActorInstance* actorInstance,
             const Node* node,
             const Node* parentNode,
             EMStudio::RenderPlugin* renderPlugin,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
             const MCore::RGBAColor& color);
-        void RenderJointFrame(const Physics::JointLimitConfiguration& jointConfiguration,
+        void RenderJointFrame(
+            const AzPhysics::JointConfiguration& jointConfiguration,
             const ActorInstance* actorInstance,
             const Node* node,
             const Node* parentNode,
@@ -77,7 +80,7 @@ namespace EMotionFX
         void OnPasteJointLimits();
 
     private:
-        bool PhysXGemAvailable() const;
+        bool IsPhysXGemAvailable() const;
 
         RagdollNodeWidget*          m_nodeWidget;
 

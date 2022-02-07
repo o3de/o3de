@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -72,14 +73,14 @@ namespace EMotionFX
          * @param actorInstance The actor instance to insert.
          * @param startStep An offset in the schedule where to start trying to insert the actor instances.
          */
-        void RecursiveInsertActorInstance(ActorInstance* actorInstance, uint32 startStep = 0) override    { MCORE_UNUSED(actorInstance); MCORE_UNUSED(startStep); }
+        void RecursiveInsertActorInstance(ActorInstance* actorInstance, size_t startStep = 0) override    { MCORE_UNUSED(actorInstance); MCORE_UNUSED(startStep); }
 
         /**
          * Recursively remove an actor instance and its attachments from the schedule.
          * @param actorInstance The actor instance to remove.
          * @param startStep An offset in the schedule where to start trying to remove from.
          */
-        void RecursiveRemoveActorInstance(ActorInstance* actorInstance, uint32 startStep = 0) override    { MCORE_UNUSED(actorInstance); MCORE_UNUSED(startStep); }
+        void RecursiveRemoveActorInstance(ActorInstance* actorInstance, size_t startStep = 0) override    { MCORE_UNUSED(actorInstance); MCORE_UNUSED(startStep); }
 
         /**
          * Remove a single actor instance from the schedule. This will not remove its attachments.
@@ -87,7 +88,7 @@ namespace EMotionFX
          * @param startStep An offset in the schedule where to start trying to remove from.
          * @result Returns the offset in the schedule where the actor instance was removed.
          */
-        uint32 RemoveActorInstance(ActorInstance* actorInstance, uint32 startStep = 0) override           { MCORE_UNUSED(actorInstance); MCORE_UNUSED(startStep); return 0; }
+        size_t RemoveActorInstance(ActorInstance* actorInstance, size_t startStep = 0) override           { MCORE_UNUSED(actorInstance); MCORE_UNUSED(startStep); return 0; }
 
     protected:
         /**

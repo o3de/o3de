@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "PropertyDoubleSpinCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include <QSlider>
@@ -363,32 +363,32 @@ namespace AzToolsFramework
 
     void doublePropertySpinboxHandler::WriteGUIValuesIntoProperty(size_t index, PropertyDoubleSpinCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         double val = GUI->value() / GUI->multiplier();
         instance = static_cast<property_t>(val);
     }
 
     void floatPropertySpinboxHandler::WriteGUIValuesIntoProperty(size_t index, PropertyDoubleSpinCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         double val = GUI->value() / GUI->multiplier();
         instance = static_cast<property_t>(val);
     }
 
     bool doublePropertySpinboxHandler::ReadValuesIntoGUI(size_t index, PropertyDoubleSpinCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         GUI->setValue(instance * GUI->multiplier());
         return false;
     }
 
     bool floatPropertySpinboxHandler::ReadValuesIntoGUI(size_t index, PropertyDoubleSpinCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         GUI->setValue(instance * GUI->multiplier());
         return false;
     }

@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
@@ -14,6 +16,7 @@
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
+#include <Atom/RHI.Reflect/Size.h>
 
 #include <Atom/RPI.Public/GpuQuery/Query.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -169,16 +172,10 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_Error("Pass System", false, "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
+                        AZ_Error( "Pass System", AZ::RHI::IsNullRenderer(), "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
                         binding.m_shaderInputIndex = PassAttachmentBinding::ShaderInputNoBind;
                     }
                 }
-            }
-
-            // Need to recreate the dest attachment because the source attachment might be changed
-            if (!m_attachmentCopy.expired())
-            {
-                m_attachmentCopy.lock()->InvalidateDestImage();
             }
         }
 
@@ -193,12 +190,10 @@ namespace AZ
 
             // Read back the ScopeQueries submitted from previous frames
             ReadbackScopeQueryResults();
-             
-            if (!m_attachmentCopy.expired())
-            {
-                m_attachmentCopy.lock()->FrameBegin(params);
-            }
+
             CollectSrgs();
+
+            PassSystemInterface::Get()->IncrementFrameRenderPassCount();
         }
 
 
@@ -268,15 +263,8 @@ namespace AZ
             }
         }
 
-        void RenderPass::BindAttachment(const RHI::FrameGraphCompileContext& context, const PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex)
+        void RenderPass::BindAttachment(const RHI::FrameGraphCompileContext& context, PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex)
         {
-            if (binding.m_shaderInputIndex == PassAttachmentBinding::ShaderInputNoBind ||
-                binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget ||
-                binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
-            {
-                return;
-            }
-
             PassAttachment* attachment = binding.m_attachment.get();
             if (attachment)
             {
@@ -289,11 +277,40 @@ namespace AZ
                         inputIndex = imageIndex;
                     }
                     const RHI::ImageView* imageView = context.GetImageView(attachment->GetAttachmentId(), binding.m_attachmentUsageIndex);
-                    m_shaderResourceGroup->SetImageView(RHI::ShaderInputImageIndex(inputIndex), imageView, arrayIndex);
-                    ++imageIndex;
+
+                    if (binding.m_shaderImageDimensionsNameIndex.HasName())
+                    {
+                        RHI::Size size = attachment->m_descriptor.m_image.m_size;
+
+                        AZ::Vector4 imageDimensions;
+                        imageDimensions.SetX(float(size.m_width));
+                        imageDimensions.SetY(float(size.m_height));
+                        imageDimensions.SetZ(1.0f / float(size.m_width));
+                        imageDimensions.SetW(1.0f / float(size.m_height));
+
+                        [[maybe_unused]]
+                        bool success = m_shaderResourceGroup->SetConstant(binding.m_shaderImageDimensionsNameIndex, imageDimensions);
+                        AZ_Assert(success, "Pass [%s] Could not find float4 constant [%s] in Shader Resource Group [%s]",
+                            GetPathName().GetCStr(),
+                            binding.m_shaderImageDimensionsNameIndex.GetNameForDebug().GetCStr(),
+                            m_shaderResourceGroup->GetDatabaseName());
+                    }
+
+                    if (binding.m_shaderInputIndex != PassAttachmentBinding::ShaderInputNoBind &&
+                        binding.m_scopeAttachmentUsage != RHI::ScopeAttachmentUsage::RenderTarget &&
+                        binding.m_scopeAttachmentUsage != RHI::ScopeAttachmentUsage::DepthStencil)
+                    {
+                        m_shaderResourceGroup->SetImageView(RHI::ShaderInputImageIndex(inputIndex), imageView, arrayIndex);
+                        ++imageIndex;
+                    }
                 }
                 else if (attachment->GetAttachmentType() == RHI::AttachmentType::Buffer)
                 {
+                    if (binding.m_shaderInputIndex == PassAttachmentBinding::ShaderInputNoBind)
+                    {
+                        return;
+                    }
+
                     if (inputIndex == PassAttachmentBinding::ShaderInputAutoBind)
                     {
                         inputIndex = bufferIndex;
@@ -490,6 +507,7 @@ namespace AZ
             {
                 if (query->BeginQuery(context) == QueryResultCode::Fail)
                 {
+                    AZ_UNUSED(this); // Prevent unused warning in release builds
                     AZ_WarningOnce("RenderPass", false, "BeginScopeQuery failed. Make sure AddScopeQueryToFrameGraph was called in SetupFrameGraphDependencies"
                         " for this pass: %s", this->RTTI_GetTypeName());
                 }

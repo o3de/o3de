@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,20 +48,20 @@ namespace MCore
          * Default constructor. Color will be set to black (0,0,0,0).
          */
         MCORE_INLINE RGBAColor()
-            : r(0.0f)
-            , g(0.0f)
-            , b(0.0f)
-            , a(1.0f) {}
+            : m_r(0.0f)
+            , m_g(0.0f)
+            , m_b(0.0f)
+            , m_a(1.0f) {}
 
         /**
          * Constructor which sets all components to the same given value.
          * @param value The value to put in all components (r,g,b,a).
          */
         MCORE_INLINE RGBAColor(float value)
-            : r(value)
-            , g(value)
-            , b(value)
-            , a(value) {}
+            : m_r(value)
+            , m_g(value)
+            , m_b(value)
+            , m_a(value) {}
 
         /**
          * Constructor which sets each color component.
@@ -70,40 +71,40 @@ namespace MCore
          * @param cA The value for alpha [default=1.0]
          */
         MCORE_INLINE RGBAColor(float cR, float cG, float cB, float cA = 1.0f)
-            : r(cR)
-            , g(cG)
-            , b(cB)
-            , a(cA) {}
+            : m_r(cR)
+            , m_g(cG)
+            , m_b(cB)
+            , m_a(cA) {}
 
         /**
          * Copy constructor.
          * @param col The color to copy the component values from.
          */
         MCORE_INLINE RGBAColor(const RGBAColor& col)
-            : r(col.r)
-            , g(col.g)
-            , b(col.b)
-            , a(col.a) {}
+            : m_r(col.m_r)
+            , m_g(col.m_g)
+            , m_b(col.m_b)
+            , m_a(col.m_a) {}
 
         /**
          * Constructor to convert a 32-bits DWORD to a high precision color.
          * @param col The 32-bits DWORD, for example constructed using the MCore::RGBA(...) function.
          */
         RGBAColor(uint32 col)
-            : r(ExtractRed(col) / 255.0f)
-            , g(ExtractGreen(col) / 255.0f)
-            , b(ExtractBlue(col) / 255.0f)
-            , a(ExtractAlpha(col) / 255.0f) {}
+            : m_r(ExtractRed(col) / 255.0f)
+            , m_g(ExtractGreen(col) / 255.0f)
+            , m_b(ExtractBlue(col) / 255.0f)
+            , m_a(ExtractAlpha(col) / 255.0f) {}
 
         /**
         * Constructor to convert from AZ::Color. This constructor is convenient until we replace the usage of this class with AZ::Color
         * @param color The AZ::Color to construct from
         */
         RGBAColor(const AZ::Color& color)
-            : r(color.GetR())
-            , g(color.GetG())
-            , b(color.GetB())
-            , a(color.GetA())
+            : m_r(color.GetR())
+            , m_g(color.GetG())
+            , m_b(color.GetB())
+            , m_a(color.GetA())
         {}
 
         /**
@@ -111,7 +112,7 @@ namespace MCore
         */
         operator AZ::Color() const
         {
-            return AZ::Color(r, g, b, a);
+            return AZ::Color(m_r, m_g, m_b, m_a);
         }
 
         /**
@@ -121,18 +122,18 @@ namespace MCore
          * @param cB The value for blue.
          * @param cA The value for alpha.
          */
-        MCORE_INLINE void Set(float cR, float cG, float cB, float cA)                           { r = cR; g = cG; b = cB; a = cA; }
+        MCORE_INLINE void Set(float cR, float cG, float cB, float cA)                           { m_r = cR; m_g = cG; m_b = cB; m_a = cA; }
 
         /**
          * Set the color component values.
          * @param color The color to set.
          */
-        MCORE_INLINE void Set(const RGBAColor& color)                                           { r = color.r; g = color.g; b = color.b; a = color.a; }
+        MCORE_INLINE void Set(const RGBAColor& color)                                           { m_r = color.m_r; m_g = color.m_g; m_b = color.m_b; m_a = color.m_a; }
 
         /**
          * Clear the color component values. Set them all to zero, so the color turns into black.
          */
-        MCORE_INLINE void Zero()                                                                { r = g = b = a = 0.0f; }
+        MCORE_INLINE void Zero()                                                                { m_r = m_g = m_b = m_a = 0.0f; }
 
         /**
          * Clamp all color component values in a range of 0..1
@@ -140,20 +141,20 @@ namespace MCore
          * the Exposure method for exposure control or the Normalize method.
          * @result The clamped color.
          */
-        MCORE_INLINE RGBAColor& Clamp()                                                         { r = MCore::Clamp<float>(r, 0.0f, 1.0f); g = MCore::Clamp<float>(g, 0.0f, 1.0f); b = MCore::Clamp<float>(b, 0.0f, 1.0f); a = MCore::Clamp<float>(a, 0.0f, 1.0f); return *this; }
+        MCORE_INLINE RGBAColor& Clamp()                                                         { m_r = MCore::Clamp<float>(m_r, 0.0f, 1.0f); m_g = MCore::Clamp<float>(m_g, 0.0f, 1.0f); m_b = MCore::Clamp<float>(m_b, 0.0f, 1.0f); m_a = MCore::Clamp<float>(m_a, 0.0f, 1.0f); return *this; }
 
         /**
          * Returns the length of the color components (r, g, b), just like you calculate the length of a vector.
          * The higher the length value, the more bright the color will be.
          * @result The length of the vector constructed by the r, g and b components.
          */
-        MCORE_INLINE float CalcLength() const                                                   { return Math::Sqrt(r * r + g * g + b * b); }
+        MCORE_INLINE float CalcLength() const                                                   { return Math::Sqrt(m_r * m_r + m_g * m_g + m_b * m_b); }
 
         /**
          * Calculates and returns the intensity of the color. This gives an idea of how bright the color would be on the screen.
          * @result The intensity.
          */
-        MCORE_INLINE float CalcIntensity() const                                                { return r * 0.212671f + g * 0.715160f + b * 0.072169f; }
+        MCORE_INLINE float CalcIntensity() const                                                { return m_r * 0.212671f + m_g * 0.715160f + m_b * 0.072169f; }
 
         /**
          * Checks if this color is close to another given color.
@@ -163,25 +164,25 @@ namespace MCore
          */
         MCORE_INLINE bool CheckIfIsClose(const RGBAColor& col, float distSq = 0.0001f) const
         {
-            float cR = (r - col.r);
+            float cR = (m_r - col.m_r);
             cR *= cR;
             if (cR > distSq)
             {
                 return false;
             }
-            float cG = (g - col.g);
+            float cG = (m_g - col.m_g);
             cR += cG * cG;
             if (cR > distSq)
             {
                 return false;
             }
-            float cB = (b - col.b);
+            float cB = (m_b - col.m_b);
             cR += cB * cB;
             if (cR > distSq)
             {
                 return false;
             }
-            float cA = (a - col.a);
+            float cA = (m_a - col.m_a);
             cR += cA * cA;
             return (cR < distSq);
         }
@@ -191,7 +192,7 @@ namespace MCore
          * In order to work correctly, the color component values must be in range of 0..1. So they have to be clamped, normalized or exposure controlled before calling this method.
          * @result The 32-bit integer value where each byte is a color component.
          */
-        MCORE_INLINE uint32 ToInt() const                                                       { return MCore::RGBA((uint8)(r * 255), (uint8)(g * 255), (uint8)(b * 255), (uint8)(a * 255)); }
+        MCORE_INLINE uint32 ToInt() const                                                       { return MCore::RGBA((uint8)(m_r * 255), (uint8)(m_g * 255), (uint8)(m_b * 255), (uint8)(m_a * 255)); }
 
         /**
          * Perform exposure control on the color components.
@@ -201,9 +202,9 @@ namespace MCore
          */
         MCORE_INLINE RGBAColor& Exposure(float exposure = 1.5f)
         {
-            r = 1.0f - Math::Exp(-r * exposure);
-            g = 1.0f - Math::Exp(-g * exposure);
-            b = 1.0f - Math::Exp(-b * exposure);
+            m_r = 1.0f - Math::Exp(-m_r * exposure);
+            m_g = 1.0f - Math::Exp(-m_g * exposure);
+            m_b = 1.0f - Math::Exp(-m_b * exposure);
             return *this;
         }
 
@@ -219,67 +220,67 @@ namespace MCore
         {
             float maxVal = 1.0f;
 
-            if (r > maxVal)
+            if (m_r > maxVal)
             {
-                maxVal = r;
+                maxVal = m_r;
             }
-            if (g > maxVal)
+            if (m_g > maxVal)
             {
-                maxVal = g;
+                maxVal = m_g;
             }
-            if (b > maxVal)
+            if (m_b > maxVal)
             {
-                maxVal = b;
+                maxVal = m_b;
             }
 
             float mul = 1.0f / maxVal;
 
-            r *= mul;
-            g *= mul;
-            b *= mul;
+            m_r *= mul;
+            m_g *= mul;
+            m_b *= mul;
 
             return *this;
         }
 
         // operators
-        MCORE_INLINE bool               operator==(const RGBAColor& col) const              { return ((r == col.r) && (g == col.g) && (b == col.b) && (a == col.a)); }
-        MCORE_INLINE const RGBAColor&   operator*=(const RGBAColor& col)                    { r *= col.r; g *= col.g; b *= col.b; a *= col.a; return *this; }
-        MCORE_INLINE const RGBAColor&   operator+=(const RGBAColor& col)                    { r += col.r; g += col.g; b += col.b; a += col.a; return *this; }
-        MCORE_INLINE const RGBAColor&   operator-=(const RGBAColor& col)                    { r -= col.r; g -= col.g; b -= col.b; a -= col.a; return *this; }
-        MCORE_INLINE const RGBAColor&   operator*=(float m)                                 { r *= m; g *= m; b *= m; a *= m; return *this; }
+        MCORE_INLINE bool               operator==(const RGBAColor& col) const              { return ((m_r == col.m_r) && (m_g == col.m_g) && (m_b == col.m_b) && (m_a == col.m_a)); }
+        MCORE_INLINE const RGBAColor&   operator*=(const RGBAColor& col)                    { m_r *= col.m_r; m_g *= col.m_g; m_b *= col.m_b; m_a *= col.m_a; return *this; }
+        MCORE_INLINE const RGBAColor&   operator+=(const RGBAColor& col)                    { m_r += col.m_r; m_g += col.m_g; m_b += col.m_b; m_a += col.m_a; return *this; }
+        MCORE_INLINE const RGBAColor&   operator-=(const RGBAColor& col)                    { m_r -= col.m_r; m_g -= col.m_g; m_b -= col.m_b; m_a -= col.m_a; return *this; }
+        MCORE_INLINE const RGBAColor&   operator*=(float m)                                 { m_r *= m; m_g *= m; m_b *= m; m_a *= m; return *this; }
         //MCORE_INLINE const RGBAColor& operator*=(double m)                                { r*=m; g*=m; b*=m; a*=m; return *this; }
-        MCORE_INLINE const RGBAColor&   operator/=(float d)                                 { float ooD = 1.0f / d; r *= ooD; g *= ooD; b *= ooD; a *= ooD; return *this; }
+        MCORE_INLINE const RGBAColor&   operator/=(float d)                                 { float ooD = 1.0f / d; m_r *= ooD; m_g *= ooD; m_b *= ooD; m_a *= ooD; return *this; }
         //MCORE_INLINE const RGBAColor& operator/=(double d)                                { float ooD=1.0f/d; r*=ooD; g*=ooD; b*=ooD; a*=ooD; return *this; }
-        MCORE_INLINE const RGBAColor&   operator= (const RGBAColor& col)                    { r = col.r; g = col.g; b = col.b; a = col.a; return *this; }
-        MCORE_INLINE const RGBAColor&   operator= (float colorValue)                        { r = colorValue; g = colorValue; b = colorValue; a = colorValue; return *this; }
+        MCORE_INLINE const RGBAColor&   operator= (const RGBAColor& col)                    { m_r = col.m_r; m_g = col.m_g; m_b = col.m_b; m_a = col.m_a; return *this; }
+        MCORE_INLINE const RGBAColor&   operator= (float colorValue)                        { m_r = colorValue; m_g = colorValue; m_b = colorValue; m_a = colorValue; return *this; }
 
-        MCORE_INLINE float&             operator[](int32 row)                               { return ((float*)&r)[row]; }
-        MCORE_INLINE operator           float*()                                            { return (float*)&r; }
-        MCORE_INLINE operator           const float*() const                                { return (const float*)&r; }
+        MCORE_INLINE float&             operator[](int32 row)                               { return ((float*)&m_r)[row]; }
+        MCORE_INLINE operator           float*()                                            { return (float*)&m_r; }
+        MCORE_INLINE operator           const float*() const                                { return (const float*)&m_r; }
 
-        static uint32 mColorTable[128];
+        static uint32 s_colorTable[128];
 
         // attributes
-        float   r;  /**< Red component. */
-        float   g;  /**< Green component. */
-        float   b;  /**< Blue component. */
-        float   a;  /**< Alpha component. */
+        float   m_r;  /**< Red component. */
+        float   m_g;  /**< Green component. */
+        float   m_b;  /**< Blue component. */
+        float   m_a;  /**< Alpha component. */
     };
 
     /**
      * Picks a random color from a table of 128 different colors.
      * @result The generated color.
      */
-    MCORE_INLINE uint32 GenerateColor()                                                         { return RGBAColor::mColorTable[rand() % 128]; }
+    MCORE_INLINE uint32 GenerateColor()                                                         { return RGBAColor::s_colorTable[rand() % 128]; }
 
     // operators
-    MCORE_INLINE RGBAColor operator*(const RGBAColor& colA, const RGBAColor& colB)              { return RGBAColor(colA.r * colB.r, colA.g * colB.g, colA.b * colB.b, colA.a * colB.a); }
-    MCORE_INLINE RGBAColor operator+(const RGBAColor& colA, const RGBAColor& colB)              { return RGBAColor(colA.r + colB.r, colA.g + colB.g, colA.b + colB.b, colA.a + colB.a); }
-    MCORE_INLINE RGBAColor operator-(const RGBAColor& colA, const RGBAColor& colB)              { return RGBAColor(colA.r - colB.r, colA.g - colB.g, colA.b - colB.b, colA.b - colB.b); }
-    MCORE_INLINE RGBAColor operator*(const RGBAColor& colA, float m)                            { return RGBAColor(colA.r * m, colA.g * m, colA.b * m, colA.a * m); }
+    MCORE_INLINE RGBAColor operator*(const RGBAColor& colA, const RGBAColor& colB)              { return RGBAColor(colA.m_r * colB.m_r, colA.m_g * colB.m_g, colA.m_b * colB.m_b, colA.m_a * colB.m_a); }
+    MCORE_INLINE RGBAColor operator+(const RGBAColor& colA, const RGBAColor& colB)              { return RGBAColor(colA.m_r + colB.m_r, colA.m_g + colB.m_g, colA.m_b + colB.m_b, colA.m_a + colB.m_a); }
+    MCORE_INLINE RGBAColor operator-(const RGBAColor& colA, const RGBAColor& colB)              { return RGBAColor(colA.m_r - colB.m_r, colA.m_g - colB.m_g, colA.m_b - colB.m_b, colA.m_b - colB.m_b); }
+    MCORE_INLINE RGBAColor operator*(const RGBAColor& colA, float m)                            { return RGBAColor(colA.m_r * m, colA.m_g * m, colA.m_b * m, colA.m_a * m); }
     //MCORE_INLINE RGBAColor operator*(const RGBAColor& colA,   double m)                           { return RGBAColor(colA.r*m, colA.g*m, colA.b*m, colA.a*m); }
-    MCORE_INLINE RGBAColor operator*(float m,               const RGBAColor& colB)              { return RGBAColor(m * colB.r, m * colB.g, m * colB.b, m * colB.a); }
+    MCORE_INLINE RGBAColor operator*(float m,               const RGBAColor& colB)              { return RGBAColor(m * colB.m_r, m * colB.m_g, m * colB.m_b, m * colB.m_a); }
     //MCORE_INLINE RGBAColor operator*(double m,                const RGBAColor& colB)              { return RGBAColor(m*colB.r, m*colB.g, m*colB.b, m*colB.a); }
-    MCORE_INLINE RGBAColor operator/(const RGBAColor& colA, float d)                            { float ooD = 1.0f / d; return RGBAColor(colA.r * ooD, colA.g * ooD, colA.b * ooD, colA.a * ooD); }
+    MCORE_INLINE RGBAColor operator/(const RGBAColor& colA, float d)                            { float ooD = 1.0f / d; return RGBAColor(colA.m_r * ooD, colA.m_g * ooD, colA.m_b * ooD, colA.m_a * ooD); }
     //MCORE_INLINE RGBAColor operator/(const RGBAColor& colA,   double d)                           { float ooD=1.0f/d; return RGBAColor(colA.r*ooD, colA.g*ooD, colA.b*ooD, colA.a*ooD); }
 }   // namespace MCore

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -149,7 +150,7 @@ namespace ScriptedEntityTweener
 
         bool IsTimelineIdValid(int timelineId)
         {
-            return timelineId != AnimationProperties::InvalidTimelineId;
+            return timelineId != static_cast<int>(AnimationProperties::InvalidTimelineId);
         }
 
         bool InitializeSubtask(ScriptedEntityTweenerSubtask& subtask, const AZStd::pair<AnimationParameterAddressData, AZStd::any> initData, AnimationParameters params);

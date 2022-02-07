@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Profiler.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Utils/Utils.h>
@@ -207,7 +209,7 @@ namespace Platform
 
     bool DeleteDir(const char* dirName)
     {
-        AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::DeleteDir(util) - %s", dirName);
+        AZ_PROFILE_SCOPE(AzCore, "SystemFile::DeleteDir(util) - %s", dirName);
 
         if (dirName)
         {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,8 +18,6 @@ namespace UnitTests
     {
     public:
         MOCK_METHOD1(GetAbsoluteAssetDatabaseLocation, bool(AZStd::string&));
-        MOCK_METHOD0(GetAbsoluteDevGameFolderPath, const char* ());
-        MOCK_METHOD0(GetAbsoluteDevRootFolderPath, const char* ());
         MOCK_METHOD2(GetRelativeProductPathFromFullSourceOrProductPath, bool(const AZStd::string& fullPath, AZStd::string& relativeProductPath));
         MOCK_METHOD3(GenerateRelativeSourcePath,
             bool(const AZStd::string& sourcePath, AZStd::string& relativePath, AZStd::string& watchFolder));

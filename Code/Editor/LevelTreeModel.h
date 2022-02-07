@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,7 +23,7 @@ class LevelTreeModelFilter
     Q_OBJECT
 public:
     explicit LevelTreeModelFilter(QObject* parent = nullptr);
-    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const;
+    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
     void setFilterText(const QString&);
     QVariant data(const QModelIndex& index, int role) const override;
 private:

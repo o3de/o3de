@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -206,21 +207,21 @@ namespace MCore
          * to the extended constructor or to the SetCommandLine function.
          * @result The number of parameters that have been detected.
          */
-        uint32 GetNumParameters() const;
+        size_t GetNumParameters() const;
 
         /**
          * Get the name of a given parameter.
          * @param nr The parameter number, which must be in range of [0 .. GetNumParameters()-1].
          * @result The name of the parameter.
          */
-        const AZStd::string& GetParameterName(uint32 nr) const;
+        const AZStd::string& GetParameterName(size_t nr) const;
 
         /**
          * Get the value for a given parameter.
          * @param nr The parameter number, which must be in range of [0 .. GetNumParameters()-1].
          * @return The value of the parameter, or "" (an empty string) when no value has been specified.
          */
-        const AZStd::string& GetParameterValue(uint32 nr) const;
+        const AZStd::string& GetParameterValue(size_t nr) const;
 
         /**
          * Find the parameter index for a parameter with a specific name.
@@ -228,7 +229,7 @@ namespace MCore
          * @param paramName The name of the parameter to search for.
          * @result The index/number of the parameter, or MCORE_INVALIDINDEX32 when no parameter with the specific name has been found.
          */
-        uint32 FindParameterIndex(const char* paramName) const;
+        size_t FindParameterIndex(const char* paramName) const;
 
         /**
          * Check whether a given parameter has a value specified or not.
@@ -270,13 +271,13 @@ namespace MCore
          */
         struct MCORE_API Parameter
         {
-            AZStd::string   mName;              /**< The parameter name, for example "XRES". */
-            AZStd::string   mValue;             /**< The parameter value, for example "1024". */
+            AZStd::string   m_name;              /**< The parameter name, for example "XRES". */
+            AZStd::string   m_value;             /**< The parameter value, for example "1024". */
         };
 
         AZStd::vector<Parameter> m_parameters;    /**< The parameters that have been detected in the command line string. */
 
         // extract the next parameter, starting from a given offset
-        bool ExtractNextParam(const AZStd::string& paramString, AZStd::string& outParamName, AZStd::string& outParamValue, uint32* inOutStartOffset);
+        bool ExtractNextParam(const AZStd::string& paramString, AZStd::string& outParamName, AZStd::string& outParamValue, size_t* inOutStartOffset);
     };
 }   // namespace MCore

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,18 +18,19 @@ AzToolsFramework--EntityOutlinerWidget QTreeView
     selection-background-color: transparent;
 }
 
+
+/* 	
+ *  Entity Outliner handles hover and selected state of items via code,
+ *  so we need to override the AzQtComponents::Treeview style.
+ */
 AzToolsFramework--EntityOutlinerWidget QTreeView::branch:hover
 , AzToolsFramework--EntityOutlinerWidget QTreeView::item:hover
-{
-    background: rgba(255, 255, 255, 30);
-}
-
-AzToolsFramework--EntityOutlinerWidget QTreeView::branch:selected
+, AzToolsFramework--EntityOutlinerWidget QTreeView::branch:selected
 , AzToolsFramework--EntityOutlinerWidget QTreeView::item:selected
 , AzToolsFramework--EntityOutlinerWidget QTreeView::branch:selected:active
 , AzToolsFramework--EntityOutlinerWidget QTreeView::item:selected:active
 {
-    background: rgba(255, 255, 255, 45);
+    background: transparent;
 }
 
 
@@ -42,7 +44,6 @@ AzToolsFramework--EntityOutlinerCheckBox
     padding: 0;
 	padding-right: 2px;
     line-height: 0px;
-    font-size: 0px;
     margin: 0px;
     max-height: 20px;
     max-width: 18px;
@@ -58,7 +59,6 @@ AzToolsFramework--EntityOutlinerCheckBox::indicator
     spacing: 0px;
     padding: 0px;
     line-height: 0px;
-    font-size: 0px;
     margin: 3px 0 0 0;
     max-width: 18px;
     width: 18px;

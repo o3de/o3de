@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -238,7 +239,7 @@ namespace GraphCanvas
         ////
 
         // SystemTickBus
-        void OnSystemTick();
+        void OnSystemTick() override;
         ////
 
         // VisualNotificationBus
@@ -445,13 +446,13 @@ namespace GraphCanvas
         ////
 
         // CommentNotificationBus
-        void OnEditBegin();
-        void OnEditEnd();
+        void OnEditBegin() override;
+        void OnEditEnd() override;
 
         void OnCommentSizeChanged(const QSizeF& oldSize, const QSizeF& newSize) override;
 
-        void OnCommentFontReloadBegin();
-        void OnCommentFontReloadEnd();
+        void OnCommentFontReloadBegin() override;
+        void OnCommentFontReloadEnd() override;
         ////
 
         // QGraphicsItem

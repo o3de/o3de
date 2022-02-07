@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,8 +36,17 @@ namespace AZ
             virtual void SetSortKey(RHI::DrawItemSortKey sortKey) = 0;
             virtual RHI::DrawItemSortKey GetSortKey() const = 0;
 
+            virtual void SetLodType(RPI::Cullable::LodType lodType) = 0;
+            virtual RPI::Cullable::LodType GetLodType() const = 0;
+
             virtual void SetLodOverride(RPI::Cullable::LodOverride lodOverride) = 0;
             virtual RPI::Cullable::LodOverride GetLodOverride() const = 0;
+
+            virtual void SetMinimumScreenCoverage(float minimumScreenCoverage) = 0;
+            virtual float GetMinimumScreenCoverage() const = 0;
+
+            virtual void SetQualityDecayRate(float qualityDecayRate) = 0;
+            virtual float GetQualityDecayRate() const = 0;
 
             virtual void SetVisibility(bool visible) = 0;
             virtual bool GetVisibility() const = 0;

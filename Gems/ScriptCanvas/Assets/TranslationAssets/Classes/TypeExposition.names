@@ -1,0 +1,78 @@
+{
+    "entries": [
+        {
+            "base": "TypeExposition",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "TypeExposition"
+            },
+            "methods": [
+                {
+                    "base": "Reflect_AZStd__array_AZ__Vector3_2",
+                    "context": "TypeExposition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reflect_AZStd__array_AZ__Vector3_2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reflect_AZStd__array_AZ__Vector3_2 is invoked"
+                    },
+                    "details": {
+                        "name": "TypeExposition::Reflect_AZStd::array<AZ::Vector3, 2>",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E65D74A8-908B-51B4-94CC-7226AC363DD5}",
+                            "details": {
+                                "name": "AZStd::array<Vector3, 2>&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Reflect_AZ__Outcome_AZ__Vector3_void",
+                    "context": "TypeExposition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reflect_AZ__Outcome_AZ__Vector3_void"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reflect_AZ__Outcome_AZ__Vector3_void is invoked"
+                    },
+                    "details": {
+                        "name": "TypeExposition::Reflect_AZ::Outcome<AZ::Vector3, void>",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D1FEE25B-F252-5625-863C-1312E1F822A0}",
+                            "details": {
+                                "name": "Outcome<Vector3, void>&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

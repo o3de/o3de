@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,7 +15,7 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSpace.h>

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -100,16 +101,4 @@ namespace Audio
         size_t m_currentByteTotal;
         size_t m_maxByteTotal;
     };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    // Filter for drawing debug info to the screen
-    enum EAudioFileCacheManagerDebugFilter
-    {
-        eAFCMDF_ALL = 0,
-        eAFCMDF_GLOBALS         = AUDIO_BIT(6),   // a
-        eAFCMDF_LEVEL_SPECIFICS = AUDIO_BIT(7),   // b
-        eAFCMDF_USE_COUNTED     = AUDIO_BIT(8),   // c
-        eAFCMDF_LOADED          = AUDIO_BIT(9),   // d
-    };
-
 } // namespace Audio

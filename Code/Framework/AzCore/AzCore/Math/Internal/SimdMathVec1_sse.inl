@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -330,31 +331,32 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec1::CmpAllEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllEq(arg1, arg2, 0x000F);
+            // Only check the first bit for Vector1
+            return Sse::CmpAllEq(arg1, arg2, 0b0001);
         }
 
 
         AZ_MATH_INLINE bool Vec1::CmpAllLt(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllLt(arg1, arg2, 0x000F);
+            return Sse::CmpAllLt(arg1, arg2, 0b0001);
         }
 
 
         AZ_MATH_INLINE bool Vec1::CmpAllLtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllLtEq(arg1, arg2, 0x000F);
+            return Sse::CmpAllLtEq(arg1, arg2, 0b0001);
         }
 
 
         AZ_MATH_INLINE bool Vec1::CmpAllGt(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllGt(arg1, arg2, 0x000F);
+            return Sse::CmpAllGt(arg1, arg2, 0b0001);
         }
 
 
         AZ_MATH_INLINE bool Vec1::CmpAllGtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllGtEq(arg1, arg2, 0x000F);
+            return Sse::CmpAllGtEq(arg1, arg2, 0b0001);
         }
 
 
@@ -396,7 +398,7 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec1::CmpAllEq(Int32ArgType arg1, Int32ArgType arg2)
         {
-            return Sse::CmpAllEq(arg1, arg2, 0x000F);
+            return Sse::CmpAllEq(arg1, arg2, 0b0001);
         }
 
 

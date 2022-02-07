@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,7 +27,7 @@ namespace GameStateSamples
         IConsole* iConsole = iSystem ? iSystem->GetIConsole() : nullptr;
         if (iConsole)
         {
-            iConsole->GetCVar("level_load_screen_uicanvas_path")->Set("@assets@/ui/canvases/defaultlevelloadingscreen.uicanvas");
+            iConsole->GetCVar("level_load_screen_uicanvas_path")->Set("@products@/ui/canvases/defaultlevelloadingscreen.uicanvas");
             iConsole->GetCVar("level_load_screen_sequence_to_auto_play")->Set("DefaultLevelLoadingAnimatedSequence");
         }
     }

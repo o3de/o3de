@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -141,7 +142,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // FrameEventBus::Handler
-            void OnFrameCompileEnd(RHI::FrameGraph& frameGraph);
+            void OnFrameCompileEnd(RHI::FrameGraph& frameGraph) override;
             //////////////////////////////////////////////////////////////////////////
 
             // Returns if a barrier can be converted to an implicit subpass barrier.

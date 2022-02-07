@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -102,13 +103,13 @@ namespace EMotionFX
         }
 
 
-        MCore::Array<uint32> actorInstanceIDs;
+        AZStd::vector<uint32> actorInstanceIDs;
 
         // Add the current actor instance and all the ones it is attached to
         EMotionFX::ActorInstance* currentInstance = actorInstance;
         while (currentInstance)
         {
-            actorInstanceIDs.Add(currentInstance->GetID());
+            actorInstanceIDs.emplace_back(currentInstance->GetID());
             EMotionFX::Attachment* attachment = currentInstance->GetSelfAttachment();
             if (attachment)
             {
@@ -130,12 +131,12 @@ namespace EMotionFX
             if (newSelection.size() == 1)
             {
                 AZStd::string selectedNodeName = newSelection[0].GetNodeName();
-                AZ::u32 selectedActorInstanceId = newSelection[0].mActorInstanceID;
+                AZ::u32 selectedActorInstanceId = newSelection[0].m_actorInstanceId;
 
-                uint32 parentDepth = actorInstanceIDs.Find(selectedActorInstanceId);
-                AZ_Assert(parentDepth != MCORE_INVALIDINDEX32, "Cannot get parent depth. The selected actor instance was not shown in the selection window.");
+                const auto parentDepth = AZStd::find(begin(actorInstanceIDs), end(actorInstanceIDs), selectedActorInstanceId);
+                AZ_Assert(parentDepth != end(actorInstanceIDs), "Cannot get parent depth. The selected actor instance was not shown in the selection window.");
 
-                m_goalNode = AZStd::make_pair<AZStd::string, int>(selectedNodeName, parentDepth);
+                m_goalNode = {AZStd::move(selectedNodeName), static_cast<int>(AZStd::distance(begin(actorInstanceIDs), parentDepth))};
 
                 UpdateInterface();
                 emit SelectionChanged();

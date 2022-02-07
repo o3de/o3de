@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,6 +19,8 @@
 #include <foundation/PxVec3.h>
 #include <foundation/PxVec4.h>
 #include <foundation/PxQuat.h>
+
+AZ_DEFINE_BUDGET(Cloth);
 
 namespace NvCloth
 {
@@ -164,7 +167,7 @@ namespace NvCloth
 
     void Cloth::Update()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         ResolveStaticParticles();
 

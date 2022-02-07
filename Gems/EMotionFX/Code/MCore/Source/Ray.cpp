@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,23 +20,23 @@ namespace MCore
     // ray-boundingsphere
     bool Ray::Intersects(const BoundingSphere& s, AZ::Vector3* intersectA, AZ::Vector3* intersectB) const
     {
-        const AZ::Vector3 rayOrg = mOrigin - s.GetCenter(); // ray in space of the sphere
+        const AZ::Vector3 rayOrg = m_origin - s.GetCenter(); // ray in space of the sphere
 
         // The Intersection can be solved by finding the solutions of the quadratic equation:
-        // (mOrigin + t * mDirection)^2 - s.GetRadiusSquared() = 0
-        // Where t is a value that makes (mOrigin + t * mDirection) intersect the sphere
+        // (m_origin + t * m_direction)^2 - s.GetRadiusSquared() = 0
+        // Where t is a value that makes (m_origin + t * m_direction) intersect the sphere
         // Expanding the above equation we have to find t1 and t2:
-        // t1 = (-2 * mOrigin * mDirection + sqrt(delta)) / (2 * mDirection^2)
-        // t2 = (-2 * mOrigin * mDirection - sqrt(delta)) / (2 * mDirection^2)
-        // where delta = (2 * mOrigin * mDirection) ^ 2 - 4 * mDirection^2 * (mOrigin^2 - s.GetRadiusSquared())
+        // t1 = (-2 * m_origin * m_direction + sqrt(delta)) / (2 * m_direction^2)
+        // t2 = (-2 * m_origin * m_direction - sqrt(delta)) / (2 * m_direction^2)
+        // where delta = (2 * m_origin * m_direction) ^ 2 - 4 * m_direction^2 * (m_origin^2 - s.GetRadiusSquared())
         // The two intersection points will be:
-        // mOrigin + mDirection * t1
-        // mOrigin + mDirection * t2
+        // m_origin + m_direction * t1
+        // m_origin + m_direction * t2
         // If delta < 0, then there is no intersection
         // If delta == 0, it intersects int he same point
         //
-        const float a = mDirection.GetLengthSq();
-        const float b = 2.0f * mDirection.Dot(rayOrg);
+        const float a = m_direction.GetLengthSq();
+        const float b = 2.0f * m_direction.Dot(rayOrg);
         const float c = rayOrg.GetLengthSq() - s.GetRadiusSquared();
         const float delta = ((b * b) - 4.0f * a * c);
 
@@ -62,22 +63,22 @@ namespace MCore
             {
                 if (intersectA)
                 {
-                    (*intersectA) = mOrigin + mDirection * t1;
+                    (*intersectA) = m_origin + m_direction * t1;
                 }
                 if (intersectB)
                 {
-                    (*intersectB) = mOrigin + mDirection * t2;
+                    (*intersectB) = m_origin + m_direction * t2;
                 }
             }
             else
             {
                 if (intersectA)
                 {
-                    (*intersectA) = mOrigin + mDirection * t2;
+                    (*intersectA) = m_origin + m_direction * t2;
                 }
                 if (intersectB)
                 {
-                    (*intersectB) = mOrigin + mDirection * t1;
+                    (*intersectB) = m_origin + m_direction * t1;
                 }
             }
         }
@@ -87,11 +88,11 @@ namespace MCore
             const float t = -0.5f * b / a;
             if (intersectA)
             {
-                (*intersectA) = mOrigin + mDirection * t;
+                (*intersectA) = m_origin + m_direction * t;
             }
             if (intersectB)
             {
-                (*intersectB) = mOrigin + mDirection * t;
+                (*intersectB) = m_origin + m_direction * t;
             }
         }
 
@@ -103,11 +104,11 @@ namespace MCore
     bool Ray::Intersects(const PlaneEq& p, AZ::Vector3* intersect) const
     {
         // check if ray is parallel to plane (no intersection) or ray pointing away from plane (no intersection)
-        float dot1 = p.GetNormal().Dot(mDirection);
+        float dot1 = p.GetNormal().Dot(m_direction);
         //if (dot1 >= 0) return false;  // backface cull
 
         // calc second dot product
-        float dot2 = -(p.GetNormal().Dot(mOrigin) + p.GetDist());
+        float dot2 = -(p.GetNormal().Dot(m_origin) + p.GetDist());
 
         // calc t value
         float t = dot2 / dot1;
@@ -126,9 +127,9 @@ namespace MCore
         // calc intersection point
         if (intersect)
         {
-            intersect->SetX(mOrigin.GetX() + (mDirection.GetX() * t));
-            intersect->SetY(mOrigin.GetY() + (mDirection.GetY() * t));
-            intersect->SetZ(mOrigin.GetZ() + (mDirection.GetZ() * t));
+            intersect->SetX(m_origin.GetX() + (m_direction.GetX() * t));
+            intersect->SetY(m_origin.GetY() + (m_direction.GetY() * t));
+            intersect->SetZ(m_origin.GetZ() + (m_direction.GetZ() * t));
         }
 
         return true;
@@ -143,7 +144,7 @@ namespace MCore
         const AZ::Vector3 edge2 = p3 - p1;
 
         // begin calculating determinant - also used to calculate U parameter
-        const AZ::Vector3 dir = mDest - mOrigin;
+        const AZ::Vector3 dir = m_dest - m_origin;
         const AZ::Vector3 pvec = dir.Cross(edge2);
 
         // if determinant is near zero, ray lies in plane of triangle
@@ -154,7 +155,7 @@ namespace MCore
         }
 
         // calculate distance from vert0 to ray origin
-        const AZ::Vector3 tvec = mOrigin - p1;
+        const AZ::Vector3 tvec = m_origin - p1;
 
         // calculate U parameter and test bounds
         const float inv_det = 1.0f / det;
@@ -192,7 +193,7 @@ namespace MCore
         }
         if (intersect)
         {
-            *intersect = mOrigin + t * dir;
+            *intersect = m_origin + t * dir;
         }
 
         // yes, there was an intersection
@@ -211,10 +212,10 @@ namespace MCore
         // For all three axes, check the near and far intersection point on the two slabs
         for (int32 i = 0; i < 3; i++)
         {
-            if (Math::Abs(mDirection.GetElement(i)) < Math::epsilon)
+            if (Math::Abs(m_direction.GetElement(i)) < Math::epsilon)
             {
                 // direction is parallel to this plane, check if we're somewhere between min and max
-                if ((mOrigin.GetElement(i) < minVec.GetElement(i)) || (mOrigin.GetElement(i) > maxVec.GetElement(i)))
+                if ((m_origin.GetElement(i) < minVec.GetElement(i)) || (m_origin.GetElement(i) > maxVec.GetElement(i)))
                 {
                     return false;
                 }
@@ -222,8 +223,8 @@ namespace MCore
             else
             {
                 // calculate t's at the near and far slab, see if these are min or max t's
-                float t1 = (minVec.GetElement(i) - mOrigin.GetElement(i)) / mDirection.GetElement(i);
-                float t2 = (maxVec.GetElement(i) - mOrigin.GetElement(i)) / mDirection.GetElement(i);
+                float t1 = (minVec.GetElement(i) - m_origin.GetElement(i)) / m_direction.GetElement(i);
+                float t2 = (maxVec.GetElement(i) - m_origin.GetElement(i)) / m_direction.GetElement(i);
                 if (t1 > t2)
                 {
                     float temp = t1;
@@ -247,12 +248,12 @@ namespace MCore
 
         if (intersectA)
         {
-            *intersectA = mOrigin + mDirection * tNear;
+            *intersectA = m_origin + m_direction * tNear;
         }
 
         if (intersectB)
         {
-            *intersectB = mOrigin + mDirection * tFar;
+            *intersectB = m_origin + m_direction * tFar;
         }
 
         return true;

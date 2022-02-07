@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -213,6 +214,11 @@ namespace AZ
         typename AllocatorOverrideShim::size_type AllocatorOverrideShim::GetMaxAllocationSize() const
         {
             return m_source->GetMaxAllocationSize();
+        }
+
+        auto AllocatorOverrideShim::GetMaxContiguousAllocationSize() const -> size_type
+        {
+            return m_source->GetMaxContiguousAllocationSize();
         }
 
         IAllocatorAllocate* AllocatorOverrideShim::GetSubAllocator()

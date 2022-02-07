@@ -1,8 +1,9 @@
 #pragma once
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,7 +34,7 @@ namespace AZ
 
                 QWidget* CreateGUI(QWidget* parent) override;
                 u32 GetHandlerName() const override;
-                bool AutoDelete() const;
+                bool AutoDelete() const override;
                 
                 void ConsumeAttribute(ManifestNameWidget* widget, u32 attrib,
                     AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;

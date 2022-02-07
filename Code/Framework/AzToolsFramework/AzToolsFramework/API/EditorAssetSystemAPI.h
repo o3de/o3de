@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,14 +47,6 @@ namespace AzToolsFramework
 
             //! Retrieve the absolute path for the Asset Database Location
             virtual bool GetAbsoluteAssetDatabaseLocation(AZStd::string& /*result*/) { return false; }
-
-            //! Retrieve the absolute folder path to the current game's source assets (the ones that go into source control)
-            //! This may include the current mod path, if a mod is being edited by the editor
-            virtual const char* GetAbsoluteDevGameFolderPath() = 0;
-
-            //! Retrieve the absolute folder path to the current developer root ('dev'), which contains source artifacts
-            //! and is generally checked into source control.
-            virtual const char* GetAbsoluteDevRootFolderPath() = 0;
         
             /// Convert a full source path like "c:\\dev\\gamename\\blah\\test.tga" into a relative product path.
             /// asset paths never mention their alias and are relative to the asset cache root
@@ -311,8 +304,7 @@ namespace AzToolsFramework
 #elif defined(AZ_PLATFORM_WINDOWS)
             return "pc";
 #elif defined(AZ_PLATFORM_LINUX)
-            // set this to pc because that's what bootstrap.cfg currently defines the platform to "pc", even on Linux
-            return "pc";
+            return "linux";
 #else
             #error Unimplemented Host Asset Platform
 #endif

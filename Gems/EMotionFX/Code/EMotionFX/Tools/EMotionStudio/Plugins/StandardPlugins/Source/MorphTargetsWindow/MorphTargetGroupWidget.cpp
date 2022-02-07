@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,11 +23,11 @@ namespace EMStudio
         : QWidget(parent)
     {
         // keep values
-        mName = name;
-        mActorInstance = actorInstance;
+        m_name = name;
+        m_actorInstance = actorInstance;
 
         // init the edit window to nullptr
-        mEditWindow = nullptr;
+        m_editWindow = nullptr;
 
         // create the layout
         QVBoxLayout* layout = new QVBoxLayout();
@@ -34,9 +35,9 @@ namespace EMStudio
         layout->setMargin(0);
 
         // checkbox to enable/disable manual mode for all morph targets
-        mSelectAll = new QCheckBox("Select All");
-        mSelectAll->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
-        connect(mSelectAll, &QCheckBox::stateChanged, this, &MorphTargetGroupWidget::SetManualModeForAll);
+        m_selectAll = new QCheckBox("Select All");
+        m_selectAll->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+        connect(m_selectAll, &QCheckBox::stateChanged, this, &MorphTargetGroupWidget::SetManualModeForAll);
 
         // button for resetting all morph targets
         QPushButton* resetAll = new QPushButton("Reset All");
@@ -45,7 +46,7 @@ namespace EMStudio
 
         // add controls to the top layout
         QHBoxLayout* topControlLayout = new QHBoxLayout();
-        topControlLayout->addWidget(mSelectAll);
+        topControlLayout->addWidget(m_selectAll);
         topControlLayout->addWidget(resetAll);
         topControlLayout->setSpacing(5);
         topControlLayout->setMargin(0);
@@ -59,13 +60,13 @@ namespace EMStudio
         gridLayout->setVerticalSpacing(2);
 
         const size_t numMorphTargets = morphTargets.size();
-        mMorphTargets.resize(numMorphTargets);
+        m_morphTargets.resize(numMorphTargets);
 
         for (size_t i=0; i<numMorphTargets; ++i)
         {
             // keep values
-            mMorphTargets[i].mMorphTarget = morphTargets[i];
-            mMorphTargets[i].mMorphTargetInstance = morphTargetInstances[i];
+            m_morphTargets[i].m_morphTarget = morphTargets[i];
+            m_morphTargets[i].m_morphTargetInstance = morphTargetInstances[i];
 
             // add the number label
             const int intIndex = aznumeric_caster(i);
@@ -73,22 +74,22 @@ namespace EMStudio
             gridLayout->addWidget(numberLabel, intIndex, 0);
 
             // add the manual mode checkbox
-            mMorphTargets[i].mManualMode = new QCheckBox();
-            mMorphTargets[i].mManualMode->setMaximumWidth(15);
-            mMorphTargets[i].mManualMode->setProperty("MorphTargetIndex", intIndex);
-            mMorphTargets[i].mManualMode->setStyleSheet("QCheckBox{ spacing: 0px; }");
-            gridLayout->addWidget(mMorphTargets[i].mManualMode, intIndex, 1);
-            connect(mMorphTargets[i].mManualMode, &QCheckBox::clicked, this, &MorphTargetGroupWidget::ManualModeClicked);
+            m_morphTargets[i].m_manualMode = new QCheckBox();
+            m_morphTargets[i].m_manualMode->setMaximumWidth(15);
+            m_morphTargets[i].m_manualMode->setProperty("MorphTargetIndex", intIndex);
+            m_morphTargets[i].m_manualMode->setStyleSheet("QCheckBox{ spacing: 0px; }");
+            gridLayout->addWidget(m_morphTargets[i].m_manualMode, intIndex, 1);
+            connect(m_morphTargets[i].m_manualMode, &QCheckBox::clicked, this, &MorphTargetGroupWidget::ManualModeClicked);
 
             // create slider to adjust the morph target
-            mMorphTargets[i].mSliderWeight = new AzQtComponents::SliderDoubleCombo();
-            mMorphTargets[i].mSliderWeight->setMinimumWidth(50);
-            mMorphTargets[i].mSliderWeight->setProperty("MorphTargetIndex", intIndex);
-            mMorphTargets[i].mSliderWeight->spinbox()->setMinimumWidth(40);
-            mMorphTargets[i].mSliderWeight->spinbox()->setMaximumWidth(40);
-            gridLayout->addWidget(mMorphTargets[i].mSliderWeight, intIndex, 2);
-            connect(mMorphTargets[i].mSliderWeight, &AzQtComponents::SliderDoubleCombo::valueChanged, this, &MorphTargetGroupWidget::SliderWeightMoved);
-            connect(mMorphTargets[i].mSliderWeight, &AzQtComponents::SliderDoubleCombo::editingFinished, this, &MorphTargetGroupWidget::SliderWeightReleased);
+            m_morphTargets[i].m_sliderWeight = new AzQtComponents::SliderDoubleCombo();
+            m_morphTargets[i].m_sliderWeight->setMinimumWidth(50);
+            m_morphTargets[i].m_sliderWeight->setProperty("MorphTargetIndex", intIndex);
+            m_morphTargets[i].m_sliderWeight->spinbox()->setMinimumWidth(40);
+            m_morphTargets[i].m_sliderWeight->spinbox()->setMaximumWidth(40);
+            gridLayout->addWidget(m_morphTargets[i].m_sliderWeight, intIndex, 2);
+            connect(m_morphTargets[i].m_sliderWeight, &AzQtComponents::SliderDoubleCombo::valueChanged, this, &MorphTargetGroupWidget::SliderWeightMoved);
+            connect(m_morphTargets[i].m_sliderWeight, &AzQtComponents::SliderDoubleCombo::editingFinished, this, &MorphTargetGroupWidget::SliderWeightReleased);
 
             // create the name label
             QLabel* nameLabel = new QLabel(morphTargets[i]->GetName());
@@ -115,7 +116,7 @@ namespace EMStudio
     // the destructor
     MorphTargetGroupWidget::~MorphTargetGroupWidget()
     {
-        delete mEditWindow;
+        delete m_editWindow;
     }
 
 
@@ -127,12 +128,12 @@ namespace EMStudio
         AZStd::string command;
 
         // loop trough all morph targets and enable/disable manual mode
-        const size_t numMorphTargets = mMorphTargets.size();
+        const size_t numMorphTargets = m_morphTargets.size();
         for (size_t i = 0; i < numMorphTargets; ++i)
         {
-            EMotionFX::MorphTarget* morphTarget = mMorphTargets[i].mMorphTarget;
+            EMotionFX::MorphTarget* morphTarget = m_morphTargets[i].m_morphTarget;
 
-            command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %i -name \"%s\" -manualMode ", mActorInstance->GetID(), mActorInstance->GetLODLevel(), morphTarget->GetName());
+            command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %zu -name \"%s\" -manualMode ", m_actorInstance->GetID(), m_actorInstance->GetLODLevel(), morphTarget->GetName());
             command += AZStd::to_string(value == Qt::Checked);
             commandGroup.AddCommandString(command);
         }
@@ -153,12 +154,12 @@ namespace EMStudio
         AZStd::string command;
 
         // loop trough all morph targets and enable/disable manual mode
-        const size_t numMorphTargets = mMorphTargets.size();
+        const size_t numMorphTargets = m_morphTargets.size();
         for (size_t i = 0; i < numMorphTargets; ++i)
         {
-            EMotionFX::MorphTarget* morphTarget = mMorphTargets[i].mMorphTarget;
+            EMotionFX::MorphTarget* morphTarget = m_morphTargets[i].m_morphTarget;
 
-            command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %i -name \"%s\" -weight %f", mActorInstance->GetID(), mActorInstance->GetLODLevel(), morphTarget->GetName(), morphTarget->CalcZeroInfluenceWeight());
+            command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %zu -name \"%s\" -weight %f", m_actorInstance->GetID(), m_actorInstance->GetLODLevel(), morphTarget->GetName(), morphTarget->CalcZeroInfluenceWeight());
             commandGroup.AddCommandString(command);
         }
 
@@ -175,12 +176,12 @@ namespace EMStudio
     {
         QCheckBox* checkBox = static_cast<QCheckBox*>(sender());
         const int morphTargetIndex = checkBox->property("MorphTargetIndex").toInt();
-        EMotionFX::MorphTarget* morphTarget = mMorphTargets[morphTargetIndex].mMorphTarget;
+        EMotionFX::MorphTarget* morphTarget = m_morphTargets[morphTargetIndex].m_morphTarget;
 
         AZStd::string result;
-        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %i -name \"%s\" -weight %f -manualMode %s", 
-            mActorInstance->GetID(), 
-            mActorInstance->GetLODLevel(), 
+        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %zu -name \"%s\" -weight %f -manualMode %s", 
+            m_actorInstance->GetID(), 
+            m_actorInstance->GetLODLevel(), 
             morphTarget->GetName(), 
             0.0f, 
             AZStd::to_string(checkBox->isChecked()).c_str());
@@ -197,7 +198,7 @@ namespace EMStudio
         // get the morph target
         AzQtComponents::SliderDoubleCombo* floatSlider = static_cast<AzQtComponents::SliderDoubleCombo*>(sender());
         const int morphTargetIndex = floatSlider->property("MorphTargetIndex").toInt();
-        EMotionFX::MorphSetupInstance::MorphTarget* morphTargetInstance = mMorphTargets[morphTargetIndex].mMorphTargetInstance;
+        EMotionFX::MorphSetupInstance::MorphTarget* morphTargetInstance = m_morphTargets[morphTargetIndex].m_morphTargetInstance;
 
         // update the weight
         morphTargetInstance->SetWeight(aznumeric_cast<float>(floatSlider->value()));
@@ -210,22 +211,22 @@ namespace EMStudio
         // get the morph target and the morph target instance
         AzQtComponents::SliderDoubleCombo* floatSlider = static_cast<AzQtComponents::SliderDoubleCombo*>(sender());
         const int morphTargetIndex = floatSlider->property("MorphTargetIndex").toInt();
-        EMotionFX::MorphTarget* morphTarget = mMorphTargets[morphTargetIndex].mMorphTarget;
-        EMotionFX::MorphSetupInstance::MorphTarget* morphTargetInstance = mMorphTargets[morphTargetIndex].mMorphTargetInstance;
+        EMotionFX::MorphTarget* morphTarget = m_morphTargets[morphTargetIndex].m_morphTarget;
+        EMotionFX::MorphSetupInstance::MorphTarget* morphTargetInstance = m_morphTargets[morphTargetIndex].m_morphTargetInstance;
 
         // set the old weight to have the undo correct
-        morphTargetInstance->SetWeight(mMorphTargets[morphTargetIndex].mOldWeight);
+        morphTargetInstance->SetWeight(m_morphTargets[morphTargetIndex].m_oldWeight);
 
         // execute command
         AZStd::string result;
-        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %i -name \"%s\" -weight %f", mActorInstance->GetID(), mActorInstance->GetLODLevel(), morphTarget->GetName(), floatSlider->value());
+        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %zu -name \"%s\" -weight %f", m_actorInstance->GetID(), m_actorInstance->GetLODLevel(), morphTarget->GetName(), floatSlider->value());
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result) == false)
         {
             AZ_Error("EMotionFX", false, result.c_str());
         }
 
         // set the new old weight value
-        mMorphTargets[morphTargetIndex].mOldWeight = aznumeric_cast<float>(floatSlider->value());
+        m_morphTargets[morphTargetIndex].m_oldWeight = aznumeric_cast<float>(floatSlider->value());
     }
 
 
@@ -235,12 +236,12 @@ namespace EMStudio
         // get the morph target
         QPushButton* button = static_cast<QPushButton*>(sender());
         const int morphTargetIndex = button->property("MorphTargetIndex").toInt();
-        EMotionFX::MorphTarget* morphTarget = mMorphTargets[morphTargetIndex].mMorphTarget;
+        EMotionFX::MorphTarget* morphTarget = m_morphTargets[morphTargetIndex].m_morphTarget;
 
         // show the edit window
-        delete mEditWindow;
-        mEditWindow = new MorphTargetEditWindow(mActorInstance, morphTarget, this);
-        mEditWindow->exec();
+        delete m_editWindow;
+        m_editWindow = new MorphTargetEditWindow(m_actorInstance, morphTarget, this);
+        m_editWindow->exec();
     }
 
 
@@ -249,13 +250,13 @@ namespace EMStudio
     {
         bool selectAllChecked = true;
 
-        const size_t numMorphTargets = mMorphTargets.size();
+        const size_t numMorphTargets = m_morphTargets.size();
         for (size_t i = 0; i < numMorphTargets; ++i)
         {
-            const float rangeMin    = mMorphTargets[i].mMorphTarget->GetRangeMin();
-            const float rangeMax    = mMorphTargets[i].mMorphTarget->GetRangeMax();
-            const float weight      = mMorphTargets[i].mMorphTargetInstance->GetWeight();
-            const bool  manualMode  = mMorphTargets[i].mMorphTargetInstance->GetIsInManualMode();
+            const float rangeMin    = m_morphTargets[i].m_morphTarget->GetRangeMin();
+            const float rangeMax    = m_morphTargets[i].m_morphTarget->GetRangeMax();
+            const float weight      = m_morphTargets[i].m_morphTargetInstance->GetWeight();
+            const bool  manualMode  = m_morphTargets[i].m_morphTargetInstance->GetIsInManualMode();
 
             // check if the select all should not be checked
             if (manualMode == false)
@@ -264,82 +265,82 @@ namespace EMStudio
             }
 
             // disable signals
-            QSignalBlocker sb(mMorphTargets[i].mSliderWeight);
-            mMorphTargets[i].mManualMode->blockSignals(true);
+            QSignalBlocker sb(m_morphTargets[i].m_sliderWeight);
+            m_morphTargets[i].m_manualMode->blockSignals(true);
 
             // update the manual mode
-            mMorphTargets[i].mManualMode->setChecked(manualMode);
+            m_morphTargets[i].m_manualMode->setChecked(manualMode);
 
             // update the slider weight
-            mMorphTargets[i].mSliderWeight->setDisabled(!manualMode);
-            mMorphTargets[i].mSliderWeight->setRange(rangeMin, rangeMax);
+            m_morphTargets[i].m_sliderWeight->setDisabled(!manualMode);
+            m_morphTargets[i].m_sliderWeight->setRange(rangeMin, rangeMax);
             // enforce single step of 0.1
-            mMorphTargets[i].mSliderWeight->slider()->setNumSteps(aznumeric_cast<int>((rangeMax - rangeMin) / 0.1));
-            mMorphTargets[i].mSliderWeight->setValue(weight);
+            m_morphTargets[i].m_sliderWeight->slider()->setNumSteps(aznumeric_cast<int>((rangeMax - rangeMin) / 0.1));
+            m_morphTargets[i].m_sliderWeight->setValue(weight);
 
             // enable signals
-            mMorphTargets[i].mManualMode->blockSignals(false);
+            m_morphTargets[i].m_manualMode->blockSignals(false);
 
             // store the current weight
             // the weight is updated in realtime but before to execute the adjust command it has to be reset to have the undo correct
-            mMorphTargets[i].mOldWeight = weight;
+            m_morphTargets[i].m_oldWeight = weight;
         }
 
         // update the select all
-        mSelectAll->blockSignals(true);
-        mSelectAll->setChecked(selectAllChecked);
-        mSelectAll->blockSignals(false);
+        m_selectAll->blockSignals(true);
+        m_selectAll->setChecked(selectAllChecked);
+        m_selectAll->blockSignals(false);
 
         // update the edit window
-        if (mEditWindow)
+        if (m_editWindow)
         {
-            mEditWindow->UpdateInterface();
+            m_editWindow->UpdateInterface();
         }
     }
 
     void MorphTargetGroupWidget::UpdateMorphTarget(const char* name)
     {
         // update the row
-        const size_t numMorphTargets = mMorphTargets.size();
+        const size_t numMorphTargets = m_morphTargets.size();
         for (size_t i = 0; i < numMorphTargets; ++i)
         {
             // continue of the name is not the same
-            if (mMorphTargets[i].mMorphTarget->GetNameString() != name)
+            if (m_morphTargets[i].m_morphTarget->GetNameString() != name)
             {
                 continue;
             }
 
             // get values
-            const float rangeMin    = mMorphTargets[i].mMorphTarget->GetRangeMin();
-            const float rangeMax    = mMorphTargets[i].mMorphTarget->GetRangeMax();
-            const float weight      = mMorphTargets[i].mMorphTargetInstance->GetWeight();
-            const bool  manualMode  = mMorphTargets[i].mMorphTargetInstance->GetIsInManualMode();
+            const float rangeMin    = m_morphTargets[i].m_morphTarget->GetRangeMin();
+            const float rangeMax    = m_morphTargets[i].m_morphTarget->GetRangeMax();
+            const float weight      = m_morphTargets[i].m_morphTargetInstance->GetWeight();
+            const bool  manualMode  = m_morphTargets[i].m_morphTargetInstance->GetIsInManualMode();
 
             // disable signals
-            QSignalBlocker sb(mMorphTargets[i].mSliderWeight);
-            mMorphTargets[i].mManualMode->blockSignals(true);
+            QSignalBlocker sb(m_morphTargets[i].m_sliderWeight);
+            m_morphTargets[i].m_manualMode->blockSignals(true);
 
             // update the manual mode
-            mMorphTargets[i].mManualMode->setChecked(manualMode);
+            m_morphTargets[i].m_manualMode->setChecked(manualMode);
 
             // update the slider weight
-            mMorphTargets[i].mSliderWeight->setDisabled(!manualMode);
-            mMorphTargets[i].mSliderWeight->setRange(rangeMin, rangeMax);
+            m_morphTargets[i].m_sliderWeight->setDisabled(!manualMode);
+            m_morphTargets[i].m_sliderWeight->setRange(rangeMin, rangeMax);
             // enforce single step of 0.1
-            mMorphTargets[i].mSliderWeight->slider()->setNumSteps(aznumeric_cast<int>((rangeMax - rangeMin) / 0.1));
-            mMorphTargets[i].mSliderWeight->setValue(weight);
+            m_morphTargets[i].m_sliderWeight->slider()->setNumSteps(aznumeric_cast<int>((rangeMax - rangeMin) / 0.1));
+            m_morphTargets[i].m_sliderWeight->setValue(weight);
 
             // enable signals
-            mMorphTargets[i].mManualMode->blockSignals(false);
+            m_morphTargets[i].m_manualMode->blockSignals(false);
 
             // store the current weight
             // the weight is updated in realtime but before to execute the adjust command it has to be reset to have the undo correct
-            mMorphTargets[i].mOldWeight = weight;
+            m_morphTargets[i].m_oldWeight = weight;
 
             // update edit window in case it's the edit of this morph target
-            if (mEditWindow && mEditWindow->GetMorphTarget() == mMorphTargets[i].mMorphTarget)
+            if (m_editWindow && m_editWindow->GetMorphTarget() == m_morphTargets[i].m_morphTarget)
             {
-                mEditWindow->UpdateInterface();
+                m_editWindow->UpdateInterface();
             }
 
             // stop here because we found it
@@ -350,15 +351,15 @@ namespace EMStudio
         bool selectAllChecked = true;
         for (uint32 i = 0; i < numMorphTargets; ++i)
         {
-            if (mMorphTargets[i].mMorphTargetInstance->GetIsInManualMode() == false)
+            if (m_morphTargets[i].m_morphTargetInstance->GetIsInManualMode() == false)
             {
                 selectAllChecked = false;
                 break;
             }
         }
-        mSelectAll->blockSignals(true);
-        mSelectAll->setChecked(selectAllChecked);
-        mSelectAll->blockSignals(false);
+        m_selectAll->blockSignals(true);
+        m_selectAll->setChecked(selectAllChecked);
+        m_selectAll->blockSignals(false);
     }
 } // namespace EMStudio
 

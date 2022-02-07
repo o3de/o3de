@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,7 +49,7 @@ namespace AZ::Render
 
     private:
 
-        static constexpr size_t NoFreeSlot = -1;
+        static constexpr size_t NoFreeSlot = std::numeric_limits<size_t>::max();
         static constexpr size_t InitialReservedCount = 128;
         
         using Fn = void(&)(AZStd::vector<Ts>& ...);
@@ -102,7 +103,7 @@ namespace AZ::Render
     template<typename ... Ts>
     inline size_t MultiSparseVector<Ts...>::Reserve()
     {
-        size_t slotToReturn = -1;
+        size_t slotToReturn = std::numeric_limits<size_t>::max();
         if (m_nextFreeSlot != NoFreeSlot)
         {
             // If there's a free slot, then use that space and update the linked list of free slots.

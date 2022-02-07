@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,12 +25,15 @@ namespace O3DE::ProjectManager
         QString m_name;
         QString m_thirdPartyPath;
 
-        // from o3de_manifest.json
         QString m_path;
+
+        // from o3de_manifest.json
         QString m_defaultProjectsFolder;
         QString m_defaultGemsFolder;
         QString m_defaultTemplatesFolder;
         QString m_defaultRestrictedFolder;
+
+        bool m_registered = false;
 
         bool IsValid() const;
     };

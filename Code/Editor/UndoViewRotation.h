@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,6 +29,8 @@ protected:
     void Redo();
 
 private:
+    static Ang3 GetActiveCameraRotation();
+
     Ang3 m_undo;
     Ang3 m_redo;
     QString m_undoDescription;

@@ -1,12 +1,18 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 set(FILES
-    Source/Multiplayer_precompiled.h
+    Source/Debug/MultiplayerDebugByteReporter.cpp
+    Source/Debug/MultiplayerDebugByteReporter.h
+    Source/Debug/MultiplayerDebugHierarchyReporter.cpp
+    Source/Debug/MultiplayerDebugHierarchyReporter.h
+    Source/Debug/MultiplayerDebugPerEntityReporter.cpp
+    Source/Debug/MultiplayerDebugPerEntityReporter.h
     Source/Debug/MultiplayerDebugModule.cpp
     Source/Debug/MultiplayerDebugModule.h
     Source/Debug/MultiplayerDebugSystemComponent.cpp

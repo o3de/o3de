@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,14 +71,14 @@ namespace EMotionFX
          * @param node The node where the mesh belongs to during this initialization.
          * @param lodLevel The LOD level of the mesh the mesh deformer works on.
          */
-        void Reinitialize(Actor* actor, Node* node, uint32 lodLevel) override;
+        void Reinitialize(Actor* actor, Node* node, size_t lodLevel) override;
 
         /**
          * Creates an exact clone (copy) of this deformer, and returns a pointer to it.
          * @param mesh The mesh to apply the deformer on.
          * @result A pointer to the newly created clone of this deformer.
          */
-        MeshDeformer* Clone(Mesh* mesh) override;
+        MeshDeformer* Clone(Mesh* mesh) const override;
 
         /**
          * Returns the unique type ID of the deformer.
@@ -99,26 +100,26 @@ namespace EMotionFX
          * This is the number of different bones that the skinning information of the mesh where this deformer works on uses.
          * @result The number of bones.
          */
-        MCORE_INLINE size_t GetNumLocalBones() const                        { return mNodeNumbers.size(); }
+        MCORE_INLINE size_t GetNumLocalBones() const                        { return m_nodeNumbers.size(); }
 
         /**
          * Get the node number of a given local bone.
          * @param index The local bone number, which must be in range of [0..GetNumLocalBones()-1].
          * @result The node number, which is in range of [0..Actor::GetNumNodes()-1], depending on the actor where this deformer works on.
          */
-        MCORE_INLINE uint32 GetLocalBone(uint32 index) const                { return mNodeNumbers[index]; }
+        MCORE_INLINE size_t GetLocalBone(size_t index) const                { return m_nodeNumbers[index]; }
 
         /**
          * Pre-allocate space for a given number of local bones.
          * This does not alter the value returned by GetNumLocalBones().
          * @param numBones The number of bones to pre-allocate space for.
          */
-        MCORE_INLINE void ReserveLocalBones(uint32 numBones)                { mNodeNumbers.reserve(numBones); mBoneMatrices.reserve(numBones); }
+        MCORE_INLINE void ReserveLocalBones(size_t numBones)                { m_nodeNumbers.reserve(numBones); m_boneMatrices.reserve(numBones); }
 
 
     protected:
-        AZStd::vector<AZ::Matrix3x4>    mBoneMatrices;
-        AZStd::vector<uint32>           mNodeNumbers;
+        AZStd::vector<AZ::Matrix3x4>    m_boneMatrices;
+        AZStd::vector<size_t>           m_nodeNumbers;
 
         /**
          * Default constructor.
@@ -134,20 +135,12 @@ namespace EMotionFX
         /**
          * Find the entry number that uses a specified node number.
          * @param nodeIndex The node number to search for.
-         * @result The index inside the mBones member array, which uses the given node.
+         * @result The index inside the m_bones member array, which uses the given node.
          */
-        MCORE_INLINE uint32 FindLocalBoneIndex(uint32 nodeIndex) const
+        MCORE_INLINE size_t FindLocalBoneIndex(size_t nodeIndex) const
         {
-            const size_t numBones = mNodeNumbers.size();
-            for (size_t i = 0; i < numBones; ++i)
-            {
-                if (mNodeNumbers[i] == nodeIndex)
-                {
-                    return static_cast<uint32>(i);
-                }
-            }
-
-            return MCORE_INVALIDINDEX32;
+            const auto foundBoneIndex = AZStd::find(begin(m_nodeNumbers), end(m_nodeNumbers), nodeIndex);
+            return foundBoneIndex != end(m_nodeNumbers) ? AZStd::distance(begin(m_nodeNumbers), foundBoneIndex) : InvalidIndex;
         }
 
         void SkinVertexRange(uint32 startVertex, uint32 endVertex, AZ::Vector3* positions, AZ::Vector3* normals, AZ::Vector4* tangents, AZ::Vector3* bitangents, uint32* orgVerts, SkinningInfoVertexAttributeLayer* layer);

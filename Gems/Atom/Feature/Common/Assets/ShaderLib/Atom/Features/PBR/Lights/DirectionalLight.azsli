@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,7 +24,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         litRatio = DirectionalLightShadow::GetVisibility(
             shadowIndex,
             lightingData.shadowCoords,
-            surface.normal,
+            surface.vertexNormal,
             debugInfo);
             
         if (o_transmission_mode == TransmissionMode::ThickObject)

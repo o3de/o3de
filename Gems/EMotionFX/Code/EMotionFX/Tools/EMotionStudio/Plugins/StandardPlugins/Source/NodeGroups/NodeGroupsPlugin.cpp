@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/CommandSystem/Source/NodeGroupCommands.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 
 // include qt headers
@@ -24,16 +26,16 @@ namespace EMStudio
     NodeGroupsPlugin::NodeGroupsPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mDialogStack                = nullptr;
-        mNodeGroupWidget            = nullptr;
-        mNodeGroupManagementWidget  = nullptr;
-        mSelectCallback             = nullptr;
-        mUnselectCallback           = nullptr;
-        mClearSelectionCallback     = nullptr;
-        mAdjustNodeGroupCallback    = nullptr;
-        mAddNodeGroupCallback       = nullptr;
-        mRemoveNodeGroupCallback    = nullptr;
-        mCurrentActor               = nullptr;
+        m_dialogStack                = nullptr;
+        m_nodeGroupWidget            = nullptr;
+        m_nodeGroupManagementWidget  = nullptr;
+        m_selectCallback             = nullptr;
+        m_unselectCallback           = nullptr;
+        m_clearSelectionCallback     = nullptr;
+        m_adjustNodeGroupCallback    = nullptr;
+        m_addNodeGroupCallback       = nullptr;
+        m_removeNodeGroupCallback    = nullptr;
+        m_currentActor               = nullptr;
     }
 
 
@@ -41,23 +43,23 @@ namespace EMStudio
     NodeGroupsPlugin::~NodeGroupsPlugin()
     {
         // unregister the command callbacks and get rid of the memory
-        GetCommandManager()->RemoveCommandCallback(mSelectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mUnselectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mClearSelectionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mAdjustNodeGroupCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mAddNodeGroupCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mRemoveNodeGroupCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_selectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_unselectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_clearSelectionCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_adjustNodeGroupCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_addNodeGroupCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_removeNodeGroupCallback, false);
 
         // remove the callback
-        delete mSelectCallback;
-        delete mUnselectCallback;
-        delete mClearSelectionCallback;
-        delete mAdjustNodeGroupCallback;
-        delete mAddNodeGroupCallback;
-        delete mRemoveNodeGroupCallback;
+        delete m_selectCallback;
+        delete m_unselectCallback;
+        delete m_clearSelectionCallback;
+        delete m_adjustNodeGroupCallback;
+        delete m_addNodeGroupCallback;
+        delete m_removeNodeGroupCallback;
 
         // clear dialogstack and delete afterwards
-        delete mDialogStack;
+        delete m_dialogStack;
     }
 
 
@@ -73,40 +75,40 @@ namespace EMStudio
     bool NodeGroupsPlugin::Init()
     {
         // create the dialog stack
-        assert(mDialogStack == nullptr);
-        mDialogStack = new MysticQt::DialogStack();
-        mDock->setMinimumWidth(300);
-        mDock->setMinimumHeight(100);
-        mDock->setWidget(mDialogStack);
+        assert(m_dialogStack == nullptr);
+        m_dialogStack = new MysticQt::DialogStack();
+        m_dock->setMinimumWidth(300);
+        m_dock->setMinimumHeight(100);
+        m_dock->setWidget(m_dialogStack);
 
         // create the management and node group widgets
-        mNodeGroupWidget            = new NodeGroupWidget();
-        mNodeGroupManagementWidget  = new NodeGroupManagementWidget(mNodeGroupWidget);
+        m_nodeGroupWidget            = new NodeGroupWidget();
+        m_nodeGroupManagementWidget  = new NodeGroupManagementWidget(m_nodeGroupWidget);
 
         // add the widgets to the dialog stack
-        mDialogStack->Add(mNodeGroupManagementWidget, "Node Group Management", false, true, true, false);
-        mDialogStack->Add(mNodeGroupWidget, "Node Group", false, true, true);
+        m_dialogStack->Add(m_nodeGroupManagementWidget, "Node Group Management", false, true, true, false);
+        m_dialogStack->Add(m_nodeGroupWidget, "Node Group", false, true, true);
 
         // create and register the command callbacks only (only execute this code once for all plugins)
-        mSelectCallback             = new CommandSelectCallback(false);
-        mUnselectCallback           = new CommandUnselectCallback(false);
-        mClearSelectionCallback     = new CommandClearSelectionCallback(false);
-        mAdjustNodeGroupCallback    = new CommandAdjustNodeGroupCallback(false);
-        mAddNodeGroupCallback       = new CommandAddNodeGroupCallback(false);
-        mRemoveNodeGroupCallback    = new CommandRemoveNodeGroupCallback(false);
+        m_selectCallback             = new CommandSelectCallback(false);
+        m_unselectCallback           = new CommandUnselectCallback(false);
+        m_clearSelectionCallback     = new CommandClearSelectionCallback(false);
+        m_adjustNodeGroupCallback    = new CommandAdjustNodeGroupCallback(false);
+        m_addNodeGroupCallback       = new CommandAddNodeGroupCallback(false);
+        m_removeNodeGroupCallback    = new CommandRemoveNodeGroupCallback(false);
 
-        GetCommandManager()->RegisterCommandCallback("Select", mSelectCallback);
-        GetCommandManager()->RegisterCommandCallback("Unselect", mUnselectCallback);
-        GetCommandManager()->RegisterCommandCallback("ClearSelection", mClearSelectionCallback);
-        GetCommandManager()->RegisterCommandCallback("AdjustNodeGroup", mAdjustNodeGroupCallback);
-        GetCommandManager()->RegisterCommandCallback("AddNodeGroup", mAddNodeGroupCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveNodeGroup", mRemoveNodeGroupCallback);
+        GetCommandManager()->RegisterCommandCallback("Select", m_selectCallback);
+        GetCommandManager()->RegisterCommandCallback("Unselect", m_unselectCallback);
+        GetCommandManager()->RegisterCommandCallback("ClearSelection", m_clearSelectionCallback);
+        GetCommandManager()->RegisterCommandCallback(CommandSystem::CommandAdjustNodeGroup::s_commandName.data(), m_adjustNodeGroupCallback);
+        GetCommandManager()->RegisterCommandCallback("AddNodeGroup", m_addNodeGroupCallback);
+        GetCommandManager()->RegisterCommandCallback("RemoveNodeGroup", m_removeNodeGroupCallback);
 
         // reinit the dialog
         ReInit();
 
         // connect the window activation signal to refresh if reactivated
-        connect(mDock, &QDockWidget::visibilityChanged, this, &NodeGroupsPlugin::WindowReInit);
+        connect(m_dock, &QDockWidget::visibilityChanged, this, &NodeGroupsPlugin::WindowReInit);
 
         return true;
     }
@@ -122,10 +124,10 @@ namespace EMStudio
         // show hint if no/multiple actor instances is/are selected
         if (actorInstance == nullptr)
         {
-            mCurrentActor = nullptr;
-            mNodeGroupWidget->SetActor(nullptr);
-            mNodeGroupWidget->SetNodeGroup(nullptr);
-            mNodeGroupManagementWidget->SetActor(nullptr);
+            m_currentActor = nullptr;
+            m_nodeGroupWidget->SetActor(nullptr);
+            m_nodeGroupWidget->SetNodeGroup(nullptr);
+            m_nodeGroupManagementWidget->SetActor(nullptr);
             return;
         }
 
@@ -133,18 +135,18 @@ namespace EMStudio
         EMotionFX::Actor* actor = actorInstance->GetActor();
 
         // only reinit the node groups window if actorinstance changed
-        if (mCurrentActor != actor)
+        if (m_currentActor != actor)
         {
             // set the new actor
-            mCurrentActor = actor;
+            m_currentActor = actor;
 
             // set the new actor on each widget
-            mNodeGroupWidget->SetActor(mCurrentActor);
-            mNodeGroupManagementWidget->SetActor(mCurrentActor);
+            m_nodeGroupWidget->SetActor(m_currentActor);
+            m_nodeGroupManagementWidget->SetActor(m_currentActor);
         }
 
         // set the dialog stack as main widget
-        mDock->setWidget(mDialogStack);
+        m_dock->setWidget(m_dialogStack);
 
         // update the interface
         UpdateInterface();
@@ -164,8 +166,8 @@ namespace EMStudio
     // update the interface
     void NodeGroupsPlugin::UpdateInterface()
     {
-        mNodeGroupManagementWidget->UpdateInterface();
-        mNodeGroupWidget->UpdateInterface();
+        m_nodeGroupManagementWidget->UpdateInterface();
+        m_nodeGroupWidget->UpdateInterface();
     }
 
 

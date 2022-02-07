@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ namespace GraphCanvas
 
     protected:
         // QGraphicsItem  
-        void mousePressEvent(QGraphicsSceneMouseEvent* event)
+        void mousePressEvent(QGraphicsSceneMouseEvent* event) override
         {
             bool result = false;
             VisualNotificationBus::EventResult(result, GetEntityId(), &VisualNotifications::OnMousePress, GetEntityId(), event);
@@ -47,7 +48,7 @@ namespace GraphCanvas
             }
         }
 
-        void mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+        void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override
         {
             bool result = false;
             VisualNotificationBus::EventResult(result, GetEntityId(), &VisualNotifications::OnMouseRelease, GetEntityId(), event);

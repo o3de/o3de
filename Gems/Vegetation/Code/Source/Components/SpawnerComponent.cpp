@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -205,7 +206,7 @@ namespace Vegetation
 
     bool SpawnerComponent::PrepareToClaim(EntityIdStack& stackIds)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         //adding entity id to the stack of entity ids affecting vegetation
         EntityIdStack emptyIds;
@@ -258,7 +259,7 @@ namespace Vegetation
 
     bool SpawnerComponent::CreateInstance([[maybe_unused]] const ClaimPoint &point, InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         instanceData.m_instanceId = InvalidInstanceId;
         if (instanceData.m_descriptorPtr && instanceData.m_descriptorPtr->IsSpawnable())
@@ -278,7 +279,7 @@ namespace Vegetation
 
     bool SpawnerComponent::EvaluateFilters(EntityIdStack& processedIds, InstanceData& instanceData, const FilterStage intendedStage) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         bool accepted = true;
         for (const auto& id : processedIds)
@@ -301,7 +302,7 @@ namespace Vegetation
 
     bool SpawnerComponent::ProcessInstance(EntityIdStack& processedIds, const ClaimPoint& point, InstanceData& instanceData, DescriptorPtr descriptorPtr)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (!descriptorPtr)
         {
@@ -352,7 +353,7 @@ namespace Vegetation
 
     bool SpawnerComponent::ClaimPosition(EntityIdStack& processedIds, const ClaimPoint& point, InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
 #if VEG_SPAWNER_ENABLE_CACHING
         {
@@ -412,7 +413,7 @@ namespace Vegetation
 
     void SpawnerComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         //reject entire spawner if there are inclusion tags to consider that don't exist in the context
         if (SurfaceData::HasValidTags(context.m_masks) &&
@@ -496,7 +497,7 @@ namespace Vegetation
 
     void SpawnerComponent::UnclaimPosition(const ClaimHandle handle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         InstanceId instanceId = InvalidInstanceId;
         {
@@ -517,7 +518,7 @@ namespace Vegetation
 
     AZ::Aabb SpawnerComponent::GetEncompassingAabb() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ::Aabb bounds = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(bounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
@@ -527,12 +528,12 @@ namespace Vegetation
     AZ::u32 SpawnerComponent::GetProductCount() const
     {
         AZStd::lock_guard<decltype(m_claimInstanceMappingMutex)> claimInstanceMappingMutexLock(m_claimInstanceMappingMutex);
-        return m_claimInstanceMapping.size();
+        return static_cast<AZ::u32>(m_claimInstanceMapping.size());
     }
 
     void SpawnerComponent::OnCompositionChanged()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
         AreaComponentBase::OnCompositionChanged();
 
 #if VEG_SPAWNER_ENABLE_CACHING
@@ -545,7 +546,7 @@ namespace Vegetation
 
     void SpawnerComponent::DestroyAllInstances()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         ClaimInstanceMapping claimInstanceMapping;
         {

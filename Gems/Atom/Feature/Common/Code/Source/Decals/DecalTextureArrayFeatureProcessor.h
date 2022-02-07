@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #pragma once
 
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -15,7 +17,6 @@
 #include <Atom/Feature/Utils/IndexableList.h>
 #include <Decals/DecalTextureArray.h>
 #include <Decals/AsyncLoadTracker.h>
-#include <CoreLights/IndexedDataVector.h>
 
 namespace AZ
 {
@@ -88,6 +89,7 @@ namespace AZ
         private:
 
             // Number of size and format permutations
+            // This number should match the number of texture arrays in Decals/ViewSrg.azsli
             static constexpr int NumTextureArrays = 5;
             static constexpr const char* FeatureProcessorName = "DecalTextureArrayFeatureProcessor";
 
@@ -112,6 +114,7 @@ namespace AZ
             AZStd::optional<DecalLocation> AddMaterialToTextureArrays(const AZ::RPI::MaterialAsset* materialAsset);
 
             int FindTextureArrayWithSize(const RHI::Size& size) const;
+            void RemoveMaterialFromDecal(const uint16_t decalIndex);
             void SetDecalTextureLocation(const DecalHandle& handle, const DecalLocation location);
             void QueueMaterialLoadForDecal(const AZ::Data::AssetId material, const DecalHandle handle);
             bool RemoveDecalFromTextureArrays(const DecalLocation decalLocation);
@@ -127,7 +130,7 @@ namespace AZ
             // 4 textures @ 512x512
             IndexableList < AZStd::pair < AZ::RHI::Size, DecalTextureArray>> m_textureArrayList;
 
-            AZStd::array<RHI::ShaderInputImageIndex, NumTextureArrays> m_decalTextureArrayIndices;
+            AZStd::array<AZStd::array<RHI::ShaderInputImageIndex, DecalMapType_Num>, NumTextureArrays> m_decalTextureArrayIndices;
             GpuBufferHandler m_decalBufferHandler;
 
             AsyncLoadTracker<DecalHandle> m_materialLoadTracker;

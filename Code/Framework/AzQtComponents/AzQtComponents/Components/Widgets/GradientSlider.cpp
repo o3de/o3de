@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,7 +30,7 @@ GradientSlider::GradientSlider(Qt::Orientation orientation, QWidget* parent)
 
     setMouseTracking(true);
 
-    m_colorFunction = [this](qreal value) {
+    m_colorFunction = [](qreal value) {
         return QColor::fromRgbF(value, value, value);
     };
 
@@ -113,8 +114,7 @@ void GradientSlider::mouseMoveEvent(QMouseEvent* event)
 {
     int intValue = Slider::valueFromPosition(this, event->pos(), width(), height(), rect().bottom());
 
-    qreal value = (aznumeric_cast<qreal, int>(intValue - minimum()) / aznumeric_cast<qreal, int>(maximum() - minimum()));
-    QColor rgb = m_colorFunction(value);
+    qreal value = (aznumeric_cast<qreal>(intValue - minimum()) / aznumeric_cast<qreal>(maximum() - minimum()));
 
     const QString toolTipText = m_toolTipFunction(value);
 

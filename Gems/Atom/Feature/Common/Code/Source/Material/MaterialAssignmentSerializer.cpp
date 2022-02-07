@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,9 @@ namespace AZ
         AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialAssignmentSerializer, AZ::SystemAllocator, 0);
 
         JsonSerializationResult::Result JsonMaterialAssignmentSerializer::Load(
-            void* outputValue, [[maybe_unused]] const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+            void* outputValue,
+            [[maybe_unused]] const Uuid& outputValueTypeId,
+            const rapidjson::Value& inputValue,
             JsonDeserializerContext& context)
         {
             namespace JSR = JsonSerializationResult;
@@ -61,6 +64,7 @@ namespace AZ
                             LoadAny<AZ::Color>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZStd::string>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::AssetId>(propertyValue, inputPropertyPair.value, context, result) ||
+                            LoadAny<AZ::Data::Asset<AZ::Data::AssetData>>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::RPI::ImageAsset>>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(propertyValue, inputPropertyPair.value, context, result))
                         {
@@ -77,7 +81,10 @@ namespace AZ
         }
 
         JsonSerializationResult::Result JsonMaterialAssignmentSerializer::Store(
-            rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue, [[maybe_unused]] const Uuid& valueTypeId,
+            rapidjson::Value& outputValue,
+            const void* inputValue,
+            const void* defaultValue,
+            [[maybe_unused]] const Uuid& valueTypeId,
             JsonSerializerContext& context)
         {
             namespace JSR = AZ::JsonSerializationResult;
@@ -137,9 +144,9 @@ namespace AZ
                                 StoreAny<AZ::Color>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZStd::string>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::AssetId>(propertyValue, outputPropertyValue, context, result) ||
+                                StoreAny<AZ::Data::Asset<AZ::Data::AssetData>>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::Asset<AZ::RPI::ImageAsset>>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(
-                                    propertyValue, outputPropertyValue, context, result))
+                                StoreAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(propertyValue, outputPropertyValue, context, result))
                             {
                                 outputPropertyValueContainer.AddMember(
                                     rapidjson::Value::StringRefType(propertyName.GetCStr()), outputPropertyValue,
@@ -163,7 +170,9 @@ namespace AZ
 
         template<typename T>
         bool JsonMaterialAssignmentSerializer::LoadAny(
-            AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
+            AZStd::any& propertyValue,
+            const rapidjson::Value& inputPropertyValue,
+            AZ::JsonDeserializerContext& context,
             AZ::JsonSerializationResult::ResultCode& result)
         {
             if (inputPropertyValue.IsObject() && inputPropertyValue.HasMember("Value") && inputPropertyValue.HasMember("$type"))
@@ -186,7 +195,9 @@ namespace AZ
 
         template<typename T>
         bool JsonMaterialAssignmentSerializer::StoreAny(
-            const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
+            const AZStd::any& propertyValue,
+            rapidjson::Value& outputPropertyValue,
+            AZ::JsonSerializerContext& context,
             AZ::JsonSerializationResult::ResultCode& result)
         {
             if (propertyValue.is<T>())
@@ -198,7 +209,7 @@ namespace AZ
                 result.Combine(StoreTypeId(typeValue, azrtti_typeid<T>(), context));
                 outputPropertyValue.AddMember("$type", typeValue, context.GetJsonAllocator());
 
-                T value = AZStd::any_cast<T>(propertyValue);
+                const T& value = AZStd::any_cast<T>(propertyValue);
                 result.Combine(
                     ContinueStoringToJsonObjectField(outputPropertyValue, "Value", &value, nullptr, azrtti_typeid<T>(), context));
                 return true;

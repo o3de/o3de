@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -53,6 +54,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = false;
         }
 
+        using JsonSerializerConformityTestDescriptor<AZStd::unordered_set<int>>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Set>();
@@ -107,6 +109,7 @@ namespace JsonSerializationTests
             context->RegisterGenericType<MultiSet>();
         }
 
+        using JsonSerializerConformityTestDescriptor<MultiSet>::Reflect;
         bool AreEqual(const MultiSet& lhs, const MultiSet& rhs) override
         {
             return
@@ -138,6 +141,7 @@ namespace JsonSerializationTests
             BaseJsonSerializerFixture::TearDown();
         }
 
+        using BaseJsonSerializerFixture::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
         {
             serializeContext->RegisterGenericType<Set>();

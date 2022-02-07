@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/DataOverlayInstanceMsgs.h>
 #include <AzCore/Serialization/DataOverlayProviderMsgs.h>
@@ -785,7 +787,7 @@ namespace AZ
                 // Serializable leaf element.
                 else if (classData->m_serializer)
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "ObjectStreamImpl::LoadClass Load");
+                    AZ_PROFILE_SCOPE(AzCore, "ObjectStreamImpl::LoadClass Load");
 
                     // Wrap the stream
                     IO::GenericStream* currentStream = &m_inStream;
@@ -1519,6 +1521,7 @@ namespace AZ
             {
                 if (m_writeElementResultStack.empty())
                 {
+                    AZ_UNUSED(classData); // Prevent unused warning in release builds
                     AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                     return true;
                 }
@@ -1580,6 +1583,7 @@ namespace AZ
                     {
                         if (m_writeElementResultStack.empty())
                         {
+                            AZ_UNUSED(classData); // Prevent unused warning in release builds
                             AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                             return true;
                         }
@@ -1643,6 +1647,7 @@ namespace AZ
                 {
                     if (m_writeElementResultStack.empty())
                     {
+                        AZ_UNUSED(classData); // Prevent unused warning in release builds
                         AZ_Error("Serialize", false, "CloseElement is attempted to be called without a corresponding WriteElement when writing class %s", classData->m_name);
                         return true;
                     }
@@ -1928,7 +1933,7 @@ namespace AZ
         //=========================================================================
         bool ObjectStreamImpl::Start()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             ++m_pending;
 

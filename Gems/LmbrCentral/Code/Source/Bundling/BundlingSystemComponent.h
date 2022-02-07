@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,10 +19,7 @@
 
 #include <LmbrCentral/Bundling/BundlingSystemComponentBus.h>
 
-#include <CrySystemBus.h>
 #include <AzFramework/Archive/ArchiveBus.h>
-
-struct IConsoleCmdArgs;
 
 namespace AzFramework
 {
@@ -41,10 +39,9 @@ namespace LmbrCentral
      * System component for managing bundles
      */
     class BundlingSystemComponent
-        : public AZ::Component,
-        public BundlingSystemRequestBus::Handler,
-        public CrySystemEventBus::Handler,
-        public AZ::IO::ArchiveNotificationBus::Handler
+        : public AZ::Component
+        , public BundlingSystemRequestBus::Handler
+        , public AZ::IO::ArchiveNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(BundlingSystemComponent, "{0FB7153D-EE80-4B1C-9584-134270401AAF}");
@@ -69,13 +66,6 @@ namespace LmbrCentral
         void BundleOpened(const char* bundleName, AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, const char* nextBundle, AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog) override;
         void BundleClosed(const char* bundleName) override;
 
-        // CrySystemEventBus
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override;
-
-        // Calls the LoadBundles method
-        static void ConsoleCommandLoadBundles(IConsoleCmdArgs* pCmdArgs);
-        // Calls the UnloadBundles method
-        static void ConsoleCommandUnloadBundles(IConsoleCmdArgs* pCmdArgs);
 
         AZStd::vector<AZStd::string> GetBundleList(const char* bundlePath, const char* bundleExtension) const;
 

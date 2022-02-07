@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,7 +24,7 @@ namespace AzToolsFramework
 
         // EditorEntityUiHandler...
         QString GenerateItemInfoString(AZ::EntityId entityId) const override;
-        QPixmap GenerateItemIcon(AZ::EntityId entityId) const override;
+        QIcon GenerateItemIcon(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const override;

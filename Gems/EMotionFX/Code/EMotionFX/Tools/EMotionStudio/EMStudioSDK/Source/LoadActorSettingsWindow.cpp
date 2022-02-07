@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,101 +40,101 @@ namespace EMStudio
         const QSettings loadActorSettings(GetConfigFilename(), QSettings::IniFormat, this);
 
         // create the load meshes checkbox
-        mLoadMeshesCheckbox = new QCheckBox("Load Meshes");
+        m_loadMeshesCheckbox = new QCheckBox("Load Meshes");
         const bool loadMeshesValue = loadActorSettings.value("LoadMeshes", true).toBool();
-        mLoadMeshesCheckbox->setChecked(loadMeshesValue);
+        m_loadMeshesCheckbox->setChecked(loadMeshesValue);
 
         // connect the load meshes checkbox to enable/disable all related to mesh
-        connect(mLoadMeshesCheckbox, &QCheckBox::clicked, this, &LoadActorSettingsWindow::LoadMeshesClicked);
+        connect(m_loadMeshesCheckbox, &QCheckBox::clicked, this, &LoadActorSettingsWindow::LoadMeshesClicked);
 
         // create the load collision meshes checkbox
-        mLoadCollisionMeshesCheckbox = new QCheckBox("Load Collision Meshes");
+        m_loadCollisionMeshesCheckbox = new QCheckBox("Load Collision Meshes");
         const bool loadCollisionMeshesValue = loadActorSettings.value("LoadCollisionMeshes", true).toBool();
-        mLoadCollisionMeshesCheckbox->setChecked(loadCollisionMeshesValue);
+        m_loadCollisionMeshesCheckbox->setChecked(loadCollisionMeshesValue);
 
         // create the load standard material layers checkbox
-        mLoadStandardMaterialLayersCheckbox = new QCheckBox("Load Standard Material Layers");
+        m_loadStandardMaterialLayersCheckbox = new QCheckBox("Load Standard Material Layers");
         const bool loadStandardMaterialLayersValue = loadActorSettings.value("LoadStandardMaterialLayers", true).toBool();
-        mLoadStandardMaterialLayersCheckbox->setChecked(loadStandardMaterialLayersValue);
+        m_loadStandardMaterialLayersCheckbox->setChecked(loadStandardMaterialLayersValue);
 
         // create the load skinning info checkbox
-        mLoadSkinningInfoCheckbox = new QCheckBox("Load Skinning Info");
+        m_loadSkinningInfoCheckbox = new QCheckBox("Load Skinning Info");
         const bool loadSkinningInfoValue = loadActorSettings.value("LoadSkinningInfo", true).toBool();
-        mLoadSkinningInfoCheckbox->setChecked(loadSkinningInfoValue);
+        m_loadSkinningInfoCheckbox->setChecked(loadSkinningInfoValue);
 
         // connect the load meshes checkbox to enable/disable all related to mesh
-        connect(mLoadSkinningInfoCheckbox, &QCheckBox::clicked, this, &LoadActorSettingsWindow::LoadSkinningInfoClicked);
+        connect(m_loadSkinningInfoCheckbox, &QCheckBox::clicked, this, &LoadActorSettingsWindow::LoadSkinningInfoClicked);
 
         // create the load limits checkbox
-        mLoadLimitsCheckbox = new QCheckBox("Load Limits");
+        m_loadLimitsCheckbox = new QCheckBox("Load Limits");
         const bool loadLimitsValue = loadActorSettings.value("LoadLimits", true).toBool();
-        mLoadLimitsCheckbox->setChecked(loadLimitsValue);
+        m_loadLimitsCheckbox->setChecked(loadLimitsValue);
 
         // create the load geometry LODs checkbox
-        mLoadGeometryLODsCheckbox = new QCheckBox("Load Geometry LODs");
+        m_loadGeometryLoDsCheckbox = new QCheckBox("Load Geometry LODs");
         const bool loadGeometryLODsValue = loadActorSettings.value("LoadGeometryLODs", true).toBool();
-        mLoadGeometryLODsCheckbox->setChecked(loadGeometryLODsValue);
+        m_loadGeometryLoDsCheckbox->setChecked(loadGeometryLODsValue);
 
         // create the load skeletal LODs checkbox
-        mLoadSkeletalLODsCheckbox = new QCheckBox("Load Skeletal LODs");
+        m_loadSkeletalLoDsCheckbox = new QCheckBox("Load Skeletal LODs");
         const bool loadSkeletalLODsValue = loadActorSettings.value("LoadSkeletalLODs", true).toBool();
-        mLoadSkeletalLODsCheckbox->setChecked(loadSkeletalLODsValue);
+        m_loadSkeletalLoDsCheckbox->setChecked(loadSkeletalLODsValue);
 
         // create the load tangents checkbox
-        mLoadTangentsCheckbox = new QCheckBox("Load Tangents");
+        m_loadTangentsCheckbox = new QCheckBox("Load Tangents");
         const bool loadTangentsValue = loadActorSettings.value("LoadTangents", true).toBool();
-        mLoadTangentsCheckbox->setChecked(loadTangentsValue);
+        m_loadTangentsCheckbox->setChecked(loadTangentsValue);
 
         // create the auto generate tangents checkbox
-        mAutoGenerateTangentsCheckbox = new QCheckBox("Auto Generate Tangents");
+        m_autoGenerateTangentsCheckbox = new QCheckBox("Auto Generate Tangents");
         const bool autoGenerateTangentsValue = loadActorSettings.value("AutoGenerateTangents", true).toBool();
-        mAutoGenerateTangentsCheckbox->setChecked(autoGenerateTangentsValue);
+        m_autoGenerateTangentsCheckbox->setChecked(autoGenerateTangentsValue);
 
         // create the load morph targets checkbox
-        mLoadMorphTargetsCheckbox = new QCheckBox("Load Morph Targets");
+        m_loadMorphTargetsCheckbox = new QCheckBox("Load Morph Targets");
         const bool loadMorphTargetsValue = loadActorSettings.value("LoadMorphTargets", true).toBool();
-        mLoadMorphTargetsCheckbox->setChecked(loadMorphTargetsValue);
+        m_loadMorphTargetsCheckbox->setChecked(loadMorphTargetsValue);
 
         // create the dual quaternion skinning checkbox
-        mDualQuaternionSkinningCheckbox = new QCheckBox("Dual Quaternion Skinning");
+        m_dualQuaternionSkinningCheckbox = new QCheckBox("Dual Quaternion Skinning");
         const bool dualQuaternionSkinningValue = loadActorSettings.value("DualQuaternionSkinning", false).toBool();
-        mDualQuaternionSkinningCheckbox->setChecked(dualQuaternionSkinningValue);
+        m_dualQuaternionSkinningCheckbox->setChecked(dualQuaternionSkinningValue);
 
         // disable the controls if load meshes is not enabled
         if (loadMeshesValue == false)
         {
-            mLoadStandardMaterialLayersCheckbox->setDisabled(true);
-            mLoadSkinningInfoCheckbox->setDisabled(true);
-            mLoadGeometryLODsCheckbox->setDisabled(true);
-            mLoadTangentsCheckbox->setDisabled(true);
-            mAutoGenerateTangentsCheckbox->setDisabled(true);
-            mDualQuaternionSkinningCheckbox->setDisabled(true);
+            m_loadStandardMaterialLayersCheckbox->setDisabled(true);
+            m_loadSkinningInfoCheckbox->setDisabled(true);
+            m_loadGeometryLoDsCheckbox->setDisabled(true);
+            m_loadTangentsCheckbox->setDisabled(true);
+            m_autoGenerateTangentsCheckbox->setDisabled(true);
+            m_dualQuaternionSkinningCheckbox->setDisabled(true);
         }
         else
         {
             // disable dual quaternion skinning control if the load dual skinning info is not enabled
             if (loadSkinningInfoValue == false)
             {
-                mDualQuaternionSkinningCheckbox->setDisabled(true);
+                m_dualQuaternionSkinningCheckbox->setDisabled(true);
             }
         }
 
         // create the left part settings layout
         QVBoxLayout* leftPartSettingsLayout = new QVBoxLayout();
-        leftPartSettingsLayout->addWidget(mLoadMeshesCheckbox);
-        leftPartSettingsLayout->addWidget(mLoadCollisionMeshesCheckbox);
-        leftPartSettingsLayout->addWidget(mLoadStandardMaterialLayersCheckbox);
-        leftPartSettingsLayout->addWidget(mLoadSkinningInfoCheckbox);
-        leftPartSettingsLayout->addWidget(mLoadLimitsCheckbox);
+        leftPartSettingsLayout->addWidget(m_loadMeshesCheckbox);
+        leftPartSettingsLayout->addWidget(m_loadCollisionMeshesCheckbox);
+        leftPartSettingsLayout->addWidget(m_loadStandardMaterialLayersCheckbox);
+        leftPartSettingsLayout->addWidget(m_loadSkinningInfoCheckbox);
+        leftPartSettingsLayout->addWidget(m_loadLimitsCheckbox);
 
         // create the right part settings layout
         QVBoxLayout* rightPartSettingsLayout = new QVBoxLayout();
-        rightPartSettingsLayout->addWidget(mLoadGeometryLODsCheckbox);
-        rightPartSettingsLayout->addWidget(mLoadSkeletalLODsCheckbox);
-        rightPartSettingsLayout->addWidget(mLoadTangentsCheckbox);
-        rightPartSettingsLayout->addWidget(mAutoGenerateTangentsCheckbox);
-        rightPartSettingsLayout->addWidget(mLoadMorphTargetsCheckbox);
-        rightPartSettingsLayout->addWidget(mDualQuaternionSkinningCheckbox);
+        rightPartSettingsLayout->addWidget(m_loadGeometryLoDsCheckbox);
+        rightPartSettingsLayout->addWidget(m_loadSkeletalLoDsCheckbox);
+        rightPartSettingsLayout->addWidget(m_loadTangentsCheckbox);
+        rightPartSettingsLayout->addWidget(m_autoGenerateTangentsCheckbox);
+        rightPartSettingsLayout->addWidget(m_loadMorphTargetsCheckbox);
+        rightPartSettingsLayout->addWidget(m_dualQuaternionSkinningCheckbox);
 
         // create the settings layout
         QHBoxLayout* settingsLayout = new QHBoxLayout();
@@ -188,17 +189,17 @@ namespace EMStudio
     LoadActorSettingsWindow::LoadActorSettings LoadActorSettingsWindow::GetLoadActorSettings() const
     {
         LoadActorSettings loadActorSettings;
-        loadActorSettings.mLoadMeshes               = mLoadMeshesCheckbox->isChecked();
-        loadActorSettings.mLoadCollisionMeshes      = mLoadCollisionMeshesCheckbox->isChecked();
-        loadActorSettings.mLoadStandardMaterialLayers = mLoadStandardMaterialLayersCheckbox->isChecked();
-        loadActorSettings.mLoadSkinningInfo         = mLoadSkinningInfoCheckbox->isChecked();
-        loadActorSettings.mLoadLimits               = mLoadLimitsCheckbox->isChecked();
-        loadActorSettings.mLoadGeometryLODs         = mLoadGeometryLODsCheckbox->isChecked();
-        loadActorSettings.mLoadSkeletalLODs         = mLoadSkeletalLODsCheckbox->isChecked();
-        loadActorSettings.mLoadTangents             = mLoadTangentsCheckbox->isChecked();
-        loadActorSettings.mAutoGenerateTangents     = mAutoGenerateTangentsCheckbox->isChecked();
-        loadActorSettings.mLoadMorphTargets         = mLoadMorphTargetsCheckbox->isChecked();
-        loadActorSettings.mDualQuaternionSkinning   = mDualQuaternionSkinningCheckbox->isChecked();
+        loadActorSettings.m_loadMeshes               = m_loadMeshesCheckbox->isChecked();
+        loadActorSettings.m_loadCollisionMeshes      = m_loadCollisionMeshesCheckbox->isChecked();
+        loadActorSettings.m_loadStandardMaterialLayers = m_loadStandardMaterialLayersCheckbox->isChecked();
+        loadActorSettings.m_loadSkinningInfo         = m_loadSkinningInfoCheckbox->isChecked();
+        loadActorSettings.m_loadLimits               = m_loadLimitsCheckbox->isChecked();
+        loadActorSettings.m_loadGeometryLoDs         = m_loadGeometryLoDsCheckbox->isChecked();
+        loadActorSettings.m_loadSkeletalLoDs         = m_loadSkeletalLoDsCheckbox->isChecked();
+        loadActorSettings.m_loadTangents             = m_loadTangentsCheckbox->isChecked();
+        loadActorSettings.m_autoGenerateTangents     = m_autoGenerateTangentsCheckbox->isChecked();
+        loadActorSettings.m_loadMorphTargets         = m_loadMorphTargetsCheckbox->isChecked();
+        loadActorSettings.m_dualQuaternionSkinning   = m_dualQuaternionSkinningCheckbox->isChecked();
         return loadActorSettings;
     }
 
@@ -209,45 +210,45 @@ namespace EMStudio
         QSettings loadActorSettings(GetConfigFilename(), QSettings::IniFormat, this);
 
         // set all values
-        loadActorSettings.setValue("LoadMeshes", mLoadMeshesCheckbox->isChecked());
-        loadActorSettings.setValue("LoadCollisionMeshes", mLoadCollisionMeshesCheckbox->isChecked());
-        loadActorSettings.setValue("LoadStandardMaterialLayers", mLoadStandardMaterialLayersCheckbox->isChecked());
-        loadActorSettings.setValue("LoadSkinningInfo", mLoadSkinningInfoCheckbox->isChecked());
-        loadActorSettings.setValue("LoadLimits", mLoadLimitsCheckbox->isChecked());
-        loadActorSettings.setValue("LoadGeometryLODs", mLoadGeometryLODsCheckbox->isChecked());
-        loadActorSettings.setValue("LoadSkeletalLODs", mLoadSkeletalLODsCheckbox->isChecked());
-        loadActorSettings.setValue("LoadTangents", mLoadTangentsCheckbox->isChecked());
-        loadActorSettings.setValue("AutoGenerateTangents", mAutoGenerateTangentsCheckbox->isChecked());
-        loadActorSettings.setValue("LoadMorphTargets", mLoadMorphTargetsCheckbox->isChecked());
-        loadActorSettings.setValue("DualQuaternionSkinning", mDualQuaternionSkinningCheckbox->isChecked());
+        loadActorSettings.setValue("LoadMeshes", m_loadMeshesCheckbox->isChecked());
+        loadActorSettings.setValue("LoadCollisionMeshes", m_loadCollisionMeshesCheckbox->isChecked());
+        loadActorSettings.setValue("LoadStandardMaterialLayers", m_loadStandardMaterialLayersCheckbox->isChecked());
+        loadActorSettings.setValue("LoadSkinningInfo", m_loadSkinningInfoCheckbox->isChecked());
+        loadActorSettings.setValue("LoadLimits", m_loadLimitsCheckbox->isChecked());
+        loadActorSettings.setValue("LoadGeometryLODs", m_loadGeometryLoDsCheckbox->isChecked());
+        loadActorSettings.setValue("LoadSkeletalLODs", m_loadSkeletalLoDsCheckbox->isChecked());
+        loadActorSettings.setValue("LoadTangents", m_loadTangentsCheckbox->isChecked());
+        loadActorSettings.setValue("AutoGenerateTangents", m_autoGenerateTangentsCheckbox->isChecked());
+        loadActorSettings.setValue("LoadMorphTargets", m_loadMorphTargetsCheckbox->isChecked());
+        loadActorSettings.setValue("DualQuaternionSkinning", m_dualQuaternionSkinningCheckbox->isChecked());
     }
 
 
     void LoadActorSettingsWindow::LoadMeshesClicked(bool checked)
     {
         // enable or disable controls
-        mLoadStandardMaterialLayersCheckbox->setEnabled(checked);
-        mLoadSkinningInfoCheckbox->setEnabled(checked);
-        mLoadGeometryLODsCheckbox->setEnabled(checked);
-        mLoadTangentsCheckbox->setEnabled(checked);
-        mAutoGenerateTangentsCheckbox->setEnabled(checked);
+        m_loadStandardMaterialLayersCheckbox->setEnabled(checked);
+        m_loadSkinningInfoCheckbox->setEnabled(checked);
+        m_loadGeometryLoDsCheckbox->setEnabled(checked);
+        m_loadTangentsCheckbox->setEnabled(checked);
+        m_autoGenerateTangentsCheckbox->setEnabled(checked);
 
         // the dual quaternion skinning control is enabled based on the laod skinning info control
         // when the the load meshes is not enabled, the control is disabled
         if (checked)
         {
-            mDualQuaternionSkinningCheckbox->setEnabled(mLoadSkinningInfoCheckbox->isChecked());
+            m_dualQuaternionSkinningCheckbox->setEnabled(m_loadSkinningInfoCheckbox->isChecked());
         }
         else
         {
-            mDualQuaternionSkinningCheckbox->setDisabled(true);
+            m_dualQuaternionSkinningCheckbox->setDisabled(true);
         }
     }
 
 
     void LoadActorSettingsWindow::LoadSkinningInfoClicked(bool checked)
     {
-        mDualQuaternionSkinningCheckbox->setEnabled(checked);
+        m_dualQuaternionSkinningCheckbox->setEnabled(checked);
     }
 
 
@@ -260,17 +261,17 @@ namespace EMStudio
 
 
     LoadActorSettingsWindow::LoadActorSettings::LoadActorSettings() :
-        mLoadMeshes(true),
-        mLoadCollisionMeshes(true),
-        mLoadStandardMaterialLayers(true),
-        mLoadSkinningInfo(true),
-        mLoadLimits(true),
-        mLoadGeometryLODs(true),
-        mLoadSkeletalLODs(true),
-        mLoadTangents(true),
-        mAutoGenerateTangents(true),
-        mLoadMorphTargets(true),
-        mDualQuaternionSkinning(false)
+        m_loadMeshes(true),
+        m_loadCollisionMeshes(true),
+        m_loadStandardMaterialLayers(true),
+        m_loadSkinningInfo(true),
+        m_loadLimits(true),
+        m_loadGeometryLoDs(true),
+        m_loadSkeletalLoDs(true),
+        m_loadTangents(true),
+        m_autoGenerateTangents(true),
+        m_loadMorphTargets(true),
+        m_dualQuaternionSkinning(false)
     {
     }
 

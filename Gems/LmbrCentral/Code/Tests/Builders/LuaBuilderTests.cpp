@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include <AzTest/AzTest.h>
 #include <Builders/LuaBuilder/LuaBuilderWorker.h>
 #include <AzTest/Utils.h>
@@ -31,12 +31,14 @@ namespace UnitTest
             AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             m_app.Start(m_descriptor);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -45,7 +47,7 @@ namespace UnitTest
 
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
         }
 
         void TearDown() override

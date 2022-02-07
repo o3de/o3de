@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Module/Environment.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <SceneAPI/SceneCore/Components/BehaviorComponent.h>
@@ -136,7 +138,7 @@ namespace AZ
 
                 // Check if this library hasn't already been reflected. This can happen as the ResourceCompilerScene needs
                 //      to explicitly load and reflect the SceneAPI libraries to discover the available extension, while
-                //      Gems with system components need to do the same in the Project Configurator.
+                //      Gems with system components need to do the same in the Project Manager.
                 if (context && (context->IsRemovingReflection() || !context->FindClassData(AZ::SceneAPI::DataTypes::IGroup::TYPEINFO_Uuid())))
                 {
                     AZ::SceneAPI::DataTypes::IManifestObject::Reflect(context);
@@ -211,6 +213,7 @@ namespace AZ
                 AZ::SceneAPI::Containers::SceneGraph::Reflect(context);
                 AZ::SceneAPI::Containers::SceneManifest::Reflect(context);
                 AZ::SceneAPI::Containers::RuleContainer::Reflect(context);
+                AZ::SceneAPI::SceneCore::ExportingComponent::Reflect(context);
             }
 
             void Activate()

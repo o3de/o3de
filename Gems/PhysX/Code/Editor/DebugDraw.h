@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
@@ -15,6 +17,11 @@
 #include <PhysX/MeshAsset.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
+
+namespace physx
+{
+    class PxBase;
+}
 
 namespace PhysX
 {
@@ -97,7 +104,15 @@ namespace PhysX
                 const AZ::Vector3& meshScale,
                 AZ::u32 geomIndex) const;
 
-            void DrawPolygonPrism(AzFramework::DebugDisplayRequests& debugDisplay,
+            void DrawHeightfield(
+                AzFramework::DebugDisplayRequests& debugDisplay,
+                const Physics::ColliderConfiguration& colliderConfig,
+                const Physics::HeightfieldShapeConfiguration& heightfieldShapeConfig,
+                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne(),
+                const bool forceUniformScaling = false) const;
+
+            void DrawPolygonPrism(
+                AzFramework::DebugDisplayRequests& debugDisplay,
                 const Physics::ColliderConfiguration& colliderConfig, const AZStd::vector<AZ::Vector3>& points) const;
 
             AZ::Transform GetColliderLocalTransform(const Physics::ColliderConfiguration& colliderConfig,

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,6 +39,8 @@ namespace AzToolsFramework
             , private AZ::TransformNotificationBus::MultiHandler
             , private AZ::TransformHierarchyInformationBus::Handler
         {
+            friend class JsonTransformComponentSerializer;
+
         public:
             friend class TransformComponentFactory;
 
@@ -238,6 +241,9 @@ namespace AzToolsFramework
             // This is a workaround for a bug which causes the button to appear with incorrect placement if a UI
             // element is used rather than a data element.
             bool m_addNonUniformScaleButton = false;
+
+            // Used to check whether entity was just created vs manually reactivated. Set true after OnEntityActivated is called the first time.
+            bool m_initialized = false;
 
             // Deprecated
             AZ::InterpolationMode m_interpolatePosition;

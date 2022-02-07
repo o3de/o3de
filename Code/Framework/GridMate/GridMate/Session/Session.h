@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,8 +39,8 @@ namespace GridMate
     struct MemberID
     {
         virtual ~MemberID() {}
-        virtual string ToString() const = 0;
-        virtual string ToAddress() const = 0;
+        virtual AZStd::string ToString() const = 0;
+        virtual AZStd::string ToAddress() const = 0;
         virtual MemberIDCompact Compact() const = 0;
         virtual bool IsValid() const = 0;
 
@@ -49,7 +50,7 @@ namespace GridMate
         AZ_FORCE_INLINE bool operator!=(const MemberIDCompact& rhs) const { return Compact() != rhs; }
     };
 
-    typedef string SessionID;
+    typedef AZStd::string SessionID;
 
     struct SearchInfo;
 
@@ -86,8 +87,8 @@ namespace GridMate
         void SetValue(float* values, size_t numElements);
         void SetValue(double* values, size_t numElements);
 
-        string m_id;
-        string m_value;
+        AZStd::string m_id;
+        AZStd::string m_value;
         AZ::u8 m_type;
 
         AZ_FORCE_INLINE bool operator==(const GridSessionParam& rhs) const { return m_type == rhs.m_type && m_id == rhs.m_id && m_value == rhs.m_value; }
@@ -248,7 +249,7 @@ namespace GridMate
         /// Callback that notifies the title when a session will be left. session pointer is NOT valid after the callback returns.
         virtual void OnSessionDelete(GridSession* session) { (void)session; }
         /// Called when a session error occurs.
-        virtual void OnSessionError(GridSession* session, const string& errorMsg) { (void)session; (void)errorMsg; }
+        virtual void OnSessionError(GridSession* session, const AZStd::string& errorMsg) { (void)session; (void)errorMsg; }
         /// Called when the actual game(match) starts
         virtual void OnSessionStart(GridSession* session) { (void)session; }
         /// Called when the actual game(match) ends
@@ -302,7 +303,7 @@ namespace GridMate
         virtual const PlayerId* GetPlayerId() const = 0;
 
         NatType GetNatType() const;
-        string GetName() const;
+        AZStd::string GetName() const;
 
         GridSession* GetSession() const { return m_session; }
 
@@ -352,7 +353,7 @@ namespace GridMate
         //@{ Platform information
         AZ::PlatformID GetPlatformId() const;
         AZ::u32 GetProcessId() const;
-        string GetMachineName() const;
+        AZStd::string GetMachineName() const;
         //@}
 
     protected:
@@ -483,7 +484,7 @@ namespace GridMate
         // Adds/updates a parameter. Returns false if parameter can not be added.
         bool SetParam(const GridSessionParam& param);
         // Removes a parameter by id. Returns false if parameter can not be removed.
-        bool RemoveParam(const string& paramId);
+        bool RemoveParam(const AZStd::string& paramId);
         // Removes a parameter by index. Returns false if parameter can not be removed.
         bool RemoveParam(unsigned int index);
 
@@ -542,9 +543,9 @@ namespace GridMate
         /// Frees a slot based on a slot type.
         void FreeSlot(int slotType);
         /// Creates remote player, when he wants to join.
-        virtual GridMember* CreateRemoteMember(const string& address, ReadBuffer& data, RemotePeerMode peerMode, ConnectionID connId = InvalidConnectionID) = 0;
+        virtual GridMember* CreateRemoteMember(const AZStd::string& address, ReadBuffer& data, RemotePeerMode peerMode, ConnectionID connId = InvalidConnectionID) = 0;
         /// Returns true if this address belongs to a member in the list, otherwise false.
-        virtual bool IsAddressInMemberList(const string& address);
+        virtual bool IsAddressInMemberList(const AZStd::string& address);
         virtual bool IsConnectionIdInMemberList(const ConnectionID& connId);
         /// Adds a created member to the session. Return false if no free slow was found!
         virtual bool AddMember(GridMember* member);
@@ -557,7 +558,7 @@ namespace GridMate
         /// Called when a session parameter is added/changed.
         virtual void OnSessionParamChanged(const GridSessionParam& param) = 0;
         /// Called when a session parameter is deleted.
-        virtual void OnSessionParamRemoved(const string& paramId) = 0;
+        virtual void OnSessionParamRemoved(const AZStd::string& paramId) = 0;
         //////////////////////////////////////////////////////////////////////////
 
         SessionID m_sessionId; ///< Session id. Content of the string will vary based on session types and platforms.
@@ -567,7 +568,7 @@ namespace GridMate
         Internal::GridSessionHandshake* m_handshake;
         typedef unordered_set<ConnectionID> ConnectionIDSet;
         ConnectionIDSet m_connections;
-        string m_hostAddress;
+        AZStd::string m_hostAddress;
         bool m_isShutdown;
 
         GridMember* m_myMember; ///< Created with the session and bound when the server replica arrives.
@@ -697,7 +698,7 @@ namespace GridMate
         static void* UserDataCopier(const void* sourceData, unsigned int sourceDataSize)
         {
             (void)sourceDataSize;
-            AZ_Assert(sizeof(T) == sourceDataSize, "Data size %d doesn't match the type size %d", sourceDataSize, sizeof(T))
+            AZ_Assert(sizeof(T) == sourceDataSize, "Data size %d doesn't match the type size %d", sourceDataSize, sizeof(T));
             return azcreate(T, (*static_cast<const T*>(sourceData)), GridMateAllocatorMP, "UserDataCopier");
         }
         template<class T>
@@ -922,14 +923,14 @@ namespace GridMate
 
             DataSet<AZ::u8> m_numConnections;
             DataSet<NatType> m_natType;
-            DataSet<string> m_name;
+            DataSet<AZStd::string> m_name;
             DataSet<MemberIDCompact> m_memberId;
             DataSet<MemberIDCompact> m_newHostVote; ///< Used when in host migration, to cast machine's vote.
             MuteDataSetType m_muteList; ///< List of all players we have muted.
 
             // Platform and application informational data
             DataSet<AZ::PlatformID, ConversionMarshaler<AZ::u8, AZ::PlatformID> > m_platformId;
-            DataSet<string> m_machineName;
+            DataSet<AZStd::string> m_machineName;
             DataSet<AZ::u32> m_processId;
             DataSet<bool> m_isInvited;
         };
@@ -974,7 +975,7 @@ namespace GridMate
             /// Callback that notifies the title when a session will be left. session pointer is NOT valid after the callback returns.
             virtual void OnSessionDelete(GridSession* session) { (void)session; }
             /// Called when a session error occurs.
-            virtual void OnSessionError(GridSession* session, const string& errorMsg) { (void)session; (void)errorMsg; }
+            virtual void OnSessionError(GridSession* session, const AZStd::string& errorMsg) { (void)session; (void)errorMsg; }
             /// Called when the actual game(match) starts
             virtual void OnSessionStart(GridSession* session) { (void)session; }
             /// Called when the actual game(match) ends

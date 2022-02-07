@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -249,7 +250,7 @@ namespace AZ::IO
 
             constexpr s32 minValue = std::numeric_limits<s32>::min();
             EXPECT_CALL(*mock, UpdateStatus(_))
-                .WillOnce([minValue](StreamStackEntry::Status& status)
+                .WillOnce([](StreamStackEntry::Status& status)
                 {
                     status.m_numAvailableSlots = minValue;
                 });

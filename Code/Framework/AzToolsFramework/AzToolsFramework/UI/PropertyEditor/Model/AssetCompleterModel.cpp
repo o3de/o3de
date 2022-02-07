@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,7 +39,12 @@ namespace AzToolsFramework
         typeFilter->SetAssetType(filterType);
         typeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
 
-        m_assetBrowserFilterModel->SetFilter(FilterConstType(typeFilter));
+        SetFilter(FilterConstType(typeFilter));
+    }
+
+    void AssetCompleterModel::SetFilter(FilterConstType filter)
+    {
+        m_assetBrowserFilterModel->SetFilter(filter);
 
         RefreshAssetList();
     }
@@ -119,9 +125,6 @@ namespace AzToolsFramework
         int rows = m_assetBrowserFilterModel->rowCount(index);
         if (rows == 0)
         {
-            if (index != QModelIndex()) {
-                AZ_Error("AssetCompleterModel", false, "No children detected in FetchResources()");
-            }
             return;
         }
 
@@ -130,7 +133,7 @@ namespace AzToolsFramework
             QModelIndex childIndex = m_assetBrowserFilterModel->index(i, 0, index);
             AssetBrowserEntry* childEntry = GetAssetEntry(m_assetBrowserFilterModel->mapToSource(childIndex));
 
-            if (childEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+            if (childEntry->GetEntryType() == m_entryType)
             {
                 ProductAssetBrowserEntry* productEntry = static_cast<ProductAssetBrowserEntry*>(childEntry);
                 AZStd::string assetName;
@@ -166,7 +169,6 @@ namespace AzToolsFramework
         return m_assets[index.row()].m_displayName;
     }
 
-
     const AZ::Data::AssetId AssetCompleterModel::GetAssetIdFromIndex(const QModelIndex& index) 
     {
         if (!index.isValid())
@@ -175,5 +177,20 @@ namespace AzToolsFramework
         }
 
         return m_assets[index.row()].m_assetId;
+    }
+
+    const AZStd::string_view AssetCompleterModel::GetPathFromIndex(const QModelIndex& index)
+    {
+        if (!index.isValid())
+        {
+            return "";
+        }
+
+        return m_assets[index.row()].m_path;
+    }
+
+    void AssetCompleterModel::SetFetchEntryType(AssetBrowserEntry::AssetEntryType entryType)
+    {
+        m_entryType = entryType;
     }
 }

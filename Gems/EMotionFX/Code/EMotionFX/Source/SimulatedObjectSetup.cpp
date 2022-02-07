@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -97,7 +98,7 @@ namespace EMotionFX
         }
     }
 
-    SimulatedJoint::SimulatedJoint(SimulatedObject* object, AZ::u32 skeletonJointIndex)
+    SimulatedJoint::SimulatedJoint(SimulatedObject* object, size_t skeletonJointIndex)
         : m_object(object)
         , m_jointIndex(skeletonJointIndex)
     {
@@ -162,7 +163,7 @@ namespace EMotionFX
         {
             return nullptr;
         }
-        const AZ::u32 parentIndex = skeletonJoint->GetParentIndex();
+        const size_t parentIndex = skeletonJoint->GetParentIndex();
         return m_object->FindSimulatedJointBySkeletonJointIndex(parentIndex);
     }
 
@@ -175,11 +176,11 @@ namespace EMotionFX
         {
             return nullptr;
         }
-        const AZ::u32 childCount = skeletonJoint->GetNumChildNodes();
+        const size_t childCount = skeletonJoint->GetNumChildNodes();
         size_t count = 0;
-        for (AZ::u32 i = 0; i < childCount; ++i)
+        for (size_t i = 0; i < childCount; ++i)
         {
-            const AZ::u32 skeletonChildJointIndex = skeletonJoint->GetChildIndex(i);
+            const size_t skeletonChildJointIndex = skeletonJoint->GetChildIndex(i);
             if (m_object->FindSimulatedJointBySkeletonJointIndex(skeletonChildJointIndex))
             {
                 if (count == childIndex)
@@ -213,11 +214,11 @@ namespace EMotionFX
         {
             return 0;
         }
-        const AZ::u32 childCount = skeletonJoint->GetNumChildNodes();
+        const size_t childCount = skeletonJoint->GetNumChildNodes();
         size_t count = 0;
-        for (AZ::u32 i = 0; i < childCount; ++i)
+        for (size_t i = 0; i < childCount; ++i)
         {
-            const AZ::u32 childIndex = skeletonJoint->GetChildIndex(i);
+            const size_t childIndex = skeletonJoint->GetChildIndex(i);
             if (m_object->FindSimulatedJointBySkeletonJointIndex(childIndex))
             {
                 count++;
@@ -238,7 +239,7 @@ namespace EMotionFX
         return sum;
     }
 
-    AZ::u32 SimulatedJoint::CalculateChildIndex() const
+    size_t SimulatedJoint::CalculateChildIndex() const
     {
         const Actor* actor = m_object->GetSimulatedObjectSetup()->GetActor();
         const SimulatedJoint* parentJoint = FindParentSimulatedJoint();
@@ -249,11 +250,11 @@ namespace EMotionFX
             {
                 return 0;
             }
-            const AZ::u32 numChildSkeletonJoints = parentSkeletonJoint->GetNumChildNodes();
-            AZ::u32 childSimulatedJointIndex = 0;
-            for (AZ::u32 i = 0; i < numChildSkeletonJoints; ++i)
+            const size_t numChildSkeletonJoints = parentSkeletonJoint->GetNumChildNodes();
+            size_t childSimulatedJointIndex = 0;
+            for (size_t i = 0; i < numChildSkeletonJoints; ++i)
             {
-                AZ::u32 childJointIndex = parentSkeletonJoint->GetChildIndex(i);
+                size_t childJointIndex = parentSkeletonJoint->GetChildIndex(i);
                 SimulatedJoint* childSimulatedJoint = m_object->FindSimulatedJointBySkeletonJointIndex(childJointIndex);
                 if (childSimulatedJoint)
                 {
@@ -270,8 +271,8 @@ namespace EMotionFX
         }
 
         // If the simuated joint doesn't have a parent joint, it should be a root joint.
-        AZ::u32 rootJointIndex = static_cast<AZ::u32>(m_object->GetSimulatedRootJointIndex(this));
-        AZ_Error("EMotionFX", rootJointIndex != MCORE_INVALIDINDEX32, "This joint should be a root joint.");
+        size_t rootJointIndex = m_object->GetSimulatedRootJointIndex(this);
+        AZ_Error("EMotionFX", rootJointIndex != InvalidIndex, "This joint should be a root joint.");
         return rootJointIndex;
     }
 
@@ -279,7 +280,7 @@ namespace EMotionFX
     {
         if (m_object)
         {
-            return m_object->GetSimulatedRootJointIndex(this) != MCORE_INVALIDINDEX32;
+            return m_object->GetSimulatedRootJointIndex(this) != InvalidIndex;
         }
 
         return false;
@@ -319,7 +320,7 @@ namespace EMotionFX
         m_rootJoints.clear();
     }
 
-    SimulatedJoint* SimulatedObject::FindSimulatedJointBySkeletonJointIndex(AZ::u32 skeletonJointIndex) const
+    SimulatedJoint* SimulatedObject::FindSimulatedJointBySkeletonJointIndex(size_t skeletonJointIndex) const
     {
         for (SimulatedJoint* joint : m_joints)
         {
@@ -347,10 +348,10 @@ namespace EMotionFX
         const auto found = AZStd::find(m_rootJoints.begin(), m_rootJoints.end(), rootJoint);
         if (found != m_rootJoints.end())
         {
-            return static_cast<AZ::u32>(AZStd::distance(m_rootJoints.begin(), found));
+            return AZStd::distance(m_rootJoints.begin(), found);
         }
 
-        return MCORE_INVALIDINDEX32;
+        return InvalidIndex;
     }
 
     void SimulatedObject::Reflect(AZ::ReflectContext* context)
@@ -429,13 +430,13 @@ namespace EMotionFX
         BuildRootJointList();
     }
 
-    SimulatedJoint* SimulatedObject::AddSimulatedJoint(AZ::u32 jointIndex)
+    SimulatedJoint* SimulatedObject::AddSimulatedJoint(size_t jointIndex)
     {
         AddSimulatedJoints({ jointIndex });
         return FindSimulatedJointBySkeletonJointIndex(jointIndex);
     }
 
-    void SimulatedObject::AddSimulatedJoints(AZStd::vector<AZ::u32> jointIndexes)
+    void SimulatedObject::AddSimulatedJoints(AZStd::vector<size_t> jointIndexes)
     {
         AZStd::sort(jointIndexes.begin(), jointIndexes.end());
 
@@ -444,10 +445,10 @@ namespace EMotionFX
         BuildRootJointList();
     }
 
-    void SimulatedObject::AddSimulatedJointAndChildren(AZ::u32 jointIndex)
+    void SimulatedObject::AddSimulatedJointAndChildren(size_t jointIndex)
     {
-        AZStd::vector<AZ::u32> jointsToAdd;
-        AZStd::queue<AZ::u32> toVisit;
+        AZStd::vector<size_t> jointsToAdd;
+        AZStd::queue<size_t> toVisit;
         toVisit.emplace(jointIndex);
 
         const Skeleton* skeleton = m_simulatedObjectSetup->GetActor()->GetSkeleton();
@@ -455,7 +456,7 @@ namespace EMotionFX
         // Collect all the joint indices to add
         while (!toVisit.empty())
         {
-            const AZ::u32 currentIndex = toVisit.front();
+            const size_t currentIndex = toVisit.front();
             toVisit.pop();
 
             jointsToAdd.emplace_back(currentIndex);
@@ -466,7 +467,7 @@ namespace EMotionFX
                 const size_t childNodeCount = node->GetNumChildNodes();
                 for (size_t i = 0; i < childNodeCount; ++i)
                 {
-                    const AZ::u32 childNodeIndex = node->GetChildIndex(static_cast<AZ::u32>(i));
+                    const size_t childNodeIndex = node->GetChildIndex(i);
                     toVisit.emplace(childNodeIndex);
                 }
             }
@@ -483,7 +484,7 @@ namespace EMotionFX
         BuildRootJointList();
     }
 
-    void SimulatedObject::MergeAndMakeJoints(const AZStd::vector<AZ::u32>& jointsToAdd)
+    void SimulatedObject::MergeAndMakeJoints(const AZStd::vector<size_t>& jointsToAdd)
     {
         AZStd::vector<SimulatedJoint*> newJointList;
 
@@ -536,7 +537,7 @@ namespace EMotionFX
         return AZStd::string::format("%zu joint%s selected", jointCounts, jointCounts == 1? "" : "s");
     }
 
-    void SimulatedObject::RemoveSimulatedJoint(AZ::u32 jointIndex, bool removeChildren)
+    void SimulatedObject::RemoveSimulatedJoint(size_t jointIndex, bool removeChildren)
     {
         // If we order the joints storage so that the leaf node always comes late than its parent, we can do the remove in one iteration.
         bool removed = false;
@@ -577,7 +578,7 @@ namespace EMotionFX
             size_t childNodeCount = node->GetNumChildNodes();
             for (size_t i = 0; i < childNodeCount; ++i)
             {
-                const AZ::u32 childNodeIndex = node->GetChildIndex(static_cast<AZ::u32>(i));
+                const size_t childNodeIndex = node->GetChildIndex(i);
                 if (FindSimulatedJointBySkeletonJointIndex(childNodeIndex))
                 {
                     RemoveSimulatedJoint(childNodeIndex, true);
@@ -601,12 +602,12 @@ namespace EMotionFX
             currentParents.emplace(current);
             toCheck.erase(toCheck.find(joint));
 
-            while (current && current->GetSkeletonJointIndex() != MCORE_INVALIDINDEX32 && !((seenJoints.find(current) != seenJoints.end()) || (toCheck.find(current) != toCheck.end())))
+            while (current && current->GetSkeletonJointIndex() != InvalidIndex && !((seenJoints.find(current) != seenJoints.end()) || (toCheck.find(current) != toCheck.end())))
             {
                 current = current->FindParentSimulatedJoint();
             }
 
-            if (!current || current->GetSkeletonJointIndex() == MCORE_INVALIDINDEX32)
+            if (!current || current->GetSkeletonJointIndex() == InvalidIndex)
             {
                 // We reached the top of the model without seeing any other
                 // model index (or parent thereof) in modelIndices. This is a

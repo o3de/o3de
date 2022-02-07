@@ -1,13 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
-#include <CrySizer.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -98,12 +98,12 @@ public:
     //   bEnglish            - if true, translates the string into the always present English language.
     // Returns:
     //   true if localization was successful, false otherwise
-    virtual bool LocalizeString_ch(const char* sString, string& outLocalizedString, bool bEnglish = false) = 0;
+    virtual bool LocalizeString_ch(const char* sString, AZStd::string& outLocalizedString, bool bEnglish = false) = 0;
 
     // Summary:
-    //   Same as LocalizeString( const char* sString, string& outLocalizedString, bool bEnglish=false )
+    //   Same as LocalizeString( const char* sString, AZStd::string& outLocalizedString, bool bEnglish=false )
     //   but at the moment this is faster.
-    virtual bool LocalizeString_s(const string& sString, string& outLocalizedString, bool bEnglish = false) = 0;
+    virtual bool LocalizeString_s(const AZStd::string& sString, AZStd::string& outLocalizedString, bool bEnglish = false) = 0;
 
     // Set up system for passing in placeholder data for localized strings
     // Summary:
@@ -137,7 +137,7 @@ public:
     //   bEnglish            - if true, returns the always present English version of the label.
     // Returns:
     //   True if localization was successful, false otherwise.
-    virtual bool LocalizeLabel(const char* sLabel, string& outLocalizedString, bool bEnglish = false) = 0;
+    virtual bool LocalizeLabel(const char* sLabel, AZStd::string& outLocalizedString, bool bEnglish = false) = 0;
 
     // Summary:
     //   Return number of localization entries.
@@ -150,7 +150,7 @@ public:
     //   sLocalizedString - Corresponding english language string.
     // Returns:
     //   True if successful, false otherwise (key not found).
-    virtual bool GetEnglishString(const char* sKey, string& sLocalizedString) = 0;
+    virtual bool GetEnglishString(const char* sKey, AZStd::string& sLocalizedString) = 0;
 
     // Summary:
     //   Get Subtitle for Key or Label .
@@ -160,21 +160,21 @@ public:
     //   bForceSubtitle - If true, get subtitle (sLocalized or sEnglish) even if not specified in Data file.
     // Returns:
     //   True if subtitle found (and outSubtitle filled in), false otherwise.
-    virtual bool GetSubtitle(const char* sKeyOrLabel, string& outSubtitle, bool bForceSubtitle = false) = 0;
+    virtual bool GetSubtitle(const char* sKeyOrLabel, AZStd::string& outSubtitle, bool bForceSubtitle = false) = 0;
 
     // Description:
     //      These methods format outString depending on sString with ordered arguments
     //      FormatStringMessage(outString, "This is %2 and this is %1", "second", "first");
     // Arguments:
     //      outString - This is first and this is second.
-    virtual void FormatStringMessage_List(string& outString, const string& sString, const char** sParams, int nParams) = 0;
-    virtual void FormatStringMessage(string& outString, const string& sString, const char* param1, const char* param2 = 0, const char* param3 = 0, const char* param4 = 0) = 0;
+    virtual void FormatStringMessage_List(AZStd::string& outString, const AZStd::string& sString, const char** sParams, int nParams) = 0;
+    virtual void FormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char* param1, const char* param2 = 0, const char* param3 = 0, const char* param4 = 0) = 0;
 
-    virtual void LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, string& outTimeString) = 0;
-    virtual void LocalizeDate(time_t t, bool bMakeLocalTime, bool bShort, bool bIncludeWeekday, string& outDateString) = 0;
-    virtual void LocalizeDuration(int seconds, string& outDurationString) = 0;
-    virtual void LocalizeNumber(int number, string& outNumberString) = 0;
-    virtual void LocalizeNumber_Decimal(float number, int decimals, string& outNumberString) = 0;
+    virtual void LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, AZStd::string& outTimeString) = 0;
+    virtual void LocalizeDate(time_t t, bool bMakeLocalTime, bool bShort, bool bIncludeWeekday, AZStd::string& outDateString) = 0;
+    virtual void LocalizeDuration(int seconds, AZStd::string& outDurationString) = 0;
+    virtual void LocalizeNumber(int number, AZStd::string& outNumberString) = 0;
+    virtual void LocalizeNumber_Decimal(float number, int decimals, AZStd::string& outNumberString) = 0;
 
     // Summary:
     //   Returns true if the project has localization configured for use, false otherwise.

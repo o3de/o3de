@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabLoad, LoadPrefab_Basic)(::benchmark::State& state)
     {
-        const unsigned int numTemplates = state.range();
+        const unsigned int numTemplates = static_cast<unsigned int>(state.range());
         CreateFakePaths(numTemplates);
 
         for (auto _ : state)
@@ -28,7 +29,7 @@ namespace Benchmark
 
             state.ResumeTiming();
 
-            for (int templateCounter = 0; templateCounter < numTemplates; ++templateCounter)
+            for (unsigned int templateCounter = 0; templateCounter < numTemplates; ++templateCounter)
             {
                 m_prefabLoaderInterface->LoadTemplateFromFile(m_paths[templateCounter]);
             }

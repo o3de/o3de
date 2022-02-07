@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <SceneAPI/SceneData/GraphData/MaterialData.h>
@@ -16,11 +18,6 @@ namespace AZ
         namespace GraphData
         {
             namespace DataTypes = AZ::SceneAPI::DataTypes;
-
-            const AZStd::string MaterialData::s_DiffuseMapName = "Diffuse";
-            const AZStd::string MaterialData::s_SpecularMapName = "Specular";
-            const AZStd::string MaterialData::s_BumpMapName = "Bump";
-            const AZStd::string MaterialData::s_emptyString = "";
 
             MaterialData::MaterialData()
                 : m_isNoDraw(false)
@@ -71,7 +68,7 @@ namespace AZ
                     return result->second;
                 }
 
-                return s_emptyString;
+                return m_emptyString;
             }
 
             void MaterialData::SetNoDraw(bool isNoDraw)
@@ -234,6 +231,19 @@ namespace AZ
                 return m_uniqueId;
             }
 
+            namespace Helper
+            {
+                template <typename T>
+                T ReturnOptionalValue(AZStd::optional<T> value)
+                {
+                    if (!value)
+                    {
+                        return {};
+                    }
+                    return value.value();
+                }
+            }
+
             void MaterialData::Reflect(ReflectContext* context)
             {
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
@@ -288,6 +298,76 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_emissiveIntensity, "Emissive Intensity", "The intensity of the emissiveness of the material.")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialData::m_useAOMap, "Use Ambient Occlusion Map", "True to use an ambient occlusion map, false to ignore it.");
                     }
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<SceneAPI::DataTypes::IMaterialData>()
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene");
+
+                    using namespace Helper;
+                    using DataTypes::IMaterialData;
+
+                    behaviorContext->Class<MaterialData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Constant("AmbientOcclusion", BehaviorConstant(TextureMapType::AmbientOcclusion))
+                        ->Constant("BaseColor", BehaviorConstant(TextureMapType::BaseColor))
+                        ->Constant("Bump", BehaviorConstant(TextureMapType::Bump))
+                        ->Constant("Diffuse", BehaviorConstant(TextureMapType::Diffuse))
+                        ->Constant("Emissive", BehaviorConstant(TextureMapType::Emissive))
+                        ->Constant("Metallic", BehaviorConstant(TextureMapType::Metallic))
+                        ->Constant("Normal", BehaviorConstant(TextureMapType::Normal))
+                        ->Constant("Roughness", BehaviorConstant(TextureMapType::Roughness))
+                        ->Constant("Specular", BehaviorConstant(TextureMapType::Specular))
+                        ->Method("GetTexture", &MaterialData::GetTexture)
+                        ->Method("GetMaterialName", &MaterialData::GetMaterialName)
+                        ->Method("IsNoDraw", &MaterialData::IsNoDraw)
+                        ->Method("GetDiffuseColor", &MaterialData::GetDiffuseColor)
+                        ->Method("GetSpecularColor", &MaterialData::GetSpecularColor)
+                        ->Method("GetEmissiveColor", &MaterialData::GetEmissiveColor)
+                        ->Method("GetOpacity", &MaterialData::GetOpacity)
+                        ->Method("GetUniqueId", &MaterialData::GetUniqueId)
+                        ->Method("GetShininess", &MaterialData::GetShininess)
+                        ->Method("GetUseColorMap", [](const MaterialData& self)
+                        {
+                            return ReturnOptionalValue(self.GetUseColorMap());
+                        })
+                        ->Method("GetBaseColor", [](const MaterialData& self)
+                        {
+                            return ReturnOptionalValue(self.GetBaseColor());
+                        })
+                        ->Method("GetUseMetallicMap", [](const MaterialData& self)
+                        {
+                            return ReturnOptionalValue(self.GetUseMetallicMap());
+                        })
+                        ->Method("GetMetallicFactor", [](const MaterialData& self)
+                        {
+                            return ReturnOptionalValue(self.GetMetallicFactor());
+                        })
+                        ->Method("GetUseRoughnessMap", [](const MaterialData& self)
+                        {
+                            return ReturnOptionalValue(self.GetUseRoughnessMap());
+                        })
+                        ->Method("GetRoughnessFactor", [](const MaterialData& self)
+                        {
+                            return ReturnOptionalValue(self.GetRoughnessFactor());
+                        })
+                        ->Method("GetUseEmissiveMap", [](const MaterialData& self)
+                        {
+                            return ReturnOptionalValue(self.GetUseEmissiveMap());
+                        })
+                        ->Method("GetEmissiveIntensity", [](const MaterialData& self)
+                        {
+                            return ReturnOptionalValue(self.GetEmissiveIntensity());
+                        })
+                        ->Method("GetUseAOMap", [](const MaterialData& self)
+                        {
+                            return ReturnOptionalValue(self.GetUseAOMap());
+                        });
                 }
             }
         } // namespace GraphData

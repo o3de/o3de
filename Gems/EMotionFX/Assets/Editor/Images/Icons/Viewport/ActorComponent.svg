@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon / Animation / Actor box</title>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#ADADAD" stop-opacity="0" offset="0%"></stop>
+            <stop stop-color="#9D9D9D" offset="100%"></stop>
+        </linearGradient>
+        <path d="M20.924815,0 C23.1021676,0 23.9566542,1.77846722 23.9566542,3.01865122 C23.9566542,4.25883521 23.9566542,18.7815894 23.9566542,20.6420628 C23.9566542,22.3929727 22.7281352,23.9566542 20.924815,23.9566542 C19.1214948,23.9566542 4.64929841,23.9566542 2.80929064,23.9566542 C1.38661643,23.9566542 0,22.5147712 0,21.1586662 C0,19.8025612 0,4.03532882 0,2.67255351 C0,1.3097782 1.36539793,0 2.60955829,0 C3.85371865,0 18.9601214,0 20.924815,0 Z" id="path-2"></path>
+    </defs>
+    <g id="icon-/-Animation-/-Actor-box" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="icon/general/color/-box-template">
+            <mask id="mask-3" fill="white">
+                <use xlink:href="#path-2"></use>
+            </mask>
+            <use id="Path-3" fill="url(#linearGradient-1)" xlink:href="#path-2"></use>
+            <g id="Group" mask="url(#mask-3)" fill="#5AA9D2">
+                <g id="icon/color/AI" style="mix-blend-mode: multiply;">
+                    <rect id="UI" x="0" y="0" width="24" height="24"></rect>
+                </g>
+            </g>
+        </g>
+        <path d="M15,9 L15,22 L13,22 L13,16 L11,16 L11,22 L9,22 L9,9 L4,9 L4,7 L20,7 L20,9 L15,9 Z M12,6 C10.8954305,6 10,5.1045695 10,4 C10,2.8954305 10.8954305,2 12,2 C13.1045695,2 14,2.8954305 14,4 C14,5.1045695 13.1045695,6 12,6 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

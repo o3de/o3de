@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -206,6 +207,25 @@ namespace AzFramework
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
+        //! EBus Trait: requests can be addressed to a specific InputDeviceId so that they are only
+        //! handled by one input device that has connected to the bus using that unique id, or they
+        //! can be broadcast to all input devices that have connected to the bus, regardless of id.
+        //! Connected input devices are ordered by their local player index from lowest to highest.
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ByIdAndOrdered;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! EBus Trait: requests should be handled by only one input device connected to each id
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! EBus Trait: requests can be addressed to a specific InputDeviceId
+        using BusIdType = InputDeviceId;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! EBus Trait: requests are handled by connected devices in the order of local player index
+        using BusIdOrderCompare = AZStd::less<BusIdType>;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         //! Alias for the EBus implementation of this interface
         using Bus = AZ::EBus<InputDeviceImplementationRequest<InputDeviceType>>;
 
@@ -214,11 +234,12 @@ namespace AzFramework
         using CreateFunctionType = typename InputDeviceType::Implementation*(*)(InputDeviceType&);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Create a custom implementation for all the existing instances of this input device type.
+        //! Set a custom implementation for this input device type, either for a specific instance
+        //! by addressing the call to an InputDeviceId, or for all existing instances by broadcast.
         //! Passing InputDeviceType::Implementation::Create as the argument will create the default
         //! device implementation, while passing nullptr will delete any existing implementation.
         //! \param[in] createFunction Pointer to the function that will create the implementation.
-        virtual void CreateCustomImplementation(CreateFunctionType createFunction) = 0;
+        virtual void SetCustomImplementation(CreateFunctionType createFunction) = 0;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -238,7 +259,7 @@ namespace AzFramework
         AZ_INLINE InputDeviceImplementationRequestHandler(InputDeviceType& inputDevice)
             : m_inputDevice(inputDevice)
         {
-            InputDeviceImplementationRequest<InputDeviceType>::Bus::Handler::BusConnect();
+            InputDeviceImplementationRequest<InputDeviceType>::Bus::Handler::BusConnect(m_inputDevice.GetInputDeviceId());
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -251,8 +272,8 @@ namespace AzFramework
         using CreateFunctionType = typename InputDeviceType::Implementation*(*)(InputDeviceType&);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! \ref InputDeviceImplementationRequest<InputDeviceType>::CreateCustomImplementation
-        AZ_INLINE void CreateCustomImplementation(CreateFunctionType createFunction) override
+        //! \ref InputDeviceImplementationRequest<InputDeviceType>::SetCustomImplementation
+        AZ_INLINE void SetCustomImplementation(CreateFunctionType createFunction) override
         {
             AZStd::unique_ptr<typename InputDeviceType::Implementation> newImplementation;
             if (createFunction)

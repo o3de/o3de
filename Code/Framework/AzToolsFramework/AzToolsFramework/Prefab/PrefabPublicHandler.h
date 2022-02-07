@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 #include <AzCore/std/string/string_view.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
@@ -41,8 +43,12 @@ namespace AzToolsFramework
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath) override;
-            PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+            CreatePrefabResult CreatePrefabInDisk(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabInMemory(
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            InstantiatePrefabResult InstantiatePrefab(
+                AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
@@ -57,18 +63,23 @@ namespace AzToolsFramework
 
             PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
-            PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
+            DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
 
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
-            bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
-                EntityList& outEntities, AZStd::vector<Instance*>& outInstances) const;
-            EntityIdList GenerateEntityIdListWithoutLevelInstance(const EntityIdList& entityIds) const;
+            PrefabOperationResult RetrieveAndSortPrefabEntitiesAndInstances(
+                const EntityList& inputEntities,
+                Instance& commonRootEntityOwningInstance,
+                EntityList& outEntities,
+                AZStd::vector<Instance*>& outInstances) const;
+            EntityIdList GenerateEntityIdListWithoutFocusedInstanceContainer(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
+            void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,
+                const EntityAlias& parentEntityAlias, const EntityAlias& entityToAddAlias);
 
             /**
              * Duplicate a list of entities owned by a common owning instance by directly
@@ -178,8 +189,13 @@ namespace AzToolsFramework
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+            PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+
+            // Handles the Prefab Focus API that determines what prefab is being edited.
+            PrefabFocusHandler m_prefabFocusHandler;
 
             // Caches entity states for undo/redo purposes
             PrefabUndoCache m_prefabUndoCache;

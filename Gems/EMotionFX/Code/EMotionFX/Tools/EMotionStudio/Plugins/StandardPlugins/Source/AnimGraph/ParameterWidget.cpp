@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,32 +36,32 @@ namespace EMStudio
         layout->setMargin(0);
 
         // create the tree widget
-        mTreeWidget = new QTreeWidget();
+        m_treeWidget = new QTreeWidget();
 
         // create header items
-        mTreeWidget->setColumnCount(1);
+        m_treeWidget->setColumnCount(1);
         QStringList headerList;
         headerList.append("Name");
-        mTreeWidget->setHeaderLabels(headerList);
+        m_treeWidget->setHeaderLabels(headerList);
 
         // set optical stuff for the tree
-        mTreeWidget->setSortingEnabled(false);
-        mTreeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-        mTreeWidget->setMinimumWidth(620);
-        mTreeWidget->setMinimumHeight(500);
-        mTreeWidget->setAlternatingRowColors(true);
-        mTreeWidget->setExpandsOnDoubleClick(true);
-        mTreeWidget->setAnimated(true);
+        m_treeWidget->setSortingEnabled(false);
+        m_treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+        m_treeWidget->setMinimumWidth(620);
+        m_treeWidget->setMinimumHeight(500);
+        m_treeWidget->setAlternatingRowColors(true);
+        m_treeWidget->setExpandsOnDoubleClick(true);
+        m_treeWidget->setAnimated(true);
 
         // disable the move of section to have column order fixed
-        mTreeWidget->header()->setSectionsMovable(false);
+        m_treeWidget->header()->setSectionsMovable(false);
 
         layout->addWidget(m_searchWidget);
-        layout->addWidget(mTreeWidget);
+        layout->addWidget(m_treeWidget);
         setLayout(layout);
 
-        connect(mTreeWidget, &QTreeWidget::itemSelectionChanged, this, &ParameterWidget::UpdateSelection);
-        connect(mTreeWidget, &QTreeWidget::itemDoubleClicked, this, &ParameterWidget::ItemDoubleClicked);
+        connect(m_treeWidget, &QTreeWidget::itemSelectionChanged, this, &ParameterWidget::UpdateSelection);
+        connect(m_treeWidget, &QTreeWidget::itemDoubleClicked, this, &ParameterWidget::ItemDoubleClicked);
 
         // set the selection mode
         SetSelectionMode(useSingleSelection);
@@ -74,9 +75,9 @@ namespace EMStudio
 
     void ParameterWidget::Update(EMotionFX::AnimGraph* animGraph, const AZStd::vector<AZStd::string>& selectedParameters)
     {
-        mAnimGraph                = animGraph;
-        mSelectedParameters       = selectedParameters;
-        mOldSelectedParameters    = selectedParameters;
+        m_animGraph                = animGraph;
+        m_selectedParameters       = selectedParameters;
+        m_oldSelectedParameters    = selectedParameters;
 
         Update();
     }
@@ -101,15 +102,15 @@ namespace EMStudio
             }
             else
             {
-                item = new QTreeWidgetItem(mTreeWidget);
-                mTreeWidget->addTopLevelItem(item);
+                item = new QTreeWidgetItem(m_treeWidget);
+                m_treeWidget->addTopLevelItem(item);
             }
 
             item->setText(0, parameter->GetName().c_str());
             item->setExpanded(true);
 
             // check if the given parameter is selected
-            if (AZStd::find(mOldSelectedParameters.begin(), mOldSelectedParameters.end(), parameter->GetName()) != mOldSelectedParameters.end())
+            if (AZStd::find(m_oldSelectedParameters.begin(), m_oldSelectedParameters.end(), parameter->GetName()) != m_oldSelectedParameters.end())
             {
                 item->setSelected(true);
             }
@@ -119,39 +120,39 @@ namespace EMStudio
 
     void ParameterWidget::Update()
     {
-        mTreeWidget->clear();
-        mTreeWidget->blockSignals(true);
+        m_treeWidget->clear();
+        m_treeWidget->blockSignals(true);
 
         // add all parameters that belong to no group parameter
-        const EMotionFX::ValueParameterVector childValueParameters = mAnimGraph->GetChildValueParameters();
+        const EMotionFX::ValueParameterVector childValueParameters = m_animGraph->GetChildValueParameters();
         for (const EMotionFX::ValueParameter* parameter : childValueParameters)
         {
-            AddParameterToInterface(mAnimGraph, parameter, nullptr);
+            AddParameterToInterface(m_animGraph, parameter, nullptr);
         }
 
         // get all group parameters and iterate through them
         AZStd::string tempString;
-        const EMotionFX::GroupParameterVector groupParameters = mAnimGraph->RecursivelyGetGroupParameters();
+        const EMotionFX::GroupParameterVector groupParameters = m_animGraph->RecursivelyGetGroupParameters();
         for (const EMotionFX::GroupParameter* groupParameter : groupParameters)
         {
             // add the group item to the tree widget
-            QTreeWidgetItem* groupItem = new QTreeWidgetItem(mTreeWidget);
+            QTreeWidgetItem* groupItem = new QTreeWidgetItem(m_treeWidget);
             groupItem->setText(0, groupParameter->GetName().c_str());
 
             groupItem->setExpanded(true);
             const EMotionFX::ValueParameterVector childValueParameters2 = groupParameter->GetChildValueParameters();
             tempString = AZStd::string::format("%zu Parameters", childValueParameters2.size());
             groupItem->setToolTip(1, tempString.c_str());
-            mTreeWidget->addTopLevelItem(groupItem);
+            m_treeWidget->addTopLevelItem(groupItem);
 
             // add all parameters that belong to the given group
             bool groupSelected = !childValueParameters2.empty();
             for (const EMotionFX::ValueParameter* valueParameter : childValueParameters2)
             {
-                AddParameterToInterface(mAnimGraph, valueParameter, groupItem);
+                AddParameterToInterface(m_animGraph, valueParameter, groupItem);
 
                 // check if the given parameter is selected
-                if (groupSelected && AZStd::find(mOldSelectedParameters.begin(), mOldSelectedParameters.end(), valueParameter->GetName()) == mOldSelectedParameters.end())
+                if (groupSelected && AZStd::find(m_oldSelectedParameters.begin(), m_oldSelectedParameters.end(), valueParameter->GetName()) == m_oldSelectedParameters.end())
                 {
                     groupSelected = false;
                 }
@@ -160,18 +161,18 @@ namespace EMStudio
             groupItem->setSelected(groupSelected);
         }
 
-        mTreeWidget->blockSignals(false);
+        m_treeWidget->blockSignals(false);
         UpdateSelection();
     }
 
 
     void ParameterWidget::UpdateSelection()
     {
-        QList<QTreeWidgetItem*> selectedItems = mTreeWidget->selectedItems();
+        QList<QTreeWidgetItem*> selectedItems = m_treeWidget->selectedItems();
 
-        mSelectedParameters.clear();
+        m_selectedParameters.clear();
         const uint32 numSelectedItems = selectedItems.count();
-        mSelectedParameters.reserve(numSelectedItems);
+        m_selectedParameters.reserve(numSelectedItems);
 
         // Iterate through the selected items in the tree widget.
         AZStd::string itemName;
@@ -182,7 +183,7 @@ namespace EMStudio
 
             // Get the parameter by name.
             // Skip elements that we can't find as they also shouldn't be selectable.
-            const EMotionFX::Parameter* parameter = mAnimGraph->FindParameterByName(itemName);
+            const EMotionFX::Parameter* parameter = m_animGraph->FindParameterByName(itemName);
             if (!parameter)
             {
                 continue;
@@ -191,9 +192,9 @@ namespace EMStudio
             // check if the selected item is a parameter
             if (azrtti_typeid(parameter) != azrtti_typeid<EMotionFX::GroupParameter>())
             {
-                if (AZStd::find(mSelectedParameters.begin(), mSelectedParameters.end(), itemName) == mSelectedParameters.end())
+                if (AZStd::find(m_selectedParameters.begin(), m_selectedParameters.end(), itemName) == m_selectedParameters.end())
                 {
-                    mSelectedParameters.emplace_back(itemName);
+                    m_selectedParameters.emplace_back(itemName);
                 }
             }
             // selected item is a group
@@ -204,9 +205,9 @@ namespace EMStudio
                 const EMotionFX::ValueParameterVector valueParameters = groupParameter->RecursivelyGetChildValueParameters();
                 for (const EMotionFX::ValueParameter* valueParameter : valueParameters)
                 {
-                    if (AZStd::find(mSelectedParameters.begin(), mSelectedParameters.end(), valueParameter->GetName()) == mSelectedParameters.end())
+                    if (AZStd::find(m_selectedParameters.begin(), m_selectedParameters.end(), valueParameter->GetName()) == m_selectedParameters.end())
                     {
-                        mSelectedParameters.emplace_back(valueParameter->GetName());
+                        m_selectedParameters.emplace_back(valueParameter->GetName());
                     }
                 }
             }
@@ -218,14 +219,14 @@ namespace EMStudio
     {
         if (useSingleSelection)
         {
-            mTreeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+            m_treeWidget->setSelectionMode(QAbstractItemView::SingleSelection);
         }
         else
         {
-            mTreeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+            m_treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
         }
 
-        mUseSingleSelection = useSingleSelection;
+        m_useSingleSelection = useSingleSelection;
     }
 
     void ParameterWidget::SetFilterTypes(const AZStd::vector<AZ::TypeId>& filterTypes)
@@ -239,9 +240,9 @@ namespace EMStudio
         MCORE_UNUSED(column);
 
         UpdateSelection();
-        if (!mSelectedParameters.empty())
+        if (!m_selectedParameters.empty())
         {
-            emit OnDoubleClicked(mSelectedParameters[0]);
+            emit OnDoubleClicked(m_selectedParameters[0]);
         }
     }
 
@@ -256,7 +257,7 @@ namespace EMStudio
 
     void ParameterWidget::FireSelectionDoneSignal()
     {
-        emit OnSelectionDone(mSelectedParameters);
+        emit OnSelectionDone(m_selectedParameters);
     }
 } // namespace EMStudio
 

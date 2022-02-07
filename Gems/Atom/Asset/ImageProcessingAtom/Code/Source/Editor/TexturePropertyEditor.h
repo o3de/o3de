@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/PlatformDef.h>
 // warning C4251: 'QBrush::d': class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
 // warning C4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
 AZ_PUSH_DISABLE_WARNING(4800 4251, "-Wunknown-warning-option")
@@ -50,7 +52,7 @@ namespace ImageProcessingAtomEditor
 
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus
-        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform);
+        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform) override;
         ////////////////////////////////////////////////////////////////////////
 
         bool event(QEvent* event) override;

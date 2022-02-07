@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -277,7 +278,7 @@ namespace AZ
         {
             AZ::Name        m_nameId;
             uint32_t        m_sizeInBytes = 0;
-            uint32_t        m_space = -1;
+            uint32_t        m_space = std::numeric_limits<uint32_t>::max();
             uint32_t        m_registerId = RHI::UndefinedRegisterSlot;
         };
     } // ShaderBuilder

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiLYCommonMenu.h"
 
 #ifdef IMGUI_ENABLED
@@ -13,6 +13,7 @@
 #include <AzCore/std/sort.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <ILevelSystem.h>
 #include "ImGuiColorDefines.h"
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"
@@ -92,8 +93,36 @@ namespace ImGui
 
     void ImGuiLYCommonMenu::OnImGuiUpdate()
     {
+        float dpiScalingFactor = 1.0f;
+        ImGuiManagerBus::BroadcastResult(dpiScalingFactor, &ImGuiManagerBus::Events::GetDpiScalingFactor);
+
+        // Utility function to calculate the size in device pixels based on the current DPI
+        const auto dpiAwareSizeFn = [dpiScalingFactor](float size)
+        {
+            return dpiScalingFactor * size;
+        };
+
+        AZStd::optional<AzFramework::ViewportBorderPadding> viewportBorderPaddingOpt;
+        AzFramework::ViewportBorderRequestBus::BroadcastResult(
+            viewportBorderPaddingOpt, &AzFramework::ViewportBorderRequestBus::Events::GetViewportBorderPadding);
+
+        AzFramework::ViewportBorderPadding viewportBorderPadding = viewportBorderPaddingOpt.value_or(AzFramework::ViewportBorderPadding{});
+        // Utility function to return the current offset (scaled by DPI) if a viewport border
+        // is active (otherwise 0.0)
+        auto dpiAwareBorderOffsetFn = [&viewportBorderPaddingOpt, &dpiAwareSizeFn](float size)
+        {
+            return viewportBorderPaddingOpt.has_value() ? dpiAwareSizeFn(size) : 0.0f;
+        };
+
+        // Shift the menu down if a viewport border is active
+        ImVec2 cachedSafeArea = ImGui::GetStyle().DisplaySafeAreaPadding;
+        ImGui::GetStyle().DisplaySafeAreaPadding = ImVec2(cachedSafeArea.x, cachedSafeArea.y + dpiAwareSizeFn(viewportBorderPadding.m_top));
+
         if (ImGui::BeginMainMenuBar())
         {
+            // Constant to shift right aligned menu items by (distance to the left) when a viewport border is active
+            const float rightAlignedBorderOffset = dpiAwareBorderOffsetFn(36.0f);
+
             // Get Discrete Input state now, we will use it both inside the ImGui SubMenu, and along the main task bar ( when it is on )
             bool discreteInputEnabled = false;
             ImGuiManagerBus::BroadcastResult(discreteInputEnabled, &IImGuiManager::GetEnableDiscreteInputMode);
@@ -101,7 +130,8 @@ namespace ImGui
             // Input Mode Display
             {
                 const float prevCursorPos = ImGui::GetCursorPosX();
-                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 300.0f);
+                ImGui::SetCursorPosX(
+                    ImGui::GetWindowWidth() - dpiAwareSizeFn(300.0f + viewportBorderPadding.m_right) - rightAlignedBorderOffset);
 
                 AZStd::string inputTitle = "Input: ";
                 if (!discreteInputEnabled)
@@ -152,7 +182,7 @@ namespace ImGui
             }
 
             // Add some space before the first menu so it won't overlap with view control buttons
-            ImGui::SetCursorPosX(40.f);
+            ImGui::SetCursorPosX(dpiAwareSizeFn(40.0f + viewportBorderPadding.m_left));
 
             // Main Open 3D Engine menu
             if (ImGui::BeginMenu("O3DE"))
@@ -196,20 +226,6 @@ namespace ImGui
                         if (dragIntVal != displayInfoVal)
                         {
                             rDisplayInfoCVar->Set(dragIntVal);
-                        }
-                    }
-
-                    // Lod Min
-                    static ICVar* eLodMinCVAR = gEnv->pConsole->GetCVar("e_LodMin");
-                    if (eLodMinCVAR)
-                    {
-                        int minLodValue = eLodMinCVAR->GetIVal();
-                        int dragIntVal = minLodValue;
-                        ImGui::Text("e_LodMin: %d ( Force a lowest LOD level )", minLodValue);
-                        ImGui::SliderInt("##LodMin", &dragIntVal, 0, 5);
-                        if (dragIntVal != minLodValue)
-                        {
-                            eLodMinCVAR->Set(dragIntVal);
                         }
                     }
 
@@ -571,11 +587,12 @@ namespace ImGui
                 // End LY Common Tools menu
                 ImGui::EndMenu();
             }
-            const int labelSize{ 100 };
-            const int buttonSize{ 40 };
+
+            const float labelSize = dpiAwareSizeFn(100.0f + viewportBorderPadding.m_right) + rightAlignedBorderOffset;
+            const float buttonSize = dpiAwareSizeFn(40.0f + viewportBorderPadding.m_right) + rightAlignedBorderOffset;
             ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnImGuiMainMenuUpdate);
             ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - labelSize);
-            float backgroundHeight = ImGui::GetTextLineHeight() + 3;
+            float backgroundHeight = ImGui::GetTextLineHeight() + dpiAwareSizeFn(3.0f);
             ImVec2 cursorPos = ImGui::GetCursorScreenPos();
             ImGui::GetWindowDrawList()->AddRectFilled(
                 cursorPos, ImVec2(cursorPos.x + labelSize, cursorPos.y + backgroundHeight), IM_COL32(0, 115, 187, 255));
@@ -593,6 +610,9 @@ namespace ImGui
             ImGui::PopStyleColor(3);
             ImGui::EndMainMenuBar();
         }
+
+        // Restore original safe area.
+        ImGui::GetStyle().DisplaySafeAreaPadding = cachedSafeArea;
 
         // Update Contextual Controller Window
         if (m_controllerLegendWindowVisible)

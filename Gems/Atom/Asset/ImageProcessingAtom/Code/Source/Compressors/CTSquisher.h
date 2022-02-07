@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,6 +27,7 @@ namespace ImageProcessingAtom
 
         EPixelFormat GetSuggestedUncompressedFormat(EPixelFormat compressedfmt, EPixelFormat uncompressedfmt) const override;
         ColorSpace GetSupportedColorSpace(EPixelFormat compressFormat) const final;
+        const char* GetName() const final;
 
     private:
         static CryTextureSquisher::ECodingPreset GetCompressPreset(EPixelFormat compressFmt, EPixelFormat uncompressFmt);

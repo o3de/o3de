@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -207,7 +208,7 @@ namespace AzQtComponents
 
     QString PaletteCardCollection::uniquePaletteName(QSharedPointer<PaletteCard> card, const QString& name) const
     {
-        const auto paletteNameExists = [this, card](const QString& name)
+        const auto paletteNameExists = [this](const QString& name)
         {
             auto it = std::find_if(m_paletteCards.begin(), m_paletteCards.end(),
                 [&name](QSharedPointer<const PaletteCard> card)

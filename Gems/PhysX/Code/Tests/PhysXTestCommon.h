@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -88,6 +89,7 @@ namespace PhysX
             const AzPhysics::CollisionLayer& layer = AzPhysics::CollisionLayer::Default);
 
         AzPhysics::SimulatedBodyHandle AddStaticTriangleMeshCubeToScene(AzPhysics::SceneHandle scene, float halfExtent);
+        AzPhysics::SimulatedBodyHandle AddKinematicTriangleMeshCubeToScene(AzPhysics::SceneHandle scene, float halfExtent, AzPhysics::MassComputeFlags massComputeFlags);
 
         // Collision Filtering
         void SetCollisionLayer(EntityPtr& entity, const AZStd::string& layerName, const AZStd::string& colliderTag = "");

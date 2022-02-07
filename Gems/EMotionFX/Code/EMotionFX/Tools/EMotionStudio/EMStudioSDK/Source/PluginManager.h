@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,7 +36,7 @@ namespace EMStudio
 
         void RegisterPlugin(EMStudioPlugin* plugin);
         EMStudioPlugin* CreateWindowOfType(const char* pluginType, const char* objectName = nullptr);
-        uint32 FindPluginByTypeString(const char* pluginType) const;
+        size_t FindPluginByTypeString(const char* pluginType) const;
         EMStudioPlugin* GetActivePluginByTypeString(const char* pluginType) const;
 
         // Reqire that PluginType is a subclass of EMStudioPlugin
@@ -46,23 +47,23 @@ namespace EMStudio
         }
         EMStudioPlugin* FindActivePlugin(uint32 classID) const;   // find first active plugin, or nullptr when not found
 
-        MCORE_INLINE uint32 GetNumPlugins() const                           { return static_cast<uint32>(mPlugins.size()); }
-        MCORE_INLINE EMStudioPlugin* GetPlugin(const uint32 index)          { return mPlugins[index]; }
+        MCORE_INLINE size_t GetNumPlugins() const                           { return m_plugins.size(); }
+        MCORE_INLINE EMStudioPlugin* GetPlugin(const size_t index)          { return m_plugins[index]; }
 
-        MCORE_INLINE uint32 GetNumActivePlugins() const                     { return static_cast<uint32>(mActivePlugins.size()); }
-        MCORE_INLINE EMStudioPlugin* GetActivePlugin(const uint32 index)    { return mActivePlugins[index]; }
-        MCORE_INLINE const PluginVector& GetActivePlugins() { return mActivePlugins; }
+        MCORE_INLINE size_t GetNumActivePlugins() const                     { return m_activePlugins.size(); }
+        MCORE_INLINE EMStudioPlugin* GetActivePlugin(const size_t index)    { return m_activePlugins[index]; }
+        MCORE_INLINE const PluginVector& GetActivePlugins() { return m_activePlugins; }
 
-        uint32 GetNumActivePluginsOfType(const char* pluginType) const;
-        uint32 GetNumActivePluginsOfType(uint32 classID) const;
+        size_t GetNumActivePluginsOfType(const char* pluginType) const;
+        size_t GetNumActivePluginsOfType(uint32 classID) const;
         void RemoveActivePlugin(EMStudioPlugin* plugin);
 
         QString GenerateObjectName() const;
 
     private:
-        PluginVector mPlugins;
+        PluginVector m_plugins;
 
-        PluginVector mActivePlugins;
+        PluginVector m_activePlugins;
 
         void UnloadPlugins();
     };

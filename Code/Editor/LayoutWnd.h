@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -102,11 +103,13 @@ public:
     static const char* GetConfigGroupName();
 
     CLayoutViewPane* FindViewByClass(const QString& viewClassName);
-    void BindViewport(CLayoutViewPane* vp, const QString& viewClassName, QWidget* pViewport = NULL);
+    void BindViewport(CLayoutViewPane* vp, const QString& viewClassName, QWidget* pViewport = nullptr);
     QString ViewportTypeToClassName(EViewportType viewType);
 
     //! Switch 2D viewports.
     void Cycle2DViewport();
+
+    using AzQtComponents::ToolBarArea::SetMainWidget;
 
 public slots:
     void ResetLayout();

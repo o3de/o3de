@@ -1,17 +1,17 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 // LY Editor Crashpad Upload Handler Extension
 
+#include <AzCore/PlatformIncl.h>
 #include <handler/handler_main.h>
 #include <tools/tool_support.h>
 #include <Uploader/CrashUploader.h>
-
-#include <windows.h>
 
 namespace
 {

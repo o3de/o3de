@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,7 +59,7 @@ public:
     // Lock value of first and last key to be the same.
     void LockFirstAndLastKeys(bool bLock) { m_bLockFirstLastKey = bLock; }
 
-    void SetSpline(ISplineInterpolator* pSpline, BOOL bRedraw = FALSE);
+    void SetSpline(ISplineInterpolator* pSpline, bool bRedraw = false);
     ISplineInterpolator* GetSpline();
 
     void SetTimeMarker(float fTime);

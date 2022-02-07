@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "base": "{B17F2D7F-22DF-512D-BF2A-98890D337661}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Columns",
+                "category": "Math/Matrix4x4",
+                "tooltip": "returns a rotation matrix based on angle around Z axis"
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "base": "DataInput_Column1_0",
+                    "details": {
+                        "name": "Column1"
+                    }
+                },
+                {
+                    "base": "DataInput_Column2_1",
+                    "details": {
+                        "name": "Column2"
+                    }
+                },
+                {
+                    "base": "DataInput_Column3_2",
+                    "details": {
+                        "name": "Column3"
+                    }
+                },
+                {
+                    "base": "DataInput_Column4_3",
+                    "details": {
+                        "name": "Column4"
+                    }
+                },
+                {
+                    "base": "DataOutput_Result_0",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

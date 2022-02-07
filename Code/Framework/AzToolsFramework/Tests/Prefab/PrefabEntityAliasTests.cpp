@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -158,9 +159,6 @@ namespace UnitTest
             m_prefabSystemComponent->InstantiatePrefab(rootInstance->GetTemplateId());
 
         ASSERT_TRUE(secondRootInstance);
-
-        // Find the new instances versions of the new and referenced entities using the aliases we saved
-        AZ::EntityId secondNewEntityId = secondRootInstance->GetEntityId(newEntityAlias);
 
         InstanceOptionalReference secondNestedInstance = secondRootInstance->FindNestedInstance(nestedAlias);
         ASSERT_TRUE(secondNestedInstance);

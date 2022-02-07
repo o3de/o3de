@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -43,47 +44,47 @@ namespace EMotionFX
             /// Retrieving the index and using it to set parameter values is more performant than setting by name.
             /// \param parameterName - name of parameter for which to retrieve the index.
             /// \return parameter index
-            virtual AZ::u32 FindParameterIndex(const char* parameterName) = 0;
+            virtual size_t FindParameterIndex(const char* parameterName) = 0;
 
             /// Retrieve parameter name for a given parameter index.
             /// \param parameterName - index of parameter for which to retrieve the name.
             /// \return parameter name
-            virtual const char* FindParameterName(AZ::u32 parameterIndex) = 0;
+            virtual const char* FindParameterName(size_t parameterIndex) = 0;
 
             /// Updates a anim graph property given a float value.
             /// \param parameterIndex - index of parameter to set
             /// \param value - value to set
-            virtual void SetParameterFloat(AZ::u32 parameterIndex, float value) = 0;
+            virtual void SetParameterFloat(size_t parameterIndex, float value) = 0;
 
             /// Updates a anim graph property given a boolean value.
             /// \param parameterIndex - index of parameter to set
             /// \param value - value to set
-            virtual void SetParameterBool(AZ::u32 parameterIndex, bool value) = 0;
+            virtual void SetParameterBool(size_t parameterIndex, bool value) = 0;
 
             /// Updates a anim graph property given a string value.
             /// \param parameterIndex - index of parameter to set
             /// \param value - value to set
-            virtual void SetParameterString(AZ::u32 parameterIndex, const char* value) = 0;
+            virtual void SetParameterString(size_t parameterIndex, const char* value) = 0;
 
             /// Updates a anim graph property given a Vector2 value.
             /// \param parameterIndex - index of parameter to set
             /// \param value - value to set
-            virtual void SetParameterVector2(AZ::u32 parameterIndex, const AZ::Vector2& value) = 0;
+            virtual void SetParameterVector2(size_t parameterIndex, const AZ::Vector2& value) = 0;
 
             /// Updates a anim graph property given a Vector3 value.
             /// \param parameterIndex - index of parameter to set
             /// \param value - value to set
-            virtual void SetParameterVector3(AZ::u32 parameterIndex, const AZ::Vector3& value) = 0;
+            virtual void SetParameterVector3(size_t parameterIndex, const AZ::Vector3& value) = 0;
 
             /// Updates a anim graph property given euler rotation values.
             /// \param parameterIndex - index of parameter to set
             /// \param value - value to set
-            virtual void SetParameterRotationEuler(AZ::u32 parameterIndex, const AZ::Vector3& value) = 0;
+            virtual void SetParameterRotationEuler(size_t parameterIndex, const AZ::Vector3& value) = 0;
 
             /// Updates a anim graph property given a quaternion value.
             /// \param parameterIndex - index of parameter to set
             /// \param value - value to set
-            virtual void SetParameterRotation(AZ::u32 parameterIndex, const AZ::Quaternion& value) = 0;
+            virtual void SetParameterRotation(size_t parameterIndex, const AZ::Quaternion& value) = 0;
 
 
             /// Updates a anim graph property given a float value.
@@ -126,31 +127,31 @@ namespace EMotionFX
 
             /// Retrieves a anim graph property as a float value.
             /// \param parameterIndex - index of parameter to set
-            virtual float GetParameterFloat(AZ::u32 parameterIndex) = 0;
+            virtual float GetParameterFloat(size_t parameterIndex) = 0;
 
             /// Retrieves a anim graph property as a boolean value.
             /// \param parameterIndex - index of parameter to set
-            virtual bool GetParameterBool(AZ::u32 parameterIndex) = 0;
+            virtual bool GetParameterBool(size_t parameterIndex) = 0;
 
             /// Retrieves a anim graph property given a string value.
             /// \param parameterIndex - index of parameter to set
-            virtual AZStd::string GetParameterString(AZ::u32 parameterIndex) = 0;
+            virtual AZStd::string GetParameterString(size_t parameterIndex) = 0;
 
             /// Retrieves a anim graph property as a Vector2 value.
             /// \param parameterIndex - index of parameter to set
-            virtual AZ::Vector2 GetParameterVector2(AZ::u32 parameterIndex) = 0;
+            virtual AZ::Vector2 GetParameterVector2(size_t parameterIndex) = 0;
 
             /// Retrieves a anim graph property as a Vector3 value.
             /// \param parameterIndex - index of parameter to set
-            virtual AZ::Vector3 GetParameterVector3(AZ::u32 parameterIndex) = 0;
+            virtual AZ::Vector3 GetParameterVector3(size_t parameterIndex) = 0;
 
             /// Retrieves a anim graph property given as euler rotation values.
             /// \param parameterIndex - index of parameter to set
-            virtual AZ::Vector3 GetParameterRotationEuler(AZ::u32 parameterIndex) = 0;
+            virtual AZ::Vector3 GetParameterRotationEuler(size_t parameterIndex) = 0;
 
             /// Retrieves a anim graph property as a quaternion value.
             /// \param parameterIndex - index of parameter to set
-            virtual AZ::Quaternion GetParameterRotation(AZ::u32 parameterIndex) = 0;
+            virtual AZ::Quaternion GetParameterRotation(size_t parameterIndex) = 0;
 
             /// Retrieves a anim graph property as a float value.
             /// \param parameterName - name of parameter to get
@@ -240,42 +241,42 @@ namespace EMotionFX
             /// \param parameterIndex - index of changed parameter
             /// \param beforeValue - value before the change
             /// \param afterValue - value after the change
-            virtual void OnAnimGraphFloatParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] AZ::u32 parameterIndex, [[maybe_unused]] float beforeValue, [[maybe_unused]] float afterValue) {};
+            virtual void OnAnimGraphFloatParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] size_t parameterIndex, [[maybe_unused]] float beforeValue, [[maybe_unused]] float afterValue) {};
 
             /// Notifies listeners when a bool parameter changes
             /// \param animGraphInstance - pointer to anim graph instance
             /// \param parameterIndex - index of changed parameter
             /// \param beforeValue - value before the change
             /// \param afterValue - value after the change
-            virtual void OnAnimGraphBoolParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] AZ::u32 parameterIndex, [[maybe_unused]] bool beforeValue, [[maybe_unused]] bool afterValue) {};
+            virtual void OnAnimGraphBoolParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] size_t parameterIndex, [[maybe_unused]] bool beforeValue, [[maybe_unused]] bool afterValue) {};
 
             /// Notifies listeners when a string parameter changes
             /// \param animGraphInstance - pointer to anim graph instance
             /// \param parameterIndex - index of changed parameter
             /// \param beforeValue - value before the change
             /// \param afterValue - value after the change
-            virtual void OnAnimGraphStringParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] AZ::u32 parameterIndex, [[maybe_unused]] const char* beforeValue, [[maybe_unused]] const char* afterValue) {};
+            virtual void OnAnimGraphStringParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] size_t parameterIndex, [[maybe_unused]] const char* beforeValue, [[maybe_unused]] const char* afterValue) {};
 
             /// Notifies listeners when a vector2 parameter changes
             /// \param animGraphInstance - pointer to anim graph instance
             /// \param parameterIndex - index of changed parameter
             /// \param beforeValue - value before the change
             /// \param afterValue - value after the change
-            virtual void OnAnimGraphVector2ParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] AZ::u32 parameterIndex, [[maybe_unused]] const AZ::Vector2& beforeValue, [[maybe_unused]] const AZ::Vector2& afterValue) {};
+            virtual void OnAnimGraphVector2ParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] size_t parameterIndex, [[maybe_unused]] const AZ::Vector2& beforeValue, [[maybe_unused]] const AZ::Vector2& afterValue) {};
 
             /// Notifies listeners when a vector3 parameter changes
             /// \param animGraphInstance - pointer to anim graph instance
             /// \param parameterIndex - index of changed parameter
             /// \param beforeValue - value before the change
             /// \param afterValue - value after the change
-            virtual void OnAnimGraphVector3ParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] AZ::u32 parameterIndex, [[maybe_unused]] const AZ::Vector3& beforeValue, [[maybe_unused]] const AZ::Vector3& afterValue) {};
+            virtual void OnAnimGraphVector3ParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] size_t parameterIndex, [[maybe_unused]] const AZ::Vector3& beforeValue, [[maybe_unused]] const AZ::Vector3& afterValue) {};
 
             /// Notifies listeners when a rotation parameter changes
             /// \param animGraphInstance - pointer to anim graph instance
             /// \param parameterIndex - index of changed parameter
             /// \param beforeValue - value before the change
             /// \param afterValue - value after the change
-            virtual void OnAnimGraphRotationParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] AZ::u32 parameterIndex, [[maybe_unused]] const AZ::Quaternion& beforeValue, [[maybe_unused]] const AZ::Quaternion& afterValue) {};
+            virtual void OnAnimGraphRotationParameterChanged(EMotionFX::AnimGraphInstance* /*animGraphInstance*/, [[maybe_unused]] size_t parameterIndex, [[maybe_unused]] const AZ::Quaternion& beforeValue, [[maybe_unused]] const AZ::Quaternion& afterValue) {};
 
             /// Notifies listeners when an another anim graph trying to sync this graph
             /// \param animGraphInstance - pointer to the follower anim graph instance

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,7 +22,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #define MIN_ASPECT 1
 #define MAX_ASPECT 16384
 
-CCustomAspectRatioDlg::CCustomAspectRatioDlg(int x, int y, QWidget* pParent /*=NULL*/)
+CCustomAspectRatioDlg::CCustomAspectRatioDlg(int x, int y, QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_xDefault(x)
     , m_yDefault(y)

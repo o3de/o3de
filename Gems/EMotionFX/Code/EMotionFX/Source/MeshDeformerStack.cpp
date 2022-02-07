@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,24 +21,22 @@ namespace EMotionFX
     MeshDeformerStack::MeshDeformerStack(Mesh* mesh)
         : BaseObject()
     {
-        mMesh = mesh;
-        mDeformers.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_DEFORMERS);
+        m_mesh = mesh;
     }
 
 
     // destructor
     MeshDeformerStack::~MeshDeformerStack()
     {
-        const uint32 numDeformers = mDeformers.GetLength();
-        for (uint32 i = 0; i < numDeformers; ++i)
+        for (MeshDeformer* deformer : m_deformers)
         {
-            mDeformers[i]->Destroy();
+            deformer->Destroy();
         }
 
-        mDeformers.Clear();
+        m_deformers.clear();
 
         // reset
-        mMesh = nullptr;
+        m_mesh = nullptr;
     }
 
 
@@ -51,37 +50,32 @@ namespace EMotionFX
     // returns the mesh
     Mesh* MeshDeformerStack::GetMesh() const
     {
-        return mMesh;
+        return m_mesh;
     }
 
 
     // update the mesh deformer stack
     void MeshDeformerStack::Update(ActorInstance* actorInstance, Node* node, float timeDelta, bool forceUpdateDisabledDeformers)
     {
-        // if we have deformers in the stack
-        const uint32 numDeformers = mDeformers.GetLength();
-        if (numDeformers > 0)
+        bool firstEnabled = true;
+
+        // iterate through the deformers and update them
+        for (MeshDeformer* deformer : m_deformers)
         {
-            bool firstEnabled = true;
-
-            // iterate through the deformers and update them
-            for (uint32 i = 0; i < numDeformers; ++i)
+            // if the deformer is enabled
+            if (deformer->GetIsEnabled() || forceUpdateDisabledDeformers)
             {
-                // if the deformer is enabled
-                if (mDeformers[i]->GetIsEnabled() || forceUpdateDisabledDeformers)
+                // if this is the first enabled deformer
+                if (firstEnabled)
                 {
-                    // if this is the first enabled deformer
-                    if (firstEnabled)
-                    {
-                        firstEnabled = false;
+                    firstEnabled = false;
 
-                        // reset all output vertex data to the original vertex data
-                        mMesh->ResetToOriginalData();
-                    }
-
-                    // update the mesh deformer
-                    mDeformers[i]->Update(actorInstance, node, timeDelta);
+                    // reset all output vertex data to the original vertex data
+                    m_mesh->ResetToOriginalData();
                 }
+
+                // update the mesh deformer
+                deformer->Update(actorInstance, node, timeDelta);
             }
         }
     }
@@ -90,39 +84,36 @@ namespace EMotionFX
     void MeshDeformerStack::UpdateByModifierType(ActorInstance* actorInstance, Node* node, float timeDelta, uint32 typeID, bool resetMesh, bool forceUpdateDisabledDeformers)
     {
         bool resetDone = false;
-        // if we have deformers in the stack
-        const uint32 numDeformers = mDeformers.GetLength();
-        // iterate through the deformers and update them
-        for (uint32 i = 0; i < numDeformers; ++i)
+        for (MeshDeformer* deformer : m_deformers)
         {
             // if the deformer of the correct type and is enabled
-            if (mDeformers[i]->GetType() == typeID && (mDeformers[i]->GetIsEnabled() || forceUpdateDisabledDeformers))
+            if (deformer->GetType() == typeID && (deformer->GetIsEnabled() || forceUpdateDisabledDeformers))
             {
                 // if this is the first enabled deformer
                 if (resetMesh && !resetDone)
                 {
                     // reset all output vertex data to the original vertex data
-                    mMesh->ResetToOriginalData();
+                    m_mesh->ResetToOriginalData();
                     resetDone = true;
                 }
 
                 // update the mesh deformer
-                mDeformers[i]->Update(actorInstance, node, timeDelta);
+                deformer->Update(actorInstance, node, timeDelta);
             }
         }
     }
 
 
     // reinitialize mesh deformers
-    void MeshDeformerStack::ReinitializeDeformers(Actor* actor, Node* node, uint32 lodLevel)
+    void MeshDeformerStack::ReinitializeDeformers(Actor* actor, Node* node, size_t lodLevel)
     {
         // if we have deformers in the stack
-        const uint32 numDeformers = mDeformers.GetLength();
+        const size_t numDeformers = m_deformers.size();
 
         // iterate through the deformers and reinitialize them
-        for (uint32 i = 0; i < numDeformers; ++i)
+        for (size_t i = 0; i < numDeformers; ++i)
         {
-            mDeformers[i]->Reinitialize(actor, node, lodLevel);
+            m_deformers[i]->Reinitialize(actor, node, lodLevel);
         }
     }
 
@@ -130,21 +121,26 @@ namespace EMotionFX
     void MeshDeformerStack::AddDeformer(MeshDeformer* meshDeformer)
     {
         // add the object into the stack
-        mDeformers.Add(meshDeformer);
+        m_deformers.emplace_back(meshDeformer);
     }
 
 
-    void MeshDeformerStack::InsertDeformer(uint32 pos, MeshDeformer* meshDeformer)
+    void MeshDeformerStack::InsertDeformer(size_t pos, MeshDeformer* meshDeformer)
     {
         // add the object into the stack
-        mDeformers.Insert(pos, meshDeformer);
+        m_deformers.emplace(AZStd::next(begin(m_deformers), pos), meshDeformer);
     }
 
 
     bool MeshDeformerStack::RemoveDeformer(MeshDeformer* meshDeformer)
     {
         // delete the object
-        return mDeformers.RemoveByValue(meshDeformer);
+        if (const auto it = AZStd::find(begin(m_deformers), end(m_deformers), meshDeformer); it != end(m_deformers))
+        {
+            m_deformers.erase(it);
+            return true;
+        }
+        return false;
     }
 
 
@@ -154,10 +150,9 @@ namespace EMotionFX
         MeshDeformerStack* newStack = aznew MeshDeformerStack(mesh);
 
         // clone all deformers
-        const uint32 numDeformers = mDeformers.GetLength();
-        for (uint32 i = 0; i < numDeformers; ++i)
+        for (const MeshDeformer* deformer : m_deformers)
         {
-            newStack->AddDeformer(mDeformers[i]->Clone(mesh));
+            newStack->AddDeformer(deformer->Clone(mesh));
         }
 
         // return a pointer to the clone
@@ -165,26 +160,26 @@ namespace EMotionFX
     }
 
 
-    uint32 MeshDeformerStack::GetNumDeformers() const
+    size_t MeshDeformerStack::GetNumDeformers() const
     {
-        return mDeformers.GetLength();
+        return m_deformers.size();
     }
 
 
-    MeshDeformer* MeshDeformerStack::GetDeformer(uint32 nr) const
+    MeshDeformer* MeshDeformerStack::GetDeformer(size_t nr) const
     {
-        MCORE_ASSERT(nr < mDeformers.GetLength());
-        return mDeformers[nr];
+        MCORE_ASSERT(nr < m_deformers.size());
+        return m_deformers[nr];
     }
 
 
     // remove all the deformers of a given type
-    uint32 MeshDeformerStack::RemoveAllDeformersByType(uint32 deformerTypeID)
+    size_t MeshDeformerStack::RemoveAllDeformersByType(uint32 deformerTypeID)
     {
-        uint32 numRemoved = 0;
-        for (uint32 a = 0; a < mDeformers.GetLength(); )
+        size_t numRemoved = 0;
+        for (size_t a = 0; a < m_deformers.size(); )
         {
-            MeshDeformer* deformer = mDeformers[a];
+            MeshDeformer* deformer = m_deformers[a];
             if (deformer->GetType() == deformerTypeID)
             {
                 RemoveDeformer(deformer);
@@ -204,12 +199,10 @@ namespace EMotionFX
     // remove all the deformers
     void MeshDeformerStack::RemoveAllDeformers()
     {
-        for (uint32 i = 0; i < mDeformers.GetLength(); ++i)
+        for (MeshDeformer* deformer : m_deformers)
         {
             // retrieve the current deformer
-            MeshDeformer* deformer = mDeformers[i];
-
-            // remove the deformer
+             // remove the deformer
             RemoveDeformer(deformer);
             deformer->Destroy();
         }
@@ -217,14 +210,12 @@ namespace EMotionFX
 
 
     // enabled or disable all controllers of a given type
-    uint32 MeshDeformerStack::EnableAllDeformersByType(uint32 deformerTypeID, bool enabled)
+    size_t MeshDeformerStack::EnableAllDeformersByType(uint32 deformerTypeID, bool enabled)
     {
-        uint32 numChanged = 0;
-        const uint32 numDeformers = mDeformers.GetLength();
-        for (uint32 a = 0; a < numDeformers; ++a)
+        size_t numChanged = 0;
+        for (MeshDeformer* deformer : m_deformers)
         {
-            MeshDeformer* deformer = mDeformers[a];
-            if (deformer->GetType() == deformerTypeID)
+             if (deformer->GetType() == deformerTypeID)
             {
                 deformer->SetIsEnabled(enabled);
                 numChanged++;
@@ -238,44 +229,20 @@ namespace EMotionFX
     // check if the stack contains a deformer of a specified type
     bool MeshDeformerStack::CheckIfHasDeformerOfType(uint32 deformerTypeID) const
     {
-        const uint32 numDeformers = mDeformers.GetLength();
-        for (uint32 a = 0; a < numDeformers; ++a)
+        return AZStd::any_of(begin(m_deformers), end(m_deformers), [deformerTypeID](const MeshDeformer* deformer)
         {
-            if (mDeformers[a]->GetType() == deformerTypeID)
-            {
-                return true;
-            }
-        }
-
-        return false;
+            return deformer->GetType() == deformerTypeID;
+        });
     }
 
 
     // find a deformer by type ID
-    MeshDeformer* MeshDeformerStack::FindDeformerByType(uint32 deformerTypeID, uint32 occurrence) const
+    MeshDeformer* MeshDeformerStack::FindDeformerByType(uint32 deformerTypeID, size_t occurrence) const
     {
-        uint32 count = 0;
-
-        // for all deformers
-        const uint32 numDeformers = mDeformers.GetLength();
-        for (uint32 a = 0; a < numDeformers; ++a)
+        const auto foundDeformer = AZStd::find_if(begin(m_deformers), end(m_deformers), [deformerTypeID, iter = occurrence](const MeshDeformer* deformer) mutable
         {
-            // if this is a deformer of the type we search for
-            if (mDeformers[a]->GetType() == deformerTypeID)
-            {
-                // if its the one we want
-                if (count == occurrence)
-                {
-                    return mDeformers[a];
-                }
-                else
-                {
-                    count++;
-                }
-            }
-        }
-
-        // none found
-        return nullptr;
+            return deformer->GetType() == deformerTypeID && iter-- == 0;
+        });
+        return foundDeformer != end(m_deformers) ? *foundDeformer : nullptr;
     }
 } // namespace EMotionFX

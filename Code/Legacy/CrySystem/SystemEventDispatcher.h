@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,7 @@
 
 #include <ISystem.h>
 #include <CryListenerSet.h>
+#include <MultiThread_Containers.h>
 
 class CSystemEventDispatcher
     : public ISystemEventDispatcher
@@ -45,7 +47,7 @@ private:
 
     typedef CryMT::queue<SEventParams> TSystemEventQueue;
     TSystemEventQueue m_systemEventQueue;
-    CryCriticalSection m_listenerRegistrationLock;
+    AZStd::recursive_mutex m_listenerRegistrationLock;
 };
 
 #endif // CRYINCLUDE_CRYSYSTEM_SYSTEMEVENTDISPATCHER_H

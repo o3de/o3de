@@ -39,6 +39,16 @@ Follow cmake instructions to configure your project, for example:
       ```
       $ python\python.cmd debug Gems\AWSCore\Code\Tools\ResourceMappingTool\resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>\bin\debug\AWSCoreEditorQtBin
       ```
+   * Linux
+      * release mode
+      ```
+      $ python/python.sh Gems/AWSCore/Code/Tools/ResourceMappingTool/resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>/bin/profile/AWSCoreEditorQtBin
+      ```
+      * debug mode
+      ```
+      $ python/python.sh Gems/AWSCore/Code/Tools/ResourceMappingTool/resource_mapping_tool.py --binaries_path <PATH_TO_BUILD_FOLDER>/bin/debug/AWSCoreEditorQtBin
+      ```
+      
 * Note - Editor is integrated with the same engine python environment to launch Resource Mapping Tool. If it is failed to launch the tool
 in Editor, please follow above steps to make sure expected scripts/binaries are present.
 
@@ -89,3 +99,13 @@ you can create the virtualenv manually.
    ```
    $ python3 resource_mapping_tool.py
    ```
+## Tool Arguments
+* `--binaries-path` **[Optional]** Path to QT Binaries necessary for PySide,
+                    required if launching tool with engine python environment.
+* `--config-path`   **[Optional]** Path to resource mapping config directory,
+                    if not provided tool will use current directory.
+* `--debug`         **[Optional]** Execute on debug mode to enable DEBUG logging level.
+* `--log-path`      **[Optional]** Path to resource mapping tool logging directory,
+                    if not provided tool will store logging under tool source code directory.
+* `--profile`       **[Optional]** Named AWS profile to use for querying AWS resources,
+                    if not provided tool will use `default` aws profile.

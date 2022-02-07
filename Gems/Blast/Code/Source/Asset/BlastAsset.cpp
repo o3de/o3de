@@ -1,13 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "StdAfx.h"
-
 #include <Asset/BlastAsset.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/parallel/lock.h>
 #include <Blast/BlastSystemBus.h>
 #include <NvBlastExtAssetUtils.h>
@@ -27,6 +27,17 @@ namespace Blast
         , m_bondHealthMax(0)
     {
     }
+
+    void BlastAsset::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<BlastAsset, AZ::Data::AssetData>()
+                ->Version(0)
+                ;
+        }
+    }
+
 
     bool BlastAsset::LoadFromBuffer(void* buffer, size_t bytesSize)
     {

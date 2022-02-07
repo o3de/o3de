@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -79,7 +80,7 @@ namespace AzFramework
     {
         using namespace AZ::IO;
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(request, "PrepareRequest was provided a null request.");
 
         if (AZStd::holds_alternative<FileRequest::ReadRequestData>(request->GetCommand()))
@@ -277,10 +278,10 @@ namespace AzFramework
     {
         using namespace AZ::IO;
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
             
         auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
-        AZ_Assert(data, "Request doing reading in the RemoteStorageDrive didn't contain read data.")
+        AZ_Assert(data, "Request doing reading in the RemoteStorageDrive didn't contain read data.");
 
         HandleType file = InvalidHandle;
 
@@ -423,7 +424,7 @@ namespace AzFramework
     {
         using namespace AZ::IO;
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileMetaDataTimeAverage);
 
         AZ::u64 fileSize = 0;

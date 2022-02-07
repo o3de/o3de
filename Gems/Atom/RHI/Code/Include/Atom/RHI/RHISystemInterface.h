@@ -1,16 +1,21 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/EBus/EBus.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
+#include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
+
+AZ_DECLARE_BUDGET(RHI);
 
 namespace AZ
 {
@@ -22,7 +27,6 @@ namespace AZ
         class PipelineStateCache;
         class PlatformLimitsDescriptor;
         class RayTracingShaderTable;
-        struct CpuTimingStatistics;
         struct FrameSchedulerCompileRequest;
         struct TransientAttachmentStatistics;
         struct TransientAttachmentPoolDescriptor;
@@ -50,9 +54,11 @@ namespace AZ
 
             virtual void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) = 0;
 
-            virtual const RHI::CpuTimingStatistics* GetCpuTimingStatistics() const = 0;
+            virtual double GetCpuFrameTime() const = 0;
 
             virtual const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const = 0;
+
+            virtual const RHI::MemoryStatistics* GetMemoryStatistics() const = 0;
 
             virtual const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
 

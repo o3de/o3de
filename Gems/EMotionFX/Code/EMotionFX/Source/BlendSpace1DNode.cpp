@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -80,7 +81,7 @@ namespace EMotionFX
 
     void BlendSpace1DNode::UniqueData::Update()
     {
-        BlendSpace1DNode* blendSpaceNode = azdynamic_cast<BlendSpace1DNode*>(mObject);
+        BlendSpace1DNode* blendSpaceNode = azdynamic_cast<BlendSpace1DNode*>(m_object);
         AZ_Assert(blendSpaceNode, "Unique data linked to incorrect node type.");
 
         blendSpaceNode->UpdateMotionInfos(this);
@@ -165,13 +166,15 @@ namespace EMotionFX
 
     void BlendSpace1DNode::Output(AnimGraphInstance* animGraphInstance)
     {
+        AZ_PROFILE_SCOPE(Animation, "BlendSpace1DNode::Output");
+
         if (!AnimGraphInstanceExists(animGraphInstance))
         {
             return;
         }
 
         // If the node is disabled, simply output a bind pose.
-        if (mDisabled)
+        if (m_disabled)
         {
             SetBindPoseAtOutput(animGraphInstance);
             return;
@@ -245,7 +248,7 @@ namespace EMotionFX
 
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -261,7 +264,7 @@ namespace EMotionFX
         DoTopDownUpdate(animGraphInstance, m_syncMode, uniqueData->m_leaderMotionIdx,
             uniqueData->m_motionInfos, uniqueData->m_allMotionsHaveSyncTracks);
 
-        EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).mConnection;
+        EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).m_connection;
         if (paramConnection)
         {
             AnimGraphNode* paramSrcNode = paramConnection->GetSourceNode();
@@ -275,9 +278,11 @@ namespace EMotionFX
 
     void BlendSpace1DNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
-        if (!mDisabled)
+        AZ_PROFILE_SCOPE(Animation, "BlendSpace1DNode::Update");
+
+        if (!m_disabled)
         {
-            EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).mConnection;
+            EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).m_connection;
             if (paramConnection)
             {
                 UpdateIncomingNode(animGraphInstance, paramConnection->GetSourceNode(), timePassedInSeconds);
@@ -290,7 +295,7 @@ namespace EMotionFX
         AZ_Assert(uniqueData, "UniqueData not found for BlendSpace1DNode");
         uniqueData->Clear();
 
-        if (mDisabled)
+        if (m_disabled)
         {
             return;
         }
@@ -330,7 +335,7 @@ namespace EMotionFX
 
         UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
 
-        if (mDisabled)
+        if (m_disabled)
         {
             RequestRefDatas(animGraphInstance);
             AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
@@ -339,7 +344,7 @@ namespace EMotionFX
             return;
         }
 
-        EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).mConnection;
+        EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).m_connection;
         if (paramConnection)
         {
             paramConnection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
@@ -409,7 +414,7 @@ namespace EMotionFX
 
             MotionInstance* motionInstance = motionInstancePool.RequestNew(motion, actorInstance);
             motionInstance->InitFromPlayBackInfo(playInfo, true);
-            motionInstance->SetRetargetingEnabled(animGraphInstance->GetRetargetingEnabled() && playInfo.mRetarget);
+            motionInstance->SetRetargetingEnabled(animGraphInstance->GetRetargetingEnabled() && playInfo.m_retarget);
             motionInstance->UnPause();
             motionInstance->SetIsActive(true);
             motionInstance->SetWeight(1.0f, 0.0f);
@@ -433,7 +438,7 @@ namespace EMotionFX
 
     bool BlendSpace1DNode::GetIsInPlace(AnimGraphInstance* animGraphInstance) const
     {
-        EMotionFX::BlendTreeConnection* inPlaceConnection = GetInputPort(INPUTPORT_INPLACE).mConnection;
+        EMotionFX::BlendTreeConnection* inPlaceConnection = GetInputPort(INPUTPORT_INPLACE).m_connection;
         if (inPlaceConnection)
         {
             return GetInputNumberAsBool(animGraphInstance, INPUTPORT_INPLACE);
@@ -583,7 +588,7 @@ namespace EMotionFX
     void BlendSpace1DNode::SetMotions(const AZStd::vector<BlendSpaceMotion>& motions)
     {
         m_motions = motions;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -637,7 +642,7 @@ namespace EMotionFX
         }
         else
         {
-            EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).mConnection;
+            EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).m_connection;
 
             if (GetEMotionFX().GetIsInEditorMode())
             {
@@ -753,7 +758,7 @@ namespace EMotionFX
     void BlendSpace1DNode::SetCalculationMethod(ECalculationMethod calculationMethod)
     {
         m_calculationMethod = calculationMethod;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -769,7 +774,7 @@ namespace EMotionFX
     void BlendSpace1DNode::SetSyncLeaderMotionId(const AZStd::string& syncLeaderMotionId)
     {
         m_syncLeaderMotionId = syncLeaderMotionId;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -785,7 +790,7 @@ namespace EMotionFX
     void BlendSpace1DNode::SetEvaluatorType(const AZ::TypeId& evaluatorType)
     {
         m_evaluatorType = evaluatorType;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

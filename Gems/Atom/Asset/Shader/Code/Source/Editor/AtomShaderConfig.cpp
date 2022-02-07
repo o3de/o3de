@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,7 +12,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 
 namespace AZ
@@ -20,7 +21,7 @@ namespace AZ
     {
         namespace AtomShaderConfig
         {
-            static constexpr char AtomShaderConfigName[] = "AtomShaderConfig";
+            [[maybe_unused]] static constexpr char AtomShaderConfigName[] = "AtomShaderConfig";
 
             bool MutateToFirstAbsoluteFolderThatExists(AZStd::string& relativeFolder, AZStd::vector<AZStd::string>& watchFolders)
             {

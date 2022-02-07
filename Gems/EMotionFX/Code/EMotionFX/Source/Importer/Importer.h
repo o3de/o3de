@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,7 @@
 #pragma once
 
 #include "../EMotionFXConfig.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Endian.h>
 #include <EMotionFX/Source/BaseObject.h>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -72,26 +73,26 @@ namespace EMotionFX
          */
         struct EMFX_API ActorSettings
         {
-            bool mLoadLimits = true;                               /**< Set to false if you wish to disable loading of joint limits. */
-            bool mLoadSkeletalLODs = true;                         /**< Set to false if you wish to disable loading of skeletal LOD levels. */
-            bool mLoadMorphTargets = true;                         /**< Set to false if you wish to disable loading any morph targets. */
-            bool mDualQuatSkinning = false;                        /**< Set to true  if you wish to enable software skinning using dual quaternions. */
-            bool mMakeGeomLODsCompatibleWithSkeletalLODs = false;  /**< Set to true if you wish to disable the process that makes sure no skinning influences are mapped to disabled bones. Default is false. */
-            bool mUnitTypeConvert = true;                          /**< Set to false to disable automatic unit type conversion (between cm, meters, etc). On default this is enabled. */
-            bool mLoadSimulatedObjects = true;                     /**< Set to false if you wish to disable loading of simulated objects. */
-            bool mOptimizeForServer = false;                       /**< Set to true if you witsh to optimize this actor to be used on server. */
-            uint32 mThreadIndex = 0;
-            MCore::Array<uint32>    mChunkIDsToIgnore;      /**< Add chunk ID's to this array. Chunks with these ID's will not be processed. */
-            MCore::Array<uint32>    mLayerIDsToIgnore;      /**< Add vertex attribute layer ID's to ignore. */
+            bool m_loadLimits = true;                               /**< Set to false if you wish to disable loading of joint limits. */
+            bool m_loadSkeletalLoDs = true;                         /**< Set to false if you wish to disable loading of skeletal LOD levels. */
+            bool m_loadMorphTargets = true;                         /**< Set to false if you wish to disable loading any morph targets. */
+            bool m_dualQuatSkinning = false;                        /**< Set to true  if you wish to enable software skinning using dual quaternions. */
+            bool m_makeGeomLoDsCompatibleWithSkeletalLoDs = false;  /**< Set to true if you wish to disable the process that makes sure no skinning influences are mapped to disabled bones. Default is false. */
+            bool m_unitTypeConvert = true;                          /**< Set to false to disable automatic unit type conversion (between cm, meters, etc). On default this is enabled. */
+            bool m_loadSimulatedObjects = true;                     /**< Set to false if you wish to disable loading of simulated objects. */
+            bool m_optimizeForServer = false;                       /**< Set to true if you witsh to optimize this actor to be used on server. */
+            uint32 m_threadIndex = 0;
+            AZStd::vector<uint32>    m_chunkIDsToIgnore;      /**< Add chunk ID's to this array. Chunks with these ID's will not be processed. */
+            AZStd::vector<uint32>    m_layerIDsToIgnore;      /**< Add vertex attribute layer ID's to ignore. */
 
             /**
              * If the actor need to be optimized for server, will overwrite a few other actor settings.
              */
             void OptimizeForServer()
             {
-                mLoadSkeletalLODs = false;
-                mLoadMorphTargets = false;
-                mLoadSimulatedObjects = false;
+                m_loadSkeletalLoDs = false;
+                m_loadMorphTargets = false;
+                m_loadSimulatedObjects = false;
             }
         };
 
@@ -101,12 +102,11 @@ namespace EMotionFX
          */
         struct EMFX_API MotionSettings
         {
-            bool mForceLoading = false;       /**< Set to true in case you want to load the motion even if a motion with the given filename is already inside the motion manager. */
-            bool mLoadMotionEvents = true;    /**< Set to false if you wish to disable loading of motion events. */
-            bool mUnitTypeConvert = true;     /**< Set to false to disable automatic unit type conversion (between cm, meters, etc). On default this is enabled. */
-            MCore::Array<uint32> mChunkIDsToIgnore;  /**< Add the ID's of the chunks you wish to ignore. */
+            bool m_forceLoading = false;       /**< Set to true in case you want to load the motion even if a motion with the given filename is already inside the motion manager. */
+            bool m_loadMotionEvents = true;    /**< Set to false if you wish to disable loading of motion events. */
+            bool m_unitTypeConvert = true;     /**< Set to false to disable automatic unit type conversion (between cm, meters, etc). On default this is enabled. */
+            AZStd::vector<uint32> m_chunkIDsToIgnore;  /**< Add the ID's of the chunks you wish to ignore. */
         };
-
 
         /**
          * The motion set import options.
@@ -114,10 +114,8 @@ namespace EMotionFX
          */
         struct EMFX_API MotionSetSettings
         {
-            bool mForceLoading = false;         /**< Set to true in case you want to load the motion set even if a motion set with the given filename is already inside the motion manager. */
             bool m_isOwnedByRuntime = false;
         };
-
 
         /**
          * The node map import options.
@@ -125,36 +123,21 @@ namespace EMotionFX
          */
         struct EMFX_API NodeMapSettings
         {
-            bool mAutoLoadSourceActor = true;   /**< Should we automatically try to load the source actor? (default=true) */
-            bool mLoadNodes = true;             /**< Add nodes to the map? (default=true) */
+            bool m_autoLoadSourceActor = true;   /**< Should we automatically try to load the source actor? (default=true) */
+            bool m_loadNodes = true;             /**< Add nodes to the map? (default=true) */
         };
-
-
-        /**
-         * The anim graph import settings.
-         */
-        struct EMFX_API AnimGraphSettings
-        {
-            bool mForceLoading = false;              /**< Set to true in case you want to load the anim graph even if an anim graph with the given filename is already inside the anim graph manager. */
-            bool mDisableNodeVisualization = true;  /**< Force disabling of node visualization code execution inside the anim graph nodes? */
-        };
-
 
         struct EMFX_API ImportParameters
         {
-            Actor*                              mActor = nullptr;
-            Motion*                             mMotion = nullptr;
-            MotionSet*                          mMotionSet = nullptr;
-            Importer::ActorSettings*            mActorSettings = nullptr;
-            Importer::MotionSettings*           mMotionSettings = nullptr;
-            MCore::Array<SharedData*>*          mSharedData = nullptr;
-            MCore::Endian::EEndianType          mEndianType = MCore::Endian::ENDIAN_LITTLE;
+            Actor*                              m_actor = nullptr;
+            Motion*                             m_motion = nullptr;
+            Importer::ActorSettings*            m_actorSettings = nullptr;
+            Importer::MotionSettings*           m_motionSettings = nullptr;
+            AZStd::vector<SharedData*>*          m_sharedData = nullptr;
+            MCore::Endian::EEndianType          m_endianType = MCore::Endian::ENDIAN_LITTLE;
 
-            AnimGraph*                          mAnimGraph = nullptr;
-            Importer::AnimGraphSettings*        mAnimGraphSettings = nullptr;
-
-            NodeMap*                            mNodeMap = nullptr;
-            Importer::NodeMapSettings*          mNodeMapSettings = nullptr;
+            NodeMap*                            m_nodeMap = nullptr;
+            Importer::NodeMapSettings*          m_nodeMapSettings = nullptr;
             bool                                m_isOwnedByRuntime = false;
             bool                                m_additiveMotion = false;
         };
@@ -176,7 +159,7 @@ namespace EMotionFX
 
         struct FileInfo
         {
-            MCore::Endian::EEndianType  mEndianType;
+            MCore::Endian::EEndianType  m_endianType;
         };
 
         //-------------------------------------------------------------------------------------------------
@@ -250,41 +233,22 @@ namespace EMotionFX
         //-------------------------------------------------------------------------------------------------
 
         /**
-         * Load a anim graph file from a given file object.
-         * @param f The file object.
-         * @param settings The importer settings, or nullptr to use default settings.
-         * @result The anim graph object, or nullptr when failed.
-         */
-        AnimGraph* LoadAnimGraph(MCore::File* f, AnimGraphSettings* settings = nullptr);
-
-        /**
          * Load a anim graph file by filename.
          * @param filename The filename to load from.
-         * @param settings The anim graph importer settings, or nullptr to use default settings.
          * @param loadFilter The filter descriptor for loading anim graph from file
          * @result The anim graph object, or nullptr in case loading failed.
          */
-        AnimGraph* LoadAnimGraph(AZStd::string, AnimGraphSettings* settings = nullptr, const AZ::ObjectStream::FilterDescriptor& loadFilter = AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
+        AnimGraph* LoadAnimGraph(AZStd::string, const AZ::ObjectStream::FilterDescriptor& loadFilter = AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
 
         /**
          * Load a anim graph file from a memory location.
          * @param memoryStart The start address of the file in memory.
          * @param lengthInBytes The length of the file, in bytes.
-         * @param settings The settings to use during loading, or nullptr when you want to use default settings, which would load everything.
          * @result The anim graph object, or nullptr in case loading failed.
          */
-        AnimGraph* LoadAnimGraph(uint8* memoryStart, size_t lengthInBytes, AnimGraphSettings* settings = nullptr);
+        AnimGraph* LoadAnimGraph(uint8* memoryStart, size_t lengthInBytes);
 
         //-------------------------------------------------------------------------------------------------
-
-        /**
-         * Load a motion set from a given file.
-         * A file does not have to be stored on disk, but can also be in memory or in an archive or  on some network stream. Anything is possible.
-         * @param f The file to load the motion set from (after load, the file will be closed).
-         * @param settings The motion set importer settings, or nullptr to use default settings.
-         * @result The motion set object, or nullptr in case loading failed.
-         */
-        MotionSet* LoadMotionSet(MCore::File* f, MotionSetSettings* settings = nullptr);
 
         /**
          * Loads a motion set from a file on disk.
@@ -348,7 +312,7 @@ namespace EMotionFX
          * @param type The shared data ID to search for.
          * @return A pointer to the shared data object, or nullptr when no shared data of this type has been found.
          */
-        static SharedData* FindSharedData(MCore::Array<SharedData*>* sharedDataArray, uint32 type);
+        static SharedData* FindSharedData(AZStd::vector<SharedData*>* sharedDataArray, uint32 type);
 
         /**
          * Enable or disable logging.
@@ -391,9 +355,9 @@ namespace EMotionFX
 
 
     private:
-        MCore::Array<ChunkProcessor*>       mChunkProcessors;   /**< The registered chunk processors. */
-        bool                                mLoggingActive;     /**< Contains if the importer should perform logging or not or not. */
-        bool                                mLogDetails;        /**< Contains if the importer should perform detail-logging or not. */
+        AZStd::vector<ChunkProcessor*>       m_chunkProcessors;   /**< The registered chunk processors. */
+        bool                                m_loggingActive;     /**< Contains if the importer should perform logging or not or not. */
+        bool                                m_logDetails;        /**< Contains if the importer should perform detail-logging or not. */
 
         /**
          * The constructor.
@@ -430,30 +394,6 @@ namespace EMotionFX
         bool CheckIfIsValidMotionFile(MCore::File* f, MCore::Endian::EEndianType* outEndianType) const;
 
         /**
-         * Verify if the given file is a valid motion set file that can be processed by the importer.
-         * Please note that the specified must already been opened and must also be pointing to the location where the
-         * XPM file header will be stored (the start of the file). The file will not be closed after this method!
-         * The endian type of the file will be written inside the outEndianType parameter.
-         * Also note that the file position (read position / cursor) will point after the header after this function has been executed.
-         * @param f The file to perform the check on.
-         * @param outEndianType The value that will contain the endian type used by the file.
-         * @result Returns true when the file is a valid actor file that can be processed by the importer. Otherwise false is returned.
-         */
-        bool CheckIfIsValidMotionSetFile(MCore::File* f, MCore::Endian::EEndianType* outEndianType) const;
-
-        /**
-         * Verify if the given file is a valid anim graph file that can be processed by the importer.
-         * Please note that the specified must already been opened and must also be pointing to the location where the
-         * XPM file header will be stored (the start of the file). The file will not be closed after this method!
-         * The endian type of the file will be written inside the outEndianType parameter.
-         * Also note that the file position (read position / cursor) will point after the header after this function has been executed.
-         * @param f The file to perform the check on.
-         * @param outEndianType The value that will contain the endian type used by the file.
-         * @result Returns true when the file is a valid actor file that can be processed by the importer. Otherwise false is returned.
-         */
-        bool CheckIfIsValidAnimGraphFile(MCore::File* f, MCore::Endian::EEndianType* outEndianType) const;
-
-        /**
          * Verify if the given file is a valid node map file that can be processed by the importer.
          * Please note that the specified must already been opened and must also be pointing to the location where the
          * XPM file header will be stored (the start of the file). The file will not be closed after this method!
@@ -474,19 +414,19 @@ namespace EMotionFX
          * @param sharedData The array which holds the shared data objects.
          * @param data A pointer to your shared data object.
          */
-        static void AddSharedData(MCore::Array<SharedData*>& sharedData, SharedData* data);
+        static void AddSharedData(AZStd::vector<SharedData*>& sharedData, SharedData* data);
 
         /*
          * Precreate the standard shared data objects.
          * @param sharedData The shared data array to work on.
          */
-        static void PrepareSharedData(MCore::Array<SharedData*>& sharedData);
+        static void PrepareSharedData(AZStd::vector<SharedData*>& sharedData);
 
         /**
          * Reset all shared data objects.
          * Resetting these objects will clear/empty their internal data.
          */
-        static void ResetSharedData(MCore::Array<SharedData*>& sharedData);
+        static void ResetSharedData(AZStd::vector<SharedData*>& sharedData);
 
         /**
          * Find the chunk processor which has a given ID and version number.

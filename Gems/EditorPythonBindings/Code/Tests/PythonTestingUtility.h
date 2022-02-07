@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -80,7 +81,6 @@ namespace UnitTest
             }
 
             m_fileIOHelper = AZStd::make_unique<FileIOHelper>();
-            m_fileIOHelper->m_fileIO.SetAlias("@devroot@", m_engineRoot.c_str());
             m_fileIOHelper->m_fileIO.SetAlias("@engroot@", m_engineRoot.c_str());
 
             AzFramework::Application::Descriptor appDesc;
@@ -135,10 +135,6 @@ namespace UnitTest
         void NormalizePath(AZStd::string& ) override {}
         void NormalizePathKeepCase(AZStd::string& ) override {}
         void CalculateBranchTokenForEngineRoot(AZStd::string& ) const override {}
-        // Gets the engine root path for testing
-        const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
-        // Retrieves the app root path for testing
-        const char* GetAppRoot() const override { return m_engineRoot.c_str(); }
 
         AZ::ComponentApplication m_app;
         AZStd::unique_ptr<FileIOHelper> m_fileIOHelper;

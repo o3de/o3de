@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -85,6 +86,13 @@ namespace AZ
 
         PhysicalDeviceDriverValidator::ValidationResult PhysicalDeviceDriverValidator::ValidateDriverVersion(const PhysicalDeviceDescriptor& descriptor) const
         {
+            // [GFX TODO] Add driver info for other platforms besides Windows. Currently, avoid spamming warnings.
+            // ATOM-14967 [RHI][Metal] - Address driver version validator for Mac
+            if (m_driverInfo.size() == 0)
+            {
+                return ValidationResult::MissingInfo;
+            }
+
             auto iter = m_driverInfo.find(descriptor.m_vendorId);
 
             if (iter == m_driverInfo.end())

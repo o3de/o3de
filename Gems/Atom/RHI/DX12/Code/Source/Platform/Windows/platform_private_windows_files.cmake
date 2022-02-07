@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -21,7 +22,9 @@ set(FILES
     RHI/DX12_Windows.cpp
     RHI/DX12_Windows.h
     RHI/SystemComponent_Windows.cpp
+    RHI/SwapChain_Platform.h
     RHI/SwapChain_Windows.cpp
+    RHI/SwapChain_Windows.h
     RHI/NsightAftermathGpuCrashTracker_Windows.cpp
     RHI/NsightAftermathGpuCrashTracker_Windows.h
     RHI/NsightAftermath_Windows.cpp

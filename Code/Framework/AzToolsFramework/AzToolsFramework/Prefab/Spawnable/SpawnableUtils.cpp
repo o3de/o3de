@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,7 +30,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
     {
         Instance instance;
         if (Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(instance, prefabDom, referencedAssets,
-            Prefab::PrefabDomUtils::LoadInstanceFlags::AssignRandomEntityId)) // Always assign random entity ids because the spawnable is
+            Prefab::PrefabDomUtils::LoadFlags::AssignRandomEntityId)) // Always assign random entity ids because the spawnable is
                                                                               // going to be used to create clones of the entities.
         {
             AzFramework::Spawnable::EntityList& entities = spawnable.GetEntities();

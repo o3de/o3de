@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,11 +12,9 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/XML/rapidxml.h>
 
 #include <ACETypes.h>
-
-#include <platform.h>
-#include <IXml.h>
 
 namespace AudioControls
 {
@@ -116,14 +115,14 @@ namespace AudioControls
         //! @param node XML node where the connection is defined.
         //! @param atlControlType The type of the ATL control you are connecting to.
         //! @return A pointer to the newly created connection.
-        virtual TConnectionPtr CreateConnectionFromXMLNode(XmlNodeRef node, EACEControlType atlControlType) = 0;
+        virtual TConnectionPtr CreateConnectionFromXMLNode(AZ::rapidxml::xml_node<char>* node, EACEControlType atlControlType) = 0;
 
         //! When serializing connections between controls this function will be called once per connection to serialize its properties.
         //! This function should be in sync with CreateConnectionToControl as whatever it's written here will have to be read there.
         //! @param connection Connection to serialize.
         //! @param atlControlType Type of the ATL control that has this connection.
         //! @return XML node with the connection serialized.
-        virtual XmlNodeRef CreateXMLNodeFromConnection(const TConnectionPtr connection, const EACEControlType atlControlType) = 0;
+        virtual AZ::rapidxml::xml_node<char>* CreateXMLNodeFromConnection(const TConnectionPtr connection, const EACEControlType atlControlType) = 0;
 
         //! Whenever a connection is removed from an ATL control this function should be called.
         //! To keep the system informed of which controls have been connected and which ones haven't.

@@ -1,12 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
-
 #include "EditorCommon.h"
+
+#include "UiCanvasComponent.h"
 
 #include "EditorDefs.h"
 #include "Settings.h"
@@ -219,6 +220,7 @@ ViewportWidget::ViewportWidget(EditorWindow* parent)
     InitUiRenderer();
 
     SetupShortcuts();
+    installEventFilter(m_editorWindow);
 
     // Setup a timer for the maximum refresh rate we want.
     // Refresh is actually triggered by interaction events and by the IdleUpdate. This avoids the UI
@@ -246,6 +248,7 @@ ViewportWidget::ViewportWidget(EditorWindow* parent)
 
     FontNotificationBus::Handler::BusConnect();
     AZ::TickBus::Handler::BusConnect();
+    AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(GetCurrentContextName());
 }
 
 ViewportWidget::~ViewportWidget()
@@ -253,6 +256,10 @@ ViewportWidget::~ViewportWidget()
     AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
     FontNotificationBus::Handler::BusDisconnect();
     AZ::TickBus::Handler::BusDisconnect();
+    LyShinePassDataRequestBus::Handler::BusDisconnect();
+    AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
+
+    removeEventFilter(m_editorWindow);
 
     m_uiRenderer.reset();
 
@@ -273,6 +280,8 @@ void ViewportWidget::InitUiRenderer()
     lyShine->SetUiRendererForEditor(m_uiRenderer);
 
     m_draw2d = AZStd::make_shared<CDraw2d>(GetViewportContext());
+
+    LyShinePassDataRequestBus::Handler::BusConnect(GetViewportContext()->GetRenderScene()->GetId());
 }
 
 ViewportInteraction* ViewportWidget::GetViewportInteraction()
@@ -489,29 +498,43 @@ void ViewportWidget::EnableCanvasRender()
 
 void ViewportWidget::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
 {
+    // Update
+    UiEditorMode editorMode = m_editorWindow->GetEditorMode();
+    if (editorMode == UiEditorMode::Edit)
+    {
+        UpdateEditMode(deltaTime);
+    }
+    else // if (editorMode == UiEditorMode::Preview)
+    {
+        UpdatePreviewMode(deltaTime);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+int ViewportWidget::GetTickOrder()
+{
+    return AZ::TICK_PRE_RENDER;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void ViewportWidget::OnRenderTick()
+{
     if (!m_uiRenderer->IsReady() || !m_canvasRenderIsEnabled)
     {
         return;
     }
 
-#ifdef LYSHINE_ATOM_TODO
-    gEnv->pRenderer->SetSrgbWrite(true);
-#endif
-
     const float dpiScale = QtHelpers::GetHighDpiScaleFactor(*this);
     ViewportIcon::SetDpiScaleFactor(dpiScale);
-
-    // Set up to render a frame to this viewport's window
-    GetViewportContext()->RenderTick();
 
     UiEditorMode editorMode = m_editorWindow->GetEditorMode();
     if (editorMode == UiEditorMode::Edit)
     {
-        RenderEditMode(deltaTime);
+        RenderEditMode();
     }
     else // if (editorMode == UiEditorMode::Preview)
     {
-        RenderPreviewMode(deltaTime);
+        RenderPreviewMode();
     }
 }
 
@@ -668,9 +691,9 @@ void ViewportWidget::wheelEvent(QWheelEvent* ev)
     Refresh();
 }
 
-bool ViewportWidget::event(QEvent* ev)
+bool ViewportWidget::eventFilter([[maybe_unused]] QObject* watched, QEvent* event)
 {
-    if (ev->type() == QEvent::ShortcutOverride)
+    if (event->type() == QEvent::ShortcutOverride)
     {
         // When a shortcut is matched, Qt's event processing sends out a shortcut override event
         // to allow other systems to override it. If it's not overridden, then the key events
@@ -678,40 +701,48 @@ bool ViewportWidget::event(QEvent* ev)
         // handler. In our case this causes a problem in preview mode for the Key_Delete event.
         // So, if we are preview mode avoid treating Key_Delete as a shortcut.
 
-        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(ev);
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         int key = keyEvent->key();
 
         // Override the space bar shortcut so that the key gets handled by the viewport's KeyPress/KeyRelease
         // events when the viewport has the focus. The space bar is set up as a shortcut in order to give the
         // viewport the focus and activate the space bar when another widget has the focus. Once the shortcut
         // is pressed and focus is given to the viewport, the viewport takes over handling the space bar via
-        // the KeyPress/KeyRelease events
-        if (key == Qt::Key_Space)
+        // the KeyPress/KeyRelease events.
+        // Also ignore nudge shortcuts in edit/preview mode so that the KeyPressEvent will be sent.
+        switch (key)
         {
-            ev->accept();
+        case Qt::Key_Space:
+        case Qt::Key_Up:
+        case Qt::Key_Down:
+        case Qt::Key_Left:
+        case Qt::Key_Right:
+        {
+            event->accept();
             return true;
+        }
+        default:
+        {
+            break;
+        }
         }
 
         UiEditorMode editorMode = m_editorWindow->GetEditorMode();
         if (editorMode == UiEditorMode::Preview)
         {
-            switch (key)
+            if (key == Qt::Key_Delete)
             {
-            case Qt::Key_Delete:
-                // Ignore nudge shortcuts in preview mode so that the KeyPressEvent will be sent
-            case Qt::Key_Up:
-            case Qt::Key_Down:
-            case Qt::Key_Left:
-            case Qt::Key_Right:
-            {
-                ev->accept();
+                event->accept();
                 return true;
             }
-            break;
-            };
         }
     }
-    
+
+    return false;
+}
+
+bool ViewportWidget::event(QEvent* ev)
+{
     bool result = RenderViewportWidget::event(ev);
     return result;
 }
@@ -722,8 +753,7 @@ void ViewportWidget::keyPressEvent(QKeyEvent* event)
     if (editorMode == UiEditorMode::Edit)
     {
         // in Edit mode just send input to ViewportInteraction
-        bool handled = m_viewportInteraction->KeyPressEvent(event);
-        if (!handled)
+        if (!m_viewportInteraction->KeyPressEvent(event))
         {
             RenderViewportWidget::keyPressEvent(event);
         }
@@ -885,23 +915,65 @@ void ViewportWidget::OnFontTextureUpdated([[maybe_unused]] IFFont* font)
     m_fontTextureHasChanged = true;
 }
 
+LyShine::AttachmentImagesAndDependencies ViewportWidget::GetRenderTargets()
+{
+    LyShine::AttachmentImagesAndDependencies canvasTargets;
+
+    AZ::EntityId canvasEntityId = m_editorWindow->GetCanvasForCurrentEditorMode();
+    if (canvasEntityId.IsValid())
+    {
+        AZ::Entity* canvasEntity = nullptr;
+        EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+        AZ_Assert(canvasEntity, "Canvas entity not found by ID");
+        if (canvasEntity)
+        {
+            UiCanvasComponent* canvasComponent = canvasEntity->FindComponent<UiCanvasComponent>();
+            AZ_Assert(canvasComponent, "Canvas entity has no canvas component");
+            if (canvasComponent)
+            {
+                canvasComponent->GetRenderTargets(canvasTargets);
+            }
+        }
+    }
+
+    return canvasTargets;
+}
+
 QPointF ViewportWidget::WidgetToViewport(const QPointF & point) const
 {
     return point * WidgetToViewportFactor();
 }
 
-void ViewportWidget::RenderEditMode(float deltaTime)
+void ViewportWidget::UpdateEditMode(float deltaTime)
 {
-    // sort keys for different layers
-    static const int64_t backgroundKey = -0x1000;
-    static const int64_t topLayerKey = 0x1000000;
-
     if (m_fontTextureHasChanged)
     {
         // A font texture has changed since we last rendered. Force a render graph update for each loaded canvas
         m_editorWindow->FontTextureHasChanged();
         m_fontTextureHasChanged = false;
     }
+
+    AZ::EntityId canvasEntityId = m_editorWindow->GetCanvas();
+    if (!canvasEntityId.IsValid())
+    {
+        return; // this can happen if a render happens during a restart
+    }
+
+    AZ::Vector2 canvasSize;
+    EBUS_EVENT_ID_RESULT(canvasSize, canvasEntityId, UiCanvasBus, GetCanvasSize);
+
+    // Set the target size of the canvas
+    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);
+
+    // Update this canvas (must be done after SetTargetCanvasSize)
+    EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, false);
+}
+
+void ViewportWidget::RenderEditMode()
+{
+    // sort keys for different layers
+    static const int64_t backgroundKey = -0x1000;
+    static const int64_t topLayerKey = 0x1000000;
 
     AZ::EntityId canvasEntityId = m_editorWindow->GetCanvas();
     if (!canvasEntityId.IsValid())
@@ -937,12 +1009,9 @@ void ViewportWidget::RenderEditMode(float deltaTime)
     // Set the target size of the canvas
     EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, false, canvasSize);
 
-    // Update this canvas (must be done after SetTargetCanvasSize)
-    EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, false);
-
     // Render this canvas
     QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
-    AZ::Vector2 viewportSize(scaledViewportSize.width(), scaledViewportSize.height());
+    AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
     EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, false, viewportSize);
 
     m_draw2d->SetSortKey(topLayerKey);
@@ -1038,11 +1107,8 @@ void ViewportWidget::RenderEditMode(float deltaTime)
     }
 }
 
-void ViewportWidget::RenderPreviewMode(float deltaTime)
+void ViewportWidget::UpdatePreviewMode(float deltaTime)
 {
-    // sort keys for different layers
-    static const int64_t backgroundKey = -0x1000;
-
     AZ::EntityId canvasEntityId = m_editorWindow->GetPreviewModeCanvas();
 
     if (m_fontTextureHasChanged)
@@ -1051,6 +1117,37 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
         m_editorWindow->FontTextureHasChanged();
         m_fontTextureHasChanged = false;
     }
+
+    if (canvasEntityId.IsValid())
+    {
+        QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
+        AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
+
+        // Get the canvas size
+        AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
+        if (canvasSize.GetX() == 0.0f && canvasSize.GetY() == 0.0f)
+        {
+            // special value of (0,0) means use the viewport size
+            canvasSize = viewportSize;
+        }
+
+        // Set the target size of the canvas
+        EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, true, canvasSize);
+
+        // Update this canvas (must be done after SetTargetCanvasSize)
+        EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, true);
+
+        // Execute events that have been queued during the canvas update
+        gEnv->pLyShine->ExecuteQueuedEvents();
+    }
+}
+
+void ViewportWidget::RenderPreviewMode()
+{
+    // sort keys for different layers
+    static const int64_t backgroundKey = -0x1000;
+
+    AZ::EntityId canvasEntityId = m_editorWindow->GetPreviewModeCanvas();
 
     // Rather than scaling to exactly fit we try to draw at one of these preset scale factors
     // to make it it bit more obvious that the canvas size is changing
@@ -1066,7 +1163,7 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
     if (canvasEntityId.IsValid())
     {
         QSize scaledViewportSize = QtHelpers::GetDpiScaledViewportSize(*this);
-        AZ::Vector2 viewportSize(scaledViewportSize.width(), scaledViewportSize.height());
+        AZ::Vector2 viewportSize(static_cast<float>(scaledViewportSize.width()), static_cast<float>(scaledViewportSize.height()));
 
         // Get the canvas size
         AZ::Vector2 canvasSize = m_editorWindow->GetPreviewCanvasSize();
@@ -1097,15 +1194,6 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
             }
         }
 
-        // Set the target size of the canvas
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetTargetCanvasSize, true, canvasSize);
-
-        // Update this canvas (must be done after SetTargetCanvasSize)
-        EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, UpdateCanvasInEditorViewport, deltaTime, true);
-
-        // Execute events that have been queued during the canvas update
-        gEnv->pLyShine->ExecuteQueuedEvents();
-
         // match scale to one of the predefined scales. If the scale is so small
         // that it is less than the smallest scale then leave it as it is
         for (int i = 0; i < AZ_ARRAY_SIZE(zoomScales); ++i)
@@ -1131,14 +1219,6 @@ void ViewportWidget::RenderPreviewMode(float deltaTime)
         AZ::Matrix4x4 canvasToViewportMatrix = AZ::Matrix4x4::CreateScale(scale3);
         canvasToViewportMatrix.SetTranslation(translation);
         EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, SetCanvasToViewportMatrix, canvasToViewportMatrix);
-
-#ifdef LYSHINE_ATOM_TODO // mask support with Atom
-        // clear the stencil buffer before rendering each canvas - required for masking
-        // NOTE: the FRT_CLEAR_IMMEDIATE is required since we will not be setting the render target
-        // We also clear the color to a mid grey so that we can see the bounds of the canvas
-        ColorF viewportBackgroundColor(0.5f, 0.5f, 0.5f, 0); // if clearing color we want to set alpha to zero also
-        gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR, viewportBackgroundColor);
-#endif
 
         m_draw2d->SetSortKey(backgroundKey);
 
@@ -1169,121 +1249,12 @@ void ViewportWidget::RenderViewportBackground()
 
     Draw2dHelper draw2d(m_draw2d.get());
     draw2d.SetImageColor(backgroundColor.GetAsVector3());
-    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), AZ::Vector2(viewportSize.width(), viewportSize.height()));
+    draw2d.DrawImage(image, AZ::Vector2(0.0f, 0.0f), AZ::Vector2(static_cast<float>(viewportSize.width()), static_cast<float>(viewportSize.height())));
 }
 
 void ViewportWidget::SetupShortcuts()
 {
     // Actions with shortcuts are created instead of direct shortcuts because the shortcut dispatcher only looks for matching actions
-
-    // Create nudge shortcuts that are active across the entire UI Editor window. Any widgets (such as the spin box widget) that
-    // handle the same keys and want the shortcut to be ignored need to handle that with a shortcut override event.
-    // In preview mode, the nudge shortcuts are ignored via the shortcut override event. KeyPressEvents are sent instead,
-    // and passed along to the canvas
-
-    // Nudge up
-    {
-        QAction* action = new QAction("Up", this);
-        action->setShortcut(QKeySequence(Qt::Key_Up));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Up, ViewportInteraction::NudgeSpeed::Slow);
-        });
-        addAction(action);
-    }
-
-    // Nudge up fast
-    {
-        QAction* action = new QAction("Up Fast", this);
-        action->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Up));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Up, ViewportInteraction::NudgeSpeed::Fast);
-        });
-        addAction(action);
-    }
-
-    // Nudge down
-    {
-        QAction* action = new QAction("Down", this);
-        action->setShortcut(QKeySequence(Qt::Key_Down));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Down, ViewportInteraction::NudgeSpeed::Slow);
-        });
-        addAction(action);
-    }
-
-    // Nudge down fast
-    {
-        QAction* action = new QAction("Down Fast", this);
-        action->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Down));       
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Down, ViewportInteraction::NudgeSpeed::Fast);
-        });
-        addAction(action);
-    }
-
-    // Nudge left
-    {
-        QAction* action = new QAction("Left", this);
-        action->setShortcut(QKeySequence(Qt::Key_Left));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Left, ViewportInteraction::NudgeSpeed::Slow);
-        });
-        addAction(action);
-    }
-
-    // Nudge left fast
-    {
-        QAction* action = new QAction("Left Fast", this);
-        action->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Left));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Left, ViewportInteraction::NudgeSpeed::Fast);
-        });
-        addAction(action);
-    }
-
-    // Nudge right
-    {
-        QAction* action = new QAction("Right", this);
-        action->setShortcut(QKeySequence(Qt::Key_Right));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Right, ViewportInteraction::NudgeSpeed::Slow);
-        });
-        addAction(action);
-    }
-
-    // Nudge right fast
-    {
-        QAction* action = new QAction("Right Fast", this);
-        action->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Right));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Right, ViewportInteraction::NudgeSpeed::Fast);
-        });
-        addAction(action);
-    }
 
     // Give the viewport focus and activate the space bar
     {

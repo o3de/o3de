@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,8 +57,10 @@ namespace EMotionFX
             ActorInstance* GetActorInstance() override { return m_actorInstance.get(); }
             bool GetRenderCharacter() const override;
             void SetRenderCharacter(bool enable) override;
+            bool GetRenderActorVisible() const override;
             size_t GetNumJoints() const override;
             SkinningMethod GetSkinningMethod() const override;
+            void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
 
             // EditorActorComponentRequestBus overrides ...
             const AZ::Data::AssetId& GetActorAssetId() override;
@@ -76,8 +79,6 @@ namespace EMotionFX
             // AZ::Data::AssetBus::Handler overrides ...
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
-            void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset);
 
             // BoundsRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
@@ -116,6 +117,7 @@ namespace EMotionFX
             AZ::Crc32 OnAttachmentTypeChanged();
             AZ::Crc32 OnAttachmentTargetChanged();
             AZ::Crc32 OnAttachmentTargetJointSelect();
+            void OnBBoxConfigChanged();
             bool AttachmentTargetVisibility();
             bool AttachmentTargetJointVisibility();
             AZStd::string AttachmentJointButtonText();
@@ -156,8 +158,9 @@ namespace EMotionFX
             AttachmentType                      m_attachmentType;           ///< Attachment type.
             AZ::EntityId                        m_attachmentTarget;         ///< Target entity to attach to, if any.
             AZStd::string                       m_attachmentJointName;      ///< Joint name on target to which to attach (if ActorAttachment).
-            AZ::u32                             m_attachmentJointIndex;
-            AZ::u32                             m_lodLevel;
+            size_t                              m_attachmentJointIndex;
+            size_t                              m_lodLevel;
+            ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
             // \todo attachmentTarget node nr
 

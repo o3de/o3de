@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="NetworkHierarchyRootComponent"
+    Namespace="Multiplayer"
+    OverrideComponent="true"
+    OverrideController="true"
+    OverrideInclude="Multiplayer/Components/NetworkHierarchyRootComponent.h"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <Include File="Multiplayer/NetworkInput/NetworkInputChild.h"/>
+  
+    <ComponentRelation Constraint="Required" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
+  
+    <NetworkInput Type="NetworkInputChildList" Name="ChildInputs" Init="" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true"  />
+  
+    <NetworkProperty Type="NetEntityId" Name="hierarchyRoot" Init="InvalidNetEntityId" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="false" IsPredictable="false" IsPublic="true" Container="Object" ExposeToEditor="false" ExposeToScript="false" GenerateEventBindings="true" />
+</Component>

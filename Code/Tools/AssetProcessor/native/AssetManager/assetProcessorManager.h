@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -206,6 +207,11 @@ namespace AssetProcessor
         //! or a job dependency and we can only resolve these dependencies once all the create jobs are completed.
         struct JobToProcessEntry
         {
+            bool operator<(const JobToProcessEntry& other)
+            {
+                return m_sourceFileInfo.m_pathRelativeToScanFolder < other.m_sourceFileInfo.m_pathRelativeToScanFolder;
+            }
+
             SourceFileInfo m_sourceFileInfo;
             AZStd::vector<JobDetails> m_jobsToAnalyze;
             // a vector of pairs of <builder which emitted it, the dependency>
@@ -434,8 +440,6 @@ namespace AssetProcessor
         AZStd::mutex m_sourceUUIDToSourceInfoMapMutex;
 
         QString m_normalizedCacheRootPath;
-        char m_absoluteDevFolderPath[AZ_MAX_PATH_LEN];
-        char m_absoluteDevGameFolderPath[AZ_MAX_PATH_LEN];
         QDir m_cacheRootDir;
         bool m_isCurrentlyScanning = false;
         bool m_quitRequested = false;

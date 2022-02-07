@@ -1,16 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
-#include <QString>
+#include <AzCore/Asset/AssetCommon.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvasEditor
 {
-    AZ::Data::AssetId ReadRecentAssetId();
-    void SetRecentAssetId(const AZ::Data::AssetId& assetId);
+    SourceHandle ReadRecentAssetId();
+    void SetRecentAssetId(SourceHandle assetId);
     void ClearRecentAssetId();
 }

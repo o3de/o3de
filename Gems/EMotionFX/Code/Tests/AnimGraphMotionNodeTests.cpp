@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -117,16 +118,16 @@ namespace EMotionFX
         }
 
     protected:
-        AZ::u32 m_l_handIndex = InvalidIndex32;
-        AZ::u32 m_l_loArmIndex = InvalidIndex32;
-        AZ::u32 m_l_loLegIndex = InvalidIndex32;
-        AZ::u32 m_l_ankleIndex = InvalidIndex32;
-        AZ::u32 m_r_handIndex = InvalidIndex32;
-        AZ::u32 m_r_loArmIndex = InvalidIndex32;
-        AZ::u32 m_r_loLegIndex = InvalidIndex32;
-        AZ::u32 m_r_ankleIndex = InvalidIndex32;
-        AZ::u32 m_jack_rootIndex = InvalidIndex32;
-        AZ::u32 m_bip01__pelvisIndex = InvalidIndex32;
+        size_t m_lHandIndex = InvalidIndex;
+        size_t m_lLoArmIndex = InvalidIndex;
+        size_t m_lLoLegIndex = InvalidIndex;
+        size_t m_lAnkleIndex = InvalidIndex;
+        size_t m_rHandIndex = InvalidIndex;
+        size_t m_rLoArmIndex = InvalidIndex;
+        size_t m_rLoLegIndex = InvalidIndex;
+        size_t m_rAnkleIndex = InvalidIndex;
+        size_t m_jackRootIndex = InvalidIndex;
+        size_t m_bip01PelvisIndex = InvalidIndex;
         AnimGraphMotionNode* m_motionNode = nullptr;
         BlendTree* m_blendTree = nullptr;
         BlendTreeFloatConstantNode* m_fltConstNode = nullptr;
@@ -146,16 +147,16 @@ namespace EMotionFX
 
         void SetupIndices()
         {
-            Node* rootNode = m_jackSkeleton->FindNodeAndIndexByName("jack_root", m_jack_rootIndex);
-            Node* pelvisNode = m_jackSkeleton->FindNodeAndIndexByName("Bip01__pelvis", m_bip01__pelvisIndex);
-            Node* lHandNode = m_jackSkeleton->FindNodeAndIndexByName("l_hand", m_l_handIndex);
-            Node* lLoArmNode = m_jackSkeleton->FindNodeAndIndexByName("l_loArm", m_l_loArmIndex);
-            Node* lLoLegNode = m_jackSkeleton->FindNodeAndIndexByName("l_loLeg", m_l_loLegIndex);
-            Node* lAnkleNode = m_jackSkeleton->FindNodeAndIndexByName("l_ankle", m_l_ankleIndex);
-            Node* rHandNode = m_jackSkeleton->FindNodeAndIndexByName("r_hand", m_r_handIndex);
-            Node* rLoArmNode = m_jackSkeleton->FindNodeAndIndexByName("r_loArm", m_r_loArmIndex);
-            Node* rLoLegNode = m_jackSkeleton->FindNodeAndIndexByName("r_loLeg", m_r_loLegIndex);
-            Node* rAnkleNode = m_jackSkeleton->FindNodeAndIndexByName("r_ankle", m_r_ankleIndex);
+            Node* rootNode = m_jackSkeleton->FindNodeAndIndexByName("jack_root", m_jackRootIndex);
+            Node* pelvisNode = m_jackSkeleton->FindNodeAndIndexByName("Bip01__pelvis", m_bip01PelvisIndex);
+            Node* lHandNode = m_jackSkeleton->FindNodeAndIndexByName("l_hand", m_lHandIndex);
+            Node* lLoArmNode = m_jackSkeleton->FindNodeAndIndexByName("l_loArm", m_lLoArmIndex);
+            Node* lLoLegNode = m_jackSkeleton->FindNodeAndIndexByName("l_loLeg", m_lLoLegIndex);
+            Node* lAnkleNode = m_jackSkeleton->FindNodeAndIndexByName("l_ankle", m_lAnkleIndex);
+            Node* rHandNode = m_jackSkeleton->FindNodeAndIndexByName("r_hand", m_rHandIndex);
+            Node* rLoArmNode = m_jackSkeleton->FindNodeAndIndexByName("r_loArm", m_rLoArmIndex);
+            Node* rLoLegNode = m_jackSkeleton->FindNodeAndIndexByName("r_loLeg", m_rLoLegIndex);
+            Node* rAnkleNode = m_jackSkeleton->FindNodeAndIndexByName("r_ankle", m_rAnkleIndex);
 
             // Make sure all nodes exist.
             ASSERT_TRUE(rootNode && pelvisNode && lHandNode && lLoArmNode && lLoLegNode && lAnkleNode &&
@@ -165,14 +166,14 @@ namespace EMotionFX
         void SetupMirrorNodes()
         {
             m_actor->AllocateNodeMirrorInfos();
-            m_actor->GetNodeMirrorInfo(m_l_handIndex).mSourceNode = static_cast<uint16>(m_r_handIndex);
-            m_actor->GetNodeMirrorInfo(m_r_handIndex).mSourceNode = static_cast<uint16>(m_l_handIndex);
-            m_actor->GetNodeMirrorInfo(m_l_loArmIndex).mSourceNode = static_cast<uint16>(m_r_loArmIndex);
-            m_actor->GetNodeMirrorInfo(m_r_loArmIndex).mSourceNode = static_cast<uint16>(m_l_loArmIndex);
-            m_actor->GetNodeMirrorInfo(m_l_loLegIndex).mSourceNode = static_cast<uint16>(m_r_loLegIndex);
-            m_actor->GetNodeMirrorInfo(m_r_loLegIndex).mSourceNode = static_cast<uint16>(m_l_loLegIndex);
-            m_actor->GetNodeMirrorInfo(m_l_ankleIndex).mSourceNode = static_cast<uint16>(m_r_ankleIndex);
-            m_actor->GetNodeMirrorInfo(m_r_ankleIndex).mSourceNode = static_cast<uint16>(m_l_ankleIndex);
+            m_actor->GetNodeMirrorInfo(m_lHandIndex).m_sourceNode = static_cast<uint16>(m_rHandIndex);
+            m_actor->GetNodeMirrorInfo(m_rHandIndex).m_sourceNode = static_cast<uint16>(m_lHandIndex);
+            m_actor->GetNodeMirrorInfo(m_lLoArmIndex).m_sourceNode = static_cast<uint16>(m_rLoArmIndex);
+            m_actor->GetNodeMirrorInfo(m_rLoArmIndex).m_sourceNode = static_cast<uint16>(m_lLoArmIndex);
+            m_actor->GetNodeMirrorInfo(m_lLoLegIndex).m_sourceNode = static_cast<uint16>(m_rLoLegIndex);
+            m_actor->GetNodeMirrorInfo(m_rLoLegIndex).m_sourceNode = static_cast<uint16>(m_lLoLegIndex);
+            m_actor->GetNodeMirrorInfo(m_lAnkleIndex).m_sourceNode = static_cast<uint16>(m_rAnkleIndex);
+            m_actor->GetNodeMirrorInfo(m_rAnkleIndex).m_sourceNode = static_cast<uint16>(m_lAnkleIndex);
             m_actor->AutoDetectMirrorAxes();
         }
     };
@@ -185,11 +186,11 @@ namespace EMotionFX
         // Follow-through during the duration(~1.06666672 seconds) of the motion.
         for (float i = 0.1f; i < 1.2f; i += 0.1f)
         {
-            const AZ::Vector3 rootCurrentPos = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-            const AZ::Vector3 pelvisCurrentPos = m_jackPose->GetModelSpaceTransform(m_bip01__pelvisIndex).mPosition;
+            const AZ::Vector3 rootCurrentPos = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+            const AZ::Vector3 pelvisCurrentPos = m_jackPose->GetModelSpaceTransform(m_bip01PelvisIndex).m_position;
             GetEMotionFX().Update(1.0f / 10.0f);
-            const AZ::Vector3 rootUpdatedPos = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-            const AZ::Vector3 pelvisUpdatedPos = m_jackPose->GetModelSpaceTransform(m_bip01__pelvisIndex).mPosition;
+            const AZ::Vector3 rootUpdatedPos = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+            const AZ::Vector3 pelvisUpdatedPos = m_jackPose->GetModelSpaceTransform(m_bip01PelvisIndex).m_position;
             const float rootDifference = rootUpdatedPos.GetY() - rootCurrentPos.GetY();
             const float pelvisDifference = pelvisUpdatedPos.GetY() - pelvisCurrentPos.GetY();
 
@@ -202,7 +203,7 @@ namespace EMotionFX
     TEST_F(AnimGraphMotionNodeFixture, NoInputAndLoopOutputsCorrectMotionAndPose)
     {
         AnimGraphMotionNode::UniqueData* uniqueData = static_cast<AnimGraphMotionNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode));
-        uniqueData->mReload = true;
+        uniqueData->m_reload = true;
         m_motionNode->SetLoop(true);
         m_motionNode->InvalidateUniqueData(m_animGraphInstance);
         m_actorInstance->SetMotionExtractionEnabled(false);
@@ -210,14 +211,14 @@ namespace EMotionFX
         GetEMotionFX().Update(0.0f); // Needed to trigger a refresh of motion node internals.
 
         // Update to half the motion's duration.
-        AZ::Vector3 rootStartPos = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-        AZ::Vector3 pelvisStartPos = m_jackPose->GetModelSpaceTransform(m_bip01__pelvisIndex).mPosition;
+        AZ::Vector3 rootStartPos = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+        AZ::Vector3 pelvisStartPos = m_jackPose->GetModelSpaceTransform(m_bip01PelvisIndex).m_position;
         const float duration = m_motionNode->GetDuration(m_animGraphInstance);
         const float offset = duration * 0.5f;
         GetEMotionFX().Update(offset);
         EXPECT_FLOAT_EQ(uniqueData->GetCurrentPlayTime(), offset);
-        AZ::Vector3 rootCurrentPos = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-        AZ::Vector3 pelvisCurrentPos = m_jackPose->GetModelSpaceTransform(m_bip01__pelvisIndex).mPosition;
+        AZ::Vector3 rootCurrentPos = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+        AZ::Vector3 pelvisCurrentPos = m_jackPose->GetModelSpaceTransform(m_bip01PelvisIndex).m_position;
         EXPECT_TRUE(rootCurrentPos.GetY() > rootStartPos.GetY()) << "Y-axis position of root should increase.";
         EXPECT_TRUE(pelvisCurrentPos.GetY() > pelvisStartPos.GetY()) << "Y-axis position of pelvis should increase.";
 
@@ -226,8 +227,8 @@ namespace EMotionFX
         pelvisStartPos = pelvisCurrentPos;
         GetEMotionFX().Update(duration * 0.6f);
         EXPECT_FLOAT_EQ(uniqueData->GetCurrentPlayTime(), duration * 0.1f);
-        rootCurrentPos = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-        pelvisCurrentPos = m_jackPose->GetModelSpaceTransform(m_bip01__pelvisIndex).mPosition;
+        rootCurrentPos = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+        pelvisCurrentPos = m_jackPose->GetModelSpaceTransform(m_bip01PelvisIndex).m_position;
         EXPECT_TRUE(rootCurrentPos.GetY() < rootStartPos.GetY()) << "Y-axis position of root should increase.";
         EXPECT_TRUE(pelvisCurrentPos.GetY() < pelvisStartPos.GetY()) << "Y-axis position of pelvis should increase.";
     };
@@ -236,7 +237,7 @@ namespace EMotionFX
     {
         m_motionNode->SetReverse(true);
         AnimGraphMotionNode::UniqueData* uniqueData = static_cast<AnimGraphMotionNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode));
-        uniqueData->mReload = true;
+        uniqueData->m_reload = true;
         GetEMotionFX().Update(1.1f);
 
         EXPECT_TRUE(m_motionNode->GetIsReversed()) << "Reverse effect should be on.";
@@ -245,11 +246,11 @@ namespace EMotionFX
         // Follow-through during the duration(~1.06666672 seconds) of the motion.
         for (float i = 0.1f; i < 1.2f; i += 0.1f)
         {
-            const AZ::Vector3 rootCurrentPos = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-            const AZ::Vector3 pelvisCurrentPos = m_jackPose->GetModelSpaceTransform(m_bip01__pelvisIndex).mPosition;
+            const AZ::Vector3 rootCurrentPos = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+            const AZ::Vector3 pelvisCurrentPos = m_jackPose->GetModelSpaceTransform(m_bip01PelvisIndex).m_position;
             GetEMotionFX().Update(1.0f / 10.0f);
-            const AZ::Vector3 rootUpdatedPos = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-            const AZ::Vector3 pelvisUpdatedPos = m_jackPose->GetModelSpaceTransform(m_bip01__pelvisIndex).mPosition;
+            const AZ::Vector3 rootUpdatedPos = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+            const AZ::Vector3 pelvisUpdatedPos = m_jackPose->GetModelSpaceTransform(m_bip01PelvisIndex).m_position;
             const float rootDifference =  rootCurrentPos.GetY() - rootUpdatedPos.GetY();
             const float pelvisDifference = pelvisCurrentPos.GetY() - pelvisUpdatedPos.GetY();
 
@@ -262,33 +263,33 @@ namespace EMotionFX
     TEST_F(AnimGraphMotionNodeFixture, DISABLED_NoInputAndMirrorMotionOutputsCorrectMotionAndPose)
     {
         AnimGraphMotionNode::UniqueData* uniqueData = static_cast<AnimGraphMotionNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode));
-        uniqueData->mReload = true;
+        uniqueData->m_reload = true;
         GetEMotionFX().Update(1.0f);
 
         // Get positions before mirroring to compare with mirrored positions later.
-        const AZ::Vector3 l_handCurrentPos = m_jackPose->GetModelSpaceTransform(m_l_handIndex).mPosition;
-        const AZ::Vector3 l_loArmCurrentPos = m_jackPose->GetModelSpaceTransform(m_l_loArmIndex).mPosition;
-        const AZ::Vector3 l_loLegCurrentPos = m_jackPose->GetModelSpaceTransform(m_l_loLegIndex).mPosition;
-        const AZ::Vector3 l_ankleCurrentPos = m_jackPose->GetModelSpaceTransform(m_l_ankleIndex).mPosition;
-        const AZ::Vector3 r_handCurrentPos = m_jackPose->GetModelSpaceTransform(m_r_handIndex).mPosition;
-        const AZ::Vector3 r_loArmCurrentPos = m_jackPose->GetModelSpaceTransform(m_r_loArmIndex).mPosition;
-        const AZ::Vector3 r_loLegCurrentPos = m_jackPose->GetModelSpaceTransform(m_r_loLegIndex).mPosition;
-        const AZ::Vector3 r_ankleCurrentPos = m_jackPose->GetModelSpaceTransform(m_r_ankleIndex).mPosition;
+        const AZ::Vector3 l_handCurrentPos = m_jackPose->GetModelSpaceTransform(m_lHandIndex).m_position;
+        const AZ::Vector3 l_loArmCurrentPos = m_jackPose->GetModelSpaceTransform(m_lLoArmIndex).m_position;
+        const AZ::Vector3 l_loLegCurrentPos = m_jackPose->GetModelSpaceTransform(m_lLoLegIndex).m_position;
+        const AZ::Vector3 l_ankleCurrentPos = m_jackPose->GetModelSpaceTransform(m_lAnkleIndex).m_position;
+        const AZ::Vector3 r_handCurrentPos = m_jackPose->GetModelSpaceTransform(m_rHandIndex).m_position;
+        const AZ::Vector3 r_loArmCurrentPos = m_jackPose->GetModelSpaceTransform(m_rLoArmIndex).m_position;
+        const AZ::Vector3 r_loLegCurrentPos = m_jackPose->GetModelSpaceTransform(m_rLoLegIndex).m_position;
+        const AZ::Vector3 r_ankleCurrentPos = m_jackPose->GetModelSpaceTransform(m_rAnkleIndex).m_position;
 
         m_motionNode->SetMirrorMotion(true);
-        uniqueData->mReload = true;
+        uniqueData->m_reload = true;
         GetEMotionFX().Update(0.0001f);
 
         EXPECT_TRUE(m_motionNode->GetMirrorMotion()) << "Mirror motion effect should be on.";
 
-        const AZ::Vector3 l_handMirroredPos = m_jackPose->GetModelSpaceTransform(m_l_handIndex).mPosition;
-        const AZ::Vector3 l_loArmMirroredPos = m_jackPose->GetModelSpaceTransform(m_l_loArmIndex).mPosition;
-        const AZ::Vector3 l_loLegMirroredPos = m_jackPose->GetModelSpaceTransform(m_l_loLegIndex).mPosition;
-        const AZ::Vector3 l_ankleMirroredPos = m_jackPose->GetModelSpaceTransform(m_l_ankleIndex).mPosition;
-        const AZ::Vector3 r_handMirroredPos = m_jackPose->GetModelSpaceTransform(m_r_handIndex).mPosition;
-        const AZ::Vector3 r_loArmMirroredPos = m_jackPose->GetModelSpaceTransform(m_r_loArmIndex).mPosition;
-        const AZ::Vector3 r_loLegMirroredPos = m_jackPose->GetModelSpaceTransform(m_r_loLegIndex).mPosition;
-        const AZ::Vector3 r_ankleMirroredPos = m_jackPose->GetModelSpaceTransform(m_r_ankleIndex).mPosition;
+        const AZ::Vector3 l_handMirroredPos = m_jackPose->GetModelSpaceTransform(m_lHandIndex).m_position;
+        const AZ::Vector3 l_loArmMirroredPos = m_jackPose->GetModelSpaceTransform(m_lLoArmIndex).m_position;
+        const AZ::Vector3 l_loLegMirroredPos = m_jackPose->GetModelSpaceTransform(m_lLoLegIndex).m_position;
+        const AZ::Vector3 l_ankleMirroredPos = m_jackPose->GetModelSpaceTransform(m_lAnkleIndex).m_position;
+        const AZ::Vector3 r_handMirroredPos = m_jackPose->GetModelSpaceTransform(m_rHandIndex).m_position;
+        const AZ::Vector3 r_loArmMirroredPos = m_jackPose->GetModelSpaceTransform(m_rLoArmIndex).m_position;
+        const AZ::Vector3 r_loLegMirroredPos = m_jackPose->GetModelSpaceTransform(m_rLoLegIndex).m_position;
+        const AZ::Vector3 r_ankleMirroredPos = m_jackPose->GetModelSpaceTransform(m_rAnkleIndex).m_position;
 
         EXPECT_TRUE(PositionsAreMirrored(l_handCurrentPos, r_handMirroredPos, 0.001f)) << "Actor's left hand should be mirrored to right hand.";
         EXPECT_TRUE(PositionsAreMirrored(l_handMirroredPos, r_handCurrentPos, 0.001f)) << "Actor's right hand should be mirrored to left hand.";
@@ -302,7 +303,7 @@ namespace EMotionFX
 
     TEST_F(AnimGraphMotionNodeFixture, InPlaceInputAndNoEffectOutputsCorrectMotionAndPose)
     {
-        m_motionNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortByName("InPlace")->mPortID, AnimGraphMotionNode::INPUTPORT_INPLACE);
+        m_motionNode->AddConnection(m_paramNode, static_cast<uint16>(m_paramNode->FindOutputPortByName("InPlace")->m_portId), AnimGraphMotionNode::INPUTPORT_INPLACE);
         ParamSetValue<MCore::AttributeBool, bool>("InPlace", true);
         m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode);
         
@@ -314,15 +315,15 @@ namespace EMotionFX
         // Follow-through during the duration(~1.06666672 seconds) of the motion.
         for (float i = 0.1f; i < 1.2f; i += 0.1f)
         {
-            const AZ::Vector3 rootCurrentPos = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-            const AZ::Vector3 pelvisCurrentPos = m_jackPose->GetModelSpaceTransform(m_bip01__pelvisIndex).mPosition;
-            const AZ::Vector3 lankleCurrentPos = m_jackPose->GetModelSpaceTransform(m_l_ankleIndex).mPosition;
-            const AZ::Vector3 rankleCurrentPos = m_jackPose->GetModelSpaceTransform(m_r_ankleIndex).mPosition;
+            const AZ::Vector3 rootCurrentPos = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+            const AZ::Vector3 pelvisCurrentPos = m_jackPose->GetModelSpaceTransform(m_bip01PelvisIndex).m_position;
+            const AZ::Vector3 lankleCurrentPos = m_jackPose->GetModelSpaceTransform(m_lAnkleIndex).m_position;
+            const AZ::Vector3 rankleCurrentPos = m_jackPose->GetModelSpaceTransform(m_rAnkleIndex).m_position;
             GetEMotionFX().Update(1.0f / 10.0f);
-            const AZ::Vector3 rootUpdatedPos = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-            const AZ::Vector3 pelvisUpdatedPos = m_jackPose->GetModelSpaceTransform(m_bip01__pelvisIndex).mPosition;
-            const AZ::Vector3 lankleUpdatedPos = m_jackPose->GetModelSpaceTransform(m_l_ankleIndex).mPosition;
-            const AZ::Vector3 rankleUpdatedPos = m_jackPose->GetModelSpaceTransform(m_r_ankleIndex).mPosition;
+            const AZ::Vector3 rootUpdatedPos = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+            const AZ::Vector3 pelvisUpdatedPos = m_jackPose->GetModelSpaceTransform(m_bip01PelvisIndex).m_position;
+            const AZ::Vector3 lankleUpdatedPos = m_jackPose->GetModelSpaceTransform(m_lAnkleIndex).m_position;
+            const AZ::Vector3 rankleUpdatedPos = m_jackPose->GetModelSpaceTransform(m_rAnkleIndex).m_position;
             EXPECT_TRUE(m_motionNode->GetIsInPlace(m_animGraphInstance)) << "InPlace flag of the motion node should be true.";
             EXPECT_TRUE(rootUpdatedPos.IsClose(rootCurrentPos, 0.0f)) << "Position of root should not change.";           
             EXPECT_TRUE(pelvisCurrentPos != pelvisUpdatedPos) << "Position of pelvis should change.";
@@ -342,26 +343,26 @@ namespace EMotionFX
         GetEMotionFX().Update(1.0f / 60.0f);
 
         // Root node's initial position under the first speed factor.
-        AZ::Vector3 rootInitialPosUnderSpeed1 = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-        uniqueData->mReload = true;
+        AZ::Vector3 rootInitialPosUnderSpeed1 = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+        uniqueData->m_reload = true;
         GetEMotionFX().Update(1.1f);
         
         // Root node's final position under the first speed factor.
-        AZ::Vector3 rootFinalPosUnderSpeed1 = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
+        AZ::Vector3 rootFinalPosUnderSpeed1 = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
         std::vector<float> speedFactors = { 2.0f, 3.0f, 10.0f, 100.0f };
         std::vector<float> playTimes = { 0.6f, 0.4f, 0.11f, 0.011f };
-        for (AZ::u32 i = 0; i < 4; i++)
+        for (size_t i = 0; i < 4; i++)
         {
             m_motionNode->Rewind(m_animGraphInstance);
             m_fltConstNode->SetValue(speedFactors[i]);
             GetEMotionFX().Update(1.0f / 60.0f);
 
-            uniqueData->mReload = true;
-            const AZ::Vector3 rootInitialPosUnderSpeed2 = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
+            uniqueData->m_reload = true;
+            const AZ::Vector3 rootInitialPosUnderSpeed2 = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
 
             // Faster play speed requires less play time to reach its final pose.
             GetEMotionFX().Update(playTimes[i]);
-            const AZ::Vector3 rootFinalPosUnderSpeed2 = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
+            const AZ::Vector3 rootFinalPosUnderSpeed2 = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
 
             EXPECT_TRUE(rootInitialPosUnderSpeed1.IsClose(rootInitialPosUnderSpeed2, 0.0f)) << "Root initial position should be same in different motion speeds.";
             EXPECT_TRUE(rootFinalPosUnderSpeed1.IsClose(rootFinalPosUnderSpeed2, 0.0f)) << "Root final position should be same in different motion speeds.";
@@ -378,23 +379,23 @@ namespace EMotionFX
         m_motionNode->SetMotionPlaySpeed(1.0f);
         GetEMotionFX().Update(1.0f / 60.0f);
 
-        rootInitialPosUnderSpeed1 = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
-        uniqueData->mReload = true;
+        rootInitialPosUnderSpeed1 = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
+        uniqueData->m_reload = true;
         GetEMotionFX().Update(1.1f);
-        rootFinalPosUnderSpeed1 = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
+        rootFinalPosUnderSpeed1 = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
 
         // Similar test to using the InPlace input port.
-        for (AZ::u32 i = 0; i < 4; i++)
+        for (size_t i = 0; i < 4; i++)
         {
             m_motionNode->Rewind(m_animGraphInstance);
             m_motionNode->SetMotionPlaySpeed(speedFactors[i]);
             GetEMotionFX().Update(1.0f / 60.0f);
 
-            uniqueData->mReload = true;
-            const AZ::Vector3 rootInitialPosUnderSpeed2 = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
+            uniqueData->m_reload = true;
+            const AZ::Vector3 rootInitialPosUnderSpeed2 = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
 
             GetEMotionFX().Update(playTimes[i]);
-            const AZ::Vector3 rootFinalPosUnderSpeed2 = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
+            const AZ::Vector3 rootFinalPosUnderSpeed2 = m_jackPose->GetModelSpaceTransform(m_jackRootIndex).m_position;
 
             EXPECT_TRUE(rootInitialPosUnderSpeed1.IsClose(rootInitialPosUnderSpeed2, 0.0f));
             EXPECT_TRUE(rootFinalPosUnderSpeed1.IsClose(rootFinalPosUnderSpeed2, 0.0f));
@@ -411,7 +412,7 @@ namespace EMotionFX
         AddMotionData(TestMotionAssets::GetJackDie(), "jack_death_fall_back_zup");
         m_motionNode->AddMotionId("jack_death_fall_back_zup");
         AnimGraphMotionNode::UniqueData* uniqueData = static_cast<AnimGraphMotionNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_motionNode));
-        uniqueData->mReload = true;
+        uniqueData->m_reload = true;
         m_motionNode->Reinit();
 
         m_motionNode->SetIndexMode(AnimGraphMotionNode::INDEXMODE_RANDOMIZE);
@@ -425,14 +426,14 @@ namespace EMotionFX
         // In randomized index mode, all motions should at least appear once over 10 loops.
         bool motion1Displayed = false;
         bool motion2Displayed = false;
-        for (AZ::u32 i = 0; i < 20; i++)
+        for (size_t i = 0; i < 20; i++)
         {
             // Run the test loop multiple times to make sure all the motion index is picked.
-            uniqueData->mReload = true;
+            uniqueData->m_reload = true;
             m_motionNode->Reinit();
             GetEMotionFX().Update(2.0f);
 
-            const uint32 motionIndex = uniqueData->mActiveMotionIndex;
+            const uint32 motionIndex = uniqueData->m_activeMotionIndex;
             if (motionIndex == 0)
             {
                 motion1Displayed = true;
@@ -456,18 +457,18 @@ namespace EMotionFX
         uniqueData->Reset();
         m_motionNode->Reinit();
         uniqueData->Update();
-        uint32 currentMotionIndex = uniqueData->mActiveMotionIndex;
+        uint32 currentMotionIndex = uniqueData->m_activeMotionIndex;
 
         // In randomized no repeat index mode, motions should change in each loop.
-        for (AZ::u32 i = 0; i < 10; i++)
+        for (size_t i = 0; i < 10; i++)
         {
-            uniqueData->mReload = true;
+            uniqueData->m_reload = true;
             m_motionNode->Reinit();
 
             // As we keep and use the cached version of the unique data, we need to manually update it.
             uniqueData->Update();
 
-            const AZ::u32 updatedMotionIndex = uniqueData->mActiveMotionIndex;
+            const AZ::u32 updatedMotionIndex = uniqueData->m_activeMotionIndex;
             EXPECT_TRUE(updatedMotionIndex != currentMotionIndex) << "Updated motion index should be different from its previous motion index.";
             currentMotionIndex = updatedMotionIndex;
         }
@@ -475,13 +476,13 @@ namespace EMotionFX
         m_motionNode->SetIndexMode(AnimGraphMotionNode::INDEXMODE_SEQUENTIAL);
 
         // In sequential index mode, motions should increase its index each time and wrap around. Basically iterating over the list of motions.
-        for (AZ::u32 i = 0; i < 10; i++)
+        for (size_t i = 0; i < 10; i++)
         {
-            uniqueData->mReload = true;
+            uniqueData->m_reload = true;
             m_motionNode->Reinit();
             uniqueData->Update();
-            EXPECT_NE(currentMotionIndex, uniqueData->mActiveMotionIndex) << "Updated motion index should match the expected motion index.";
-            currentMotionIndex = uniqueData->mActiveMotionIndex;
+            EXPECT_NE(currentMotionIndex, uniqueData->m_activeMotionIndex) << "Updated motion index should match the expected motion index.";
+            currentMotionIndex = uniqueData->m_activeMotionIndex;
         }
     };
 } // end namespace EMotionFX

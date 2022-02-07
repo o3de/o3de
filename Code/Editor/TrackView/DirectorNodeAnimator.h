@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,7 +34,5 @@ private:
     void ForEachActiveSequence(const SAnimContext& ac, CTrackViewTrack* pSequenceTrack,
         const bool bHandleOtherKeys, std::function<void(CTrackViewSequence*, const SAnimContext&)> animateFunction,
         std::function<void(CTrackViewSequence*, const SAnimContext&)> resetFunction);
-
-    CTrackViewAnimNode* m_pDirectorNode;
 };
 #endif // CRYINCLUDE_EDITOR_TRACKVIEW_DIRECTORNODEANIMATOR_H

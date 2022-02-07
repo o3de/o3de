@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -197,8 +198,6 @@ public:
     void GetStreamInfo(int stream, void*& pStream, int& nElementSize) const;
     int  GetStreamSize(int stream) const { return m_streamSize[stream]; };
 
-    void SetFromMesh(CMesh& mesh);
-    void UpdateIndexedMesh(IIndexedMesh* pIndexedMesh) const;
     // Calculate per face normal.
     void CalcFaceNormals();
 

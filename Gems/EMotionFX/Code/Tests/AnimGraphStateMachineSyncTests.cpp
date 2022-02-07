@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,11 +20,11 @@ namespace EMotionFX
 {
     struct AnimGraphStateMachineSyncParam
     {
-        float playSpeedA;
-        float durationA;
-        float playSpeedB;
-        float durationB;
-        bool syncEnabled;
+        float m_playSpeedA;
+        float m_durationA;
+        float m_playSpeedB;
+        float m_durationB;
+        bool m_syncEnabled;
     };
 
     class AnimGraphStateMachineSyncFixture
@@ -50,7 +51,7 @@ namespace EMotionFX
                 1.0f/*blendTime*/,
                 0.0f/*countDownTime*/);
 
-            if (param.syncEnabled)
+            if (param.m_syncEnabled)
             {
                 m_transition->SetSyncMode(AnimGraphObject::SYNCMODE_CLIPBASED);
             }
@@ -84,8 +85,8 @@ namespace EMotionFX
             m_animGraphInstance->Destroy();
             m_animGraphInstance = m_motionNodeAnimGraph->GetAnimGraphInstance(m_actorInstance, m_motionSet);
 
-            SetUpMotionNode("testMotionA", param.playSpeedA, param.durationA, m_stateA);
-            SetUpMotionNode("testMotionB", param.playSpeedB, param.durationB, m_stateB);
+            SetUpMotionNode("testMotionA", param.m_playSpeedA, param.m_durationA, m_stateA);
+            SetUpMotionNode("testMotionB", param.m_playSpeedB, param.m_durationB, m_stateB);
 
             GetEMotionFX().Update(0.0f);
         }
@@ -99,13 +100,11 @@ namespace EMotionFX
 
     TEST_P(AnimGraphStateMachineSyncFixture, PlayspeedTests)
     {
-        const AnimGraphStateMachineSyncParam param = GetParam();
-
         bool transitioned = false;
         Simulate(2.0f/*simulationTime*/, 10.0f/*expectedFps*/, 0.0f/*fpsVariance*/,
-            /*preCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
-            /*postCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
-            /*preUpdateCallback*/[this](AnimGraphInstance*, float, float, int){},
+            /*preCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
+            /*postCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
+            /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int){},
             /*postUpdateCallback*/[this, &transitioned](AnimGraphInstance* animGraphInstance, [[maybe_unused]] float time, [[maybe_unused]] float timeDelta, [[maybe_unused]] int frame)
             {
                 if (m_rootStateMachine->IsTransitionActive(m_transition, animGraphInstance))

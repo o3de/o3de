@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -221,7 +222,7 @@ namespace AZ
 
         int AddRefCount(int value)
         {
-            AZ_Assert(value == 1 || value == -1, "ModRefCount is only for incrementing or decrementing on copy or destruction of ExposedLambda")
+            AZ_Assert(value == 1 || value == -1, "ModRefCount is only for incrementing or decrementing on copy or destruction of ExposedLambda");
             lua_rawgeti(m_lua, LUA_REGISTRYINDEX, m_refCountRegistryIndex);
             // Lua: refCount-old
             const int refCount = Internal::azlua_tointeger(m_lua, -1) + value;
@@ -1462,9 +1463,9 @@ static void* LuaMemoryHook(void* userData, void* ptr, size_t osize, size_t nsize
         {
             allocator->DeAllocate(ptr);
         }
-        return NULL;
+        return nullptr;
     }
-    else if (ptr == NULL)
+    else if (ptr == nullptr)
     {
         return allocator->Allocate(nsize, LUA_DEFAULT_ALIGNMENT, 0, "Script", __FILE__, __LINE__, 1);
     }
@@ -1707,7 +1708,7 @@ LUA_API const Node* lua_getDummyNode()
                 "Invalid stack!");
             lua_pop(m_nativeContext, (currentTop - m_startVariableIndex) + 1);
 
-            m_nativeContext = NULL;
+            m_nativeContext = nullptr;
             m_startVariableIndex = 0;
             m_numArguments = 0;
             m_numResults = 0;
@@ -2037,7 +2038,7 @@ LUA_API const Node* lua_getDummyNode()
         LSV_BEGIN_VARIABLE(m_nativeContext);
 
         valueIndex = 0;
-        name = NULL;
+        name = nullptr;
         index = -1;
         if (m_mode == MD_INSPECT)
         {
@@ -2305,7 +2306,7 @@ LUA_API const Node* lua_getDummyNode()
                 else // even references are stored by value as we need to convert from lua native type, i.e. there is not real reference for NativeTypes (numbers, strings, etc.)
                 {
                     bool usedBackupAlloc = false;
-                    if (backupAllocator != nullptr && sizeof(T) > tempAllocator.get_max_size())
+                    if (backupAllocator != nullptr && sizeof(T) > AZStd::allocator_traits<decltype(tempAllocator)>::max_size(tempAllocator))
                     {
                         value.m_value = backupAllocator->allocate(sizeof(T), AZStd::alignment_of<T>::value, 0);
                         usedBackupAlloc = true;
@@ -2339,7 +2340,7 @@ LUA_API const Node* lua_getDummyNode()
                 else // it's a value type
                 {
                     bool usedBackupAlloc = false;
-                    if (backupAllocator != nullptr && valueClass->m_size > tempAllocator.get_max_size())
+                    if (backupAllocator != nullptr && valueClass->m_size > AZStd::allocator_traits<decltype(tempAllocator)>::max_size(tempAllocator))
                     {
                         value.m_value = backupAllocator->allocate(valueClass->m_size, valueClass->m_alignment, 0);
                         usedBackupAlloc = true;
@@ -3252,6 +3253,7 @@ LUA_API const Node* lua_getDummyNode()
             else if (Internal::LuaScriptNumber<short>::FromStack(param, result)) return result;
             else if (Internal::LuaScriptNumber<AZ::s64>::FromStack(param, result)) return result;
             else if (Internal::LuaScriptNumber<long>::FromStack(param, result)) return result;
+            else if (Internal::LuaScriptNumber<AZ::s8>::FromStack(param, result)) return result;
             else if (Internal::LuaScriptNumber<unsigned char>::FromStack(param, result)) return result;
             else if (Internal::LuaScriptNumber<unsigned short>::FromStack(param, result)) return result;
             else if (Internal::LuaScriptNumber<unsigned int>::FromStack(param, result)) return result;
@@ -3406,7 +3408,14 @@ LUA_API const Node* lua_getDummyNode()
                     const BehaviorParameter* arg = method->GetArgument(iArg);
                     BehaviorClass* argClass = nullptr;
                     LuaLoadFromStack fromStack = FromLuaStack(context, arg, argClass);
-                    AZ_Assert(fromStack, "Argument %s for Method %s doesn't have support to be converted to Lua!", arg->m_name, method->m_name.c_str());
+                    AZ_Assert(fromStack,
+                        "The argument type: %s for method: %s is not serialized and/or reflected for scripting.\n"
+                        "Make sure %s is added to the SerializeContext and reflected to the BehaviorContext\n"
+                        "For example, verify these two exist and are being called in a Reflect function:\n"
+                        "serializeContext->Class<%s>();\n"
+                        "behaviorContext->Class<%s>();\n"
+                        "%s will not be available for scripting unless these requirements are met."
+                        , arg->m_name, method->m_name.c_str(), arg->m_name, arg->m_name, arg->m_name, method->m_name.c_str());
 
                     m_fromLua.push_back(AZStd::make_pair(fromStack, argClass));
                 }
@@ -3725,7 +3734,7 @@ LUA_API const Node* lua_getDummyNode()
 
                 if (m_handler)
                 {
-#if defined(PERFORMANCE_BUILD) || !defined(_RELEASE)
+#if !defined(_RELEASE)
                     const AZStd::string_view luaString("Lua");
                     lua_Debug info;
                     for (int level = 0; lua_getstack(m_lua, level, &info); ++level)
@@ -3737,7 +3746,7 @@ LUA_API const Node* lua_getDummyNode()
                             break;
                         }
                     }
-#endif//defined(PERFORMANCE_BUILD) || !defined(_RELEASE)
+#endif
 
                     BindEvents(scriptTable);
 
@@ -5064,13 +5073,26 @@ LUA_API const Node* lua_getDummyNode()
                     // Check all constructors if they have use ScriptDataContext and if so choose this one 
                     if (!customConstructorMethod)
                     {
+                        int overrideIndex = -1;
+                        AZ::AttributeReader(nullptr, FindAttribute
+                            ( Script::Attributes::DefaultConstructorOverrideIndex, behaviorClass->m_attributes)).Read<int>(overrideIndex);
+
+                        int methodIndex = 0;
                         for (BehaviorMethod* method : behaviorClass->m_constructors)
                         {
+                            if (methodIndex == overrideIndex)
+                            {
+                                customConstructorMethod = method;
+                                break;
+                            }
+
                             if (method->GetNumArguments() && method->GetArgument(method->GetNumArguments() - 1)->m_typeId == AZ::AzTypeInfo<ScriptDataContext>::Uuid())
                             {
                                 customConstructorMethod = method;
                                 break;
                             }
+
+                            ++methodIndex;
                         }
                     }
 

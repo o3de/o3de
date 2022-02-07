@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,10 +9,14 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/PassSystem.h>
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
 
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/PipelineState.h>
+
+#include <AzCore/Console/Console.h>
 
 #include <PostProcessing/LookModificationCompositePass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
@@ -21,6 +26,24 @@ namespace AZ
 {
     namespace Render
     {
+        AZ_CVAR(uint8_t,
+            r_lutSampleQuality,
+            0,
+            [](const uint8_t& value)
+            {
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<LookModificationCompositePass>();
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [value](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                    {
+                        LookModificationCompositePass* lookModPass = azrtti_cast<LookModificationCompositePass*>(pass);
+                        lookModPass->SetSampleQuality(LookModificationCompositePass::SampleQuality(value));
+
+                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    });
+            },
+            ConsoleFunctorFlags::Null,
+            "This can be increased to deal with particularly tricky luts. Range (0-2). 0 (default) - Standard linear sampling. 1 - 7 tap b-spline sampling. 2 - 19 tap b-spline sampling."
+        );
+        
         RPI::Ptr<LookModificationCompositePass> LookModificationCompositePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<LookModificationCompositePass> pass = aznew LookModificationCompositePass(descriptor);
@@ -29,8 +52,6 @@ namespace AZ
 
         LookModificationCompositePass::LookModificationCompositePass(const RPI::PassDescriptor& descriptor)
             : AZ::RPI::FullscreenTrianglePass(descriptor)
-            , m_exposureShaderVariantOptionName(ExposureShaderVariantOptionName)
-            , m_colorGradingShaderVariantOptionName(ColorGradingShaderVariantOptionName)
         {
         }
 
@@ -59,19 +80,38 @@ namespace AZ
         {
             AZ_Assert(m_shader != nullptr, "LookModificationCompositePass %s has a null shader when calling InitializeShaderVariant.", GetPathName().GetCStr());
 
-            AZStd::vector<AZ::Name> exposureVariationTypes = { AZ::Name("true"), AZ::Name("false") };
-            AZStd::vector<AZ::Name> colorGradingVariationTypes = { AZ::Name("true"), AZ::Name("false") };
+            struct OptionSettings
+            {
+                AZ::Name m_enableExposureControl;
+                AZ::Name m_enableColorGrading;
+                RPI::ShaderOptionValue m_lutSampleQuality;
 
-            auto exposureVariationTypeCount = exposureVariationTypes.size();
-            auto totalVariationCount = exposureVariationTypes.size() * colorGradingVariationTypes.size();
+                OptionSettings(const char* enableExposureControl, const char* enableColorGrading, SampleQuality sampleQuality)
+                    : m_enableExposureControl(Name(enableExposureControl))
+                    , m_enableColorGrading(Name(enableColorGrading))
+                    , m_lutSampleQuality(RPI::ShaderOptionValue(sampleQuality))
+                {}
+            };
+
+            AZStd::vector<OptionSettings> options =
+            {
+                { "false", "false", SampleQuality::Linear },
+                { "true", "false", SampleQuality::Linear },
+                { "false", "true", SampleQuality::Linear },
+                { "false", "true", SampleQuality::BSpline7Tap },
+                { "false", "true", SampleQuality::BSpline19Tap },
+                { "true", "true", SampleQuality::Linear },
+                { "true", "true", SampleQuality::BSpline7Tap },
+                { "true", "true", SampleQuality::BSpline19Tap },
+            };
 
             // Caching all pipeline state for each shader variation for performance reason.
-            for (auto shaderVariantIndex = 0; shaderVariantIndex < totalVariationCount; ++shaderVariantIndex)
+            for (auto shaderVariantIndex = 0; shaderVariantIndex < options.size(); ++shaderVariantIndex)
             {
                 auto shaderOption = m_shader->CreateShaderOptionGroup();
-                shaderOption.SetValue(m_exposureShaderVariantOptionName, exposureVariationTypes[shaderVariantIndex % exposureVariationTypeCount]);
-                shaderOption.SetValue(m_colorGradingShaderVariantOptionName, colorGradingVariationTypes[shaderVariantIndex / exposureVariationTypeCount]);
-
+                shaderOption.SetValue(m_exposureShaderVariantOptionName, options.at(shaderVariantIndex).m_enableExposureControl);
+                shaderOption.SetValue(m_colorGradingShaderVariantOptionName, options.at(shaderVariantIndex).m_enableColorGrading);
+                shaderOption.SetValue(m_lutSampleQualityShaderVariantOptionName, options.at(shaderVariantIndex).m_lutSampleQuality);
                 PreloadShaderVariant(m_shader, shaderOption, GetRenderAttachmentConfiguration(), GetMultisampleState());
             }
 
@@ -172,9 +212,9 @@ namespace AZ
                 {
                     m_shaderResourceGroup->SetImageView(m_shaderColorGradingLutImageIndex, m_blendedColorGradingLut.m_lutImageView.get());
 
-                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperTypeIndex, m_colorGradingShaperParams.type);
-                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperBiasIndex, m_colorGradingShaperParams.bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperScaleIndex, m_colorGradingShaperParams.scale);
+                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperTypeIndex, m_colorGradingShaperParams.m_type);
+                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperBiasIndex, m_colorGradingShaperParams.m_bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperScaleIndex, m_colorGradingShaperParams.m_scale);
                 }
             }
 
@@ -191,7 +231,8 @@ namespace AZ
             // Decide which shader to use.
             shaderOption.SetValue(m_exposureShaderVariantOptionName, m_exposureControlEnabled ? AZ::Name("true") : AZ::Name("false"));
             shaderOption.SetValue(m_colorGradingShaderVariantOptionName, m_colorGradingLutEnabled ? AZ::Name("true") : AZ::Name("false"));
-
+            shaderOption.SetValue(m_lutSampleQualityShaderVariantOptionName, RPI::ShaderOptionValue(m_sampleQuality));
+            
             UpdateShaderVariant(shaderOption);
 
             m_needToUpdateShaderVariant = false;
@@ -217,5 +258,12 @@ namespace AZ
         {
             m_colorGradingShaperParams = shaperParams;
         }
+        
+        void LookModificationCompositePass::SetSampleQuality(SampleQuality sampleQuality)
+        {
+            m_sampleQuality = sampleQuality;
+            m_needToUpdateShaderVariant = true;
+        }
+
     }   // namespace Render
 }   // namespace AZ

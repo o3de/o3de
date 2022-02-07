@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,35 +22,35 @@ namespace CommandSystem
 {
     // Create a new anim graph parameter.
     MCORE_DEFINECOMMAND_START(CommandAnimGraphCreateParameter, "Create an anim graph parameter", true)
-        bool            mOldDirtyFlag;
+        bool            m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 
     // Remove a given anim graph parameter.
     MCORE_DEFINECOMMAND_START(CommandAnimGraphRemoveParameter, "Remove an anim graph parameter", true)
-        size_t          mIndex;
-        AZ::TypeId      mType;
-        AZStd::string   mName;
-        AZStd::string   mContents;
-        AZStd::string   mParent;
-        bool            mOldDirtyFlag;
+        size_t          m_index;
+        AZ::TypeId      m_type;
+        AZStd::string   m_name;
+        AZStd::string   m_contents;
+        AZStd::string   m_parent;
+        bool            m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 
     // Adjust a given anim graph parameter.
     MCORE_DEFINECOMMAND_START(CommandAnimGraphAdjustParameter, "Adjust an anim graph parameter", true)
-        AZ::TypeId      mOldType;
-        AZStd::string   mOldName;
-        AZStd::string   mOldContents;
-        bool            mOldDirtyFlag;
+        AZ::TypeId      m_oldType;
+        AZStd::string   m_oldName;
+        AZStd::string   m_oldContents;
+        bool            m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 
     // Move the parameter to another position.
     MCORE_DEFINECOMMAND_START(CommandAnimGraphMoveParameter, "Move an anim graph parameter", true)
-        AZStd::string   mOldParent;
-        size_t          mOldIndex;
-        bool            mOldDirtyFlag;
+        AZStd::string   m_oldParent;
+        size_t          m_oldIndex;
+        bool            m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,20 +59,18 @@ namespace CommandSystem
 
     struct COMMANDSYSTEM_API ParameterConnectionItem
     {
-        uint32  mTargetNodePort;
+        void SetParameterNodeName(const char* name)         { m_parameterNodeNameId  = MCore::GetStringIdPool().GenerateIdForString(name); }
+        void SetTargetNodeName(const char* name)            { m_targetNodeNameId     = MCore::GetStringIdPool().GenerateIdForString(name); }
+        void SetParameterName(const char* name)             { m_parameterNameId      = MCore::GetStringIdPool().GenerateIdForString(name); }
 
-        void SetParameterNodeName(const char* name)         { mParameterNodeNameID  = MCore::GetStringIdPool().GenerateIdForString(name); }
-        void SetTargetNodeName(const char* name)            { mTargetNodeNameID     = MCore::GetStringIdPool().GenerateIdForString(name); }
-        void SetParameterName(const char* name)             { mParameterNameID      = MCore::GetStringIdPool().GenerateIdForString(name); }
-
-        const char* GetParameterNodeName() const            { return MCore::GetStringIdPool().GetName(mParameterNodeNameID).c_str(); }
-        const char* GetTargetNodeName() const               { return MCore::GetStringIdPool().GetName(mTargetNodeNameID).c_str(); }
-        const char* GetParameterName() const                { return MCore::GetStringIdPool().GetName(mParameterNameID).c_str(); }
+        const char* GetParameterNodeName() const            { return MCore::GetStringIdPool().GetName(m_parameterNodeNameId).c_str(); }
+        const char* GetTargetNodeName() const               { return MCore::GetStringIdPool().GetName(m_targetNodeNameId).c_str(); }
+        const char* GetParameterName() const                { return MCore::GetStringIdPool().GetName(m_parameterNameId).c_str(); }
 
     private:
-        uint32  mParameterNodeNameID;
-        uint32  mTargetNodeNameID;
-        uint32  mParameterNameID;
+        uint32  m_parameterNodeNameId;
+        uint32  m_targetNodeNameId;
+        uint32  m_parameterNameId;
     };
 
     COMMANDSYSTEM_API void RemoveConnectionsForParameter(EMotionFX::AnimGraph* animGraph, const char* parameterName, MCore::CommandGroup& commandGroup);
@@ -80,6 +79,6 @@ namespace CommandSystem
     COMMANDSYSTEM_API void ClearParametersCommand(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
 
     // Construct the create parameter command string using the the given information.
-    COMMANDSYSTEM_API void ConstructCreateParameterCommand(AZStd::string& outResult, EMotionFX::AnimGraph* animGraph, const EMotionFX::Parameter* parameter, uint32 insertAtIndex = MCORE_INVALIDINDEX32);
+    COMMANDSYSTEM_API void ConstructCreateParameterCommand(AZStd::string& outResult, EMotionFX::AnimGraph* animGraph, const EMotionFX::Parameter* parameter, size_t insertAtIndex = InvalidIndex);
 
 } // namespace CommandSystem

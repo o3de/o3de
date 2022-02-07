@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,7 @@
 #define AZCORE_DATA_OVERLAY_H
 
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace AZ
 {

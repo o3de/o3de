@@ -54,7 +54,7 @@
         <number>0</number>
        </property>
        <item>
-        <layout class="QVBoxLayout" name="m_headerLayout">
+        <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="AzToolsFramework::AssetBrowser::SearchWidget" name="m_searchWidget" native="true">
            <property name="sizePolicy">
@@ -62,6 +62,13 @@
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="m_toggleDisplayViewBtn">
+           <property name="text">
+            <string>...</string>
            </property>
           </widget>
          </item>
@@ -108,6 +115,46 @@
             <number>0</number>
            </property>
            <item>
+            <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_assetBrowserTableViewWidget">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="editTriggers">
+              <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+             </property>
+             <property name="dragDropOverwriteMode">
+              <bool>false</bool>
+             </property>
+             <property name="dragDropMode">
+              <enum>QAbstractItemView::DragOnly</enum>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+             <property name="horizontalScrollMode">
+              <enum>QAbstractItemView::ScrollPerPixel</enum>
+             </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+             <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+            </widget>
+           </item>
+           <item>
             <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTreeView" name="m_assetBrowserTreeViewWidget">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -152,6 +199,11 @@
    <container>1</container>
   </customwidget>
   <customwidget>
+   <class>AzQtComponents::TableView</class>
+   <extends>QTreeView</extends>
+   <header>AzQtComponents/Components/Widgets/TableView.h</header>
+  </customwidget>
+  <customwidget>
    <class>AzToolsFramework::AssetBrowser::AssetBrowserTreeView</class>
    <extends>QTreeView</extends>
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h</header>
@@ -162,7 +214,14 @@
    <header>AzToolsFramework/AssetBrowser/Previewer/PreviewerFrame.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
+   <extends>AzQtComponents::TableView</extends>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
+  </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

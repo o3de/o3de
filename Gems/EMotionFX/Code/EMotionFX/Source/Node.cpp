@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,24 +20,20 @@ namespace EMotionFX
     Node::Node(const char* name, Skeleton* skeleton)
         : BaseObject()
     {
-        // set the array memory categories
-        mAttributes.SetMemoryCategory(EMFX_MEMCATEGORY_NODES);
-        mChildIndices.SetMemoryCategory(EMFX_MEMCATEGORY_NODES);
-
-        mParentIndex        = MCORE_INVALIDINDEX32;
-        mNodeIndex          = MCORE_INVALIDINDEX32;     // hasn't been set yet
-        mSkeletalLODs       = 0xFFFFFFFF;               // set all bits of the integer to 1, which enables this node in all LOD levels on default
-        mSkeleton           = skeleton;
-        mSemanticNameID     = MCORE_INVALIDINDEX32;
-        mNodeFlags          = FLAG_INCLUDEINBOUNDSCALC;
+        m_parentIndex        = InvalidIndex;
+        m_nodeIndex          = InvalidIndex;     // hasn't been set yet
+        m_skeletalLoDs       = 0xFFFFFFFF;               // set all bits of the integer to 1, which enables this node in all LOD levels on default
+        m_skeleton           = skeleton;
+        m_semanticNameId     = InvalidIndex32;
+        m_nodeFlags          = FLAG_INCLUDEINBOUNDSCALC;
 
         if (name)
         {
-            mNameID         = MCore::GetStringIdPool().GenerateIdForString(name);
+            m_nameId         = MCore::GetStringIdPool().GenerateIdForString(name);
         }
         else
         {
-            mNameID         = MCORE_INVALIDINDEX32;
+            m_nameId         = InvalidIndex32;
         }
     }
 
@@ -44,17 +41,13 @@ namespace EMotionFX
     Node::Node(uint32 nameID, Skeleton* skeleton)
         : BaseObject()
     {
-        // set the array memory categories
-        mAttributes.SetMemoryCategory(EMFX_MEMCATEGORY_NODES);
-        mChildIndices.SetMemoryCategory(EMFX_MEMCATEGORY_NODES);
-
-        mParentIndex        = MCORE_INVALIDINDEX32;
-        mNodeIndex          = MCORE_INVALIDINDEX32;     // hasn't been set yet
-        mSkeletalLODs       = 0xFFFFFFFF;// set all bits of the integer to 1, which enables this node in all LOD levels on default
-        mSkeleton           = skeleton;
-        mNameID             = nameID;
-        mSemanticNameID     = MCORE_INVALIDINDEX32;
-        mNodeFlags          = FLAG_INCLUDEINBOUNDSCALC;
+        m_parentIndex        = InvalidIndex;
+        m_nodeIndex          = InvalidIndex;     // hasn't been set yet
+        m_skeletalLoDs       = 0xFFFFFFFF;// set all bits of the integer to 1, which enables this node in all LOD levels on default
+        m_skeleton           = skeleton;
+        m_nameId             = nameID;
+        m_semanticNameId     = InvalidIndex32;
+        m_nodeFlags          = FLAG_INCLUDEINBOUNDSCALC;
     }
 
 
@@ -82,95 +75,24 @@ namespace EMotionFX
     }
 
 
-    /*
-    // create a clone of this node
-    Node* Node::Clone(Actor* actor) const
-    {
-        Node* result = Node::Create(GetName(), actor);
-
-        // copy attributes
-        result->mParentIndex        = mParentIndex;
-        result->mNodeIndex          = mNodeIndex;
-        result->mNameID             = mNameID;
-        result->mSkeletalLODs       = mSkeletalLODs;
-        //result->mMotionLODs           = mMotionLODs;
-        result->mChildIndices       = mChildIndices;
-        //result->mImportanceFactor = mImportanceFactor;
-        result->mNodeFlags          = mNodeFlags;
-        result->mOBB                = mOBB;
-        result->mSemanticNameID     = mSemanticNameID;
-
-        // copy the node attributes
-        for (uint32 i=0; i<mAttributes.GetLength(); i++)
-            result->AddAttribute( mAttributes[i]->Clone() );
-
-        // copy the meshes
-        const uint32 numLODs = mLODs.GetLength();
-        if (result->mLODs.GetLength() < numLODs)
-            result->mLODs.Resize( numLODs );
-
-        for (uint32 i=0; i<numLODs; ++i)
-        {
-            Mesh* realMesh = mLODs[i].mMesh;
-            if (realMesh)
-                result->mLODs[i].mMesh = realMesh->Clone(actor, result);
-            else
-                result->mLODs[i].mMesh = nullptr;
-        }
-
-        // copy the collision meshes
-        for (uint32 i=0; i<numLODs; ++i)
-        {
-            Mesh* realMesh = mLODs[i].mColMesh;
-            if (realMesh)
-                result->mLODs[i].mColMesh = realMesh->Clone(actor, result);
-            else
-                result->mLODs[i].mColMesh = nullptr;
-        }
-
-        // clone node stacks
-        for (uint32 i=0; i<numLODs; ++i)
-        {
-            MeshDeformerStack* realStack = mLODs[i].mStack;
-            if (realStack)
-                result->mLODs[i].mStack = realStack->Clone(result->mLODs[i].mMesh, actor);
-            else
-                result->mLODs[i].mStack = nullptr;
-        }
-
-        // clone node collision stacks if desired
-        for (uint32 i=0; i<numLODs; ++i)
-        {
-            MeshDeformerStack* realStack = mLODs[i].mColStack;
-            if (realStack)
-                result->mLODs[i].mColStack = realStack->Clone(result->mLODs[i].mColMesh, actor);
-            else
-                result->mLODs[i].mColStack = nullptr;
-        }
-
-        // return the resulting clone
-        return result;
-    }
-    */
-
     // create a clone of this node
     Node* Node::Clone(Skeleton* skeleton) const
     {
-        Node* result = Node::Create(mNameID, skeleton);
+        Node* result = Node::Create(m_nameId, skeleton);
 
         // copy attributes
-        result->mParentIndex        = mParentIndex;
-        result->mNodeIndex          = mNodeIndex;
-        result->mSkeletalLODs       = mSkeletalLODs;
-        result->mChildIndices       = mChildIndices;
-        result->mNodeFlags          = mNodeFlags;
-        result->mSemanticNameID     = mSemanticNameID;
+        result->m_parentIndex        = m_parentIndex;
+        result->m_nodeIndex          = m_nodeIndex;
+        result->m_skeletalLoDs       = m_skeletalLoDs;
+        result->m_childIndices       = m_childIndices;
+        result->m_nodeFlags          = m_nodeFlags;
+        result->m_semanticNameId     = m_semanticNameId;
 
         // copy the node attributes
-        result->mAttributes.Reserve(mAttributes.GetLength());
-        for (uint32 i = 0; i < mAttributes.GetLength(); i++)
+        result->m_attributes.reserve(m_attributes.size());
+        for (const NodeAttribute* attribute : m_attributes)
         {
-            result->AddAttribute(mAttributes[i]->Clone());
+            result->AddAttribute(attribute->Clone());
         }
 
         // return the resulting clone
@@ -181,25 +103,24 @@ namespace EMotionFX
     // removes all attributes
     void Node::RemoveAllAttributes()
     {
-        while (mAttributes.GetLength())
+        while (!m_attributes.empty())
         {
-            mAttributes.GetLast()->Destroy();
-            mAttributes.RemoveLast();
+            m_attributes.back()->Destroy();
+            m_attributes.pop_back();
         }
     }
 
 
     // get the total number of children
-    uint32 Node::GetNumChildNodesRecursive() const
+    size_t Node::GetNumChildNodesRecursive() const
     {
         // the number of total child nodes which include the childs of the childs, too
-        uint32 result = 0;
+        size_t result = 0;
 
         // retrieve the number of child nodes of the actual node
-        const uint32 numChildNodes = GetNumChildNodes();
-        for (uint32 i = 0; i < numChildNodes; ++i)
+        for (size_t childIndex : m_childIndices)
         {
-            mSkeleton->GetNode(mChildIndices[i])->RecursiveCountChildNodes(result);
+            m_skeleton->GetNode(childIndex)->RecursiveCountChildNodes(result);
         }
 
         return result;
@@ -207,22 +128,21 @@ namespace EMotionFX
 
 
     // recursively count the number of nodes down the hierarchy
-    void Node::RecursiveCountChildNodes(uint32& numNodes)
+    void Node::RecursiveCountChildNodes(size_t& numNodes)
     {
         // increase the counter
         numNodes++;
 
         // recurse down the hierarchy
-        const uint32 numChildNodes = mChildIndices.GetLength();
-        for (uint32 i = 0; i < numChildNodes; ++i)
+        for (size_t childIndex : m_childIndices)
         {
-            mSkeleton->GetNode(mChildIndices[i])->RecursiveCountChildNodes(numNodes);
+            m_skeleton->GetNode(childIndex)->RecursiveCountChildNodes(numNodes);
         }
     }
 
 
     // recursively go through the parents until a root node is reached and store all parents inside an array
-    void Node::RecursiveCollectParents(AZStd::vector<uint32>& parents, bool clearParentsArray) const
+    void Node::RecursiveCollectParents(AZStd::vector<size_t>& parents, bool clearParentsArray) const
     {
         if (clearParentsArray)
         {
@@ -230,12 +150,12 @@ namespace EMotionFX
         }
 
         // loop until we reached a root node
-        Node* node = const_cast<Node*>(this);
+        const Node* node = this;
         while (node)
         {
             // get the parent index and add it to the list of parents if the current node is not a root node
-            const uint32 parentIndex = node->GetParentIndex();
-            if (parentIndex != MCORE_INVALIDINDEX32)
+            const size_t parentIndex = node->GetParentIndex();
+            if (parentIndex != InvalidIndex)
             {
                 // check if the parent is already in our array, if not add it so that we only store each node once
                 if (AZStd::find(begin(parents), end(parents), parentIndex) == end(parents))
@@ -251,55 +171,29 @@ namespace EMotionFX
 
 
     // remove the given attribute of the given type from the node
-    void Node::RemoveAttributeByType(uint32 attributeTypeID, uint32 occurrence)
+    void Node::RemoveAttributeByType(uint32 attributeTypeID, size_t occurrence)
     {
-        // retrieve the number of attributes inside this node
-        const uint32 numAttributes = GetNumAttributes();
-
-        // counts the number of occurrences of the attribute to search for
-        uint32 numOccurredAttibutes = 0;
-
-        // iterate through all node attributes
-        for (uint32 i = 0; i < numAttributes; ++i)
+        const auto foundAttribute = AZStd::find_if(begin(m_attributes), end(m_attributes), [attributeTypeID, occurrence, currentOccurrence = size_t{0}] (const NodeAttribute* attribute) mutable
         {
-            // get the current node attribute
-            NodeAttribute* nodeAttribute = GetAttribute(i);
-
-            // check the type of the current node attribute and compare the two
-            if (nodeAttribute->GetType() == attributeTypeID)
+            if (attribute->GetType() == attributeTypeID)
             {
-                // increase the occurrence counter
-                numOccurredAttibutes++;
-
-                // check if the found attribute is the one we searched
-                if (occurrence < numOccurredAttibutes)
-                {
-                    // remove the attribute and return
-                    RemoveAttribute(i);
-                    return;
-                }
+                ++currentOccurrence;
+                return occurrence < currentOccurrence;
             }
-        }
+            return false;
+        });
+
+        m_attributes.erase(foundAttribute);
     }
 
 
     // remove all attributes of the given type from the node
-    uint32 Node::RemoveAllAttributesByType(uint32 attributeTypeID)
+    size_t Node::RemoveAllAttributesByType(uint32 attributeTypeID)
     {
-        uint32 attributeNumber = MCORE_INVALIDINDEX32;
-        uint32 numAttributesRemoved = 0;
-
-        // try to find a node of the given attribute type
-        while ((attributeNumber = FindAttributeNumber(attributeTypeID)) != MCORE_INVALIDINDEX32)
+        return AZStd::erase_if(m_attributes, [attributeTypeID](const NodeAttribute* attribute)
         {
-            // remove the attribute we found and go again
-            RemoveAttribute(attributeNumber);
-
-            // increase the number of removed attributes
-            numAttributesRemoved++;
-        }
-
-        return numAttributesRemoved;
+            return attribute->GetType() == attributeTypeID;
+        });
     }
 
 
@@ -307,25 +201,25 @@ namespace EMotionFX
     // recursively find the root node (expensive call)
     Node* Node::FindRoot() const
     {
-        uint32 parentIndex = mParentIndex;
-        Node* curNode = const_cast<Node*>(this);
+        size_t parentIndex = m_parentIndex;
+        const Node* curNode = this;
 
-        while (parentIndex != MCORE_INVALIDINDEX32)
+        while (parentIndex != InvalidIndex)
         {
-            curNode = mSkeleton->GetNode(parentIndex);
+            curNode = m_skeleton->GetNode(parentIndex);
             parentIndex = curNode->GetParentIndex();
         }
 
-        return curNode;
+        return const_cast<Node*>(curNode);
     }
 
 
     // get the parent node, or nullptr when it doesn't exist
     Node* Node::GetParentNode() const
     {
-        if (mParentIndex != MCORE_INVALIDINDEX32)
+        if (m_parentIndex != InvalidIndex)
         {
-            return mSkeleton->GetNode(mParentIndex);
+            return m_skeleton->GetNode(m_parentIndex);
         }
 
         return nullptr;
@@ -337,11 +231,11 @@ namespace EMotionFX
     {
         if (name)
         {
-            mNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+            m_nameId = MCore::GetStringIdPool().GenerateIdForString(name);
         }
         else
         {
-            mNameID = MCORE_INVALIDINDEX32;
+            m_nameId = InvalidIndex32;
         }
     }
 
@@ -351,53 +245,53 @@ namespace EMotionFX
     {
         if (name)
         {
-            mSemanticNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+            m_semanticNameId = MCore::GetStringIdPool().GenerateIdForString(name);
         }
         else
         {
-            mSemanticNameID = MCORE_INVALIDINDEX32;
+            m_semanticNameId = InvalidIndex32;
         }
     }
 
 
-    void Node::SetParentIndex(uint32 parentNodeIndex)
+    void Node::SetParentIndex(size_t parentNodeIndex)
     {
-        mParentIndex = parentNodeIndex;
+        m_parentIndex = parentNodeIndex;
     }
 
 
     // get the name
     const char* Node::GetName() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID).c_str();
+        return MCore::GetStringIdPool().GetName(m_nameId).c_str();
     }
 
 
     // get the name of the node as pointer to chars
     const AZStd::string& Node::GetNameString() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID);
+        return MCore::GetStringIdPool().GetName(m_nameId);
     }
 
 
     // get the semantic name
     const char* Node::GetSemanticName() const
     {
-        return MCore::GetStringIdPool().GetName(mSemanticNameID).c_str();
+        return MCore::GetStringIdPool().GetName(m_semanticNameId).c_str();
     }
 
 
     // get the semantic name of the node as pointer to chars
     const AZStd::string& Node::GetSemanticNameString() const
     {
-        return MCore::GetStringIdPool().GetName(mSemanticNameID);
+        return MCore::GetStringIdPool().GetName(m_semanticNameId);
     }
 
 
     // returns true if this is a root node, so if it has no parents
     bool Node::GetIsRootNode() const
     {
-        return (mParentIndex == MCORE_INVALIDINDEX32);
+        return (m_parentIndex == InvalidIndex);
     }
 
 
@@ -405,132 +299,123 @@ namespace EMotionFX
 
     void Node::AddAttribute(NodeAttribute* attribute)
     {
-        mAttributes.Add(attribute);
+        m_attributes.emplace_back(attribute);
     }
 
 
-    uint32 Node::GetNumAttributes() const
+    size_t Node::GetNumAttributes() const
     {
-        return mAttributes.GetLength();
+        return m_attributes.size();
     }
 
 
-    NodeAttribute* Node::GetAttribute(uint32 attributeNr)
+    NodeAttribute* Node::GetAttribute(size_t attributeNr)
     {
         // make sure we are in range
-        MCORE_ASSERT(attributeNr < mAttributes.GetLength());
+        MCORE_ASSERT(attributeNr < m_attributes.size());
 
         // return the attribute
-        return mAttributes[attributeNr];
+        return m_attributes[attributeNr];
     }
 
 
-    uint32 Node::FindAttributeNumber(uint32 attributeTypeID) const
+    size_t Node::FindAttributeNumber(uint32 attributeTypeID) const
     {
         // check all attributes, and find where the specific attribute is
-        const uint32 numAttributes = mAttributes.GetLength();
-        for (uint32 i = 0; i < numAttributes; ++i)
+        const auto foundAttribute = AZStd::find_if(begin(m_attributes), end(m_attributes), [attributeTypeID](const NodeAttribute* attribute)
         {
-            if (mAttributes[i]->GetType() == attributeTypeID)
-            {
-                return i;
-            }
-        }
-
-        // not found
-        return MCORE_INVALIDINDEX32;
+            return attribute->GetType() == attributeTypeID;
+        });
+        return foundAttribute != end(m_attributes) ? AZStd::distance(begin(m_attributes), foundAttribute) : InvalidIndex;
     }
 
 
     NodeAttribute* Node::GetAttributeByType(uint32 attributeType)
     {
         // check all attributes
-        const uint32 numAttributes = mAttributes.GetLength();
-        for (uint32 i = 0; i < numAttributes; ++i)
+        const auto foundAttribute = AZStd::find_if(begin(m_attributes), end(m_attributes), [attributeType](const NodeAttribute* attribute)
         {
-            if (mAttributes[i]->GetType() == attributeType)
-            {
-                return mAttributes[i];
-            }
-        }
-
-        // not found
-        return nullptr;
+            return attribute->GetType() == attributeType;
+        });
+        return foundAttribute != end(m_attributes) ? *foundAttribute : nullptr;
     }
 
 
     // remove the given attribute
-    void Node::RemoveAttribute(uint32 index)
+    void Node::RemoveAttribute(size_t index)
     {
-        mAttributes.Remove(index);
+        m_attributes.erase(AZStd::next(begin(m_attributes), index));
     }
 
 
-    void Node::AddChild(uint32 nodeIndex)
+    void Node::AddChild(size_t nodeIndex)
     {
-        mChildIndices.AddExact(nodeIndex);
+        m_childIndices.emplace_back(nodeIndex);
     }
 
 
-    void Node::SetChild(uint32 childNr, uint32 childNodeIndex)
+    void Node::SetChild(size_t childNr, size_t childNodeIndex)
     {
-        mChildIndices[childNr] = childNodeIndex;
+        m_childIndices[childNr] = childNodeIndex;
     }
 
 
-    void Node::SetNumChildNodes(uint32 numChildNodes)
+    void Node::SetNumChildNodes(size_t numChildNodes)
     {
-        mChildIndices.Resize(numChildNodes);
+        m_childIndices.resize(numChildNodes);
     }
 
 
-    void Node::PreAllocNumChildNodes(uint32 numChildNodes)
+    void Node::PreAllocNumChildNodes(size_t numChildNodes)
     {
-        mChildIndices.Reserve(numChildNodes);
+        m_childIndices.reserve(numChildNodes);
     }
 
 
-    void Node::RemoveChild(uint32 nodeIndex)
+    void Node::RemoveChild(size_t nodeIndex)
     {
-        mChildIndices.RemoveByValue(nodeIndex);
+        if (const auto it = AZStd::find(begin(m_childIndices), end(m_childIndices), nodeIndex); it != end(m_childIndices))
+        {
+            m_childIndices.erase(it);
+        }
     }
 
 
     void Node::RemoveAllChildNodes()
     {
-        mChildIndices.Clear();
+        m_childIndices.clear();
     }
 
 
     bool Node::GetHasChildNodes() const
     {
-        return (mChildIndices.GetLength() > 0);
+        return !m_childIndices.empty();
     }
 
 
-    void Node::SetNodeIndex(uint32 index)
+    void Node::SetNodeIndex(size_t index)
     {
-        mNodeIndex = index;
+        m_nodeIndex = index;
     }
 
 
 
-    void Node::SetSkeletalLODLevelBits(uint32 bitValues)
+    void Node::SetSkeletalLODLevelBits(size_t bitValues)
     {
-        mSkeletalLODs = bitValues;
+        m_skeletalLoDs = bitValues;
     }
 
 
-    void Node::SetSkeletalLODStatus(uint32 lodLevel, bool enabled)
+    void Node::SetSkeletalLODStatus(size_t lodLevel, bool enabled)
     {
-        MCORE_ASSERT(lodLevel <= 31);
+        MCORE_ASSERT(lodLevel <= 63);
         if (enabled)
         {
-            mSkeletalLODs |= (1 << lodLevel);
+            m_skeletalLoDs |= (1ull << lodLevel);
         }
         else
         {
-            mSkeletalLODs &= ~(1 << lodLevel);
+            m_skeletalLoDs &= ~(1ull << lodLevel);
         }
     }
 
@@ -539,11 +424,11 @@ namespace EMotionFX
     {
         if (includeThisNode)
         {
-            mNodeFlags |= FLAG_INCLUDEINBOUNDSCALC;
+            m_nodeFlags |= FLAG_INCLUDEINBOUNDSCALC;
         }
         else
         {
-            mNodeFlags &= ~FLAG_INCLUDEINBOUNDSCALC;
+            m_nodeFlags &= ~FLAG_INCLUDEINBOUNDSCALC;
         }
     }
 
@@ -551,18 +436,18 @@ namespace EMotionFX
     {
         if (isCritical)
         {
-            mNodeFlags |= FLAG_CRITICAL;
+            m_nodeFlags |= FLAG_CRITICAL;
         }
         else
         {
-            mNodeFlags &= ~FLAG_CRITICAL;
+            m_nodeFlags &= ~FLAG_CRITICAL;
         }
     }
 
 
     bool Node::GetIsAttachmentNode() const
     {
-        return (mNodeFlags & FLAG_ATTACHMENT) != 0;
+        return (m_nodeFlags & FLAG_ATTACHMENT) != 0;
     }
 
 
@@ -570,11 +455,11 @@ namespace EMotionFX
     {
         if (isAttachmentNode)
         {
-            mNodeFlags |= FLAG_ATTACHMENT;
+            m_nodeFlags |= FLAG_ATTACHMENT;
         }
         else
         {
-            mNodeFlags &= ~FLAG_ATTACHMENT;
+            m_nodeFlags &= ~FLAG_ATTACHMENT;
         }
     }
 } // namespace EMotionFX

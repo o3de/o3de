@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,7 @@
 #define CRYINCLUDE_CRYCOMMON_VECTORMAP_H
 #pragma once
 
+#include <CryCommon/StlUtils.h>
 
 //--------------------------------------------------------------------------
 // VectorMap
@@ -407,10 +409,8 @@ typename VectorMap<K, V, T, A>::key_compare VectorMap<K, V, T, A>::key_comp() co
 template <typename K, typename V, typename T, typename A>
 typename VectorMap<K, V, T, A>::iterator VectorMap<K, V, T, A>::lower_bound(const key_type& key)
 {
-    int count = 0;
-    count = m_entries.size();
+    int count = static_cast<int>(m_entries.size());
     iterator first = m_entries.begin();
-    iterator last = m_entries.end();
     for (; 0 < count; )
     {   // divide and conquer, find half that contains answer
         int count2 = count / 2;
@@ -431,10 +431,8 @@ typename VectorMap<K, V, T, A>::iterator VectorMap<K, V, T, A>::lower_bound(cons
 template <typename K, typename V, typename T, typename A>
 typename VectorMap<K, V, T, A>::const_iterator VectorMap<K, V, T, A>::lower_bound(const key_type& key) const
 {
-    int count = 0;
-    count = m_entries.size();
+    int count = static_cast<int>(m_entries.size());
     const_iterator first = m_entries.begin();
-    const_iterator last = m_entries.end();
     for (; 0 < count; )
     {   // divide and conquer, find half that contains answer
         int count2 = count / 2;

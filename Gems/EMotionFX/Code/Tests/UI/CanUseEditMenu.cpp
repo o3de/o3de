@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,7 +41,7 @@ namespace EMotionFX
         CommandSystem::CreateAnimGraphNode(/*commandGroup=*/nullptr, animGraph, azrtti_typeid<EMotionFX::AnimGraphReferenceNode>(), "Reference", currentNode, 0, 0);
         
         // Check the expected node now exists.
-        uint32 numNodes = currentNode->GetNumChildNodes();
+        size_t numNodes = currentNode->GetNumChildNodes();
         EXPECT_EQ(1, numNodes);
 
         // Undo.
@@ -48,7 +49,7 @@ namespace EMotionFX
         ASSERT_TRUE(undoAction);
         undoAction->trigger();
 
-        const uint32 numNodesAfterUndo = currentNode->GetNumChildNodes();
+        const size_t numNodesAfterUndo = currentNode->GetNumChildNodes();
         ASSERT_EQ(numNodesAfterUndo, numNodes - 1);
 
         // Redo.
@@ -56,7 +57,7 @@ namespace EMotionFX
         ASSERT_TRUE(redoAction);
         redoAction->trigger();
 
-        const uint32 numNodesAfterRedo = currentNode->GetNumChildNodes();
+        const size_t numNodesAfterRedo = currentNode->GetNumChildNodes();
         ASSERT_EQ(numNodesAfterRedo, numNodesAfterUndo + 1);
     }
 } // namespace EMotionFX

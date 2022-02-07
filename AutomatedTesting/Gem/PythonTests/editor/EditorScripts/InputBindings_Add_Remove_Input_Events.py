@@ -1,35 +1,40 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-"""
-C1506881: Adding/Removing Event Groups
-"""
 
-import os
-import sys
-from PySide2 import QtWidgets
+class Tests:
+    asset_editor_opened = (
+        "Successfully opened the Asset Editor",
+        "Failed to open the Asset Editor"
+    )
+    event_groups_added = (
+        "Successfully added event groups via +",
+        "Failed to add event groups"
+    )
+    single_event_group_deleted = (
+        "Successfully deleted an event group",
+        "Failed to delete event group"
+    )
+    all_event_groups_deleted = (
+        "Successfully deleted all event groups",
+        "Failed to delete all event groups"
+    )
+    asset_editor_closed = (
+        "Successfully closed the Asset Editor",
+        "Failed to close the Asset Editor"
+    )
 
-import azlmbr.legacy.general as general
-import azlmbr.bus as bus
-import azlmbr.editor as editor
-import azlmbr.entity as entity
-import azlmbr.math as math
-import azlmbr.paths
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import editor_python_test_tools.hydra_editor_utils as hydra
-import editor_python_test_tools.pyside_utils as pyside_utils
-from editor_python_test_tools.editor_test_helper import EditorTestHelper
+def InputBindings_Add_Remove_Input_Events():
 
-class AddRemoveInputEventsTest(EditorTestHelper):
-    def __init__(self):
-        EditorTestHelper.__init__(self, log_prefix="InputBindings_Add_Remove_Input_Events", args=["level"])
+    import editor_python_test_tools.pyside_utils as pyside_utils
 
     @pyside_utils.wrap_async
-    async def run_test(self):
+    async def run_test():
         """
         Summary:
         Verify if we are able add/remove input events in inputbindings file.
@@ -41,7 +46,7 @@ class AddRemoveInputEventsTest(EditorTestHelper):
 
 
         Test Steps:
-        1) Open a new level
+        1) Open an existing level
         2) Open Asset Editor
         3) Access Asset Editor
         4) Create a new .inputbindings file and add event groups
@@ -60,6 +65,13 @@ class AddRemoveInputEventsTest(EditorTestHelper):
         :return: None
         """
 
+        from PySide2 import QtWidgets
+
+        import azlmbr.legacy.general as general
+
+        from editor_python_test_tools.utils import Report
+        from editor_python_test_tools.utils import TestHelper as helper
+
         def open_asset_editor():
             general.open_pane("Asset Editor")
             return general.is_pane_visible("Asset Editor")
@@ -68,17 +80,12 @@ class AddRemoveInputEventsTest(EditorTestHelper):
             general.close_pane("Asset Editor")
             return not general.is_pane_visible("Asset Editor")
 
-        # 1) Open a new level
-        self.test_success = self.create_level(
-            self.args["level"],
-            heightmap_resolution=1024,
-            heightmap_meters_per_pixel=1,
-            terrain_texture_resolution=4096,
-            use_terrain=False,
-        )
+        # 1) Open an existing simple level
+        helper.init_idle()
+        helper.open_level("Physics", "Base")
 
         # 2) Open Asset Editor
-        print(f"Asset Editor opened: {open_asset_editor()}")
+        Report.result(Tests.asset_editor_opened, open_asset_editor())
 
         # 3) Access Asset Editor
         editor_window = pyside_utils.get_editor_main_window()
@@ -102,8 +109,7 @@ class AddRemoveInputEventsTest(EditorTestHelper):
         # 5) Verify if there are 3 elements in the Input Event Groups label
         no_of_elements_label = input_event_groups.findChild(QtWidgets.QLabel, "DefaultLabel")
         success = await pyside_utils.wait_for_condition(lambda: "3 elements" in no_of_elements_label.text(), 2.0)
-        if success:
-            print("New Event Groups added when + is clicked")
+        Report.result(Tests.event_groups_added, success)
 
         # 6) Delete one event group
         event = asset_editor_widget.findChildren(QtWidgets.QFrame, "<Unspecified Event>")[0]
@@ -120,11 +126,11 @@ class AddRemoveInputEventsTest(EditorTestHelper):
                 input_event_group = input_event_groups[1]
                 no_of_elements_label = input_event_group.findChild(QtWidgets.QLabel, "DefaultLabel")
                 return no_of_elements_label.text()
+            return ""
 
-            return "";
-        success = await pyside_utils.wait_for_condition(lambda: "2 elements" in get_elements_label_text(asset_editor_widget), 2.0)
-        if success:
-            print("Event Group deleted when the Delete button is clicked on an Event Group")
+        success = await pyside_utils.wait_for_condition(lambda: "2 elements" in
+                                                                get_elements_label_text(asset_editor_widget), 2.0)
+        Report.result(Tests.single_event_group_deleted, success)
 
         # 8) Click on Delete button to delete all the Event Groups
         # First QToolButton child of active input_event_groups is +, Second QToolButton is Delete
@@ -140,13 +146,17 @@ class AddRemoveInputEventsTest(EditorTestHelper):
         yes_button.click()
 
         # 9) Verify if all the elements are deleted
-        success = await pyside_utils.wait_for_condition(lambda: "0 elements" in get_elements_label_text(asset_editor_widget), 2.0)
-        if success:
-            print("All event groups deleted on clicking the Delete button")
+        success = await pyside_utils.wait_for_condition(lambda: "0 elements" in
+                                                                get_elements_label_text(asset_editor_widget), 2.0)
+        Report.result(Tests.all_event_groups_deleted, success)
 
         # 10) Close Asset Editor
-        print(f"Asset Editor closed: {close_asset_editor()}")
+        Report.result(Tests.asset_editor_closed, close_asset_editor())
+
+    run_test()
 
 
-test = AddRemoveInputEventsTest()
-test.run()
+if __name__ == "__main__":
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(InputBindings_Add_Remove_Input_Events)

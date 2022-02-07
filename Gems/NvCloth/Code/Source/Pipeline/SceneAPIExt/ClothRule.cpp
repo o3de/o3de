@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,7 +37,15 @@ namespace NvCloth
             const AZ::SceneAPI::Containers::SceneGraph& graph,
             const size_t numVertices) const
         {
-            const auto meshNodeIndex = graph.Find(GetMeshNodeName());
+            const AZ::SceneAPI::Containers::SceneGraph::NodeIndex meshNodeIndex = [this, &graph]()
+            {
+                if (const auto index = graph.Find(GetMeshNodeName() + AZStd::string(AZ::SceneAPI::Utilities::OptimizedMeshSuffix)); index.IsValid())
+                {
+                    return index;
+                }
+                return graph.Find(GetMeshNodeName());
+            }();
+
             if (!meshNodeIndex.IsValid())
             {
                 return {};

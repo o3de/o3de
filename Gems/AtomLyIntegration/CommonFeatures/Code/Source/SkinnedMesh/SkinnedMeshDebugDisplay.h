@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,7 +48,7 @@ namespace AZ
             // CVar for toggling the display of the scene stats
             int r_skinnedMeshDisplaySceneStats = 0;
             // SceneId to query for the stats
-            RPI::SceneId m_sceneId = RPI::SceneId::CreateNull();
+            RPI::SceneId m_sceneId;
         };
     }// namespace Render
 }// namespace AZ

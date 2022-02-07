@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
 
 namespace AZ::SceneAPI
@@ -53,7 +55,7 @@ namespace AZ::SceneAPI
             AZ::Transform   m_targetTransform;
             AZ::Transform   m_conversionTransform;
             AZ::Transform   m_conversionTransformInversed;
-            AZ_POP_DISABLE_OVERRIDE_WARNING
+            AZ_POP_DISABLE_WARNING
             AZ::u32         m_targetBasisIndices[3];
             bool            m_needsConversion;
             bool            m_sourceRightHanded;

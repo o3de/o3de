@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,6 +39,22 @@ namespace AssetProcessor
     class ScanFolderInfo;
     extern const char AssetConfigPlatformDir[];
     extern const char AssetProcessorPlatformConfigFileName[];
+
+    struct AssetImporterPathsVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        AssetImporterPathsVisitor(AZ::SettingsRegistryInterface* settingsRegistry, AZStd::vector<AZStd::string>& supportedExtension)
+            : m_settingsRegistry(settingsRegistry)
+            , m_supportedFileExtensions(supportedExtension)
+        {
+        }
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+
+        AZ::SettingsRegistryInterface* m_settingsRegistry;
+        AZStd::vector<AZStd::string> m_supportedFileExtensions;
+    };
 
     //! Information for a given recognizer, on a specific platform
     //! essentially a plain data holder, but with helper funcs
@@ -113,6 +130,8 @@ namespace AssetProcessor
     {
         AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
             AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
@@ -136,6 +155,8 @@ namespace AssetProcessor
     {
         AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
             AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
         AZStd::vector<ExcludeAssetRecognizer> m_excludeAssetRecognizers;
@@ -153,6 +174,8 @@ namespace AssetProcessor
         }
         AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
             AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;

@@ -1,19 +1,22 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include <Builders/BenchmarkAssetBuilder/BenchmarkAssetBuilderWorker.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Debug/Trace.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
+
+#include <CryCommon/platform.h>
 
 namespace BenchmarkAssetBuilder
 {

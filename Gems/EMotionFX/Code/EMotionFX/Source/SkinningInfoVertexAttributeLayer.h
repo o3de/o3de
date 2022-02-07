@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,9 +28,9 @@ namespace EMotionFX
          * Default constructor.
          */
         SkinInfluence()
-            : mWeight(0.0f)
-            , mBoneNr(0)
-            , mNodeNr(0) {}
+            : m_weight(0.0f)
+            , m_boneNr(0)
+            , m_nodeNr(0) {}
 
         /**
          * Constructor.
@@ -38,52 +39,52 @@ namespace EMotionFX
          * @param boneNr The bone number, used as optimization inside the softskin deformer.
          */
         SkinInfluence(uint16 nodeNr, float weight, uint16 boneNr = 0)
-            : mWeight(weight)
-            , mBoneNr(boneNr)
-            , mNodeNr(nodeNr) {}
+            : m_weight(weight)
+            , m_boneNr(boneNr)
+            , m_nodeNr(nodeNr) {}
 
         /**
          * Get the weight of this influence.
          * @result The weight, which should be in range of [0..1].
          */
-        MCORE_INLINE float GetWeight() const                                    { return mWeight; }
+        MCORE_INLINE float GetWeight() const                                    { return m_weight; }
 
         /**
          * Adjust the weight value.
          * @param weight The weight value, which must be in range of [0..1].
          */
-        void SetWeight(float weight)                                            { mWeight = weight; }
+        void SetWeight(float weight)                                            { m_weight = weight; }
 
         /**
          * Get the node number that points inside an actor.
          * So this number is an index you can pass to Actor::GetNode(...) to get the actual node that acts as bone.
          * @result The node number, which points inside the nodes array of the actor.
          */
-        MCORE_INLINE uint16 GetNodeNr() const                                   { return mNodeNr; }
+        MCORE_INLINE uint16 GetNodeNr() const                                   { return m_nodeNr; }
 
         /**
          * Set the node number that points inside an actor.
          * So this number is an index you can pass to Actor::GetNode(...) to get the actual node that acts as bone.
          * @param nodeNr The node number, which points inside the nodes array of the actor.
          */
-        void SetNodeNr(uint16 nodeNr)                                           { mNodeNr = nodeNr; }
+        void SetNodeNr(uint16 nodeNr)                                           { m_nodeNr = nodeNr; }
 
         /**
          * Set the bone number, used for precalculations.
          * @param boneNr The bone number.
          */
-        void SetBoneNr(uint16 boneNr)                                           { mBoneNr = boneNr; }
+        void SetBoneNr(uint16 boneNr)                                           { m_boneNr = boneNr; }
 
         /**
          * Get the bone number, which is used for precalculations.
          * @result The bone number.
          */
-        MCORE_INLINE uint16 GetBoneNr() const                                   { return mBoneNr; }
+        MCORE_INLINE uint16 GetBoneNr() const                                   { return m_boneNr; }
 
     private:
-        float   mWeight;    /**< The weight value, between 0 and 1. */
-        uint16  mBoneNr;    /**< A bone number, which points in an array of bone info structs used for precalculating the skinning matrices. */
-        uint16  mNodeNr;    /**< The node number inside the actor which acts as a bone. */
+        float   m_weight;    /**< The weight value, between 0 and 1. */
+        uint16  m_boneNr;    /**< A bone number, which points in an array of bone info structs used for precalculating the skinning matrices. */
+        uint16  m_nodeNr;    /**< The node number inside the actor which acts as a bone. */
     };
 
 
@@ -148,7 +149,7 @@ namespace EMotionFX
          * @param attributeNr The attribute/vertex number.
          * @result The number of influences.
          */
-        MCORE_INLINE size_t GetNumInfluences(size_t attributeNr)                                            { return mData.GetNumElements(attributeNr); }
+        MCORE_INLINE size_t GetNumInfluences(size_t attributeNr)                                            { return m_data.GetNumElements(attributeNr); }
 
         /**
          * Get a given influence.
@@ -156,21 +157,21 @@ namespace EMotionFX
          * @param influenceNr The influence number, which must be in range of [0..GetNumInfluences()]
          * @result The given influence.
          */
-        MCORE_INLINE SkinInfluence* GetInfluence(size_t attributeNr, size_t influenceNr)                    { return &mData.GetElement(attributeNr, influenceNr); }
+        MCORE_INLINE SkinInfluence* GetInfluence(size_t attributeNr, size_t influenceNr)                    { return &m_data.GetElement(attributeNr, influenceNr); }
 
         /**
          * Get direct access to the jagged 2D array that contains the skinning influence data.
          * This can be used in the importers for fast loading and not having to add influence per influence.
          * @result A reference to the 2D array containing all the skinning influences.
          */
-        MCORE_INLINE MCore::Array2D<SkinInfluence>& GetArray2D()                                            { return mData; }
+        MCORE_INLINE MCore::Array2D<SkinInfluence>& GetArray2D()                                            { return m_data; }
 
         /**
         * Collect all unique joint indices used by the skin.
         * @param numOrgVertices The number of original vertices in the mesh.
         * @result Vector of unique joint indices used by the skinning info layer.
         */
-        AZStd::set<AZ::u32> CalcLocalJointIndices(AZ::u32 numOrgVertices);
+        AZStd::set<uint16> CalcLocalJointIndices(AZ::u32 numOrgVertices);
 
         /**
          * Clone the vertex attribute layer.
@@ -250,7 +251,7 @@ namespace EMotionFX
         void CollapseInfluences(size_t attributeNr);
 
     private:
-        MCore::Array2D<SkinInfluence>   mData;  /**< The stored influence data. The Array2D template allows a different number of skinning influences per vertex. */
+        MCore::Array2D<SkinInfluence>   m_data;  /**< The stored influence data. The Array2D template allows a different number of skinning influences per vertex. */
 
         /**
          * The constructor.

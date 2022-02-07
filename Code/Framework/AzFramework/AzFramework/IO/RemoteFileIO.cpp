@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,10 +24,12 @@ namespace AZ
     namespace IO
     {
         //////////////////////////////////////////////////////////////////////////
-        const char* const NetworkFileIOChannel = "NetworkFileIO";
+        [[maybe_unused]] const char* const NetworkFileIOChannel = "NetworkFileIO";
 #ifndef REMOTEFILEIO_IS_NETWORKFILEIO
-        const char* const RemoteFileIOChannel = "RemoteFileIO";
+        [[maybe_unused]] const char* const RemoteFileIOChannel = "RemoteFileIO";
+    #ifdef REMOTEFILEIO_SYNC_CHECK
         const char* const RemoteFileCacheChannel = "RemoteFileCache";
+    #endif
 #endif
 
         const size_t READ_CHUNK_SIZE = 1024 * 256;
@@ -46,14 +49,14 @@ namespace AZ
                 s_IOLog.append(m_name);
                 s_IOLog.append("\r\n");
             }
-            
+
             void Append(const char* line)
             {
                 s_IOLog.append(AZStd::string::format("%u ", m_fileOperation));
                 s_IOLog.append(line);
                 s_IOLog.append("\r\n");
             }
-            
+
             ~LogCall()
             {
                 s_IOLog.append(AZStd::string::format("%u End ", m_fileOperation));
@@ -248,7 +251,7 @@ namespace AZ
                 REMOTEFILE_LOG_APPEND(AZStd::string::format("NetworkFileIO::Size(filePath=%s) size request failed. return Error", filePath).c_str());
                 return ResultCode::Error;
             }
-            
+
             size = response.m_size;
             REMOTEFILE_LOG_APPEND(AZStd::string::format("NetworkFileIO::Size(filePath=%s) size=%u. return Success", filePath, size).c_str());
             return ResultCode::Success;
@@ -790,6 +793,12 @@ namespace AZ
             REMOTEFILE_LOG_CALL(AZStd::string::format("NetworkFileIO()::ClearAlias(alias=%s)", alias?alias:"nullptr").c_str());
         }
 
+        void NetworkFileIO::SetDeprecatedAlias([[maybe_unused]] AZStd::string_view oldAlias, [[maybe_unused]] AZStd::string_view newAlias)
+        {
+            REMOTEFILE_LOG_CALL(AZStd::string::format("NetworkFileIO()::SetDeprecatedAlias(oldAlias=%.*s, newAlias=%.*s)",
+                AZ_STRING_ARG(oldAlias), AZ_STRING_ARG(newAlias)).c_str());
+        }
+
         AZStd::optional<AZ::u64> NetworkFileIO::ConvertToAlias(char* inOutBuffer, [[maybe_unused]] AZ::u64 bufferLength) const
         {
             REMOTEFILE_LOG_CALL(AZStd::string::format("NetworkFileIO()::ConvertToAlias(inOutBuffer=%s, bufferLength=%u)", inOutBuffer?inOutBuffer:"nullptr", bufferLength).c_str());
@@ -924,7 +933,7 @@ namespace AZ
         {
             m_cacheLookaheadPos = filePosition - CacheStartFilePosition();
         }
-        
+
         void RemoteFileCache::SyncCheck()
         {
 #ifdef REMOTEFILEIO_SYNC_CHECK
@@ -952,7 +961,7 @@ namespace AZ
                 AZ_TracePrintf(RemoteFileCacheChannel, "RemoteFileCache::SyncCheck(m_fileHandle=%u) tell request failed.", m_fileHandle);
                 REMOTEFILE_LOG_APPEND(AZStd::string::format("RemoteFileCache::SyncCheck(m_fileHandle=%u) tell request failed.", m_fileHandle).c_str());
             }
-            
+
             if (responce.m_offset != m_filePosition)
             {
                 AZ_TracePrintf(RemoteFileCacheChannel, "RemoteFileCache::SyncCheck(m_fileHandle=%u) failed!!! m_filePosition=%u tell=%u", m_fileHandle, m_filePosition, responce.m_offset);
@@ -1025,7 +1034,7 @@ namespace AZ
         {
             REMOTEFILE_LOG_CALL(AZStd::string::format("RemoteFileIO()::Close(fileHandle=%u)", fileHandle).c_str());
             Result returnValue = NetworkFileIO::Close(fileHandle);
-            
+
             if (returnValue == ResultCode::Success)
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_remoteFileCacheGuard);
@@ -1080,16 +1089,6 @@ namespace AZ
                 return ResultCode::Error;
             }
 
-            //bound check
-            //note that seeking beyond end or before beginning is system dependent
-            //therefore we will define that on all platforms it is not allowed
-            if (newFilePosition < 0)
-            {
-                AZ_TracePrintf(RemoteFileIOChannel, "RemoteFileIO::Seek(fileHandle=%u, offset=%i, type=%s) seek to a position before the begining of a file!", fileHandle, offset, type == SeekType::SeekFromCurrent ? "SeekFromCurrent" : type == SeekType::SeekFromEnd ? "SeekFromEnd" : type == SeekType::SeekFromStart ? "SeekFromStart" : "Unknown");
-                REMOTEFILE_LOG_APPEND(AZStd::string::format("RemoteFileIO::Seek(fileHandle=%u, offset=%i, type=%s) seek to a position before the begining of a file!", fileHandle, offset, type == SeekType::SeekFromCurrent ? "SeekFromCurrent" : type == SeekType::SeekFromEnd ? "SeekFromEnd" : type == SeekType::SeekFromStart ? "SeekFromStart" : "Unknown").c_str());
-                newFilePosition = 0;
-            }
-            else
             {
                 AZ::u64 fileSize = 0;
                 Size(fileHandle, fileSize);
@@ -1167,7 +1166,7 @@ namespace AZ
             REMOTEFILE_LOG_CALL(AZStd::string::format("RemoteFileIO()::Read(fileHandle=%u, buffer=OUT, size=%u, failOnFewerThanSizeBytesRead=%s, bytesRead=OUT)", fileHandle, size, failOnFewerThanSizeBytesRead ? "True" : "False").c_str());
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_remoteFileCacheGuard);
             RemoteFileCache& cache = GetCache(fileHandle);
-            
+
             AZ::u64 remainingBytesToRead = size;
             AZ::u64 bytesReadFromCache = 0;
             AZ::u64 remainingBytesInCache = cache.RemainingBytes();
@@ -1270,7 +1269,7 @@ namespace AZ
             RemoteFileCache& cache = GetCache(fileHandle);
             if (cache.m_cacheLookaheadBuffer.size() && cache.RemainingBytes())
             {
-                // find out where we are 
+                // find out where we are
                 AZ::u64 seekPosition = cache.CacheFilePosition();
 
                 // note, seeks are predicted, and do not ask for a response.
@@ -1365,6 +1364,14 @@ namespace AZ
             if (m_excludedFileIO)
             {
                 m_excludedFileIO->ClearAlias(alias);
+            }
+        }
+
+        void RemoteFileIO::SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias)
+        {
+            if (m_excludedFileIO)
+            {
+                m_excludedFileIO->SetDeprecatedAlias(oldAlias, newAlias);
             }
         }
 

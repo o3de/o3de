@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -47,7 +48,7 @@ ly_add_target(
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/imageprocessingatom_editor_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
-         ${platform_tools_files}
+        ${platform_tools_files}
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -61,12 +62,11 @@ ly_add_target(
             3rdParty::Qt::Core
             3rdParty::Qt::Widgets
             3rdParty::Qt::Gui
-            3rdParty::etc2comp
-            3rdParty::PVRTexTool
+            3rdParty::astc-encoder
             3rdParty::squish-ccr
-            3rdParty::tiff
+            3rdParty::TIFF
+            3rdParty::ISPCTexComp
             3rdParty::ilmbase
-            Legacy::CryCommon
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AzQtComponents
@@ -75,8 +75,6 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::Atom_RHI.Reflect
             Gem::Atom_Utils.Static
-    RUNTIME_DEPENDENCIES
-        3rdParty::ASTCEncoder
 
 )
 ly_add_source_properties(

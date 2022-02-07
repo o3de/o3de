@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <RHI/FrameGraphExecuteGroupBase.h>
 #include <RHI/FrameGraphExecuteGroupHandlerBase.h>
@@ -27,6 +27,7 @@ namespace AZ
         {
             EndInternal();
             m_device->GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass).ExecuteWork(AZStd::move(m_workRequest));
+            m_isExecuted = true;
         }
 
         bool FrameGraphExecuteGroupHandlerBase::IsComplete() const
@@ -40,6 +41,11 @@ namespace AZ
             }
 
             return true;
+        }
+
+        bool FrameGraphExecuteGroupHandlerBase::IsExecuted() const
+        {
+            return m_isExecuted;
         }
 
         template<class T>

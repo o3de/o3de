@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
 #include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
@@ -16,7 +18,11 @@
 
 namespace physx
 {
+    class PxControllerManager;
+    struct PxOverlapHit;
+    struct PxRaycastHit;
     class PxScene;
+    struct PxSweepHit;
 }
 
 namespace PhysX
@@ -47,6 +53,10 @@ namespace PhysX
         void RemoveSimulatedBodies(AzPhysics::SimulatedBodyHandleList& bodyHandles) override;
         void EnableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle) override;
         void DisableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle) override;
+        AzPhysics::JointHandle AddJoint(const AzPhysics::JointConfiguration* jointConfig, 
+            AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) override;
+        AzPhysics::Joint* GetJointFromHandle(AzPhysics::JointHandle jointHandle) override;
+        void RemoveJoint(AzPhysics::JointHandle jointHandle) override;
         AzPhysics::SceneQueryHits QueryScene(const AzPhysics::SceneQueryRequest* request) override;
         AzPhysics::SceneQueryHitsList QuerySceneBatch(const AzPhysics::SceneQueryRequests& requests) override;
         [[nodiscard]] bool QuerySceneAsync(AzPhysics::SceneQuery::AsyncRequestId requestId,
@@ -88,6 +98,10 @@ namespace PhysX
         AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::SimulatedBody*>> m_simulatedBodies; //this will become a SimulatedBody with LYN-1334
         AZStd::vector<AzPhysics::SimulatedBody*> m_deferredDeletions;
         AZStd::queue<AzPhysics::SimulatedBodyIndex> m_freeSceneSlots;
+
+        AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::Joint*>> m_joints;
+        AZStd::vector<AzPhysics::Joint*> m_deferredDeletionsJoints;
+        AZStd::queue<AzPhysics::JointIndex> m_freeJointSlots;
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physicsSystemConfigChanged;
 

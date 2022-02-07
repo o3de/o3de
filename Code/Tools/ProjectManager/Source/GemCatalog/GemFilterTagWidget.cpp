@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,7 +33,7 @@ namespace O3DE::ProjectManager
 
         m_closeButton = new QPushButton();
         m_closeButton->setFlat(true);
-        m_closeButton->setIcon(QIcon(":/FeatureTagClose.svg"));
+        m_closeButton->setIcon(QIcon(":/X.svg"));
         m_closeButton->setIconSize(QSize(12, 12));
         m_closeButton->setStyleSheet("QPushButton { background-color: transparent; border: 0px }");
         layout->addWidget(m_closeButton);

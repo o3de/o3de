@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,16 +37,16 @@ namespace MCore
          * This automatically initializes the dual quaternion to identity.
          */
         MCORE_INLINE DualQuaternion()
-            : mReal(0.0f, 0.0f, 0.0f, 1.0f)
-            , mDual(0.0f, 0.0f, 0.0f, 0.0f) {}
+            : m_real(0.0f, 0.0f, 0.0f, 1.0f)
+            , m_dual(0.0f, 0.0f, 0.0f, 0.0f) {}
 
         /**
          * Copy constructor.
          * @param other The dual quaternion to copy the data from.
          */
         MCORE_INLINE DualQuaternion(const DualQuaternion& other)
-            : mReal(other.mReal)
-            , mDual(other.mDual) {}
+            : m_real(other.m_real)
+            , m_dual(other.m_dual) {}
 
         /**
          * Extended constructor.
@@ -55,8 +56,8 @@ namespace MCore
          *       or use the FromRotationTranslation method.
          */
         MCORE_INLINE DualQuaternion(const AZ::Quaternion& real, const AZ::Quaternion& dual)
-            : mReal(real)
-            , mDual(dual) {}
+            : m_real(real)
+            , m_dual(dual) {}
 
         /**
          * Constructor which takes a matrix as input parameter.
@@ -80,7 +81,7 @@ namespace MCore
          * @note Please keep in mind that you should not set the translation directly into the dual part. If you want to initialize the dual quaternion from
          *       a rotation and translation, please use the special constructor for this, or the FromRotationTranslation method.
          */
-        MCORE_INLINE void Set(const AZ::Quaternion& real, const AZ::Quaternion& dual)                   { mReal = real; mDual = dual; }
+        MCORE_INLINE void Set(const AZ::Quaternion& real, const AZ::Quaternion& dual)                   { m_real = real; m_dual = dual; }
 
         /**
          * Normalize the dual quaternion.
@@ -101,7 +102,7 @@ namespace MCore
          * The default constructor already puts the dual quaternion in its identity transform.
          * @result A reference to this quaternion, but now having an identity transform.
          */
-        MCORE_INLINE DualQuaternion& Identity()                                                 { mReal = AZ::Quaternion::CreateIdentity(); mDual.Set(0.0f, 0.0f, 0.0f, 0.0f); return *this; }
+        MCORE_INLINE DualQuaternion& Identity()                                                 { m_real = AZ::Quaternion::CreateIdentity(); m_dual.Set(0.0f, 0.0f, 0.0f, 0.0f); return *this; }
 
         /**
          * Get the dot product between the two dual quaternions.
@@ -111,7 +112,7 @@ namespace MCore
          * @result A 2D vector containing the result of the dot products. The x component contains the result of the dot between the real part and the y component
          *         contains the result of the dot product between the dual parts.
          */
-        MCORE_INLINE AZ::Vector2 Dot(const DualQuaternion& other) const                             { return AZ::Vector2(mReal.Dot(other.mReal), mDual.Dot(other.mDual)); }
+        MCORE_INLINE AZ::Vector2 Dot(const DualQuaternion& other) const                             { return AZ::Vector2(m_real.Dot(other.m_real), m_dual.Dot(other.m_dual)); }
 
         /**
          * Calculate the length of the dual quaternion.
@@ -119,7 +120,7 @@ namespace MCore
          * The result of the real part will be stored in the x component of the 2D vector, and the result of the dual part will be stored in the y component.
          * @result The 2D vector containing the length of the real and dual part.
          */
-        MCORE_INLINE AZ::Vector2 Length() const                                                     { const float realLen = mReal.GetLength(); return AZ::Vector2(realLen, mReal.Dot(mDual) / realLen); }
+        MCORE_INLINE AZ::Vector2 Length() const                                                     { const float realLen = m_real.GetLength(); return AZ::Vector2(realLen, m_real.Dot(m_dual) / realLen); }
 
         /**
          * Inverse this dual quaternion.
@@ -138,14 +139,14 @@ namespace MCore
          * @result A reference to this dual quaternion, but now conjugaged.
          * @note If you want to inverse a unit quaternion, you can use the conjugate instead, as that gives the same result, but is much faster to calculate.
          */
-        MCORE_INLINE DualQuaternion& Conjugate()                                                { mReal = mReal.GetConjugate(); mDual = mDual.GetConjugate(); return *this; }
+        MCORE_INLINE DualQuaternion& Conjugate()                                                { m_real = m_real.GetConjugate(); m_dual = m_dual.GetConjugate(); return *this; }
 
         /**
          * Calculate a conjugated version of this dual quaternion.
          * @result A copy of this dual quaternion, but conjugated.
          * @note If you want to inverse a unit quaternion, you can use the conjugate instead, as that gives the same result, but is much faster to calculate.
          */
-        MCORE_INLINE DualQuaternion Conjugated() const                                          { return DualQuaternion(mReal.GetConjugate(), mDual.GetConjugate()); }
+        MCORE_INLINE DualQuaternion Conjugated() const                                          { return DualQuaternion(m_real.GetConjugate(), m_dual.GetConjugate()); }
 
         /**
          * Initialize the current quaternion from a specified matrix.
@@ -227,28 +228,27 @@ namespace MCore
 
         // operators
         MCORE_INLINE const DualQuaternion&  operator=(const AZ::Transform& transform)           { FromTransform(transform); return *this; }
-        MCORE_INLINE const DualQuaternion&  operator=(const DualQuaternion& other)              { mReal = other.mReal; mDual = other.mDual; return *this; }
-        MCORE_INLINE DualQuaternion         operator-() const                                   { return DualQuaternion(-mReal, -mDual); }
-        MCORE_INLINE const DualQuaternion&  operator+=(const DualQuaternion& q)                 { mReal += q.mReal; mDual += q.mDual; return *this; }
-        MCORE_INLINE const DualQuaternion&  operator-=(const DualQuaternion& q)                 { mReal -= q.mReal; mDual -= q.mDual; return *this; }
-        MCORE_INLINE const DualQuaternion&  operator*=(const DualQuaternion& q)                 { const AZ::Quaternion orgReal(mReal); mReal *= q.mReal; mDual = orgReal * q.mDual + q.mReal * mDual; return *this; }
-        MCORE_INLINE const DualQuaternion&  operator*=(float f)                                 { mReal *= f; mDual *= f; return *this; }
-        //MCORE_INLINE const DualQuaternion&    operator*=(double f)                                { mReal*=f; mDual*=f; return *this; }
+        MCORE_INLINE const DualQuaternion&  operator=(const DualQuaternion& other)              { m_real = other.m_real; m_dual = other.m_dual; return *this; }
+        MCORE_INLINE DualQuaternion         operator-() const                                   { return DualQuaternion(-m_real, -m_dual); }
+        MCORE_INLINE const DualQuaternion&  operator+=(const DualQuaternion& q)                 { m_real += q.m_real; m_dual += q.m_dual; return *this; }
+        MCORE_INLINE const DualQuaternion&  operator-=(const DualQuaternion& q)                 { m_real -= q.m_real; m_dual -= q.m_dual; return *this; }
+        MCORE_INLINE const DualQuaternion&  operator*=(const DualQuaternion& q)                 { const AZ::Quaternion orgReal(m_real); m_real *= q.m_real; m_dual = orgReal * q.m_dual + q.m_real * m_dual; return *this; }
+        MCORE_INLINE const DualQuaternion&  operator*=(float f)                                 { m_real *= f; m_dual *= f; return *this; }
 
         // attributes
-        AZ::Quaternion  mReal;  /**< The real value, which you can see as the regular rotation quaternion. */
-        AZ::Quaternion  mDual;  /**< The dual part, which you can see as the translation part. */
+        AZ::Quaternion  m_real;  /**< The real value, which you can see as the regular rotation quaternion. */
+        AZ::Quaternion  m_dual;  /**< The dual part, which you can see as the translation part. */
     };
 
 
     // operators
-    MCORE_INLINE DualQuaternion    operator*(const DualQuaternion& a, float f)                         { return DualQuaternion(a.mReal * f, a.mDual * f); }
-    MCORE_INLINE DualQuaternion    operator*(float f, const DualQuaternion& b)                         { return DualQuaternion(b.mReal * f, b.mDual * f); }
-    MCORE_INLINE DualQuaternion    operator+(const DualQuaternion& a, const DualQuaternion& b)         { return DualQuaternion(a.mReal + b.mReal, a.mDual + b.mDual); }
-    MCORE_INLINE DualQuaternion    operator-(const DualQuaternion& a, const DualQuaternion& b)         { return DualQuaternion(a.mReal - b.mReal, a.mDual - b.mDual); }
+    MCORE_INLINE DualQuaternion    operator*(const DualQuaternion& a, float f)                         { return DualQuaternion(a.m_real * f, a.m_dual * f); }
+    MCORE_INLINE DualQuaternion    operator*(float f, const DualQuaternion& b)                         { return DualQuaternion(b.m_real * f, b.m_dual * f); }
+    MCORE_INLINE DualQuaternion    operator+(const DualQuaternion& a, const DualQuaternion& b)         { return DualQuaternion(a.m_real + b.m_real, a.m_dual + b.m_dual); }
+    MCORE_INLINE DualQuaternion    operator-(const DualQuaternion& a, const DualQuaternion& b)         { return DualQuaternion(a.m_real - b.m_real, a.m_dual - b.m_dual); }
     MCORE_INLINE DualQuaternion    operator*(const DualQuaternion& a, const DualQuaternion& b)
     {
-        return DualQuaternion(a.mReal * b.mReal, a.mReal * b.mDual + b.mReal * a.mDual);
+        return DualQuaternion(a.m_real * b.m_real, a.m_real * b.m_dual + b.m_real * a.m_dual);
     }
 
     // include the inline code

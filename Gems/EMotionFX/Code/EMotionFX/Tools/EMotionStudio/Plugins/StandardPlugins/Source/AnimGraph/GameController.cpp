@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
 
 #include <MCore/Source/LogManager.h>
+#include <AzCore/std/string/conversions.h>
 
 
 // joystick enum callback
@@ -19,17 +21,17 @@ BOOL CALLBACK GameController::EnumJoysticksCallback(const DIDEVICEINSTANCE* pdid
     GameController* manager = static_cast<GameController*>(pContext);
 
     // store the name
-    manager->mDeviceInfo.mName = pdidInstance->tszProductName;
+    AZStd::to_string(manager->m_deviceInfo.m_name, pdidInstance->tszProductName);
 
     // Skip anything other than the perferred Joystick device as defined by the control panel.
     // Instead you could store all the enumerated Joysticks and let the user pick.
-    if (manager->mEnumContext.mPrefJoystickConfigValid && IsEqualGUID(pdidInstance->guidInstance, manager->mEnumContext.mPrefJoystickConfig->guidInstance) == false)
+    if (manager->m_enumContext.m_prefJoystickConfigValid && IsEqualGUID(pdidInstance->guidInstance, manager->m_enumContext.m_prefJoystickConfig->guidInstance) == false)
     {
         return DIENUM_CONTINUE;
     }
 
     // Obtain an interface to the enumerated Joystick.
-    HRESULT result = manager->mDirectInput->CreateDevice(pdidInstance->guidInstance, &manager->mJoystick, nullptr);
+    HRESULT result = manager->m_directInput->CreateDevice(pdidInstance->guidInstance, &manager->m_joystick, nullptr);
 
     // If it failed, then we can't use this Joystick. (Maybe the user unplugged
     // it while we were in the middle of enumerating it.)
@@ -62,7 +64,7 @@ BOOL CALLBACK GameController::EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* 
         diprg.lMax              = +1000;
 
         // Set the range for the axis
-        if (FAILED(manager->mJoystick->SetProperty(DIPROP_RANGE, &diprg.diph)))
+        if (FAILED(manager->m_joystick->SetProperty(DIPROP_RANGE, &diprg.diph)))
         {
             return DIENUM_STOP;
         }
@@ -70,103 +72,94 @@ BOOL CALLBACK GameController::EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* 
 
     if (pdidoi->guidType == GUID_XAxis)
     {
-        manager->mDeviceElements[ ELEM_POS_X ].mName                = pdidoi->tszName;
-        manager->mDeviceElements[ ELEM_POS_X ].mPresent             = true;
-        manager->mDeviceElements[ ELEM_POS_X ].mValue               = 0.0f;
-        //manager->mDeviceElements[ ELEM_POS_X ].mCalibrationValue  = 0.0f;
-        manager->mDeviceElements[ ELEM_POS_X ].mType                = ELEMTYPE_AXIS;
-        manager->mDeviceInfo.mNumAxes++;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_POS_X ].m_name, pdidoi->tszName);
+        manager->m_deviceElements[ ELEM_POS_X ].m_present             = true;
+        manager->m_deviceElements[ ELEM_POS_X ].m_value               = 0.0f;
+        manager->m_deviceElements[ ELEM_POS_X ].m_type                = ELEMTYPE_AXIS;
+        manager->m_deviceInfo.m_numAxes++;
     }
 
     if (pdidoi->guidType == GUID_YAxis)
     {
-        manager->mDeviceElements[ ELEM_POS_Y ].mName                = pdidoi->tszName;
-        manager->mDeviceElements[ ELEM_POS_Y ].mPresent             = true;
-        manager->mDeviceElements[ ELEM_POS_Y ].mValue               = 0.0f;
-        //manager->mDeviceElements[ ELEM_POS_Y ].mCalibrationValue  = 0.0f;
-        manager->mDeviceElements[ ELEM_POS_Y ].mType                = ELEMTYPE_AXIS;
-        manager->mDeviceInfo.mNumAxes++;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_POS_Y ].m_name, pdidoi->tszName);
+        manager->m_deviceElements[ ELEM_POS_Y ].m_present             = true;
+        manager->m_deviceElements[ ELEM_POS_Y ].m_value               = 0.0f;
+        manager->m_deviceElements[ ELEM_POS_Y ].m_type                = ELEMTYPE_AXIS;
+        manager->m_deviceInfo.m_numAxes++;
     }
 
     if (pdidoi->guidType == GUID_ZAxis)
     {
-        manager->mDeviceElements[ ELEM_POS_Z ].mName                = pdidoi->tszName;
-        manager->mDeviceElements[ ELEM_POS_Z ].mPresent             = true;
-        manager->mDeviceElements[ ELEM_POS_Z ].mValue               = 0.0f;
-        //manager->mDeviceElements[ ELEM_POS_Z ].mCalibrationValue  = 0.0f;
-        manager->mDeviceElements[ ELEM_POS_Z ].mType                = ELEMTYPE_AXIS;
-        manager->mDeviceInfo.mNumAxes++;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_POS_Z ].m_name, pdidoi->tszName);
+        manager->m_deviceElements[ ELEM_POS_Z ].m_present             = true;
+        manager->m_deviceElements[ ELEM_POS_Z ].m_value               = 0.0f;
+        manager->m_deviceElements[ ELEM_POS_Z ].m_type                = ELEMTYPE_AXIS;
+        manager->m_deviceInfo.m_numAxes++;
     }
 
     if (pdidoi->guidType == GUID_RxAxis)
     {
-        manager->mDeviceElements[ ELEM_ROT_X ].mName                = pdidoi->tszName;
-        manager->mDeviceElements[ ELEM_ROT_X ].mPresent             = true;
-        manager->mDeviceElements[ ELEM_ROT_X ].mValue               = 0.0f;
-        //manager->mDeviceElements[ ELEM_ROT_X ].mCalibrationValue  = 0.0f;
-        manager->mDeviceElements[ ELEM_ROT_X ].mType                = ELEMTYPE_AXIS;
-        manager->mDeviceInfo.mNumAxes++;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_ROT_X ].m_name, pdidoi->tszName);
+        manager->m_deviceElements[ ELEM_ROT_X ].m_present             = true;
+        manager->m_deviceElements[ ELEM_ROT_X ].m_value               = 0.0f;
+        manager->m_deviceElements[ ELEM_ROT_X ].m_type                = ELEMTYPE_AXIS;
+        manager->m_deviceInfo.m_numAxes++;
     }
 
     if (pdidoi->guidType == GUID_RyAxis)
     {
-        manager->mDeviceElements[ ELEM_ROT_Y ].mName                = pdidoi->tszName;
-        manager->mDeviceElements[ ELEM_ROT_Y ].mPresent             = true;
-        manager->mDeviceElements[ ELEM_ROT_Y ].mValue               = 0.0f;
-        //manager->mDeviceElements[ ELEM_ROT_Y ].mCalibrationValue  = 0.0f;
-        manager->mDeviceElements[ ELEM_ROT_Y ].mType                = ELEMTYPE_AXIS;
-        manager->mDeviceInfo.mNumAxes++;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_ROT_Y ].m_name, pdidoi->tszName);
+        manager->m_deviceElements[ ELEM_ROT_Y ].m_present             = true;
+        manager->m_deviceElements[ ELEM_ROT_Y ].m_value               = 0.0f;
+        manager->m_deviceElements[ ELEM_ROT_Y ].m_type                = ELEMTYPE_AXIS;
+        manager->m_deviceInfo.m_numAxes++;
     }
 
     if (pdidoi->guidType == GUID_RzAxis)
     {
-        manager->mDeviceElements[ ELEM_ROT_Z ].mName                = pdidoi->tszName;
-        manager->mDeviceElements[ ELEM_ROT_Z ].mPresent             = true;
-        manager->mDeviceElements[ ELEM_ROT_Z ].mValue               = 0.0f;
-        //manager->mDeviceElements[ ELEM_ROT_Z ].mCalibrationValue  = 0.0f;
-        manager->mDeviceElements[ ELEM_ROT_Z ].mType                = ELEMTYPE_AXIS;
-        manager->mDeviceInfo.mNumAxes++;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_ROT_Z ].m_name, pdidoi->tszName);
+        manager->m_deviceElements[ ELEM_ROT_Z ].m_present             = true;
+        manager->m_deviceElements[ ELEM_ROT_Z ].m_value               = 0.0f;
+        manager->m_deviceElements[ ELEM_ROT_Z ].m_type                = ELEMTYPE_AXIS;
+        manager->m_deviceInfo.m_numAxes++;
     }
 
     // a slider
     if (pdidoi->guidType == GUID_Slider)
     {
-        if (manager->mDeviceInfo.mNumSliders == 0)
+        if (manager->m_deviceInfo.m_numSliders == 0)
         {
-            manager->mDeviceElements[ ELEM_SLIDER_1 ].mName                 = pdidoi->tszName;
-            manager->mDeviceElements[ ELEM_SLIDER_1 ].mPresent              = true;
-            manager->mDeviceElements[ ELEM_SLIDER_1 ].mValue                = 0.0f;
-            //manager->mDeviceElements[ ELEM_SLIDER_1 ].mCalibrationValue   = 0.0f;
-            manager->mDeviceElements[ ELEM_SLIDER_1 ].mType                 = ELEMTYPE_SLIDER;
+            AZStd::to_string(manager->m_deviceElements[ ELEM_SLIDER_1 ].m_name, pdidoi->tszName);
+            manager->m_deviceElements[ ELEM_SLIDER_1 ].m_present              = true;
+            manager->m_deviceElements[ ELEM_SLIDER_1 ].m_value                = 0.0f;
+            manager->m_deviceElements[ ELEM_SLIDER_1 ].m_type                 = ELEMTYPE_SLIDER;
         }
         else
         {
-            manager->mDeviceElements[ ELEM_SLIDER_2 ].mName                 = pdidoi->tszName;
-            manager->mDeviceElements[ ELEM_SLIDER_2 ].mPresent              = true;
-            manager->mDeviceElements[ ELEM_SLIDER_2 ].mValue                = 0.0f;
-            //manager->mDeviceElements[ ELEM_SLIDER_2 ].mCalibrationValue   = 0.0f;
-            manager->mDeviceElements[ ELEM_SLIDER_2 ].mType                 = ELEMTYPE_SLIDER;
+            AZStd::to_string(manager->m_deviceElements[ ELEM_SLIDER_2 ].m_name, pdidoi->tszName);
+            manager->m_deviceElements[ ELEM_SLIDER_2 ].m_present              = true;
+            manager->m_deviceElements[ ELEM_SLIDER_2 ].m_value                = 0.0f;
+            manager->m_deviceElements[ ELEM_SLIDER_2 ].m_type                 = ELEMTYPE_SLIDER;
         }
 
-        manager->mDeviceInfo.mNumSliders++;
+        manager->m_deviceInfo.m_numSliders++;
     }
 
     // a POV
     if (pdidoi->guidType == GUID_POV)
     {
-        const uint32 povIndex = manager->mDeviceInfo.mNumPOVs;
-        manager->mDeviceElements[ ELEM_POV_1 + povIndex ].mName                 = pdidoi->tszName;
-        manager->mDeviceElements[ ELEM_POV_1 + povIndex ].mPresent              = true;
-        manager->mDeviceElements[ ELEM_POV_1 + povIndex ].mValue                = 0.0f;
-        //manager->mDeviceElements[ ELEM_POV_1 + povIndex ].mCalibrationValue   = 0.0f;
-        manager->mDeviceElements[ ELEM_POV_1 + povIndex ].mType                 = ELEMTYPE_POV;
-        manager->mDeviceInfo.mNumPOVs++;
+        const uint32 povIndex = manager->m_deviceInfo.m_numPoVs;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_POV_1 + povIndex ].m_name, pdidoi->tszName);
+        manager->m_deviceElements[ ELEM_POV_1 + povIndex ].m_present              = true;
+        manager->m_deviceElements[ ELEM_POV_1 + povIndex ].m_value                = 0.0f;
+        manager->m_deviceElements[ ELEM_POV_1 + povIndex ].m_type                 = ELEMTYPE_POV;
+        manager->m_deviceInfo.m_numPoVs++;
     }
 
     // a button
     if (pdidoi->guidType == GUID_Button)
     {
-        manager->mDeviceInfo.mNumButtons++;
+        manager->m_deviceInfo.m_numButtons++;
     }
 
     return DIENUM_CONTINUE;
@@ -182,7 +175,7 @@ bool GameController::Init(HWND hWnd)
     // reinit
     if (FAILED(InitDirectInput(hWnd)))
     {
-        mValid = false;
+        m_valid = false;
         return false;
     }
 
@@ -198,24 +191,24 @@ HRESULT GameController::InitDirectInput(HWND hWnd)
     HRESULT result;
 
     // reset the device info
-    mDeviceInfo.mName       = "";
-    mDeviceInfo.mNumAxes    = 0;
-    mDeviceInfo.mNumButtons = 0;
-    mDeviceInfo.mNumPOVs    = 0;
-    mDeviceInfo.mNumSliders = 0;
+    m_deviceInfo.m_name       = "";
+    m_deviceInfo.m_numAxes    = 0;
+    m_deviceInfo.m_numButtons = 0;
+    m_deviceInfo.m_numPoVs    = 0;
+    m_deviceInfo.m_numSliders = 0;
 
     uint32 i;
     for (i = 0; i < NUM_ELEMENTS; ++i)
     {
-        mDeviceElements[i].mPresent = false;
-        mDeviceElements[i].mValue   = 0.0f;
+        m_deviceElements[i].m_present = false;
+        m_deviceElements[i].m_value   = 0.0f;
     }
 
     // register with the DirectInput subsystem and get a pointer to a IDirectInput interface we can use
-    result = DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, ( VOID** )&mDirectInput, nullptr);
+    result = DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, ( VOID** )&m_directInput, nullptr);
     if (FAILED(result))
     {
-        mValid = false;
+        m_valid = false;
         return result;
     }
 
@@ -223,21 +216,21 @@ HRESULT GameController::InitDirectInput(HWND hWnd)
     memset(&prefJoystickConfig, 0, sizeof(DIJOYCONFIG));
     prefJoystickConfig.dwSize = sizeof(DIJOYCONFIG);
 
-    mEnumContext.mPrefJoystickConfig        = &prefJoystickConfig;
-    mEnumContext.mPrefJoystickConfigValid   = false;
+    m_enumContext.m_prefJoystickConfig        = &prefJoystickConfig;
+    m_enumContext.m_prefJoystickConfigValid   = false;
 
     IDirectInputJoyConfig8* joystickConfig = nullptr;
-    result = mDirectInput->QueryInterface(IID_IDirectInputJoyConfig8, (void**)&joystickConfig);
+    result = m_directInput->QueryInterface(IID_IDirectInputJoyConfig8, (void**)&joystickConfig);
     if (FAILED(result))
     {
-        mValid = false;
+        m_valid = false;
         return result;
     }
 
     result = joystickConfig->GetConfig(0, &prefJoystickConfig, DIJC_GUIDINSTANCE);
     if (SUCCEEDED(result)) // this function is expected to fail if no joystick is attached
     {
-        mEnumContext.mPrefJoystickConfigValid = true;
+        m_enumContext.m_prefJoystickConfigValid = true;
     }
 
     if (joystickConfig)
@@ -247,18 +240,18 @@ HRESULT GameController::InitDirectInput(HWND hWnd)
     }
 
     // look for a simple Joystick we can use for this sample program.
-    result = mDirectInput->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoysticksCallback, this, DIEDFL_ATTACHEDONLY);
+    result = m_directInput->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoysticksCallback, this, DIEDFL_ATTACHEDONLY);
     if (FAILED(result))
     {
-        mValid = false;
+        m_valid = false;
         return result;
     }
 
     // make sure we got a Joystick
-    if (mJoystick == nullptr)
+    if (m_joystick == nullptr)
     {
         // No joystick found.
-        mValid = false;
+        m_valid = false;
         return S_OK;
     }
 
@@ -267,10 +260,10 @@ HRESULT GameController::InitDirectInput(HWND hWnd)
     // A data format specifies which controls on a device we are interested in,
     // and how they should be reported. This tells DInput that we will be
     // passing a DIJOYSTATE2 structure to IDirectInputDevice::GetDeviceState().
-    result = mJoystick->SetDataFormat(&c_dfDIJoystick2);
+    result = m_joystick->SetDataFormat(&c_dfDIJoystick2);
     if (FAILED(result))
     {
-        mValid = false;
+        m_valid = false;
         return result;
     }
 
@@ -278,10 +271,10 @@ HRESULT GameController::InitDirectInput(HWND hWnd)
     // interact with the system and with other DInput applications.
     if (hWnd)
     {
-        result = mJoystick->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND);
+        result = m_joystick->SetCooperativeLevel(hWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND);
         if (FAILED(result))
         {
-            mValid = false;
+            m_valid = false;
             return result;
         }
     }
@@ -289,37 +282,37 @@ HRESULT GameController::InitDirectInput(HWND hWnd)
     // Enumerate the Joystick objects. The callback function enabled user
     // interface elements for objects that are found, and sets the min/max
     // values property for discovered axes.
-    result = mJoystick->EnumObjects(EnumObjectsCallback, (VOID*)this, DIDFT_ALL);
+    result = m_joystick->EnumObjects(EnumObjectsCallback, (VOID*)this, DIDFT_ALL);
     if (FAILED(result))
     {
-        mValid = false;
+        m_valid = false;
         return result;
     }
 
     // acquire the joystick
-    mJoystick->Acquire();
+    m_joystick->Acquire();
 
     // display the device info
-    MCore::LogDetailedInfo("- Controller = %s", mDeviceInfo.mName.c_str());
-    MCore::LogDetailedInfo("   + Num buttons = %d", mDeviceInfo.mNumButtons);
-    MCore::LogDetailedInfo("   + Num axes    = %d", mDeviceInfo.mNumAxes);
-    MCore::LogDetailedInfo("   + Num sliders = %d", mDeviceInfo.mNumSliders);
-    MCore::LogDetailedInfo("   + Num POVs    = %d", mDeviceInfo.mNumPOVs);
+    MCore::LogDetailedInfo("- Controller = %s", m_deviceInfo.m_name.c_str());
+    MCore::LogDetailedInfo("   + Num buttons = %d", m_deviceInfo.m_numButtons);
+    MCore::LogDetailedInfo("   + Num axes    = %d", m_deviceInfo.m_numAxes);
+    MCore::LogDetailedInfo("   + Num sliders = %d", m_deviceInfo.m_numSliders);
+    MCore::LogDetailedInfo("   + Num POVs    = %d", m_deviceInfo.m_numPoVs);
 
     // display all elements
     uint32 numPresentElements = 0;
     for (i = 0; i < NUM_ELEMENTS; ++i)
     {
-        if (mDeviceElements[i].mPresent == false)
+        if (m_deviceElements[i].m_present == false)
         {
             continue;
         }
 
         numPresentElements++;
-        MCore::LogDetailedInfo("   + Element #%d  = %s", numPresentElements, mDeviceElements[i].mName.c_str());
+        MCore::LogDetailedInfo("   + Element #%d  = %s", numPresentElements, m_deviceElements[i].m_name.c_str());
     }
 
-    mValid = true;
+    m_valid = true;
     return S_OK;
 }
 
@@ -328,18 +321,18 @@ HRESULT GameController::InitDirectInput(HWND hWnd)
 void GameController::Shutdown()
 {
     // unacquire the device one last time just in case
-    if (mJoystick)
+    if (m_joystick)
     {
-        mJoystick->Unacquire();
-        mJoystick->Release();
-        mJoystick = nullptr;
+        m_joystick->Unacquire();
+        m_joystick->Release();
+        m_joystick = nullptr;
     }
 
     // release any DirectInput objects
-    if (mDirectInput)
+    if (m_directInput)
     {
-        mDirectInput->Release();
-        mDirectInput = nullptr;
+        m_directInput->Release();
+        m_directInput = nullptr;
     }
 }
 
@@ -347,42 +340,38 @@ void GameController::Shutdown()
 // calibrate
 void GameController::Calibrate()
 {
-    mDeviceElements[ELEM_POS_X].mCalibrationValue       = -(mJoystickState.lX / 1000.0f);
-    mDeviceElements[ELEM_POS_Y].mCalibrationValue       = -(mJoystickState.lY / 1000.0f);
-    mDeviceElements[ELEM_POS_Z].mCalibrationValue       = -(mJoystickState.lZ / 1000.0f);
-    mDeviceElements[ELEM_ROT_X].mCalibrationValue       = -(mJoystickState.lRx / 1000.0f);
-    mDeviceElements[ELEM_ROT_Y].mCalibrationValue       = -(mJoystickState.lRy / 1000.0f);
-    mDeviceElements[ELEM_ROT_Z].mCalibrationValue       = -(mJoystickState.lRz / 1000.0f);
-    //mDeviceElements[ELEM_POV_1].mCalibrationValue     = -(mJoystickState.rgdwPOV[0] / 1000.0f);
-    //mDeviceElements[ELEM_POV_2].mCalibrationValue     = -(mJoystickState.rgdwPOV[1] / 1000.0f);
-    //mDeviceElements[ELEM_POV_3].mCalibrationValue     = -(mJoystickState.rgdwPOV[2] / 1000.0f);
-    //mDeviceElements[ELEM_POV_4].mCalibrationValue     = -(mJoystickState.rgdwPOV[3] / 1000.0f);
-    mDeviceElements[ELEM_SLIDER_1].mCalibrationValue    = -(mJoystickState.rglSlider[0] / 1000.0f);
-    mDeviceElements[ELEM_SLIDER_2].mCalibrationValue    = -(mJoystickState.rglSlider[1] / 1000.0f);
+    m_deviceElements[ELEM_POS_X].m_calibrationValue       = -(m_joystickState.lX / 1000.0f);
+    m_deviceElements[ELEM_POS_Y].m_calibrationValue       = -(m_joystickState.lY / 1000.0f);
+    m_deviceElements[ELEM_POS_Z].m_calibrationValue       = -(m_joystickState.lZ / 1000.0f);
+    m_deviceElements[ELEM_ROT_X].m_calibrationValue       = -(m_joystickState.lRx / 1000.0f);
+    m_deviceElements[ELEM_ROT_Y].m_calibrationValue       = -(m_joystickState.lRy / 1000.0f);
+    m_deviceElements[ELEM_ROT_Z].m_calibrationValue       = -(m_joystickState.lRz / 1000.0f);
+    m_deviceElements[ELEM_SLIDER_1].m_calibrationValue    = -(m_joystickState.rglSlider[0] / 1000.0f);
+    m_deviceElements[ELEM_SLIDER_2].m_calibrationValue    = -(m_joystickState.rglSlider[1] / 1000.0f);
 }
 
 
 // update the controller
 bool GameController::Update()
 {
-    if (mJoystick == nullptr)
+    if (m_joystick == nullptr)
     {
-        mValid = false;
+        m_valid = false;
         return false;
     }
 
     // poll the device to read the current state
-    HRESULT result = mJoystick->Poll();
+    HRESULT result = m_joystick->Poll();
     if (FAILED(result))
     {
         // DInput is telling us that the input stream has been
         // interrupted. We aren't tracking any state between polls, so
         // we don't have any special reset that needs to be done. We
         // just re-acquire and try again.
-        result = mJoystick->Acquire();
+        result = m_joystick->Acquire();
         while (result == DIERR_INPUTLOST)
         {
-            result = mJoystick->Acquire();
+            result = m_joystick->Acquire();
         }
 
         // reset all buttons
@@ -397,70 +386,70 @@ bool GameController::Update()
         // switching, so just try again later
         if (result == DIERR_OTHERAPPHASPRIO)
         {
-            mValid = true;
+            m_valid = true;
             return true;
         }
 
         if (FAILED(result))
         {
-            mValid = false;
+            m_valid = false;
             return false;
         }
     }
 
     // Get the input's device state
-    result = mJoystick->GetDeviceState(sizeof(DIJOYSTATE2), &mJoystickState);
+    result = m_joystick->GetDeviceState(sizeof(DIJOYSTATE2), &m_joystickState);
     if (FAILED(result))
     {
-        mValid = false;
+        m_valid = false;
         return false; // The device should have been acquired during the Poll()
     }
 
     // update the values of the elements
-    mDeviceElements[ELEM_POS_X].mValue      = mJoystickState.lX / 1000.0f;
-    mDeviceElements[ELEM_POS_Y].mValue      = mJoystickState.lY / 1000.0f;
-    mDeviceElements[ELEM_POS_Z].mValue      = mJoystickState.lZ / 1000.0f;
-    mDeviceElements[ELEM_ROT_X].mValue      = mJoystickState.lRx / 1000.0f;
-    mDeviceElements[ELEM_ROT_Y].mValue      = mJoystickState.lRy / 1000.0f;
-    mDeviceElements[ELEM_ROT_Z].mValue      = mJoystickState.lRz / 1000.0f;
-    mDeviceElements[ELEM_SLIDER_1].mValue   = mJoystickState.rglSlider[0] / 1000.0f;
-    mDeviceElements[ELEM_SLIDER_2].mValue   = mJoystickState.rglSlider[1] / 1000.0f;
+    m_deviceElements[ELEM_POS_X].m_value      = m_joystickState.lX / 1000.0f;
+    m_deviceElements[ELEM_POS_Y].m_value      = m_joystickState.lY / 1000.0f;
+    m_deviceElements[ELEM_POS_Z].m_value      = m_joystickState.lZ / 1000.0f;
+    m_deviceElements[ELEM_ROT_X].m_value      = m_joystickState.lRx / 1000.0f;
+    m_deviceElements[ELEM_ROT_Y].m_value      = m_joystickState.lRy / 1000.0f;
+    m_deviceElements[ELEM_ROT_Z].m_value      = m_joystickState.lRz / 1000.0f;
+    m_deviceElements[ELEM_SLIDER_1].m_value   = m_joystickState.rglSlider[0] / 1000.0f;
+    m_deviceElements[ELEM_SLIDER_2].m_value   = m_joystickState.rglSlider[1] / 1000.0f;
 
-    if (mJoystickState.rgdwPOV[0] == MCORE_INVALIDINDEX32)
+    if (m_joystickState.rgdwPOV[0] == MCORE_INVALIDINDEX32)
     {
-        mDeviceElements[ELEM_POV_1].mValue = 0.0f;
+        m_deviceElements[ELEM_POV_1].m_value = 0.0f;
     }
     else
     {
-        mDeviceElements[ELEM_POV_1].mValue = (mJoystickState.rgdwPOV[0] / 100.0f) / 360.0f;
+        m_deviceElements[ELEM_POV_1].m_value = (m_joystickState.rgdwPOV[0] / 100.0f) / 360.0f;
     }
-    if (mJoystickState.rgdwPOV[1] == MCORE_INVALIDINDEX32)
+    if (m_joystickState.rgdwPOV[1] == MCORE_INVALIDINDEX32)
     {
-        mDeviceElements[ELEM_POV_2].mValue = 0.0f;
-    }
-    else
-    {
-        mDeviceElements[ELEM_POV_2].mValue = (mJoystickState.rgdwPOV[1] / 100.0f) / 360.0f;
-    }
-    if (mJoystickState.rgdwPOV[2] == MCORE_INVALIDINDEX32)
-    {
-        mDeviceElements[ELEM_POV_3].mValue = 0.0f;
+        m_deviceElements[ELEM_POV_2].m_value = 0.0f;
     }
     else
     {
-        mDeviceElements[ELEM_POV_3].mValue = (mJoystickState.rgdwPOV[2] / 100.0f) / 360.0f;
+        m_deviceElements[ELEM_POV_2].m_value = (m_joystickState.rgdwPOV[1] / 100.0f) / 360.0f;
     }
-    if (mJoystickState.rgdwPOV[3] == MCORE_INVALIDINDEX32)
+    if (m_joystickState.rgdwPOV[2] == MCORE_INVALIDINDEX32)
     {
-        mDeviceElements[ELEM_POV_4].mValue = 0.0f;
+        m_deviceElements[ELEM_POV_3].m_value = 0.0f;
     }
     else
     {
-        mDeviceElements[ELEM_POV_4].mValue = (mJoystickState.rgdwPOV[3] / 100.0f) / 360.0f;
+        m_deviceElements[ELEM_POV_3].m_value = (m_joystickState.rgdwPOV[2] / 100.0f) / 360.0f;
+    }
+    if (m_joystickState.rgdwPOV[3] == MCORE_INVALIDINDEX32)
+    {
+        m_deviceElements[ELEM_POV_4].m_value = 0.0f;
+    }
+    else
+    {
+        m_deviceElements[ELEM_POV_4].m_value = (m_joystickState.rgdwPOV[3] / 100.0f) / 360.0f;
     }
 
     // apply the dead zone
-    const float minValue    = mDeadZone;
+    const float minValue    = m_deadZone;
     const float maxValue    = 1.0f;
     const float range       = maxValue - minValue;
 
@@ -468,12 +457,12 @@ bool GameController::Update()
     for (uint32 i = 0; i < 8; ++i)
     {
         // get the current normalized value
-        float value = mDeviceElements[i].mValue;
+        float value = m_deviceElements[i].m_value;
 
         // ignore all values that are smaller than the dead zone
-        if (value > -mDeadZone && value < mDeadZone)
+        if (value > -m_deadZone && value < m_deadZone)
         {
-            mDeviceElements[i].mValue = 0.0f;
+            m_deviceElements[i].m_value = 0.0f;
         }
         else
         {
@@ -486,14 +475,14 @@ bool GameController::Update()
             }
 
             // calculate the value in the new range excluding the dead zone range
-            const float newValue = (value - mDeadZone) / range;
+            const float newValue = (value - m_deadZone) / range;
 
             // set it back in normal or negated version
-            mDeviceElements[i].mValue = negativeValue == false ? newValue : -newValue;
+            m_deviceElements[i].m_value = negativeValue == false ? newValue : -newValue;
         }
     }
 
-    mValid = true;
+    m_valid = true;
     return true;
 }
 
@@ -558,7 +547,7 @@ const char* GameController::GetElementEnumName(uint32 index)
 }
 
 
-uint32 GameController::FindElemendIDByName(const AZStd::string& elementEnumName)
+uint32 GameController::FindElementIDByName(const AZStd::string& elementEnumName)
 {
     if (elementEnumName == "Pos X")
     {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,10 +19,8 @@
 
 
 ////////////////////////////////////////////////////////////////////////////
-CDirectorNodeAnimator::CDirectorNodeAnimator(CTrackViewAnimNode* pDirectorNode)
-    : m_pDirectorNode(pDirectorNode)
+CDirectorNodeAnimator::CDirectorNodeAnimator([[maybe_unused]] CTrackViewAnimNode* pDirectorNode)
 {
-    assert(m_pDirectorNode != nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -138,7 +137,6 @@ void CDirectorNodeAnimator::ForEachActiveSequence(const SAnimContext& ac, CTrack
     const bool bHandleOtherKeys, std::function<void(CTrackViewSequence*, const SAnimContext&)> animateFunction,
     std::function<void(CTrackViewSequence*, const SAnimContext&)> resetFunction)
 {
-    const float time = ac.time;
     const unsigned int numKeys = pSequenceTrack->GetKeyCount();
 
     if (bHandleOtherKeys)

@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -13,13 +14,14 @@ MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM: int = 15
 INTERACTION_COMPONENT_HEIGHT: int = 25
 
 """error page related constants"""
-ERROR_PAGE_LAYOUT_MARGIN_LEFTRIGHT: int = 10
-ERROR_PAGE_LAYOUT_MARGIN_TOPBOTTOM: int = 10
+ERROR_PAGE_LAYOUT_MARGIN_LEFTRIGHT: int = 25
+ERROR_PAGE_LAYOUT_MARGIN_TOPBOTTOM: int = 20
+ERROR_PAGE_LAYOUT_SPACING: int = 15
 
-ERROR_PAGE_MAIN_WINDOW_WIDTH: int = 600
-ERROR_PAGE_MAIN_WINDOW_HEIGHT: int = 145
+ERROR_PAGE_MAIN_WINDOW_WIDTH: int = 100
+ERROR_PAGE_MAIN_WINDOW_HEIGHT: int = 75
 
-ERROR_PAGE_NOTIFICATION_AREA_HEIGHT: int = 100
+ERROR_PAGE_NOTIFICATION_AREA_HEIGHT: int = 30
 ERROR_PAGE_FOOTER_AREA_HEIGHT: int = 45
 
 OK_BUTTON_WIDTH: int = 90

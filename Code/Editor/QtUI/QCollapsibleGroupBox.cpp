@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,7 +13,7 @@
 QCollapsibleGroupBox::QCollapsibleGroupBox(QWidget* parent)
     : QGroupBox(parent)
     , m_collapsed(false)
-    , m_toggleButton(0)
+    , m_toggleButton(nullptr)
 {
     m_toggleButton = new QToolButton(this);
     m_toggleButton->setFixedSize(16, 16);

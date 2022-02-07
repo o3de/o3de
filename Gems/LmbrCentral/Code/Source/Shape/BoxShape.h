@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,7 +37,7 @@ namespace LmbrCentral
 
         static void Reflect(AZ::ReflectContext* context);
 
-        void Activate(AZ::EntityId entityId);
+        virtual void Activate(AZ::EntityId entityId);
         void Deactivate();
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
@@ -66,12 +67,9 @@ namespace LmbrCentral
 
         void SetDrawColor(const AZ::Color& color) { m_boxShapeConfig.SetDrawColor(color); }
 
-    protected:
-
-        friend class EditorBoxShapeComponent;        
         BoxShapeConfig& ModifyConfiguration() { return m_boxShapeConfig; }
 
-    private:
+    protected:
         /// Runtime data - cache potentially expensive operations.
         class BoxIntersectionDataCache
             : public IntersectionTestDataCache<BoxShapeConfig>
@@ -81,6 +79,7 @@ namespace LmbrCentral
                 const AZ::Vector3& currentNonUniformScale = AZ::Vector3::CreateOne()) override;
 
             friend BoxShape;
+            friend class AxisAlignedBoxShape;
 
             AZ::Aabb m_aabb; ///< Aabb representing this Box (including the effects of scale).
             AZ::Obb m_obb; ///< Obb representing this Box (including the effects of scale).
@@ -89,12 +88,12 @@ namespace LmbrCentral
             bool m_axisAligned = true; ///< Indicates whether the box is axis or object aligned.
         };
 
-        BoxShapeConfig m_boxShapeConfig; ///< Underlying box configuration.
         BoxIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current transform for the entity on which this component lives.
         AZ::EntityId m_entityId; ///< Id of the entity the box shape is attached to.
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
         AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); ///< Caches the current non-uniform scale.
+        BoxShapeConfig m_boxShapeConfig; ///< Underlying box configuration.
     };
 
     void DrawBoxShape(

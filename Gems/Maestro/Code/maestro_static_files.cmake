@@ -1,12 +1,12 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 set(FILES
-    Source/Maestro_precompiled.h
     Source/Cinematics/ShadowsSetupNode.h
     Source/Cinematics/ShadowsSetupNode.cpp
     Include/Maestro/MaestroBus.h
@@ -21,7 +21,6 @@ set(FILES
     Source/Cinematics/AnimSequence.h
     Source/Cinematics/CharacterTrackAnimator.h
     Source/Cinematics/Movie.h
-    Source/Cinematics/Maestro_precompiled.h
     Source/Cinematics/TCBSpline.h
     Source/Cinematics/resource.h
     Source/Cinematics/AnimSplineTrack.cpp

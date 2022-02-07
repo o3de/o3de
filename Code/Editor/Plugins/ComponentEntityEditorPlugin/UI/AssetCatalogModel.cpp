@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ComponentEntityEditorPlugin_precompiled.h"
-
+#include <EditorDefs.h>
 #include "CryEdit.h"
 #include "AssetCatalogModel.h"
 #include "Objects/ComponentEntityObject.h"
@@ -18,7 +18,6 @@
 
 #include <LmbrCentral/Rendering/LensFlareAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
-#include <LmbrCentral/Rendering/MaterialAsset.h>
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/TypeInfo.h>
@@ -135,14 +134,6 @@ AssetCatalogModel::AssetCatalogModel(QObject* parent)
             }
         }
     }
-
-    //  Special cases for SimpleAssets. If these get full-fledged AssetData types, these cases can be removed.
-    QString textureExtensions = LmbrCentral::TextureAsset::GetFileFilter();
-    m_extensionToAssetType.insert(AZStd::make_pair(textureExtensions.replace("*", "").replace(" ", "").toStdString().c_str(), AZStd::vector<AZ::Uuid> { AZ::AzTypeInfo<LmbrCentral::TextureAsset>::Uuid() }));
-    QString materialExtensions = LmbrCentral::MaterialAsset::GetFileFilter();
-    m_extensionToAssetType.insert(AZStd::make_pair(materialExtensions.replace("*", "").replace(" ", "").toStdString().c_str(), AZStd::vector<AZ::Uuid> { AZ::AzTypeInfo<LmbrCentral::MaterialAsset>::Uuid() }));
-    QString dccMaterialExtensions = LmbrCentral::DccMaterialAsset::GetFileFilter();
-    m_extensionToAssetType.insert(AZStd::make_pair(dccMaterialExtensions.replace("*", "").replace(" ", "").toStdString().c_str(), AZStd::vector<AZ::Uuid> { AZ::AzTypeInfo<LmbrCentral::DccMaterialAsset>::Uuid() }));
 
     AZ::SerializeContext* serializeContext = nullptr;
     EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
@@ -472,7 +463,7 @@ void AssetCatalogModel::LoadDatabase()
         {
             m_fileCacheCurrentIndex = 0;
             Q_EMIT UpdateProgress(0);
-            Q_EMIT SetTotalProgress(m_fileCache.size());
+            Q_EMIT SetTotalProgress(static_cast<int>(m_fileCache.size()));
         };
 
     EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, EnumerateAssets, startCB, enumerateCB, endCB);

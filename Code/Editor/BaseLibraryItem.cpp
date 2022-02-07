@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,7 @@
 
 #include <AzCore/Math/Uuid.h>
 
-//undo object for multi-changes inside library item. such as set all variables to default values. 
+//undo object for multi-changes inside library item. such as set all variables to default values.
 //For example: change particle emitter shape will lead to multiple variable changes
 class CUndoBaseLibraryItem
     : public IUndoObject
@@ -42,7 +43,7 @@ public:
         //evaluate size
         XmlString xmlStr = m_undoCtx.node->getXML();
         m_size = sizeof(CUndoBaseLibraryItem);
-        m_size += xmlStr.GetAllocatedMemory();
+        m_size += static_cast<int>(xmlStr.GetAllocatedMemory());
         m_size += m_itemPath.length();
         m_size += m_description.length();
     }
@@ -53,24 +54,24 @@ public:
     }
 
 protected:
-    virtual int GetSize() 
-    { 
+    int GetSize() override
+    {
         return m_size;
     }
 
     QString GetDescription() override
-    { 
-        return m_description; 
+    {
+        return m_description;
     }
 
-    virtual void Undo(bool bUndo)
+    void Undo(bool bUndo) override
     {
         //find the libItem
         IDataBaseItem *libItem = m_libMgr->FindItemByName(m_itemPath);
         if (libItem == nullptr)
         {
             //the undo stack is not reliable any more..
-            assert(false);  
+            assert(false);
             return;
         }
 
@@ -86,7 +87,7 @@ protected:
             libItem->Serialize(m_redoCtx);
 
             XmlString xmlStr = m_redoCtx.node->getXML();
-            m_size += xmlStr.GetAllocatedMemory();
+            m_size += static_cast<int>(xmlStr.GetAllocatedMemory());
         }
 
         //load previous saved data
@@ -94,7 +95,7 @@ protected:
         libItem->Serialize(m_undoCtx);
     }
 
-    virtual void Redo()
+    void Redo() override
     {
         //find the libItem
         IDataBaseItem *libItem = m_libMgr->FindItemByName(m_itemPath);
@@ -123,7 +124,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 CBaseLibraryItem::CBaseLibraryItem()
 {
-    m_library = 0;
+    m_library = nullptr;
     GenerateId();
     m_bModified = false;
 }
@@ -265,7 +266,7 @@ void CBaseLibraryItem::SetLibrary(CBaseLibrary* pLibrary)
 void CBaseLibraryItem::SetModified(bool bModified)
 {
     m_bModified = bModified;
-    if (m_bModified && m_library != NULL)
+    if (m_bModified && m_library != nullptr)
     {
         m_library->SetModified(bModified);
     }

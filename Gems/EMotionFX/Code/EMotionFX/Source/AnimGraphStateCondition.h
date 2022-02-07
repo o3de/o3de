@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -62,9 +63,9 @@ namespace EMotionFX
             // The anim graph instance pointer shouldn't change. If it were to
             // change, we'd need to remove an existing event handler and create
             // a new one in the new anim graph instance.
-            AnimGraphInstance* const                    mAnimGraphInstance;
-            AnimGraphStateCondition::EventHandler*      mEventHandler;
-            bool                                        mTriggered;
+            AnimGraphInstance* const                    m_animGraphInstance;
+            AnimGraphStateCondition::EventHandler*      m_eventHandler;
+            bool                                        m_triggered;
         };
 
         AnimGraphStateCondition();
@@ -124,8 +125,8 @@ namespace EMotionFX
             bool IsTargetState(const AnimGraphNode* state) const;
             void OnStateChange(AnimGraphInstance* animGraphInstance, AnimGraphNode* state, TestFunction targetFunction);
 
-            AnimGraphStateCondition*    mCondition;
-            UniqueData*                 mUniqueData;
+            AnimGraphStateCondition*    m_condition;
+            UniqueData*                 m_uniqueData;
         };
 
         AZ::Crc32 GetTestFunctionVisibility() const;

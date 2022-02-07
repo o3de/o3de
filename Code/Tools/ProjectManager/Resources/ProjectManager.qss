@@ -9,7 +9,7 @@ QMainWindow {
 
 #ScreensCtrl {
     min-width:1200px;
-    min-height:800px;
+    min-height:700px;
 }
 
 QPushButton:focus {
@@ -20,8 +20,7 @@ QPushButton:focus {
 QTabBar {
     background-color: transparent;
 }
-QTabWidget::tab-bar
-{
+QTabWidget::tab-bar {
     left: 78px; /* make room for the logo */
 }
 QTabBar::tab {
@@ -32,26 +31,52 @@ QTabBar::tab {
     margin-right:40px;
     border-bottom: 3px solid transparent;
 }
-QTabBar::tab:text
-{
+QTabBar::tab:text {
     text-align:left;
 }
 QTabWidget::pane {
     background-color: #333333;
     border:0 none;
 }
-QTabBar::tab:selected
-{
+QTabBar::tab:selected {
+    background-color: transparent;
     border-bottom: 3px solid #1e70eb;
     color: #1e70eb;
+    font-weight: 500;
 }
-QTabBar::tab:hover
-{
+QTabBar::tab:hover {
     color: #1e70eb;
+    font-weight: 500;
 }
-QTabBar::tab:pressed
-{
+QTabBar::tab:pressed {
     color: #0e60eb;
+}
+QTabBar::focus {
+    outline: 0px;
+    outline: none;
+    outline-style: none;
+}
+QTabBar::tab:focus {
+    background-color: #525252;
+    color: #4082eb;
+}
+
+#ToastNotification {
+    background-color: black;
+    border-radius: 20px;
+    border:1px solid #dddddd;
+    qproperty-minimumSize: 100px 50px;
+}
+
+#ToastNotification #icon_frame {
+    border-radius: 4px;
+    qproperty-minimumSize: 44px 20px;
+}
+
+#ToastNotification #iconLabel {
+    qproperty-minimumSize: 30px 20px;
+    qproperty-maximumSize: 30px 20px;
+    margin-left: 6px;
 }
 
 /************** General (Forms) **************/
@@ -150,15 +175,16 @@ QTabBar::tab:pressed
     font-size:14px;
     text-align:left;
     margin:0;
-    padding-top:10px;
-    padding-bottom:-5px;
-    min-height:15px;
-    max-height:15px;
+    padding-top:0px;
+    padding-bottom:0px;
+    min-height:20px;
+    max-height:20px;
 }
 #headerSubTitle {
     font-size:24px;
     text-align:left;
     margin:0;
+    padding-top:-5px;
     min-height:42px;
     max-height:42px;
 }
@@ -206,13 +232,25 @@ QTabBar::tab:pressed
                             stop: 0 #555555, stop: 1.0 #777777);
 }
 
+#horizontalSeparatingLine {
+    color: #666666;
+}
+
+#verticalSeparatingLine {
+    color: #888888;
+}
+
 /************** Project Settings **************/
 #projectSettings {
-    margin-top:42px;
+    margin-top:30px;
+}
+
+#projectPreviewLabel {
+    margin: 10px 0 5px 0;
 }
 
 #projectTemplate {
-    margin: 55px 0 0 50px;
+    margin: 25px 0 0 50px;
 }
 #projectTemplateLabel {
     font-size:16px;
@@ -286,8 +324,6 @@ QTabBar::tab:pressed
     border:none;
 }
 
-
-
 #projectSettingsTab::tab-bar {
     left: 60px;
 }
@@ -353,6 +389,10 @@ QTabBar::tab:pressed
     color: #1e70eb;
 }
 
+#firstTimeContent > QPushButton:focus {
+    border: 1px solid #1e70eb;
+}
+
 #firstTimeContent > QPushButton:pressed {
     border: 1px solid #0e60eb;
     color: #0e60eb;
@@ -393,7 +433,8 @@ QTabBar::tab:pressed
 }
 
 #projectButton > #labelButton:hover,
-#projectButton > #labelButton:pressed  {
+#projectButton > #labelButton:pressed,
+#projectButton > #labelButton:focus {
     border:1px solid #1e70eb;
 }
 
@@ -419,6 +460,11 @@ QTabBar::tab:pressed
 #projectsContent > QFrame > #newProjectButton {
     min-width:150px;
     max-width:150px;
+    min-height:26px;
+    max-height:26px;
+}
+
+#projectActionButton, #openEditorButton {
     min-height:26px;
     max-height:26px;
 }
@@ -461,6 +507,34 @@ QProgressBar::chunk {
     font-weight: 600;
 }
 
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
+}
+
+#GemCatalogCartOverlayGemDownloadHeader {
+    margin:0;
+    padding: 0px;
+    background-color: #333333;
+}
+
+#GemCatalogCartOverlayGemDownloadBG {
+    margin:0;
+    padding: 0px;
+    background-color: #444444;
+}
+
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
+}
+
 #GemCatalogHeaderLabel {
     font-size: 12px;
     color: #FFFFFF;
@@ -476,10 +550,89 @@ QProgressBar::chunk {
     background-color: #333333;
 }
 
-/************** Filter tag widget **************/
+#GemDependenciesDialog QLabel {
+    margin-bottom:10px;
+}
+
+#GemDependenciesDialog QCheckBox {
+    background-color: #333333;
+    border-radius: 3px;
+    spacing:3px;
+    margin-right:5px;
+    padding:4px;
+    margin-top:5px;
+}
+
+#gemCatalogUpdateGemButton,
+#gemCatalogUninstallGemButton 
+{
+    qproperty-flat: true;
+    min-height:24px;
+    max-height:24px;
+    border-radius: 3px;
+    text-align:center;
+    font-size:12px;
+    font-weight:600;
+}
+
+#gemCatalogUpdateGemButton {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
+}
+#gemCatalogUpdateGemButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
+}
+#gemCatalogUpdateGemButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
+}
+
+#footer > #gemCatalogUninstallGemButton,
+#gemCatalogUninstallGemButton {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #E32C27, stop: 1.0 #951D21);
+}
+#footer > #gemCatalogUninstallGemButton:hover,
+#gemCatalogUninstallGemButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #FD3129, stop: 1.0 #AF2221);
+}
+#footer > #gemCatalogUninstallGemButton:pressed,
+#gemCatalogUninstallGemButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #951D1F, stop: 1.0 #C92724);
+}
+
+#gemCatalogDialogSubTitle {
+    font-size:14px;
+    font-weight:600;
+}
+
+/************** Filter Tag widget **************/
 
 #FilterTagWidgetTextLabel {
     color: #94D2FF;
+    font-size: 10px;
+}
+
+#TagWidget {
+    background-color: #333333;
+    padding:3px;
+    font-size:12px;
+    border-radius: 3px;
+    margin-right: 3px;
+}
+
+/************** Gems SubWidget **************/
+
+#gemSubWidgetTitleLabel {
+    color: #FFFFFF;
+    font-size: 16px;
+}
+
+#gemSubWidgetTextLabel {
+    color: #DDDDDD;
     font-size: 10px;
 }
 
@@ -502,4 +655,117 @@ QProgressBar::chunk {
 #GemCatalogFilterCategoryTitle {
     font-size: 12px;
     font-weight: 600;
+}
+
+/************** Engine **************/
+
+#engineTab::tab-bar {
+    left: 60px;
+}
+
+#engineTabBar::tab {
+    height: 50px;
+    background-color: transparent;
+    font-weight: 400;
+    font-size: 18px;
+    min-width: 160px;
+}
+
+#engineTabBar::tab:selected {
+    border-bottom: 3px solid #94D2FF;
+    color: #94D2FF;
+    font-weight: 600;
+}
+#engineTabBar::tab:hover {
+    color: #94D2FF;
+    font-weight: 600;
+}
+#engineTabBar::tab:pressed {
+    color: #66bcfa;
+}
+
+#engineTopFrame {
+    background-color:#1E252F;
+}
+
+/************** Gem Repo **************/
+
+#gemRepoHeaderLabel {
+    font-size: 12px;
+}
+
+#gemRepoNoReposLabel {
+    font-size: 16px;
+}
+
+#gemRepoHeaderRefreshButton {
+    background-color: transparent;
+    qproperty-flat: true;
+    qproperty-iconSize: 14px;
+}
+
+#gemRepoAddButton {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
+    qproperty-flat: true;
+    min-width:120px;
+    max-width:120px;
+    min-height:24px;
+    max-height:24px;
+    border-radius: 3px;
+    text-align:center;
+    font-size:12px;
+    font-weight:600;
+}
+#gemRepoAddButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
+}
+#gemRepoAddButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
+}
+
+#gemRepoHeaderTable {
+    background-color: transparent;
+    max-height: 30px;
+}
+
+#gemRepoListHeader {
+    background-color: transparent;
+}
+
+#gemRepoInspector {
+    background: #444444;
+}
+
+#gemRepoAddDialogInstructionTitleLabel {
+    font-size:14px;
+    font-weight:bold;
+}
+
+#gemRepoAddDialogWarningLabel {
+    font-size:12px;
+    font-style:italic;
+}
+
+#addGemRepoDialog #formFrame {
+    margin-left:0px;
+}
+
+/************** Gem Repo Inspector **************/
+
+#gemRepoInspectorNameLabel {
+    font-size: 18px;
+    color: #FFFFFF;
+}
+
+#gemRepoInspectorBodyLabel {
+    font-size: 12px;
+    color: #DDDDDD;
+}
+
+#gemRepoInspectorAddInfoTitleLabel {
+    font-size: 16px;
+    color: #FFFFFF;
 }

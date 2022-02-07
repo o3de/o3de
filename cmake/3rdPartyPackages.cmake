@@ -1,12 +1,13 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
 include_guard()
 
-include(cmake/LySet.cmake)
+include(${LY_ROOT_FOLDER}/cmake/LySet.cmake)
 
 # OVERVIEW:
 # this is the Open 3D Engine Package system.
@@ -39,22 +40,18 @@ endif()
 # If you keep packages after downloading, then they can be moved to a network share
 # or checked into source control so that others on the same project can avoid re-downloading
 set(LY_PACKAGE_KEEP_AFTER_DOWNLOADING TRUE CACHE BOOL "If enabled, packages will be kept after downloading them for later re-use")
-set(LY_PACKAGE_DOWNLOAD_CACHE_LOCATION ${LY_3RDPARTY_PATH}/downloaded_packages CACHE PATH "You can make it store the packages in a folder of your choosing")
+set(LY_PACKAGE_DOWNLOAD_CACHE_LOCATION @LY_3RDPARTY_PATH@/downloaded_packages CACHE PATH "Download location for packages (Defaults to @LY_3RDPARTY_PATH@/downloaded_packages)")
 if (DEFINED ENV{LY_PACKAGE_DOWNLOAD_CACHE_LOCATION})
     set(LY_PACKAGE_DOWNLOAD_CACHE_LOCATION $ENV{LY_PACKAGE_DOWNLOAD_CACHE_LOCATION})
 endif()
+string(CONFIGURE ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION} LY_PACKAGE_DOWNLOAD_CACHE_LOCATION @ONLY)
 
 # LY_PACKAGE_UNPACK_LOCATION - you can change this to any path reachable.
-set(LY_PACKAGE_UNPACK_LOCATION ${LY_3RDPARTY_PATH}/packages CACHE PATH "Location to unpack downloaded packages to")
+set(LY_PACKAGE_UNPACK_LOCATION @LY_3RDPARTY_PATH@/packages CACHE PATH "Unpack location of downloaded packages (Defaults to @LY_3RDPARTY_PATH@/packages)")
 if (DEFINED ENV{LY_PACKAGE_UNPACK_LOCATION})
     set(LY_PACKAGE_UNPACK_LOCATION $ENV{LY_PACKAGE_UNPACK_LOCATION})
 endif()
-
-# note that sometimes the user configures first without populating LY_3RDPARTY_PATH
-# in that case, we'll try overwriting the cache value, only if it is blank:
-if (NOT LY_PACKAGE_UNPACK_LOCATION)
-    set(LY_PACKAGE_UNPACK_LOCATION ${LY_3RDPARTY_PATH}/packages CACHE PATH "Location to unpack downloaded packages to" FORCE )
-endif()
+string(CONFIGURE ${LY_PACKAGE_UNPACK_LOCATION} LY_PACKAGE_UNPACK_LOCATION @ONLY)
 
 # while developing you can set one or both to true to force auto downloads from your local cache
 set(LY_PACKAGE_VALIDATE_CONTENTS FALSE CACHE BOOL "If enabled, will fully validate every file in every package based on the SHA256SUMS file from the package")
@@ -83,10 +80,7 @@ macro(ly_package_message)
     endif()
 endmacro()
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/packages)
-
-include(cmake/LYPackage_S3Downloader.cmake)
-
+include(${LY_ROOT_FOLDER}/cmake/LYPackage_S3Downloader.cmake)
 
 # Attempts one time to download a file.
 # sets should_retry to true if the caller should retry due to an intermittent problem
@@ -529,6 +523,12 @@ function(ly_force_download_package package_name)
     execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ${temp_download_target} 
          WORKING_DIRECTORY ${final_folder} COMMAND_ECHO STDOUT OUTPUT_VARIABLE unpack_result)
 
+    # For the runtime dependencies cases, we need the timestamps of the files coming from 3rdParty to be newer than the ones
+    # from the output so the new versions get copied over. The untar from the previous step preserves timestamps so they
+    # can produce binaries with older timestamps to the ones that are in the build output.
+    file(GLOB_RECURSE package_files LIST_DIRECTORIES false ${final_folder}/*)
+    file(TOUCH_NOCREATE ${package_files})
+
     if (NOT ${unpack_result} EQUAL 0)
         message(SEND_ERROR "ly_package: required package {package_name} could not be unpacked.  Compile may fail!  Enable LY_PACKAGE_DEBUG to debug.")
         return()
@@ -708,11 +708,11 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
     # include the built in 3rd party packages that are for every platform.
     # you can put your package associations anywhere, but this provides
     # a good starting point.
-    include(cmake/3rdParty/BuiltInPackages.cmake)
+    include(${LY_ROOT_FOLDER}/cmake/3rdParty/BuiltInPackages.cmake)
 endif()
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    include(cmake/LYWrappers.cmake)
+    include(${LY_ROOT_FOLDER}/cmake/LYWrappers.cmake)
     # Importing this globally to handle AUTOMOC, AUTOUIC, AUTORCC
     ly_parse_third_party_dependencies(3rdParty::Qt)
 endif()

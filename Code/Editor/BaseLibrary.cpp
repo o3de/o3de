@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,10 +24,10 @@ class CUndoBaseLibrary
     : public IUndoObject
 {
 public:
-    CUndoBaseLibrary(CBaseLibrary* pLib, const QString& description, const QString& selectedItem = 0)
+    CUndoBaseLibrary(CBaseLibrary* pLib, const QString& description, const QString& selectedItem = QString())
         : m_pLib(pLib)
         , m_description(description)
-        , m_redo(0)
+        , m_redo(nullptr)
         , m_selectedItem(selectedItem)
     {
         assert(m_pLib);
@@ -35,16 +36,16 @@ public:
         m_pLib->Serialize(m_undo, false);
     }
 
-    virtual QString GetEditorObjectName()
+    QString GetEditorObjectName() override
     {
         return m_selectedItem;
     }
 
 protected:
-    virtual int GetSize() { return sizeof(CUndoBaseLibrary); }
-    virtual QString GetDescription() { return m_description; };
+    int GetSize() override { return sizeof(CUndoBaseLibrary); }
+    QString GetDescription() override { return m_description; };
 
-    virtual void Undo(bool bUndo)
+    void Undo(bool bUndo) override
     {
         if (bUndo)
         {
@@ -56,7 +57,7 @@ protected:
         GetIEditor()->Notify(eNotify_OnDataBaseUpdate);
     }
 
-    virtual void Redo()
+    void Redo() override
     {
         m_pLib->Serialize(m_redo, true);
         m_pLib->SetModified();
@@ -106,7 +107,7 @@ void CBaseLibrary::RemoveAllItems()
         // Unregister item in case it was registered.  It is ok if it wasn't.  This is still safe to call.
         m_pManager->UnregisterItem(m_items[i]);
         // Clear library item.
-        m_items[i]->m_library = NULL;
+        m_items[i]->m_library = nullptr;
     }
     m_items.clear();
     Release();
@@ -215,7 +216,7 @@ IDataBaseItem* CBaseLibrary::FindItem(const QString& name)
             return m_items[i];
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 bool CBaseLibrary::AddLibraryToSourceControl(const QString& fullPathName) const
@@ -232,8 +233,8 @@ bool CBaseLibrary::AddLibraryToSourceControl(const QString& fullPathName) const
 
 bool CBaseLibrary::SaveLibrary(const char* name, bool saveEmptyLibrary)
 {
-    assert(name != NULL);
-    if (name == NULL)
+    assert(name != nullptr);
+    if (name == nullptr)
     {
         CryFatalError("The library you are attempting to save has no name specified.");
         return false;
@@ -257,9 +258,8 @@ bool CBaseLibrary::SaveLibrary(const char* name, bool saveEmptyLibrary)
     }
     if (!bRes)
     {
-        string strMessage;
         QByteArray filenameUtf8 = fileName.toUtf8();
-        strMessage.Format("The file %s is read-only and the save of the library couldn't be performed. Try to remove the \"read-only\" flag or check-out the file and then try again.", filenameUtf8.data());
+        AZStd::string strMessage = AZStd::string::format("The file %s is read-only and the save of the library couldn't be performed. Try to remove the \"read-only\" flag or check-out the file and then try again.", filenameUtf8.data());
         CryMessageBox(strMessage.c_str(), "Saving Error", MB_OK | MB_ICONWARNING);
     }
     return bRes;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -51,14 +52,14 @@ namespace EMStudio
         {
             MCORE_MEMORYOBJECTCATEGORY(RenderPlugin::EMStudioRenderActor, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK_RENDERPLUGINBASE);
 
-            EMotionFX::Actor*                           mActor;
-            MCore::Array<uint32>                        mBoneList;
-            RenderGL::GLActor*                          mRenderActor;
-            MCore::Array<EMotionFX::ActorInstance*>     mActorInstances;
-            float                                       mNormalsScaleMultiplier;
-            float                                       mCharacterHeight;
-            float                                       mOffsetFromTrajectoryNode;
-            bool                                        mMustCalcNormalScale;
+            EMotionFX::Actor*                           m_actor;
+            AZStd::vector<size_t>                        m_boneList;
+            RenderGL::GLActor*                          m_renderActor;
+            AZStd::vector<EMotionFX::ActorInstance*>     m_actorInstances;
+            float                                       m_normalsScaleMultiplier;
+            float                                       m_characterHeight;
+            float                                       m_offsetFromTrajectoryNode;
+            bool                                        m_mustCalcNormalScale;
 
             EMStudioRenderActor(EMotionFX::Actor* actor, RenderGL::GLActor* renderActor);
             virtual ~EMStudioRenderActor();
@@ -71,14 +72,14 @@ namespace EMStudio
             MCORE_MEMORYOBJECTCATEGORY(RenderPlugin::Layout, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK_RENDERPLUGINBASE);
 
         public:
-            Layout() { mRenderPlugin = nullptr; }
+            Layout() { m_renderPlugin = nullptr; }
             virtual ~Layout() { }
             virtual QWidget* Create(RenderPlugin* renderPlugin, QWidget* parent) = 0;
             virtual const char* GetName() = 0;
             virtual const char* GetImageFileName() = 0;
 
         private:
-            RenderPlugin* mRenderPlugin;
+            RenderPlugin* m_renderPlugin;
         };
 
         RenderPlugin();
@@ -94,7 +95,7 @@ namespace EMStudio
         virtual bool CreateEMStudioActor(EMotionFX::Actor* actor) = 0;
 
         // SkeletonOutlinerNotificationBus
-        void ZoomToJoints(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<EMotionFX::Node*>& joints);
+        void ZoomToJoints(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<EMotionFX::Node*>& joints) override;
 
         // ActorNotificationBus
         void OnActorReady(EMotionFX::Actor* actor) override;
@@ -102,12 +103,12 @@ namespace EMStudio
         EMStudioPlugin::EPluginType GetPluginType() const override              { return EMStudioPlugin::PLUGINTYPE_RENDERING; }
         uint32 GetProcessFramePriority() const override                         { return 100; }
 
-        PluginOptions* GetOptions() override { return &mRenderOptions; }
+        PluginOptions* GetOptions() override { return &m_renderOptions; }
 
         // render actors
-        EMStudioRenderActor* FindEMStudioActor(EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance = true);
-        EMStudioRenderActor* FindEMStudioActor(EMotionFX::Actor* actor);
-        uint32 FindEMStudioActorIndex(EMStudioRenderActor* EMStudioRenderActor);
+        EMStudioRenderActor* FindEMStudioActor(const EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance = true) const;
+        EMStudioRenderActor* FindEMStudioActor(const EMotionFX::Actor* actor) const;
+        size_t FindEMStudioActorIndex(const EMStudioRenderActor* EMStudioRenderActor) const;
 
         void AddEMStudioActor(EMStudioRenderActor* emstudioActor);
         bool DestroyEMStudioActor(EMotionFX::Actor* actor);
@@ -122,16 +123,16 @@ namespace EMStudio
         // manipulators
         void ReInitTransformationManipulators();
         MCommon::TransformationManipulator* GetActiveManipulator(MCommon::Camera* camera, int32 mousePosX, int32 mousePosY);
-        MCORE_INLINE MCommon::TranslateManipulator* GetTranslateManipulator()       { return mTranslateManipulator; }
-        MCORE_INLINE MCommon::RotateManipulator* GetRotateManipulator()             { return mRotateManipulator; }
-        MCORE_INLINE MCommon::ScaleManipulator* GetScaleManipulator()               { return mScaleManipulator; }
+        MCORE_INLINE MCommon::TranslateManipulator* GetTranslateManipulator()       { return m_translateManipulator; }
+        MCORE_INLINE MCommon::RotateManipulator* GetRotateManipulator()             { return m_rotateManipulator; }
+        MCORE_INLINE MCommon::ScaleManipulator* GetScaleManipulator()               { return m_scaleManipulator; }
 
         // other helpers
-        MCORE_INLINE RenderOptions* GetRenderOptions()                              { return &mRenderOptions; }
+        MCORE_INLINE RenderOptions* GetRenderOptions()                              { return &m_renderOptions; }
 
         // view widget helpers
-        MCORE_INLINE RenderViewWidget* GetFocusViewWidget()                         { return mFocusViewWidget; }
-        MCORE_INLINE void SetFocusViewWidget(RenderViewWidget* focusViewWidget)     { mFocusViewWidget = focusViewWidget; }
+        MCORE_INLINE RenderViewWidget* GetFocusViewWidget()                         { return m_focusViewWidget; }
+        MCORE_INLINE void SetFocusViewWidget(RenderViewWidget* focusViewWidget)     { m_focusViewWidget = focusViewWidget; }
 
         RenderViewWidget* GetViewWidget(size_t index) { return m_viewWidgets[index]; }
         size_t GetNumViewWidgets() const { return m_viewWidgets.size(); }
@@ -139,21 +140,21 @@ namespace EMStudio
         void RemoveViewWidget(RenderViewWidget* viewWidget);
         void ClearViewWidgets();
 
-        MCORE_INLINE RenderViewWidget* GetActiveViewWidget()                        { return mActiveViewWidget; }
-        MCORE_INLINE void SetActiveViewWidget(RenderViewWidget* viewWidget)         { mActiveViewWidget = viewWidget; }
+        MCORE_INLINE RenderViewWidget* GetActiveViewWidget()                        { return m_activeViewWidget; }
+        MCORE_INLINE void SetActiveViewWidget(RenderViewWidget* viewWidget)         { m_activeViewWidget = viewWidget; }
 
         void AddLayout(Layout* layout) { m_layouts.emplace_back(layout); }
         Layout* FindLayoutByName(const AZStd::string& layoutName) const;
         Layout* GetCurrentLayout() const { return m_currentLayout; }
         const AZStd::vector<Layout*>& GetLayouts() { return m_layouts; }
 
-        MCORE_INLINE QCursor& GetZoomInCursor()                                     { assert(mZoomInCursor); return *mZoomInCursor; }
-        MCORE_INLINE QCursor& GetZoomOutCursor()                                    { assert(mZoomOutCursor); return *mZoomOutCursor; }
+        MCORE_INLINE QCursor& GetZoomInCursor()                                     { assert(m_zoomInCursor); return *m_zoomInCursor; }
+        MCORE_INLINE QCursor& GetZoomOutCursor()                                    { assert(m_zoomOutCursor); return *m_zoomOutCursor; }
 
-        MCORE_INLINE CommandSystem::SelectionList* GetCurrentSelection() const      { return mCurrentSelection; }
-        MCORE_INLINE MCommon::RenderUtil* GetRenderUtil() const                     { return mRenderUtil; }
+        MCORE_INLINE CommandSystem::SelectionList* GetCurrentSelection() const      { return m_currentSelection; }
+        MCORE_INLINE MCommon::RenderUtil* GetRenderUtil() const                     { return m_renderUtil; }
 
-        MCore::AABB GetSceneAABB(bool selectedInstancesOnly);
+        AZ::Aabb GetSceneAabb(bool selectedInstancesOnly);
 
         MCommon::RenderUtil::TrajectoryTracePath* FindTracePath(EMotionFX::ActorInstance* actorInstance);
         void ResetSelectedTrajectoryPaths();
@@ -194,38 +195,38 @@ namespace EMStudio
         AZStd::vector<MCommon::RenderUtil::TrajectoryTracePath*> m_trajectoryTracePaths;
 
         // the transformation manipulators
-        MCommon::TranslateManipulator*      mTranslateManipulator;
-        MCommon::RotateManipulator*         mRotateManipulator;
-        MCommon::ScaleManipulator*          mScaleManipulator;
+        MCommon::TranslateManipulator*      m_translateManipulator;
+        MCommon::RotateManipulator*         m_rotateManipulator;
+        MCommon::ScaleManipulator*          m_scaleManipulator;
 
-        MCommon::RenderUtil*                mRenderUtil;
-        RenderUpdateCallback*               mUpdateCallback;
+        MCommon::RenderUtil*                m_renderUtil;
+        RenderUpdateCallback*               m_updateCallback;
 
-        RenderOptions                       mRenderOptions;
-        MCore::Array<EMStudioRenderActor*>  mActors;
+        RenderOptions                       m_renderOptions;
+        AZStd::vector<EMStudioRenderActor*>  m_actors;
 
         // view widgets
         AZStd::vector<RenderViewWidget*>    m_viewWidgets;
-        RenderViewWidget*                   mActiveViewWidget;
-        RenderViewWidget*                   mFocusViewWidget;
+        RenderViewWidget*                   m_activeViewWidget;
+        RenderViewWidget*                   m_focusViewWidget;
 
         // render view layouts
         AZStd::vector<Layout*>              m_layouts;
         Layout*                             m_currentLayout;
 
         // cursor image files
-        QCursor*                            mZoomInCursor;
-        QCursor*                            mZoomOutCursor;
+        QCursor*                            m_zoomInCursor;
+        QCursor*                            m_zoomOutCursor;
 
         // window visibility
-        bool                                mIsVisible;
+        bool                                m_isVisible;
 
         // base layout and interface functionality
-        QHBoxLayout*                        mBaseLayout;
-        QWidget*                            mRenderLayoutWidget;
-        QWidget*                            mInnerWidget;
-        CommandSystem::SelectionList*       mCurrentSelection;
-        bool                                mFirstFrameAfterReInit;
+        QHBoxLayout*                        m_baseLayout;
+        QWidget*                            m_renderLayoutWidget;
+        QWidget*                            m_innerWidget;
+        CommandSystem::SelectionList*       m_currentSelection;
+        bool                                m_firstFrameAfterReInit;
         bool                                m_reinitRequested = false;
 
         // command callbacks
@@ -238,14 +239,14 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(ClearSelectionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandResetToBindPoseCallback);
         MCORE_DEFINECOMMANDCALLBACK(AdjustActorInstanceCallback);
-        UpdateRenderActorsCallback*         mUpdateRenderActorsCallback;
-        ReInitRenderActorsCallback*         mReInitRenderActorsCallback;
-        CreateActorInstanceCallback*        mCreateActorInstanceCallback;
-        RemoveActorInstanceCallback*        mRemoveActorInstanceCallback;
-        SelectCallback*                     mSelectCallback;
-        UnselectCallback*                   mUnselectCallback;
-        ClearSelectionCallback*             mClearSelectionCallback;
-        CommandResetToBindPoseCallback*     mResetToBindPoseCallback;
-        AdjustActorInstanceCallback*        mAdjustActorInstanceCallback;
+        UpdateRenderActorsCallback*         m_updateRenderActorsCallback;
+        ReInitRenderActorsCallback*         m_reInitRenderActorsCallback;
+        CreateActorInstanceCallback*        m_createActorInstanceCallback;
+        RemoveActorInstanceCallback*        m_removeActorInstanceCallback;
+        SelectCallback*                     m_selectCallback;
+        UnselectCallback*                   m_unselectCallback;
+        ClearSelectionCallback*             m_clearSelectionCallback;
+        CommandResetToBindPoseCallback*     m_resetToBindPoseCallback;
+        AdjustActorInstanceCallback*        m_adjustActorInstanceCallback;
     };
 } // namespace EMStudio

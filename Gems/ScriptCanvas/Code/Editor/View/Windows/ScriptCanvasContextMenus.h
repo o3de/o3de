@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -60,7 +61,10 @@ namespace ScriptCanvasEditor
         bool IsInSubMenu() const override;
         AZStd::string GetSubMenuPath() const override;
 
+        using GraphCanvas::SceneContextMenuAction::RefreshAction;
         void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::SceneContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
     };
 
@@ -76,7 +80,10 @@ namespace ScriptCanvasEditor
 
         GraphCanvas::ActionGroupId GetActionGroupId() const override;
 
+        using GraphCanvas::ContextMenuAction::RefreshAction;
         void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::ContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
 
     private:
@@ -109,7 +116,10 @@ namespace ScriptCanvasEditor
 
         GraphCanvas::ActionGroupId GetActionGroupId() const override;
 
+        using SlotManipulationMenuAction::RefreshAction;
         void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using SlotManipulationMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
 
     private:
@@ -126,7 +136,10 @@ namespace ScriptCanvasEditor
         ExposeSlotMenuAction(QObject* parent);
         virtual ~ExposeSlotMenuAction() = default;
 
+        using GraphCanvas::SlotContextMenuAction::RefreshAction;
         void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::SlotContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
 
     protected:
@@ -144,7 +157,10 @@ namespace ScriptCanvasEditor
         virtual ~SetDataSlotTypeMenuAction() = default;
         static bool IsSupportedSlotType(const AZ::EntityId& slotId);
 
+        using GraphCanvas::SlotContextMenuAction::RefreshAction;
         void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::SlotContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
 
     private:
@@ -163,7 +179,10 @@ namespace ScriptCanvasEditor
 
         CreateAzEventHandlerSlotMenuAction(QObject* parent);
 
+        using GraphCanvas::SlotContextMenuAction::RefreshAction;
         void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::SlotContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
 
         static const AZ::BehaviorMethod* FindBehaviorMethodWithAzEventReturn(const GraphCanvas::GraphId& graphId, AZ::EntityId targetId);
@@ -238,7 +257,10 @@ namespace ScriptCanvasEditor
         RenameFunctionDefinitionNodeAction(NodeDescriptorComponent* descriptor, QObject* parent);
         virtual ~RenameFunctionDefinitionNodeAction() = default;
 
+        using GraphCanvas::NodeContextMenuAction::RefreshAction;
         void RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId) override;
+
+        using GraphCanvas::NodeContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const GraphCanvas::GraphId& graphId, const AZ::Vector2& scenePos) override;
 
         NodeDescriptorComponent* m_descriptor;

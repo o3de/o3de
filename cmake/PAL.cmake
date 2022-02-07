@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -111,7 +112,8 @@ function(read_engine_restricted_path output_restricted_path)
     # Set manifest path to path in the user home directory
     set(manifest_path ${LY_ROOT_FOLDER}/engine.json)
     if(EXISTS ${manifest_path})
-        o3de_restricted_path(${manifest_path} output_restricted_path)
+        o3de_restricted_path(${manifest_path} read_restricted_path)
+        set(${output_restricted_path} ${read_restricted_path} PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -132,16 +134,17 @@ ly_set(PAL_HOST_PLATFORM_NAME_LOWERCASE ${PAL_HOST_PLATFORM_NAME_LOWERCASE})
 
 set(PAL_RESTRICTED_PLATFORMS)
 
-string(LENGTH "${O3DE_ENGINE_RESTRICTED_PATH}" engine_restricted_length)
 file(GLOB pal_restricted_files ${O3DE_ENGINE_RESTRICTED_PATH}/*/cmake/PAL_*.cmake)
 foreach(pal_restricted_file ${pal_restricted_files})
-    string(FIND ${pal_restricted_file} "/cmake/PAL" end)
-    if(${end} GREATER -1)
-        math(EXPR platform_length "${end} - ${engine_restricted_length} - 1")
-        math(EXPR platform_start "${engine_restricted_length} + 1")
-        string(SUBSTRING ${pal_restricted_file} ${platform_start} ${platform_length} platform)
-        list(APPEND PAL_RESTRICTED_PLATFORMS "${platform}")
-    endif()
+    # Get relative path from restricted root directory
+    cmake_path(RELATIVE_PATH pal_restricted_file BASE_DIRECTORY ${O3DE_ENGINE_RESTRICTED_PATH} OUTPUT_VARIABLE relative_pal_restricted_file)
+    # Split relative restricted path into path segments
+    string(REPLACE "/" ";" pal_restricted_segments ${relative_pal_restricted_file})
+    # Retrieve the first path segment which should be the restricted platform
+    list(GET pal_restricted_segments 0 platform)
+    # Append the new restricted platform
+    string(TOLOWER ${platform} platform_lower)
+    list(APPEND PAL_RESTRICTED_PLATFORMS ${platform_lower})
 endforeach()
 ly_set(PAL_RESTRICTED_PLATFORMS ${PAL_RESTRICTED_PLATFORMS})
 
@@ -185,11 +188,17 @@ function(ly_get_absolute_pal_filename out_name in_name)
             # Remove one path segment from the end of the current_object_path and prepend it to the list path_segments
             cmake_path(GET current_object_path PARENT_PATH parent_path)
             cmake_path(GET current_object_path FILENAME path_segment)
-            list(PREPEND path_segments_visited path_segment)
+            list(PREPEND path_segments_visited ${path_segment})
             cmake_path(COMPARE current_object_path NOT_EQUAL parent_path is_prev_path_segment)
             cmake_path(SET current_object_path "${parent_path}")
 
+            set(is_prev_path_segment TRUE)
             while(is_prev_path_segment)
+                # Remove one path segment from the end of the current_object_path and prepend it to the list path_segments
+                cmake_path(GET current_object_path PARENT_PATH parent_path)
+                cmake_path(GET current_object_path FILENAME path_segment)
+                cmake_path(COMPARE current_object_path NOT_EQUAL parent_path is_prev_path_segment)
+                cmake_path(SET current_object_path "${parent_path}")
                 # The Path is in a PAL structure
                 # Decompose the path into sections before "Platform" and after "Platform"
                 if(path_segment STREQUAL "Platform")
@@ -204,21 +213,17 @@ function(ly_get_absolute_pal_filename out_name in_name)
                     break()
                 endif()
 
-                # Remove one path segment from the end of the current_object_path and prepend it to the list path_segments
-                cmake_path(GET current_object_path PARENT_PATH parent_path)
-                cmake_path(GET current_object_path FILENAME path_segment)
-                list(PREPEND path_segments_visited path_segment)
-                cmake_path(COMPARE current_object_path NOT_EQUAL parent_path is_prev_path_segment)
-                cmake_path(SET current_object_path "${parent_path}")
+                list(PREPEND path_segments_visited ${path_segment})
             endwhile()
 
             # Compose a candidate restricted path and examine if it exists
-            cmake_path(APPEND object_restricted_path ${pre_platform_paths} "Platform" ${post_platform_paths}
+            cmake_path(APPEND ${pre_platform_paths} "Platform" ${post_platform_paths}
                 OUTPUT_VARIABLE candidate_PAL_path)
             if(NOT EXISTS ${candidate_PAL_path})
-                if("${candidate_platform_name}" IN_LIST PAL_RESTRICTED_PLATFORMS)
+                string(TOLOWER ${candidate_platform_name} candidate_platform_name_lower)
+                if("${candidate_platform_name_lower}" IN_LIST PAL_RESTRICTED_PLATFORMS)
                     cmake_path(APPEND object_restricted_path ${candidate_platform_name} ${object_name}
-                        ${pre_platform_paths} ${post_platform_paths} OUTPUT_VARIABLE candidate_PAL_path)
+                        ${pre_platform_paths} OUTPUT_VARIABLE candidate_PAL_path)
                 endif()
             endif()
             if(EXISTS ${candidate_PAL_path})
@@ -226,6 +231,7 @@ function(ly_get_absolute_pal_filename out_name in_name)
             endif()
         endif()
     endif()
+    cmake_path(ABSOLUTE_PATH full_name BASE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
     set(${out_name} ${full_name} PARENT_SCOPE)
 endfunction()
 

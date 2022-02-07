@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "precompiled.h"
 
 #include <Asset/AssetDescription.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
@@ -29,19 +29,20 @@
 #include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 #include <Source/Components/SceneComponent.h>
+#include <ScriptCanvas/Core/Core.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+
 
 namespace ScriptCanvasBuilder
 {
     AssetHandlers::AssetHandlers(SharedHandlers& source)
-        : m_editorAssetHandler(source.m_editorAssetHandler.first)
-        , m_editorFunctionAssetHandler(source.m_editorFunctionAssetHandler.first)
+        : m_editorFunctionAssetHandler(source.m_editorFunctionAssetHandler.first)
         , m_runtimeAssetHandler(source.m_runtimeAssetHandler.first)
         , m_subgraphInterfaceHandler(source.m_subgraphInterfaceHandler.first)
     {}
 
     void SharedHandlers::DeleteOwnedHandlers()
     {
-        DeleteIfOwned(m_editorAssetHandler);
         DeleteIfOwned(m_editorFunctionAssetHandler);
         DeleteIfOwned(m_runtimeAssetHandler);
         DeleteIfOwned(m_subgraphInterfaceHandler);
@@ -77,48 +78,34 @@ namespace ScriptCanvasBuilder
         return ScriptCanvas::Translation::ParseGraph(request);
     }
 
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(AZ::Entity* buildEntity, AZ::Data::AssetId scriptAssetId, AZStd::string_view rawLuaFilePath)
+    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const ScriptCanvasEditor::SourceHandle& editAsset, AZStd::string_view rawLuaFilePath)
     {
         AZStd::string fullPath(rawLuaFilePath);
         AZStd::string fileNameOnly;
         AzFramework::StringFunc::Path::GetFullFileName(rawLuaFilePath.data(), fileNameOnly);
         AzFramework::StringFunc::Path::Normalize(fullPath);
 
-        auto sourceGraph = PrepareSourceGraph(buildEntity);
+        auto sourceGraph = PrepareSourceGraph(editAsset.Mod()->GetEntity());
 
         ScriptCanvas::Grammar::Request request;
-        request.scriptAssetId = scriptAssetId;
+        request.scriptAssetId = editAsset.Id();
         request.graph = sourceGraph;
         request.name = fileNameOnly;
         request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
         request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModel;
         request.path = fullPath;
 
-        bool pathFound = false;
-        AZStd::string relativePath;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-        (pathFound
-            , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath
-            , fullPath.c_str(), relativePath);
-
-        if (!pathFound)
-        {
-            AZ::Failure(AZStd::string::format("Failed to get engine relative path from %s", fullPath.c_str()));
-        }
-
-        request.namespacePath = relativePath;
         const ScriptCanvas::Translation::Result translationResult = TranslateToLua(request);
 
         auto isSuccessOutcome = translationResult.IsSuccess(ScriptCanvas::Translation::TargetFlags::Lua);
-
         if (!isSuccessOutcome.IsSuccess())
         {
             return AZ::Failure(isSuccessOutcome.TakeError());
         }
-        auto& translation = translationResult.m_translations.find(ScriptCanvas::Translation::TargetFlags::Lua)->second;
 
+        auto& translation = translationResult.m_translations.find(ScriptCanvas::Translation::TargetFlags::Lua)->second;
         AZ::Data::Asset<AZ::ScriptAsset> asset;
-        scriptAssetId.m_subId = AZ::ScriptAsset::CompiledAssetSubId;
+        AZ::Data::AssetId scriptAssetId(editAsset.Id(), AZ::ScriptAsset::CompiledAssetSubId);
         asset.Create(scriptAssetId);
         auto writeStream = asset.Get()->CreateWriteStream();
 
@@ -145,12 +132,12 @@ namespace ScriptCanvasBuilder
         return AZ::Success(result);
     }
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset)
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const ScriptCanvasEditor::SourceHandle& editAsset)
     {
         // Flush asset manager events to ensure no asset references are held by closures queued on Ebuses.
         AZ::Data::AssetManager::Instance().DispatchEvents();
 
-        auto runtimeAssetId = editAsset.GetId();
+        AZ::Data::AssetId runtimeAssetId = editAsset.Id();
         runtimeAssetId.m_subId = AZ_CRC("RuntimeData", 0x163310ae);
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
         runtimeAsset.Create(runtimeAssetId);
@@ -481,12 +468,12 @@ namespace ScriptCanvasBuilder
             buildEntity->Activate();
         }
 
+        AZ_Assert(buildEntity->GetState() == AZ::Entity::State::Active, "build entity not active");
         return sourceGraph;
     }
 
     AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input)
     {
-        const bool saveRawLua{ true };
         auto sourceGraph = PrepareSourceGraph(input.buildEntity);
 
         auto version = sourceGraph->GetVersion();
@@ -651,11 +638,6 @@ namespace ScriptCanvasBuilder
 
         for (const auto& assetDependency : runtimeData.m_requiredAssets)
         {
-            auto filterScripts = [](const AZ::Data::Asset<AZ::Data::AssetData>& asset)
-            {
-                return asset.GetType() != azrtti_typeid<AZ::ScriptAsset>();
-            };
-
             if (AZ::Data::AssetManager::Instance().GetAsset(assetDependency.GetId(), assetDependency.GetType(), AZ::Data::AssetLoadBehavior::PreLoad))
             {
                 jobProduct.m_dependencies.push_back({ assetDependency.GetId(), {} });

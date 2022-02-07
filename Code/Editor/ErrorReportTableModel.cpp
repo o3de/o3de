@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,7 +45,7 @@ bool GetPositionFromString(QString er, float* x, float* y, float* z)
                 }
                 if (ind > 0)
                 {
-                    *x = er.mid(0, ind).toDouble();
+                    *x = er.mid(0, ind).toFloat();
                     er = er.mid(ind);
                     er.remove(QRegExp("^[ ,]*"));
 
@@ -56,12 +57,12 @@ bool GetPositionFromString(QString er, float* x, float* y, float* z)
                     }
                     if (ind > 0)
                     {
-                        *y = er.mid(0, ind).toDouble();
+                        *y = er.mid(0, ind).toFloat();
                         er = er.mid(ind);
                         er.remove(QRegExp("^[ ,]*"));
                         if (er.length())
                         {
-                            *z = er.toDouble();
+                            *z = er.toFloat();
                             return true;
                         }
                     }
@@ -104,7 +105,7 @@ void CErrorReportTableModel::setErrorReport(CErrorReport* report)
     {
         m_errorRecords.clear();
     }
-    if (report != 0)
+    if (report != nullptr)
     {
         const int count = report->GetErrorCount();
         m_errorRecords.reserve(count);
@@ -118,7 +119,7 @@ void CErrorReportTableModel::setErrorReport(CErrorReport* report)
 
 int CErrorReportTableModel::rowCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : m_errorRecords.size();
+    return parent.isValid() ? 0 : static_cast<int>(m_errorRecords.size());
 }
 
 int CErrorReportTableModel::columnCount(const QModelIndex& parent) const

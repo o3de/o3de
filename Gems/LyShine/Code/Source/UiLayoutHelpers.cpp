@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiLayoutHelpers.h"
 
 #include <LyShine/Bus/UiElementBus.h>
@@ -434,7 +434,7 @@ namespace UiLayoutHelpers
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void CalculateElementSizes(const LayoutCellSizes& layoutCells, float availableSize, float spacing, AZStd::vector<float>& sizesOut)
     {
-        int numElements = layoutCells.size();
+        int numElements = static_cast<int>(layoutCells.size());
 
         availableSize -= (numElements - 1) * spacing;
 

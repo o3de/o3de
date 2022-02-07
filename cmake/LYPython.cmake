@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -20,16 +21,19 @@ include(cmake/LySet.cmake)
 # CMAKE_HOST_SYSTEM_NAME is  "Windows", "Darwin", or "Linux" in our cases..
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" )
     ly_set(LY_PYTHON_VERSION 3.7.10)
+    ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.7)
     ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev2-linux)
     ly_set(LY_PYTHON_PACKAGE_HASH 6b9cf455e6190ec38836194f4454bb9db6bfc6890b4baff185cc5520aa822f05)
 elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
     ly_set(LY_PYTHON_VERSION 3.7.10)
+    ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.7)
     ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev1-darwin)
     ly_set(LY_PYTHON_PACKAGE_HASH 3f65801894e4e44b5faa84dd85ef80ecd772dcf728cdd2d668a6e75978a32695)
 elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
     ly_set(LY_PYTHON_VERSION 3.7.10)
-    ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev1-windows)
-    ly_set(LY_PYTHON_PACKAGE_HASH 851383addea5c54b7c6398860d04606c1053f1157c2edd801ec3d47394f73136)
+    ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.7)
+    ly_set(LY_PYTHON_PACKAGE_NAME python-3.7.10-rev2-windows)
+    ly_set(LY_PYTHON_PACKAGE_HASH 06d97488a2dbabe832ecfa832a42d3e8a7163ba95e975f032727331b0f49d280)
 endif()
 
 # settings and globals
@@ -142,7 +146,10 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
     # we only ever need to do this once per runtime install, since its a link
     # not an actual install:
 
-    if(EXISTS ${stamp_file})
+    # If setup.py changes we must reinstall the package in case its dependencies changed
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${package_folder_path}/setup.py)
+
+    if(EXISTS ${stamp_file} AND ${stamp_file} IS_NEWER_THAN ${package_folder_path}/setup.py)
         ly_package_is_newer_than(${LY_PYTHON_PACKAGE_NAME} ${stamp_file} package_is_newer)
         if (NOT package_is_newer)
             # no need to run the command again, as the package is older than the stamp file

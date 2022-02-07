@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -150,35 +151,6 @@ inline AZ::Transform LYTransformToAZTransform(const Matrix34& source)
 inline AZ::Matrix3x4 LYTransformToAZMatrix3x4(const Matrix34& source)
 {
     return AZ::Matrix3x4::CreateFromRowMajorFloat12(source.GetData());
-}
-
-inline AZ::Transform LYQuatTToAZTransform(const QuatT& source)
-{
-    return AZ::Transform::CreateFromQuaternionAndTranslation(
-        LYQuaternionToAZQuaternion(source.q),
-        LYVec3ToAZVec3(source.t));
-}
-
-inline QuatT AZTransformToLYQuatT(const AZ::Transform& source)
-{
-    return QuatT(
-        AZQuaternionToLYQuaternion(source.GetRotation()),
-        AZVec3ToLYVec3(source.GetTranslation()));
-}
-
-inline QuatT AZMatrix3x4ToLYQuatT(const AZ::Matrix3x4& source)
-{
-    AZ::Matrix3x4 sourceNoScale(source);
-    sourceNoScale.ExtractScale();
-
-    return QuatT(
-        AZQuaternionToLYQuaternion(AZ::Quaternion::CreateFromMatrix3x4(sourceNoScale)),
-        AZVec3ToLYVec3(source.GetTranslation()));
-}
-
-inline DualQuat AZMatrix3x4ToLYDualQuat(const AZ::Matrix3x4& matrix3x4)
-{
-    return DualQuat(AZMatrix3x4ToLYMatrix3x4(matrix3x4));
 }
 
 inline AABB AZAabbToLyAABB(const AZ::Aabb& source)

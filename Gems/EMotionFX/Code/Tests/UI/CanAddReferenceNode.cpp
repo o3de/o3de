@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,7 +47,7 @@ namespace EMotionFX
         addReferenceNodeAction->trigger();
 
         // Check the expected node now exists.
-        int numNodesAfter= currentNode->GetNumChildNodes();
+        size_t numNodesAfter = currentNode->GetNumChildNodes();
         EXPECT_EQ(1, numNodesAfter);
 
         AnimGraphNode* newNode = currentNode->GetChildNode(0);

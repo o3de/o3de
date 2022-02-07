@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,18 +26,12 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Source/AreaSystemComponent.h>
 #include <Source/InstanceSystemComponent.h>
 #include <ISerialize.h>
 #include <IIndexedMesh.h>
 #include <IStatObj.h>
-
-// used for the mock for IStatObj
-#ifndef CRYINCLUDE_CRY3DENGINE_STATOBJ_H
-struct SPhysGeomArray
-{
-};
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 // mock event bus classes for testing vegetation
@@ -274,7 +269,7 @@ namespace UnitTest
             }
         }
 
-        void GetSystemConfig(AZ::ComponentConfig* config) const
+        void GetSystemConfig(AZ::ComponentConfig* config) const override
         {
             if (azrtti_typeid(m_areaSystemConfig) == azrtti_typeid(*config))
             {
@@ -553,6 +548,16 @@ namespace UnitTest
             return m_drawItemSortKeyOutput;
         }
 
+        AZ::RPI::Cullable::LodType m_lodTypeOutput;
+        void SetLodType(AZ::RPI::Cullable::LodType lodType) override
+        {
+            m_lodTypeOutput = lodType;
+        }
+        AZ::RPI::Cullable::LodType GetLodType() const override
+        {
+            return m_lodTypeOutput;
+        }
+
         AZ::RPI::Cullable::LodOverride m_lodOverrideOutput;
         void SetLodOverride(AZ::RPI::Cullable::LodOverride lodOverride) override
         {
@@ -561,6 +566,26 @@ namespace UnitTest
         AZ::RPI::Cullable::LodOverride GetLodOverride() const override
         {
             return m_lodOverrideOutput;
+        }
+
+        float m_minimumScreenCoverageOutput;
+        void SetMinimumScreenCoverage(float minimumScreenCoverage) override
+        {
+            m_minimumScreenCoverageOutput = minimumScreenCoverage;
+        }
+        float GetMinimumScreenCoverage() const override
+        {
+            return m_minimumScreenCoverageOutput;
+        }
+
+        float m_qualityDecayRateOutput;
+        void SetQualityDecayRate(float qualityDecayRate) override
+        {
+            m_qualityDecayRateOutput = qualityDecayRate;
+        }
+        float GetQualityDecayRate() const override
+        {
+            return m_qualityDecayRateOutput;
         }
     };
 

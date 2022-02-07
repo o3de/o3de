@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,7 +30,7 @@ namespace EMotionFX
             leftPinky2Index = 11,
             leftPinky3Index = 12,
             numJoints = 13,
-            INVALID = MCORE_INVALIDINDEX32
+            INVALID = InvalidIndex
         };
 
         PrefabLeftArmSkeleton()
@@ -79,7 +80,7 @@ namespace EMotionFX
                 .WillRepeatedly(Return(nodeName));
 
             AZ::u32 i = 0;
-            std::initializer_list<int> {(([&]() {
+            [[maybe_unused]] std::initializer_list<int> dummy = {(([&]() {
                 EXPECT_CALL(*node, GetChildIndex(i))
                     .WillRepeatedly(Return(children));
                 ++i;

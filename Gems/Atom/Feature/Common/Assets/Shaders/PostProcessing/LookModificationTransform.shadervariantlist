@@ -1,9 +1,13 @@
 { 
     "Shader" : "LookModificationTransform.shader",
     "Variants" : [ 
-        {   "StableId": 1, "Options" : { "o_enableExposureControlFeature": "true", "o_enableColorGradingLut": "true" } },
-        {   "StableId": 2, "Options" : { "o_enableExposureControlFeature": "true", "o_enableColorGradingLut": "false" } },
-        {   "StableId": 3, "Options" : { "o_enableExposureControlFeature": "false", "o_enableColorGradingLut": "true" } },
-        {   "StableId": 4, "Options" : { "o_enableExposureControlFeature": "false", "o_enableColorGradingLut": "false" } }
+        {   "StableId": 1, "Options" : { "o_enableExposureControlFeature": "true", "o_enableColorGradingLut": "false" } },
+        {   "StableId": 2, "Options" : { "o_enableExposureControlFeature": "false", "o_enableColorGradingLut": "false" } },
+        {   "StableId": 3, "Options" : { "o_enableExposureControlFeature": "true", "o_enableColorGradingLut": "true", "o_lutSampleQuality": 0 } },
+        {   "StableId": 4, "Options" : { "o_enableExposureControlFeature": "false", "o_enableColorGradingLut": "true", "o_lutSampleQuality": 0 } },
+        {   "StableId": 5, "Options" : { "o_enableExposureControlFeature": "true", "o_enableColorGradingLut": "true", "o_lutSampleQuality": 1 } },
+        {   "StableId": 6, "Options" : { "o_enableExposureControlFeature": "false", "o_enableColorGradingLut": "true", "o_lutSampleQuality": 1 } },
+        {   "StableId": 7, "Options" : { "o_enableExposureControlFeature": "true", "o_enableColorGradingLut": "true", "o_lutSampleQuality": 2 } },
+        {   "StableId": 8, "Options" : { "o_enableExposureControlFeature": "false", "o_enableColorGradingLut": "true", "o_lutSampleQuality": 2 } }
     ]    
 }

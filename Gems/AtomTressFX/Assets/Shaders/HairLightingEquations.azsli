@@ -1,0 +1,243 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+* 
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
+#pragma once
+
+// --- Overview ---
+// 
+// This is a modified Marschner Lighting Model for hair based on the following papers:
+// 
+// The original Marschner Siggraph paper defining the fundementsal hair lighting model.
+// http://www.graphics.stanford.edu/papers/hair/hair-sg03final.pdf
+// 
+// An Energy-Conserving Hair Reflectance Model
+// http://www.eugenedeon.com/project/an-energy-conserving-hair-reflectance-model/
+// http://www.eugenedeon.com/wp-content/uploads/2014/04/egsrhair.pdf
+// 
+// Physically Based Hair Shading in Unreal - specifically adapted in our shader
+// https://blog.selfshadow.com/publications/s2016-shading-course/karis/s2016_pbs_epic_hair.pptx
+// 
+// Strand-based Hair Rendering in Frostbite for reference
+// https://advances.realtimerendering.com/s2019/hair_presentation_final.pdf
+// 
+//
+// Path Notations
+// --------------
+// The Marschner model divides hair rendering into three light paths: R, TT and TRT 
+// R - the light bounces straight off the hair fiber (Reflection)
+// TT - the light penetrates the hair fiber and exits at the other side (Transmitance - Transmitance)
+// TRT - the light penetrates the hair fiber, bounces inside and exists (Transmitance - Reflection - Transmitance)
+// 
+// The calculations for each path are devided into longitude (M) and azimuth (N) terms: 
+// Longtitude:  M_R, M_TT, M_TRT  
+// Azimuth:     N_R, N_TT, N_TRT
+//
+// Other notations
+// ---------------
+// Wi - incoming light vector 
+// Wr - reflected light vector
+// L - angles with respect to the Longitude
+// O - vectors with respect to the azimuth
+// Li and Lr are the longitudinal angles with respect to incoming/reflected light, i.e. the angle between 
+//      those vector and the normal plane (plane perpendicular to the hair)
+// Oi and Or are the azimuthal angles, i.e. the angles contained by the normal plane
+// Lh and Oh are the averages, i.e. Lh = (Lr + Li) / 2  and  Oh = (Or + Oi) / 2
+// Ld is the difference angle, i.e. Ld = (Lr - Li) / 2
+// O denotes the relative azimuth, simply O = (Or - Oi)
+
+#include <Atom/RPI/Math.azsli>
+
+//------------------------------------------------------------------------------
+option bool o_enableMarschner_R = true;
+option bool o_enableMarschner_TRT = true;
+option bool o_enableMarschner_TT = true;
+
+option bool o_enableLongtitudeCoeff = true; 
+option bool o_enableAzimuthCoeff = true;
+//------------------------------------------------------------------------------
+
+// Longitudinal functions (M_R, M_TT, M_RTR)
+// Notice that tilt and roughness multipliers are a-priori per Epic artistic taste 
+float M_R(Surface surface, float Lh, float sinLiPlusSinLr)
+{
+    float a = 1.0f * surface.cuticleTilt;   // Tilt is translate as the mean offset
+    float b = 0.5f * surface.roughnessA2;    // Roughness is used as the standard deviation
+
+//    return GaussianNormalized(sinLiPlusSinLr, a, b);  // reference
+    return GaussianNormalized(Lh, a, b);
+}
+
+float M_TT(Surface surface, float Lh, float sinLiPlusSinLr)
+{
+    float a = 1.0f * surface.cuticleTilt;
+    float b = 0.5f * surface.roughnessA2;
+
+//    return GaussianNormalized(sinLiPlusSinLr, a, b);  // reference
+    return GaussianNormalized(Lh, a, b);
+}
+
+float M_TRT(Surface surface, float Lh, float sinLiPlusSinLr)
+{
+    float a = 1.5f * surface.cuticleTilt;
+    float b = 1.0f * surface.roughnessA2;
+
+//    return GaussianNormalized(sinLiPlusSinLr, a, b);  // reference
+    return GaussianNormalized(Lh, a, b);    
+}
+
+
+// Azimuth functions (N_R, N_TT, N_RTR)
+float N_R(Surface surface, float cos_O2, float3 Wi, float3 Wr, float f0)
+{
+    // Fresnel part of the attentuation term (A in the papers)
+    float fresnel = FresnelSchlick( sqrt(0.5 * dot(Wi, Wr) + 0.5) , f0);
+
+    // Distribution term
+    float distribution = 0.25 * cos_O2;
+
+    // No absorption term since this is the reflected light path
+    return fresnel * distribution;
+}
+
+// Light passes through the hair and exits at the back - most dominant effect
+// will be of lights at the back of the hair when the hair is thin and not concealed 
+float3 N_TT(Surface surface, float n2, float cos_O, float cos_O2, float3 cos_Ld, float f0)
+{
+    // Helper variables (see papers)
+    float a = rcp(n2);
+    float h = (1 + a * (0.6 - (0.8 * cos_O))) * cos_O2; 
+
+    // Fresnel part of the attentuation term (A in the papers)
+    float fresnel = FresnelSchlick(cos_Ld * sqrt( 1 - (h*h) ), f0);
+    fresnel = Pow2(1 - fresnel);
+
+    // The absorption part of the attenuation term (A in the papers).
+    float3 absorption = pow(surface.albedo, sqrt( 1 - (h*h*a*a) ) / (2 * cos_Ld) );
+
+    // Distribution term
+    float distribution = exp(-3.65 * cos_O - 3.98);
+
+    return absorption * (fresnel * distribution);
+}
+
+float3 N_TRT(Surface surface, float cos_O, float3 cos_Ld, float f0)
+{
+    // Helper variables (see papers)
+    float h = sqrt(3.0f) * 0.5f;
+
+    // Fresnel part of the attentuation term (A in the papers)
+    float fresnel = FresnelSchlick(cos_Ld * sqrt( 1 - (h*h) ), f0);
+    fresnel = Pow2(1 - fresnel) * fresnel;
+
+    // How much light the hair will absorb. Part of the attenuation term (A in the papers)
+    float3 absorption = pow(surface.albedo, 0.8f / max(cos_Ld, 0.001) );
+
+    // Distribution term
+    float distribution = exp(17.0f * cos_O - 16.78f);
+
+    return absorption * (fresnel * distribution);
+}
+
+//------------------------------------------------------------------------------
+//                    The BSDF lighting function used by Hair
+//------------------------------------------------------------------------------
+float3 HairMarschnerBSDF(Surface surface, LightingData lightingData, const float3 dirToLight)
+{
+    //-------------- Lighting Parameters Calculations ---------------
+    // Incoming and outgoing light directions
+    float3 Wi = normalize(dirToLight);                 // Incident light direction
+    float3 Wr = normalize(lightingData.dirToCamera);   // Reflected light measurement direction AKA reflection                                        
+    float3 T = normalize(surface.tangent);             // Hair tangent
+
+    // Incident light and reflection direction projected along the tangent
+    float Ti = T * dot(T, Wi);
+    float Tr = T * dot(T, Wr);
+
+    // The light and reflection vectors projected along the normal plane to the hair.
+    // The plane is spliting the Azimuth and Longtitude angles and vectors contributions.
+    float3 NPi = normalize(Wi - Ti);
+    float3 NPr = normalize(Wr - Tr);
+
+    // Azimuthal angle between the incident light vector and the reflection 
+    // direction (the direction at which we measure the light scaterring)
+    // float O = acos(dot(NPi, NPr))  <- Unused, for reference only
+    float cos_O = dot(NPi, NPr);
+
+    // cosine(O / 2)
+    float cos_O2 = sqrt(0.5 * cos_O + 0.5);  // <- trigonometric formula for calculating cos(x/2) given cos(x) 
+
+    // Longitude angles
+    float Li = acos(clamp(dot(Wi, NPi),-1.0f, 1.0f));
+    float Lr = acos(clamp(dot(Wr, NPr),-1.0f, 1.0f));
+    float Lh = (Lr + Li) * 0.5f;
+    float Ld = (Lr - Li) * 0.5f;
+
+    // The folowing is according to the original article - reference only
+    //    float sinLiPlusSinLr = dot(Wi, NPi) * dot(Wr, NPr);// sin(Li) + sin(Lr);
+    float sinLiPlusSinLr = sin(Li) + sin(Lr);
+
+    // Refraction index 
+    const float n = 1.55f;
+    float cos_Ld = cos(Ld);
+    float n2 = (1.19f / cos_Ld) + 0.36f * cos_Ld;
+
+    // Fresnel F0
+    float f0 = Pow2( (1.0f - n) / (1.0f + n) );
+
+    //--------------- Lighting accumulation per lobe ------------------
+    float3 lighting = float3(0.0f, 0.0f, 0.0f);
+
+    // R Path - single reflection from the hair towards the eye.
+    if (o_enableMarschner_R)
+    {
+        float lighting_R = o_enableLongtitudeCoeff ? M_R(surface, Lh, sinLiPlusSinLr) : 1.0f;
+        if (o_enableAzimuthCoeff)
+            lighting_R *= N_R(surface, cos_O2, Wi, Wr, f0);
+
+        // The following lines are a cheap method to get occluded reflection by accoounting 
+        // for the thickness if the reflection of light is going through the hair.
+        // A reminder for this approximation - this is the R and not the TT lobe.
+        float lightToEye = saturate(-dot(Wi, Wr));
+        float selfOcclude = lightToEye * surface.thickness;
+        float lightTransferRatio = 1.0f - selfOcclude;
+        lightTransferRatio *= lightTransferRatio;
+        lighting_R *= lightTransferRatio;
+
+        lighting += float3(lighting_R, lighting_R, lighting_R);
+    }
+
+    // TT Path - ray passes through the hair.
+    // The ray from the eye is refracted into the hair, then refracted again through the 
+    // back of the hair.  The main contribution here would for thin hair areas from lights 
+    // behind the hair that are not concealed.  For thicker hair this contribution should
+    // be blocked by the head consealing the back light and by the thickness of the hair 
+    // that absorbs this energy over thick area hence reducing the energy pass based
+    // on the average thickness.
+    if (o_enableMarschner_TT)
+    {   
+        float3 lighting_TT = o_enableLongtitudeCoeff ? M_TT(surface, Lh, sinLiPlusSinLr) : float3(1.0f, 1.0f, 1.0f);
+        if (o_enableAzimuthCoeff)
+            lighting_TT *= N_TT(surface, n2, cos_O, cos_O2, cos_Ld, f0);
+
+        // Reduce back transmittance based on the thickness of the hair
+        lighting_TT *= (1.0f - surface.thickness);
+        lighting += lighting_TT;
+    }
+
+    // TRT Path - ray refracted into the hair, reflected back inside and exits (refracted)
+    // the hair towards the eye.
+    if (o_enableMarschner_TRT)
+    {
+        float3 lighting_TRT = o_enableLongtitudeCoeff ? M_TRT(surface, Lh, sinLiPlusSinLr) : float3(1.0f, 1.0f, 1.0f);
+        if (o_enableAzimuthCoeff)
+            lighting_TRT *= N_TRT(surface, cos_O, cos_Ld, f0);
+        lighting += lighting_TRT;
+    }
+
+    return lighting;
+}

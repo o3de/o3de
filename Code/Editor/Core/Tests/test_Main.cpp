@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,13 +26,14 @@ class EditorCoreTestEnvironment
 public:
     AZ_TEST_CLASS_ALLOCATOR(EditorCoreTestEnvironment);
 
-    virtual ~EditorCoreTestEnvironment()
+    ~EditorCoreTestEnvironment() override
     {
     }
 
 protected:
     void SetupEnvironment() override
     {
+        AttachEditorCoreAZEnvironment(AZ::Environment::GetInstance());
         m_allocatorScope.ActivateAllocators();
         m_cryPak = new NiceMock<CryPakMock>();
 
@@ -48,10 +50,11 @@ protected:
     {
         delete m_cryPak;
         m_allocatorScope.DeactivateAllocators();
+        DetachEditorCoreAZEnvironment();
     }
 
 private:
-    AZ::AllocatorScope<AZ::OSAllocator, AZ::SystemAllocator, AZ::LegacyAllocator, CryStringAllocator> m_allocatorScope;
+    AZ::AllocatorScope<AZ::OSAllocator, AZ::SystemAllocator, AZ::LegacyAllocator> m_allocatorScope;
     SSystemGlobalEnvironment m_stubEnv;
     AZ::IO::LocalFileIO m_fileIO;
     NiceMock<CryPakMock>* m_cryPak;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,22 +17,22 @@
 namespace EMStudio
 {
     // constructor
-    NodeConnection::NodeConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* targetNode, uint32 portNr, GraphNode* sourceNode, uint32 sourceOutputPortNr)
+    NodeConnection::NodeConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* targetNode, AZ::u16 portNr, GraphNode* sourceNode, AZ::u16 sourceOutputPortNr)
         : m_modelIndex(modelIndex)
         , m_parentGraph(parentGraph)
     {
-        mSourceNode     = sourceNode;
-        mSourcePortNr   = sourceOutputPortNr;
-        mTargetNode     = targetNode;
-        mPortNr         = portNr;
-        mIsVisible      = false;
-        mIsProcessed    = false;
-        mIsDashed       = false;
-        mIsDisabled     = false;
-        mIsHeadHighlighted = false;
-        mIsTailHighlighted = false;
-        mIsSynced       = false;
-        mColor          = QColor(128, 255, 128);
+        m_sourceNode     = sourceNode;
+        m_sourcePortNr   = sourceOutputPortNr;
+        m_targetNode     = targetNode;
+        m_portNr         = portNr;
+        m_isVisible      = false;
+        m_isProcessed    = false;
+        m_isDashed       = false;
+        m_isDisabled     = false;
+        m_isHeadHighlighted = false;
+        m_isTailHighlighted = false;
+        m_isSynced       = false;
+        m_color          = QColor(128, 255, 128);
     }
 
 
@@ -47,15 +48,15 @@ namespace EMStudio
         MCORE_UNUSED(mousePos);
 
         // calculate the rects
-        mRect       = CalcRect();
-        mFinalRect  = CalcFinalRect();
+        m_rect       = CalcRect();
+        m_finalRect  = CalcFinalRect();
 
         // check for visibility
-        mIsVisible  = mFinalRect.intersects(visibleRect);
+        m_isVisible  = m_finalRect.intersects(visibleRect);
 
         // reset the is highlighted flags
-        mIsHighlighted          = false;
-        mIsConnectedHighlighted = false;
+        m_isHighlighted          = false;
+        m_isConnectedHighlighted = false;
     }
 
 
@@ -72,12 +73,12 @@ namespace EMStudio
         int32 endY      = targetRect.center().y() + 1;
 
         // draw the connection
-        mPainterPath = QPainterPath();
+        m_painterPath = QPainterPath();
         const float width = aznumeric_cast<float>(abs((endX - 3) - (startX + 3)));
-        mPainterPath.moveTo(startX, startY);
-        mPainterPath.lineTo(startX + 3, startY);
-        mPainterPath.cubicTo(startX + (width / 2), startY, endX - (width / 2), endY, endX - 3, endY);
-        mPainterPath.lineTo(endX, endY);
+        m_painterPath.moveTo(startX, startY);
+        m_painterPath.lineTo(startX + 3, startY);
+        m_painterPath.cubicTo(startX + (width / 2), startY, endX - (width / 2), endY, endX - 3, endY);
+        m_painterPath.lineTo(endX, endY);
     }
 
 
@@ -89,14 +90,14 @@ namespace EMStudio
         AZ_UNUSED(visibleRect);
 
         // used when relinking
-        if (mIsDashed)
+        if (m_isDashed)
         {
             return;
         }
 
         painter.setOpacity(opacity);
 
-        const float scale = mSourceNode->GetParentGraph()->GetScale();
+        const float scale = m_sourceNode->GetParentGraph()->GetScale();
         QColor penColor;
 
         // draw some small horizontal lines that go outside of the connection port
@@ -116,11 +117,10 @@ namespace EMStudio
         else // unselected
         {
             // don't make it bold when not selected
-            if (mIsProcessed == false && alwaysColor == false)
+            if (m_isProcessed == false && alwaysColor == false)
             {
-                if (mSourceNode)
+                if (m_sourceNode)
                 {
-                    //penColor = mSourceNode->GetOutputPort(mSourcePortNr)->GetColor();
                     penColor.setRgb(75, 75, 75);
                 }
                 else
@@ -132,14 +132,14 @@ namespace EMStudio
             }
             else
             {
-                if (mSourceNode)
+                if (m_sourceNode)
                 {
                     if (alwaysColor == false)
                     {
                         pen->setWidthF(1.5f);
                     }
 
-                    penColor = mSourceNode->GetOutputPort(mSourcePortNr)->GetColor();
+                    penColor = m_sourceNode->GetOutputPort(m_sourcePortNr)->GetColor();
                 }
                 else
                 {
@@ -151,13 +151,13 @@ namespace EMStudio
         }
 
         // lighten the color in case the transition is highlighted
-        if (mIsHighlighted)
+        if (m_isHighlighted)
         {
             penColor = penColor.lighter(160);
         }
 
         // lighten the color in case the transition is connected to the currently selected node
-        if (mIsConnectedHighlighted)
+        if (m_isConnectedHighlighted)
         {
             const float minInput = 0.1f;
             const float maxInput = 1.0f;
@@ -183,9 +183,9 @@ namespace EMStudio
         }
 
         // blinking red error color
-        if (mSourceNode && mSourceNode->GetHasError() && !GetIsSelected())
+        if (m_sourceNode && m_sourceNode->GetHasError() && !GetIsSelected())
         {
-            NodeGraph* parentGraph = mTargetNode->GetParentGraph();
+            NodeGraph* parentGraph = m_targetNode->GetParentGraph();
             if (parentGraph->GetUseAnimation())
             {
                 penColor = parentGraph->GetErrorBlinkColor();
@@ -198,9 +198,9 @@ namespace EMStudio
 
         // set the pen
         pen->setColor(penColor);
-        if (mIsProcessed)
+        if (m_isProcessed)
         {
-            NodeGraph* parentGraph = mTargetNode->GetParentGraph();
+            NodeGraph* parentGraph = m_targetNode->GetParentGraph();
             if (parentGraph->GetScale() > 0.5f && parentGraph->GetUseAnimation())
             {
                 pen->setStyle(Qt::PenStyle::DashLine);
@@ -228,7 +228,7 @@ namespace EMStudio
 
         // draw the curve
         UpdatePainterPath();
-        painter.drawPath(mPainterPath);
+        painter.drawPath(m_painterPath);
 
         // restore opacity and width
         painter.setOpacity(1.0f);
@@ -239,11 +239,11 @@ namespace EMStudio
     // get the source rect
     QRect NodeConnection::GetSourceRect() const
     {
-        if (mSourceNode)
+        if (m_sourceNode)
         {
-            if (mSourceNode->GetIsCollapsed() == false)
+            if (m_sourceNode->GetIsCollapsed() == false)
             {
-                return mSourceNode->GetOutputPort(mSourcePortNr)->GetRect();
+                return m_sourceNode->GetOutputPort(m_sourcePortNr)->GetRect();
             }
             else
             {
@@ -261,9 +261,9 @@ namespace EMStudio
     // get the target rect
     QRect NodeConnection::GetTargetRect() const
     {
-        if (mTargetNode->GetIsCollapsed() == false)
+        if (m_targetNode->GetIsCollapsed() == false)
         {
-            return mTargetNode->GetInputPort(mPortNr)->GetRect();
+            return m_targetNode->GetInputPort(m_portNr)->GetRect();
         }
         else
         {
@@ -275,7 +275,7 @@ namespace EMStudio
     // intersects this connection?
     bool NodeConnection::Intersects(const QRect& rect)
     {
-        if (mRect.intersects(rect) == false)
+        if (m_rect.intersects(rect) == false)
         {
             return false;
         }
@@ -290,7 +290,7 @@ namespace EMStudio
         //testPath.addRect( rect );
 
         UpdatePainterPath();
-        return mPainterPath.intersects(rect);
+        return m_painterPath.intersects(rect);
     }
 
 
@@ -298,12 +298,12 @@ namespace EMStudio
     bool NodeConnection::CheckIfIsCloseTo(const QPoint& point)
     {
         // if we're not visible don't check
-        if (mIsVisible == false)
+        if (m_isVisible == false)
         {
             return false;
         }
 
-        if (mRect.contains(point) == false)
+        if (m_rect.contains(point) == false)
         {
             return false;
         }
@@ -324,7 +324,7 @@ namespace EMStudio
     // get the collapsed source rect
     QRect NodeConnection::CalcCollapsedSourceRect() const
     {
-        QRect tempRect = mSourceNode->GetRect();
+        QRect tempRect = m_sourceNode->GetRect();
         //  QPoint a = QPoint(tempRect.right(), tempRect.top() + tempRect.height() / 2);
         QPoint a = QPoint(tempRect.right(), tempRect.top() + 13);
         return QRect(a - QPoint(1, 1), a);
@@ -334,7 +334,7 @@ namespace EMStudio
     // get the collapsed target rect
     QRect NodeConnection::CalcCollapsedTargetRect() const
     {
-        QRect tempRect = mTargetNode->GetRect();
+        QRect tempRect = m_targetNode->GetRect();
         //  QPoint a = QPoint(tempRect.left(), tempRect.top() + tempRect.height() / 2);
         QPoint a = QPoint(tempRect.left(), tempRect.top() + 13);
         return QRect(a, a + QPoint(1, 1));
@@ -353,14 +353,14 @@ namespace EMStudio
     // calc the final rect
     QRect NodeConnection::CalcFinalRect() const
     {
-        if (mSourceNode)
+        if (m_sourceNode)
         {
-            return mSourceNode->GetParentGraph()->GetTransform().mapRect(CalcRect());
+            return m_sourceNode->GetParentGraph()->GetTransform().mapRect(CalcRect());
         }
 
-        if (mTargetNode)
+        if (m_targetNode)
         {
-            return mTargetNode->GetParentGraph()->GetTransform().mapRect(CalcRect());
+            return m_targetNode->GetParentGraph()->GetTransform().mapRect(CalcRect());
         }
 
         MCORE_ASSERT(false);

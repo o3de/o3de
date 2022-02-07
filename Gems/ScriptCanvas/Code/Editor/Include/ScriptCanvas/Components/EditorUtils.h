@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,6 +21,13 @@ namespace GraphCanvas
 
 namespace ScriptCanvasEditor
 {
+    // If only the Path or the Id is valid, attempts to fill in the missing piece.
+    // If both Path and Id is valid, including after correction, returns the handle including source Data,
+    // otherwise, returns null
+    AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source);
+    // if CompleteDescription() succeeds, sets the handle to the result, else does nothing
+    bool CompleteDescriptionInPlace(SourceHandle& source);
+
     class Graph;
     class NodePaletteModel;
 

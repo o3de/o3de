@@ -1,14 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
 #include "EditorDefs.h"
-
-#pragma warning ( disable : 4244 )  // conversion from 'double' to 'float', possible loss of data.
 
 /**** Decompose.h - Basic declarations ****/
 typedef struct
@@ -159,11 +158,11 @@ static  Quatern Qt_FromMatrix(HMatrix mat)
     if (tr >= 0.0)
     {
         s = sqrt(tr + mat[W][W]);
-        qu.w = s * 0.5;
+        qu.w = static_cast<float>(s * 0.5);
         s = 0.5 / s;
-        qu.x = (mat[Z][Y] - mat[Y][Z]) * s;
-        qu.y = (mat[X][Z] - mat[Z][X]) * s;
-        qu.z = (mat[Y][X] - mat[X][Y]) * s;
+        qu.x = static_cast<float>((mat[Z][Y] - mat[Y][Z]) * s);
+        qu.y = static_cast<float>((mat[X][Z] - mat[Z][X]) * s);
+        qu.z = static_cast<float>((mat[Y][X] - mat[X][Y]) * s);
     }
     else
     {
@@ -181,11 +180,11 @@ static  Quatern Qt_FromMatrix(HMatrix mat)
 #define caseMacro(i, j, k, I, J, K)                              \
 case I:                                                          \
     s = sqrt((mat[I][I] - (mat[J][J] + mat[K][K])) + mat[W][W]); \
-    qu.i = s * 0.5;                                              \
+    qu.i = static_cast<float>(s * 0.5);                          \
     s = 0.5 / s;                                                 \
-    qu.j = (mat[I][J] + mat[J][I]) * s;                          \
-    qu.k = (mat[K][I] + mat[I][K]) * s;                          \
-    qu.w = (mat[K][J] - mat[J][K]) * s;                          \
+    qu.j = static_cast<float>((mat[I][J] + mat[J][I]) * s);      \
+    qu.k = static_cast<float>((mat[K][I] + mat[I][K]) * s);      \
+    qu.w = static_cast<float>((mat[K][J] - mat[J][K]) * s);      \
     break
             caseMacro(x, y, z, X, Y, Z);
             caseMacro(y, z, x, Y, Z, X);
@@ -264,7 +263,7 @@ static  void make_reflector(float* v, float* u)
     u[0] = v[0];
     u[1] = v[1];
     u[2] = v[2] + ((v[2] < 0.0) ? -s : s);
-    s = sqrt(2.0 / vdot(u, u));
+    s = static_cast<float>(sqrt(2.0f / vdot(u, u)));
     u[0] = u[0] * s;
     u[1] = u[1] * s;
     u[2] = u[2] * s;
@@ -408,8 +407,8 @@ float polar_decomp(HMatrix M, HMatrix Q, HMatrix S)
         MadjT_one = norm_one(MadjTk);
         MadjT_inf = norm_inf(MadjTk);
         gamma = sqrt(sqrt((MadjT_one * MadjT_inf) / (M_one * M_inf)) / fabs(det));
-        g1 = gamma * 0.5;
-        g2 = 0.5 / (gamma * det);
+        g1 = gamma * 0.5f;
+        g2 = 0.5f / (gamma * det);
         mat_copy(Ek, =, Mk, 3);
         mat_binop(Mk, =, g1 * Mk, +, g2 * MadjTk, 3);
         mat_copy(Ek, -=, Mk, 3);
@@ -425,7 +424,7 @@ float polar_decomp(HMatrix M, HMatrix Q, HMatrix S)
     {
         for (int j = i; j < 3; j++)
         {
-            S[i][j] = S[j][i] = 0.5 * (S[i][j] + S[j][i]);
+            S[i][j] = S[j][i] = 0.5f * (S[i][j] + S[j][i]);
         }
     }
     return (det);
@@ -455,7 +454,7 @@ HVect spect_decomp(HMatrix S, HMatrix U)
     OffD[Z] = S[X][Y];
     for (sweep = 20; sweep > 0; sweep--)
     {
-        float sm = fabs(OffD[X]) + fabs(OffD[Y]) + fabs(OffD[Z]);
+        float sm = static_cast<float>(fabs(OffD[X]) + fabs(OffD[Y]) + fabs(OffD[Z]));
         if (sm == 0.0)
         {
             break;
@@ -497,16 +496,16 @@ HVect spect_decomp(HMatrix S, HMatrix U)
                 {
                     a = U[j][p];
                     b = U[j][q];
-                    U[j][p] -= s * (b + tau * a);
-                    U[j][q] += s * (a - tau * b);
+                    U[j][p] -= static_cast<float>(s * (b + tau * a));
+                    U[j][q] += static_cast<float>(s * (a - tau * b));
                 }
             }
         }
     }
-    kv.x = Diag[X];
-    kv.y = Diag[Y];
-    kv.z = Diag[Z];
-    kv.w = 1.0;
+    kv.x = static_cast<float>(Diag[X]);
+    kv.y = static_cast<float>(Diag[Y]);
+    kv.z = static_cast<float>(Diag[Z]);
+    kv.w = 1.0f;
     return (kv);
 }
 
@@ -651,7 +650,7 @@ Quatern snuggle(Quatern q, HVect* k)
         }
         qp = Qt_Mul(q, p);
         t = sqrt(mag[win] + 0.5);
-        p = Qt_Mul(p, Qt_(0.0, 0.0, -qp.z / t, qp.w / t));
+        p = Qt_Mul(p, Qt_(0.0f, 0.0f, static_cast<float>(-qp.z / t), static_cast<float>(qp.w / t)));
         p = Qt_Mul(qtoz, Qt_Conj(p));
     }
     else
@@ -722,14 +721,14 @@ Quatern snuggle(Quatern q, HVect* k)
                     int ii;
                     for (ii = 0; ii < 4; ii++)
                     {
-                        pa[ii] = sgn(neg[ii], 0.5);
+                        pa[ii] = static_cast<float>(sgn(neg[ii], 0.5f));
                     }
                 }
                 cycle(ka, par)
             }
             else
             { /*big*/
-                pa[hi] = sgn(neg[hi], 1.0);
+                pa[hi] = static_cast<float>(sgn(neg[hi], 1.0f));
             }
         }
         else
@@ -753,7 +752,7 @@ Quatern snuggle(Quatern q, HVect* k)
             }
             else
             { /*big*/
-                pa[hi] = sgn(neg[hi], 1.0);
+                pa[hi] = static_cast<float>(sgn(neg[hi], 1.0f));
             }
         }
         p.x = -pa[0];

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,6 +19,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QStandardPaths>
+#include <QScrollArea>
 
 namespace O3DE::ProjectManager
 {
@@ -32,19 +34,30 @@ namespace O3DE::ProjectManager
         // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
         QFrame* projectSettingsFrame = new QFrame(this);
         projectSettingsFrame->setObjectName("projectSettings");
-        m_verticalLayout = new QVBoxLayout();
 
-        // you cannot remove content margins in qss
-        m_verticalLayout->setContentsMargins(0, 0, 0, 0);
+        QVBoxLayout* vLayout = new QVBoxLayout();
+        vLayout->setMargin(0);
+        vLayout->setAlignment(Qt::AlignTop);
+        projectSettingsFrame->setLayout(vLayout);
+
+        QScrollArea* scrollArea = new QScrollArea(this);
+        scrollArea->setWidgetResizable(true);
+        vLayout->addWidget(scrollArea);
+
+        QWidget* scrollWidget = new QWidget(this);
+        scrollArea->setWidget(scrollWidget);
+
+        m_verticalLayout = new QVBoxLayout();
+        m_verticalLayout->setMargin(0);
         m_verticalLayout->setAlignment(Qt::AlignTop);
+        scrollWidget->setLayout(m_verticalLayout);
 
         m_projectName = new FormLineEditWidget(tr("Project name"), "", this);
-        connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::ValidateProjectName);
+        connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectNameUpdated);
         m_verticalLayout->addWidget(m_projectName);
 
         m_projectPath = new FormFolderBrowseEditWidget(tr("Project Location"), "", this);
-        m_projectPath->lineEdit()->setReadOnly(true);
-        connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::Validate);
+        connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectPathUpdated);
         m_verticalLayout->addWidget(m_projectPath);
 
         projectSettingsFrame->setLayout(m_verticalLayout);
@@ -109,26 +122,34 @@ namespace O3DE::ProjectManager
         m_projectName->setErrorLabelVisible(!projectNameIsValid);
         return projectNameIsValid;
     }
+
     bool ProjectSettingsScreen::ValidateProjectPath()
     {
         bool projectPathIsValid = true;
-        if (m_projectPath->lineEdit()->text().isEmpty())
+        QDir path(m_projectPath->lineEdit()->text());
+        if (!path.isAbsolute())
         {
             projectPathIsValid = false;
-            m_projectPath->setErrorLabelText(tr("Please provide a valid location."));
+            m_projectPath->setErrorLabelText(tr("Please provide an absolute path for the project location."));
         }
-        else
+        else if (path.exists() && !path.isEmpty())
         {
-            QDir path(m_projectPath->lineEdit()->text());
-            if (path.exists() && !path.isEmpty())
-            {
-                projectPathIsValid = false;
-                m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
-            }
+            projectPathIsValid = false;
+            m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
         }
 
         m_projectPath->setErrorLabelVisible(!projectPathIsValid);
         return projectPathIsValid;
+    }
+
+    void ProjectSettingsScreen::OnProjectNameUpdated()
+    {
+        ValidateProjectName();
+    }
+
+    void ProjectSettingsScreen::OnProjectPathUpdated()
+    {
+        Validate();
     }
 
     bool ProjectSettingsScreen::Validate()

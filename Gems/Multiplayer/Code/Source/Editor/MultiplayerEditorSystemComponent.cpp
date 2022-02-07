@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -61,6 +62,7 @@ namespace Multiplayer
     }
 
     MultiplayerEditorSystemComponent::MultiplayerEditorSystemComponent()
+        : m_serverAcceptanceReceivedHandler([this](){OnServerAcceptanceReceived();})
     {
         ;
     }
@@ -69,6 +71,7 @@ namespace Multiplayer
     {
         AzFramework::GameEntityContextEventBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AZ::Interface<IMultiplayer>::Get()->AddServerAcceptanceReceivedHandler(m_serverAcceptanceReceivedHandler);
     }
 
     void MultiplayerEditorSystemComponent::Deactivate()
@@ -104,7 +107,7 @@ namespace Multiplayer
                 m_serverProcess->TerminateProcess(0);
                 m_serverProcess = nullptr;
             }
-            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPEditorInterfaceName));
+            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
             if (editorNetworkInterface)
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
@@ -142,17 +145,17 @@ namespace Multiplayer
 
         // Start the configured server if it's available
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" --editorsv_isDedicated true", serverPath.c_str());
+        processLaunchInfo.m_commandlineParameters = AZStd::string::format(
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s")",
+            serverPath.c_str(),
+            AZ::Utils::GetProjectPath().c_str(),
+            static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str());
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
-        // Launch the Server and give it a few seconds to boot up
+        // Launch the Server
         AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
             processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
-        if (outProcess)
-        {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(15000));
-        }
 
         return outProcess;
     }
@@ -197,7 +200,7 @@ namespace Multiplayer
             AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
             // Now that the server has launched, attempt to connect the NetworkInterface         
-            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPEditorInterfaceName));
+            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
             AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
             m_editorConnId = editorNetworkInterface->Connect(
                 AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
@@ -241,5 +244,13 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesReset()
     {
+    }
+
+    void MultiplayerEditorSystemComponent::OnServerAcceptanceReceived()
+    {
+        // We're now accepting the connection to the EditorServer.
+        // In normal game clients SendReadyForEntityUpdates will be enabled once the appropriate level's root spawnable is loaded,
+        // but since we're in Editor, we're already in the level.
+        AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
     }
 }

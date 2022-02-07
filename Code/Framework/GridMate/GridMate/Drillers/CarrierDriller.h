@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -41,7 +42,7 @@ namespace GridMate
 
             //////////////////////////////////////////////////////////////////////////
             // Carrier Driller Bus
-            void OnUpdateStatistics(const GridMate::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime) override;
+            void OnUpdateStatistics(const AZStd::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime) override;
             void OnConnectionStateChanged(Carrier* carrier, ConnectionID id, Carrier::ConnectionStates newState) override;
             //////////////////////////////////////////////////////////////////////////
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,13 +45,13 @@ namespace EMotionFX
         const ActorManager& actorManager = GetActorManager();
 
         // reset stats
-        mNumUpdated.SetValue(0);
-        mNumVisible.SetValue(0);
-        mNumSampled.SetValue(0);
+        m_numUpdated.SetValue(0);
+        m_numVisible.SetValue(0);
+        m_numSampled.SetValue(0);
 
         // propagate root actor instance visibility to their attachments
-        const uint32 numRootActorInstances = GetActorManager().GetNumRootActorInstances();
-        for (uint32 i = 0; i < numRootActorInstances; ++i)
+        const size_t numRootActorInstances = GetActorManager().GetNumRootActorInstances();
+        for (size_t i = 0; i < numRootActorInstances; ++i)
         {
             ActorInstance* rootInstance = actorManager.GetRootActorInstance(i);
             if (rootInstance->GetIsEnabled() == false)
@@ -61,17 +62,8 @@ namespace EMotionFX
             rootInstance->RecursiveSetIsVisible(rootInstance->GetIsVisible());
         }
 
-        /*  // make sure parents of attachments are updated as well
-            const uint32 numActorInstances = actorManager.GetNumActorInstances();
-            for (uint32 i=0; i<numActorInstances; ++i)
-            {
-                ActorInstance* actorInstance = actorManager.GetActorInstance(i);
-                if (actorInstance->GetIsVisible())
-                    actorInstance->RecursiveSetIsVisibleTowardsRoot( true );
-            }*/
-
         // process all root actor instances, and execute them and their attachments
-        for (uint32 i = 0; i < numRootActorInstances; ++i)
+        for (size_t i = 0; i < numRootActorInstances; ++i)
         {
             ActorInstance* rootActorInstance = actorManager.GetRootActorInstance(i);
             if (rootActorInstance->GetIsEnabled() == false)
@@ -89,7 +81,7 @@ namespace EMotionFX
     {
         actorInstance->SetThreadIndex(0);
 
-        mNumUpdated.Increment();
+        m_numUpdated.Increment();
 
         const bool isVisible = actorInstance->GetIsVisible();
 
@@ -103,21 +95,21 @@ namespace EMotionFX
 
             if (isVisible)
             {
-                mNumSampled.Increment();
+                m_numSampled.Increment();
             }
         }
 
         if (isVisible)
         {
-            mNumVisible.Increment();
+            m_numVisible.Increment();
         }
 
         // update the transformations
         actorInstance->UpdateTransformations(timePassedInSeconds, isVisible, sampleMotions);
 
         // recursively process the attachments
-        const uint32 numAttachments = actorInstance->GetNumAttachments();
-        for (uint32 i = 0; i < numAttachments; ++i)
+        const size_t numAttachments = actorInstance->GetNumAttachments();
+        for (size_t i = 0; i < numAttachments; ++i)
         {
             ActorInstance* attachment = actorInstance->GetAttachment(i)->GetAttachmentActorInstance();
             if (attachment && attachment->GetIsEnabled())

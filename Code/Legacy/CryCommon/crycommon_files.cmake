@@ -1,23 +1,21 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 set(FILES
-    CryCommon.cpp
     IAudioInterfacesCommonData.h
     IAudioSystem.h
     ICmdLine.h
     IConsole.h
     IEntityRenderState.h
-    IEntityRenderState_info.cpp
     IFont.h
     IFunctorBase.h
     IGem.h
     IIndexedMesh.h
-    IIndexedMesh_info.cpp
     ILevelSystem.h
     ILocalizationManager.h
     LocalizationManagerBus.h
@@ -26,20 +24,14 @@ set(FILES
     IMaterial.h
     IMiniLog.h
     IMovieSystem.h
-    IPhysics.h
-    IPostEffectGroup.h
     IProcess.h
-    IReadWriteXMLSink.h
     IRenderAuxGeom.h
     IRenderer.h
-    IRenderMesh.h
     ISerialize.h
     IShader.h
     ISplines.h
     IStatObj.h
     StatObjBus.h
-    IStereoRenderer.h
-    ISurfaceType.h
     ISystem.h
     ITexture.h
     ITimer.h
@@ -48,63 +40,30 @@ set(FILES
     IWindowMessageHandler.h
     IXml.h
     MicrophoneBus.h
-    physinterface.h
     HMDBus.h
     VRCommon.h
-    StereoRendererBus.h
-    HeightmapUpdateNotificationBus.h
     INavigationSystem.h
     IMNM.h
-    SFunctor.h
-    FunctorBaseFunction.h
-    FunctorBaseMember.h
-    stridedptr.h
-    Options.h
     SerializationTypes.h
     CryEndian.h
     CryRandomInternal.h
     Random.h
     LCGRandom.h
-    MTPseudoRandom.cpp
-    CryTypeInfo.cpp
     BaseTypes.h
-    CompileTimeAssert.h
-    MemoryAccess.h
     AnimKey.h
-    BitFiddling.h
-    Common_TypeInfo.cpp
-    CryArray.h
     CryAssert.h
-    CryCrc32.h
-    CryCustomTypes.h
     CryFile.h
-    CryFixedString.h
-    CryHeaders.h
-    CryHeaders_info.cpp
     CryListenerSet.h
     CryLegacyAllocator.h
-    CryName.h
     CryPath.h
-    CryPodArray.h
-    CrySizer.h
-    CryString.h
     CrySystemBus.h
-    CryThread.h
-    CryThreadImpl.h
-    CryTypeInfo.h
     CryVersion.h
-    FrameProfiler.h
-    HeapAllocator.h
+    LegacyAllocator.cpp
     LegacyAllocator.h
-    MetaUtils.h
     MiniQueue.h
-    MTPseudoRandom.h
-    MultiThread.h
     MultiThread_Containers.h
     NullAudioSystem.h
     PNoise3.h
-    PoolAllocator.h
-    primitives.h
     ProjectDefines.h
     Range.h
     ScopedVariableSetter.h
@@ -112,46 +71,28 @@ set(FILES
     SimpleSerialize.h
     smartptr.h
     StlUtils.h
-    StringUtils.h
-    Synchronization.h
-    Tarray.h
     Timer.h
     TimeValue.h
-    TimeValue_info.h
-    TypeInfo_decl.h
-    TypeInfo_impl.h
-    UnicodeBinding.h
-    UnicodeEncoding.h
-    UnicodeFunctions.h
-    UnicodeIterator.h
     VectorMap.h
-    VectorSet.h
     VertexFormats.h
     XMLBinaryHeaders.h
-    RenderBus.h
     MainThreadRenderRequestBus.h
     Cry_Matrix33.h
     Cry_Matrix34.h
     Cry_Matrix44.h
-    Cry_MatrixDiag.h
     Cry_Vector4.h
     Cry_Camera.h
     Cry_Color.h
     Cry_Geo.h
     Cry_GeoDistance.h
     Cry_GeoIntersect.h
-    Cry_GeoOverlap.h
     Cry_Math.h
     Cry_Quat.h
     Cry_ValidNumber.h
     Cry_Vector2.h
     Cry_Vector3.h
-    Cry_XOptimise.h
-    CryHalf_info.h
     CryHalf.inl
     MathConversion.h
-    Cry_HWMatrix.h
-    Cry_HWVector3.h
     AndroidSpecific.h
     AppleSpecific.h
     CryAssert_Android.h
@@ -161,12 +102,6 @@ set(FILES
     CryAssert_Mac.h
     CryLibrary.cpp
     CryLibrary.h
-    CryThread_dummy.h
-    CryThread_pthreads.h
-    CryThread_windows.h
-    CryThreadImpl_pthreads.h
-    CryThreadImpl_windows.h
-    CryWindows.h
     Linux32Specific.h
     Linux64Specific.h
     Linux_Win32Wrapper.h

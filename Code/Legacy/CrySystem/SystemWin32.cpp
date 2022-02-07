@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,7 +15,6 @@
 #include <IMovieSystem.h>
 #include <ILog.h>
 #include <CryLibrary.h>
-#include <StringUtils.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 #include <AzCore/std/allocator_stack.h>
@@ -126,7 +126,7 @@ const char* CSystem::GetUserName()
     DWORD dwSize = iNameBufferSize;
     wchar_t nameW[iNameBufferSize];
     ::GetUserNameW(nameW, &dwSize);
-    cry_strcpy(szNameBuffer, CryStringUtils::WStrToUTF8(nameW));
+    AZStd::to_string(szNameBuffer, iNameBufferSize, { nameW, dwSize });
     return szNameBuffer;
 #else
 #if defined(LINUX)
@@ -170,12 +170,12 @@ int CSystem::GetApplicationInstance()
     // this code below essentially "locks" an instance of the USER folder to a specific running application
     if (m_iApplicationInstance == -1)
     {
-        string suffix;
+        AZStd::wstring suffix;
         for (int instance = 0;; ++instance)
         {
-            suffix.Format("(%d)", instance);
+            suffix = AZStd::wstring::format(L"O3DEApplication(%d)", instance);
 
-            CreateMutex(NULL, TRUE, "LumberyardApplication" + suffix);
+            CreateMutexW(NULL, TRUE, suffix.c_str());
             // search for duplicates
             if (GetLastError() != ERROR_ALREADY_EXISTS)
             {
@@ -194,13 +194,13 @@ int CSystem::GetApplicationInstance()
 int CSystem::GetApplicationLogInstance([[maybe_unused]] const char* logFilePath)
 {
 #if AZ_TRAIT_OS_USE_WINDOWS_MUTEX
-    string suffix;
+    AZStd::wstring suffix;
     int instance = 0;
     for (;; ++instance)
     {
-        suffix.Format("(%d)", instance);
+        suffix = AZStd::wstring::format(L"%s(%d)", logFilePath, instance);
 
-        CreateMutex(NULL, TRUE, logFilePath + suffix);
+        CreateMutexW(NULL, TRUE, suffix.c_str());
         if (GetLastError() != ERROR_ALREADY_EXISTS)
         {
             break;
@@ -217,30 +217,11 @@ struct CryDbgModule
 {
     HANDLE heap;
     WIN_HMODULE handle;
-    string name;
+    AZStd::string name;
     DWORD dwSize;
 };
 
 #ifdef WIN32
-//////////////////////////////////////////////////////////////////////////
-class CStringOrder
-{
-public:
-    bool operator () (const char* szLeft, const char* szRight) const {return azstricmp(szLeft, szRight) < 0; }
-};
-typedef std::map<const char*, unsigned, CStringOrder> StringToSizeMap;
-void AddSize (StringToSizeMap& mapSS, const char* szString, unsigned nSize)
-{
-    StringToSizeMap::iterator it = mapSS.find (szString);
-    if (it == mapSS.end())
-    {
-        mapSS.insert (StringToSizeMap::value_type(szString, nSize));
-    }
-    else
-    {
-        it->second += nSize;
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 const char* GetModuleGroup (const char* szString)
@@ -282,7 +263,7 @@ static const char* GetLastSystemErrorMessage()
                 0,
                 NULL))
         {
-            cry_strcpy(szBuffer, (char*)lpMsgBuf);
+            azstrcpy(szBuffer, AZ_ARRAY_SIZE(szBuffer), (char*)lpMsgBuf);
             LocalFree(lpMsgBuf);
         }
         else
@@ -292,11 +273,7 @@ static const char* GetLastSystemErrorMessage()
 
         return szBuffer;
     }
-#else
-    return 0;
-
 #endif //WIN32
-
     return 0;
 }
 
@@ -342,44 +319,40 @@ void CSystem::FatalError(const char* format, ...)
     assert(szBuffer[0] >= ' ');
     //  strcpy(szBuffer,szBuffer+1);    // remove verbosity tag since it is not supported by ::MessageBox
 
-    OutputDebugString(szBuffer);
+    AZ::Debug::Platform::OutputToDebugger("CrySystem", szBuffer);
+
 #ifdef WIN32
     OnFatalError(szBuffer);
     if (!g_cvars.sys_no_crash_dialog)
     {
-        ::MessageBox(NULL, szBuffer, "Open 3D Engine Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+        AZStd::wstring szBufferW;
+        AZStd::to_wstring(szBufferW, szBuffer);
+        ::MessageBoxW(NULL, szBufferW.c_str(), L"Open 3D Engine Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
     }
 
     // Dump callstack.
     IDebugCallStack::instance()->FatalError(szBuffer);
 #endif
 
-    CryDebugBreak();
-
     // app can not continue
+    AZ::Debug::Trace::Break();
+
 #ifdef _DEBUG
+    #if defined(WIN32) || defined(WIN64)
+        _flushall();
+        // on windows, _exit does all sorts of things which can cause cleanup to fail during a crash, we need to terminate instead.
+        TerminateProcess(GetCurrentProcess(), 1);
+    #endif
 
-#if defined(WIN32) && !defined(WIN64)
-    DEBUG_BREAK;
-#endif
-
-#else
-
-#if defined(WIN32) || defined(WIN64)
-    _flushall();
-    // on windows, _exit does all sorts of things which can cause cleanup to fail during a crash, we need to terminate instead.
-    TerminateProcess(GetCurrentProcess(), 1);
-#endif
-
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMWIN32_CPP_SECTION_2
-#include AZ_RESTRICTED_FILE(SystemWin32_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    _exit(1);
-#endif
+    #if defined(AZ_RESTRICTED_PLATFORM)
+        #define AZ_RESTRICTED_SECTION SYSTEMWIN32_CPP_SECTION_2
+        #include AZ_RESTRICTED_FILE(SystemWin32_cpp)
+    #endif
+    #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
+        #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
+    #else
+        _exit(1);
+    #endif
 #endif
 }
 
@@ -409,7 +382,7 @@ void CSystem::debug_GetCallStack(const char** pFunctions, int& nCount)
     unsigned int numFrames = StackRecorder::Record(frames, nMaxCount, 1);
     SymbolStorage::StackLine* textLines = (SymbolStorage::StackLine*)AZ_ALLOCA(sizeof(SymbolStorage::StackLine)*nMaxCount);
     SymbolStorage::DecodeFrames(frames, numFrames, textLines);
-    for (int i = 0; i < numFrames; i++)
+    for (unsigned int i = 0; i < numFrames; i++)
     {
         pFunctions[i] = textLines[i];
     }
@@ -460,20 +433,20 @@ bool CSystem::ReLaunchMediaCenter()
     }
 
     // Get the path to Media Center
-    char szExpandedPath[AZ_MAX_PATH_LEN];
-    if (!ExpandEnvironmentStrings("%SystemRoot%\\ehome\\ehshell.exe", szExpandedPath, AZ_MAX_PATH_LEN))
+    wchar_t szExpandedPath[AZ_MAX_PATH_LEN];
+    if (!ExpandEnvironmentStringsW(L"%SystemRoot%\\ehome\\ehshell.exe", szExpandedPath, AZ_MAX_PATH_LEN))
     {
         return false;
     }
 
     // Skip if ehshell.exe doesn't exist
-    if (GetFileAttributes(szExpandedPath) == 0xFFFFFFFF)
+    if (GetFileAttributesW(szExpandedPath) == 0xFFFFFFFF)
     {
         return false;
     }
 
     // Launch ehshell.exe
-    INT_PTR result = (INT_PTR)ShellExecute(NULL, TEXT("open"), szExpandedPath, NULL, NULL, SW_SHOWNORMAL);
+    INT_PTR result = (INT_PTR)ShellExecuteW(NULL, TEXT("open"), szExpandedPath, NULL, NULL, SW_SHOWNORMAL);
     return (result > 32);
 }
 #else
@@ -490,7 +463,7 @@ bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)
     bool bSucceeded  = false;
     // check Vista and later OS first
 
-    HMODULE shell32 = LoadLibraryA("Shell32.dll");
+    HMODULE shell32 = LoadLibraryW(L"Shell32.dll");
     if (shell32)
     {
         typedef long (__stdcall * T_SHGetKnownFolderPath)(REFKNOWNFOLDERID rfid, unsigned long dwFlags, void* hToken, wchar_t** ppszPath);
@@ -504,7 +477,7 @@ bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)
             if (bSucceeded)
             {
                 // Convert from UNICODE to UTF-8
-                cry_strcpy(szMyDocumentsPath, maxPathSize, CryStringUtils::WStrToUTF8(wMyDocumentsPath));
+                AZStd::to_string(szMyDocumentsPath, maxPathSize, wMyDocumentsPath);
                 CoTaskMemFree(wMyDocumentsPath);
             }
         }
@@ -518,7 +491,7 @@ bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)
         bSucceeded = SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, wMyDocumentsPath));
         if (bSucceeded)
         {
-            cry_strcpy(szMyDocumentsPath, maxPathSize, CryStringUtils::WStrToUTF8(wMyDocumentsPath));
+            AZStd::to_string(szMyDocumentsPath, maxPathSize, wMyDocumentsPath);
         }
     }
 
@@ -546,7 +519,7 @@ void CSystem::DetectGameFolderAccessRights()
     BOOL bAccessStatus = FALSE;
 
     // Get a pointer to the existing DACL.
-    dwRes = GetNamedSecurityInfo(".", SE_FILE_OBJECT,
+    dwRes = GetNamedSecurityInfoW(L".", SE_FILE_OBJECT,
             DACL_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION,
             NULL, NULL, &pDACL, NULL, &pSD);
 

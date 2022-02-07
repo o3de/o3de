@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -75,20 +76,18 @@ namespace AZ
 
             bool GetEnableShadow() const override;
             void SetEnableShadow(bool enabled) override;
+            float GetShadowBias() const override;
+            void SetShadowBias(float bias) override;
             ShadowmapSize GetShadowmapMaxSize() const override;
             void SetShadowmapMaxSize(ShadowmapSize size) override;
             ShadowFilterMethod GetShadowFilterMethod() const override;
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
-            float GetSofteningBoundaryWidthAngle() const override;
-            void SetSofteningBoundaryWidthAngle(float width) override;
-            uint32_t GetPredictionSampleCount() const override;
-            void SetPredictionSampleCount(uint32_t count) override;
             uint32_t GetFilteringSampleCount() const override;
             void SetFilteringSampleCount(uint32_t count) override;
-            PcfMethod GetPcfMethod() const override;
-            void SetPcfMethod(PcfMethod method) override;
             float GetEsmExponent() const override;
             void SetEsmExponent(float exponent) override;
+            float GetNormalShadowBias() const override;
+            void SetNormalShadowBias(float bias) override;
 
             void HandleDisplayEntityViewport(
                 const AzFramework::ViewportInfo& viewportInfo,

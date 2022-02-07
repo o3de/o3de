@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,13 +48,13 @@ namespace EMotionFX
         MotionLinkData& operator=(MotionLinkData&&) = default;
         virtual ~MotionLinkData() = default;
 
-        AZStd::vector<AZ::u32>& GetJointDataLinks() { return m_jointDataLinks; }
-        const AZStd::vector<AZ::u32>& GetJointDataLinks() const { return m_jointDataLinks; }
-        bool IsJointActive(size_t jointIndex) const { return (m_jointDataLinks[jointIndex] != InvalidIndex32); }
-        AZ::u32 GetJointDataLink(size_t jointIndex) const { return m_jointDataLinks[jointIndex]; }
+        AZStd::vector<size_t>& GetJointDataLinks() { return m_jointDataLinks; }
+        const AZStd::vector<size_t>& GetJointDataLinks() const { return m_jointDataLinks; }
+        bool IsJointActive(size_t jointIndex) const { return (m_jointDataLinks[jointIndex] != InvalidIndex); }
+        size_t GetJointDataLink(size_t jointIndex) const { return m_jointDataLinks[jointIndex]; }
 
     protected:
-        AZStd::vector<AZ::u32> m_jointDataLinks;
+        AZStd::vector<size_t> m_jointDataLinks;
     };
 
     class EMFX_API MotionLinkCache
@@ -161,7 +162,7 @@ namespace EMotionFX
         virtual const char* GetSceneSettingsName() const = 0;
 
         // Sampling
-        virtual Transform SampleJointTransform(const SampleSettings& settings, AZ::u32 jointSkeletonIndex) const = 0;
+        virtual Transform SampleJointTransform(const SampleSettings& settings, size_t jointSkeletonIndex) const = 0;
         virtual void SamplePose(const SampleSettings& settings, Pose* outputPose) const = 0;
         virtual float SampleMorph(float sampleTime, size_t morphDataIndex) const = 0;
         virtual float SampleFloat(float sampleTime, size_t morphDataIndex) const = 0;
@@ -210,7 +211,7 @@ namespace EMotionFX
         void SetDuration(float duration);
         virtual void SetSampleRate(float sampleRate);
 
-        AZ::Outcome<size_t> FindJointIndexByNameId(AZ::u32 nameId) const;
+        AZ::Outcome<size_t> FindJointIndexByNameId(size_t nameId) const;
         AZ::Outcome<size_t> FindMorphIndexByNameId(AZ::u32 nameId) const;
         AZ::Outcome<size_t> FindFloatIndexByNameId(AZ::u32 nameId) const;
 
@@ -264,7 +265,7 @@ namespace EMotionFX
         static void CalculateInterpolationIndicesNonUniform(const AZStd::vector<float>& timeValues, float sampleTime, size_t& indexA, size_t& indexB, float& t);
         static void CalculateInterpolationIndicesUniform(float sampleTime, float sampleSpacing, float duration, size_t numSamples, size_t& indexA, size_t& indexB, float& t);
 
-        void BasicRetarget(const ActorInstance* actorInstance, const MotionLinkData* motionLinkData, AZ::u32 jointIndex, Transform& inOutTransform) const;
+        void BasicRetarget(const ActorInstance* actorInstance, const MotionLinkData* motionLinkData, size_t jointIndex, Transform& inOutTransform) const;
 
         bool IsAdditive() const;
         void SetAdditive(bool isAdditive);

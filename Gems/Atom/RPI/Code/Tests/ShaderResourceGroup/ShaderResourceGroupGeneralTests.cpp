@@ -1,15 +1,16 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzTest/AzTest.h>
 #include <Common/RPITestFixture.h>
+#include <Common/ShaderAssetTestUtils.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h>
 
 namespace UnitTest
 {
@@ -20,73 +21,67 @@ namespace UnitTest
         : public RPITestFixture
     {
     protected:
-        Data::Asset<ShaderResourceGroupAsset> m_testSrgAsset;
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> m_testSrgLayout;
+        Data::Asset<ShaderAsset> m_testShaderAsset;
 
-        Data::Asset<ShaderResourceGroupAsset> CreateTestSrgAsset(const char* nameId)
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> CreateTestSrgLayout(const char* nameId)
         {
-            Data::Asset<ShaderResourceGroupAsset> asset;
-            ShaderResourceGroupAssetCreator srgCreator;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = RHI::ShaderResourceGroupLayout::Create();
 
-            srgCreator.Begin(Uuid::CreateRandom(), Name(nameId));
-            srgCreator.BeginAPI(RHI::Factory::Get().GetType());
-            srgCreator.SetBindingSlot(0);
-            srgCreator.AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferA" }, RHI::ShaderInputBufferAccess::ReadWrite, RHI::ShaderInputBufferType::Raw, 1, 4, 1 });
-            srgCreator.AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::ReadWrite, RHI::ShaderInputBufferType::Raw, 1, 4, 2 });
-            srgCreator.AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageA" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 3 });
-            srgCreator.AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageB" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 4 });
-            srgCreator.AddShaderInput(RHI::ShaderInputSamplerDescriptor{ Name{ "MySamplerA" }, 1, 5 });
-            srgCreator.AddShaderInput(RHI::ShaderInputSamplerDescriptor{ Name{ "MySamplerB" }, 1, 6 });
-            srgCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "MyFloatA" }, 0, 4, 0 });
-            srgCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "MyFloatB" }, 4, 4, 0 });
-            srgCreator.EndAPI();
-            srgCreator.End(asset);
+            srgLayout->SetName(Name(nameId));
+            srgLayout->SetBindingSlot(0);
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferA" }, RHI::ShaderInputBufferAccess::ReadWrite, RHI::ShaderInputBufferType::Raw, 1, 4, 1 });
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::ReadWrite, RHI::ShaderInputBufferType::Raw, 1, 4, 2 });
+            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageA" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 3 });
+            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageB" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 4 });
+            srgLayout->AddShaderInput(RHI::ShaderInputSamplerDescriptor{ Name{ "MySamplerA" }, 1, 5 });
+            srgLayout->AddShaderInput(RHI::ShaderInputSamplerDescriptor{ Name{ "MySamplerB" }, 1, 6 });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "MyFloatA" }, 0, 4, 0 });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "MyFloatB" }, 4, 4, 0 });
+            srgLayout->Finalize();
 
-            return asset;
+            return srgLayout;
         }
 
         void SetUp() override
         {
             RPITestFixture::SetUp();
 
-            m_testSrgAsset = CreateTestSrgAsset("TestSrg");
+            m_testSrgLayout = CreateTestSrgLayout("TestSrg");
+            m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testSrgLayout);
         }
 
         void TearDown() override
         {
-            m_testSrgAsset.Reset();
+            m_testSrgLayout = nullptr;
+            m_testShaderAsset.Reset();
 
             RPITestFixture::TearDown();
         }
     };
 
-    TEST_F(ShaderResourceGroupGeneralTests, TestCreateVsFindOrCreate)
+    TEST_F(ShaderResourceGroupGeneralTests, TestCreate)
     {        
-        Data::Instance<ShaderResourceGroup> srgInstance1 = ShaderResourceGroup::FindOrCreate(m_testSrgAsset);
-        Data::Instance<ShaderResourceGroup> srgInstance2 = ShaderResourceGroup::FindOrCreate(m_testSrgAsset);
-        Data::Instance<ShaderResourceGroup> srgInstance3 = ShaderResourceGroup::Create(m_testSrgAsset);
-        Data::Instance<ShaderResourceGroup> srgInstance4 = ShaderResourceGroup::Create(m_testSrgAsset);
+        Data::Instance<ShaderResourceGroup> srgInstance3 = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
+        Data::Instance<ShaderResourceGroup> srgInstance4 = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
 
-        EXPECT_TRUE(srgInstance1);
-        EXPECT_TRUE(srgInstance2);
         EXPECT_TRUE(srgInstance3);
         EXPECT_TRUE(srgInstance4);
 
-        // Instances created via FindOrCreate should be the same object
+        // Instances created via Create should be the same object
 
-        EXPECT_EQ(srgInstance1, srgInstance2);
-        EXPECT_NE(srgInstance1, srgInstance3);
-        EXPECT_NE(srgInstance1, srgInstance4);
         EXPECT_NE(srgInstance3, srgInstance4);
     }
 
     TEST_F(ShaderResourceGroupGeneralTests, TestResourcePool)
     {
-        Data::Instance<ShaderResourceGroup> srgA_instance1 = ShaderResourceGroup::Create(m_testSrgAsset);
-        Data::Instance<ShaderResourceGroup> srgA_instance2 = ShaderResourceGroup::Create(m_testSrgAsset);
+        Data::Instance<ShaderResourceGroup> srgA_instance1 = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
+        Data::Instance<ShaderResourceGroup> srgA_instance2 = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
 
-        Data::Asset<ShaderResourceGroupAsset> srgAssetB = CreateTestSrgAsset("TestSrgB");
-        Data::Instance<ShaderResourceGroup> srgB_instance1 = ShaderResourceGroup::Create(srgAssetB);
-        Data::Instance<ShaderResourceGroup> srgB_instance2 = ShaderResourceGroup::Create(srgAssetB);
+        auto srgLayoutB = CreateTestSrgLayout("TestSrgB");
+        auto shaderAssetB = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayoutB);
+        Data::Instance<ShaderResourceGroup> srgB_instance1 = ShaderResourceGroup::Create(shaderAssetB, AZ::RPI::DefaultSupervariantIndex, srgLayoutB->GetName());
+        Data::Instance<ShaderResourceGroup> srgB_instance2 = ShaderResourceGroup::Create(shaderAssetB, AZ::RPI::DefaultSupervariantIndex, srgLayoutB->GetName());
 
         // All instances based on the same asset should have the same pool
 
@@ -101,7 +96,7 @@ namespace UnitTest
 
     TEST_F(ShaderResourceGroupGeneralTests, TestLayoutWrapperFunctions)
     {
-        Data::Instance<ShaderResourceGroup> testSrg = ShaderResourceGroup::Create(m_testSrgAsset);
+        Data::Instance<ShaderResourceGroup> testSrg = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
 
         EXPECT_TRUE(testSrg->GetLayout());
         EXPECT_EQ(testSrg->FindShaderInputBufferIndex(Name{ "MyBufferA" }), testSrg->GetLayout()->FindShaderInputBufferIndex(Name{ "MyBufferA" }));

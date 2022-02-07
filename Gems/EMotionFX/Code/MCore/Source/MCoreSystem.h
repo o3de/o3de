@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,10 +38,10 @@ namespace MCore
     public:
         struct MCORE_API InitSettings
         {
-            AllocateCallback            mMemAllocFunction;          /**< The memory allocation function, defaults to nullptr, which means the standard malloc function will be used. */
-            ReallocCallback             mMemReallocFunction;        /**< The memory reallocation function, defaults to nullptr, which means the standard realloc function will be used. */
-            FreeCallback                mMemFreeFunction;           /**< The memory free function, defaults to nullptr, which means the standard free function will be used. */
-            bool                        mTrackMemoryUsage;          /**< Enable this to track memory usage statistics. This has a bit of an impact on memory allocation and release speed and memory usage though. You should really only use this in debug mode. On default it is disabled. */
+            AllocateCallback            m_memAllocFunction;          /**< The memory allocation function, defaults to nullptr, which means the standard malloc function will be used. */
+            ReallocCallback             m_memReallocFunction;        /**< The memory reallocation function, defaults to nullptr, which means the standard realloc function will be used. */
+            FreeCallback                m_memFreeFunction;           /**< The memory free function, defaults to nullptr, which means the standard free function will be used. */
+            bool                        m_trackMemoryUsage;          /**< Enable this to track memory usage statistics. This has a bit of an impact on memory allocation and release speed and memory usage though. You should really only use this in debug mode. On default it is disabled. */
 
             InitSettings();
         };
@@ -79,59 +80,59 @@ namespace MCore
          * Get the log manager.
          * @result A reference to the log manager.
          */
-        MCORE_INLINE LogManager& GetLogManager()                        { return *mLogManager; }
+        MCORE_INLINE LogManager& GetLogManager()                        { return *m_logManager; }
 
         /**
          * Get the ID generator.
          * @result A reference to the ID generator.
          */
-        MCORE_INLINE IDGenerator& GetIDGenerator()                      { return *mIDGenerator; }
+        MCORE_INLINE IDGenerator& GetIDGenerator()                      { return *m_idGenerator; }
 
         /**
          * Get the string based ID generator.
          * @result A reference to the string based ID generator.
          */
-        MCORE_INLINE StringIdPool& GetStringIdPool()          { return *mStringIdPool; }
+        MCORE_INLINE StringIdPool& GetStringIdPool()          { return *m_stringIdPool; }
 
         /**
          * Get the attribute factory.
          * @result A reference to the attribute factory, which is used to create attributes of a certain type.
          */
-        MCORE_INLINE AttributeFactory& GetAttributeFactory()            { return *mAttributeFactory; }
+        MCORE_INLINE AttributeFactory& GetAttributeFactory()            { return *m_attributeFactory; }
 
         /**
          * Get the memory tracker.
          * @result A reference to the memory tracker, which can be used to track memory allocations and usage.
          */
-        MCORE_INLINE MemoryTracker& GetMemoryTracker()                  { return *mMemoryTracker; }
-        MCORE_INLINE bool GetIsTrackingMemory() const                   { return mTrackMemory; }
+        MCORE_INLINE MemoryTracker& GetMemoryTracker()                  { return *m_memoryTracker; }
+        MCORE_INLINE bool GetIsTrackingMemory() const                   { return m_trackMemory; }
 
-        MCORE_INLINE void* GetMemTempBuffer()                           { return mMemTempBuffer; }
-        MCORE_INLINE size_t GetMemTempBufferSize() const                { return mMemTempBufferSize; }
+        MCORE_INLINE void* GetMemTempBuffer()                           { return m_memTempBuffer; }
+        MCORE_INLINE size_t GetMemTempBufferSize() const                { return m_memTempBufferSize; }
         void MemTempBufferAssureSize(size_t numBytes);
         void MemTempBufferFree();
 
         void RegisterMemoryCategories(MemoryTracker& memTracker);
 
-        MCORE_INLINE Mutex& GetMemoryMutex()                            { return *mMemoryMutex; }
+        MCORE_INLINE Mutex& GetMemoryMutex()                            { return *m_memoryMutex; }
 
-        MCORE_INLINE AllocateCallback GetAllocateFunction()             { return mAllocateFunction; }
-        MCORE_INLINE ReallocCallback GetReallocFunction()               { return mReallocFunction; }
-        MCORE_INLINE FreeCallback GetFreeFunction()                     { return mFreeFunction; }
+        MCORE_INLINE AllocateCallback GetAllocateFunction()             { return m_allocateFunction; }
+        MCORE_INLINE ReallocCallback GetReallocFunction()               { return m_reallocFunction; }
+        MCORE_INLINE FreeCallback GetFreeFunction()                     { return m_freeFunction; }
 
     private:
-        LogManager*             mLogManager;        /**< The log manager. */
-        IDGenerator*            mIDGenerator;       /**< The ID generator. */
-        StringIdPool*           mStringIdPool; /**< The string based ID generator. */
-        AttributeFactory*       mAttributeFactory;  /**< The attribute factory. */
-        MemoryTracker*          mMemoryTracker;     /**< The memory tracker. */
-        Mutex*                  mMemoryMutex;
-        AllocateCallback        mAllocateFunction;
-        ReallocCallback         mReallocFunction;
-        FreeCallback            mFreeFunction;
-        void*                   mMemTempBuffer;     /**< A buffer with temp memory, used by the MCore::AlignedRealloc, to assure data integrity after reallocating memory. */
-        size_t                  mMemTempBufferSize; /**< The size in bytes, of the MemTempBuffer. */
-        bool                    mTrackMemory;       /**< Check if we want to track memory or not. */
+        LogManager*             m_logManager;        /**< The log manager. */
+        IDGenerator*            m_idGenerator;       /**< The ID generator. */
+        StringIdPool*           m_stringIdPool; /**< The string based ID generator. */
+        AttributeFactory*       m_attributeFactory;  /**< The attribute factory. */
+        MemoryTracker*          m_memoryTracker;     /**< The memory tracker. */
+        Mutex*                  m_memoryMutex;
+        AllocateCallback        m_allocateFunction;
+        ReallocCallback         m_reallocFunction;
+        FreeCallback            m_freeFunction;
+        void*                   m_memTempBuffer;     /**< A buffer with temp memory, used by the MCore::AlignedRealloc, to assure data integrity after reallocating memory. */
+        size_t                  m_memTempBufferSize; /**< The size in bytes, of the MemTempBuffer. */
+        bool                    m_trackMemory;       /**< Check if we want to track memory or not. */
 
         /**
          * The constructor.

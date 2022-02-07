@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,7 @@
 #pragma once
 
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Color.h>
 #include <MCore/Source/StringIdPool.h>
 #include "../StandardPluginsConfig.h"
@@ -42,29 +43,28 @@ namespace EMStudio
 
     public:
         NodePort()
-            : mIsHighlighted(false)  { mNode = nullptr; mNameID = MCORE_INVALIDINDEX32; mColor.setRgb(50, 150, 250); }
-        ~NodePort() {}
+            : m_isHighlighted(false)  { m_node = nullptr; m_nameId = MCORE_INVALIDINDEX32; m_color.setRgb(50, 150, 250); }
 
-        MCORE_INLINE void SetName(const char* name)         { mNameID = MCore::GetStringIdPool().GenerateIdForString(name); OnNameChanged(); }
-        MCORE_INLINE const char* GetName() const            { return MCore::GetStringIdPool().GetName(mNameID).c_str(); }
-        MCORE_INLINE void SetNameID(uint32 id)              { mNameID = id; }
-        MCORE_INLINE uint32 GetNameID() const               { return mNameID; }
-        MCORE_INLINE void SetRect(const QRect& rect)        { mRect = rect; }
-        MCORE_INLINE const QRect& GetRect() const           { return mRect; }
-        MCORE_INLINE void SetColor(const QColor& color)     { mColor = color; }
-        MCORE_INLINE const QColor& GetColor() const         { return mColor; }
-        MCORE_INLINE void SetNode(GraphNode* node)          { mNode = node; }
-        MCORE_INLINE bool GetIsHighlighted() const          { return mIsHighlighted; }
-        MCORE_INLINE void SetIsHighlighted(bool enabled)    { mIsHighlighted = enabled; }
+        MCORE_INLINE void SetName(const char* name)         { m_nameId = MCore::GetStringIdPool().GenerateIdForString(name); OnNameChanged(); }
+        MCORE_INLINE const char* GetName() const            { return MCore::GetStringIdPool().GetName(m_nameId).c_str(); }
+        MCORE_INLINE void SetNameID(uint32 id)              { m_nameId = id; }
+        MCORE_INLINE uint32 GetNameID() const               { return m_nameId; }
+        MCORE_INLINE void SetRect(const QRect& rect)        { m_rect = rect; }
+        MCORE_INLINE const QRect& GetRect() const           { return m_rect; }
+        MCORE_INLINE void SetColor(const QColor& color)     { m_color = color; }
+        MCORE_INLINE const QColor& GetColor() const         { return m_color; }
+        MCORE_INLINE void SetNode(GraphNode* node)          { m_node = node; }
+        MCORE_INLINE bool GetIsHighlighted() const          { return m_isHighlighted; }
+        MCORE_INLINE void SetIsHighlighted(bool enabled)    { m_isHighlighted = enabled; }
 
         void OnNameChanged();
 
     private:
-        QRect           mRect;
-        QColor          mColor;
-        GraphNode*      mNode;
-        uint32          mNameID;
-        bool            mIsHighlighted;
+        QRect           m_rect;
+        QColor          m_color;
+        GraphNode*      m_node;
+        uint32          m_nameId;
+        bool            m_isHighlighted;
     };
 
 
@@ -78,64 +78,63 @@ namespace EMStudio
             TYPE_ID = 0x00000001
         };
 
-        GraphNode(const QModelIndex& modelIndex, const char* name, uint32 numInputs = 0, uint32 numOutputs = 0);
+        GraphNode(const QModelIndex& modelIndex, const char* name, AZ::u16 numInputs = 0, AZ::u16 numOutputs = 0);
         virtual ~GraphNode();
 
         const QModelIndex& GetModelIndex() const                            { return m_modelIndex; }
 
-        MCORE_INLINE void UpdateNameAndPorts()                              { mNameAndPortsUpdated = false; }
-        MCORE_INLINE MCore::Array<NodeConnection*>& GetConnections()        { return mConnections; }
-        MCORE_INLINE uint32 GetNumConnections()                             { return mConnections.GetLength(); }
-        MCORE_INLINE NodeConnection* GetConnection(uint32 index)            { return mConnections[index]; }
-        MCORE_INLINE NodeConnection* AddConnection(NodeConnection* con)     { mConnections.Add(con); return con; }
-        MCORE_INLINE void SetParentGraph(NodeGraph* graph)                  { mParentGraph = graph; }
-        MCORE_INLINE NodeGraph* GetParentGraph()                            { return mParentGraph; }
-        MCORE_INLINE NodePort* GetInputPort(uint32 index)                   { return &mInputPorts[index]; }
-        MCORE_INLINE NodePort* GetOutputPort(uint32 index)                  { return &mOutputPorts[index]; }
-        MCORE_INLINE const QRect& GetRect() const                           { return mRect; }
-        MCORE_INLINE const QRect& GetFinalRect() const                      { return mFinalRect; }
-        MCORE_INLINE const QRect& GetVizRect() const                        { return mVisualizeRect; }
-        MCORE_INLINE void SetBaseColor(const QColor& color)                 { mBaseColor = color; }
-        MCORE_INLINE QColor GetBaseColor() const                            { return mBaseColor; }
-        MCORE_INLINE bool GetIsVisible() const                              { return mIsVisible; }
-        MCORE_INLINE const char* GetName() const                            { return mName.c_str(); }
-        MCORE_INLINE const AZStd::string& GetNameString() const             { return mName; }
+        MCORE_INLINE void UpdateNameAndPorts()                              { m_nameAndPortsUpdated = false; }
+        MCORE_INLINE AZStd::vector<NodeConnection*>& GetConnections()        { return m_connections; }
+        MCORE_INLINE size_t GetNumConnections()                             { return m_connections.size(); }
+        MCORE_INLINE NodeConnection* GetConnection(size_t index)            { return m_connections[index]; }
+        MCORE_INLINE NodeConnection* AddConnection(NodeConnection* con)     { m_connections.emplace_back(con); return con; }
+        MCORE_INLINE void SetParentGraph(NodeGraph* graph)                  { m_parentGraph = graph; }
+        MCORE_INLINE NodeGraph* GetParentGraph()                            { return m_parentGraph; }
+        MCORE_INLINE NodePort* GetInputPort(AZ::u16 index)                  { return &m_inputPorts[index]; }
+        MCORE_INLINE NodePort* GetOutputPort(AZ::u16 index)                 { return &m_outputPorts[index]; }
+        MCORE_INLINE const QRect& GetRect() const                           { return m_rect; }
+        MCORE_INLINE const QRect& GetFinalRect() const                      { return m_finalRect; }
+        MCORE_INLINE const QRect& GetVizRect() const                        { return m_visualizeRect; }
+        MCORE_INLINE void SetBaseColor(const QColor& color)                 { m_baseColor = color; }
+        MCORE_INLINE QColor GetBaseColor() const                            { return m_baseColor; }
+        MCORE_INLINE bool GetIsVisible() const                              { return m_isVisible; }
+        MCORE_INLINE const char* GetName() const                            { return m_name.c_str(); }
+        MCORE_INLINE const AZStd::string& GetNameString() const             { return m_name; }
 
-        MCORE_INLINE bool GetCreateConFromOutputOnly() const                { return mConFromOutputOnly; }
-        MCORE_INLINE void SetCreateConFromOutputOnly(bool enable)           { mConFromOutputOnly = enable; }
-        MCORE_INLINE bool GetIsDeletable() const                            { return mIsDeletable; }
-        MCORE_INLINE bool GetIsCollapsed() const                            { return mIsCollapsed; }
+        MCORE_INLINE bool GetCreateConFromOutputOnly() const                { return m_conFromOutputOnly; }
+        MCORE_INLINE void SetCreateConFromOutputOnly(bool enable)           { m_conFromOutputOnly = enable; }
+        MCORE_INLINE bool GetIsDeletable() const                            { return m_isDeletable; }
+        MCORE_INLINE bool GetIsCollapsed() const                            { return m_isCollapsed; }
         void SetIsCollapsed(bool collapsed);
-        MCORE_INLINE void SetDeletable(bool deletable)                      { mIsDeletable = deletable; }
+        MCORE_INLINE void SetDeletable(bool deletable)                      { m_isDeletable = deletable; }
         void SetSubTitle(const char* subTitle, bool updatePixmap = true);
-        MCORE_INLINE const char* GetSubTitle() const                        { return mSubTitle.c_str(); }
-        //MCORE_INLINE const AZStd::string& GetSubTitleString() const           { return mSubTitle; }
-        MCORE_INLINE bool GetIsInsideArrowRect(const QPoint& point) const   { return mArrowRect.contains(point, true); }
+        MCORE_INLINE const char* GetSubTitle() const                        { return m_subTitle.c_str(); }
+        MCORE_INLINE bool GetIsInsideArrowRect(const QPoint& point) const   { return m_arrowRect.contains(point, true); }
 
-        MCORE_INLINE void SetVisualizeColor(const QColor& color)            { mVisualizeColor = color; }
-        MCORE_INLINE const QColor& GetVisualizeColor() const                { return mVisualizeColor; }
+        MCORE_INLINE void SetVisualizeColor(const QColor& color)            { m_visualizeColor = color; }
+        MCORE_INLINE const QColor& GetVisualizeColor() const                { return m_visualizeColor; }
 
-        MCORE_INLINE void SetHasChildIndicatorColor(const QColor& color)    { mHasChildIndicatorColor = color; }
-        MCORE_INLINE const QColor& GetHasChildIndicatorColor() const        { return mHasChildIndicatorColor; }
+        MCORE_INLINE void SetHasChildIndicatorColor(const QColor& color)    { m_hasChildIndicatorColor = color; }
+        MCORE_INLINE const QColor& GetHasChildIndicatorColor() const        { return m_hasChildIndicatorColor; }
 
-        MCORE_INLINE bool GetIsHighlighted() const                          { return mIsHighlighted; }
-        MCORE_INLINE bool GetIsVisualizedHighlighted() const                { return mVisualizeHighlighted; }
-        MCORE_INLINE bool GetIsInsideVisualizeRect(const QPoint& point) const   { return mVisualizeRect.contains(point, true); }
+        MCORE_INLINE bool GetIsHighlighted() const                          { return m_isHighlighted; }
+        MCORE_INLINE bool GetIsVisualizedHighlighted() const                { return m_visualizeHighlighted; }
+        MCORE_INLINE bool GetIsInsideVisualizeRect(const QPoint& point) const   { return m_visualizeRect.contains(point, true); }
 
-        MCORE_INLINE void SetIsVisualized(bool enabled)                     { mVisualize = enabled; }
-        MCORE_INLINE bool GetIsVisualized() const                           { return mVisualize; }
+        MCORE_INLINE void SetIsVisualized(bool enabled)                     { m_visualize = enabled; }
+        MCORE_INLINE bool GetIsVisualized() const                           { return m_visualize; }
 
-        MCORE_INLINE void SetIsEnabled(bool enabled)                        { mIsEnabled = enabled; }
-        MCORE_INLINE bool GetIsEnabled() const                              { return mIsEnabled; }
+        MCORE_INLINE void SetIsEnabled(bool enabled)                        { m_isEnabled = enabled; }
+        MCORE_INLINE bool GetIsEnabled() const                              { return m_isEnabled; }
 
-        MCORE_INLINE void SetCanVisualize(bool canViz)                      { mCanVisualize = canViz; }
-        MCORE_INLINE bool GetCanVisualize() const                           { return mCanVisualize; }
+        MCORE_INLINE void SetCanVisualize(bool canViz)                      { m_canVisualize = canViz; }
+        MCORE_INLINE bool GetCanVisualize() const                           { return m_canVisualize; }
 
-        MCORE_INLINE float GetOpacity() const                               { return mOpacity; }
-        MCORE_INLINE void SetOpacity(float opacity)                         { mOpacity = opacity; }
+        MCORE_INLINE float GetOpacity() const                               { return m_opacity; }
+        MCORE_INLINE void SetOpacity(float opacity)                         { m_opacity = opacity; }
 
-        uint32 GetNumInputPorts() const                                     { return mInputPorts.GetLength(); }
-        uint32 GetNumOutputPorts() const                                    { return mOutputPorts.GetLength(); }
+        AZ::u16 GetNumInputPorts() const                                    { return aznumeric_caster(m_inputPorts.size()); }
+        AZ::u16 GetNumOutputPorts() const                                   { return aznumeric_caster(m_outputPorts.size()); }
 
         NodePort* AddInputPort(bool updateTextPixMap);
         NodePort* AddOutputPort(bool updateTextPixMap);
@@ -150,8 +149,8 @@ namespace EMStudio
         virtual int32 CalcRequiredHeight() const;
         virtual int32 CalcRequiredWidth();
 
-        virtual uint32 CalcMaxInputPortWidth() const;
-        virtual uint32 CalcMaxOutputPortWidth() const;
+        virtual int CalcMaxInputPortWidth() const;
+        virtual int CalcMaxOutputPortWidth() const;
 
         bool GetIsInside(const QPoint& globalPoint) const;
         bool GetIsSelected() const;
@@ -173,31 +172,31 @@ namespace EMStudio
         virtual void RenderHasChildsIndicator(QPainter& painter, QPen* pen, QColor borderColor, QColor bgColor);
         virtual void RenderVisualizeRect(QPainter& painter, const QColor& bgColor, const QColor& bgColor2);
 
-        virtual QRect CalcInputPortRect(uint32 portNr);
-        virtual QRect CalcOutputPortRect(uint32 portNr);
-        virtual NodePort* FindPort(int32 x, int32 y, uint32* outPortNr, bool* outIsInputPort, bool includeInputPorts);
+        virtual QRect CalcInputPortRect(AZ::u16 portNr);
+        virtual QRect CalcOutputPortRect(AZ::u16 portNr);
+        virtual NodePort* FindPort(int32 x, int32 y, AZ::u16* outPortNr, bool* outIsInputPort, bool includeInputPorts);
 
         virtual bool GetAlwaysColor() const                                                     { return true; }
         virtual bool GetHasError() const                                                        { return true; }
 
-        MCORE_INLINE bool GetIsProcessed() const                                                { return mIsProcessed; }
-        MCORE_INLINE void SetIsProcessed(bool processed)                                        { mIsProcessed = processed; }
+        MCORE_INLINE bool GetIsProcessed() const                                                { return m_isProcessed; }
+        MCORE_INLINE void SetIsProcessed(bool processed)                                        { m_isProcessed = processed; }
 
-        MCORE_INLINE bool GetIsUpdated() const                                                  { return mIsUpdated; }
-        MCORE_INLINE void SetIsUpdated(bool updated)                                            { mIsUpdated = updated; }
+        MCORE_INLINE bool GetIsUpdated() const                                                  { return m_isUpdated; }
+        MCORE_INLINE void SetIsUpdated(bool updated)                                            { m_isUpdated = updated; }
 
         virtual void Sync() {}
 
-        void CalcOutputPortTextRect(uint32 portNr, QRect& outRect, bool local = false);
-        void CalcInputPortTextRect(uint32 portNr, QRect& outRect, bool local = false);
+        void CalcOutputPortTextRect(AZ::u16 portNr, QRect& outRect, bool local = false);
+        void CalcInputPortTextRect(AZ::u16 portNr, QRect& outRect, bool local = false);
         void CalcInfoTextRect(QRect& outRect, bool local = false);
 
-        MCORE_INLINE void SetHasVisualOutputPorts(bool hasVisualOutputPorts)                    { mHasVisualOutputPorts = hasVisualOutputPorts; }
-        MCORE_INLINE bool GetHasVisualOutputPorts() const                                       { return mHasVisualOutputPorts; }
+        MCORE_INLINE void SetHasVisualOutputPorts(bool hasVisualOutputPorts)                    { m_hasVisualOutputPorts = hasVisualOutputPorts; }
+        MCORE_INLINE bool GetHasVisualOutputPorts() const                                       { return m_hasVisualOutputPorts; }
 
-        const QColor& GetBorderColor() const                                                    { return mBorderColor; }
-        void SetBorderColor(const QColor& color)                                                { mBorderColor = color; }
-        void ResetBorderColor()                                                                 { mBorderColor = QColor(0, 0, 0); }
+        const QColor& GetBorderColor() const                                                    { return m_borderColor; }
+        void SetBorderColor(const QColor& color)                                                { m_borderColor = color; }
+        void ResetBorderColor()                                                                 { m_borderColor = QColor(0, 0, 0); }
 
         virtual void UpdateTextPixmap();
         static void RenderText(QPainter& painter, const QString& text, const QColor& textColor, const QFont& font, const QFontMetrics& fontMetrics, Qt::Alignment textAlignment, const QRect& rect);
@@ -208,75 +207,74 @@ namespace EMStudio
         void GetNodePortColors(NodePort* nodePort, const QColor& borderColor, const QColor& headerBgColor, QColor* outBrushColor, QColor* outPenColor);
 
         QPersistentModelIndex           m_modelIndex;
-        AZStd::string                   mName;
-        QString                         mElidedName;
+        AZStd::string                   m_name;
+        QString                         m_elidedName;
 
-        QPainter                        mTextPainter;
-        //QPixmap                           mTextPixmap;
-        AZStd::string                   mSubTitle;
-        QString                         mElidedSubTitle;
-        AZStd::string                   mNodeInfo;
-        QString                         mElidedNodeInfo;
-        QBrush                          mBrush;
-        QColor                          mBaseColor;
-        QRect                           mRect;
-        QRect                           mFinalRect;
-        QRect                           mArrowRect;
-        QRect                           mVisualizeRect;
-        QColor                          mBorderColor;
-        QColor                          mVisualizeColor;
-        QColor                          mHasChildIndicatorColor;
-        MCore::Array<NodeConnection*>   mConnections;
-        float                           mOpacity;
-        bool                            mIsVisible;
-        static QColor                   mPortHighlightColor;
-        static QColor                   mPortHighlightBGColor;
+        QPainter                        m_textPainter;
+        AZStd::string                   m_subTitle;
+        QString                         m_elidedSubTitle;
+        AZStd::string                   m_nodeInfo;
+        QString                         m_elidedNodeInfo;
+        QBrush                          m_brush;
+        QColor                          m_baseColor;
+        QRect                           m_rect;
+        QRect                           m_finalRect;
+        QRect                           m_arrowRect;
+        QRect                           m_visualizeRect;
+        QColor                          m_borderColor;
+        QColor                          m_visualizeColor;
+        QColor                          m_hasChildIndicatorColor;
+        AZStd::vector<NodeConnection*>   m_connections;
+        float                           m_opacity;
+        bool                            m_isVisible;
+        static QColor                   s_portHighlightColo;
+        static QColor                   s_portHighlightBGColor;
 
         // font stuff
-        QFont                           mHeaderFont;
-        QFont                           mPortNameFont;
-        QFont                           mSubTitleFont;
-        QFont                           mInfoTextFont;
-        QFontMetrics*                   mPortFontMetrics;
-        QFontMetrics*                   mHeaderFontMetrics;
-        QFontMetrics*                   mInfoFontMetrics;
-        QFontMetrics*                   mSubTitleFontMetrics;
-        QTextOption                     mTextOptionsCenter;
-        QTextOption                     mTextOptionsAlignLeft;
-        QTextOption                     mTextOptionsAlignRight;
-        QTextOption                     mTextOptionsCenterHV;
+        QFont                           m_headerFont;
+        QFont                           m_portNameFont;
+        QFont                           m_subTitleFont;
+        QFont                           m_infoTextFont;
+        QFontMetrics*                   m_portFontMetrics;
+        QFontMetrics*                   m_headerFontMetrics;
+        QFontMetrics*                   m_infoFontMetrics;
+        QFontMetrics*                   m_subTitleFontMetrics;
+        QTextOption                     m_textOptionsCenter;
+        QTextOption                     m_textOptionsAlignLeft;
+        QTextOption                     m_textOptionsAlignRight;
+        QTextOption                     m_textOptionsCenterHv;
 
-        QStaticText                     mTitleText;
-        QStaticText                     mSubTitleText;
-        QStaticText                     mInfoText;
+        QStaticText                     m_titleText;
+        QStaticText                     m_subTitleText;
+        QStaticText                     m_infoText;
 
-        MCore::Array<QStaticText>       mInputPortText;
-        MCore::Array<QStaticText>       mOutputPortText;
+        AZStd::vector<QStaticText>       m_inputPortText;
+        AZStd::vector<QStaticText>       m_outputPortText;
 
-        int32                           mRequiredWidth;
-        bool                            mNameAndPortsUpdated;
+        int32                           m_requiredWidth;
+        bool                            m_nameAndPortsUpdated;
 
-        NodeGraph*                      mParentGraph;
-        MCore::Array<NodePort>          mInputPorts;
-        MCore::Array<NodePort>          mOutputPorts;
-        bool                            mConFromOutputOnly;
-        bool                            mIsDeletable;
-        bool                            mIsCollapsed;
-        bool                            mIsProcessed;
-        bool                            mIsUpdated;
-        bool                            mVisualize;
-        bool                            mCanVisualize;
-        bool                            mVisualizeHighlighted;
-        bool                            mIsEnabled;
-        bool                            mIsHighlighted;
-        bool                            mCanHaveChildren;
-        bool                            mHasVisualGraph;
-        bool                            mHasVisualOutputPorts;
+        NodeGraph*                      m_parentGraph;
+        AZStd::vector<NodePort>          m_inputPorts;
+        AZStd::vector<NodePort>          m_outputPorts;
+        bool                            m_conFromOutputOnly;
+        bool                            m_isDeletable;
+        bool                            m_isCollapsed;
+        bool                            m_isProcessed;
+        bool                            m_isUpdated;
+        bool                            m_visualize;
+        bool                            m_canVisualize;
+        bool                            m_visualizeHighlighted;
+        bool                            m_isEnabled;
+        bool                            m_isHighlighted;
+        bool                            m_canHaveChildren;
+        bool                            m_hasVisualGraph;
+        bool                            m_hasVisualOutputPorts;
 
-        uint32                          mMaxInputWidth; // will be calculated automatically in CalcRequiredWidth()
-        uint32                          mMaxOutputWidth; // will be calculated automatically in CalcRequiredWidth()
+        int                          m_maxInputWidth; // will be calculated automatically in CalcRequiredWidth()
+        int                          m_maxOutputWidth; // will be calculated automatically in CalcRequiredWidth()
 
         // has child node indicator
-        QPolygonF                       mSubstPoly;
+        QPolygonF                       m_substPoly;
     };
 }   // namespace EMStudio

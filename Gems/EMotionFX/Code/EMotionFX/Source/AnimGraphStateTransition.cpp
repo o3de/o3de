@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -116,8 +117,8 @@ namespace EMotionFX
                 continue;
             }
 
-            const AZ::u32 numNodes = nodeGroup->GetNumNodes();
-            for (AZ::u32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = nodeGroup->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 AnimGraphNodeId nodeId = nodeGroup->GetNode(i);
                 AnimGraphNode* node = stateMachine->FindChildNodeById(nodeId);
@@ -179,9 +180,9 @@ namespace EMotionFX
         float duration
     )
         : AnimGraphObject()
-        , mConditions(AZStd::move(conditions))
-        , mSourceNode(source)
-        , mTargetNode(target)
+        , m_conditions(AZStd::move(conditions))
+        , m_sourceNode(source)
+        , m_targetNode(target)
         , m_sourceNodeId(source ? source->GetId() : ObjectId::InvalidId)
         , m_targetNodeId(target ? target->GetId() : ObjectId::InvalidId)
         , m_transitionTime(duration)
@@ -191,31 +192,31 @@ namespace EMotionFX
     AnimGraphStateTransition::~AnimGraphStateTransition()
     {
         RemoveAllConditions(true);
-        if (mAnimGraph)
+        if (m_animGraph)
         {
-            mAnimGraph->RemoveObject(this);
+            m_animGraph->RemoveObject(this);
         }
     }
 
     void AnimGraphStateTransition::Reinit()
     {
-        if (!mAnimGraph)
+        if (!m_animGraph)
         {
-            mSourceNode = nullptr;
-            mTargetNode = nullptr;
+            m_sourceNode = nullptr;
+            m_targetNode = nullptr;
             return;
         }
 
         // Re-link the source node.
         if (GetSourceNodeId().IsValid())
         {
-            mSourceNode = mAnimGraph->RecursiveFindNodeById(GetSourceNodeId());
+            m_sourceNode = m_animGraph->RecursiveFindNodeById(GetSourceNodeId());
         }
 
         // Re-link the target node.
         if (GetTargetNodeId().IsValid())
         {
-            mTargetNode = mAnimGraph->RecursiveFindNodeById(GetTargetNodeId());
+            m_targetNode = m_animGraph->RecursiveFindNodeById(GetTargetNodeId());
         }
 
         AnimGraphObject::Reinit();
@@ -225,7 +226,7 @@ namespace EMotionFX
     {
         Reinit();
 
-        for (AnimGraphTransitionCondition* condition : mConditions)
+        for (AnimGraphTransitionCondition* condition : m_conditions)
         {
             condition->Reinit();
         }
@@ -242,7 +243,7 @@ namespace EMotionFX
 
         InitInternalAttributesForAllInstances();
 
-        for (AnimGraphTransitionCondition* condition : mConditions)
+        for (AnimGraphTransitionCondition* condition : m_conditions)
         {
             condition->SetTransition(this);
             condition->InitAfterLoading(animGraph);
@@ -264,7 +265,7 @@ namespace EMotionFX
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
 
         // calculate the blend weight, based on the type of smoothing
-        const float weight = uniqueData->mBlendWeight;
+        const float weight = uniqueData->m_blendWeight;
 
         // blend the two poses
         *outputPose = from;
@@ -281,37 +282,37 @@ namespace EMotionFX
         {
             const float blendTime = GetBlendTime(animGraphInstance);
 
-            uniqueData->mTotalSeconds += timePassedInSeconds;
-            if (uniqueData->mTotalSeconds >= blendTime)
+            uniqueData->m_totalSeconds += timePassedInSeconds;
+            if (uniqueData->m_totalSeconds >= blendTime)
             {
-                uniqueData->mTotalSeconds = blendTime;
-                uniqueData->mIsDone = true;
+                uniqueData->m_totalSeconds = blendTime;
+                uniqueData->m_isDone = true;
             }
             else
             {
-                uniqueData->mIsDone = false;
+                uniqueData->m_isDone = false;
             }
 
             // calculate the blend weight
             if (blendTime > MCore::Math::epsilon)
             {
-                uniqueData->mBlendProgress = uniqueData->mTotalSeconds / blendTime;
+                uniqueData->m_blendProgress = uniqueData->m_totalSeconds / blendTime;
             }
             else
             {
-                uniqueData->mBlendProgress = 1.0f;
+                uniqueData->m_blendProgress = 1.0f;
             }
 
-            uniqueData->mBlendWeight = CalculateWeight(uniqueData->mBlendProgress);
+            uniqueData->m_blendWeight = CalculateWeight(uniqueData->m_blendProgress);
         }
     }
 
     void AnimGraphStateTransition::ExtractMotion(AnimGraphInstance* animGraphInstance, AnimGraphRefCountedData* sourceData, Transform* outTransform, Transform* outTransformMirrored) const
     {
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-        const float weight = uniqueData->mBlendWeight;
+        const float weight = uniqueData->m_blendWeight;
 
-        AnimGraphRefCountedData* targetData = mTargetNode->FindOrCreateUniqueNodeData(animGraphInstance)->GetRefCountedData();
+        AnimGraphRefCountedData* targetData = m_targetNode->FindOrCreateUniqueNodeData(animGraphInstance)->GetRefCountedData();
         CalculateMotionExtractionDelta(m_extractionMode, sourceData, targetData, weight, true, *outTransform, *outTransformMirrored);
     }
 
@@ -320,12 +321,12 @@ namespace EMotionFX
         // get the unique data
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
 
-        uniqueData->mBlendWeight    = 0.0f;
-        uniqueData->mIsDone         = false;
-        uniqueData->mTotalSeconds   = 0.0f;
-        uniqueData->mBlendProgress  = 0.0f;
+        uniqueData->m_blendWeight    = 0.0f;
+        uniqueData->m_isDone         = false;
+        uniqueData->m_totalSeconds   = 0.0f;
+        uniqueData->m_blendProgress  = 0.0f;
 
-        mTargetNode->SetSyncIndex(animGraphInstance, MCORE_INVALIDINDEX32);
+        m_targetNode->SetSyncIndex(animGraphInstance, InvalidIndex);
 
         // Trigger action
         for (AnimGraphTriggerAction* action : m_actionSetup.GetActions())
@@ -342,23 +343,23 @@ namespace EMotionFX
     {
         // get the unique data and return the is done flag
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-        return uniqueData->mIsDone;
+        return uniqueData->m_isDone;
     }
 
     float AnimGraphStateTransition::GetBlendWeight(AnimGraphInstance* animGraphInstance) const
     {
         // get the unique data and return the is done flag
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-        return uniqueData->mBlendWeight;
+        return uniqueData->m_blendWeight;
     }
 
     void AnimGraphStateTransition::OnEndTransition(AnimGraphInstance* animGraphInstance)
     {
         // get the unique data
         UniqueData* uniqueData      = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-        uniqueData->mBlendWeight    = 1.0f;
-        uniqueData->mBlendProgress  = 1.0f;
-        uniqueData->mIsDone         = true;
+        uniqueData->m_blendWeight    = 1.0f;
+        uniqueData->m_blendProgress  = 1.0f;
+        uniqueData->m_isDone         = true;
 
         // Trigger action
         for (AnimGraphTriggerAction* action : m_actionSetup.GetActions())
@@ -373,28 +374,28 @@ namespace EMotionFX
     void AnimGraphStateTransition::AddCondition(AnimGraphTransitionCondition* condition)
     {
         condition->SetTransition(this);
-        mConditions.push_back(condition);
+        m_conditions.push_back(condition);
     }
 
     void AnimGraphStateTransition::InsertCondition(AnimGraphTransitionCondition* condition, size_t index)
     {
         condition->SetTransition(this);
-        mConditions.insert(mConditions.begin() + index, condition);
+        m_conditions.insert(m_conditions.begin() + index, condition);
     }
 
     void AnimGraphStateTransition::ReserveConditions(size_t numConditions)
     {
-        mConditions.reserve(numConditions);
+        m_conditions.reserve(numConditions);
     }
 
     void AnimGraphStateTransition::RemoveCondition(size_t index, bool delFromMem)
     {
         if (delFromMem)
         {
-            delete mConditions[index];
+            delete m_conditions[index];
         }
 
-        mConditions.erase(mConditions.begin() + index);
+        m_conditions.erase(m_conditions.begin() + index);
     }
 
     void AnimGraphStateTransition::RemoveAllConditions(bool delFromMem)
@@ -402,19 +403,19 @@ namespace EMotionFX
         // delete them all from memory
         if (delFromMem)
         {
-            for (AnimGraphTransitionCondition* condition : mConditions)
+            for (AnimGraphTransitionCondition* condition : m_conditions)
             {
                 delete condition;
             }
         }
 
-        mConditions.clear();
+        m_conditions.clear();
     }
 
     // check if all conditions are tested positive
     bool AnimGraphStateTransition::CheckIfIsReady(AnimGraphInstance* animGraphInstance) const
     {
-        if (mConditions.empty())
+        if (m_conditions.empty())
         {
             return false;
         }
@@ -422,7 +423,7 @@ namespace EMotionFX
         if (!GetEMotionFX().GetIsInEditorMode())
         {
             // If we are not in editor mode, we can early out for the first failed condition
-            for (AnimGraphTransitionCondition* condition : mConditions)
+            for (AnimGraphTransitionCondition* condition : m_conditions)
             {
                 const bool testResult = condition->TestCondition(animGraphInstance);
 
@@ -439,7 +440,7 @@ namespace EMotionFX
             // If we are in editor mode, we need to execute all the conditions so the UI can reflect properly which ones
             // passed and which ones didn't
             bool isReady = true;
-            for (AnimGraphTransitionCondition* condition : mConditions)
+            for (AnimGraphTransitionCondition* condition : m_conditions)
             {
                 const bool testResult = condition->TestCondition(animGraphInstance);
 
@@ -454,27 +455,27 @@ namespace EMotionFX
 
     void AnimGraphStateTransition::SetIsWildcardTransition(bool isWildcardTransition)
     {
-        mIsWildcardTransition = isWildcardTransition;
+        m_isWildcardTransition = isWildcardTransition;
     }
 
     void AnimGraphStateTransition::SetSourceNode(AnimGraphInstance* animGraphInstance, AnimGraphNode* sourceNode)
     {
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-        uniqueData->mSourceNode = sourceNode;
+        uniqueData->m_sourceNode = sourceNode;
     }
 
     // get the source node of the transition
     AnimGraphNode* AnimGraphStateTransition::GetSourceNode(AnimGraphInstance* animGraphInstance) const
     {
         // return the normal source node in case we are not dealing with a wildcard transition
-        if (mIsWildcardTransition == false)
+        if (m_isWildcardTransition == false)
         {
-            return mSourceNode;
+            return m_sourceNode;
         }
 
         // wildcard transition special case handling
         UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-        return uniqueData->mSourceNode;
+        return uniqueData->m_sourceNode;
     }
 
     void AnimGraphStateTransition::SetBlendTime(float blendTime)
@@ -487,8 +488,8 @@ namespace EMotionFX
         MCORE_UNUSED(animGraphInstance);
 
         // Use a blend time of zero in case this transition is connected to aan entry or exit state.
-        if ((mSourceNode && (azrtti_typeid(mSourceNode) == azrtti_typeid<AnimGraphExitNode>() || azrtti_typeid(mSourceNode) == azrtti_typeid<AnimGraphEntryNode>())) ||
-            (mTargetNode && (azrtti_typeid(mTargetNode) == azrtti_typeid<AnimGraphExitNode>() || azrtti_typeid(mTargetNode) == azrtti_typeid<AnimGraphEntryNode>())))
+        if ((m_sourceNode && (azrtti_typeid(m_sourceNode) == azrtti_typeid<AnimGraphExitNode>() || azrtti_typeid(m_sourceNode) == azrtti_typeid<AnimGraphEntryNode>())) ||
+            (m_targetNode && (azrtti_typeid(m_targetNode) == azrtti_typeid<AnimGraphExitNode>() || azrtti_typeid(m_targetNode) == azrtti_typeid<AnimGraphEntryNode>())))
         {
             return 0.0f;
         }
@@ -499,7 +500,7 @@ namespace EMotionFX
     // callback that gets called before a node gets removed
     void AnimGraphStateTransition::OnRemoveNode(AnimGraph* animGraph, AnimGraphNode* nodeToRemove)
     {
-        for (AnimGraphTransitionCondition* condition : mConditions)
+        for (AnimGraphTransitionCondition* condition : m_conditions)
         {
             condition->OnRemoveNode(animGraph, nodeToRemove);
         }
@@ -507,7 +508,7 @@ namespace EMotionFX
 
     void AnimGraphStateTransition::ResetConditions(AnimGraphInstance* animGraphInstance)
     {
-        for (AnimGraphTransitionCondition* condition : mConditions)
+        for (AnimGraphTransitionCondition* condition : m_conditions)
         {
             condition->Reset(animGraphInstance);
         }
@@ -595,7 +596,7 @@ namespace EMotionFX
     {
         if (m_canBeInterruptedByOthers &&
             transition != this &&
-            (GetIsWildcardTransition() || transition->GetIsWildcardTransition() || transition->GetSourceNode() == mSourceNode))
+            (GetIsWildcardTransition() || transition->GetIsWildcardTransition() || transition->GetSourceNode() == m_sourceNode))
         {
             // Allow all in case the transition candidate list is empty, otherwise only allow transitions from the possible interruption candidate list.
             if (m_canBeInterruptedByTransitionIds.empty() ||
@@ -662,14 +663,14 @@ namespace EMotionFX
     }
 
     // add all sub objects
-    void AnimGraphStateTransition::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphStateTransition::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
-        for (const AnimGraphTransitionCondition* condition : mConditions)
+        for (const AnimGraphTransitionCondition* condition : m_conditions)
         {
             condition->RecursiveCollectObjects(outObjects);
         }
 
-        outObjects.Add(const_cast<AnimGraphStateTransition*>(this));
+        outObjects.emplace_back(const_cast<AnimGraphStateTransition*>(this));
     }
 
     // calculate the blend weight, based on the type of smoothing
@@ -705,7 +706,7 @@ namespace EMotionFX
     {
         AnimGraphObject::InvalidateUniqueData(animGraphInstance);
 
-        for (AnimGraphTransitionCondition* condition : mConditions)
+        for (AnimGraphTransitionCondition* condition : m_conditions)
         {
             condition->InvalidateUniqueData(animGraphInstance);
         }
@@ -760,11 +761,11 @@ namespace EMotionFX
 
     void AnimGraphStateTransition::SetSourceNode(AnimGraphNode* node)
     {
-        mSourceNode = node;
+        m_sourceNode = node;
 
-        if (mSourceNode)
+        if (m_sourceNode)
         {
-            m_sourceNodeId = mSourceNode->GetId();
+            m_sourceNodeId = m_sourceNode->GetId();
         }
         else
         {
@@ -774,17 +775,17 @@ namespace EMotionFX
 
     AnimGraphNode* AnimGraphStateTransition::GetSourceNode() const
     {
-        AZ_Assert(!mSourceNode || (mSourceNode && mSourceNode->GetId() == GetSourceNodeId()), "Source node not in sync with node id.");
-        return mSourceNode;
+        AZ_Assert(!m_sourceNode || (m_sourceNode && m_sourceNode->GetId() == GetSourceNodeId()), "Source node not in sync with node id.");
+        return m_sourceNode;
     }
 
     void AnimGraphStateTransition::SetTargetNode(AnimGraphNode* node)
     {
-        mTargetNode = node;
+        m_targetNode = node;
 
-        if (mTargetNode)
+        if (m_targetNode)
         {
-            m_targetNodeId = mTargetNode->GetId();
+            m_targetNodeId = m_targetNode->GetId();
         }
         else
         {
@@ -794,36 +795,36 @@ namespace EMotionFX
 
     AnimGraphNode* AnimGraphStateTransition::GetTargetNode() const
     {
-        AZ_Assert(mTargetNode && mTargetNode->GetId() == GetTargetNodeId(), "Target node not in sync with node id.");
-        return mTargetNode;
+        AZ_Assert(m_targetNode && m_targetNode->GetId() == GetTargetNodeId(), "Target node not in sync with node id.");
+        return m_targetNode;
     }
 
     void AnimGraphStateTransition::SetVisualOffsets(int32 startX, int32 startY, int32 endX, int32 endY)
     {
-        mStartOffsetX   = startX;
-        mStartOffsetY   = startY;
-        mEndOffsetX     = endX;
-        mEndOffsetY     = endY;
+        m_startOffsetX   = startX;
+        m_startOffsetY   = startY;
+        m_endOffsetX     = endX;
+        m_endOffsetY     = endY;
     }
 
     int32 AnimGraphStateTransition::GetVisualStartOffsetX() const
     {
-        return mStartOffsetX;
+        return m_startOffsetX;
     }
 
     int32 AnimGraphStateTransition::GetVisualStartOffsetY() const
     {
-        return mStartOffsetY;
+        return m_startOffsetY;
     }
 
     int32 AnimGraphStateTransition::GetVisualEndOffsetX() const
     {
-        return mEndOffsetX;
+        return m_endOffsetX;
     }
 
     int32 AnimGraphStateTransition::GetVisualEndOffsetY() const
     {
-        return mEndOffsetY;
+        return m_endOffsetY;
     }
 
     bool AnimGraphStateTransition::CanWildcardTransitionFrom(AnimGraphNode* sourceNode) const
@@ -836,7 +837,7 @@ namespace EMotionFX
 
         if (sourceNode)
         {
-            if (m_allowTransitionsFrom.Contains(mAnimGraph, sourceNode->GetId()))
+            if (m_allowTransitionsFrom.Contains(m_animGraph, sourceNode->GetId()))
             {
                 // In case the given source node is part of the filter (either as individual state or part of a node group), return success.
                 return true;
@@ -848,23 +849,23 @@ namespace EMotionFX
 
     AZ::Outcome<size_t> AnimGraphStateTransition::FindConditionIndex(AnimGraphTransitionCondition* condition) const
     {
-        const auto iterator = AZStd::find(mConditions.begin(), mConditions.end(), condition);
-        if (iterator == mConditions.end())
+        const auto iterator = AZStd::find(m_conditions.begin(), m_conditions.end(), condition);
+        if (iterator == m_conditions.end())
         {
             return AZ::Failure();
         }
 
-        return AZ::Success(static_cast<size_t>(AZStd::distance(mConditions.begin(), iterator)));
+        return AZ::Success(static_cast<size_t>(AZStd::distance(m_conditions.begin(), iterator)));
     }
 
     AnimGraphStateMachine* AnimGraphStateTransition::GetStateMachine() const
     {
-        if (!mTargetNode)
+        if (!m_targetNode)
         {
             return nullptr;
         }
 
-        return azdynamic_cast<AnimGraphStateMachine*>(mTargetNode->GetParentNode());
+        return azdynamic_cast<AnimGraphStateMachine*>(m_targetNode->GetParentNode());
     }
 
     AZ::Crc32 AnimGraphStateTransition::GetEaseInOutSmoothnessVisibility() const
@@ -880,8 +881,8 @@ namespace EMotionFX
     AZ::Crc32 AnimGraphStateTransition::GetVisibilityHideWhenExitOrEntry() const
     {
         // Hide when the transition is connected to an entry or an exit state.
-        if ((mSourceNode && (azrtti_typeid(mSourceNode) == azrtti_typeid<AnimGraphExitNode>() || azrtti_typeid(mSourceNode) == azrtti_typeid<AnimGraphEntryNode>())) ||
-            (mTargetNode && (azrtti_typeid(mTargetNode) == azrtti_typeid<AnimGraphExitNode>() || azrtti_typeid(mTargetNode) == azrtti_typeid<AnimGraphEntryNode>())))
+        if ((m_sourceNode && (azrtti_typeid(m_sourceNode) == azrtti_typeid<AnimGraphExitNode>() || azrtti_typeid(m_sourceNode) == azrtti_typeid<AnimGraphEntryNode>())) ||
+            (m_targetNode && (azrtti_typeid(m_targetNode) == azrtti_typeid<AnimGraphExitNode>() || azrtti_typeid(m_targetNode) == azrtti_typeid<AnimGraphEntryNode>())))
         {
             return AZ::Edit::PropertyVisibility::Hide;
         }
@@ -1007,7 +1008,7 @@ namespace EMotionFX
             ->Field("id", &AnimGraphStateTransition::m_id)
             ->Field("sourceNodeId", &AnimGraphStateTransition::m_sourceNodeId)
             ->Field("targetNodeId", &AnimGraphStateTransition::m_targetNodeId)
-            ->Field("isWildcard", &AnimGraphStateTransition::mIsWildcardTransition)
+            ->Field("isWildcard", &AnimGraphStateTransition::m_isWildcardTransition)
             ->Field("isDisabled", &AnimGraphStateTransition::m_isDisabled)
             ->Field("priority", &AnimGraphStateTransition::m_priority)
             ->Field("canBeInterruptedByOthers", &AnimGraphStateTransition::m_canBeInterruptedByOthers)
@@ -1024,11 +1025,11 @@ namespace EMotionFX
             ->Field("interpolationType", &AnimGraphStateTransition::m_interpolationType)
             ->Field("easeInSmoothness", &AnimGraphStateTransition::m_easeInSmoothness)
             ->Field("easeOutSmoothness", &AnimGraphStateTransition::m_easeOutSmoothness)
-            ->Field("startOffsetX", &AnimGraphStateTransition::mStartOffsetX)
-            ->Field("startOffsetY", &AnimGraphStateTransition::mStartOffsetY)
-            ->Field("endOffsetX", &AnimGraphStateTransition::mEndOffsetX)
-            ->Field("endOffsetY", &AnimGraphStateTransition::mEndOffsetY)
-            ->Field("conditions", &AnimGraphStateTransition::mConditions)
+            ->Field("startOffsetX", &AnimGraphStateTransition::m_startOffsetX)
+            ->Field("startOffsetY", &AnimGraphStateTransition::m_startOffsetY)
+            ->Field("endOffsetX", &AnimGraphStateTransition::m_endOffsetX)
+            ->Field("endOffsetY", &AnimGraphStateTransition::m_endOffsetY)
+            ->Field("conditions", &AnimGraphStateTransition::m_conditions)
             ->Field("actionSetup", &AnimGraphStateTransition::m_actionSetup)
             ->Field("extractionMode", &AnimGraphStateTransition::m_extractionMode)
         ;

@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -28,7 +29,7 @@ ly_add_target(
             Gem::Atom_Utils.Static
             Gem::Atom_Bootstrap.Headers
             Gem::AtomFont
-            Gem::TextureAtlas       
+            Gem::TextureAtlas
 )
 
 ly_add_target(
@@ -63,7 +64,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTORCC
         FILES_CMAKE
             lyshine_uicanvaseditor_files.cmake
-            lyshine_editor_builder_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -78,7 +78,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::Qt::Widgets
                 AZ::AzCore
                 AZ::AzToolsFramework
-                AZ::AssetBuilderSDK
                 Legacy::EditorCommon
                 Legacy::EditorCore
                 Gem::LyShine.Static
@@ -98,7 +97,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME LyShine.Editor GEM_MODULE
-
         NAMESPACE Gem
         FILES_CMAKE
             lyshine_common_module_files.cmake
@@ -115,17 +113,71 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Legacy::CryCommon
-                AZ::AssetBuilderSDK
+                AZ::AzToolsFramework
                 Gem::LyShine.Editor.Static
                 Gem::LmbrCentral.Editor
                 Gem::TextureAtlas.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
             Gem::TextureAtlas.Editor
-)
+    )
+
+    # by naming this target LyShine.Builders it ensures that it is loaded
+    # in any pipeline tools (Like Asset Processor, AssetBuilder, etc)
+    ly_add_target(
+        NAME LyShine.Builders.Static STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            lyshine_editor_builder_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+                Source
+            PUBLIC
+                Include
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzCore
+                AZ::AzToolsFramework
+                AZ::AssetBuilderSDK
+                Gem::LyShine.Static
+                Legacy::CryCommon
+                Gem::LmbrCentral.Editor
+                Gem::TextureAtlas.Editor
+                Gem::AtomToolsFramework.Static
+                Gem::AtomToolsFramework.Editor
+                ${additional_dependencies}
+            PUBLIC
+                Gem::Atom_RPI.Public
+                Gem::Atom_Utils.Static
+                Gem::Atom_Bootstrap.Headers
+    )
+
+    ly_add_target(
+        NAME LyShine.Builders GEM_MODULE
+        NAMESPACE Gem
+        FILES_CMAKE
+            lyshine_common_module_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                LYSHINE_BUILDER
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+                Source
+                Editor
+            PUBLIC
+                Include
+        BUILD_DEPENDENCIES
+            PRIVATE
+                Legacy::CryCommon
+                AZ::AssetBuilderSDK
+                Gem::LyShine.Builders.Static
+                Gem::LmbrCentral.Editor
+                Gem::TextureAtlas.Editor
+    )
 
     # by default, load the above "Gem::LyShine.Editor" module in dev tools:
-    ly_create_alias(NAME LyShine.Builders NAMESPACE Gem TARGETS Gem::LyShine.Editor)
     ly_create_alias(NAME LyShine.Tools NAMESPACE Gem TARGETS Gem::LyShine.Editor)
 endif()
 
@@ -140,6 +192,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         FILES_CMAKE
             lyshine_common_module_files.cmake
             lyshine_tests_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                LYSHINE_TESTS
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
@@ -169,6 +224,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             COMPILE_DEFINITIONS
                 PRIVATE
                     LYSHINE_EDITOR
+                    LYSHINE_BUILDER
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
@@ -182,6 +238,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Legacy::CryCommon
                     AZ::AssetBuilderSDK
                     Gem::LyShine.Editor.Static
+                    Gem::LyShine.Builders.Static
                     Gem::LmbrCentral.Editor
                     Gem::TextureAtlas
             RUNTIME_DEPENDENCIES

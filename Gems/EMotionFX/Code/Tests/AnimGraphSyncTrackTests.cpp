@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,27 +19,27 @@ namespace EMotionFX
 {
     struct FindEventIndicesParams
     {
-        void (*eventFactory)(MotionEventTrack* track);
-        float timeValue;
-        size_t expectedLeft;
-        size_t expectedRight;
+        void (*m_eventFactory)(MotionEventTrack* track);
+        float m_timeValue;
+        size_t m_expectedLeft;
+        size_t m_expectedRight;
     };
 
     void PrintTo(FindEventIndicesParams const object, ::std::ostream* os)
     {
-        if (object.eventFactory == &MakeNoEvents)
+        if (object.m_eventFactory == &MakeNoEvents)
         {
             *os << "Events: 0";
         }
-        else if (object.eventFactory == &MakeOneEvent)
+        else if (object.m_eventFactory == &MakeOneEvent)
         {
             *os << "Events: 1";
         }
-        else if (object.eventFactory == &MakeTwoEvents)
+        else if (object.m_eventFactory == &MakeTwoEvents)
         {
             *os << "Events: 2";
         }
-        else if (object.eventFactory == &MakeThreeEvents)
+        else if (object.m_eventFactory == &MakeThreeEvents)
         {
             *os << "Events: 3";
         }
@@ -46,9 +47,9 @@ namespace EMotionFX
         {
             *os << "Events: Unknown";
         }
-        *os << " Time value: " << object.timeValue
-            << " Expected left: " << object.expectedLeft
-            << " Expected right: " << object.expectedRight
+        *os << " Time value: " << object.m_timeValue
+            << " Expected left: " << object.m_expectedLeft
+            << " Expected right: " << object.m_expectedRight
             ;
     }
 
@@ -66,7 +67,7 @@ namespace EMotionFX
             m_syncTrack = m_motion->GetEventTable()->GetSyncTrack();
 
             const FindEventIndicesParams& params = GetParam();
-            params.eventFactory(m_syncTrack);
+            params.m_eventFactory(m_syncTrack);
         }
 
         void TearDown() override
@@ -84,9 +85,9 @@ namespace EMotionFX
     {
         const FindEventIndicesParams& params = GetParam();
         size_t indexLeft, indexRight;
-        m_syncTrack->FindEventIndices(params.timeValue, &indexLeft, &indexRight);
-        EXPECT_EQ(indexLeft, params.expectedLeft);
-        EXPECT_EQ(indexRight, params.expectedRight);
+        m_syncTrack->FindEventIndices(params.m_timeValue, &indexLeft, &indexRight);
+        EXPECT_EQ(indexLeft, params.m_expectedLeft);
+        EXPECT_EQ(indexRight, params.m_expectedRight);
     }
 
     INSTANTIATE_TEST_CASE_P(TestFindEventIndices, TestFindEventIndicesFixture,
@@ -94,8 +95,8 @@ namespace EMotionFX
             {
                 MakeNoEvents,
                 0.5f,
-                MCORE_INVALIDINDEX32,
-                MCORE_INVALIDINDEX32
+                InvalidIndex,
+                InvalidIndex
             },
             {
                 MakeOneEvent,
@@ -166,28 +167,28 @@ namespace EMotionFX
 
     struct FindMatchingEventsParams
     {
-        void (*eventFactory)(MotionEventTrack* track);
-        size_t startingIndex;
-        size_t inEventAIndex;
-        size_t inEventBIndex;
-        size_t expectedEventA;
-        size_t expectedEventB;
-        bool mirrorInput;
-        bool mirrorOutput;
-        bool forward;
+        void (*m_eventFactory)(MotionEventTrack* track);
+        size_t m_startingIndex;
+        size_t m_inEventAIndex;
+        size_t m_inEventBIndex;
+        size_t m_expectedEventA;
+        size_t m_expectedEventB;
+        bool m_mirrorInput;
+        bool m_mirrorOutput;
+        bool m_forward;
     };
 
     void PrintTo(FindMatchingEventsParams const object, ::std::ostream* os)
     {
-        if (object.eventFactory == &MakeNoEvents)
+        if (object.m_eventFactory == &MakeNoEvents)
         {
             *os << "Events: 0";
         }
-        else if (object.eventFactory == &MakeOneEvent)
+        else if (object.m_eventFactory == &MakeOneEvent)
         {
             *os << "Events: 1";
         }
-        else if (object.eventFactory == &MakeTwoLeftRightEvents)
+        else if (object.m_eventFactory == &MakeTwoLeftRightEvents)
         {
             *os << "Events: LRLR";
         }
@@ -195,14 +196,14 @@ namespace EMotionFX
         {
             *os << "Events: Unknown";
         }
-        *os << " Start index: " << object.startingIndex
-            << " In Event A: " << object.inEventAIndex
-            << " In Event B: " << object.inEventBIndex
-            << " Expected Event A: " << object.expectedEventA
-            << " Expected Event B: " << object.expectedEventB
-            << " Mirror Input: " << object.mirrorInput
-            << " Mirror Output: " << object.mirrorOutput
-            << " Play direction: " << (object.forward ? "Forward" : "Backward")
+        *os << " Start index: " << object.m_startingIndex
+            << " In Event A: " << object.m_inEventAIndex
+            << " In Event B: " << object.m_inEventBIndex
+            << " Expected Event A: " << object.m_expectedEventA
+            << " Expected Event B: " << object.m_expectedEventB
+            << " Mirror Input: " << object.m_mirrorInput
+            << " Mirror Output: " << object.m_mirrorOutput
+            << " Play direction: " << (object.m_forward ? "Forward" : "Backward")
             ;
     }
 
@@ -220,7 +221,7 @@ namespace EMotionFX
             m_syncTrack = m_motion->GetEventTable()->GetSyncTrack();
 
             const FindMatchingEventsParams& params = GetParam();
-            params.eventFactory(m_syncTrack);
+            params.m_eventFactory(m_syncTrack);
         }
 
         void TearDown() override
@@ -240,21 +241,21 @@ namespace EMotionFX
 
         // Make sure we have an event to get the id of
         const size_t eventCount = m_syncTrack->GetNumEvents();
-        const size_t eventAID = eventCount ? m_syncTrack->GetEvent(params.inEventAIndex).HashForSyncing(params.mirrorInput) : 0;
-        const size_t eventBID = eventCount ? m_syncTrack->GetEvent(params.inEventBIndex).HashForSyncing(params.mirrorInput) : 0;
+        const size_t eventAID = eventCount ? m_syncTrack->GetEvent(params.m_inEventAIndex).HashForSyncing(params.m_mirrorInput) : 0;
+        const size_t eventBID = eventCount ? m_syncTrack->GetEvent(params.m_inEventBIndex).HashForSyncing(params.m_mirrorInput) : 0;
 
         size_t outLeft, outRight;
         m_syncTrack->FindMatchingEvents(
-            params.startingIndex,
+            params.m_startingIndex,
             eventAID,
             eventBID,
             &outLeft,
             &outRight,
-            params.forward,
-            params.mirrorOutput
+            params.m_forward,
+            params.m_mirrorOutput
         );
-        EXPECT_EQ(outLeft, params.expectedEventA);
-        EXPECT_EQ(outRight, params.expectedEventB);
+        EXPECT_EQ(outLeft, params.m_expectedEventA);
+        EXPECT_EQ(outRight, params.m_expectedEventB);
     }
 
     INSTANTIATE_TEST_CASE_P(TestFindMatchingEvents, TestFindMatchingEventsFixture,
@@ -266,8 +267,8 @@ namespace EMotionFX
                 0,     // startingIndex
                 0,     // inEventAIndex
                 1,     // inEventBIndex
-                MCORE_INVALIDINDEX32, // expectedEventA
-                MCORE_INVALIDINDEX32, // expectedEventB
+                InvalidIndex, // expectedEventA
+                InvalidIndex, // expectedEventB
                 false, // mirrorInput
                 false, // mirrorOutput
                 true   // forward

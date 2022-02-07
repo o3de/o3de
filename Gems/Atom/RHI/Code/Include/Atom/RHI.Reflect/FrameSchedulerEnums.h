@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,9 +65,6 @@ namespace AZ
         enum class FrameSchedulerStatisticsFlags : uint32_t
         {
             None = 0,
-
-            //! Enables gathering of cpu timing statistics.
-            GatherCpuTimingStatistics = AZ_BIT(0),
 
             //! Enables gathering of transient attachment statistics.
             GatherTransientAttachmentStatistics = AZ_BIT(2),

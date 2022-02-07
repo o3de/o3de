@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -125,7 +126,7 @@ namespace AZ
                 return;
             }
 
-            SetCascadesCount(m_arraySize);
+            SetCascadesCount(static_cast<uint16_t>(m_arraySize));
             const RHI::Size imageSize
             {
                 aznumeric_cast<uint32_t>(m_shadowmapSize),

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -83,14 +84,6 @@ namespace AtomImGuiTools
         {
             m_imguiGpuProfiler.Draw(m_showGpuProfiler, AZ::RPI::PassSystemInterface::Get()->GetRootPass().get());
         }
-        if (m_showCpuProfiler)
-        {
-            const AZ::RHI::CpuTimingStatistics* stats = AZ::RHI::RHISystemInterface::Get()->GetCpuTimingStatistics();
-            if (stats)
-            {
-                m_imguiCpuProfiler.Draw(m_showCpuProfiler, *stats);
-            }
-        }
         if (m_showTransientAttachmentProfiler)
         {
             auto* transientStats = AZ::RHI::RHISystemInterface::Get()->GetTransientAttachmentStatistics();
@@ -111,12 +104,6 @@ namespace AtomImGuiTools
         {
             ImGui::MenuItem("Pass Viewer", "", &m_showPassTree);
             ImGui::MenuItem("Gpu Profiler", "", &m_showGpuProfiler);
-            if (ImGui::MenuItem("Cpu Profiler", "", &m_showCpuProfiler))
-            {
-                AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
-                    AZ::RHI::FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics, m_showCpuProfiler);
-                AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(m_showCpuProfiler);
-            }
             if (ImGui::MenuItem("Transient Attachment Profiler", "", &m_showTransientAttachmentProfiler))
             {
                 AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(

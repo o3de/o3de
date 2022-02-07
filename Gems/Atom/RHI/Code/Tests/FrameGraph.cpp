@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -57,7 +58,7 @@ namespace UnitTest
             FrameGraphExecuteGroup* group = AddGroup<FrameGraphExecuteGroup>();
             group->Init(scope->GetId());
 
-            const bool wasInserted = m_scopeIds.emplace(scope->GetId()).second;
+            [[maybe_unused]] const bool wasInserted = m_scopeIds.emplace(scope->GetId()).second;
             AZ_Assert(wasInserted, "scope was inserted already");
         }
     }

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "LevelBuilderComponent.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -31,7 +31,7 @@ namespace LevelBuilder
         builderDescriptor.m_patterns.emplace_back(
             AssetBuilderSDK::AssetBuilderPattern(".*\\/level\\.pak$", AssetBuilderSDK::AssetBuilderPattern::PatternType::Regex));
         builderDescriptor.m_busId = azrtti_typeid<LevelBuilderWorker>();
-        builderDescriptor.m_version = 8;
+        builderDescriptor.m_version = 9;
         builderDescriptor.m_createJobFunction =
             AZStd::bind(&LevelBuilderWorker::CreateJobs, &m_levelBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction =

@@ -1,7 +1,8 @@
 {
     "gem_name": "${Name}",
     "display_name": "${Name}",
-    "license": "What license ${Name} uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "license": "What license ${Name} uses goes here: i.e. Apache-2.0 Or MIT",
+    "license_url": "",
     "origin": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
     "type": "Asset",
     "summary": "A short description of ${Name}.",

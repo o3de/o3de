@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <Prefab/ScriptingPrefabLoader.h>
 
 namespace AZ
 {
@@ -25,6 +27,8 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class PrefabSystemComponentInterface;
+        class Template;
+        using TemplateReference = AZStd::optional<AZStd::reference_wrapper<Template>>;
 
         /**
         * The Prefab Loader helps saving/loading Prefab files.
@@ -35,6 +39,8 @@ namespace AzToolsFramework
         public:
             AZ_CLASS_ALLOCATOR(PrefabLoader, AZ::SystemAllocator, 0);
             AZ_RTTI(PrefabLoader, "{A302B072-4DC4-4B7E-9188-226F56A3429C8}", PrefabLoaderInterface);
+
+            static void Reflect(AZ::ReflectContext* context);
 
             //////////////////////////////////////////////////////////////////////////
             // PrefabLoaderInterface interface implementation
@@ -105,7 +111,21 @@ namespace AzToolsFramework
             //! Returns if the path is a valid path for a prefab
             static bool IsValidPrefabPath(AZ::IO::PathView path);
 
+            SaveAllPrefabsPreference GetSaveAllPrefabsPreference() const override;
+            void SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference) override;
+
         private:
+
+            /**
+             * Copies the template dom provided and manipulates it into the proper format to be saved to disk.
+             * @param templateRef The template whose dom we want to transform into the proper format to be saved to disk.
+             * @param[out] output The PrefabDom reference we want to store the result into.
+             * @return True if the operation was completed correctly, false otherwise.
+             */
+            bool CopyTemplateIntoPrefabFileFormat(
+                TemplateReference templateRef,
+                PrefabDom& output
+            );
 
             /**
              * Load Prefab Template from given file path to memory and return the id of loaded Template.
@@ -141,10 +161,25 @@ namespace AzToolsFramework
                 TemplateId targetTemplateId,
                 AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
 
+            /*
+             * Manipulate the provided PrefabDom into the right format to be stored in memory for editor usage.
+             * @param loadedTemplateDom The template to manipulate. Changes will be applied in place.
+             * @return True if the manipulations where applied correctly, false otherwise.
+             */
+            bool SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom);
+            
+            /*
+             * Manipulate the provided PrefabDom into the right format to be stored to disk.
+             * @param savingTemplateDom The template to manipulate. Changes will be applied in place.
+             * @return True if the manipulations where applied correctly, false otherwise.
+             */
+            bool SanitizeSavingTemplate(PrefabDomReference savingTemplateDom);
+
             //! Retrieves Dom content and its path from a template id
             AZStd::optional<AZStd::pair<PrefabDom, AZ::IO::Path>> StoreTemplateIntoFileFormat(TemplateId templateId);
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+            ScriptingPrefabLoader m_scriptingPrefabLoader;
             AZ::IO::Path m_projectPathWithOsSeparator;
             AZ::IO::Path m_projectPathWithSlashSeparator;
         };

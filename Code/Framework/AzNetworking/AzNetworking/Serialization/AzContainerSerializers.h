@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -299,6 +300,39 @@ namespace AzNetworking
             serializer.Serialize(values[2], "zValue");
             serializer.Serialize(values[3], "wValue");
             value = AZ::Quaternion::CreateFromFloat4(values);
+            return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Transform>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Transform& value)
+        {
+            AZ::Vector3 translation = value.GetTranslation();
+            AZ::Quaternion rotation = value.GetRotation();
+            float uniformScale = value.GetUniformScale();
+            serializer.Serialize(translation, "Translation");
+            serializer.Serialize(rotation, "Rotation");
+            serializer.Serialize(uniformScale, "Scale");
+            value.SetTranslation(translation);
+            value.SetRotation(rotation);
+            value.SetUniformScale(uniformScale);
+            return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Aabb>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Aabb& value)
+        {
+            AZ::Vector3 minValue = value.GetMin();
+            AZ::Vector3 maxValue = value.GetMax();
+            serializer.Serialize(minValue, "minValue");
+            serializer.Serialize(maxValue, "maxValue");
+            value.SetMin(minValue);
+            value.SetMax(maxValue);
             return serializer.IsValid();
         }
     };

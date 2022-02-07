@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include "FunctionNodeDescriptorComponent.h"
 
@@ -97,7 +97,8 @@ namespace ScriptCanvasEditor
         }
 
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-        GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, assetInfo.m_assetId, -1);
+        GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset
+            , SourceHandle( nullptr, assetInfo.m_assetId.m_guid, {} ), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
         return openOutcome.IsSuccess();
     }
 

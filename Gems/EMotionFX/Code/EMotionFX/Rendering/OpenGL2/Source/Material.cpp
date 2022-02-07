@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,7 +17,7 @@ namespace RenderGL
     // constructor
     Material::Material(GLActor* actor)
     {
-        mActor = actor;
+        m_actor = actor;
     }
 
 
@@ -51,7 +52,7 @@ namespace RenderGL
     Texture* Material::LoadTexture(const char* fileName, bool genMipMaps)
     {
         Texture*        result      = nullptr;
-        AZStd::string   filename    = mActor->GetTexturePath() + fileName;
+        AZStd::string   filename    = m_actor->GetTexturePath() + fileName;
         AZStd::string   extension;
         AzFramework::StringFunc::Path::GetExtension(fileName, extension, false /* include dot */);
 

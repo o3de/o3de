@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -42,22 +43,26 @@ namespace Multiplayer
         //! @return the hosts current timeMs
         virtual AZ::TimeMs GetHostTimeMs() const = 0;
 
+        //! Retrieves the hosts current blend factor (may be rewound on the server during backward reconciliation).
+        //! @return the hosts current blend factor
+        virtual float GetHostBlendFactor() const = 0;
+
         //! Get the controlling connection that may be currently altering global game time.
         //! Note this abstraction is required at a relatively high level to allow for 'don't rewind the shooter' semantics
         //! @return the ConnectionId of the connection requesting the rewind operation
         virtual AzNetworking::ConnectionId GetRewindingConnectionId() const = 0;
 
-        //! Get the controlling connection that may be currently altering global game time.
-        //! Note this abstraction is required at a relatively high level to allow for 'don't rewind the shooter' semantics
-        //! @param rewindConnectionId if this parameter matches the current rewindConnectionId, it will return the unaltered hostFrameId
-        //! @return the HostFrameId taking into account the provided rewinding connectionId
-        virtual HostFrameId GetHostFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const = 0;
+        //! Forcibly sets the current network time to the provided frameId and game time in milliseconds.
+        //! @param frameId the new HostFrameId to use
+        //! @param timeMs the new HostTimeMs to use
+        virtual void ForceSetTime(HostFrameId frameId, AZ::TimeMs timeMs) = 0;
 
         //! Alters the current HostFrameId and binds that alteration to the provided ConnectionId.
         //! @param frameId the new HostFrameId to use
         //! @param timeMs the new HostTimeMs to use
+        //! @param blendFactor the factor used to blend between values at the current and previous HostFrameId
         //! @param rewindConnectionId the rewinding ConnectionId 
-        virtual void AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId) = 0;
+        virtual void AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, float blendFactor, AzNetworking::ConnectionId rewindConnectionId) = 0;
 
         //! Syncs all entities contained within a volume to the current rewind state.
         //! @param rewindVolume the volume to rewind entities within (needed for physics entities)

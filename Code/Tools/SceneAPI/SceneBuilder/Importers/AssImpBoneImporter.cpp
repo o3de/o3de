@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,45 +41,6 @@ namespace AZ
                 }
             }
 
-            void MakeBoneMap(const aiScene* scene, AZStd::unordered_map<AZStd::string, const aiBone*>& boneLookup)
-            {
-                AZStd::queue<const aiNode*> queue;
-                AZStd::unordered_set<AZStd::string> nodesWithNoMesh;
-
-                queue.push(scene->mRootNode);
-
-                while (!queue.empty())
-                {
-                    const aiNode* currentNode = queue.front();
-                    queue.pop();
-
-                    if (currentNode->mNumMeshes == 0)
-                    {
-                        nodesWithNoMesh.emplace(currentNode->mName.C_Str());
-                    }
-
-                    for (int childIndex = 0; childIndex < currentNode->mNumChildren; ++childIndex)
-                    {
-                        queue.push(currentNode->mChildren[childIndex]);
-                    }
-                }
-
-                for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
-                {
-                    const aiMesh* mesh = scene->mMeshes[meshIndex];
-
-                    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
-                    {
-                        const aiBone* bone = mesh->mBones[boneIndex];
-
-                        if (nodesWithNoMesh.contains(bone->mName.C_Str()))
-                        {
-                            boneLookup.emplace(bone->mName.C_Str(), bone);
-                        }
-                    }
-                }
-            }
-
             aiMatrix4x4 CalculateWorldTransform(const aiNode* currentNode)
             {
                 aiMatrix4x4 transform = {};
@@ -105,44 +67,42 @@ namespace AZ
                     return Events::ProcessingResult::Ignored;
                 }
 
-                bool isBone = false;
-                
+                AZStd::unordered_multimap<AZStd::string, const aiBone*> boneByNameMap;
+                FindAllBones(scene, boneByNameMap);
+
+                bool isBone = FindFirstBoneByNodeName(currentNode, boneByNameMap);
+                if (!isBone)
                 {
-                    AZStd::unordered_map<AZStd::string, const aiBone*> boneLookup;
-                    MakeBoneMap(scene, boneLookup);
-
-                    isBone = boneLookup.contains(currentNode->mName.C_Str());
-
-                    // If we have an animation, the bones will be listed in there
-                    if (!isBone)
+                    for(unsigned animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
                     {
-                        for(unsigned animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
+                        aiAnimation* animation = scene->mAnimations[animIndex];
+
+                        for (unsigned channelIndex = 0; channelIndex < animation->mNumChannels; ++channelIndex)
                         {
-                            aiAnimation* animation = scene->mAnimations[animIndex];
+                            aiNodeAnim* nodeAnim = animation->mChannels[channelIndex];
 
-                            for (unsigned channelIndex = 0; channelIndex < animation->mNumChannels; ++channelIndex)
+                            if (nodeAnim->mNodeName == currentNode->mName)
                             {
-                                aiNodeAnim* nodeAnim = animation->mChannels[channelIndex];
-
-                                if (nodeAnim->mNodeName == currentNode->mName)
-                                {
-                                    isBone = true;
-                                    break;
-                                }
-                            }
-
-                            if (isBone)
-                            {
+                                isBone = true;
                                 break;
                             }
                         }
+
+                        if (isBone)
+                        {
+                            break;
+                        }
+                    }
+
+                    // In case any of the children, or children of children is a bone, make sure to not skip this node.
+                    // Don't do this for the scene root itself, else wise all mesh nodes will be exported as bones and pollute the skeleton.
+                    if (currentNode != scene->mRootNode &&
+                        RecursiveHasChildBone(currentNode, boneByNameMap))
+                    {
+                        isBone = true;
                     }
                 }
 
-                if(!isBone)
-                {
-                    return Events::ProcessingResult::Ignored;
-                }
 
                 // If the current scene node (our eventual parent) contains bone data, we are not a root bone
                 AZStd::shared_ptr<SceneData::GraphData::BoneData> createdBoneData;

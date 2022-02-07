@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
@@ -15,6 +17,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <Atom/RPI.Reflect/Shader/IShaderVariantFinder.h>
+#include <Atom/RPI.Public/Shader/ShaderSystem.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
@@ -22,25 +25,53 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ShaderAsset::DisplayName = "Shader";
-        const char* ShaderAsset::Extension = "azshader";
-        const char* ShaderAsset::Group = "Shader";
+        const ShaderVariantStableId ShaderAsset::RootShaderVariantStableId{0};
 
-        const ShaderVariantStableId ShaderAsset::RootShaderVariantStableId{ 0 };
+        static constexpr uint32_t SubProductTypeBitPosition = 0;
+        static constexpr uint32_t SubProductTypeNumBits = SupervariantIndexBitPosition - SubProductTypeBitPosition;
+        [[maybe_unused]] static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
 
-        uint32_t ShaderAsset::MakeAssetProductSubId(uint32_t rhiApiUniqueIndex, uint32_t subProductType)
+        static_assert(RhiIndexMaxValue == RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
+
+        uint32_t ShaderAsset::MakeProductAssetSubId(
+            uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType)
         {
-            static constexpr uint32_t SubProductTypeBitPosition = 0;
-            static constexpr uint32_t SubProductTypeNumBits = RhiIndexBitPosition - SubProductTypeBitPosition;
-            static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
-
-            static_assert(RhiIndexMaxValue == RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
             AZ_Assert(rhiApiUniqueIndex <= RhiIndexMaxValue, "Invalid rhiApiUniqueIndex [%u]", rhiApiUniqueIndex);
+            AZ_Assert(supervariantIndex <= SupervariantIndexMaxValue, "Invalid supervariantIndex [%u]", supervariantIndex);
             AZ_Assert(subProductType <= SubProductTypeMaxValue, "Invalid subProductType [%u]", subProductType);
 
             const uint32_t assetProductSubId = (rhiApiUniqueIndex << RhiIndexBitPosition) |
-                (subProductType << SubProductTypeBitPosition);
+                (supervariantIndex << SupervariantIndexBitPosition) | (subProductType << SubProductTypeBitPosition);
             return assetProductSubId;
+        }
+
+        SupervariantIndex ShaderAsset::GetSupervariantIndexFromProductAssetSubId(uint32_t assetProducSubId)
+        {
+            const uint32_t supervariantIndex = assetProducSubId >> SupervariantIndexBitPosition;
+            return SupervariantIndex{supervariantIndex & SupervariantIndexMaxValue};
+        }
+
+        SupervariantIndex ShaderAsset::GetSupervariantIndexFromAssetId(const Data::AssetId& assetId)
+        {
+            return GetSupervariantIndexFromProductAssetSubId(assetId.m_subId);
+        }
+
+        void ShaderAsset::Supervariant::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<Supervariant>()
+                    ->Version(1)
+                    ->Field("Name", &Supervariant::m_name)
+                    ->Field("SrgLayoutList", &Supervariant::m_srgLayoutList)
+                    ->Field("PipelineLayout", &Supervariant::m_pipelineLayoutDescriptor)
+                    ->Field("InputContract", &Supervariant::m_inputContract)
+                    ->Field("OutputContract", &Supervariant::m_outputContract)
+                    ->Field("RenderStates", &Supervariant::m_renderStates)
+                    ->Field("AttributeMapList", &Supervariant::m_attributeMaps)
+                    ->Field("RootVariantAsset", &Supervariant::m_rootShaderVariantAsset)
+                    ;
+            }
         }
 
         void ShaderAsset::ShaderApiDataContainer::Reflect(AZ::ReflectContext* context)
@@ -48,37 +79,35 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderApiDataContainer>()
-                    ->Version(5)
+                    ->Version(1)
                     ->Field("APIType", &ShaderApiDataContainer::m_APIType)
-                    ->Field("PipelineLayoutDescriptor", &ShaderApiDataContainer::m_pipelineLayoutDescriptor)
-                    ->Field("RootShaderVariantAsset", &ShaderApiDataContainer::m_rootShaderVariantAsset)
-                    ->Field("AttributeMaps", &ShaderApiDataContainer::m_attributeMaps)
+                    ->Field("Supervariants", &ShaderApiDataContainer::m_supervariants)
                     ;
             }
         }
 
         void ShaderAsset::Reflect(ReflectContext* context)
         {
+            Supervariant::Reflect(context);
+
+            ShaderApiDataContainer::Reflect(context);
+
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderAsset>()
-                    ->Version(6)
+                    ->Version(1)
                     ->Field("name", &ShaderAsset::m_name)
                     ->Field("pipelineStateType", &ShaderAsset::m_pipelineStateType)
-                    ->Field("shaderResourceGroupAssets", &ShaderAsset::m_shaderResourceGroupAssets)
                     ->Field("shaderOptionGroupLayout", &ShaderAsset::m_shaderOptionGroupLayout)
-                    ->Field("perAPIShaderData", &ShaderAsset::m_perAPIShaderData)
                     ->Field("drawListName", &ShaderAsset::m_drawListName)
                     ->Field("shaderAssetBuildTimestamp", &ShaderAsset::m_shaderAssetBuildTimestamp)
+                    ->Field("perAPIShaderData", &ShaderAsset::m_perAPIShaderData)
                     ;
             }
-
-            ShaderApiDataContainer::Reflect(context);
         }
 
         ShaderAsset::~ShaderAsset()
         {
-            Data::AssetBus::Handler::BusDisconnect();
             ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
             AssetInitBus::Handler::BusDisconnect();
         }
@@ -88,27 +117,76 @@ namespace AZ
             return m_name;
         }
 
-        Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariant(const ShaderVariantId& shaderVariantId)
+        RHI::PipelineStateType ShaderAsset::GetPipelineStateType() const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            return m_pipelineStateType;
+        }
 
+        const ShaderOptionGroupLayout* ShaderAsset::GetShaderOptionGroupLayout() const
+        {
+            AZ_Assert(m_shaderOptionGroupLayout, "m_shaderOptionGroupLayout is null");
+            return m_shaderOptionGroupLayout.get();
+        }
+
+        const Name& ShaderAsset::GetDrawListName() const
+        {
+            return m_drawListName;
+        }
+
+        AZStd::sys_time_t ShaderAsset::GetShaderAssetBuildTimestamp() const
+        {
+            return m_shaderAssetBuildTimestamp;
+        }
+
+        void ShaderAsset::SetReady()
+        {
+            m_status = AssetStatus::Ready;
+        }
+
+
+        SupervariantIndex ShaderAsset::GetSupervariantIndex(const AZ::Name& supervariantName) const
+        {
+            SupervariantIndex supervariantIndex = InvalidSupervariantIndex;
+
+            // check for an RPI ShaderSystem supervariant
+            RPI::ShaderSystemInterface* shaderSystemInterface = ShaderSystemInterface::Get();
+            if (shaderSystemInterface && !shaderSystemInterface->GetSupervariantName().IsEmpty())
+            {
+                // search for the combined requested name and system supervariant name
+                // Note: the shader may not support this supervariant, if it doesn't we will
+                // fallback to the requested name below
+                AZStd::string combinedName = supervariantName.GetCStr();
+                combinedName.append(shaderSystemInterface->GetSupervariantName().GetCStr());
+                supervariantIndex = GetSupervariantIndexInternal(AZ::Name(combinedName));
+            }
+
+            if (supervariantIndex == InvalidSupervariantIndex)
+            {
+                // search for the requested name
+                supervariantIndex = GetSupervariantIndexInternal(supervariantName);
+            }
+
+            return supervariantIndex;
+        }
+
+        Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariant(
+            const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex)
+        {
             auto variantFinder = AZ::Interface<IShaderVariantFinder>::Get();
             AZ_Assert(variantFinder, "The IShaderVariantFinder doesn't exist");
 
-            Data::Asset<ShaderVariantAsset> shaderVariantAsset = variantFinder->GetShaderVariantAssetByVariantId(
-                Data::Asset<ShaderAsset>(this, Data::AssetLoadBehavior::Default), shaderVariantId);
+            Data::Asset<ShaderAsset> thisAsset(this, Data::AssetLoadBehavior::Default);
+            Data::Asset<ShaderVariantAsset> shaderVariantAsset =
+                variantFinder->GetShaderVariantAssetByVariantId(thisAsset, shaderVariantId, supervariantIndex);
             if (!shaderVariantAsset)
             {
-                variantFinder->QueueLoadShaderVariantAssetByVariantId(
-                    Data::Asset<ShaderAsset>(this, Data::AssetLoadBehavior::Default), shaderVariantId);
+                variantFinder->QueueLoadShaderVariantAssetByVariantId(thisAsset, shaderVariantId, supervariantIndex);
             }
             return shaderVariantAsset;
         }
 
         ShaderVariantSearchResult ShaderAsset::FindVariantStableId(const ShaderVariantId& shaderVariantId)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
             uint32_t dynamicOptionCount = aznumeric_cast<uint32_t>(GetShaderOptionGroupLayout()->GetShaderOptions().size());
             ShaderVariantSearchResult variantSearchResult{RootShaderVariantStableId,  dynamicOptionCount };
 
@@ -148,16 +226,18 @@ namespace AZ
             return m_shaderVariantTree->FindVariantStableId(GetShaderOptionGroupLayout(), shaderVariantId);
         }
 
-        Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariant(ShaderVariantStableId shaderVariantStableId) const
+        Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariant(
+            ShaderVariantStableId shaderVariantStableId, SupervariantIndex supervariantIndex) const
         {
             if (!shaderVariantStableId.IsValid() || shaderVariantStableId == RootShaderVariantStableId)
             {
-                return GetRootVariant();
+                return GetRootVariant(supervariantIndex);
             }
 
             auto variantFinder = AZ::Interface<IShaderVariantFinder>::Get();
             AZ_Assert(variantFinder, "No Variant Finder For shaderAsset with name [%s] and stableId [%u]", GetName().GetCStr(), shaderVariantStableId.GetIndex());
-            Data::Asset<ShaderVariantAsset> variant = variantFinder->GetShaderVariantAsset(m_shaderVariantTree.GetId(), shaderVariantStableId);
+            Data::Asset<ShaderVariantAsset> variant =
+                variantFinder->GetShaderVariantAsset(m_shaderVariantTree.GetId(), shaderVariantStableId, supervariantIndex);
             if (!variant.IsReady())
             {
                 // Enqueue a request to load the variant, next time around the caller will get the asset.
@@ -171,11 +251,11 @@ namespace AZ
                 }
                 if (variantTreeAssetId.IsValid())
                 {
-                    variantFinder->QueueLoadShaderVariantAsset(variantTreeAssetId, shaderVariantStableId);
+                    variantFinder->QueueLoadShaderVariantAsset(variantTreeAssetId, shaderVariantStableId, supervariantIndex);
                 }
-                return GetRootVariant();
+                return GetRootVariant(supervariantIndex);
             }
-            else if (variant->GetShaderAssetBuildTimestamp() == m_shaderAssetBuildTimestamp)
+            else if (variant->GetBuildTimestamp() >= m_shaderAssetBuildTimestamp)
             {
                 return variant;
             }
@@ -183,99 +263,184 @@ namespace AZ
             {
                 // When rebuilding shaders we may be in a state where the ShaderAsset and root ShaderVariantAsset have been rebuilt and reloaded, but some (or all)
                 // shader variants haven't been built yet. Since we want to use the latest version of the shader code, ignore the old variants and fall back to the newer root variant instead.
-                AZ_Warning("ShaderAsset", false, "ShaderAsset and ShaderVariantAsset are out of sync; defaulting to root shader variant. (This is common while reloading shaders).");
-                return GetRootVariant();
+                return GetRootVariant(supervariantIndex);
             }
         }
 
-        Data::Asset<ShaderVariantAsset> ShaderAsset::GetRootVariant() const
+        Data::Asset<ShaderVariantAsset> ShaderAsset::GetRootVariant(SupervariantIndex supervariantIndex) const
         {
-            return GetCurrentShaderApiData().m_rootShaderVariantAsset;
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return Data::Asset<ShaderVariantAsset>();
+            }
+            return supervariant->m_rootShaderVariantAsset;
         }
 
-        const Data::Asset<ShaderResourceGroupAsset>& ShaderAsset::FindShaderResourceGroupAsset(const Name& shaderResourceGroupName) const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& ShaderAsset::FindShaderResourceGroupLayout(
+            const Name& shaderResourceGroupName, SupervariantIndex supervariantIndex) const
         {
-            const auto findIt = AZStd::find_if(m_shaderResourceGroupAssets.begin(), m_shaderResourceGroupAssets.end(), [&](const Data::Asset<ShaderResourceGroupAsset>& asset)
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return RHI::NullSrgLayout;
+            }
+            const auto& srgLayoutList = supervariant->m_srgLayoutList;
+            const auto findIt = AZStd::find_if(srgLayoutList.begin(), srgLayoutList.end(), [&](const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
                 {
-                    return asset->GetName() == shaderResourceGroupName;
+                    return layout->GetName() == shaderResourceGroupName;
                 });
 
-            if (findIt != m_shaderResourceGroupAssets.end())
+            if (findIt != srgLayoutList.end())
             {
                 return *findIt;
             }
 
-            static const Data::Asset<ShaderResourceGroupAsset> s_nullAsset;
-            return s_nullAsset;
+            return RHI::NullSrgLayout;
         }
 
-        const Data::Asset<ShaderResourceGroupAsset>& ShaderAsset::FindShaderResourceGroupAsset(uint32_t bindingSlot) const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& ShaderAsset::FindShaderResourceGroupLayout(const Name& shaderResourceGroupName) const
         {
-            const auto findIt = AZStd::find_if(m_shaderResourceGroupAssets.begin(), m_shaderResourceGroupAssets.end(), [&](const Data::Asset<ShaderResourceGroupAsset>& asset)
+            SupervariantIndex supervariantIndex = DefaultSupervariantIndex;
+
+            // check for an RPI ShaderSystem specified supervariant
+            // Note: we can just search for the system supervariant name, since the default supervariant is "", so no need to append
+            RPI::ShaderSystemInterface* shaderSystemInterface = ShaderSystemInterface::Get();
+            if (shaderSystemInterface && !shaderSystemInterface->GetSupervariantName().IsEmpty())
+            {
+                SupervariantIndex systemSupervariantIndex = GetSupervariantIndexInternal(shaderSystemInterface->GetSupervariantName());
+                if (systemSupervariantIndex.IsValid())
                 {
-                    const auto layout = asset->GetLayout();
+                    supervariantIndex = systemSupervariantIndex;
+                }
+            }
+
+            return FindShaderResourceGroupLayout(shaderResourceGroupName, supervariantIndex);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& ShaderAsset::FindShaderResourceGroupLayout(
+            uint32_t bindingSlot, SupervariantIndex supervariantIndex) const
+        {
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return RHI::NullSrgLayout;
+            }
+            const auto& srgLayoutList = supervariant->m_srgLayoutList;
+            const auto findIt =
+                AZStd::find_if(srgLayoutList.begin(), srgLayoutList.end(), [&](const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
+                {
                     return layout && layout->GetBindingSlot() == bindingSlot;
                 });
 
-            if (findIt != m_shaderResourceGroupAssets.end())
+            if (findIt != srgLayoutList.end())
             {
                 return *findIt;
             }
 
-            static const Data::Asset<ShaderResourceGroupAsset> s_nullAsset;
-            return s_nullAsset;
+            return RHI::NullSrgLayout;
         }
 
-        const Data::Asset<ShaderResourceGroupAsset>& ShaderAsset::FindFallbackShaderResourceGroupAsset() const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& ShaderAsset::FindShaderResourceGroupLayout(uint32_t bindingSlot) const
         {
-            const auto findIt = AZStd::find_if(m_shaderResourceGroupAssets.begin(), m_shaderResourceGroupAssets.end(), [&](const Data::Asset<ShaderResourceGroupAsset>& asset)
+            SupervariantIndex supervariantIndex = DefaultSupervariantIndex;
+
+            // check for an RPI ShaderSystem specified supervariant
+            // Note: we can just search for the system supervariant name, since the default supervariant is "", so no need to append
+            RPI::ShaderSystemInterface* shaderSystemInterface = ShaderSystemInterface::Get();
+            if (shaderSystemInterface && !shaderSystemInterface->GetSupervariantName().IsEmpty())
+            {
+                SupervariantIndex systemSupervariantIndex = GetSupervariantIndexInternal(shaderSystemInterface->GetSupervariantName());
+                if (systemSupervariantIndex.IsValid())
                 {
-                    const auto layout = asset->GetLayout();
+                    supervariantIndex = systemSupervariantIndex;
+                }
+            }
+
+            return FindShaderResourceGroupLayout(bindingSlot, supervariantIndex);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& ShaderAsset::FindFallbackShaderResourceGroupLayout(
+            SupervariantIndex supervariantIndex) const
+        {
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return RHI::NullSrgLayout;
+            }
+            const auto& srgLayoutList = supervariant->m_srgLayoutList;
+            const auto findIt =
+                AZStd::find_if(srgLayoutList.begin(), srgLayoutList.end(), [&](const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
+                {
                     return layout && layout->HasShaderVariantKeyFallbackEntry();
                 });
 
-            if (findIt != m_shaderResourceGroupAssets.end())
+            if (findIt != srgLayoutList.end())
             {
                 return *findIt;
             }
 
-            static const Data::Asset<ShaderResourceGroupAsset> s_nullAsset;
-            return s_nullAsset;
+            return RHI::NullSrgLayout;
         }
 
-        AZStd::array_view<Data::Asset<ShaderResourceGroupAsset>> ShaderAsset::GetShaderResourceGroupAssets() const
+        AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> ShaderAsset::GetShaderResourceGroupLayouts(
+            SupervariantIndex supervariantIndex) const
         {
-            return m_shaderResourceGroupAssets;
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return {};
+            }
+            return supervariant->m_srgLayoutList;
         }
 
-        RHI::PipelineStateType ShaderAsset::GetPipelineStateType() const
+        
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& ShaderAsset::GetDrawSrgLayout(SupervariantIndex supervariantIndex) const
         {
-            return m_pipelineStateType;
+            return FindShaderResourceGroupLayout(SrgBindingSlot::Draw, supervariantIndex);
         }
 
-        const RHI::PipelineLayoutDescriptor* ShaderAsset::GetPipelineLayoutDescriptor() const
+        const ShaderInputContract& ShaderAsset::GetInputContract(SupervariantIndex supervariantIndex) const
         {
-            AZ_Assert(GetCurrentShaderApiData().m_pipelineLayoutDescriptor, "m_pipelineLayoutDescriptor is null");
-            return GetCurrentShaderApiData().m_pipelineLayoutDescriptor.get();
+            auto supervariant = GetSupervariant(supervariantIndex);
+            return supervariant->m_inputContract;
         }
 
-        const ShaderOptionGroupLayout* ShaderAsset::GetShaderOptionGroupLayout() const
+        const ShaderOutputContract& ShaderAsset::GetOutputContract(SupervariantIndex supervariantIndex) const
         {
-            AZ_Assert(m_shaderOptionGroupLayout, "m_shaderOptionGroupLayout is null");
-            return m_shaderOptionGroupLayout.get();
+            auto supervariant = GetSupervariant(supervariantIndex);
+            return supervariant->m_outputContract;
         }
 
-        const AZ::Data::Asset<ShaderResourceGroupAsset>& ShaderAsset::GetDrawSrgAsset() const
+        const RHI::RenderStates& ShaderAsset::GetRenderStates(SupervariantIndex supervariantIndex) const
         {
-            return FindShaderResourceGroupAsset(SrgBindingSlot::Draw);
+            auto supervariant = GetSupervariant(supervariantIndex);
+            return supervariant->m_renderStates;
         }
 
-        AZStd::optional<RHI::ShaderStageAttributeArguments> ShaderAsset::GetAttribute(const RHI::ShaderStage& shaderStage, const Name& attributeName) const
+        const RHI::PipelineLayoutDescriptor* ShaderAsset::GetPipelineLayoutDescriptor(SupervariantIndex supervariantIndex) const
         {
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return nullptr;
+            }
+            AZ_Assert(supervariant->m_pipelineLayoutDescriptor, "m_pipelineLayoutDescriptor is null");
+            return supervariant->m_pipelineLayoutDescriptor.get();
+        }
+
+        AZStd::optional<RHI::ShaderStageAttributeArguments> ShaderAsset::GetAttribute(const RHI::ShaderStage& shaderStage, const Name& attributeName,
+            SupervariantIndex supervariantIndex) const
+        {
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return AZStd::nullopt;
+            }
             const auto stageIndex = static_cast<uint32_t>(shaderStage);
             AZ_Assert(stageIndex < RHI::ShaderStageCount, "Invalid shader stage specified!");
 
-            const auto& attributeMaps = GetCurrentShaderApiData().m_attributeMaps;
+            const auto& attributeMaps = supervariant->m_attributeMaps;
             const auto& attrPair = attributeMaps[stageIndex].find(attributeName);
             if (attrPair == attributeMaps[stageIndex].end())
             {
@@ -283,21 +448,6 @@ namespace AZ
             }
 
             return attrPair->second;
-        }
-
-        const Name& ShaderAsset::GetDrawListName() const
-        {
-            return m_drawListName;
-        }
-
-        AZStd::sys_time_t ShaderAsset::GetShaderAssetBuildTimestamp() const
-        {
-            return m_shaderAssetBuildTimestamp;
-        }
-
-        void ShaderAsset::SetReady()
-        {
-            m_status = AssetStatus::Ready;
         }
 
         ShaderAsset::ShaderApiDataContainer& ShaderAsset::GetCurrentShaderApiData()
@@ -327,7 +477,51 @@ namespace AZ
             // We may only endup here when running in a Builder context.
             return m_perAPIShaderData[0];
         }
-        
+
+        ShaderAsset::Supervariant* ShaderAsset::GetSupervariant(SupervariantIndex supervariantIndex)
+        {
+            auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            auto index = supervariantIndex.GetIndex();
+            if (index >= supervariants.size())
+            {
+                AZ_Error(
+                    "ShaderAsset", false, "Supervariant index = %u is invalid because there are only %zu supervariants", index,
+                    supervariants.size());
+                return nullptr;
+            }
+
+            return &supervariants[index];
+        }
+
+        const ShaderAsset::Supervariant* ShaderAsset::GetSupervariant(SupervariantIndex supervariantIndex) const
+        {
+            const auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            auto index = supervariantIndex.GetIndex();
+            if (index >= supervariants.size())
+            {
+                AZ_Error(
+                    "ShaderAsset", false, "Supervariant index = %u is invalid because there are only %zu supervariants", index,
+                    supervariants.size());
+                return nullptr;
+            }
+
+            return &supervariants[index];
+        }
+
+        SupervariantIndex ShaderAsset::GetSupervariantIndexInternal(AZ::Name supervariantName) const
+        {
+            const auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            const uint32_t supervariantCount = static_cast<uint32_t>(supervariants.size());
+            for (uint32_t index = 0; index < supervariantCount; ++index)
+            {
+                if (supervariants[index].m_name == supervariantName)
+                {
+                    return SupervariantIndex{ index };
+                }
+            }
+            return InvalidSupervariantIndex;
+        }
+
         bool ShaderAsset::SelectShaderApiData()
         {
             // Use the current RHI that is active to select which shader data to use.
@@ -358,11 +552,15 @@ namespace AZ
             // Common finalize check
             for (const auto& shaderApiData : m_perAPIShaderData)
             {
-                bool beTrue = shaderApiData.m_attributeMaps.size() == RHI::ShaderStageCount;
-                if (!beTrue)
+                const auto& supervariants = shaderApiData.m_supervariants;
+                for (const auto& supervariant : supervariants)
                 {
-                    AZ_Error("ShaderAsset", false, "Unexpected number of shader stages!");
-                    return false;
+                    bool beTrue = supervariant.m_attributeMaps.size() == RHI::ShaderStageCount;
+                    if (!beTrue)
+                    {
+                        AZ_Error("ShaderAsset", false, "Unexpected number of shader stages at supervariant with name [%s]!", supervariant.m_name.GetCStr());
+                        return false;
+                    }
                 }
             }
 
@@ -371,45 +569,16 @@ namespace AZ
 
         bool ShaderAsset::PostLoadInit()
         {
-            // Once the ShaderAsset is loaded, it is necessary to listen for changes in the Root Variant Asset.
-            Data::AssetBus::Handler::BusConnect(GetRootVariant().GetId());
             ShaderVariantFinderNotificationBus::Handler::BusConnect(GetId());
-                        
             AssetInitBus::Handler::BusDisconnect();
-
             return true;
         }
-        
-        void ShaderAsset::ReinitializeRootShaderVariant(Data::Asset<Data::AssetData> asset)
-        {
-            Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
-            AZ_Assert(shaderVariantAsset->GetStableId() == RootShaderVariantStableId, "Was expecting to update the root variant");
-            GetCurrentShaderApiData().m_rootShaderVariantAsset = asset;
-            ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad } );
-        }
 
-        ///////////////////////////////////////////////////////////////////////
-        // AssetBus overrides...
-        void ShaderAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
-        {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
-            ReinitializeRootShaderVariant(asset);
-        }
-        void ShaderAsset::OnAssetReady(Data::Asset<Data::AssetData> asset)
-        {
-            // We have to listen to OnAssetReady, OnAssetReloaded isn't enough, because of the following scenario:
-            // The user changes a .shader file, which causes the AP to rebuild the ShaderAsset and root ShaderVariantAsset.
-            // 1) Thread A creates the new ShaderAsset, loads it, and gets the old ShaderVariantAsset.
-            // 2) Thread B creates the new ShaderVariantAsset, loads it, and calls OnAssetReloaded.
-            // 3) Main thread calls ShaderAsset::PostLoadInit which connects to the AssetBus but it's too late to receive OnAssetReloaded, 
-            //    so it continues using the old ShaderVariantAsset instead of the new one.
-            // The OnAssetReady bus function is called automatically whenever a connection to AssetBus is made, so listening to this gives
-            // us the opportunity to assign the appropriate ShaderVariantAsset.
 
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderAsset::OnAssetReady %s", this, asset.GetHint().c_str());
-            ReinitializeRootShaderVariant(asset);
+        void ShaderAsset::UpdateRootShaderVariantAsset(SupervariantIndex supervariantIndex, Data::Asset<ShaderVariantAsset> newRootVariant)
+        {
+            GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()].m_rootShaderVariantAsset = newRootVariant;
         }
-        ///////////////////////////////////////////////////////////////////////
         
         ///////////////////////////////////////////////////////////////////
         /// ShaderVariantFinderNotificationBus overrides
@@ -428,7 +597,6 @@ namespace AZ
                 m_shaderVariantTree = shaderVariantTreeAsset;
             }
             lock.unlock();
-            ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad });
         }
 
         ///////////////////////////////////////////////////////////////////

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,13 +24,13 @@ namespace EMotionFX
         MOCK_CONST_METHOD1(RecursiveFindNodeById, AnimGraphNode*(AnimGraphNodeId));
         MOCK_CONST_METHOD1(RecursiveFindTransitionById, AnimGraphStateTransition*(AnimGraphConnectionId));
         MOCK_CONST_METHOD2(RecursiveCollectNodesOfType, void(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>* outNodes));
-        MOCK_CONST_METHOD2(RecursiveCollectTransitionConditionsOfType, void(const AZ::TypeId& conditionType, MCore::Array<AnimGraphTransitionCondition*>* outConditions));
+        MOCK_CONST_METHOD2(RecursiveCollectTransitionConditionsOfType, void(const AZ::TypeId& conditionType, AZStd::vector<AnimGraphTransitionCondition*>* outConditions));
         MOCK_METHOD2(RecursiveCollectObjectsOfType, void(const AZ::TypeId& objectType, AZStd::vector<AnimGraphObject*>& outObjects));
         MOCK_METHOD2(RecursiveCollectObjectsAffectedBy, void(AnimGraph* animGraph, AZStd::vector<AnimGraphObject*>& outObjects));
         //uint32 RecursiveCalcNumNodes() const;
         //void RecursiveCalcStatistics(Statistics& outStatistics) const;
         //uint32 RecursiveCalcNumNodeConnections() const;
-        //void DecreaseInternalAttributeIndices(uint32 decreaseEverythingHigherThan);
+        //void DecreaseInternalAttributeIndices(size_t decreaseEverythingHigherThan);
         //AZStd::string GenerateNodeName(const AZStd::unordered_set<AZStd::string>& nameReserveList, const char* prefix = "Node") const;
         MOCK_CONST_METHOD0(GetNumParameters, size_t());
         MOCK_CONST_METHOD0(GetNumValueParameters, size_t());

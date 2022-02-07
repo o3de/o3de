@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,7 +41,7 @@ namespace UnitTest
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
         AZStd::unique_ptr<Instance> wheel2UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
         AZStd::unique_ptr<Instance> axleInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(wheel1UnderAxle), AZStd::move(wheel2UnderAxle) ), AxlePrefabMockFilePath);
+            MakeInstanceList(AZStd::move(wheel1UnderAxle), AZStd::move(wheel2UnderAxle)), AxlePrefabMockFilePath);
         const TemplateId axleTemplateId = axleInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> wheelInstanceAliasesUnderAxle = axleInstance->GetNestedInstanceAliases(wheelTemplateId);
         PrefabDom& axleTemplateDom = m_prefabSystemComponent->FindTemplateDom(axleTemplateId);
@@ -50,7 +51,7 @@ namespace UnitTest
         AZStd::unique_ptr<Instance> axle2UnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance> spareWheelUnderCar = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
         AZStd::unique_ptr<Instance> carInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(axle1UnderCar), AZStd::move(axle2UnderCar), AZStd::move(spareWheelUnderCar) ), CarPrefabMockFilePath);
+            MakeInstanceList(AZStd::move(axle1UnderCar), AZStd::move(axle2UnderCar), AZStd::move(spareWheelUnderCar)), CarPrefabMockFilePath);
         const TemplateId carTemplateId = carInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         const AZStd::vector<InstanceAlias> wheelInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(wheelTemplateId);
@@ -92,7 +93,7 @@ namespace UnitTest
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
         AZStd::unique_ptr<Instance> axleInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(wheel1UnderAxle) ), AxlePrefabMockFilePath);
+            MakeInstanceList(AZStd::move(wheel1UnderAxle)), AxlePrefabMockFilePath);
         const TemplateId axleTemplateId = axleInstance->GetTemplateId();
         PrefabDom& axleTemplateDom = m_prefabSystemComponent->FindTemplateDom(axleTemplateId);
         AZStd::vector<InstanceAlias> wheelInstanceAliasesUnderAxle = axleInstance->GetNestedInstanceAliases(wheelTemplateId);
@@ -104,7 +105,7 @@ namespace UnitTest
         AZStd::unique_ptr<Instance> axle1UnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance> axle2UnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance>  carInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(axle1UnderCar), AZStd::move(axle2UnderCar) ), CarPrefabMockFilePath);
+            MakeInstanceList(AZStd::move(axle1UnderCar), AZStd::move(axle2UnderCar)), CarPrefabMockFilePath);
         const TemplateId carTemplateId = carInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         PrefabDom& carTemplateDom = m_prefabSystemComponent->FindTemplateDom(carTemplateId);
@@ -145,12 +146,12 @@ namespace UnitTest
         EntityAlias entityAlias = wheelTemplateEntityAliases.front();
         PrefabDomValue* wheelEntityComponents =
             PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
-        ASSERT_TRUE(wheelEntityComponents == nullptr);
+        ASSERT_TRUE(wheelEntityComponents->IsArray() && wheelEntityComponents->Size() == 0);
 
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
         AZStd::unique_ptr<Instance> axleInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(wheel1UnderAxle) ), AxlePrefabMockFilePath);
+            MakeInstanceList(AZStd::move(wheel1UnderAxle)), AxlePrefabMockFilePath);
         const TemplateId axleTemplateId = axleInstance->GetTemplateId();
         PrefabDom& axleTemplateDom = m_prefabSystemComponent->FindTemplateDom(axleTemplateId);
         const AZStd::vector<InstanceAlias> wheelInstanceAliasesUnderAxle = axleInstance->GetNestedInstanceAliases(wheelTemplateId);
@@ -158,7 +159,7 @@ namespace UnitTest
         // Create a car with 0 entities and 1 axle instance.
         AZStd::unique_ptr<Instance> axleUnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance>  carInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(axleUnderCar) ), CarPrefabMockFilePath);
+            MakeInstanceList(AZStd::move(axleUnderCar)), CarPrefabMockFilePath);
         const TemplateId carTemplateId = carInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         PrefabDom& carTemplateDom = m_prefabSystemComponent->FindTemplateDom(carTemplateId);
@@ -204,7 +205,7 @@ namespace UnitTest
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
         AZStd::unique_ptr<Instance> axleInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(wheel1UnderAxle) ), AxlePrefabMockFilePath);
+            MakeInstanceList(AZStd::move(wheel1UnderAxle)), AxlePrefabMockFilePath);
         const TemplateId axleTemplateId = axleInstance->GetTemplateId();
         PrefabDom& axleTemplateDom = m_prefabSystemComponent->FindTemplateDom(axleTemplateId);
         const AZStd::vector<InstanceAlias> wheelInstanceAliasesUnderAxle = axleInstance->GetNestedInstanceAliases(wheelTemplateId);
@@ -212,7 +213,7 @@ namespace UnitTest
         // Create a car with 0 entities and 1 axle instance.
         AZStd::unique_ptr<Instance> axleUnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance> carInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(axleUnderCar) ), CarPrefabMockFilePath);
+            MakeInstanceList(AZStd::move(axleUnderCar)), CarPrefabMockFilePath);
         const TemplateId carTemplateId = carInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         PrefabDom& carTemplateDom = m_prefabSystemComponent->FindTemplateDom(carTemplateId);
@@ -252,7 +253,7 @@ namespace UnitTest
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
         AZStd::unique_ptr<Instance> wheel2UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
         AZStd::unique_ptr<Instance> axleInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(wheel1UnderAxle), AZStd::move(wheel2UnderAxle) ),
+            MakeInstanceList(AZStd::move(wheel1UnderAxle), AZStd::move(wheel2UnderAxle) ),
             AxlePrefabMockFilePath);
         const TemplateId axleTemplateId = axleInstance->GetTemplateId();
         PrefabDom& axleTemplateDom = m_prefabSystemComponent->FindTemplateDom(axleTemplateId);
@@ -264,7 +265,7 @@ namespace UnitTest
         // Create a car with 0 entities and 1 axle instance.
         AZStd::unique_ptr<Instance> axle1UnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance> carInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(axle1UnderCar) ), CarPrefabMockFilePath);
+            MakeInstanceList(AZStd::move(axle1UnderCar)), CarPrefabMockFilePath);
         const TemplateId carTemplateId = carInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         PrefabDom& carTemplateDom = m_prefabSystemComponent->FindTemplateDom(carTemplateId);
@@ -273,6 +274,7 @@ namespace UnitTest
         InstanceAlias aliasOfWheelInstanceToRetain = wheelInstanceAliasesUnderAxle.front();
         AZStd::unique_ptr<Instance> detachedInstance = axleInstance->DetachNestedInstance(wheelInstanceAliasesUnderAxle.back());
         ASSERT_TRUE(detachedInstance);
+        m_prefabSystemComponent->RemoveLink(detachedInstance->GetLinkId());
         PrefabDom updatedAxleInstanceDom;
         ASSERT_TRUE(PrefabDomUtils::StoreInstanceInPrefabDom(*axleInstance, updatedAxleInstanceDom));
         m_prefabSystemComponent->UpdatePrefabTemplate(axleTemplateId, updatedAxleInstanceDom);
@@ -318,7 +320,7 @@ namespace UnitTest
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
         AZStd::unique_ptr<Instance> axleInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(wheel1UnderAxle) ), AxlePrefabMockFilePath);
+            MakeInstanceList(AZStd::move(wheel1UnderAxle)), AxlePrefabMockFilePath);
         const TemplateId axleTemplateId = axleInstance->GetTemplateId();
         PrefabDom& axleTemplateDom = m_prefabSystemComponent->FindTemplateDom(axleTemplateId);
         const AZStd::vector<InstanceAlias> wheelInstanceAliasesUnderAxle = axleInstance->GetNestedInstanceAliases(wheelTemplateId);
@@ -326,7 +328,7 @@ namespace UnitTest
         // Create a car with 0 entities and 1 axle instance.
         AZStd::unique_ptr<Instance> axleUnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance> carInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(axleUnderCar) ), CarPrefabMockFilePath);
+            MakeInstanceList(AZStd::move(axleUnderCar)), CarPrefabMockFilePath);
         const TemplateId carTemplateId = carInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         PrefabDom& carTemplateDom = m_prefabSystemComponent->FindTemplateDom(carTemplateId);
@@ -340,7 +342,7 @@ namespace UnitTest
 
         // Validate that the wheel entity does not have a component under it.
         wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
-        ASSERT_TRUE(wheelEntityComponents == nullptr);
+        ASSERT_TRUE(wheelEntityComponents->IsArray() && wheelEntityComponents->Size() == 0);
 
         // Validate that the wheels under the axle have the same DOM as the wheel template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(wheelInstanceAliasesUnderAxle, axleTemplateDom, wheelTemplateDom);
@@ -379,7 +381,7 @@ namespace UnitTest
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
         AZStd::unique_ptr<Instance> axleInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(wheel1UnderAxle) ), AxlePrefabMockFilePath);
+            MakeInstanceList(AZStd::move(wheel1UnderAxle)), AxlePrefabMockFilePath);
         const TemplateId axleTemplateId = axleInstance->GetTemplateId();
         PrefabDom& axleTemplateDom = m_prefabSystemComponent->FindTemplateDom(axleTemplateId);
         const AZStd::vector<InstanceAlias> wheelInstanceAliasesUnderAxle = axleInstance->GetNestedInstanceAliases(wheelTemplateId);
@@ -387,7 +389,7 @@ namespace UnitTest
         // Create a car with 0 entities and 1 axle instance.
         AZStd::unique_ptr<Instance> axleUnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance> carInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(axleUnderCar) ), CarPrefabMockFilePath);
+            MakeInstanceList(AZStd::move(axleUnderCar)), CarPrefabMockFilePath);
         const TemplateId carTemplateId = carInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         PrefabDom& carTemplateDom = m_prefabSystemComponent->FindTemplateDom(carTemplateId);
@@ -399,15 +401,14 @@ namespace UnitTest
         m_prefabSystemComponent->UpdatePrefabTemplate(wheelTemplateId, updatedWheelInstanceDom);
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
-        // Validate that the prefabTestComponent in the wheel template DOM doesn't have a BoolProperty.
-        // Even though we changed the property to false, it won't be serialized out because it's a default value.
+        // Validate that the BoolProperty of the prefabTestComponent in the wheel template DOM is set to false.
         wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
         ASSERT_TRUE(wheelEntityComponents != nullptr && wheelEntityComponents->IsObject());
         EXPECT_EQ(wheelEntityComponents->MemberCount(), 1);
 
         PrefabDomValueReference wheelEntityComponentBoolPropertyValue =
             PrefabDomUtils::FindPrefabDomValue(wheelEntityComponents->MemberBegin()->value, PrefabTestDomUtils::BoolPropertyName);
-        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue.has_value());
+        ASSERT_TRUE(wheelEntityComponentBoolPropertyValue.has_value() && wheelEntityComponentBoolPropertyValue->get() == false);
 
         // Validate that the wheels under the axle have the same DOM as the wheel template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(wheelInstanceAliasesUnderAxle, axleTemplateDom, wheelTemplateDom);

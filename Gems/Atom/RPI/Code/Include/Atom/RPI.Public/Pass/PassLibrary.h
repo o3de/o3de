@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -83,8 +84,8 @@ namespace AZ
             bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath);
             bool LoadPassTemplateMappings(Data::Asset<AnyAsset> mappingAsset);
 
-            //! Returns a list of passes found in the pass name mapping using the provided pass filter
-            AZStd::vector<Pass*> FindPasses(const PassFilter& passFilter) const;
+            //! Visit each pass which matches the filter
+            void ForEachPass(const PassFilter& passFilter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction);
 
         private:
 

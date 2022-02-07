@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,21 +22,26 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(ScreenHeader)
     QT_FORWARD_DECLARE_CLASS(UpdateProjectSettingsScreen)
     QT_FORWARD_DECLARE_CLASS(GemCatalogScreen)
+    QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
 
-    class UpdateProjectCtrl : public ScreenWidget
+    class UpdateProjectCtrl
+        : public ScreenWidget
     {
+        Q_OBJECT
     public:
         explicit UpdateProjectCtrl(QWidget* parent = nullptr);
         ~UpdateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-    protected:
+        bool ContainsScreen(ProjectManagerScreen screen) override;
+        void GoToScreen(ProjectManagerScreen screen) override;
         void NotifyCurrentScreen() override;
 
     protected slots:
         void HandleBackButton();
         void HandleNextButton();
         void HandleGemsButton();
+        void OnChangeScreenRequest(ProjectManagerScreen screen);
         void UpdateCurrentProject(const QString& projectPath);
 
     private:
@@ -46,13 +52,15 @@ namespace O3DE::ProjectManager
         enum ScreenOrder
         {
             Settings,
-            Gems
+            Gems,
+            GemRepos
         };
 
         ScreenHeader* m_header = nullptr;
         QStackedWidget* m_stack = nullptr;
         UpdateProjectSettingsScreen* m_updateSettingsScreen = nullptr;
         GemCatalogScreen* m_gemCatalogScreen = nullptr;
+        GemRepoScreen* m_gemRepoScreen = nullptr;
 
         QPushButton* m_backButton = nullptr;
         QPushButton* m_nextButton = nullptr;

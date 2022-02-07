@@ -1,13 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include "RotateManipulator.h"
 #include <MCore/Source/AzCoreConversions.h>
-
+#include <MCore/Source/PlaneEq.h>
 
 namespace MCommon
 {
@@ -15,10 +16,10 @@ namespace MCommon
     RotateManipulator::RotateManipulator(float scalingFactor, bool isVisible)
         : TransformationManipulator(scalingFactor, isVisible)
     {
-        mMode               = ROTATE_NONE;
-        mRotation           = AZ::Vector3::CreateZero();
-        mRotationQuat       = AZ::Quaternion::CreateIdentity();
-        mClickPosition      = AZ::Vector3::CreateZero();
+        m_mode               = ROTATE_NONE;
+        m_rotation           = AZ::Vector3::CreateZero();
+        m_rotationQuat       = AZ::Quaternion::CreateIdentity();
+        m_clickPosition      = AZ::Vector3::CreateZero();
     }
 
 
@@ -33,35 +34,35 @@ namespace MCommon
     {
         MCORE_UNUSED(camera);
 
-        // adjust the mSize when in ortho mode
-        mSize           = mScalingFactor;
-        mInnerRadius    = 0.15f * mSize;
-        mOuterRadius    = 0.2f * mSize;
-        mArrowBaseRadius = mInnerRadius / 70.0f;
-        mAABBWidth      = mInnerRadius / 30.0f;// previous 70.0f
-        mAxisSize       = mSize * 0.05f;
-        mTextDistance   = mSize * 0.05f;
-        mInnerQuadSize  = 0.45f * MCore::Math::Sqrt(2) * mInnerRadius;
+        // adjust the m_size when in ortho mode
+        m_size           = m_scalingFactor;
+        m_innerRadius    = 0.15f * m_size;
+        m_outerRadius    = 0.2f * m_size;
+        m_arrowBaseRadius = m_innerRadius / 70.0f;
+        m_aabbWidth      = m_innerRadius / 30.0f;// previous 70.0f
+        m_axisSize       = m_size * 0.05f;
+        m_textDistance   = m_size * 0.05f;
+        m_innerQuadSize  = 0.45f * MCore::Math::Sqrt(2) * m_innerRadius;
 
         // set the bounding volumes of the axes selection
-        mXAxisAABB.SetMax(mPosition + AZ::Vector3(mAABBWidth, mInnerRadius, mInnerRadius));
-        mXAxisAABB.SetMin(mPosition - AZ::Vector3(mAABBWidth, mInnerRadius, mInnerRadius));
-        mYAxisAABB.SetMax(mPosition + AZ::Vector3(mInnerRadius, mAABBWidth, mInnerRadius));
-        mYAxisAABB.SetMin(mPosition - AZ::Vector3(mInnerRadius, mAABBWidth, mInnerRadius));
-        mZAxisAABB.SetMax(mPosition + AZ::Vector3(mInnerRadius, mInnerRadius, mAABBWidth));
-        mZAxisAABB.SetMin(mPosition - AZ::Vector3(mInnerRadius, mInnerRadius, mAABBWidth));
-        mXAxisInnerAABB.SetMax(mPosition + AZ::Vector3(mAABBWidth, mInnerQuadSize, mInnerQuadSize));
-        mXAxisInnerAABB.SetMin(mPosition - AZ::Vector3(mAABBWidth, mInnerQuadSize, mInnerQuadSize));
-        mYAxisInnerAABB.SetMax(mPosition + AZ::Vector3(mInnerQuadSize, mAABBWidth, mInnerQuadSize));
-        mYAxisInnerAABB.SetMin(mPosition - AZ::Vector3(mInnerQuadSize, mAABBWidth, mInnerQuadSize));
-        mZAxisInnerAABB.SetMax(mPosition + AZ::Vector3(mInnerQuadSize, mInnerQuadSize, mAABBWidth));
-        mZAxisInnerAABB.SetMin(mPosition - AZ::Vector3(mInnerQuadSize, mInnerQuadSize, mAABBWidth));
+        m_xAxisAabb.SetMax(m_position + AZ::Vector3(m_aabbWidth, m_innerRadius, m_innerRadius));
+        m_xAxisAabb.SetMin(m_position - AZ::Vector3(m_aabbWidth, m_innerRadius, m_innerRadius));
+        m_yAxisAabb.SetMax(m_position + AZ::Vector3(m_innerRadius, m_aabbWidth, m_innerRadius));
+        m_yAxisAabb.SetMin(m_position - AZ::Vector3(m_innerRadius, m_aabbWidth, m_innerRadius));
+        m_zAxisAabb.SetMax(m_position + AZ::Vector3(m_innerRadius, m_innerRadius, m_aabbWidth));
+        m_zAxisAabb.SetMin(m_position - AZ::Vector3(m_innerRadius, m_innerRadius, m_aabbWidth));
+        m_xAxisInnerAabb.SetMax(m_position + AZ::Vector3(m_aabbWidth, m_innerQuadSize, m_innerQuadSize));
+        m_xAxisInnerAabb.SetMin(m_position - AZ::Vector3(m_aabbWidth, m_innerQuadSize, m_innerQuadSize));
+        m_yAxisInnerAabb.SetMax(m_position + AZ::Vector3(m_innerQuadSize, m_aabbWidth, m_innerQuadSize));
+        m_yAxisInnerAabb.SetMin(m_position - AZ::Vector3(m_innerQuadSize, m_aabbWidth, m_innerQuadSize));
+        m_zAxisInnerAabb.SetMax(m_position + AZ::Vector3(m_innerQuadSize, m_innerQuadSize, m_aabbWidth));
+        m_zAxisInnerAabb.SetMin(m_position - AZ::Vector3(m_innerQuadSize, m_innerQuadSize, m_aabbWidth));
 
         // set the bounding spheres for inner and outer circle modifiers
-        mInnerBoundingSphere.SetCenter(mPosition);
-        mInnerBoundingSphere.SetRadius(mInnerRadius);
-        mOuterBoundingSphere.SetCenter(mPosition);
-        mOuterBoundingSphere.SetRadius(mOuterRadius);
+        m_innerBoundingSphere.SetCenter(m_position);
+        m_innerBoundingSphere.SetRadius(m_innerRadius);
+        m_outerBoundingSphere.SetCenter(m_position);
+        m_outerBoundingSphere.SetRadius(m_outerRadius);
     }
 
 
@@ -81,7 +82,7 @@ namespace MCommon
         MCore::Ray mousePosRay  = camera->Unproject(mousePosX, mousePosY);
 
         // check if mouse ray hits the outer sphere of the manipulator
-        if (mousePosRay.Intersects(mOuterBoundingSphere))
+        if (mousePosRay.Intersects(m_outerBoundingSphere))
         {
             return true;
         }
@@ -108,14 +109,14 @@ namespace MCommon
         MCore::Ray camRay = camera->Unproject(screenWidth / 2, screenHeight / 2);
         AZ::Vector3 camDir = camRay.GetDirection();
 
-        mSignX = (MCore::Math::ACos(camDir.Dot(AZ::Vector3(1.0f, 0.0f, 0.0f))) >= MCore::Math::halfPi) ? 1.0f : -1.0f;
-        mSignY = (MCore::Math::ACos(camDir.Dot(AZ::Vector3(0.0f, 1.0f, 0.0f))) >= MCore::Math::halfPi) ? 1.0f : -1.0f;
-        mSignZ = (MCore::Math::ACos(camDir.Dot(AZ::Vector3(0.0f, 0.0f, 1.0f))) >= MCore::Math::halfPi) ? 1.0f : -1.0f;
+        m_signX = (MCore::Math::ACos(camDir.Dot(AZ::Vector3(1.0f, 0.0f, 0.0f))) >= MCore::Math::halfPi) ? 1.0f : -1.0f;
+        m_signY = (MCore::Math::ACos(camDir.Dot(AZ::Vector3(0.0f, 1.0f, 0.0f))) >= MCore::Math::halfPi) ? 1.0f : -1.0f;
+        m_signZ = (MCore::Math::ACos(camDir.Dot(AZ::Vector3(0.0f, 0.0f, 1.0f))) >= MCore::Math::halfPi) ? 1.0f : -1.0f;
 
         // determine the axis visibility, to disable movement for invisible axes
-        mXAxisVisible = (MCore::InRange(MCore::Math::Abs(camDir.Dot(AZ::Vector3(1.0f, 0.0f, 0.0f))) - 1.0f, -MCore::Math::epsilon, MCore::Math::epsilon) == false);
-        mYAxisVisible = (MCore::InRange(MCore::Math::Abs(camDir.Dot(AZ::Vector3(0.0f, 1.0f, 0.0f))) - 1.0f, -MCore::Math::epsilon, MCore::Math::epsilon) == false);
-        mZAxisVisible = (MCore::InRange(MCore::Math::Abs(camDir.Dot(AZ::Vector3(0.0f, 0.0f, 1.0f))) - 1.0f, -MCore::Math::epsilon, MCore::Math::epsilon) == false);
+        m_xAxisVisible = (MCore::InRange(MCore::Math::Abs(camDir.Dot(AZ::Vector3(1.0f, 0.0f, 0.0f))) - 1.0f, -MCore::Math::epsilon, MCore::Math::epsilon) == false);
+        m_yAxisVisible = (MCore::InRange(MCore::Math::Abs(camDir.Dot(AZ::Vector3(0.0f, 1.0f, 0.0f))) - 1.0f, -MCore::Math::epsilon, MCore::Math::epsilon) == false);
+        m_zAxisVisible = (MCore::InRange(MCore::Math::Abs(camDir.Dot(AZ::Vector3(0.0f, 0.0f, 1.0f))) - 1.0f, -MCore::Math::epsilon, MCore::Math::epsilon) == false);
 
         // update the bounding volumes
         UpdateBoundingVolumes();
@@ -126,12 +127,12 @@ namespace MCommon
     void RotateManipulator::Render(MCommon::Camera* camera, RenderUtil* renderUtil)
     {
         // return if no render util is set
-        if (renderUtil == nullptr || camera == nullptr || mIsVisible == false)
+        if (renderUtil == nullptr || camera == nullptr || m_isVisible == false)
         {
             return;
         }
 
-        // set mSize variables for the gizmo
+        // set m_size variables for the gizmo
         const uint32 screenWidth    = camera->GetScreenWidth();
         const uint32 screenHeight   = camera->GetScreenHeight();
 
@@ -142,14 +143,13 @@ namespace MCommon
         MCore::RGBAColor blueTransparent    = MCore::RGBAColor(0.0, 0.0, 0.762f, 0.2f);
         MCore::RGBAColor greyTransparent    = MCore::RGBAColor(0.5f, 0.5f, 0.5f, 0.3f);
 
-        MCore::RGBAColor xAxisColor         = (mMode == ROTATE_X)           ?   ManipulatorColors::mSelectionColor : ManipulatorColors::mRed;
-        MCore::RGBAColor yAxisColor         = (mMode == ROTATE_Y)           ?   ManipulatorColors::mSelectionColor : ManipulatorColors::mGreen;
-        MCore::RGBAColor zAxisColor         = (mMode == ROTATE_Z)           ?   ManipulatorColors::mSelectionColor : ManipulatorColors::mBlue;
-        MCore::RGBAColor camRollAxisColor   = (mMode == ROTATE_CAMROLL)     ?   ManipulatorColors::mSelectionColor : grey;
-        //MCore::RGBAColor camPitchYawColor = (mMode == ROTATE_CAMPITCHYAW) ?   ManipulatorColors::mSelectionColor : grey;
+        MCore::RGBAColor xAxisColor         = (m_mode == ROTATE_X)           ?   ManipulatorColors::s_selectionColor : ManipulatorColors::s_red;
+        MCore::RGBAColor yAxisColor         = (m_mode == ROTATE_Y)           ?   ManipulatorColors::s_selectionColor : ManipulatorColors::s_green;
+        MCore::RGBAColor zAxisColor         = (m_mode == ROTATE_Z)           ?   ManipulatorColors::s_selectionColor : ManipulatorColors::s_blue;
+        MCore::RGBAColor camRollAxisColor   = (m_mode == ROTATE_CAMROLL)     ?   ManipulatorColors::s_selectionColor : grey;
 
         // render axis in the center of the rotation gizmo
-        renderUtil->RenderAxis(mAxisSize, mPosition, AZ::Vector3(1.0f, 0.0f, 0.0f), AZ::Vector3(0.0f, 1.0f, 0.0f), AZ::Vector3(0.0f, 0.0f, 1.0f));
+        renderUtil->RenderAxis(m_axisSize, m_position, AZ::Vector3(1.0f, 0.0f, 0.0f), AZ::Vector3(0.0f, 1.0f, 0.0f), AZ::Vector3(0.0f, 0.0f, 1.0f));
 
         // shoot rays to the plane, to get upwards pointing vector on the plane
         // used for the text positioning and the angle visualization for the view rotation axis
@@ -158,7 +158,7 @@ namespace MCommon
         AZ::Vector3     camRollAxis = originRay.GetDirection();
 
         // calculate the plane perpendicular to the view rotation axis
-        MCore::PlaneEq rotationPlane(originRay.GetDirection(), mPosition);
+        MCore::PlaneEq rotationPlane(originRay.GetDirection(), m_position);
 
         // get the intersection points of the rays and the plane
         AZ::Vector3 originRayIntersect, upVecRayIntersect;
@@ -176,66 +176,43 @@ namespace MCommon
         camViewMat.InvertFull();
 
         // set the translation part of the matrix
-        camViewMat.SetTranslation(mPosition);
+        camViewMat.SetTranslation(m_position);
 
         // render the view axis rotation manipulator
         const AZ::Transform camViewTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
             AZ::Matrix3x3::CreateFromMatrix4x4(camViewMat), camViewMat.GetTranslation());
-        renderUtil->RenderCircle(camViewTransform, mOuterRadius, 64, camRollAxisColor);
-        renderUtil->RenderCircle(camViewTransform, mInnerRadius, 64, grey);
+        renderUtil->RenderCircle(camViewTransform, m_outerRadius, 64, camRollAxisColor);
+        renderUtil->RenderCircle(camViewTransform, m_innerRadius, 64, grey);
 
-        if (mMode == ROTATE_CAMPITCHYAW)
+        if (m_mode == ROTATE_CAMPITCHYAW)
         {
-            renderUtil->RenderCircle(camViewTransform, mInnerRadius, 64, grey, 0.0f, MCore::Math::twoPi, true, greyTransparent);
+            renderUtil->RenderCircle(camViewTransform, m_innerRadius, 64, grey, 0.0f, MCore::Math::twoPi, true, greyTransparent);
         }
-
-        // handle the rotation around the camera roll axis
-        /*
-        if (mMode == ROTATE_CAMROLL)
-        {
-            // calculate angle of the click position to the reference directions
-            const float angleUp     = Math::ACos( mClickPosition.Dot(upVector) );
-            const float angleLeft   = Math::ACos( mClickPosition.Dot(leftVector) );
-
-            // rotate the whole circle around pi, if rotation is in the negative direction
-            if (mRotation.Dot(mRotationAxis) < 0)
-                camViewMat = camViewMat * camViewMat.RotationMatrixAxisAngle( upVector, Math::pi );
-
-            // handle different dot product results (necessary because dot product only handles a range of [0, pi])
-            if (angleLeft > Math::halfPi)
-                camViewMat = camViewMat * camViewMat.RotationMatrixAxisAngle( mRotationAxis, -angleUp );
-            else
-                camViewMat = camViewMat * camViewMat.RotationMatrixAxisAngle( mRotationAxis, angleUp );
-
-            // render the rotated circle segment to represent the current rotation angle around the view axis
-            renderUtil->RenderCircle( camViewMat, mOuterRadius, 64, ManipulatorColors::mSelectionColor, 0.0f, mRotation.Length(), true, greyTransparent );
-        }
-        */
 
         // calculate the signs of the rotation and the angle between the axes and the click position
-        const float signX = (mRotation.GetX() >= 0) ? 1.0f : -1.0f;
-        const float signY = (mRotation.GetY() >= 0) ? 1.0f : -1.0f;
-        const float signZ = (mRotation.GetZ() >= 0) ? 1.0f : -1.0f;
-        const float angleX = MCore::Math::ACos(mClickPosition.Dot(AZ::Vector3(1.0f, 0.0f, 0.0f)));
-        const float angleY = MCore::Math::ACos(mClickPosition.Dot(AZ::Vector3(0.0f, 1.0f, 0.0f)));
-        const float angleZ = MCore::Math::ACos(mClickPosition.Dot(AZ::Vector3(0.0f, 0.0f, 1.0f)));
+        const float signX = (m_rotation.GetX() >= 0) ? 1.0f : -1.0f;
+        const float signY = (m_rotation.GetY() >= 0) ? 1.0f : -1.0f;
+        const float signZ = (m_rotation.GetZ() >= 0) ? 1.0f : -1.0f;
+        const float angleX = MCore::Math::ACos(m_clickPosition.Dot(AZ::Vector3(1.0f, 0.0f, 0.0f)));
+        const float angleY = MCore::Math::ACos(m_clickPosition.Dot(AZ::Vector3(0.0f, 1.0f, 0.0f)));
+        const float angleZ = MCore::Math::ACos(m_clickPosition.Dot(AZ::Vector3(0.0f, 0.0f, 1.0f)));
 
         // transformation matrix for the circle for rotation around the x axis
         AZ::Transform rotMatrixX = MCore::GetRotationMatrixAxisAngle(AZ::Vector3(0.0f, 1.0f, 0.0f), signX * MCore::Math::halfPi);
 
         // set the translation part of the matrix
-        rotMatrixX.SetTranslation(mPosition);
+        rotMatrixX.SetTranslation(m_position);
 
         // render the circle for the rotation around the x axis
-        if (mMode == ROTATE_X)
+        if (m_mode == ROTATE_X)
         {
-            renderUtil->RenderCircle(rotMatrixX, mInnerRadius, 64, grey);
+            renderUtil->RenderCircle(rotMatrixX, m_innerRadius, 64, grey);
         }
 
-        renderUtil->RenderCircle(rotMatrixX, mInnerRadius, 64, xAxisColor, 0.0f, MCore::Math::twoPi, false, MCore::RGBAColor(), true, camRollAxis);
+        renderUtil->RenderCircle(rotMatrixX, m_innerRadius, 64, xAxisColor, 0.0f, MCore::Math::twoPi, false, MCore::RGBAColor(), true, camRollAxis);
 
         // draw current angle if in x rotation mode
-        if (mMode == ROTATE_X)
+        if (m_mode == ROTATE_X)
         {
             // handle different dot product results (necessary because dot product only handles a range of [0, pi])
             if (angleZ > MCore::Math::halfPi)
@@ -248,28 +225,28 @@ namespace MCommon
             }
 
             // set the translation part of the matrix
-            rotMatrixX.SetTranslation(mPosition);
+            rotMatrixX.SetTranslation(m_position);
 
             // render the rotated circle segment to represent the current rotation angle around the x axis
-            renderUtil->RenderCircle(rotMatrixX, mInnerRadius, 64, ManipulatorColors::mSelectionColor, 0.0f, MCore::Math::Abs(mRotation.GetX()), true, redTransparent, true, camRollAxis);
+            renderUtil->RenderCircle(rotMatrixX, m_innerRadius, 64, ManipulatorColors::s_selectionColor, 0.0f, MCore::Math::Abs(m_rotation.GetX()), true, redTransparent, true, camRollAxis);
         }
 
         // rotation matrix for rotation around the y axis
         AZ::Transform rotMatrixY = MCore::GetRotationMatrixAxisAngle(AZ::Vector3(1.0f, 0.0f, 0.0f), MCore::Math::halfPi);
 
         // set the translation part of the matrix
-        rotMatrixY.SetTranslation(mPosition);
+        rotMatrixY.SetTranslation(m_position);
 
         // render the circle for rotation around the y axis
-        if (mMode == ROTATE_Y)
+        if (m_mode == ROTATE_Y)
         {
-            renderUtil->RenderCircle(rotMatrixY, mInnerRadius, 64, grey);
+            renderUtil->RenderCircle(rotMatrixY, m_innerRadius, 64, grey);
         }
 
-        renderUtil->RenderCircle(rotMatrixY, mInnerRadius, 64, yAxisColor, 0.0f, MCore::Math::twoPi, false, MCore::RGBAColor(), true, camRollAxis);
+        renderUtil->RenderCircle(rotMatrixY, m_innerRadius, 64, yAxisColor, 0.0f, MCore::Math::twoPi, false, MCore::RGBAColor(), true, camRollAxis);
 
         // draw current angle if in y rotation mode
-        if (mMode == ROTATE_Y)
+        if (m_mode == ROTATE_Y)
         {
             // render current rotation angle depending on the dot product results calculated above
             if (signY > 0)
@@ -292,28 +269,28 @@ namespace MCommon
             }
 
             // set the translation part of the matrix
-            rotMatrixY.SetTranslation(mPosition);
+            rotMatrixY.SetTranslation(m_position);
 
             // render the rotated circle segment to represent the current rotation angle around the y axis
-            renderUtil->RenderCircle(rotMatrixY, mInnerRadius, 64, ManipulatorColors::mSelectionColor, 0.0f, MCore::Math::Abs(mRotation.GetY()), true, greenTransparent, true, camRollAxis);
+            renderUtil->RenderCircle(rotMatrixY, m_innerRadius, 64, ManipulatorColors::s_selectionColor, 0.0f, MCore::Math::Abs(m_rotation.GetY()), true, greenTransparent, true, camRollAxis);
         }
 
         // the circle for rotation around the z axis
         AZ::Transform rotMatrixZ = AZ::Transform::CreateIdentity();
 
         // set the translation part of the matrix
-        rotMatrixZ.SetTranslation(mPosition);
+        rotMatrixZ.SetTranslation(m_position);
 
         // render the circle for rotation around the z axis
-        if (mMode == ROTATE_Z)
+        if (m_mode == ROTATE_Z)
         {
-            renderUtil->RenderCircle(rotMatrixZ, mInnerRadius, 64, grey);
+            renderUtil->RenderCircle(rotMatrixZ, m_innerRadius, 64, grey);
         }
 
-        renderUtil->RenderCircle(rotMatrixZ, mInnerRadius, 64, zAxisColor, 0.0f, MCore::Math::twoPi, false, MCore::RGBAColor(), true, camRollAxis);
+        renderUtil->RenderCircle(rotMatrixZ, m_innerRadius, 64, zAxisColor, 0.0f, MCore::Math::twoPi, false, MCore::RGBAColor(), true, camRollAxis);
 
         // draw current angle if in z rotation mode
-        if (mMode == ROTATE_Z)
+        if (m_mode == ROTATE_Z)
         {
             // render current rotation angle depending on the dot product results calculated above
             if (signZ < 0.0f)
@@ -336,56 +313,56 @@ namespace MCommon
             }
 
             // set the translation part of the matrix
-            rotMatrixZ.SetTranslation(mPosition);
+            rotMatrixZ.SetTranslation(m_position);
 
             // render the rotated circle segment to represent the current rotation angle around the z axis
-            renderUtil->RenderCircle(rotMatrixZ, mInnerRadius, 64, ManipulatorColors::mSelectionColor, 0.0f, MCore::Math::Abs(mRotation.GetZ()), true, blueTransparent, true, camRollAxis);
+            renderUtil->RenderCircle(rotMatrixZ, m_innerRadius, 64, ManipulatorColors::s_selectionColor, 0.0f, MCore::Math::Abs(m_rotation.GetZ()), true, blueTransparent, true, camRollAxis);
         }
 
         // break if in different projection mode and camera roll rotation mode
-        if (mCurrentProjectionMode != camera->GetProjectionMode() && mMode == ROTATE_CAMROLL)
+        if (m_currentProjectionMode != camera->GetProjectionMode() && m_mode == ROTATE_CAMROLL)
         {
             return;
         }
 
         // render the absolute rotation if gizmo is hit
-        if (mMode != ROTATE_NONE)
+        if (m_mode != ROTATE_NONE)
         {
-            const AZ::Vector3 currRot = MCore::AzQuaternionToEulerAngles(mCallback->GetCurrValueQuat());
-            mTempString = AZStd::string::format("Abs. Rotation X: %.3f, Y: %.3f, Z: %.3f", MCore::Math::RadiansToDegrees(currRot.GetX() + MCore::Math::epsilon), MCore::Math::RadiansToDegrees(currRot.GetY() + MCore::Math::epsilon), MCore::Math::RadiansToDegrees(currRot.GetZ() + MCore::Math::epsilon));
-            renderUtil->RenderText(10, 10, mTempString.c_str(), ManipulatorColors::mSelectionColor, 9.0f);
+            const AZ::Vector3 currRot = MCore::AzQuaternionToEulerAngles(m_callback->GetCurrValueQuat());
+            m_tempString = AZStd::string::format("Abs. Rotation X: %.3f, Y: %.3f, Z: %.3f", MCore::Math::RadiansToDegrees(currRot.GetX() + MCore::Math::epsilon), MCore::Math::RadiansToDegrees(currRot.GetY() + MCore::Math::epsilon), MCore::Math::RadiansToDegrees(currRot.GetZ() + MCore::Math::epsilon));
+            renderUtil->RenderText(10, 10, m_tempString.c_str(), ManipulatorColors::s_selectionColor, 9.0f);
         }
 
         // if the rotation has been changed draw the current direction of the rotation
-        if (mRotation.GetLength() > 0.0f)
+        if (m_rotation.GetLength() > 0.0f)
         {
             // render text with the rotation values of the axes
-            float radius = (mMode == ROTATE_CAMROLL) ? mOuterRadius : mInnerRadius;
-            mTempString = AZStd::string::format("[%.2f, %.2f, %.2f]", MCore::Math::RadiansToDegrees(mRotation.GetX()), MCore::Math::RadiansToDegrees(mRotation.GetY()), MCore::Math::RadiansToDegrees(mRotation.GetZ()));
+            float radius = (m_mode == ROTATE_CAMROLL) ? m_outerRadius : m_innerRadius;
+            m_tempString = AZStd::string::format("[%.2f, %.2f, %.2f]", MCore::Math::RadiansToDegrees(m_rotation.GetX()), MCore::Math::RadiansToDegrees(m_rotation.GetY()), MCore::Math::RadiansToDegrees(m_rotation.GetZ()));
             //String rotationValues = String() = AZStd::string::format("[%.2f, %.2f, %.2f]", camera->GetPosition().x, camera->GetPosition().y, camera->GetPosition().z);
-            AZ::Vector3 textPosition = MCore::Project(mPosition + (upVector * (mOuterRadius + mTextDistance)), camera->GetViewProjMatrix(), screenWidth, screenHeight);
-            renderUtil->RenderText(textPosition.GetX() - 2.9f * mTempString.size(), textPosition.GetY(), mTempString.c_str(), ManipulatorColors::mSelectionColor);
+            AZ::Vector3 textPosition = MCore::Project(m_position + (upVector * (m_outerRadius + m_textDistance)), camera->GetViewProjMatrix(), screenWidth, screenHeight);
+            renderUtil->RenderText(textPosition.GetX() - 2.9f * m_tempString.size(), textPosition.GetY(), m_tempString.c_str(), ManipulatorColors::s_selectionColor);
 
             // mark the click position with a small cube
-            AZ::Vector3 clickPosition = mPosition + mClickPosition * radius;
+            AZ::Vector3 clickPosition = m_position + m_clickPosition * radius;
 
             // calculate the tangent at the click position
-            MCore::RGBAColor rotDirColorNegative = (mRotation.Dot(mRotationAxis) > 0.0f) ? ManipulatorColors::mSelectionColor : grey;
-            MCore::RGBAColor rotDirColorPositive = (mRotation.Dot(mRotationAxis) < 0.0f) ? ManipulatorColors::mSelectionColor : grey;
+            MCore::RGBAColor rotDirColorNegative = (m_rotation.Dot(m_rotationAxis) > 0.0f) ? ManipulatorColors::s_selectionColor : grey;
+            MCore::RGBAColor rotDirColorPositive = (m_rotation.Dot(m_rotationAxis) < 0.0f) ? ManipulatorColors::s_selectionColor : grey;
 
             // render the tangent directions at the click positions
-            AZ::Vector3 tangent = mRotationAxis.Cross(mClickPosition).GetNormalized();
-            renderUtil->RenderLine(clickPosition, clickPosition + 1.5f * mAxisSize * tangent, rotDirColorPositive);
-            renderUtil->RenderLine(clickPosition, clickPosition - 1.5f * mAxisSize * tangent, rotDirColorNegative);
-            renderUtil->RenderCylinder(2.0f * mArrowBaseRadius, 0.0f, 0.5f * mAxisSize, clickPosition + 1.5f * mAxisSize * tangent, tangent, rotDirColorPositive);
-            renderUtil->RenderCylinder(2.0f * mArrowBaseRadius, 0.0f, 0.5f * mAxisSize, clickPosition - 1.5f * mAxisSize * tangent, -tangent, rotDirColorNegative);
+            AZ::Vector3 tangent = m_rotationAxis.Cross(m_clickPosition).GetNormalized();
+            renderUtil->RenderLine(clickPosition, clickPosition + 1.5f * m_axisSize * tangent, rotDirColorPositive);
+            renderUtil->RenderLine(clickPosition, clickPosition - 1.5f * m_axisSize * tangent, rotDirColorNegative);
+            renderUtil->RenderCylinder(2.0f * m_arrowBaseRadius, 0.0f, 0.5f * m_axisSize, clickPosition + 1.5f * m_axisSize * tangent, tangent, rotDirColorPositive);
+            renderUtil->RenderCylinder(2.0f * m_arrowBaseRadius, 0.0f, 0.5f * m_axisSize, clickPosition - 1.5f * m_axisSize * tangent, -tangent, rotDirColorNegative);
         }
         else
         {
-            if (mName.size() > 0)
+            if (m_name.size() > 0)
             {
-                AZ::Vector3 textPosition = MCore::Project(mPosition + (upVector * (mOuterRadius + mTextDistance)), camera->GetViewProjMatrix(), screenWidth, screenHeight);
-                renderUtil->RenderText(textPosition.GetX(), textPosition.GetY(), mName.c_str(), ManipulatorColors::mSelectionColor, 11.0f, true);
+                AZ::Vector3 textPosition = MCore::Project(m_position + (upVector * (m_outerRadius + m_textDistance)), camera->GetViewProjMatrix(), screenWidth, screenHeight);
+                renderUtil->RenderText(textPosition.GetX(), textPosition.GetY(), m_name.c_str(), ManipulatorColors::s_selectionColor, 11.0f, true);
             }
         }
     }
@@ -398,7 +375,7 @@ namespace MCommon
         MCORE_UNUSED(middleButtonPressed);
 
         // check if camera has been set
-        if (camera == nullptr || mIsVisible == false || (leftButtonPressed && rightButtonPressed))
+        if (camera == nullptr || m_isVisible == false || (leftButtonPressed && rightButtonPressed))
         {
             return;
         }
@@ -406,7 +383,7 @@ namespace MCommon
         // update the axis visibility flags
         UpdateAxisDirections(camera);
 
-        // get screen mSize
+        // get screen m_size
         uint32 screenWidth  = camera->GetScreenWidth();
         uint32 screenHeight = camera->GetScreenHeight();
 
@@ -415,15 +392,15 @@ namespace MCommon
         //MCore::Ray mousePrevPosRay    = camera->Unproject( mousePosX-mouseMovementX, mousePosY-mouseMovementY );
         MCore::Ray camRollRay           = camera->Unproject(screenWidth / 2, screenHeight / 2);
         AZ::Vector3 camRollAxis         = camRollRay.GetDirection();
-        mRotationQuat                   = AZ::Quaternion::CreateIdentity();
+        m_rotationQuat                   = AZ::Quaternion::CreateIdentity();
 
         // check for the selected axis/plane
-        if (mSelectionLocked == false || mMode == ROTATE_NONE)
+        if (m_selectionLocked == false || m_mode == ROTATE_NONE)
         {
             // update old rotation of the callback
-            if (mCallback)
+            if (m_callback)
             {
-                mCallback->UpdateOldValues();
+                m_callback->UpdateOldValues();
             }
 
             // the intersection variables
@@ -431,88 +408,88 @@ namespace MCommon
 
             // set rotation mode to rotation around the x axis, if the following intersection conditions are fulfilled
             // innerAABB not hit, outerAABB hit, innerBoundingSphere hit and angle between cameraRollAxis and clickPosition > pi/2
-            if ((mousePosRay.Intersects(mXAxisInnerAABB) == false ||
-                 (camera->GetProjectionMode() == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && mXAxisVisible)) &&
-                mousePosRay.Intersects(mXAxisAABB, &intersectA, &intersectB) &&
-                mousePosRay.Intersects(mInnerBoundingSphere) &&
-                MCore::Math::ACos(camRollAxis.Dot((intersectA - mPosition).GetNormalized())) > MCore::Math::halfPi)
+            if ((mousePosRay.Intersects(m_xAxisInnerAabb) == false ||
+                 (camera->GetProjectionMode() == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && m_xAxisVisible)) &&
+                mousePosRay.Intersects(m_xAxisAabb, &intersectA, &intersectB) &&
+                mousePosRay.Intersects(m_innerBoundingSphere) &&
+                MCore::Math::ACos(camRollAxis.Dot((intersectA - m_position).GetNormalized())) > MCore::Math::halfPi)
             {
-                mMode = ROTATE_X;
-                mRotationAxis = AZ::Vector3(1.0f, 0.0f, 0.0f);
-                mClickPosition = (intersectA - mPosition).GetNormalized();
-                mClickPosition.SetX(0.0f);
+                m_mode = ROTATE_X;
+                m_rotationAxis = AZ::Vector3(1.0f, 0.0f, 0.0f);
+                m_clickPosition = (intersectA - m_position).GetNormalized();
+                m_clickPosition.SetX(0.0f);
             }
 
             // set rotation mode to rotation around the y axis, if the following intersection conditions are fulfilled
             // innerAABB not hit, outerAABB hit, innerBoundingSphere hit and angle between cameraRollAxis and clickPosition > pi/2
-            else if ((mousePosRay.Intersects(mYAxisInnerAABB) == false ||
-                      (camera->GetProjectionMode() == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && mYAxisVisible)) &&
-                     mousePosRay.Intersects(mYAxisAABB, &intersectA, &intersectB) && mousePosRay.Intersects(mInnerBoundingSphere) &&
-                     MCore::Math::ACos(camRollAxis.Dot((intersectA - mPosition).GetNormalized())) > MCore::Math::halfPi)
+            else if ((mousePosRay.Intersects(m_yAxisInnerAabb) == false ||
+                      (camera->GetProjectionMode() == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && m_yAxisVisible)) &&
+                     mousePosRay.Intersects(m_yAxisAabb, &intersectA, &intersectB) && mousePosRay.Intersects(m_innerBoundingSphere) &&
+                     MCore::Math::ACos(camRollAxis.Dot((intersectA - m_position).GetNormalized())) > MCore::Math::halfPi)
             {
-                mMode = ROTATE_Y;
-                mRotationAxis = AZ::Vector3(0.0f, 1.0f, 0.0f);
-                mClickPosition = (intersectA - mPosition).GetNormalized();
-                mClickPosition.SetY(0.0f);
+                m_mode = ROTATE_Y;
+                m_rotationAxis = AZ::Vector3(0.0f, 1.0f, 0.0f);
+                m_clickPosition = (intersectA - m_position).GetNormalized();
+                m_clickPosition.SetY(0.0f);
             }
 
             // set rotation mode to rotation around the z axis, if the following intersection conditions are fulfilled
             // innerAABB not hit, outerAABB hit, innerBoundingSphere hit and angle between cameraRollAxis and clickPosition > pi/2
-            else if ((mousePosRay.Intersects(mZAxisInnerAABB) == false ||
-                      (camera->GetProjectionMode() == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && mZAxisVisible)) &&
-                     mousePosRay.Intersects(mZAxisAABB, &intersectA, &intersectB) && mousePosRay.Intersects(mInnerBoundingSphere) &&
-                     MCore::Math::ACos(camRollAxis.Dot((intersectA - mPosition).GetNormalized())) > MCore::Math::halfPi)
+            else if ((mousePosRay.Intersects(m_zAxisInnerAabb) == false ||
+                      (camera->GetProjectionMode() == MCommon::Camera::PROJMODE_ORTHOGRAPHIC && m_zAxisVisible)) &&
+                     mousePosRay.Intersects(m_zAxisAabb, &intersectA, &intersectB) && mousePosRay.Intersects(m_innerBoundingSphere) &&
+                     MCore::Math::ACos(camRollAxis.Dot((intersectA - m_position).GetNormalized())) > MCore::Math::halfPi)
             {
-                mMode = ROTATE_Z;
-                mRotationAxis = AZ::Vector3(0.0f, 0.0f, 1.0f);
-                mClickPosition = (intersectA - mPosition).GetNormalized();
-                mClickPosition.SetZ(0.0f);
+                m_mode = ROTATE_Z;
+                m_rotationAxis = AZ::Vector3(0.0f, 0.0f, 1.0f);
+                m_clickPosition = (intersectA - m_position).GetNormalized();
+                m_clickPosition.SetZ(0.0f);
             }
 
             // set rotation mode to rotation around the pitch and yaw axis of the camera,
             // if the inner sphere is hit and none of the previous conditions was fulfilled
-            else if (mousePosRay.Intersects(mInnerBoundingSphere, &intersectA, &intersectB))
+            else if (mousePosRay.Intersects(m_innerBoundingSphere, &intersectA, &intersectB))
             {
-                mMode = ROTATE_CAMPITCHYAW;
+                m_mode = ROTATE_CAMPITCHYAW;
 
                 // set the rotation axis to zero, because no single axis exists in this mode
-                mRotationAxis = AZ::Vector3::CreateZero();
+                m_rotationAxis = AZ::Vector3::CreateZero();
 
                 // project the click position onto the plane which is perpendicular to the rotation direction
-                MCore::PlaneEq rotationPlane(camRollAxis, mPosition);
-                mClickPosition = (rotationPlane.Project(intersectA - mPosition)).GetNormalized();
+                MCore::PlaneEq rotationPlane(camRollAxis, m_position);
+                m_clickPosition = (rotationPlane.Project(intersectA - m_position)).GetNormalized();
             }
 
             // set rotation mode to rotation around the roll axis of the camera,
             // if the outer sphere is hit and none of the previous conditions was fulfilled
-            else if (mousePosRay.Intersects(mOuterBoundingSphere, &intersectA, &intersectB))
+            else if (mousePosRay.Intersects(m_outerBoundingSphere, &intersectA, &intersectB))
             {
                 // set rotation mode to rotate around the view axis
-                mMode = ROTATE_CAMROLL;
+                m_mode = ROTATE_CAMROLL;
 
                 // set the rotation axis to the look at ray direction
-                mRotationAxis = camRollRay.GetDirection();
+                m_rotationAxis = camRollRay.GetDirection();
 
                 // project the click position onto the plane which is perpendicular to the rotation direction
-                MCore::PlaneEq rotationPlane(mRotationAxis, AZ::Vector3::CreateZero());
-                mClickPosition = (rotationPlane.Project(intersectA - mPosition)).GetNormalized();
+                MCore::PlaneEq rotationPlane(m_rotationAxis, AZ::Vector3::CreateZero());
+                m_clickPosition = (rotationPlane.Project(intersectA - m_position)).GetNormalized();
             }
 
             // no bounding volume is currently hit, therefore do not rotate
             else
             {
-                mMode = ROTATE_NONE;
+                m_mode = ROTATE_NONE;
             }
         }
 
         // set selection lock and current projection mode
-        mSelectionLocked = leftButtonPressed;
-        mCurrentProjectionMode = camera->GetProjectionMode();
+        m_selectionLocked = leftButtonPressed;
+        m_currentProjectionMode = camera->GetProjectionMode();
 
         // reset the gizmo if no rotation mode is selected
-        if (mSelectionLocked == false || mMode == ROTATE_NONE)
+        if (m_selectionLocked == false || m_mode == ROTATE_NONE)
         {
-            mRotation = AZ::Vector3::CreateZero();
+            m_rotation = AZ::Vector3::CreateZero();
             return;
         }
 
@@ -526,13 +503,13 @@ namespace MCommon
         }
 
         // set the rotation depending on the rotation mode
-        if (mMode == ROTATE_CAMPITCHYAW)
+        if (m_mode == ROTATE_CAMPITCHYAW)
         {
             // the yaw axis of the camera view
             MCore::Ray camYawRay = camera->Unproject(screenWidth / 2, screenHeight / 2 - 10);
 
             // calculate the plane perpendicular to the view rotation axis
-            MCore::PlaneEq rotationPlane(camRollAxis, mPosition);
+            MCore::PlaneEq rotationPlane(camRollAxis, m_position);
 
             // get the intersection points of the rays and the plane
             AZ::Vector3 originRayIntersect, upVecRayIntersect;
@@ -547,69 +524,46 @@ namespace MCommon
 
             // calculate the projected axes, used to determine the angle between click position
             // and the axes. This allows weighting the angles by the movement direction.
-            AZ::Vector3 projectedCenter          = MCore::Project(mPosition, camera->GetViewProjMatrix(), screenWidth, screenHeight);
-            AZ::Vector3 projectedClickPosYaw     = MCore::Project(mPosition - leftVector, camera->GetViewProjMatrix(), screenWidth, screenHeight);
-            AZ::Vector3 projectedClickPosPitch   = MCore::Project(mPosition - upVector, camera->GetViewProjMatrix(), screenWidth, screenHeight);
+            AZ::Vector3 projectedCenter          = MCore::Project(m_position, camera->GetViewProjMatrix(), screenWidth, screenHeight);
+            AZ::Vector3 projectedClickPosYaw     = MCore::Project(m_position - leftVector, camera->GetViewProjMatrix(), screenWidth, screenHeight);
+            AZ::Vector3 projectedClickPosPitch   = MCore::Project(m_position - upVector, camera->GetViewProjMatrix(), screenWidth, screenHeight);
             AZ::Vector3 projDirClickPosYaw       = (projectedClickPosYaw - projectedCenter).GetNormalized();
             AZ::Vector3 projDirClickPosPitch     = (projectedClickPosPitch - projectedCenter).GetNormalized();
 
             // calculate the angle between mouse movement and projected rotation axis
-            float angleYaw      = projDirClickPosYaw.Dot(mouseMovementV3) * mScalingFactor * movementLength * 0.00005f;
-            float anglePitch    = projDirClickPosPitch.Dot(mouseMovementV3) * mScalingFactor * movementLength * 0.00005f;
+            float angleYaw      = projDirClickPosYaw.Dot(mouseMovementV3) * m_scalingFactor * movementLength * 0.00005f;
+            float anglePitch    = projDirClickPosPitch.Dot(mouseMovementV3) * m_scalingFactor * movementLength * 0.00005f;
 
             // perform rotation arround the cam yaw and pitch axis
             AZ::Quaternion rotation = MCore::CreateFromAxisAndAngle(upVector, -angleYaw);
             rotation = rotation * MCore::CreateFromAxisAndAngle(leftVector, anglePitch);
 
             // set euler angles of the rotation variable
-            mRotation += MCore::AzQuaternionToEulerAngles(rotation);
-            mRotationQuat = rotation;
+            m_rotation += MCore::AzQuaternionToEulerAngles(rotation);
+            m_rotationQuat = rotation;
         }
         else
         {
-            /*
-            // HINT: uncommented stuff is the exact rotation, used in maya
-            // generate current translation plane and calculate mouse intersections
-            MCore::PlaneEq movementPlane( mRotationAxis, mPosition );
-            Vector3 mousePosIntersect, mousePrevPosIntersect;
-            mousePosRay.Intersects( movementPlane, &mousePosIntersect );
-            mousePrevPosRay.Intersects( movementPlane, &mousePrevPosIntersect );
-
-            // normalize the intersection points, as only the angle between them is needed
-            mousePosIntersect = (mousePosIntersect - mPosition).Normalize();
-            mousePrevPosIntersect = (mousePrevPosIntersect - mPosition).Normalize();
-
-            // distance of the mouse intersections is the actual movement on the plane
-            float angleSign = MCore::Sgn((mRotationAxis.Cross(mousePosIntersect-mousePrevPosIntersect)).Dot(mousePosIntersect));
-            float angle = MCore::Math::ACos( (mousePrevPosIntersect).Dot((mousePosIntersect)) ) * angleSign;
-
-            mRotation += mRotationAxis * angle;
-            mRotation = Vector3( MCore::Clamp(mRotation.x, -Math::twoPi, Math::twoPi), MCore::Clamp(mRotation.y, -Math::twoPi, Math::twoPi), MCore::Clamp(mRotation.z, -Math::twoPi, Math::twoPi) );
-            mRotationQuat = Quaternion( mRotationAxis, MCore::Clamp(-angle, -Math::twoPi, Math::twoPi) );
-            */
             // calculate the projected center and click position to determine the rotation angle
-            AZ::Vector3 tangent          = (mRotationAxis.Cross(mClickPosition)).GetNormalized();
-            AZ::Vector3 projectedCenter  = MCore::Project(mPosition, camera->GetViewProjMatrix(), screenWidth, screenHeight);
-            AZ::Vector3 projectedClickPos = MCore::Project(mPosition - tangent, camera->GetViewProjMatrix(), screenWidth, screenHeight);
+            AZ::Vector3 tangent          = (m_rotationAxis.Cross(m_clickPosition)).GetNormalized();
+            AZ::Vector3 projectedCenter  = MCore::Project(m_position, camera->GetViewProjMatrix(), screenWidth, screenHeight);
+            AZ::Vector3 projectedClickPos = MCore::Project(m_position - tangent, camera->GetViewProjMatrix(), screenWidth, screenHeight);
             AZ::Vector3 projDirClickPos  = (projectedClickPos - projectedCenter);
 
-            // calculate the angle between mouse movement and projected rotation axis
-            //float angle = Math::DegreesToRadians(Math::Floor(Math::RadiansToDegrees((projDirClickPos.Dot( mouseMovementV3 ) * mScalingFactor * 0.00002f) * movementLength)));
             float angle = MCore::Math::DegreesToRadians(MCore::Sgn<float>(projDirClickPos.Dot(mouseMovementV3)) * 0.2f * MCore::Math::Floor(movementLength + 0.5f));
 
             // adjust rotation
-            mRotation += mRotationAxis * angle;
-            //mRotation = Vector3( MCore::Clamp(mRotation.x, -Math::twoPi, Math::twoPi), MCore::Clamp(mRotation.y, -Math::twoPi, Math::twoPi), MCore::Clamp(mRotation.z, -Math::twoPi, Math::twoPi) );
-            mRotationQuat = AZ::Quaternion::CreateFromAxisAngle(mRotationAxis, MCore::Math::FMod(-angle, MCore::Math::twoPi));
-            mRotationQuat.Normalize();
+            m_rotation += m_rotationAxis * angle;
+            m_rotationQuat = AZ::Quaternion::CreateFromAxisAngle(m_rotationAxis, MCore::Math::FMod(-angle, MCore::Math::twoPi));
+            m_rotationQuat.Normalize();
         }
 
         // update the callback
-        if (mCallback)
+        if (m_callback)
         {
-            const AZ::Quaternion curRot = mCallback->GetCurrValueQuat();
-            const AZ::Quaternion newRot = (curRot * mRotationQuat).GetNormalized();
-            mCallback->Update(newRot);
+            const AZ::Quaternion curRot = m_callback->GetCurrValueQuat();
+            const AZ::Quaternion newRot = (curRot * m_rotationQuat).GetNormalized();
+            m_callback->Update(newRot);
         }
     }
 } // namespace MCommon

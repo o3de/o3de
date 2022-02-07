@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,10 +59,10 @@ public: // member functions
     virtual ~ISprite() {}
 
     //! Get the pathname of this sprite
-    virtual const string& GetPathname() const = 0;
+    virtual const AZStd::string& GetPathname() const = 0;
 
     //! Get the pathname of the texture of this sprite
-    virtual const string& GetTexturePathname() const = 0;
+    virtual const AZStd::string& GetTexturePathname() const = 0;
 
     //! Get the borders of this sprite
     virtual Borders GetBorders() const = 0;
@@ -76,7 +77,7 @@ public: // member functions
     virtual void Serialize(TSerialize ser) = 0;
 
     //! Save this sprite data to disk
-    virtual bool SaveToXml(const string& pathname) = 0;
+    virtual bool SaveToXml(const AZStd::string& pathname) = 0;
 
     //! Test if this sprite has any borders
     virtual bool AreBordersZeroWidth() const = 0;
@@ -135,4 +136,3 @@ public: // member functions
     //! Returns true if this sprite is configured as a sprite-sheet, false otherwise
     virtual bool IsSpriteSheet() const = 0;
 };
-

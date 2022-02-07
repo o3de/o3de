@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -356,8 +357,7 @@ namespace AZ
         void DisplayMapperComponentController::OnConfigChanged()
         {
             // Register the configuration with the  AcesDisplayMapperFeatureProcessor for this scene.
-            const AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-            DisplayMapperFeatureProcessorInterface* fp = scene->GetFeatureProcessor<DisplayMapperFeatureProcessorInterface>();
+            DisplayMapperFeatureProcessorInterface* fp = AZ::RPI::Scene::GetFeatureProcessorForEntity<DisplayMapperFeatureProcessorInterface>(m_entityId);
             DisplayMapperConfigurationDescriptor desc;
             desc.m_operationType = m_configuration.m_displayMapperOperation;
             desc.m_ldrGradingLutEnabled = m_configuration.m_ldrColorGradingLutEnabled;

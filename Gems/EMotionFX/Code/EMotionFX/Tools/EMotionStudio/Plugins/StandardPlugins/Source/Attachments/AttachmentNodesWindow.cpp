@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 // inlude required headers
 #include "AttachmentNodesWindow.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
+#include "AzCore/std/limits.h"
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/StringConversions.h>
 
@@ -30,9 +32,9 @@ namespace EMStudio
     AttachmentNodesWindow::AttachmentNodesWindow(QWidget* parent)
         : QWidget(parent)
     {
-        mNodeTable          = nullptr;
-        mSelectNodesButton  = nullptr;
-        mNodeAction         = "";
+        m_nodeTable          = nullptr;
+        m_selectNodesButton  = nullptr;
+        m_nodeAction         = "";
 
         // init the widget
         Init();
@@ -49,49 +51,49 @@ namespace EMStudio
     void AttachmentNodesWindow::Init()
     {
         // create the node groups table
-        mNodeTable = new QTableWidget(0, 1, 0);
+        m_nodeTable = new QTableWidget(0, 1, 0);
 
         // create the table widget
-        mNodeTable->setMinimumHeight(125);
-        mNodeTable->setAlternatingRowColors(true);
-        mNodeTable->setCornerButtonEnabled(false);
-        mNodeTable->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        mNodeTable->setContextMenuPolicy(Qt::DefaultContextMenu);
+        m_nodeTable->setMinimumHeight(125);
+        m_nodeTable->setAlternatingRowColors(true);
+        m_nodeTable->setCornerButtonEnabled(false);
+        m_nodeTable->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        m_nodeTable->setContextMenuPolicy(Qt::DefaultContextMenu);
 
         // set the table to row selection
-        mNodeTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_nodeTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
         // make the table items read only
-        mNodeTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        m_nodeTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
         // set header items for the table
         QTableWidgetItem* nameHeaderItem = new QTableWidgetItem("Nodes");
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
-        mNodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
+        m_nodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
 
-        QHeaderView* horizontalHeader = mNodeTable->horizontalHeader();
+        QHeaderView* horizontalHeader = m_nodeTable->horizontalHeader();
         horizontalHeader->setStretchLastSection(true);
 
         // create the node selection window
-        mNodeSelectionWindow = new NodeSelectionWindow(this, false);
+        m_nodeSelectionWindow = new NodeSelectionWindow(this, false);
 
         // create the selection buttons
-        mSelectNodesButton  = new QToolButton();
-        mAddNodesButton     = new QToolButton();
-        mRemoveNodesButton  = new QToolButton();
+        m_selectNodesButton  = new QToolButton();
+        m_addNodesButton     = new QToolButton();
+        m_removeNodesButton  = new QToolButton();
 
-        EMStudioManager::MakeTransparentButton(mSelectNodesButton, "Images/Icons/Plus.svg",   "Select nodes and replace the current selection");
-        EMStudioManager::MakeTransparentButton(mAddNodesButton,    "Images/Icons/Plus.svg",   "Select nodes and add them to the current selection");
-        EMStudioManager::MakeTransparentButton(mRemoveNodesButton, "Images/Icons/Minus.svg",  "Remove selected nodes from the list");
+        EMStudioManager::MakeTransparentButton(m_selectNodesButton, "Images/Icons/Plus.svg",   "Select nodes and replace the current selection");
+        EMStudioManager::MakeTransparentButton(m_addNodesButton,    "Images/Icons/Plus.svg",   "Select nodes and add them to the current selection");
+        EMStudioManager::MakeTransparentButton(m_removeNodesButton, "Images/Icons/Minus.svg",  "Remove selected nodes from the list");
 
         // create the buttons layout
         QHBoxLayout* buttonLayout = new QHBoxLayout();
         buttonLayout->setSpacing(0);
         buttonLayout->setAlignment(Qt::AlignLeft);
-        buttonLayout->addWidget(mSelectNodesButton);
-        buttonLayout->addWidget(mAddNodesButton);
-        buttonLayout->addWidget(mRemoveNodesButton);
+        buttonLayout->addWidget(m_selectNodesButton);
+        buttonLayout->addWidget(m_addNodesButton);
+        buttonLayout->addWidget(m_removeNodesButton);
 
         // create the layouts
         QVBoxLayout* layout = new QVBoxLayout();
@@ -99,18 +101,18 @@ namespace EMStudio
         layout->setSpacing(2);
 
         layout->addLayout(buttonLayout);
-        layout->addWidget(mNodeTable);
+        layout->addWidget(m_nodeTable);
 
         // set the main layout
         setLayout(layout);
 
         // connect controls to the slots
-        connect(mSelectNodesButton, &QToolButton::clicked, this, &AttachmentNodesWindow::SelectNodesButtonPressed);
-        connect(mAddNodesButton, &QToolButton::clicked, this, &AttachmentNodesWindow::SelectNodesButtonPressed);
-        connect(mRemoveNodesButton, &QToolButton::clicked, this, &AttachmentNodesWindow::RemoveNodesButtonPressed);
-        connect(mNodeTable, &QTableWidget::itemSelectionChanged, this, &AttachmentNodesWindow::OnItemSelectionChanged);
-        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), static_cast<void (NodeHierarchyWidget::*)(MCore::Array<SelectionItem>)>(&NodeHierarchyWidget::OnSelectionDone), this, &AttachmentNodesWindow::NodeSelectionFinished);
-        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), static_cast<void (NodeHierarchyWidget::*)(MCore::Array<SelectionItem>)>(&NodeHierarchyWidget::OnDoubleClicked), this, &AttachmentNodesWindow::NodeSelectionFinished);
+        connect(m_selectNodesButton, &QToolButton::clicked, this, &AttachmentNodesWindow::SelectNodesButtonPressed);
+        connect(m_addNodesButton, &QToolButton::clicked, this, &AttachmentNodesWindow::SelectNodesButtonPressed);
+        connect(m_removeNodesButton, &QToolButton::clicked, this, &AttachmentNodesWindow::RemoveNodesButtonPressed);
+        connect(m_nodeTable, &QTableWidget::itemSelectionChanged, this, &AttachmentNodesWindow::OnItemSelectionChanged);
+        connect(m_nodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &AttachmentNodesWindow::NodeSelectionFinished);
+        connect(m_nodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnDoubleClicked, this, &AttachmentNodesWindow::NodeSelectionFinished);
     }
 
 
@@ -118,13 +120,13 @@ namespace EMStudio
     void AttachmentNodesWindow::UpdateInterface()
     {
         // clear the table widget
-        mNodeTable->clear();
+        m_nodeTable->clear();
 
         // check if the current actor exists
-        if (mActor == nullptr)
+        if (m_actor == nullptr)
         {
             // set the column count
-            mNodeTable->setColumnCount(0);
+            m_nodeTable->setColumnCount(0);
 
             // disable the widgets
             SetWidgetDisabled(true);
@@ -134,23 +136,23 @@ namespace EMStudio
         }
 
         // set the column count
-        mNodeTable->setColumnCount(1);
+        m_nodeTable->setColumnCount(1);
 
         // enable the widget
         SetWidgetDisabled(false);
 
         // set the remove nodes button enabled or not based on selection
-        mRemoveNodesButton->setEnabled((mNodeTable->rowCount() != 0) && (mNodeTable->selectedItems().size() != 0));
+        m_removeNodesButton->setEnabled((m_nodeTable->rowCount() != 0) && (m_nodeTable->selectedItems().size() != 0));
 
         // counter for attachment nodes
-        uint16 numAttachmentNodes = 0;
+        int numAttachmentNodes = 0;
 
         // set the row count
-        const uint16 numNodes = mActor->GetNumNodes();
-        for (uint16 i = 0; i < numNodes; ++i)
+        const int numNodes = aznumeric_caster(m_actor->GetNumNodes());
+        for (int i = 0; i < numNodes; ++i)
         {
             // get the nodegroup
-            EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(i);
+            EMotionFX::Node* node = m_actor->GetSkeleton()->GetNode(i);
             if (node->GetIsAttachmentNode())
             {
                 numAttachmentNodes++;
@@ -158,19 +160,19 @@ namespace EMStudio
         }
 
         // set the row count
-        mNodeTable->setRowCount(numAttachmentNodes);
+        m_nodeTable->setRowCount(numAttachmentNodes);
 
         // set header items for the table
-        QTableWidgetItem* nameHeaderItem = new QTableWidgetItem(AZStd::string::format("Attachment Nodes (%i / %i)", numAttachmentNodes, mActor->GetNumNodes()).c_str());
+        QTableWidgetItem* nameHeaderItem = new QTableWidgetItem(AZStd::string::format("Attachment Nodes (%d / %zu)", numAttachmentNodes, m_actor->GetNumNodes()).c_str());
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignCenter);
-        mNodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
+        m_nodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
 
         // fill the table with content
         uint16 currentRow = 0;
         for (uint16 i = 0; i < numNodes; ++i)
         {
             // get the nodegroup
-            EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(i);
+            EMotionFX::Node* node = m_actor->GetSkeleton()->GetNode(i);
 
             // continue if node does not exist
             if (node == nullptr || node->GetIsAttachmentNode() == false)
@@ -180,24 +182,24 @@ namespace EMStudio
 
             // create table items
             QTableWidgetItem* tableItemNodeName = new QTableWidgetItem(node->GetName());
-            mNodeTable->setItem(currentRow, 0, tableItemNodeName);
+            m_nodeTable->setItem(currentRow, 0, tableItemNodeName);
 
             // set the row height and increase row counter
-            mNodeTable->setRowHeight(currentRow, 21);
+            m_nodeTable->setRowHeight(currentRow, 21);
             ++currentRow;
         }
 
         // resize to contents and adjust header
-        QHeaderView* verticalHeader = mNodeTable->verticalHeader();
+        QHeaderView* verticalHeader = m_nodeTable->verticalHeader();
         verticalHeader->setVisible(false);
-        mNodeTable->resizeColumnsToContents();
-        mNodeTable->horizontalHeader()->setStretchLastSection(true);
+        m_nodeTable->resizeColumnsToContents();
+        m_nodeTable->horizontalHeader()->setStretchLastSection(true);
 
         // set table size
-        mNodeTable->setColumnWidth(0, 37);
-        mNodeTable->setColumnWidth(3, 0);
-        mNodeTable->setColumnHidden(3, true);
-        mNodeTable->sortItems(3);
+        m_nodeTable->setColumnWidth(0, 37);
+        m_nodeTable->setColumnWidth(3, 0);
+        m_nodeTable->setColumnHidden(3, true);
+        m_nodeTable->sortItems(3);
 
         // toggle enabled state of the remove button
         OnItemSelectionChanged();
@@ -208,7 +210,7 @@ namespace EMStudio
     void AttachmentNodesWindow::SetActor(EMotionFX::Actor* actor)
     {
         // set the new actor
-        mActor = actor;
+        m_actor = actor;
 
         // update the interface
         UpdateInterface();
@@ -219,20 +221,20 @@ namespace EMStudio
     void AttachmentNodesWindow::SelectNodesButtonPressed()
     {
         // check if actor is set
-        if (mActor == nullptr)
+        if (m_actor == nullptr)
         {
             return;
         }
 
         // set the action for the selected nodes
         QWidget* senderWidget = (QWidget*)sender();
-        if (senderWidget == mAddNodesButton)
+        if (senderWidget == m_addNodesButton)
         {
-            mNodeAction = "add";
+            m_nodeAction = "add";
         }
         else
         {
-            mNodeAction = "select";
+            m_nodeAction = "select";
         }
 
         // get the selected actorinstance
@@ -246,23 +248,23 @@ namespace EMStudio
         }
 
         // create selection list for the current nodes within the group
-        mNodeSelectionList.Clear();
-        if (senderWidget == mSelectNodesButton)
+        m_nodeSelectionList.Clear();
+        if (senderWidget == m_selectNodesButton)
         {
-            const uint32 numNodes = mActor->GetNumNodes();
-            for (uint32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = m_actor->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
-                EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(i);
+                EMotionFX::Node* node = m_actor->GetSkeleton()->GetNode(i);
                 if (node->GetIsAttachmentNode())
                 {
-                    mNodeSelectionList.AddNode(node);
+                    m_nodeSelectionList.AddNode(node);
                 }
             }
         }
 
         // show the node selection window
-        mNodeSelectionWindow->Update(actorInstance->GetID(), &mNodeSelectionList);
-        mNodeSelectionWindow->show();
+        m_nodeSelectionWindow->Update(actorInstance->GetID(), &m_nodeSelectionList);
+        m_nodeSelectionWindow->show();
     }
 
 
@@ -271,12 +273,12 @@ namespace EMStudio
     {
         // generate node list string
         AZStd::string nodeList;
-        uint32 lowestSelectedRow = MCORE_INVALIDINDEX32;
-        const uint32 numTableRows = mNodeTable->rowCount();
-        for (uint32 i = 0; i < numTableRows; ++i)
+        int lowestSelectedRow = AZStd::numeric_limits<int>::max();
+        const int numTableRows = m_nodeTable->rowCount();
+        for (int i = 0; i < numTableRows; ++i)
         {
             // get the current table item
-            QTableWidgetItem* item = mNodeTable->item(i, 0);
+            QTableWidgetItem* item = m_nodeTable->item(i, 0);
             if (item == nullptr)
             {
                 continue;
@@ -286,9 +288,9 @@ namespace EMStudio
             if (item->isSelected())
             {
                 nodeList += AZStd::string::format("%s;", FromQtString(item->text()).c_str());
-                if ((uint32)item->row() < lowestSelectedRow)
+                if (item->row() < lowestSelectedRow)
                 {
-                    lowestSelectedRow = (uint32)item->row();
+                    lowestSelectedRow = item->row();
                 }
             }
         }
@@ -302,29 +304,28 @@ namespace EMStudio
         // call command for adjusting disable on default flag
         AZStd::string outResult;
         AZStd::string command;
-        command = AZStd::string::format("AdjustActor -actorID %i -nodeAction \"remove\" -attachmentNodes \"%s\"", mActor->GetID(), nodeList.c_str());
+        command = AZStd::string::format("AdjustActor -actorID %i -nodeAction \"remove\" -attachmentNodes \"%s\"", m_actor->GetID(), nodeList.c_str());
         if (EMStudio::GetCommandManager()->ExecuteCommand(command.c_str(), outResult) == false)
         {
             MCore::LogError(outResult.c_str());
         }
 
         // selected the next row
-        if (lowestSelectedRow > ((uint32)mNodeTable->rowCount() - 1))
+        if (lowestSelectedRow > m_nodeTable->rowCount() - 1)
         {
-            mNodeTable->selectRow(lowestSelectedRow - 1);
+            m_nodeTable->selectRow(lowestSelectedRow - 1);
         }
         else
         {
-            mNodeTable->selectRow(lowestSelectedRow);
+            m_nodeTable->selectRow(lowestSelectedRow);
         }
     }
 
 
     // add / select nodes
-    void AttachmentNodesWindow::NodeSelectionFinished(MCore::Array<SelectionItem> selectionList)
+    void AttachmentNodesWindow::NodeSelectionFinished(AZStd::vector<SelectionItem> selectionList)
     {
-        // return if no nodes are selected
-        if (selectionList.GetLength() == 0)
+        if (selectionList.empty())
         {
             return;
         }
@@ -332,17 +333,16 @@ namespace EMStudio
         // generate node list string
         AZStd::string nodeList;
         nodeList.reserve(16384);
-        const uint32 numSelectedNodes = selectionList.GetLength();
-        for (uint32 i = 0; i < numSelectedNodes; ++i)
+        for (const SelectionItem& i : selectionList)
         {
-            nodeList += AZStd::string::format("%s;", selectionList[i].GetNodeName());
+            nodeList += AZStd::string::format("%s;", i.GetNodeName());
         }
         AzFramework::StringFunc::Strip(nodeList, MCore::CharacterConstants::semiColon, true /* case sensitive */, false /* beginning */, true /* ending */);
 
         // call command for adjusting disable on default flag
         AZStd::string outResult;
         AZStd::string command;
-        command = AZStd::string::format("AdjustActor -actorID %i -nodeAction \"%s\" -attachmentNodes \"%s\"", mActor->GetID(), mNodeAction.c_str(), nodeList.c_str());
+        command = AZStd::string::format("AdjustActor -actorID %i -nodeAction \"%s\" -attachmentNodes \"%s\"", m_actor->GetID(), m_nodeAction.c_str(), nodeList.c_str());
         if (EMStudio::GetCommandManager()->ExecuteCommand(command.c_str(), outResult) == false)
         {
             MCore::LogError(outResult.c_str());
@@ -353,17 +353,17 @@ namespace EMStudio
     // enable/disable the dialog
     void AttachmentNodesWindow::SetWidgetDisabled(bool disabled)
     {
-        mNodeTable->setDisabled(disabled);
-        mSelectNodesButton->setDisabled(disabled);
-        mAddNodesButton->setDisabled(disabled);
-        mRemoveNodesButton->setDisabled(disabled);
+        m_nodeTable->setDisabled(disabled);
+        m_selectNodesButton->setDisabled(disabled);
+        m_addNodesButton->setDisabled(disabled);
+        m_removeNodesButton->setDisabled(disabled);
     }
 
 
     // handle item selection changes of the node table
     void AttachmentNodesWindow::OnItemSelectionChanged()
     {
-        mRemoveNodesButton->setEnabled((mNodeTable->rowCount() != 0) && (mNodeTable->selectedItems().size() != 0));
+        m_removeNodesButton->setEnabled((m_nodeTable->rowCount() != 0) && (!m_nodeTable->selectedItems().empty()));
     }
 
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -71,8 +72,8 @@ namespace EMStudio
         void SetSelectedSet(EMotionFX::MotionSet* motionSet);
         int SaveDirtyMotionSet(EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);
 
-        MotionSetManagementWindow*  GetManagementWindow()                                                       { return mMotionSetManagementWindow; }
-        MotionSetWindow*            GetMotionSetWindow()                                                        { return mMotionSetWindow; }
+        MotionSetManagementWindow*  GetManagementWindow()                                                       { return m_motionSetManagementWindow; }
+        MotionSetWindow*            GetMotionSetWindow()                                                        { return m_motionSetWindow; }
 
         int OnSaveDirtyMotionSets();
         void LoadMotionSet(AZStd::string filename);
@@ -84,31 +85,22 @@ namespace EMStudio
         void WindowReInit(bool visible);
 
     private:
-        // declare the callbacks
-        MCORE_DEFINECOMMANDCALLBACK(CommandCreateMotionSetCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandReinitCallback);
+        MCORE_DEFINECOMMANDCALLBACK(CommandRemoveMotionSetCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandAdjustMotionSetCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetAddMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetRemoveMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetAdjustMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandLoadMotionSetCallback);
+        AZStd::vector<MCore::Command::Callback*> m_callbacks;
 
-        CommandCreateMotionSetCallback*         mCreateMotionSetCallback;
-        CommandReinitCallback*                  m_reinitCallback;
-        CommandAdjustMotionSetCallback*         mAdjustMotionSetCallback;
-        CommandMotionSetAddMotionCallback*      mMotionSetAddMotionCallback;
-        CommandMotionSetRemoveMotionCallback*   mMotionSetRemoveMotionCallback;
-        CommandMotionSetAdjustMotionCallback*   mMotionSetAdjustMotionCallback;
-        CommandLoadMotionSetCallback*           mLoadMotionSetCallback;
+        MotionSetManagementWindow*              m_motionSetManagementWindow;
+        MotionSetWindow*                        m_motionSetWindow;
 
-        MotionSetManagementWindow*              mMotionSetManagementWindow;
-        MotionSetWindow*                        mMotionSetWindow;
+        MysticQt::DialogStack*                  m_dialogStack;
 
-        MysticQt::DialogStack*                  mDialogStack;
-        //MotionSetStringIDWindow*              mStringIDWindow;
+        EMotionFX::MotionSet*                   m_selectedSet;
 
-        EMotionFX::MotionSet*                   mSelectedSet;
-
-        SaveDirtyMotionSetFilesCallback*        mDirtyFilesCallback;
+        SaveDirtyMotionSetFilesCallback*        m_dirtyFilesCallback;
     };
 } // namespace EMStudio

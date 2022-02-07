@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -199,28 +200,4 @@ namespace TextureAtlasBuilder
         //! Returns the height of the tallest area
         static int GetTallest(const ImageDimensionData& imageList);
     };
-
-    //! Used for sorting ImageDimensions
-    static bool operator<(ImageDimension a, ImageDimension b);
-
-    //! Used to expose the ImageDimension in a pair to AZStd::Sort
-    static bool operator<(IndexImageDimension a, IndexImageDimension b);
-
-    //! Returns true if two coordinate sets overlap
-    static bool Collides(AtlasCoordinates a, AtlasCoordinates b);
-
-    //! Returns true if item collides with any object in list
-    static bool Collides(AtlasCoordinates item, AZStd::vector<AtlasCoordinates> list);
-
-    //! Returns the portion of the second item that overlaps with the first
-    static AtlasCoordinates GetOverlap(AtlasCoordinates a, AtlasCoordinates b);
-
-    //! Performs an operation that copies a pixel to the output
-    static void SetPixels(AZ::u8* dest, const AZ::u8* source, int destBytes);
-
-    //! Checks if we can insert an image into a slot
-    static bool CanInsert(AtlasCoordinates slot, ImageDimension image, int padding, int farRight, int farBot);
-
-    //! Adds the necessary padding to an Atlas Coordinate 
-    static void AddPadding(AtlasCoordinates& slot, int padding, int farRight, int farBot);
 }

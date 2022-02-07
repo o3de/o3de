@@ -16,7 +16,7 @@ namespace {{ xml.attrib['Name'] }}
     //! @param handler      the handler used to handle the received packet
     //! @return boolean true on successful dispatch, false if the request was not handled
     template <typename HANDLER>
-    bool DispatchPacket(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer, HANDLER& handler);
+    AzNetworking::PacketDispatchResult DispatchPacket(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer, HANDLER& handler);
 }
 {% endfor %}
 

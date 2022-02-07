@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,64 +26,64 @@ namespace CommandSystem
 {
     // create a connection
     MCORE_DEFINECOMMAND_START(CommandAnimGraphCreateConnection, "Connect two anim graph nodes", true)
-        uint32                              mAnimGraphID;
-        EMotionFX::AnimGraphNodeId          mTargetNodeId;
-        EMotionFX::AnimGraphNodeId          mSourceNodeId;
+        uint32                              m_animGraphId;
+        EMotionFX::AnimGraphNodeId          m_targetNodeId;
+        EMotionFX::AnimGraphNodeId          m_sourceNodeId;
         EMotionFX::AnimGraphConnectionId    m_connectionId;
-        AZ::TypeId                          mTransitionType;
-        int32                               mStartOffsetX;
-        int32                               mStartOffsetY;
-        int32                               mEndOffsetX;
-        int32                               mEndOffsetY;
-        int32                               mSourcePort;
-        int32                               mTargetPort;
-        AZStd::string                       mSourcePortName;
-        AZStd::string                       mTargetPortName;
-        bool                                mOldDirtyFlag;
-        bool                                mUpdateParamFlag;
+        AZ::TypeId                          m_transitionType;
+        int32                               m_startOffsetX;
+        int32                               m_startOffsetY;
+        int32                               m_endOffsetX;
+        int32                               m_endOffsetY;
+        size_t                              m_sourcePort;
+        size_t                              m_targetPort;
+        AZStd::string                       m_sourcePortName;
+        AZStd::string                       m_targetPortName;
+        bool                                m_oldDirtyFlag;
+        bool                                m_updateParamFlag;
 
     public:
         EMotionFX::AnimGraphConnectionId GetConnectionId() const{ return m_connectionId; }
-        EMotionFX::AnimGraphNodeId GetTargetNodeId() const      { return mTargetNodeId; }
-        EMotionFX::AnimGraphNodeId GetSourceNodeId() const      { return mSourceNodeId; }
-        AZ::TypeId GetTransitionType() const                    { return mTransitionType; }
-        int32 GetSourcePort() const                             { return mSourcePort; }
-        int32 GetTargetPort() const                             { return mTargetPort; }
-        int32 GetStartOffsetX() const                           { return mStartOffsetX; }
-        int32 GetStartOffsetY() const                           { return mStartOffsetY; }
-        int32 GetEndOffsetX() const                             { return mEndOffsetX; }
-        int32 GetEndOffsetY() const                             { return mEndOffsetY; }
+        EMotionFX::AnimGraphNodeId GetTargetNodeId() const      { return m_targetNodeId; }
+        EMotionFX::AnimGraphNodeId GetSourceNodeId() const      { return m_sourceNodeId; }
+        AZ::TypeId GetTransitionType() const                    { return m_transitionType; }
+        size_t GetSourcePort() const                            { return m_sourcePort; }
+        size_t GetTargetPort() const                            { return m_targetPort; }
+        int32 GetStartOffsetX() const                           { return m_startOffsetX; }
+        int32 GetStartOffsetY() const                           { return m_startOffsetY; }
+        int32 GetEndOffsetX() const                             { return m_endOffsetX; }
+        int32 GetEndOffsetY() const                             { return m_endOffsetY; }
     MCORE_DEFINECOMMAND_END
 
 
     // remove a connection
     MCORE_DEFINECOMMAND_START(CommandAnimGraphRemoveConnection, "Remove a anim graph connection", true)
-        uint32                              mAnimGraphID;
-        EMotionFX::AnimGraphNodeId          mTargetNodeId;
-        AZStd::string                       mTargetNodeName;
-        EMotionFX::AnimGraphNodeId          mSourceNodeId;
-        AZStd::string                       mSourceNodeName;
+        uint32                              m_animGraphId;
+        EMotionFX::AnimGraphNodeId          m_targetNodeId;
+        AZStd::string                       m_targetNodeName;
+        EMotionFX::AnimGraphNodeId          m_sourceNodeId;
+        AZStd::string                       m_sourceNodeName;
         EMotionFX::AnimGraphConnectionId    m_connectionId;
-        AZ::TypeId                          mTransitionType;
-        int32                               mStartOffsetX;
-        int32                               mStartOffsetY;
-        int32                               mEndOffsetX;
-        int32                               mEndOffsetY;
-        int32                               mSourcePort;
-        int32                               mTargetPort;
-        bool                                mOldDirtyFlag;
-        AZStd::string                       mOldContents;
+        AZ::TypeId                          m_transitionType;
+        int32                               m_startOffsetX;
+        int32                               m_startOffsetY;
+        int32                               m_endOffsetX;
+        int32                               m_endOffsetY;
+        size_t                              m_sourcePort;
+        size_t                              m_targetPort;
+        bool                                m_oldDirtyFlag;
+        AZStd::string                       m_oldContents;
 
     public:
-        EMotionFX::AnimGraphNodeId GetTargetNodeID() const      { return mTargetNodeId; }
-        EMotionFX::AnimGraphNodeId GetSourceNodeID() const      { return mSourceNodeId; }
-        AZ::TypeId GetTransitionType() const                    { return mTransitionType; }
-        int32 GetSourcePort() const                             { return mSourcePort; }
-        int32 GetTargetPort() const                             { return mTargetPort; }
-        int32 GetStartOffsetX() const                           { return mStartOffsetX; }
-        int32 GetStartOffsetY() const                           { return mStartOffsetY; }
-        int32 GetEndOffsetX() const                             { return mEndOffsetX; }
-        int32 GetEndOffsetY() const                             { return mEndOffsetY; }
+        EMotionFX::AnimGraphNodeId GetTargetNodeID() const      { return m_targetNodeId; }
+        EMotionFX::AnimGraphNodeId GetSourceNodeID() const      { return m_sourceNodeId; }
+        AZ::TypeId GetTransitionType() const                    { return m_transitionType; }
+        size_t GetSourcePort() const                            { return m_sourcePort; }
+        size_t GetTargetPort() const                            { return m_targetPort; }
+        int32 GetStartOffsetX() const                           { return m_startOffsetX; }
+        int32 GetStartOffsetY() const                           { return m_startOffsetY; }
+        int32 GetEndOffsetX() const                             { return m_endOffsetX; }
+        int32 GetEndOffsetY() const                             { return m_endOffsetY; }
         EMotionFX::AnimGraphConnectionId GetConnectionId() const{ return m_connectionId; }
     MCORE_DEFINECOMMAND_END
 
@@ -126,7 +127,7 @@ namespace CommandSystem
 
     private:
         AZ::Outcome<AZStd::string>          m_oldSerializedMembers; // Without actions and conditions.
-        bool                                mOldDirtyFlag = false;
+        bool                                m_oldDirtyFlag = false;
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,12 +1,11 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -22,6 +21,7 @@
 #include <Source/StaticRigidBodyComponent.h>
 #include <Source/SystemComponent.h>
 #include <Source/Utils.h>
+#include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
 #include <Scene/PhysXScene.h>
 

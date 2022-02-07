@@ -92,8 +92,8 @@
                     ]
                 },
                 {
-                    "Name": "LookModificationTransformPass",
-                    "TemplateName": "LookModificationTransformTemplate",
+                    "Name": "HDRColorGradingPass",
+                    "TemplateName": "HDRColorGradingTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
@@ -101,6 +101,25 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "LightingInput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LutGenerationPass",
+                    "TemplateName": "LutGenerationTemplate",
+                    "Enabled": true
+                },
+                {
+                    "Name": "LookModificationTransformPass",
+                    "TemplateName": "LookModificationTransformTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "HDRColorGradingPass",
+                                "Attachment": "Output"
                             }
                         },
                         {

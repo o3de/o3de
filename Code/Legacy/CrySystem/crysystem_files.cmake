@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -22,7 +23,6 @@ set(FILES
     Timer.cpp
     XConsole.cpp
     XConsoleVariable.cpp
-    XML/ReadWriteXMLSink.h
     AZCrySystemInitLogSink.h
     AZCoreLogSink.h
     CmdLine.h
@@ -35,7 +35,6 @@ set(FILES
     SimpleStringPool.h
     CrySystem_precompiled.h
     System.h
-    SystemCFG.h
     SystemEventDispatcher.h
     Timer.h
     XConsole.h
@@ -43,16 +42,11 @@ set(FILES
     XML/SerializeXMLReader.cpp
     XML/SerializeXMLWriter.cpp
     XML/xml.cpp
-    XML/XMLPatcher.cpp
     XML/XmlUtils.cpp
     XML/SerializeXMLReader.h
     XML/SerializeXMLWriter.h
     XML/xml.h
-    XML/XMLPatcher.h
-    XML/xml_string.h
     XML/XmlUtils.h
-    XML/ReadXMLSink.cpp
-    XML/WriteXMLSource.cpp
     LocalizedStringManager.cpp
     LocalizedStringManager.h
     Huffman.cpp

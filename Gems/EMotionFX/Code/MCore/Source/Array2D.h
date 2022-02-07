@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,8 +45,8 @@ namespace MCore
          */
         struct TableEntry
         {
-            size_t  mStartIndex;        /**< The index offset where the data for this row starts. */
-            size_t  mNumElements;       /**< The number of elements to follow. */
+            size_t  m_startIndex;        /**< The index offset where the data for this row starts. */
+            size_t  m_numElements;       /**< The number of elements to follow. */
         };
 
         /**
@@ -66,7 +67,7 @@ namespace MCore
          *
          */
         Array2D(size_t numRows, size_t numPreAllocatedElemsPerRow = 2)
-            : mNumPreCachedElements(numPreAllocatedElemsPerRow)   { Resize(numRows); }
+            : m_numPreCachedElements(numPreAllocatedElemsPerRow)   { Resize(numRows); }
 
         /**
          * Resize the array in one dimension (the number of rows).
@@ -125,7 +126,7 @@ namespace MCore
          * speedup adding of new elements and prevent memory reallocs. The default value is set to 2 when creating an array, unless specified differently.
          * @param numElemsPerRow The number of elements per row that should be pre-allocated.
          */
-        void SetNumPreCachedElements(size_t numElemsPerRow)            { mNumPreCachedElements = numElemsPerRow; }
+        void SetNumPreCachedElements(size_t numElemsPerRow)            { m_numPreCachedElements = numElemsPerRow; }
 
         /**
          * Get the number of pre-cached/allocated elements per row, when creating new rows.
@@ -133,14 +134,14 @@ namespace MCore
          * @result The number of elements per row that will be pre-allocated/cached when adding a new row.
          * @see SetNumPreCachedElements.
          */
-        size_t GetNumPreCachedElements() const                         { return mNumPreCachedElements; }
+        size_t GetNumPreCachedElements() const                         { return m_numPreCachedElements; }
 
         /**
          * Get the number of stored elements inside a given row.
          * @param rowIndex The row number.
          * @result The number of elements stored inside this row.
          */
-        size_t GetNumElements(size_t rowIndex) const                   { return mIndexTable[rowIndex].mNumElements; }
+        size_t GetNumElements(size_t rowIndex) const                   { return m_indexTable[rowIndex].m_numElements; }
 
         /**
          * Get a pointer to the element data stored in a given row.
@@ -151,7 +152,7 @@ namespace MCore
          * @param rowIndex the row number.
          * @result A pointer to the element data for the given row.
          */
-        T* GetElements(size_t rowIndex)                                { return &mData[ mIndexTable[rowIndex].mStartIndex ]; }
+        T* GetElements(size_t rowIndex)                                { return &m_data[ m_indexTable[rowIndex].m_startIndex ]; }
 
         /**
          * Get the data of a given element.
@@ -159,7 +160,7 @@ namespace MCore
          * @param elementNr The element number inside this row to retrieve.
          * @result A reference to the element data.
          */
-        T& GetElement(size_t rowIndex, size_t elementNr)               { return mData[ mIndexTable[rowIndex].mStartIndex + elementNr ]; }
+        T& GetElement(size_t rowIndex, size_t elementNr)               { return m_data[ m_indexTable[rowIndex].m_startIndex + elementNr ]; }
 
         /**
          * Get the data of a given element.
@@ -167,7 +168,7 @@ namespace MCore
          * @param elementNr The element number inside this row to retrieve.
          * @result A const reference to the element data.
          */
-        const T& GetElement(size_t rowIndex, size_t elementNr) const   { return mData[ mIndexTable[rowIndex].mStartIndex + elementNr ]; }
+        const T& GetElement(size_t rowIndex, size_t elementNr) const   { return m_data[ m_indexTable[rowIndex].m_startIndex + elementNr ]; }
 
         /**
          * Set the value for a given element in the array.
@@ -175,13 +176,13 @@ namespace MCore
          * @param elementNr The element number to set the value for.
          * @param value The value to set the element to.
          */
-        void SetElement(size_t rowIndex, size_t elementNr, const T& value)     { MCORE_ASSERT(rowIndex < mIndexTable.GetLength()); MCORE_ASSERT(elementNr < mIndexTable[rowIndex].mNumElements); mData[ mIndexTable[rowIndex].mStartIndex + elementNr ] = value; }
+        void SetElement(size_t rowIndex, size_t elementNr, const T& value)     { MCORE_ASSERT(rowIndex < m_indexTable.GetLength()); MCORE_ASSERT(elementNr < m_indexTable[rowIndex].m_numElements); m_data[ m_indexTable[rowIndex].m_startIndex + elementNr ] = value; }
 
         /**
          * Get the number of rows in the 2D array.
          * @result The number of rows.
          */
-        size_t GetNumRows() const                                      { return mIndexTable.size(); }
+        size_t GetNumRows() const                                      { return m_indexTable.size(); }
 
         /**
          * Calculate the percentage of memory that is filled with element data.
@@ -191,7 +192,7 @@ namespace MCore
          * would be most optimal.
          * @result The percentage (in range of 0..100) of used element memory.
          */
-        float CalcUsedElementMemoryPercentage() const                  { return (mData.GetLength() ? (CalcTotalNumElements() / (float)mData.GetLength()) * 100.0f : 0); }
+        float CalcUsedElementMemoryPercentage() const                  { return (m_data.GetLength() ? (CalcTotalNumElements() / (float)m_data.GetLength()) * 100.0f : 0); }
 
         /**
          * Swap the element data of two rows.
@@ -219,12 +220,12 @@ namespace MCore
          */
         void Clear(bool freeMem = true)
         {
-            mIndexTable.clear();
-            mData.clear();
+            m_indexTable.clear();
+            m_data.clear();
             if (freeMem)
             {
-                mIndexTable.shrink_to_fit();
-                mData.shrink_to_fit();
+                m_indexTable.shrink_to_fit();
+                m_data.shrink_to_fit();
             }
         }
 
@@ -241,7 +242,7 @@ namespace MCore
          * The length of the array equals the value returned by GetNumRows().
          * @result The array of index table entries, which specify the start indices and number of entries per row.
          */
-        AZStd::vector<TableEntry>& GetIndexTable()                             { return mIndexTable; }
+        AZStd::vector<TableEntry>& GetIndexTable()                             { return m_indexTable; }
 
         /**
          * Get the data array.
@@ -249,12 +250,12 @@ namespace MCore
          * Normally you shouldn't be using this method. However it is useful in some specific cases.
          * @result The data array that contains all elements.
          */
-        AZStd::vector<T>& GetData()                                            { return mData; }
+        AZStd::vector<T>& GetData()                                            { return m_data; }
 
     private:
-        AZStd::vector<T>            mData;                  /**< The element data. */
-        AZStd::vector<TableEntry>   mIndexTable;            /**< The index table that let's us know where what data is inside the element data array. */
-        size_t              mNumPreCachedElements = 2;  /**< The number of elements per row to pre-allocate when resizing this array. This prevents some re-allocs. */
+        AZStd::vector<T>            m_data;                  /**< The element data. */
+        AZStd::vector<TableEntry>   m_indexTable;            /**< The index table that let's us know where what data is inside the element data array. */
+        size_t              m_numPreCachedElements = 2;  /**< The number of elements per row to pre-allocate when resizing this array. This prevents some re-allocs. */
     };
 
 

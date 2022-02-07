@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -10,11 +11,13 @@ add_subdirectory(NumericalMethods)
 ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
+set(PHYSX_ENABLE_RUNNING_BENCHMARKS OFF CACHE BOOL "Adds a target to allow running of the physx benchmarks.")
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
     set(physx_dependency 3rdParty::PhysX)
     set(physx_files physx_files.cmake)
     set(physx_shared_files physx_shared_files.cmake)
+    set(physx_mock_files physx_mocks_files.cmake)
     set(physx_editor_files physx_editor_files.cmake)
 else()
     set(physx_files physx_unsupported_files.cmake)
@@ -30,6 +33,7 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PUBLIC
             PHYSX_ENABLE_MULTI_THREADING
+            $<$<NOT:$<CONFIG:release>>:AZ_PHYSICS_DEBUG_ENABLED>
     INCLUDE_DIRECTORIES
         PUBLIC
             .
@@ -148,6 +152,16 @@ endif()
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_add_target(
+        NAME PhysX.Mocks HEADERONLY
+        NAMESPACE Gem
+        OUTPUT_NAME PhysX.Mocks.Gem
+        FILES_CMAKE
+            physx_mocks_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Mocks
+    )
 
     ly_add_target(
         NAME PhysX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
@@ -167,14 +181,28 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
     )
+
+    if(PAL_TRAIT_JOINTS_TYPED_TEST_CASE)
+        ly_add_source_properties(
+            SOURCES Tests/PhysXJointsTest.cpp
+            PROPERTY COMPILE_DEFINITIONS 
+            VALUES ENABLE_JOINTS_TYPED_TEST_CASE
+        )
+    endif()
+
     ly_add_googletest(
         NAME Gem::PhysX.Tests
     )
-    ly_add_googlebenchmark(
-        NAME Gem::PhysX.Benchmarks
-        TARGET Gem::PhysX.Tests
-        TIMEOUT 1500 #25mins
-    )
+
+    # Only add the physx benchmarks if this flag is set. The benchmark code is still built, as it is part of the PhysX.Tests project.
+    # Currently jenkins has a 1500sec(25min) timeout, our benchmarks can sometimes take over 1500sec and cause a build failure for timeout.
+    # Jenkins currently doesn't upload the results of the benchmarks, so this is ok.
+    if(PHYSX_ENABLE_RUNNING_BENCHMARKS)
+        ly_add_googlebenchmark(
+            NAME Gem::PhysX.Benchmarks
+            TARGET Gem::PhysX.Tests
+        )
+    endif()
 
     list(APPEND testTargets PhysX.Tests)
     
@@ -197,6 +225,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzToolsFrameworkTestCommon
                     Gem::PhysX.Static
+                    Gem::PhysX.Mocks
                     Gem::PhysX.Editor.Static
             RUNTIME_DEPENDENCIES
                 Gem::LmbrCentral.Editor
@@ -215,12 +244,3 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Test.Assets/Gems/PhysX/Code/Tests
             )
 endif()
-
-ly_add_source_properties(
-    SOURCES
-        Editor/CollisionLayersWidget.cpp
-        Source/Collision.cpp
-        Source/Configuration/PhysXConfiguration.cpp
-    PROPERTY COMPILE_DEFINITIONS 
-    VALUES TOUCHBENDING_LAYER_BIT=${LY_TOUCHBENDING_LAYER_BIT}
-)

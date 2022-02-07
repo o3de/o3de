@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,8 +32,8 @@ namespace EMStudio
         : QDialog(parent)
     {
         // store the values
-        mActor = actor;
-        mNodeGroupName = nodeGroupName;
+        m_actor = actor;
+        m_nodeGroupName = nodeGroupName;
 
         // set the window title
         setWindowTitle("Rename Node Group");
@@ -47,23 +48,23 @@ namespace EMStudio
         layout->addWidget(new QLabel("Please enter the new node group name:"));
 
         // add the line edit
-        mLineEdit = new QLineEdit();
-        connect(mLineEdit, &QLineEdit::textEdited, this, &NodeGroupManagementRenameWindow::TextEdited);
-        layout->addWidget(mLineEdit);
+        m_lineEdit = new QLineEdit();
+        connect(m_lineEdit, &QLineEdit::textEdited, this, &NodeGroupManagementRenameWindow::TextEdited);
+        layout->addWidget(m_lineEdit);
 
         // set the current name and select all
-        mLineEdit->setText(nodeGroupName.c_str());
-        mLineEdit->selectAll();
+        m_lineEdit->setText(nodeGroupName.c_str());
+        m_lineEdit->selectAll();
 
         // create the button layout
         QHBoxLayout* buttonLayout   = new QHBoxLayout();
-        mOKButton                   = new QPushButton("OK");
+        m_okButton                   = new QPushButton("OK");
         QPushButton* cancelButton   = new QPushButton("Cancel");
-        buttonLayout->addWidget(mOKButton);
+        buttonLayout->addWidget(m_okButton);
         buttonLayout->addWidget(cancelButton);
 
         // connect the buttons
-        connect(mOKButton, &QPushButton::clicked, this, &NodeGroupManagementRenameWindow::Accepted);
+        connect(m_okButton, &QPushButton::clicked, this, &NodeGroupManagementRenameWindow::Accepted);
         connect(cancelButton, &QPushButton::clicked, this, &NodeGroupManagementRenameWindow::reject);
 
         // set the new layout
@@ -77,42 +78,45 @@ namespace EMStudio
         const AZStd::string convertedNewName = text.toUtf8().data();
         if (text.isEmpty())
         {
-            //mErrorMsg->setVisible(false);
-            mOKButton->setEnabled(false);
-            GetManager()->SetWidgetAsInvalidInput(mLineEdit);
+            m_okButton->setEnabled(false);
+            GetManager()->SetWidgetAsInvalidInput(m_lineEdit);
         }
-        else if (mNodeGroupName == convertedNewName)
+        else if (m_nodeGroupName == convertedNewName)
         {
-            //mErrorMsg->setVisible(false);
-            mOKButton->setEnabled(true);
-            mLineEdit->setStyleSheet("");
+            m_okButton->setEnabled(true);
+            m_lineEdit->setStyleSheet("");
         }
         else
         {
             // find duplicate name, it can't be the same name because we already handle this case before
-            EMotionFX::NodeGroup* nodeGroup = mActor->FindNodeGroupByName(convertedNewName.c_str());
+            EMotionFX::NodeGroup* nodeGroup = m_actor->FindNodeGroupByName(convertedNewName.c_str());
             if (nodeGroup)
             {
-                mOKButton->setEnabled(false);
-                GetManager()->SetWidgetAsInvalidInput(mLineEdit);
+                m_okButton->setEnabled(false);
+                GetManager()->SetWidgetAsInvalidInput(m_lineEdit);
                 return;
             }
 
             // no duplicate name found
-            mOKButton->setEnabled(true);
-            mLineEdit->setStyleSheet("");
+            m_okButton->setEnabled(true);
+            m_lineEdit->setStyleSheet("");
         }
     }
 
 
     void NodeGroupManagementRenameWindow::Accepted()
     {
-        const AZStd::string convertedNewName = mLineEdit->text().toUtf8().data();
+        const AZStd::string convertedNewName = m_lineEdit->text().toUtf8().data();
 
         // execute the command
         AZStd::string outResult;
-        AZStd::string command = AZStd::string::format("AdjustNodeGroup -actorID %i -name \"%s\" -newName \"%s\"", mActor->GetID(), mNodeGroupName.c_str(), convertedNewName.c_str());
-        if (GetCommandManager()->ExecuteCommand(command.c_str(), outResult) == false)
+        auto* command = aznew CommandSystem::CommandAdjustNodeGroup(
+            GetCommandManager()->FindCommand(CommandSystem::CommandAdjustNodeGroup::s_commandName),
+            /*actorId=*/ m_actor->GetID(),
+            /*name=*/ m_nodeGroupName,
+            /*newName=*/ convertedNewName
+        );
+        if (GetCommandManager()->ExecuteCommand(command, outResult) == false)
         {
             AZ_Error("EMotionFX", false, outResult.c_str());
         }
@@ -127,11 +131,11 @@ namespace EMStudio
         : QWidget(parent)
     {
         // init the button variables to nullptr
-        mAddButton          = nullptr;
-        mRemoveButton       = nullptr;
-        mClearButton        = nullptr;
-        mNodeGroupsTable    = nullptr;
-        mSelectedRow        = MCORE_INVALIDINDEX32;
+        m_addButton          = nullptr;
+        m_removeButton       = nullptr;
+        m_clearButton        = nullptr;
+        m_nodeGroupsTable    = nullptr;
+        m_selectedRow        = MCORE_INVALIDINDEX32;
 
         // set the node group widget
         SetNodeGroupWidget(nodeGroupWidget);
@@ -151,20 +155,20 @@ namespace EMStudio
     void NodeGroupManagementWidget::Init()
     {
         // create the node groups table
-        mNodeGroupsTable = new QTableWidget();
+        m_nodeGroupsTable = new QTableWidget();
 
         // create the table widget
-        mNodeGroupsTable->setAlternatingRowColors(true);
-        mNodeGroupsTable->setCornerButtonEnabled(false);
-        mNodeGroupsTable->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        mNodeGroupsTable->setContextMenuPolicy(Qt::DefaultContextMenu);
+        m_nodeGroupsTable->setAlternatingRowColors(true);
+        m_nodeGroupsTable->setCornerButtonEnabled(false);
+        m_nodeGroupsTable->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        m_nodeGroupsTable->setContextMenuPolicy(Qt::DefaultContextMenu);
 
         // set the table to row single selection
-        mNodeGroupsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mNodeGroupsTable->setSelectionMode(QAbstractItemView::SingleSelection);
+        m_nodeGroupsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_nodeGroupsTable->setSelectionMode(QAbstractItemView::SingleSelection);
 
         // set the column count
-        mNodeGroupsTable->setColumnCount(3);
+        m_nodeGroupsTable->setColumnCount(3);
 
         // set header items for the table
         QTableWidgetItem* enabledHeaderItem = new QTableWidgetItem("");
@@ -172,44 +176,44 @@ namespace EMStudio
         QTableWidgetItem* numNodesHeaderItem = new QTableWidgetItem("Num Nodes");
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         numNodesHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mNodeGroupsTable->setHorizontalHeaderItem(0, enabledHeaderItem);
-        mNodeGroupsTable->setHorizontalHeaderItem(1, nameHeaderItem);
-        mNodeGroupsTable->setHorizontalHeaderItem(2, numNodesHeaderItem);
+        m_nodeGroupsTable->setHorizontalHeaderItem(0, enabledHeaderItem);
+        m_nodeGroupsTable->setHorizontalHeaderItem(1, nameHeaderItem);
+        m_nodeGroupsTable->setHorizontalHeaderItem(2, numNodesHeaderItem);
 
         // set the first column fixed
-        QHeaderView* horizontalHeader = mNodeGroupsTable->horizontalHeader();
-        mNodeGroupsTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
-        mNodeGroupsTable->setColumnWidth(0, 19);
+        QHeaderView* horizontalHeader = m_nodeGroupsTable->horizontalHeader();
+        m_nodeGroupsTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
+        m_nodeGroupsTable->setColumnWidth(0, 19);
 
         // set the name column width
-        mNodeGroupsTable->setColumnWidth(1, 150);
+        m_nodeGroupsTable->setColumnWidth(1, 150);
 
         // set the vertical columns not visible
-        QHeaderView* verticalHeader = mNodeGroupsTable->verticalHeader();
+        QHeaderView* verticalHeader = m_nodeGroupsTable->verticalHeader();
         verticalHeader->setVisible(false);
 
         // set the last column to take the whole space
         horizontalHeader->setStretchLastSection(true);
 
         // disable editing
-        mNodeGroupsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        m_nodeGroupsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
         // create buttons
-        mAddButton      = new QPushButton();
-        mRemoveButton   = new QPushButton();
-        mClearButton    = new QPushButton();
+        m_addButton      = new QPushButton();
+        m_removeButton   = new QPushButton();
+        m_clearButton    = new QPushButton();
 
-        EMStudioManager::MakeTransparentButton(mAddButton,     "Images/Icons/Plus.svg",   "Add a new node group");
-        EMStudioManager::MakeTransparentButton(mRemoveButton,  "Images/Icons/Minus.svg",  "Remove selected node groups");
-        EMStudioManager::MakeTransparentButton(mClearButton,   "Images/Icons/Clear.svg",  "Remove all node groups");
+        EMStudioManager::MakeTransparentButton(m_addButton,     "Images/Icons/Plus.svg",   "Add a new node group");
+        EMStudioManager::MakeTransparentButton(m_removeButton,  "Images/Icons/Minus.svg",  "Remove selected node groups");
+        EMStudioManager::MakeTransparentButton(m_clearButton,   "Images/Icons/Clear.svg",  "Remove all node groups");
 
         // add the buttons to the button layout
         QHBoxLayout* buttonLayout = new QHBoxLayout();
         buttonLayout->setSpacing(0);
         buttonLayout->setAlignment(Qt::AlignLeft);
-        buttonLayout->addWidget(mAddButton);
-        buttonLayout->addWidget(mRemoveButton);
-        buttonLayout->addWidget(mClearButton);
+        buttonLayout->addWidget(m_addButton);
+        buttonLayout->addWidget(m_removeButton);
+        buttonLayout->addWidget(m_clearButton);
 
         // create the layouts
         QVBoxLayout* layout = new QVBoxLayout();
@@ -220,18 +224,16 @@ namespace EMStudio
 
         // add widgets to the main layout
         layout->addLayout(buttonLayout);
-        layout->addWidget(mNodeGroupsTable);
+        layout->addWidget(m_nodeGroupsTable);
 
         // set the main layout
         setLayout(layout);
 
         // connect controls to the slots
-        connect(mAddButton, &QPushButton::clicked, this, &NodeGroupManagementWidget::AddNodeGroup);
-        connect(mRemoveButton, &QPushButton::clicked, this, &NodeGroupManagementWidget::RemoveSelectedNodeGroup);
-        connect(mClearButton, &QPushButton::clicked, this, &NodeGroupManagementWidget::ClearNodeGroups);
-        connect(mNodeGroupsTable, &QTableWidget::itemSelectionChanged, this, &NodeGroupManagementWidget::UpdateNodeGroupWidget);
-        //connect( mNodeGroupsTable, SIGNAL(currentItemChanged(QTableWidgetItem*, QTableWidgetItem*)), this, SLOT(UpdateNodeGroupWidget(QTableWidgetItem*, QTableWidgetItem*)) );
-        //connect( mNodeGroupsTable, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(NodeGroupeNameDoubleClicked(QTableWidgetItem*)) );
+        connect(m_addButton, &QPushButton::clicked, this, &NodeGroupManagementWidget::AddNodeGroup);
+        connect(m_removeButton, &QPushButton::clicked, this, &NodeGroupManagementWidget::RemoveSelectedNodeGroup);
+        connect(m_clearButton, &QPushButton::clicked, this, &NodeGroupManagementWidget::ClearNodeGroups);
+        connect(m_nodeGroupsTable, &QTableWidget::itemSelectionChanged, this, &NodeGroupManagementWidget::UpdateNodeGroupWidget);
     }
 
 
@@ -239,35 +241,35 @@ namespace EMStudio
     void NodeGroupManagementWidget::UpdateInterface()
     {
         // check if the current actor exists
-        if (mActor == nullptr)
+        if (m_actor == nullptr)
         {
             // remove all rows
-            mNodeGroupsTable->setRowCount(0);
+            m_nodeGroupsTable->setRowCount(0);
 
             // disable the controls
-            mAddButton->setDisabled(true);
-            mRemoveButton->setDisabled(true);
-            mClearButton->setDisabled(true);
+            m_addButton->setDisabled(true);
+            m_removeButton->setDisabled(true);
+            m_clearButton->setDisabled(true);
 
             // stop here
             return;
         }
 
         // enable/disable the controls
-        mAddButton->setDisabled(false);
-        const bool disableButtons = mActor->GetNumNodeGroups() == 0;
-        mRemoveButton->setDisabled(disableButtons);
-        mClearButton->setDisabled(disableButtons);
+        m_addButton->setDisabled(false);
+        const bool disableButtons = m_actor->GetNumNodeGroups() == 0;
+        m_removeButton->setDisabled(disableButtons);
+        m_clearButton->setDisabled(disableButtons);
 
         // set the row count
-        mNodeGroupsTable->setRowCount(mActor->GetNumNodeGroups());
+        m_nodeGroupsTable->setRowCount(aznumeric_caster(m_actor->GetNumNodeGroups()));
 
         // fill the table with the existing node groups
-        const uint32 numNodeGroups = mActor->GetNumNodeGroups();
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        const size_t numNodeGroups = m_actor->GetNumNodeGroups();
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             // get the nodegroup
-            EMotionFX::NodeGroup* nodeGroup = mActor->GetNodeGroup(i);
+            EMotionFX::NodeGroup* nodeGroup = m_actor->GetNodeGroup(i);
 
             // continue if node group does not exist
             if (nodeGroup == nullptr)
@@ -285,22 +287,22 @@ namespace EMStudio
 
             // create table items
             QTableWidgetItem* tableItemGroupName = new QTableWidgetItem(nodeGroup->GetName());
-            AZStd::string numGroupString = AZStd::string::format("%i", nodeGroup->GetNumNodes());
+            AZStd::string numGroupString = AZStd::string::format("%zu", nodeGroup->GetNumNodes());
             QTableWidgetItem* tableItemNumNodes = new QTableWidgetItem(numGroupString.c_str());
 
             // add items to the table
-            mNodeGroupsTable->setCellWidget(i, 0, checkbox);
-            mNodeGroupsTable->setItem(i, 1, tableItemGroupName);
-            mNodeGroupsTable->setItem(i, 2, tableItemNumNodes);
+            m_nodeGroupsTable->setCellWidget(aznumeric_caster(i), 0, checkbox);
+            m_nodeGroupsTable->setItem(aznumeric_caster(i), 1, tableItemGroupName);
+            m_nodeGroupsTable->setItem(aznumeric_caster(i), 2, tableItemNumNodes);
 
             // set the row height
-            mNodeGroupsTable->setRowHeight(i, 21);
+            m_nodeGroupsTable->setRowHeight(aznumeric_caster(i), 21);
         }
 
         // set the old selected row if any one
-        if (mSelectedRow != MCORE_INVALIDINDEX32)
+        if (m_selectedRow != MCORE_INVALIDINDEX32)
         {
-            mNodeGroupsTable->setCurrentCell(mSelectedRow, 0);
+            m_nodeGroupsTable->setCurrentCell(m_selectedRow, 0);
         }
     }
 
@@ -309,7 +311,7 @@ namespace EMStudio
     void NodeGroupManagementWidget::SetActor(EMotionFX::Actor* actor)
     {
         // set the new actor
-        mActor = actor;
+        m_actor = actor;
 
         // update the interface
         UpdateInterface();
@@ -320,7 +322,7 @@ namespace EMStudio
     void NodeGroupManagementWidget::SetNodeGroupWidget(NodeGroupWidget* nodeGroupWidget)
     {
         // set the node group widget
-        mNodeGroupWidget = nodeGroupWidget;
+        m_nodeGroupWidget = nodeGroupWidget;
     }
 
 
@@ -328,131 +330,39 @@ namespace EMStudio
     void NodeGroupManagementWidget::UpdateNodeGroupWidget()
     {
         // return if no node group widget is set
-        if (mNodeGroupWidget == nullptr)
+        if (m_nodeGroupWidget == nullptr)
         {
             return;
         }
 
         // set the node group widget to the actual selection
-        mNodeGroupWidget->SetActor(mActor);
+        m_nodeGroupWidget->SetActor(m_actor);
 
         // return if the actor is not valid
-        if (mActor == nullptr)
+        if (m_actor == nullptr)
         {
             return;
         }
 
         // get the current row
-        const int currentRow = mNodeGroupsTable->currentRow();
+        const int currentRow = m_nodeGroupsTable->currentRow();
 
         // check if the row is valid
         if (currentRow != -1)
         {
             // set the current row
-            mSelectedRow = currentRow;
+            m_selectedRow = currentRow;
 
             // set the node group
-            EMotionFX::NodeGroup* nodeGroup = mActor->FindNodeGroupByName(FromQtString(mNodeGroupsTable->item(mSelectedRow, 1)->text()).c_str());
-            mNodeGroupWidget->SetNodeGroup(nodeGroup);
+            EMotionFX::NodeGroup* nodeGroup = m_actor->FindNodeGroupByName(FromQtString(m_nodeGroupsTable->item(m_selectedRow, 1)->text()).c_str());
+            m_nodeGroupWidget->SetNodeGroup(nodeGroup);
         }
         else
         {
-            mNodeGroupWidget->SetNodeGroup(nullptr);
-            mSelectedRow = MCORE_INVALIDINDEX32;
+            m_nodeGroupWidget->SetNodeGroup(nullptr);
+            m_selectedRow = MCORE_INVALIDINDEX32;
         }
     }
-    /*void NodeGroupManagementWidget::UpdateNodeGroupWidget(QTableWidgetItem* current, QTableWidgetItem* previous)
-    {
-        MCORE_UNUSED(previous);
-
-        // return if no node group widget is set
-        if (mNodeGroupWidget == nullptr)
-            return;
-
-        // set the node group widget to the actual selection
-        mNodeGroupWidget->SetActor( mActor );
-
-        if (current)
-        {
-            // set the current row
-            mSelectedRow = current->row();
-
-            // set the node group
-            NodeGroup* nodeGroup = mActor->FindNodeGroupByName( FromQtString(mNodeGroupsTable->item(current->row(), 1)->text()).c_str() );
-            mNodeGroupWidget->SetNodeGroup( nodeGroup );
-        }
-        else
-        {
-            mNodeGroupWidget->SetNodeGroup( nullptr );
-            mSelectedRow = MCORE_INVALIDINDEX32;
-        }
-    }*/
-
-
-    // called whenever a cell is changed
-    /*void NodeGroupManagementWidget::NodeGroupNamesChanged(const QString& text)
-    {
-        // get the sender widget
-        QWidget* senderWidget = (QWidget*)sender();
-
-        // check for duplicates
-        const int duplicateFound = SearchTableForString( mNodeGroupsTable, text );
-
-        // mark edit field in red, if entry already exists
-        if (duplicateFound >= 0)
-            GetManager()->SetWidgetAsInvalidInput( senderWidget );
-        else
-            senderWidget->setStyleSheet("");
-    }*/
-
-
-    // starts editing
-    /*void NodeGroupManagementWidget::NodeGroupeNameDoubleClicked(QTableWidgetItem* item)
-    {
-        // add new line edit for the selected widget
-        QLineEdit* lineEdit = new QLineEdit( mNodeGroupsTable->item(item->row(), 0)->text() );
-        mNodeGroupsTable->setCellWidget( item->row(), 0, lineEdit );
-
-        // jump into the edit field
-        lineEdit->selectAll();
-        lineEdit->setFocus();
-        mNodeGroupsTable->setCurrentCell( item->row(), 0 );
-
-        // connect slots for edit finishing and text change
-        connect( lineEdit, SIGNAL(editingFinished()), this, SLOT(NodeGroupNameEditingFinished()) );
-        connect( lineEdit, SIGNAL(textChanged(QString)), this, SLOT(NodeGroupNamesChanged(QString)) );
-    }*/
-
-
-    // called when editing is finished
-    /*void NodeGroupManagementWidget::NodeGroupNameEditingFinished()
-    {
-        // get the current item
-        QTableWidgetItem* item = mNodeGroupsTable->currentItem();
-
-        // get the sender widget
-        QLineEdit* senderWidget = (QLineEdit*)sender();
-
-        // return if one of the widgets does not exist
-        if (item == nullptr || senderWidget == nullptr)
-            return;
-
-        // call commands for name change if name does not exist yet
-        if (senderWidget->styleSheet() == "")
-        {
-            // call command for adding a new node group
-            String outResult;
-            String command;
-            command.Format( "AdjustNodeGroup -actorID %i -name \"%s\" -newName \"%s\"", mActor->GetID(), FromQtString(item->text()).c_str(), FromQtString(senderWidget->text()).c_str() );
-            if (EMStudio::GetCommandManager()->ExecuteCommand( command.c_str(), outResult ) == false)
-                LogError( outResult.c_str() );
-        }
-        else
-        {
-            // delete the line edit
-            mNodeGroupsTable->setCellWidget(item->row(), item->column(), nullptr);
-        }
-    }*/
 
 
     // function to add a new node group with the specified name
@@ -461,7 +371,7 @@ namespace EMStudio
         // find the node group index to add
         uint32 groupNumber = 0;
         AZStd::string groupName = AZStd::string::format("UnnamedNodeGroup%i", groupNumber);
-        while (SearchTableForString(mNodeGroupsTable, groupName.c_str(), true) >= 0)
+        while (SearchTableForString(m_nodeGroupsTable, groupName.c_str(), true) >= 0)
         {
             ++groupNumber;
             groupName = AZStd::string::format("UnnamedNodeGroup%i", groupNumber);
@@ -469,20 +379,15 @@ namespace EMStudio
 
         // call command for adding a new node group
         AZStd::string outResult;
-        const AZStd::string command = AZStd::string::format("AddNodeGroup -actorID %i -name \"%s\"", mActor->GetID(), groupName.c_str());
+        const AZStd::string command = AZStd::string::format("AddNodeGroup -actorID %i -name \"%s\"", m_actor->GetID(), groupName.c_str());
         if (EMStudio::GetCommandManager()->ExecuteCommand(command.c_str(), outResult) == false)
         {
             AZ_Error("EMotionFX", false, outResult.c_str());
         }
 
         // select the new added row
-        const int insertPosition = SearchTableForString(mNodeGroupsTable, groupName.c_str());
-        mNodeGroupsTable->selectRow(insertPosition);
-
-        // find insert position
-        /*int insertPosition = SearchTableForString( mNodeGroupsTable, groupName.c_str() );
-        if (insertPosition >= 0)
-            NodeGroupeNameDoubleClicked( mNodeGroupsTable->item(insertPosition, 0) );*/
+        const int insertPosition = SearchTableForString(m_nodeGroupsTable, groupName.c_str());
+        m_nodeGroupsTable->selectRow(insertPosition);
     }
 
 
@@ -490,38 +395,38 @@ namespace EMStudio
     void NodeGroupManagementWidget::RemoveSelectedNodeGroup()
     {
         // set the node group of the node group widget to nullptr
-        if (mNodeGroupWidget)
+        if (m_nodeGroupWidget)
         {
-            mNodeGroupWidget->SetNodeGroup(nullptr);
+            m_nodeGroupWidget->SetNodeGroup(nullptr);
         }
 
         // return if there is no entry to delete
-        const int currentRow = mNodeGroupsTable->currentRow();
+        const int currentRow = m_nodeGroupsTable->currentRow();
         if (currentRow < 0)
         {
             return;
         }
 
         // get the nodegroup
-        QTableWidgetItem* item = mNodeGroupsTable->item(currentRow, 1);
-        EMotionFX::NodeGroup* nodeGroup = mActor->FindNodeGroupByName(FromQtString(item->text()).c_str());
+        QTableWidgetItem* item = m_nodeGroupsTable->item(currentRow, 1);
+        EMotionFX::NodeGroup* nodeGroup = m_actor->FindNodeGroupByName(FromQtString(item->text()).c_str());
 
         // call command for removing a nodegroup
         AZStd::string outResult;
-        const AZStd::string command = AZStd::string::format("RemoveNodeGroup -actorID %i -name \"%s\"", mActor->GetID(), nodeGroup->GetName());
+        const AZStd::string command = AZStd::string::format("RemoveNodeGroup -actorID %i -name \"%s\"", m_actor->GetID(), nodeGroup->GetName());
         if (EMStudio::GetCommandManager()->ExecuteCommand(command.c_str(), outResult) == false)
         {
             AZ_Error("EMotionFX", false, outResult.c_str());
         }
 
         // selected the next row
-        if (currentRow > (mNodeGroupsTable->rowCount() - 1))
+        if (currentRow > (m_nodeGroupsTable->rowCount() - 1))
         {
-            mNodeGroupsTable->selectRow(currentRow - 1);
+            m_nodeGroupsTable->selectRow(currentRow - 1);
         }
         else
         {
-            mNodeGroupsTable->selectRow(currentRow);
+            m_nodeGroupsTable->selectRow(currentRow);
         }
     }
 
@@ -530,11 +435,11 @@ namespace EMStudio
     void NodeGroupManagementWidget::RenameSelectedNodeGroup()
     {
         // get the nodegroup
-        QTableWidgetItem* item = mNodeGroupsTable->item(mNodeGroupsTable->currentRow(), 1);
-        EMotionFX::NodeGroup* nodeGroup = mActor->FindNodeGroupByName(FromQtString(item->text()).c_str());
+        QTableWidgetItem* item = m_nodeGroupsTable->item(m_nodeGroupsTable->currentRow(), 1);
+        EMotionFX::NodeGroup* nodeGroup = m_actor->FindNodeGroupByName(FromQtString(item->text()).c_str());
 
         // show the rename window
-        NodeGroupManagementRenameWindow nodeGroupManagementRenameWindow(this, mActor, nodeGroup->GetName());
+        NodeGroupManagementRenameWindow nodeGroupManagementRenameWindow(this, m_actor, nodeGroup->GetName());
         nodeGroupManagementRenameWindow.exec();
     }
 
@@ -542,7 +447,7 @@ namespace EMStudio
     // function to clear the nodegroups
     void NodeGroupManagementWidget::ClearNodeGroups()
     {
-        CommandSystem::ClearNodeGroupsCommand(mActor);
+        CommandSystem::ClearNodeGroupsCommand(m_actor);
     }
 
 
@@ -554,23 +459,27 @@ namespace EMStudio
 
         // find the checkbox row
         AZStd::string nodeGroupName;
-        const int rowCount = mNodeGroupsTable->rowCount();
+        const int rowCount = m_nodeGroupsTable->rowCount();
         for (int i = 0; i < rowCount; ++i)
         {
-            QCheckBox* rowChechbox = (QCheckBox*)mNodeGroupsTable->cellWidget(i, 0);
+            QCheckBox* rowChechbox = (QCheckBox*)m_nodeGroupsTable->cellWidget(i, 0);
             if (rowChechbox == senderCheckbox)
             {
-                nodeGroupName = mNodeGroupsTable->item(i, 1)->text().toUtf8().data();
+                nodeGroupName = m_nodeGroupsTable->item(i, 1)->text().toUtf8().data();
+                break;
             }
         }
 
         // execute the command
         AZStd::string outResult;
-        const AZStd::string command = AZStd::string::format("AdjustNodeGroup -actorID %i -name \"%s\" -enabledOnDefault \"%s\"", 
-            mActor->GetID(), 
-            nodeGroupName.c_str(), 
-            AZStd::to_string(checked).c_str());
-        if (EMStudio::GetCommandManager()->ExecuteCommand(command.c_str(), outResult) == false)
+        auto* command = aznew CommandSystem::CommandAdjustNodeGroup(
+            GetCommandManager()->FindCommand(CommandSystem::CommandAdjustNodeGroup::s_commandName),
+            /*actorId=*/ m_actor->GetID(),
+            /*name=*/ nodeGroupName,
+            /*newName=*/ AZStd::nullopt,
+            /*enabledOnDefault=*/ checked
+        );
+        if (EMStudio::GetCommandManager()->ExecuteCommand(command, outResult) == false)
         {
             AZ_Error("EMotionFX", false, outResult.c_str());
         }
@@ -642,13 +551,13 @@ namespace EMStudio
     void NodeGroupManagementWidget::contextMenuEvent(QContextMenuEvent* event)
     {
         // if the actor is not valid, the node group management is disabled
-        if (mActor == nullptr)
+        if (m_actor == nullptr)
         {
             return;
         }
 
         // get the current selection
-        const QList<QTableWidgetItem*> selectedItems = mNodeGroupsTable->selectedItems();
+        const QList<QTableWidgetItem*> selectedItems = m_nodeGroupsTable->selectedItems();
 
         // get the number of selected items
         const uint32 numSelectedItems = selectedItems.count();

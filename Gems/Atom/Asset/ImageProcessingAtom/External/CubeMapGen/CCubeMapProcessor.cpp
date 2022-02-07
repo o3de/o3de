@@ -3,13 +3,12 @@
 //=============================================================================
 // Modified from original
 
-#include <ImageProcessing_precompiled.h>
 #include "CCubeMapProcessor.h"
 
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/std/string/string.h>
 
-#define CP_PI   3.14159265358979323846
+#define CP_PI   3.14159265358979323846f
 
 
 namespace ImageProcessingAtom
@@ -260,10 +259,10 @@ namespace ImageProcessingAtom
        //get face idx and u, v texel coordinate in face
        VectToTexelCoord(a_XYZ, a_Surface[0].m_Width, &faceIdx, &u, &v );
 
-       u = VM_MIN((int32)u, a_Surface[0].m_Width - 1);
-       v = VM_MIN((int32)v, a_Surface[0].m_Width - 1);
+       u = static_cast<float>(VM_MIN((int32)u, a_Surface[0].m_Width - 1));
+       v = static_cast<float>(VM_MIN((int32)v, a_Surface[0].m_Width - 1));
 
-       return( a_Surface[faceIdx].GetSurfaceTexelPtr(u, v) );
+       return( a_Surface[faceIdx].GetSurfaceTexelPtr(static_cast<int32>(u), static_cast<int32>(v)) );
     }
 
     //--------------------------------------------------------------------------------------
@@ -358,7 +357,7 @@ namespace ImageProcessingAtom
        VM_XPROD3_UNTYPED(xProdVect, edgeVect0, edgeVect1 );
        texelArea += 0.5f * sqrt( VM_DOTPROD3_UNTYPED(xProdVect, xProdVect ) );
 
-       return texelArea;
+       return static_cast<float>(texelArea);
     }
 
 
@@ -617,8 +616,6 @@ namespace ImageProcessingAtom
              a_FilterExtents[oppositeFaceIdx].Augment((a_SrcSize-1), (a_SrcSize-1), 0);            
           }
        }
-
-       minV=minV;
     }
 
 
@@ -1131,7 +1128,7 @@ namespace ImageProcessingAtom
                          //  if p0 = 0 and p1 = 1, and d0 and d1 = 0, the interpolation reduces to
                          //
                          //  p(t) =  - 2t^3 + 3t^2
-                         fixupWeight = ((-2.0 * fixupFrac + 3.0) * fixupFrac * fixupFrac);
+                         fixupWeight = ((-2.0f * fixupFrac + 3.0f) * fixupFrac * fixupFrac);
                       }
                       break;
                       case CP_FIXUP_AVERAGE_LINEAR:
@@ -1148,7 +1145,7 @@ namespace ImageProcessingAtom
                       break;
                       case CP_FIXUP_AVERAGE_HERMITE:
                       {
-                         fixupWeight = ((-2.0 * fixupFrac + 3.0) * fixupFrac * fixupFrac);
+                         fixupWeight = ((-2.0f * fixupFrac + 3.0f) * fixupFrac * fixupFrac);
 
                          //perform weighted average of edge tap value and current tap
                          // fade off weight using hermite spline with distance from edge
@@ -1539,7 +1536,7 @@ namespace ImageProcessingAtom
        // Find angle for which: cos(a) ^ cosinePower = epsilon
        const float epsilon = 0.000001f;
        float angle = acosf(powf(epsilon, 1.0f / cosinePower));
-       angle *= 180.0f / (float)CP_PI;
+       angle *= 180.0f / CP_PI;
        angle *= 2.0f;
 
        return angle;
@@ -1556,7 +1553,7 @@ namespace ImageProcessingAtom
         bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
         bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
     
-        return float(bits) * 2.3283064365386963e-10;  // float(bits) * 2^-32
+        return float(bits) * 2.3283064365386963e-10f;  // float(bits) * 2^-32
     }
 
     inline void HammersleySequence(uint32 sampleIndex, uint32 sampleCount, float* vXi)
@@ -1669,7 +1666,7 @@ namespace ImageProcessingAtom
                             float mip = 0.5f * log2f(solidAngleSample / solidAngleTexel) + 1.0f;
 
                             //determine surrounding mip levels
-                            uint32 mipA = floor(mip);
+                            uint32 mipA = static_cast<uint32>(floor(mip));
                             uint32 mipB = mipA + 1;
                             float lerp = 0.0f;
                             VM_CLAMP(lerp, mip - mipA, 0.0f, 1.0f);
@@ -1820,7 +1817,7 @@ namespace ImageProcessingAtom
         float filterAngle;
 
         //min angle a src texel can cover (in degrees)
-        srcTexelAngle = (180.0f / (float)CP_PI) * atan2f(1.0f, (float)a_SrcCubeMapWidth);  
+        srcTexelAngle = (180.0f / CP_PI) * atan2f(1.0f, (float)a_SrcCubeMapWidth);  
 
         //filter angle is 1/2 the cone angle
         filterAngle = a_FilterConeAngle / 2.0f;
@@ -1871,7 +1868,7 @@ namespace ImageProcessingAtom
         const int32 dstSize = a_DstCubeMap[0].m_Width;
 
         //min angle a src texel can cover (in degrees)
-        const float srcTexelAngle = (180.0f / (float)CP_PI) * atan2f(1.0f, (float)srcSize);  
+        const float srcTexelAngle = (180.0f / CP_PI) * atan2f(1.0f, (float)srcSize);  
 
         //angle about center tap to define filter cone
         float filterAngle;
@@ -1898,7 +1895,7 @@ namespace ImageProcessingAtom
 
         //dotProdThresh threshold based on cone angle to determine whether or not taps 
         // reside within the cone angle
-        const float dotProdThresh = cosf( ((float)CP_PI / 180.0f) * filterAngle );
+        const float dotProdThresh = cosf( (CP_PI / 180.0f) * filterAngle );
 
         //thread progress
         m_ThreadProgress[a_ThreadIdx].m_StartFace = a_FaceIdxStart;
@@ -2005,8 +2002,8 @@ namespace ImageProcessingAtom
         else if( a_FilterType == CP_FILTER_TYPE_ANGULAR_GAUSSIAN )
         {
             //fit 3 standard deviations within angular extent of filter
-            CP_ITYPE stdDev = (a_FilterAngle * CP_PI / 180.0) / 3.0;
-            CP_ITYPE inv2Variance = 1.0 / (2.0 * stdDev * stdDev);
+            CP_ITYPE stdDev = (a_FilterAngle * CP_PI / 180.0f) / 3.0f;
+            CP_ITYPE inv2Variance = 1.0f / (2.0f * stdDev * stdDev);
         
             for(iLUTEntry=0; iLUTEntry<m_NumFilterLUTEntries; iLUTEntry++ )
             {

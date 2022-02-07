@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -196,7 +197,7 @@ namespace AzToolsFramework
 
         AZStd::vector<AzToolsFramework::ActionOverride> PlaceHolderComponentMode::PopulateActionsImpl()
         {
-            const AZ::Crc32 placeHolderComponentModeAction = AZ_CRC_CE("com.amazon.action.placeholder.test");
+            const AZ::Crc32 placeHolderComponentModeAction = AZ_CRC_CE("com.o3de.action.placeholder.test");
 
             return AZStd::vector<AzToolsFramework::ActionOverride>
             {

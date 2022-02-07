@@ -1,23 +1,26 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+
+import json
+import math
 import os
 import time
-import math
+import traceback
+from typing import Callable, Tuple
 
 import azlmbr
 import azlmbr.legacy.general as general
 import azlmbr.debug
 
-import traceback
 
 class FailFast(Exception):
     """
     Raise to stop proceeding through test steps.
     """
-
     pass
 
 
@@ -29,8 +32,8 @@ class TestHelper:
         # general.idle_wait_frames(1)
 
     @staticmethod
-    def open_level(directory, level):
-        # type: (str, ) -> None
+    def open_level(directory : str, level : str):
+        # type: (str, str) -> None
         """
         :param level: the name of the level folder in AutomatedTesting\\Physics\\
 
@@ -50,7 +53,7 @@ class TestHelper:
         general.idle_wait_frames(200)
 
     @staticmethod
-    def enter_game_mode(msgtuple_success_fail):
+    def enter_game_mode(msgtuple_success_fail : Tuple[str, str]):
         # type: (tuple) -> None
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
@@ -64,7 +67,7 @@ class TestHelper:
         Report.critical_result(msgtuple_success_fail, general.is_in_game_mode())
 
     @staticmethod
-    def exit_game_mode(msgtuple_success_fail):
+    def exit_game_mode(msgtuple_success_fail : Tuple[str, str]):
         # type: (tuple) -> None
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for exiting game mode.
@@ -124,6 +127,30 @@ class TestHelper:
                 if ret:
                     return True
 
+    @staticmethod
+    def close_error_windows():
+        """
+        Closes Error Report and Error Log windows that block focus if they are visible.
+        :return: None
+        """
+        if general.is_pane_visible("Error Report"):
+            general.close_pane("Error Report")
+        if general.is_pane_visible("Error Log"):
+            general.close_pane("Error Log")
+
+    @staticmethod
+    def close_display_helpers():
+        """
+        Closes helper gizmos, anti-aliasing, and FPS meters.
+        :return: None
+        """
+        if general.is_helpers_shown():
+            general.toggle_helpers()
+            general.idle_wait(1.0)
+        general.idle_wait(1.0)
+        general.run_console("r_displayInfo=0")
+        general.idle_wait(1.0)
+
 
 class Timeout:
     # type: (float) -> None
@@ -152,78 +179,125 @@ class Report:
     _exception = None
 
     @staticmethod
-    def start_test(test_function):
+    def start_test(test_function : Callable):
+        """
+        Runs the test, outputs the report and asserts in case of failure.
+        @param: The test function to execute
+        """
+        Report._results = []
+        Report._exception = None
+        general.test_output(f"Starting test {test_function.__name__}...\n")
         try:
             test_function()
         except Exception as ex:
             Report._exception = traceback.format_exc()
-        Report.report_results(test_function)
+
+        success, report_str = Report.get_report(test_function)
+        # Print on the o3de console, for debugging purpuses
+        print(report_str)
+        # Print the report on the piped stdout of the application
+        general.test_output(report_str)
+        assert success, f"Test {test_function.__name__} failed"
 
     @staticmethod
-    def report_results(test_function):
-        success = True 
-        report = f"Report for {test_function.__name__}:\n"
+    def get_report(test_function : Callable) -> (bool, str):
+        """
+        Outputs infomation on the editor console for the test
+        @param msg: message to output
+        @return: (success, report_information) tuple
+        """
+        success = True
+        report = f"Test {test_function.__name__} finished.\nReport:\n"
+        # report_dict is a JSON that can be used to parse test run information from a external runner
+        # The regular report string is intended to be used for manual debugging
+        filename = os.path.splitext(os.path.basename(test_function.__code__.co_filename))[0] 
+        report_dict = {'name' : filename, 'success' : True, 'exception' : None}
         for result in Report._results:
             passed, info = result
             success = success and passed
+            test_result_info = ""
             if passed:
-                report += f"[SUCCESS] {info}\n"
+                test_result_info = f"[SUCCESS] {info}"
             else:
-                report += f"[FAILED ] {info}\n"
+                test_result_info = f"[FAILED ] {info}"
+            report += f"{test_result_info}\n"
         if Report._exception:
-            report += "EXCEPTION raised:\n  %s\n" % Report._exception[:-1].replace("\n", "\n  ")
+            exception_str = Report._exception[:-1].replace("\n", "\n  ")
+            report += "EXCEPTION raised:\n  %s\n" % exception_str
+            report_dict['exception'] = exception_str
             success = False
-        report += "Test result:  "
-        report += "SUCCESS" if success else "FAILURE"
-        print(report)
-        general.report_test_result(success, report)
+        report += "Test result:  " + ("SUCCESS" if success else "FAILURE")
+        report_dict['success'] = success
+        report_dict['output'] = report
+        report_json_str = json.dumps(report_dict)
+        # For helping parsing, the json will be always contained between JSON_START JSON_END
+        report += f"\nJSON_START({report_json_str})JSON_END\n"
+        return success, report
 
     @staticmethod
-    def info(msg):
+    def info(msg : str):
+        """
+        Outputs infomation on the editor console for the test
+        @param msg: message to output
+        """
         print("Info: {}".format(msg))
 
     @staticmethod
-    def success(msgtuple_success_fail):
+    def success(msgtuple_success_fail : Tuple[str, str]):
+        """
+        Given a test string tuple (success_string, failure_string), registers the test result as success
+        @param msgtuple_success_fail: Two element tuple of success and failure strings
+        """
         outcome = "Success: {}".format(msgtuple_success_fail[0])
         print(outcome)
         Report._results.append((True, outcome))
 
     @staticmethod
-    def failure(msgtuple_success_fail):
+    def failure(msgtuple_success_fail : Tuple[str, str]):
+        """
+        Given a test string tuple (success_string, failure_string), registers the test result as failed
+        @param msgtuple_success_fail: Two element tuple of success and failure strings
+        """
         outcome = "Failure: {}".format(msgtuple_success_fail[1])
         print(outcome)
         Report._results.append((False, outcome))
 
     @staticmethod
-    def result(msgtuple_success_fail, condition):
-        if not isinstance(condition, bool):
-            raise TypeError("condition argument must be a bool")
+    def result(msgtuple_success_fail : Tuple[str, str], outcome : bool):
+        """
+        Given a test string tuple (success_string, failure_string), registers the test result based on the
+        given outcome
+        @param msgtuple_success_fail: Two element tuple of success and failure strings
+        @param outcome: True or False if the result has been a sucess or failure
+        """
+        if not isinstance(outcome, bool):
+            raise TypeError("outcome argument must be a bool")
 
-        if condition:
+        if outcome:
             Report.success(msgtuple_success_fail)
         else:
             Report.failure(msgtuple_success_fail)
-        return condition
+        return outcome
 
     @staticmethod
-    def critical_result(msgtuple_success_fail, condition, fast_fail_message=None):
+    def critical_result(msgtuple_success_fail : Tuple[str, str], outcome : bool, fast_fail_message : str = None):
         # type: (tuple, bool, str) -> None
         """
-        if condition is False we will fail fast
+        if outcome is False we will fail fast
 
-        :param msgtuple_success_fail: messages to print based on the condition
-        :param condition: success (True) or failure (False)
+        :param msgtuple_success_fail: messages to print based on the outcome
+        :param outcome: success (True) or failure (False)
         :param fast_fail_message: [optional] message to include on fast fail
         """
-        if not isinstance(condition, bool):
-            raise TypeError("condition argument must be a bool")
+        if not isinstance(outcome, bool):
+            raise TypeError("outcome argument must be a bool")
 
-        if not Report.result(msgtuple_success_fail, condition):
+        if not Report.result(msgtuple_success_fail, outcome):
             TestHelper.fail_fast(fast_fail_message)
 
     # DEPRECATED: Use vector3_str()
     @staticmethod
-    def info_vector3(vector3, label="", magnitude=None):
+    def info_vector3(vector3 : azlmbr.math.Vector3, label : str ="", magnitude : float =None):
         # type: (azlmbr.math.Vector3, str, float) -> None
         """
         prints the vector to the Report.info log. If applied, label will print first,
@@ -241,8 +315,8 @@ class Report:
         Report.info("   x: {:.2f}, y: {:.2f}, z: {:.2f}".format(vector3.x, vector3.y, vector3.z))
         if magnitude is not None:
             Report.info("   magnitude: {:.2f}".format(magnitude))
-            
-    
+
+
 '''
 Utility for scope tracing errors and warnings.
 Usage:
@@ -254,7 +328,7 @@ Usage:
 
     Report.result(Tests.warnings_not_found_in_section, not section_tracer.has_warnings)
 
-'''    
+'''
 class Tracer:
     def __init__(self):
         self.warnings = []
@@ -300,10 +374,10 @@ class Tracer:
             self.line = args[1]
             self.function = args[2]
             self.message = args[3]
-        
+
         def __str__(self):
             return f"Assert: [{self.filename}:{self.function}:{self.line}]: {self.message}"
-            
+
         def __repr__(self):
             return f"[Assert: {self.message}]"
 
@@ -311,21 +385,21 @@ class Tracer:
         def __init__(self, args):
             self.window = args[0]
             self.message = args[1]
-    
+
     def _on_warning(self, args):
         warningInfo = Tracer.WarningInfo(args)
         self.warnings.append(warningInfo)
         Report.info("Tracer caught Warning: %s" % warningInfo.message)
         self.has_warnings = True
         return False
-        
+
     def _on_error(self, args):
         errorInfo = Tracer.ErrorInfo(args)
         self.errors.append(errorInfo)
         Report.info("Tracer caught Error: %s" % errorInfo.message)
         self.has_errors = True
         return False
-        
+
     def _on_assert(self, args):
         assertInfo = Tracer.AssertInfo(args)
         self.asserts.append(assertInfo)
@@ -387,6 +461,7 @@ class AngleHelper:
 
 def vector3_str(vector3):
     return "(x: {:.2f}, y: {:.2f}, z: {:.2f})".format(vector3.x, vector3.y, vector3.z)
-    
+
+
 def aabb_str(aabb):
     return "[Min: %s, Max: %s]" % (vector3_str(aabb.min), vector3_str(aabb.max))

@@ -1,24 +1,25 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include "CameraState.h"
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzFramework
 {
     void SetCameraClippingVolume(
-        AzFramework::CameraState& cameraState, const float nearPlane, const float farPlane, const float fovRad)
+        AzFramework::CameraState& cameraState, const float nearPlane, const float farPlane, const float verticalFovRad)
     {
         cameraState.m_nearClip = nearPlane;
         cameraState.m_farClip = farPlane;
-        cameraState.m_fovOrZoom = fovRad;
+        cameraState.m_fovOrZoom = verticalFovRad;
     }
 
     void SetCameraTransform(CameraState& cameraState, const AZ::Transform& transform)
@@ -34,20 +35,34 @@ namespace AzFramework
         SetCameraClippingVolume(cameraState, 0.1f, 1000.0f, AZ::DegToRad(60.0f));
     }
 
-    AzFramework::CameraState CreateDefaultCamera(
-         const AZ::Transform& transform, const AZ::Vector2& viewportSize)
+    CameraState CreateCamera(
+        const AZ::Transform& transform,
+        const float nearPlane,
+        const float farPlane,
+        const float verticalFovRad,
+        const AZ::Vector2& viewportSize)
     {
         AzFramework::CameraState cameraState;
 
-        SetDefaultCameraClippingVolume(cameraState);
         SetCameraTransform(cameraState, transform);
+        SetCameraClippingVolume(cameraState, nearPlane, farPlane, verticalFovRad);
         cameraState.m_viewportSize = viewportSize;
 
         return cameraState;
     }
 
-    AzFramework::CameraState CreateIdentityDefaultCamera(
-        const AZ::Vector3& position, const AZ::Vector2& viewportSize)
+    AzFramework::CameraState CreateDefaultCamera(const AZ::Transform& transform, const AZ::Vector2& viewportSize)
+    {
+        AzFramework::CameraState cameraState;
+
+        SetCameraTransform(cameraState, transform);
+        SetDefaultCameraClippingVolume(cameraState);
+        cameraState.m_viewportSize = viewportSize;
+
+        return cameraState;
+    }
+
+    AzFramework::CameraState CreateIdentityDefaultCamera(const AZ::Vector3& position, const AZ::Vector2& viewportSize)
     {
         return CreateDefaultCamera(AZ::Transform::CreateTranslation(position), viewportSize);
     }
@@ -88,15 +103,15 @@ namespace AzFramework
 
     void CameraState::Reflect(AZ::SerializeContext& serializeContext)
     {
-        serializeContext.Class<CameraState>()->
-            Field("Position", &CameraState::m_position)->
-            Field("Forward", &CameraState::m_forward)->
-            Field("Side", &CameraState::m_side)->
-            Field("Up", &CameraState::m_up)->
-            Field("ViewportSize", &CameraState::m_viewportSize)->
-            Field("NearClip", &CameraState::m_nearClip)->
-            Field("FarClip", &CameraState::m_farClip)->
-            Field("FovZoom", &CameraState::m_fovOrZoom)->
-            Field("Ortho", &CameraState::m_orthographic);
+        serializeContext.Class<CameraState>()
+            ->Field("Position", &CameraState::m_position)
+            ->Field("Forward", &CameraState::m_forward)
+            ->Field("Side", &CameraState::m_side)
+            ->Field("Up", &CameraState::m_up)
+            ->Field("ViewportSize", &CameraState::m_viewportSize)
+            ->Field("NearClip", &CameraState::m_nearClip)
+            ->Field("FarClip", &CameraState::m_farClip)
+            ->Field("FovZoom", &CameraState::m_fovOrZoom)
+            ->Field("Ortho", &CameraState::m_orthographic);
     }
 } // namespace AzFramework

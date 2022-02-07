@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,7 +49,7 @@ namespace AZ
         {
             // Check if this library hasn't already been reflected. This can happen as the ResourceCompilerScene needs
             //      to explicitly load and reflect the SceneAPI libraries to discover the available extension, while
-            //      Gems with system components need to do the same in the Project Configurator.
+            //      Gems with system components need to do the same in the Project Manager.
             if (!context->IsRemovingReflection() && context->FindClassData(SceneData::MeshGroup::TYPEINFO_Uuid()))
             {
                 return;

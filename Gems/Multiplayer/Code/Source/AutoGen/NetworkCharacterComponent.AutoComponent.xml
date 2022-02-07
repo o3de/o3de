@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="NetworkCharacterComponent"
+    Namespace="Multiplayer"
+    OverrideComponent="true"
+    OverrideController="true"
+    OverrideInclude="Multiplayer/Components/NetworkCharacterComponent.h"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <ComponentRelation Constraint="Required" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
+</Component>

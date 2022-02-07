@@ -1,16 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <SceneAPI/SceneBuilder/Importers/AssImpImporterUtilities.h>
-
-#include <AzCore/Debug/Trace.h>
-#include <AzCore/StringFunc/StringFunc.h>
-
 #include <assimp/scene.h>
+#include <AzCore/Debug/Trace.h>
+#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/queue.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <SceneAPI/SDKWrapper/AssImpTypeConverter.h>
+#include <SceneAPI/SceneBuilder/Importers/AssImpImporterUtilities.h>
 
 namespace AZ
 {
@@ -83,6 +85,102 @@ namespace AZ
                 }
 
                 return combinedTransform;
+            }
+
+            void FindAllBones(const aiScene* scene, AZStd::unordered_multimap<AZStd::string, const aiBone*>& outBoneByNameMap)
+            {
+                outBoneByNameMap.clear();
+                AZStd::queue<const aiNode*> queue;
+                AZStd::unordered_set<AZStd::string> nodesWithNoMesh;
+
+                queue.push(scene->mRootNode);
+
+                while (!queue.empty())
+                {
+                    const aiNode* currentNode = queue.front();
+                    queue.pop();
+
+                    if (currentNode->mNumMeshes == 0)
+                    {
+                        nodesWithNoMesh.emplace(currentNode->mName.C_Str());
+                    }
+
+                    for (unsigned int childIndex = 0; childIndex < currentNode->mNumChildren; ++childIndex)
+                    {
+                        queue.push(currentNode->mChildren[childIndex]);
+                    }
+                }
+
+                for (unsigned meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
+                {
+                    const aiMesh* mesh = scene->mMeshes[meshIndex];
+
+                    for (unsigned boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                    {
+                        const aiBone* bone = mesh->mBones[boneIndex];
+
+                        if (nodesWithNoMesh.contains(bone->mName.C_Str()))
+                        {
+                            outBoneByNameMap.emplace(bone->mName.C_Str(), bone);
+                        }
+                    }
+                }
+            }
+
+            DataTypes::MatrixType GetLocalSpaceBindPoseTransform(const aiScene* scene, const aiNode* node)
+            {
+                AZStd::unordered_multimap<AZStd::string, const aiBone*> boneByNameMap;
+                FindAllBones(scene, boneByNameMap);
+
+                const aiBone* bone = FindFirstBoneByNodeName(node, boneByNameMap);
+                if (bone)
+                {
+                    const aiBone* parentBone = FindFirstBoneByNodeName(node->mParent, boneByNameMap);
+                    if (parentBone)
+                    {
+                        DataTypes::MatrixType inverseOffsetMatrix = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(bone->mOffsetMatrix).GetInverseFull();
+                        const DataTypes::MatrixType parentBoneOffsetMatrix = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(parentBone->mOffsetMatrix);
+                        return parentBoneOffsetMatrix * inverseOffsetMatrix;
+                    }
+                }
+
+                return AssImpSDKWrapper::AssImpTypeConverter::ToTransform(GetConcatenatedLocalTransform(node));
+            }
+
+            const aiBone* FindFirstBoneByNodeName(const aiNode* node, AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap)
+            {
+                if (!node)
+                {
+                    return nullptr;
+                }
+
+                auto boneIterator = boneByNameMap.find(node->mName.C_Str());
+                if (boneIterator != boneByNameMap.end())
+                {
+                    return boneIterator->second;
+                }
+
+                return nullptr;
+            }
+
+            bool RecursiveHasChildBone(const aiNode* node, const AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneByNameMap)
+            {
+                const bool isBone = boneByNameMap.contains(node->mName.C_Str());
+                if (isBone)
+                {
+                    return true;
+                }
+
+                for (unsigned int childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
+                {
+                    const aiNode* childNode = node->mChildren[childIndex];
+                    if (RecursiveHasChildBone(childNode, boneByNameMap))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
         } // namespace SceneBuilder
     } // namespace SceneAPI

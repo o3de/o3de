@@ -1,7 +1,8 @@
 ----------------------------------------------------------------------------------------------------
 --
--- Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
--- 
+-- Copyright (c) Contributors to the Open 3D Engine Project.
+-- For complete copyright and license terms please see the LICENSE at the root of this distribution.
+--
 -- SPDX-License-Identifier: Apache-2.0 OR MIT
 --
 --
@@ -52,10 +53,9 @@ function PropertyOverrideTest:OnActivate()
     self.originalAssignments = MaterialComponentRequestBus.Event.GetOriginalMaterialAssignments(self.entityId);
     self.assignmentIds = self.originalAssignments:GetKeys()
 
-    for index = 0, self.assignmentIds:Size() do
-        local idOutcome = self.assignmentIds:At(index)
-        if (idOutcome:IsSuccess()) then
-            local id = idOutcome:GetValue()
+    for index = 1, self.assignmentIds:GetSize() do
+        local id = self.assignmentIds[index]
+        if (id ~= nil) then
             self.colors[index] = randomColor()
             self.lerpDirs[index] = randomDir()
         end
@@ -64,20 +64,20 @@ function PropertyOverrideTest:OnActivate()
 end
 
 function PropertyOverrideTest:UpdateFactor(assignmentId)
-    local propertyName = Name("baseColor.factor")
+    local propertyName = "baseColor.factor"
     local propertyValue = math.random()
     MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
 function PropertyOverrideTest:UpdateColor(assignmentId, color)
-    local propertyName = Name("baseColor.color")
+    local propertyName = "baseColor.color"
     local propertyValue = color
     MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
 function PropertyOverrideTest:UpdateTexture(assignmentId)
     if (#self.Properties.Textures > 0) then
-        local propertyName = Name("baseColor.textureMap")
+        local propertyName = "baseColor.textureMap"
         local textureName = self.Properties.Textures[ math.random( #self.Properties.Textures ) ]
         Debug.Log(textureName)
         local textureAssetId = AssetCatalogRequestBus.Broadcast.GetAssetIdByPath(textureName, Uuid(), false)
@@ -87,10 +87,9 @@ end
 
 function PropertyOverrideTest:UpdateProperties()
     Debug.Log("Overriding properties...")
-    for index = 0, self.assignmentIds:Size() do
-        local idOutcome = self.assignmentIds:At(index)
-        if (idOutcome:IsSuccess()) then
-            local id = idOutcome:GetValue()
+    for index = 1, self.assignmentIds:GetSize() do
+        local id = self.assignmentIds[index]
+        if (id ~= nil) then
             self:UpdateFactor(id)
             self:UpdateTexture(id)
         end
@@ -133,10 +132,9 @@ function lerpColor(color, lerpDir, deltaTime)
 end
 
 function PropertyOverrideTest:lerpColors(deltaTime)
-    for index = 0, self.assignmentIds:Size() do
-        local idOutcome = self.assignmentIds:At(index)
-        if (idOutcome:IsSuccess()) then
-            local id = idOutcome:GetValue()
+    for index = 1, self.assignmentIds:GetSize() do
+        local id = self.assignmentIds[index]
+        if (id ~= nil) then
             lerpColor(self.colors[index], self.lerpDirs[index], deltaTime)
             self:UpdateColor(id, self.colors[index])
         end

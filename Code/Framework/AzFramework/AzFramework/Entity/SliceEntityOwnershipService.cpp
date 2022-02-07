@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -154,7 +155,7 @@ namespace AzFramework
 
     void SliceEntityOwnershipService::CreateRootSlice()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         AZ_Assert(m_rootAsset && m_rootAsset.Get(), "Root slice asset has not been created yet.");
 
@@ -163,7 +164,7 @@ namespace AzFramework
 
     void SliceEntityOwnershipService::CreateRootSlice(AZ::SliceAsset* rootSliceAsset)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
         AZ_Assert(m_rootAsset && m_rootAsset.Get(), "Root slice asset has not been created yet.");
 
         AZ::Entity* rootEntity = new AZ::Entity();
@@ -239,7 +240,7 @@ namespace AzFramework
 
     bool SliceEntityOwnershipService::LoadFromStream(AZ::IO::GenericStream& stream, bool remapIds, EntityIdToEntityIdMap* idRemapTable, const AZ::ObjectStream::FilterDescriptor& filterDesc)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         AZ_Assert(m_rootAsset, "The entity ownership service has not been initialized.");
 
@@ -258,7 +259,7 @@ namespace AzFramework
     bool SliceEntityOwnershipService::HandleRootEntityReloadedFromStream(AZ::Entity* rootEntity, bool remapIds,
         AZ::SliceComponent::EntityIdToEntityIdMap* idRemapTable)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         if (!rootEntity)
         {
@@ -384,7 +385,7 @@ namespace AzFramework
 
     void SliceEntityOwnershipService::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> readyAsset)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
         AZ_ASSET_ATTACH_TO_SCOPE(readyAsset.Get());
 
         AZ_Assert(readyAsset.GetAs<AZ::SliceAsset>(), "Asset is not a slice!");
@@ -471,7 +472,7 @@ namespace AzFramework
 
     void SliceEntityOwnershipService::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
         if (asset == m_rootAsset && asset.Get() != m_rootAsset.Get())
         {
             Reset();
@@ -547,7 +548,7 @@ namespace AzFramework
     AZ::SliceComponent::SliceInstanceAddress SliceEntityOwnershipService::CloneSliceInstance(
         AZ::SliceComponent::SliceInstanceAddress sourceInstance, AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         AZ_Assert(sourceInstance.IsValid(), "Source slice instance is invalid.");
 

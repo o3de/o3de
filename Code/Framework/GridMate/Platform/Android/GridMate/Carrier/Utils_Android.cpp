@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,9 +18,9 @@
 
 namespace GridMate
 {
-    string Utils::GetMachineAddress(int familyType)
+    AZStd::string Utils::GetMachineAddress(int familyType)
     {
-        string machineName;
+        AZStd::string machineName;
         struct RTMRequest
         {
             nlmsghdr m_msghdr;
@@ -66,7 +67,7 @@ namespace GridMate
 
                 char address[INET6_ADDRSTRLEN] = { 0 };
                 bool isLoopback = false;
-                string devname;
+                AZStd::string devname;
                 for (int rtattrlen = IFA_PAYLOAD(nlmp); RTA_OK(rtatp, rtattrlen); rtatp = RTA_NEXT(rtatp, rtattrlen))
                 {
                     if (rtatp->rta_type == IFA_ADDRESS)

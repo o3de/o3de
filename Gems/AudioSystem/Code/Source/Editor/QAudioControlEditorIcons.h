@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,7 +31,7 @@ namespace AudioControls
             iconFile = ":/Icons/Switch_Icon.svg";
             break;
         case AudioControls::eACET_SWITCH_STATE:
-            iconFile = ":/Icons/Property_Icon.svg";
+            iconFile = ":/Icons/Property_Icon.png";
             break;
         case AudioControls::eACET_ENVIRONMENT:
             iconFile = ":/Icons/Environment_Icon.svg";
@@ -40,7 +41,7 @@ namespace AudioControls
             break;
         default:
             // should make a "default"/empty icon...
-            iconFile = ":/Icons/RTPC_Icon.svg";
+            iconFile = ":/Icons/Unassigned.svg";
         }
 
         QIcon icon(iconFile);

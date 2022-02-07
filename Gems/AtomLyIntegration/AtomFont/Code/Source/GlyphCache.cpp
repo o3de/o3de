@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,6 @@
 // Purpose:
 //  - Manage and cache glyphs, retrieving them from the renderer as needed
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
@@ -124,7 +124,7 @@ int AZ::GlyphCache::Release()
 }
 
 //-------------------------------------------------------------------------------------------------
-int AZ::GlyphCache::LoadFontFromFile(const string& fileName)
+int AZ::GlyphCache::LoadFontFromFile(const AZStd::string & fileName)
 {
     return m_fontRenderer.LoadFromFile(fileName);
 }

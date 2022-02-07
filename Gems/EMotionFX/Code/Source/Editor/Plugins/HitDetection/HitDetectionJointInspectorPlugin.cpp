@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -50,13 +51,13 @@ namespace EMotionFX
             scrollArea->setWidget(m_nodeWidget);
             scrollArea->setWidgetResizable(true);
 
-            mDock->setWidget(scrollArea);
+            m_dock->setWidget(scrollArea);
 
             EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
         }
         else
         {
-            mDock->setWidget(CreateErrorContentWidget("Hit detection collider editor depends on the PhysX gem. Please enable it in the project configurator."));
+            m_dock->setWidget(CreateErrorContentWidget("Hit detection collider editor depends on the PhysX gem. Please enable it in the Project Manager."));
         }
 
         return true;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -51,12 +52,12 @@ namespace EMotionFX
 
         MOCK_METHOD1(OnAnimGraphInstanceCreated, void(EMotionFX::AnimGraphInstance*));
         MOCK_METHOD1(OnAnimGraphInstanceDestroyed, void(EMotionFX::AnimGraphInstance*));
-        MOCK_METHOD4(OnAnimGraphFloatParameterChanged, void(EMotionFX::AnimGraphInstance*, AZ::u32, float, float));
-        MOCK_METHOD4(OnAnimGraphBoolParameterChanged, void(EMotionFX::AnimGraphInstance*, AZ::u32, bool, bool));
-        MOCK_METHOD4(OnAnimGraphStringParameterChanged, void(EMotionFX::AnimGraphInstance*, AZ::u32, const char*, const char*));
-        MOCK_METHOD4(OnAnimGraphVector2ParameterChanged, void(EMotionFX::AnimGraphInstance*, AZ::u32, const AZ::Vector2&, const AZ::Vector2&));
-        MOCK_METHOD4(OnAnimGraphVector3ParameterChanged, void(EMotionFX::AnimGraphInstance*, AZ::u32, const AZ::Vector3&, const AZ::Vector3&));
-        MOCK_METHOD4(OnAnimGraphRotationParameterChanged, void(EMotionFX::AnimGraphInstance*, AZ::u32, const AZ::Quaternion&, const AZ::Quaternion&));
+        MOCK_METHOD4(OnAnimGraphFloatParameterChanged, void(EMotionFX::AnimGraphInstance*, size_t, float, float));
+        MOCK_METHOD4(OnAnimGraphBoolParameterChanged, void(EMotionFX::AnimGraphInstance*, size_t, bool, bool));
+        MOCK_METHOD4(OnAnimGraphStringParameterChanged, void(EMotionFX::AnimGraphInstance*, size_t, const char*, const char*));
+        MOCK_METHOD4(OnAnimGraphVector2ParameterChanged, void(EMotionFX::AnimGraphInstance*, size_t, const AZ::Vector2&, const AZ::Vector2&));
+        MOCK_METHOD4(OnAnimGraphVector3ParameterChanged, void(EMotionFX::AnimGraphInstance*, size_t, const AZ::Vector3&, const AZ::Vector3&));
+        MOCK_METHOD4(OnAnimGraphRotationParameterChanged, void(EMotionFX::AnimGraphInstance*, size_t, const AZ::Quaternion&, const AZ::Quaternion&));
     };
 
     class AnimGraphComponentBusTests
@@ -142,7 +143,7 @@ namespace EMotionFX
         Integration::ActorComponent* m_actorComponent = nullptr;
         Integration::AnimGraphComponent* m_animGraphComponent = nullptr;
         AnimGraphInstance* m_animGraphInstance = nullptr;
-        AZ::u32 m_parameterIndex = InvalidIndex32;
+        size_t m_parameterIndex = InvalidIndex;
         std::string m_parameterName;
     };
 
@@ -163,15 +164,17 @@ namespace EMotionFX
 
         PrepareParameterTest(aznew FloatSliderParameter());
 
-        EXPECT_CALL(testBus, OnAnimGraphFloatParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, 3.0f));
+        {
+            testing::InSequence parameterChangedCallSequence;
+            EXPECT_CALL(testBus, OnAnimGraphFloatParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, 3.0f));
+            EXPECT_CALL(testBus, OnAnimGraphFloatParameterChanged(m_animGraphInstance, m_parameterIndex, 3.0f, 4.0f));
+        }
 
         // SetParameterFloat/GetParameterFloat() test
         Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetParameterFloat, m_parameterIndex, 3.0f);
         float newValue = 0.0f;
         Integration::AnimGraphComponentRequestBus::EventResult(newValue, m_entityId, &Integration::AnimGraphComponentRequestBus::Events::GetParameterFloat, m_parameterIndex);
         EXPECT_EQ(newValue, 3.0f) << "Expected a parameter value of 3.0.";
-
-        EXPECT_CALL(testBus, OnAnimGraphFloatParameterChanged(m_animGraphInstance, m_parameterIndex, 3.0f, 4.0f));
 
         // SetNamedParameterFloat/GetNamedParameterFloat() test
         Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetNamedParameterFloat, m_parameterName.c_str(), 4.0f);
@@ -186,15 +189,18 @@ namespace EMotionFX
 
         PrepareParameterTest(aznew BoolParameter());
 
-        EXPECT_CALL(testBus, OnAnimGraphBoolParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, true));
+        {
+            testing::InSequence parameterChangedCallSequence;
+            EXPECT_CALL(testBus, OnAnimGraphBoolParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, true));
+            EXPECT_CALL(testBus, OnAnimGraphBoolParameterChanged(m_animGraphInstance, m_parameterIndex, true, false));
+        }
+
         
         // SetParameterBool/GetParameterBool() test
         Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetParameterBool, m_parameterIndex, true);
         bool newValue = false;
         Integration::AnimGraphComponentRequestBus::EventResult(newValue, m_entityId, &Integration::AnimGraphComponentRequestBus::Events::GetParameterBool, m_parameterIndex);
         EXPECT_EQ(newValue, true) << "Expected true as parameter value.";
-
-        EXPECT_CALL(testBus, OnAnimGraphBoolParameterChanged(m_animGraphInstance, m_parameterIndex, true, false));
 
         // SetNamedParameterBool/GetNamedParameterBool() test
         Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetNamedParameterBool, m_parameterName.c_str(), false);
@@ -209,15 +215,14 @@ namespace EMotionFX
 
         PrepareParameterTest(aznew StringParameter());
 
-        EXPECT_CALL(testBus, OnAnimGraphStringParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, testing::_));
+        EXPECT_CALL(testBus, OnAnimGraphStringParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, testing::_))
+            .Times(2);
 
         // SetParameterString/GetParameterString() test
         Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetParameterString, m_parameterIndex, "Test String");
         AZStd::string newValue;
         Integration::AnimGraphComponentRequestBus::EventResult(newValue, m_entityId, &Integration::AnimGraphComponentRequestBus::Events::GetParameterString, m_parameterIndex);
         EXPECT_STREQ(newValue.c_str(), "Test String") << "Expected the test string parameter.";
-
-        EXPECT_CALL(testBus, OnAnimGraphStringParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, testing::_));
 
         // SetNamedParameterString/GetNamedParameterString() test
         Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetNamedParameterString, m_parameterName.c_str(), "Yet Another String");
@@ -232,15 +237,17 @@ namespace EMotionFX
 
         PrepareParameterTest(aznew Vector2Parameter());
 
-        EXPECT_CALL(testBus, OnAnimGraphVector2ParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, AZ::Vector2(1.0f, 2.0f)));
+        {
+            testing::InSequence parameterChangedCallSequence;
+            EXPECT_CALL(testBus, OnAnimGraphVector2ParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, AZ::Vector2(1.0f, 2.0f)));
+            EXPECT_CALL(testBus, OnAnimGraphVector2ParameterChanged(m_animGraphInstance, m_parameterIndex, AZ::Vector2(1.0f, 2.0f), AZ::Vector2(3.0f, 4.0f)));
+        }
 
         // SetParameterVector2/GetParameterVector2() test
         Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetParameterVector2, m_parameterIndex, AZ::Vector2(1.0f, 2.0f));
         AZ::Vector2 newValue;
         Integration::AnimGraphComponentRequestBus::EventResult(newValue, m_entityId, &Integration::AnimGraphComponentRequestBus::Events::GetParameterVector2, m_parameterIndex);
         EXPECT_EQ(newValue, AZ::Vector2(1.0f, 2.0f));
-
-        EXPECT_CALL(testBus, OnAnimGraphVector2ParameterChanged(m_animGraphInstance, m_parameterIndex, AZ::Vector2(1.0f, 2.0f), AZ::Vector2(3.0f, 4.0f)));
 
         // SetNamedParameterVector2/GetNamedParameterVector2() test
         Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetNamedParameterVector2, m_parameterName.c_str(), AZ::Vector2(3.0f, 4.0f));
@@ -255,15 +262,17 @@ namespace EMotionFX
 
         PrepareParameterTest(aznew Vector3Parameter());
 
-        EXPECT_CALL(testBus, OnAnimGraphVector3ParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, AZ::Vector3(1.0f, 2.0f, 3.0f)));
+        {
+            testing::InSequence parameterChangedCallSequence;
+            EXPECT_CALL(testBus, OnAnimGraphVector3ParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, AZ::Vector3(1.0f, 2.0f, 3.0f)));
+            EXPECT_CALL(testBus, OnAnimGraphVector3ParameterChanged(m_animGraphInstance, m_parameterIndex, AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Vector3(4.0f, 5.0f, 6.0f)));
+        }
 
         // SetParameterVector3/GetParameterVector3() test
         Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetParameterVector3, m_parameterIndex, AZ::Vector3(1.0f, 2.0f, 3.0f));
         AZ::Vector3 newValue;
         Integration::AnimGraphComponentRequestBus::EventResult(newValue, m_entityId, &Integration::AnimGraphComponentRequestBus::Events::GetParameterVector3, m_parameterIndex);
         EXPECT_EQ(newValue, AZ::Vector3(1.0f, 2.0f, 3.0f));
-
-        EXPECT_CALL(testBus, OnAnimGraphVector3ParameterChanged(m_animGraphInstance, m_parameterIndex, AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Vector3(4.0f, 5.0f, 6.0f)));
 
         // SetNamedParameterVector3/GetNamedParameterVector3() test
         Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetNamedParameterVector3, m_parameterName.c_str(), AZ::Vector3(4.0f, 5.0f, 6.0f));
@@ -278,7 +287,8 @@ namespace EMotionFX
 
         PrepareParameterTest(aznew RotationParameter());
 
-        EXPECT_CALL(testBus, OnAnimGraphRotationParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, testing::_));
+        EXPECT_CALL(testBus, OnAnimGraphRotationParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, testing::_))
+            .Times(2);
 
         // SetParameterRotationEuler/GetParameterRotationEuler() test
         AZ::Vector3 expectedEuler(AZ::DegToRad(30.0f), AZ::DegToRad(20.0f), 0.0f);
@@ -286,8 +296,6 @@ namespace EMotionFX
         AZ::Vector3 newValue;
         Integration::AnimGraphComponentRequestBus::EventResult(newValue, m_entityId, &Integration::AnimGraphComponentRequestBus::Events::GetParameterRotationEuler, m_parameterIndex);
         EXPECT_TRUE(newValue.IsClose(expectedEuler, 0.001f));
-
-        EXPECT_CALL(testBus, OnAnimGraphRotationParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, testing::_));
 
         // SetNamedParameterRotationEuler/GetNamedParameterRotationEuler() test
         expectedEuler = AZ::Vector3(AZ::DegToRad(45.0f), 0.0f, AZ::DegToRad(30.0f));
@@ -298,30 +306,33 @@ namespace EMotionFX
 
     TEST_F(AnimGraphComponentBusTests, RotationParameter)
     {
-        AZ::Vector3 expected(AZ::DegToRad(30.0f), AZ::DegToRad(20.0f), 0.0f);
-        AZ::Quaternion expectedQuat = MCore::AzEulerAnglesToAzQuat(expected);
+        const AZ::Vector3 firstExpected(AZ::DegToRad(30.0f), AZ::DegToRad(20.0f), 0.0f);
+        const AZ::Quaternion firstExpectedQuat = MCore::AzEulerAnglesToAzQuat(firstExpected);
+        const AZ::Vector3 secondExpected = AZ::Vector3(AZ::DegToRad(45.0f), 0.0f, AZ::DegToRad(30.0f));
+        const AZ::Quaternion secondExpectedQuat = MCore::AzEulerAnglesToAzQuat(secondExpected);
+
 
         AnimGraphComponentNotificationTestBus testBus(m_entityId);
         EXPECT_CALL(testBus, OnAnimGraphInstanceCreated(testing::_));
 
         PrepareParameterTest(aznew RotationParameter());
 
-        EXPECT_CALL(testBus, OnAnimGraphRotationParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, expectedQuat));
+        {
+            testing::InSequence parameterChangedCallSequence;
+            EXPECT_CALL(testBus, OnAnimGraphRotationParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, firstExpectedQuat));
+            EXPECT_CALL(testBus, OnAnimGraphRotationParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, secondExpectedQuat));
+        }
 
         // SetParameterRotation/GetParameterRotation() test
-        Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetParameterRotation, m_parameterIndex, expectedQuat);
+        Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetParameterRotation, m_parameterIndex, firstExpectedQuat);
         AZ::Quaternion newValue;
         Integration::AnimGraphComponentRequestBus::EventResult(newValue, m_entityId, &Integration::AnimGraphComponentRequestBus::Events::GetParameterRotation, m_parameterIndex);
-        EXPECT_TRUE(newValue.IsClose(expectedQuat, 0.001f));
-
-        expected = AZ::Vector3(AZ::DegToRad(45.0f), 0.0f, AZ::DegToRad(30.0f));
-        expectedQuat = MCore::AzEulerAnglesToAzQuat(expected);
-        EXPECT_CALL(testBus, OnAnimGraphRotationParameterChanged(m_animGraphInstance, m_parameterIndex, testing::_, expectedQuat));
+        EXPECT_TRUE(newValue.IsClose(firstExpectedQuat, 0.001f));
 
         // SetNamedParameterRotation/GetNamedParameterRotation() test
-        Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetNamedParameterRotation, m_parameterName.c_str(), expectedQuat);
+        Integration::AnimGraphComponentRequestBus::Event(m_entityId, &Integration::AnimGraphComponentRequestBus::Events::SetNamedParameterRotation, m_parameterName.c_str(), secondExpectedQuat);
         Integration::AnimGraphComponentRequestBus::EventResult(newValue, m_entityId, &Integration::AnimGraphComponentRequestBus::Events::GetNamedParameterRotation, m_parameterName.c_str());
-        EXPECT_TRUE(newValue.IsClose(expectedQuat, 0.001f));
+        EXPECT_TRUE(newValue.IsClose(secondExpectedQuat, 0.001f));
     }
 
     TEST_F(AnimGraphComponentBusTests, OnAnimGraphInstanceDestroyed)

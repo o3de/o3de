@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,12 +20,12 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 
 namespace AZ
 {
@@ -153,7 +154,7 @@ namespace AZ
             ASSERT_TRUE(writeToJsonResult.IsSuccess());
 
             AZStd::string jsonText;
-            auto writeToStringResult = AzFramework::FileFunc::WriteJsonToString(writeToJsonResult.GetValue(), jsonText);
+            auto writeToStringResult = AZ::JsonSerializationUtils::WriteJsonString(writeToJsonResult.GetValue(), jsonText);
             ASSERT_TRUE(writeToStringResult.IsSuccess());
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("$type": "MockRotationRule")"));
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("rotation": [)"));
@@ -190,7 +191,7 @@ namespace AZ
             ASSERT_TRUE(writeToJsonResult.IsSuccess());
 
             AZStd::string jsonText;
-            auto writeToStringResult = AzFramework::FileFunc::WriteJsonToString(writeToJsonResult.GetValue(), jsonText);
+            auto writeToStringResult = AZ::JsonSerializationUtils::WriteJsonString(writeToJsonResult.GetValue(), jsonText);
             ASSERT_TRUE(writeToStringResult.IsSuccess());
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("$type": "MockRotationRule")"));
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("rotation": [)"));
@@ -229,7 +230,7 @@ namespace AZ
             ASSERT_TRUE(writeToJsonResult.IsSuccess());
 
             AZStd::string jsonText;
-            auto writeToStringResult = AzFramework::FileFunc::WriteJsonToString(writeToJsonResult.GetValue(), jsonText);
+            auto writeToStringResult = AZ::JsonSerializationUtils::WriteJsonString(writeToJsonResult.GetValue(), jsonText);
             ASSERT_TRUE(writeToStringResult.IsSuccess());
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("$type": "CoordinateSystemRule")"));
             EXPECT_THAT(jsonText.c_str(), ::testing::HasSubstr(R"("useAdvancedData": true,)"));

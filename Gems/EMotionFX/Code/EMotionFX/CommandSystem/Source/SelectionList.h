@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,42 +45,42 @@ namespace CommandSystem
          * Get the number of selected nodes.
          * @return The number of selected nodes.
          */
-        MCORE_INLINE uint32 GetNumSelectedNodes() const                             { return static_cast<uint32>(mSelectedNodes.size()); }
+        MCORE_INLINE size_t GetNumSelectedNodes() const                             { return m_selectedNodes.size(); }
 
         /**
          * Get the number of selected actors
          */
-        MCORE_INLINE uint32 GetNumSelectedActors() const                            { return static_cast<uint32>(mSelectedActors.size()); }
+        MCORE_INLINE size_t GetNumSelectedActors() const                            { return m_selectedActors.size(); }
 
         /**
          * Get the number of selected actor instances.
          * @return The number of selected actor instances.
          */
-        MCORE_INLINE uint32 GetNumSelectedActorInstances() const                    { return static_cast<uint32>(mSelectedActorInstances.size()); }
+        MCORE_INLINE size_t GetNumSelectedActorInstances() const                    { return m_selectedActorInstances.size(); }
 
         /**
          * Get the number of selected motion instances.
          * @return The number of selected motion instances.
          */
-        MCORE_INLINE uint32 GetNumSelectedMotionInstances() const                   { return static_cast<uint32>(mSelectedMotionInstances.size()); }
+        MCORE_INLINE size_t GetNumSelectedMotionInstances() const                   { return m_selectedMotionInstances.size(); }
 
         /**
          * Get the number of selected motions.
          * @return The number of selected motions.
          */
-        MCORE_INLINE uint32 GetNumSelectedMotions() const                           { return static_cast<uint32>(mSelectedMotions.size()); }
+        MCORE_INLINE size_t GetNumSelectedMotions() const                           { return m_selectedMotions.size(); }
 
         /**
          * Get the number of selected anim graphs.
          * @return The number of selected anim graphs.
          */
-        MCORE_INLINE uint32 GetNumSelectedAnimGraphs() const                       { return static_cast<uint32>(mSelectedAnimGraphs.size()); }
+        MCORE_INLINE size_t GetNumSelectedAnimGraphs() const                       { return m_selectedAnimGraphs.size(); }
 
         /**
          * Get the total number of selected objects.
          * @return The number of selected nodes, actors and motions.
          */
-        MCORE_INLINE uint32 GetNumTotalItems() const;
+        MCORE_INLINE size_t GetNumTotalItems() const;
 
         /**
          * Check whether or not the selection list contains any objects.
@@ -138,7 +139,7 @@ namespace CommandSystem
          * @param index The index of the node to get from the selection list.
          * @return A pointer to the given node from the selection list.
          */
-        MCORE_INLINE EMotionFX::Node* GetNode(uint32 index) const                               { return mSelectedNodes[index]; }
+        MCORE_INLINE EMotionFX::Node* GetNode(size_t index) const                               { return m_selectedNodes[index]; }
 
         /**
          * Get the first node from the selection list.
@@ -146,11 +147,11 @@ namespace CommandSystem
          */
         MCORE_INLINE EMotionFX::Node* GetFirstNode() const
         {
-            if (mSelectedNodes.empty())
+            if (m_selectedNodes.empty())
             {
                 return nullptr;
             }
-            return mSelectedNodes[0];
+            return m_selectedNodes[0];
         }
 
         /**
@@ -158,7 +159,7 @@ namespace CommandSystem
          * @param index The index of the actor to get from the selection list.
          * @return A pointer to the given actor from the selection list.
          */
-        MCORE_INLINE EMotionFX::Actor* GetActor(uint32 index) const                             { return mSelectedActors[index]; }
+        MCORE_INLINE EMotionFX::Actor* GetActor(size_t index) const                             { return m_selectedActors[index]; }
 
         /**
          * Get the first actor from the selection list.
@@ -166,11 +167,11 @@ namespace CommandSystem
          */
         MCORE_INLINE EMotionFX::Actor* GetFirstActor() const
         {
-            if (mSelectedActors.empty())
+            if (m_selectedActors.empty())
             {
                 return nullptr;
             }
-            return mSelectedActors[0];
+            return m_selectedActors[0];
         }
 
         /**
@@ -178,7 +179,7 @@ namespace CommandSystem
          * @param index The index of the actor instance to get from the selection list.
          * @return A pointer to the given actor instance from the selection list.
          */
-        MCORE_INLINE EMotionFX::ActorInstance* GetActorInstance(uint32 index) const             { return mSelectedActorInstances[index]; }
+        MCORE_INLINE EMotionFX::ActorInstance* GetActorInstance(size_t index) const             { return m_selectedActorInstances[index]; }
 
         /**
          * Get the first actor instance from the selection list.
@@ -186,11 +187,11 @@ namespace CommandSystem
          */
         MCORE_INLINE EMotionFX::ActorInstance* GetFirstActorInstance() const
         {
-            if (mSelectedActorInstances.empty())
+            if (m_selectedActorInstances.empty())
             {
                 return nullptr;
             }
-            return mSelectedActorInstances[0];
+            return m_selectedActorInstances[0];
         }
 
         /**
@@ -198,7 +199,7 @@ namespace CommandSystem
          * @param index The index of the anim graph to get from the selection list.
          * @return A pointer to the given anim graph from the selection list.
          */
-        MCORE_INLINE EMotionFX::AnimGraph* GetAnimGraph(uint32 index) const                   { return mSelectedAnimGraphs[index]; }
+        MCORE_INLINE EMotionFX::AnimGraph* GetAnimGraph(size_t index) const                   { return m_selectedAnimGraphs[index]; }
 
         /**
          * Get the first anim graph from the selection list.
@@ -206,11 +207,11 @@ namespace CommandSystem
          */
         MCORE_INLINE EMotionFX::AnimGraph* GetFirstAnimGraph() const
         {
-            if (mSelectedAnimGraphs.empty())
+            if (m_selectedAnimGraphs.empty())
             {
                 return nullptr;
             }
-            return mSelectedAnimGraphs[0];
+            return m_selectedAnimGraphs[0];
         }
 
         /**
@@ -230,7 +231,7 @@ namespace CommandSystem
          * @param index The index of the motion to get from the selection list.
          * @return A pointer to the given motion from the selection list.
          */
-        MCORE_INLINE EMotionFX::Motion* GetMotion(uint32 index) const                           { return mSelectedMotions[index]; }
+        MCORE_INLINE EMotionFX::Motion* GetMotion(size_t index) const                           { return m_selectedMotions[index]; }
 
         /**
          * Get the first motion from the selection list.
@@ -238,11 +239,11 @@ namespace CommandSystem
          */
         MCORE_INLINE EMotionFX::Motion* GetFirstMotion() const
         {
-            if (mSelectedMotions.empty())
+            if (m_selectedMotions.empty())
             {
                 return nullptr;
             }
-            return mSelectedMotions[0];
+            return m_selectedMotions[0];
         }
 
         /**
@@ -256,7 +257,7 @@ namespace CommandSystem
          * @param index The index of the motion instance to get from the selection list.
          * @return A pointer to the given motion instance from the selection list.
          */
-        MCORE_INLINE EMotionFX::MotionInstance* GetMotionInstance(uint32 index) const           { return mSelectedMotionInstances[index]; }
+        MCORE_INLINE EMotionFX::MotionInstance* GetMotionInstance(size_t index) const           { return m_selectedMotionInstances[index]; }
 
         /**
          * Get the first motion instance from the selection list.
@@ -264,48 +265,48 @@ namespace CommandSystem
          */
         MCORE_INLINE EMotionFX::MotionInstance* GetFirstMotionInstance() const
         {
-            if (mSelectedMotionInstances.empty())
+            if (m_selectedMotionInstances.empty())
             {
                 return nullptr;
             }
-            return mSelectedMotionInstances[0];
+            return m_selectedMotionInstances[0];
         }
 
         /**
          * Remove the given node from the selection list.
          * @param index The index of the node to be removed from the selection list.
          */
-        MCORE_INLINE void RemoveNode(uint32 index)                                              { mSelectedNodes.erase(mSelectedNodes.begin() + index); }
+        MCORE_INLINE void RemoveNode(size_t index)                                              { m_selectedNodes.erase(m_selectedNodes.begin() + index); }
 
         /**
          * Remove the given actor instance from the selection list.
          * @param index The index of the actor instance to be removed from the selection list.
          */
-        MCORE_INLINE void RemoveActor(uint32 index)                                             { mSelectedActors.erase(mSelectedActors.begin() + index); }
+        MCORE_INLINE void RemoveActor(size_t index)                                             { m_selectedActors.erase(m_selectedActors.begin() + index); }
 
         /**
          * Remove the given actor instance from the selection list.
          * @param index The index of the actor instance to be removed from the selection list.
          */
-        MCORE_INLINE void RemoveActorInstance(uint32 index)                                     { mSelectedActorInstances.erase(mSelectedActorInstances.begin() + index); }
+        MCORE_INLINE void RemoveActorInstance(size_t index)                                     { m_selectedActorInstances.erase(m_selectedActorInstances.begin() + index); }
 
         /**
          * Remove the given motion from the selection list.
          * @param index The index of the motion to be removed from the selection list.
          */
-        MCORE_INLINE void RemoveMotion(uint32 index)                                            { mSelectedMotions.erase(mSelectedMotions.begin() + index); }
+        MCORE_INLINE void RemoveMotion(size_t index)                                            { m_selectedMotions.erase(m_selectedMotions.begin() + index); }
 
         /**
          * Remove the given motion instance from the selection list.
          * @param index The index of the motion instance to be removed from the selection list.
          */
-        MCORE_INLINE void RemoveMotionInstance(uint32 index)                                    { mSelectedMotionInstances.erase(mSelectedMotionInstances.begin() + index); }
+        MCORE_INLINE void RemoveMotionInstance(size_t index)                                    { m_selectedMotionInstances.erase(m_selectedMotionInstances.begin() + index); }
 
         /**
          * Remove the given anim graph from the selection list.
          * @param index The index of the anim graph to remove from the selection list.
          */
-        MCORE_INLINE void RemoveAnimGraph(uint32 index)                                        { mSelectedAnimGraphs.erase(mSelectedAnimGraphs.begin() + index); }
+        MCORE_INLINE void RemoveAnimGraph(size_t index)                                        { m_selectedAnimGraphs.erase(m_selectedAnimGraphs.begin() + index); }
 
         /**
          * Remove the given node from the selection list.
@@ -348,47 +349,47 @@ namespace CommandSystem
          * @param node A pointer to the node to be checked.
          * @return True if the node is inside this selection list, false if not.
          */
-        MCORE_INLINE bool CheckIfHasNode(EMotionFX::Node* node) const                                   { return(AZStd::find(mSelectedNodes.begin(), mSelectedNodes.end(), node) != mSelectedNodes.end()); }
+        MCORE_INLINE bool CheckIfHasNode(EMotionFX::Node* node) const                                   { return(AZStd::find(m_selectedNodes.begin(), m_selectedNodes.end(), node) != m_selectedNodes.end()); }
 
         /**
          * Has actor
          */
-        MCORE_INLINE bool CheckIfHasActor(EMotionFX::Actor* actor) const                                { return (AZStd::find(mSelectedActors.begin(), mSelectedActors.end(), actor) != mSelectedActors.end()); }
+        MCORE_INLINE bool CheckIfHasActor(EMotionFX::Actor* actor) const                                { return (AZStd::find(m_selectedActors.begin(), m_selectedActors.end(), actor) != m_selectedActors.end()); }
 
         /**
          * Check if a given actor instance is selected / is in this selection list.
          * @param node A pointer to the actor instance to be checked.
          * @return True if the actor instance is inside this selection list, false if not.
          */
-        MCORE_INLINE bool CheckIfHasActorInstance(EMotionFX::ActorInstance* actorInstance) const        { return (AZStd::find(mSelectedActorInstances.begin(), mSelectedActorInstances.end(), actorInstance) != mSelectedActorInstances.end()); }
+        MCORE_INLINE bool CheckIfHasActorInstance(EMotionFX::ActorInstance* actorInstance) const        { return (AZStd::find(m_selectedActorInstances.begin(), m_selectedActorInstances.end(), actorInstance) != m_selectedActorInstances.end()); }
 
         /**
          * Check if a given motion is selected / is in this selection list.
          * @param node A pointer to the motion to be checked.
          * @return True if the motion is inside this selection list, false if not.
          */
-        MCORE_INLINE bool CheckIfHasMotion(EMotionFX::Motion* motion) const                             { return (AZStd::find(mSelectedMotions.begin(), mSelectedMotions.end(), motion) != mSelectedMotions.end()); }
+        MCORE_INLINE bool CheckIfHasMotion(EMotionFX::Motion* motion) const                             { return (AZStd::find(m_selectedMotions.begin(), m_selectedMotions.end(), motion) != m_selectedMotions.end()); }
 
         /**
          * Check if a given anim graph is in this selection list.
          * @param animGraph The anim graph to check for.
          * @return True if the anim graph is selected inside the selection list, otherwise false is returned.
          */
-        MCORE_INLINE bool CheckIfHasAnimGraph(EMotionFX::AnimGraph* animGraph) const                 { return (AZStd::find(mSelectedAnimGraphs.begin(), mSelectedAnimGraphs.end(), animGraph) != mSelectedAnimGraphs.end()); }
+        MCORE_INLINE bool CheckIfHasAnimGraph(EMotionFX::AnimGraph* animGraph) const                 { return (AZStd::find(m_selectedAnimGraphs.begin(), m_selectedAnimGraphs.end(), animGraph) != m_selectedAnimGraphs.end()); }
 
         /**
          * Check if a given motion instance is selected / is in this selection list.
          * @param node A pointer to the motion instance to be checked.
          * @return True if the motion instance is inside this selection list, false if not.
          */
-        MCORE_INLINE bool CheckIfHasMotionInstance(EMotionFX::MotionInstance* motionInstance) const     { return (AZStd::find(mSelectedMotionInstances.begin(), mSelectedMotionInstances.end(), motionInstance) != mSelectedMotionInstances.end()); }
+        MCORE_INLINE bool CheckIfHasMotionInstance(EMotionFX::MotionInstance* motionInstance) const     { return (AZStd::find(m_selectedMotionInstances.begin(), m_selectedMotionInstances.end(), motionInstance) != m_selectedMotionInstances.end()); }
 
-        MCORE_INLINE void ClearActorSelection()                                     { mSelectedActors.clear(); }
-        MCORE_INLINE void ClearActorInstanceSelection()                             { mSelectedActorInstances.clear(); }
-        MCORE_INLINE void ClearNodeSelection()                                      { mSelectedNodes.clear(); }
-        MCORE_INLINE void ClearMotionSelection()                                    { mSelectedMotions.clear(); }
-        MCORE_INLINE void ClearMotionInstanceSelection()                            { mSelectedMotionInstances.clear(); }
-        MCORE_INLINE void ClearAnimGraphSelection()                                 { mSelectedAnimGraphs.clear(); }
+        MCORE_INLINE void ClearActorSelection()                                     { m_selectedActors.clear(); }
+        MCORE_INLINE void ClearActorInstanceSelection()                             { m_selectedActorInstances.clear(); }
+        MCORE_INLINE void ClearNodeSelection()                                      { m_selectedNodes.clear(); }
+        MCORE_INLINE void ClearMotionSelection()                                    { m_selectedMotions.clear(); }
+        MCORE_INLINE void ClearMotionInstanceSelection()                            { m_selectedMotionInstances.clear(); }
+        MCORE_INLINE void ClearAnimGraphSelection()                                 { m_selectedAnimGraphs.clear(); }
 
         void Log();
         void MakeValid();
@@ -400,11 +401,11 @@ namespace CommandSystem
         // ActorInstanceNotificationBus overrides
         void OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance) override;
 
-        AZStd::vector<EMotionFX::Node*>             mSelectedNodes;             /**< Array of selected nodes. */
-        AZStd::vector<EMotionFX::Actor*>            mSelectedActors;            /**< The selected actors.  */
-        AZStd::vector<EMotionFX::ActorInstance*>    mSelectedActorInstances;    /**< Array of selected actor instances. */
-        AZStd::vector<EMotionFX::MotionInstance*>   mSelectedMotionInstances;   /**< Array of selected motion instances. */
-        AZStd::vector<EMotionFX::Motion*>           mSelectedMotions;           /**< Array of selected motions. */
-        AZStd::vector<EMotionFX::AnimGraph*>        mSelectedAnimGraphs;        /**< Array of selected anim graphs. */
+        AZStd::vector<EMotionFX::Node*>             m_selectedNodes;             /**< Array of selected nodes. */
+        AZStd::vector<EMotionFX::Actor*>            m_selectedActors;            /**< The selected actors.  */
+        AZStd::vector<EMotionFX::ActorInstance*>    m_selectedActorInstances;    /**< Array of selected actor instances. */
+        AZStd::vector<EMotionFX::MotionInstance*>   m_selectedMotionInstances;   /**< Array of selected motion instances. */
+        AZStd::vector<EMotionFX::Motion*>           m_selectedMotions;           /**< Array of selected motions. */
+        AZStd::vector<EMotionFX::AnimGraph*>        m_selectedAnimGraphs;        /**< Array of selected anim graphs. */
     };
 } // namespace CommandSystem

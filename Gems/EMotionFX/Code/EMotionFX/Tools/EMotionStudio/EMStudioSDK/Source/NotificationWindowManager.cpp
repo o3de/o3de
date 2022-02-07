@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,10 +33,9 @@ namespace EMStudio
 
         // compute the height of all notification windows with the spacing
         int allNotificationWindowsHeight = 0;
-        const uint32 numNotificationWindows = mNotificationWindows.GetLength();
-        for (uint32 i = 0; i < numNotificationWindows; ++i)
+        for (const NotificationWindow* currentNotificationWindow : m_notificationWindows)
         {
-            allNotificationWindowsHeight += mNotificationWindows[i]->geometry().height() + notificationWindowSpacing;
+            allNotificationWindowsHeight += currentNotificationWindow->geometry().height() + notificationWindowSpacing;
         }
 
         // move the notification window
@@ -44,7 +44,7 @@ namespace EMStudio
         notificationWindow->move(mainWindowBottomRight.x() - notificationWindowGeometry.width() - notificationWindowMainWindowPadding, mainWindowBottomRight.y() - allNotificationWindowsHeight - notificationWindowGeometry.height() - notificationWindowMainWindowPadding);
 
         // add the notification window in the array
-        mNotificationWindows.Add(notificationWindow);
+        m_notificationWindows.emplace_back(notificationWindow);
     }
 
 
@@ -52,25 +52,24 @@ namespace EMStudio
     void NotificationWindowManager::RemoveNotificationWindow(NotificationWindow* notificationWindow)
     {
         // find the notification window
-        const uint32 index = mNotificationWindows.Find(notificationWindow);
+        auto windowIt = AZStd::find(begin(m_notificationWindows), end(m_notificationWindows), notificationWindow);
 
         // if not found, stop here
-        if (index == MCORE_INVALIDINDEX32)
+        if (windowIt == end(m_notificationWindows))
         {
             return;
         }
 
         // move down each notification window after this one, spacing is added on the height
         const int notificationWindowHeight = notificationWindow->geometry().height() + notificationWindowSpacing;
-        const uint32 numNotificationWindows = mNotificationWindows.GetLength();
-        for (uint32 i = index + 1; i < numNotificationWindows; ++i)
+        for (auto it = windowIt + 1; it != end(m_notificationWindows); ++it)
         {
-            const QPoint pos = mNotificationWindows[i]->pos();
-            mNotificationWindows[i]->move(pos.x(), pos.y() + notificationWindowHeight);
+            const QPoint pos = (*it)->pos();
+            (*it)->move(pos.x(), pos.y() + notificationWindowHeight);
         }
 
         // remove the notification window
-        mNotificationWindows.Remove(index);
+        m_notificationWindows.erase(windowIt);
     }
 
 
@@ -82,16 +81,15 @@ namespace EMStudio
 
         // move each notification window
         int currentNotificationWindowHeight = notificationWindowMainWindowPadding;
-        const uint32 numNotificationWindows = mNotificationWindows.GetLength();
-        for (uint32 i = 0; i < numNotificationWindows; ++i)
+        for (NotificationWindow* notificationWindow : m_notificationWindows)
         {
             // add the height of the notification window
-            currentNotificationWindowHeight += mNotificationWindows[i]->geometry().height();
+            currentNotificationWindowHeight += notificationWindow->geometry().height();
 
             // move the notification window
             const QPoint mainWindowBottomRight = mainWindow->geometry().bottomRight();
-            const QRect& notificationWindowGeometry = mNotificationWindows[i]->geometry();
-            mNotificationWindows[i]->move(mainWindowBottomRight.x() - notificationWindowGeometry.width() - notificationWindowMainWindowPadding, mainWindowBottomRight.y() - currentNotificationWindowHeight);
+            const QRect& notificationWindowGeometry = notificationWindow->geometry();
+            notificationWindow->move(mainWindowBottomRight.x() - notificationWindowGeometry.width() - notificationWindowMainWindowPadding, mainWindowBottomRight.y() - currentNotificationWindowHeight);
 
             // spacing is added after to avoid spacing on the bottom of the first notification window
             currentNotificationWindowHeight += notificationWindowSpacing;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,21 +19,21 @@ namespace RenderGL
     // constructor
     RenderTexture::RenderTexture()
     {
-        mFormat         = 0;
-        mWidth          = 0;
-        mHeight         = 0;
-        mFrameBuffer    = 0;
-        mDepthBuffer    = 0;
-        mTexture        = 0;
+        m_format         = 0;
+        m_width          = 0;
+        m_height         = 0;
+        m_frameBuffer    = 0;
+        m_depthBuffer    = 0;
+        m_texture        = 0;
     }
 
 
     // destructor
     RenderTexture::~RenderTexture()
     {
-        glDeleteTextures(1, &mTexture);
-        glDeleteRenderbuffers(1, &mDepthBuffer);
-        glDeleteFramebuffers(1, &mFrameBuffer);
+        glDeleteTextures(1, &m_texture);
+        glDeleteRenderbuffers(1, &m_depthBuffer);
+        glDeleteFramebuffers(1, &m_frameBuffer);
     }
 
 
@@ -46,15 +47,15 @@ namespace RenderGL
         // get the width and height of the current used viewport
         float glDimensions[4];
         glGetFloatv(GL_VIEWPORT, glDimensions);
-        mPrevWidth  = (uint32)glDimensions[2];
-        mPrevHeight = (uint32)glDimensions[3];
+        m_prevWidth  = (uint32)glDimensions[2];
+        m_prevHeight = (uint32)glDimensions[3];
 
         // bind the render texture and frame buffer
         glBindTexture(GL_TEXTURE_2D, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
 
         // setup the new viewport
-        glViewport(0, 0, mWidth, mHeight);
+        glViewport(0, 0, m_width, m_height);
         GetGraphicsManager()->SetRenderTexture(this);
     }
 
@@ -62,7 +63,7 @@ namespace RenderGL
     // clear the render texture
     void RenderTexture::Clear(const MCore::RGBAColor& color)
     {
-        glClearColor(color.r, color.g, color.b, color.a);
+        glClearColor(color.m_r, color.m_g, color.m_b, color.m_a);
         glClearDepth(1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
@@ -75,7 +76,7 @@ namespace RenderGL
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // reset viewport to original dimensions
-        glViewport(0, 0, mPrevWidth, mPrevHeight);
+        glViewport(0, 0, m_prevWidth, m_prevHeight);
         GetGraphicsManager()->SetRenderTexture(nullptr);
     }
 
@@ -83,10 +84,10 @@ namespace RenderGL
     // initialize the render texture
     bool RenderTexture::Init(int32 format, uint32 width, uint32 height, AZ::u32 depthBuffer)
     {
-        mFormat      = format;
-        mWidth       = width;
-        mHeight      = height;
-        mDepthBuffer = depthBuffer;
+        m_format      = format;
+        m_width       = width;
+        m_height      = height;
+        m_depthBuffer = depthBuffer;
 
         // check if the graphics hardware is capable of rendering to textures, return false if not
         if (hasOpenGLFeature(Framebuffers))
@@ -95,51 +96,51 @@ namespace RenderGL
         }
 
         // create surface IDs
-        glGenFramebuffers(1, &mFrameBuffer);
-        glGenTextures(1, &mTexture);
+        glGenFramebuffers(1, &m_frameBuffer);
+        glGenTextures(1, &m_texture);
 
         // if the depth buffer was not specified, generate it
-        if (mDepthBuffer == 0)
+        if (m_depthBuffer == 0)
         {
-            glGenRenderbuffers(1, &mDepthBuffer);
+            glGenRenderbuffers(1, &m_depthBuffer);
         }
 
         // check if initalization of the texture, the frame buffer and the depth buffer worked okay
-        if (mFrameBuffer == 0 || mDepthBuffer == 0 || mTexture == 0)
+        if (m_frameBuffer == 0 || m_depthBuffer == 0 || m_texture == 0)
         {
-            MCore::LogWarning("[OpenGL] RenderTexture failed to init (5d, %d, %d)", mFrameBuffer, mDepthBuffer, mTexture);
+            MCore::LogWarning("[OpenGL] RenderTexture failed to init (5d, %d, %d)", m_frameBuffer, m_depthBuffer, m_texture);
             return false;
         }
 
         // create the frame buffer object
-        glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
 
         // setup channels
         GLenum glChannels = GL_RGBA;
-        if (mFormat == GL_ALPHA16F_ARB || mFormat == GL_ALPHA32F_ARB)
+        if (m_format == GL_ALPHA16F_ARB || m_format == GL_ALPHA32F_ARB)
         {
             glChannels = GL_ALPHA;
         }
 
         // create render target
-        glBindTexture(GL_TEXTURE_2D, mTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, mFormat, mWidth, mHeight, 0, glChannels, GL_FLOAT, nullptr);
+        glBindTexture(GL_TEXTURE_2D, m_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, m_format, m_width, m_height, 0, glChannels, GL_FLOAT, nullptr);
 
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
 
         // create depth buffer
         if (depthBuffer == 0)
         {
-            glBindRenderbuffer(GL_RENDERBUFFER, mDepthBuffer);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mWidth, mHeight);
+            glBindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, m_width, m_height);
         }
 
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {

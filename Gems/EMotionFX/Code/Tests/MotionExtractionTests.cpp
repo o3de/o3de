@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,8 +36,8 @@ namespace EMotionFX
 {
     struct MotionExtractionTestsData
     {
-        std::vector<float> durationMultipliers;
-        std::vector<AZ::u32> numOfLoops;
+        std::vector<float> m_durationMultipliers;
+        std::vector<AZ::u32> m_numOfLoops;
     };
 
     std::vector<MotionExtractionTestsData> motionExtractionTestData
@@ -58,8 +59,8 @@ namespace EMotionFX
             m_actorInstance->SetMotionExtractionEnabled(true);
             m_actor->AutoSetMotionExtractionNode();
 
-            rootNode = m_jackSkeleton->FindNodeAndIndexByName("jack_root", m_jack_rootIndex);
-            hipNode = m_jackSkeleton->FindNodeAndIndexByName("Bip01__pelvis", m_jack_hipIndex);
+            m_rootNode = m_jackSkeleton->FindNodeAndIndexByName("jack_root", m_jackRootIndex);
+            m_hipNode = m_jackSkeleton->FindNodeAndIndexByName("Bip01__pelvis", m_jackHipIndex);
             m_jackPose = m_actorInstance->GetTransformData()->GetCurrentPose();
             AddMotionEntry(TestMotionAssets::GetJackWalkForward(), "jack_walk_forward_aim_zup");
 
@@ -118,13 +119,13 @@ namespace EMotionFX
         }
 
     protected:
-        AZ::u32 m_jack_rootIndex = MCORE_INVALIDINDEX32;
-        AZ::u32 m_jack_hipIndex = MCORE_INVALIDINDEX32;
+        size_t m_jackRootIndex = InvalidIndex;
+        size_t m_jackHipIndex = InvalidIndex;
         AnimGraphMotionNode* m_motionNode = nullptr;
         BlendTree* m_blendTree = nullptr;
         Motion* m_motion = nullptr;
-        Node* rootNode = nullptr;
-        Node* hipNode = nullptr;
+        Node* m_rootNode = nullptr;
+        Node* m_hipNode = nullptr;
         Pose* m_jackPose = nullptr;
         Skeleton* m_jackSkeleton = nullptr;
     };
@@ -226,7 +227,7 @@ namespace EMotionFX
 
         // Make sure we also really end where we expect.
         // Motion extraction will introduce some small inaccuracies, so we can't use AZ::g_fltEps here, but need a slightly larger value in our AZ::IsClose().
-        const float yPos = m_actorInstance->GetWorldSpaceTransform().mPosition.GetY();
+        const float yPos = m_actorInstance->GetWorldSpaceTransform().m_position.GetY();
         EXPECT_TRUE(AZ::IsClose(yPos, expectedY, 0.01f));
     }
 #endif
@@ -242,16 +243,16 @@ namespace EMotionFX
 
         // The expected delta used is the distance of the jack walk forward motion will move in 1 complete duration
         const float expectedDelta = ExtractLastFramePos().GetY();
-        for (AZ::u32 paramIndex = 0; paramIndex < m_param.durationMultipliers.size(); paramIndex++)
+        for (size_t paramIndex = 0; paramIndex < m_param.m_durationMultipliers.size(); paramIndex++)
         {
             // Test motion extraction under different durations/time deltas
-            const float motionDuration = 1.066f * m_param.durationMultipliers[paramIndex];
-            const float originalPositionY = m_actorInstance->GetWorldSpaceTransform().mPosition.GetY();
-            for (AZ::u32 i = 0; i < m_param.numOfLoops[paramIndex]; i++)
+            const float motionDuration = 1.066f * m_param.m_durationMultipliers[paramIndex];
+            const float originalPositionY = m_actorInstance->GetWorldSpaceTransform().m_position.GetY();
+            for (AZ::u32 i = 0; i < m_param.m_numOfLoops[paramIndex]; i++)
             {
                 GetEMotionFX().Update(motionDuration);
             }
-            const float updatedPositionY = m_actorInstance->GetWorldSpaceTransform().mPosition.GetY();
+            const float updatedPositionY = m_actorInstance->GetWorldSpaceTransform().m_position.GetY();
             const float actualDeltaY = AZ::GetAbs(updatedPositionY - originalPositionY);
             EXPECT_TRUE(AZ::GetAbs(actualDeltaY - expectedDelta) < 0.002f)
                 << "The absolute difference between actual delta and expected delta of Y-axis should be less than 0.002f.";
@@ -261,15 +262,15 @@ namespace EMotionFX
         const AZ::Quaternion actorRotation(0.0f, 0.0f, -1.0f, 1.0f);
         m_actorInstance->SetLocalSpaceRotation(actorRotation.GetNormalized());
         GetEMotionFX().Update(0.0f);
-        for (AZ::u32 paramIndex = 0; paramIndex < m_param.durationMultipliers.size(); paramIndex++)
+        for (size_t paramIndex = 0; paramIndex < m_param.m_durationMultipliers.size(); paramIndex++)
         {
-            const float motionDuration = 1.066f * m_param.durationMultipliers[paramIndex];
-            const float originalPositionX = m_actorInstance->GetWorldSpaceTransform().mPosition.GetX();
-            for (AZ::u32 i = 0; i < m_param.numOfLoops[paramIndex]; i++)
+            const float motionDuration = 1.066f * m_param.m_durationMultipliers[paramIndex];
+            const float originalPositionX = m_actorInstance->GetWorldSpaceTransform().m_position.GetX();
+            for (AZ::u32 i = 0; i < m_param.m_numOfLoops[paramIndex]; i++)
             {
                 GetEMotionFX().Update(motionDuration);
             }
-            const float updatedPositionX = m_actorInstance->GetWorldSpaceTransform().mPosition.GetX();
+            const float updatedPositionX = m_actorInstance->GetWorldSpaceTransform().m_position.GetX();
             const float actualDeltaX = AZ::GetAbs(updatedPositionX - originalPositionX);
             EXPECT_TRUE(AZ::GetAbs(actualDeltaX - expectedDelta) < 0.002f)
                 << "The absolute difference between actual delta and expected delta of X-axis should be less than 0.002f.";
@@ -289,17 +290,17 @@ namespace EMotionFX
         const AZ::Quaternion diagonalRotation = m_reverse ? AZ::Quaternion(0.0f, 0.0f, 0.5f, 1.0f) : AZ::Quaternion(0.0f, 0.0f, -0.5f, 1.0f);
         m_actorInstance->SetLocalSpaceRotation(diagonalRotation.GetNormalized());
         GetEMotionFX().Update(0.0f);
-        for (AZ::u32 paramIndex = 0; paramIndex < m_param.durationMultipliers.size(); paramIndex++)
+        for (size_t paramIndex = 0; paramIndex < m_param.m_durationMultipliers.size(); paramIndex++)
         {
-            const float originalPositionX = m_actorInstance->GetWorldSpaceTransform().mPosition.GetX();
-            const float originalPositionY = m_actorInstance->GetWorldSpaceTransform().mPosition.GetY();
-            const float motionDuration = 1.066f * m_param.durationMultipliers[paramIndex];
-            for (AZ::u32 i = 0; i < m_param.numOfLoops[paramIndex]; i++)
+            const float originalPositionX = m_actorInstance->GetWorldSpaceTransform().m_position.GetX();
+            const float originalPositionY = m_actorInstance->GetWorldSpaceTransform().m_position.GetY();
+            const float motionDuration = 1.066f * m_param.m_durationMultipliers[paramIndex];
+            for (AZ::u32 i = 0; i < m_param.m_numOfLoops[paramIndex]; i++)
             {
                 GetEMotionFX().Update(motionDuration);
             }
-            const float updatedPositionX = m_actorInstance->GetWorldSpaceTransform().mPosition.GetX();
-            const float updatedPositionY = m_actorInstance->GetWorldSpaceTransform().mPosition.GetY();
+            const float updatedPositionX = m_actorInstance->GetWorldSpaceTransform().m_position.GetX();
+            const float updatedPositionY = m_actorInstance->GetWorldSpaceTransform().m_position.GetY();
             const float actualDeltaX = AZ::GetAbs(updatedPositionX - originalPositionX);
             const float actualDeltaY = AZ::GetAbs(updatedPositionY - originalPositionY);
             EXPECT_NEAR(actualDeltaX, expectedDeltaX, 0.001f)
@@ -326,14 +327,14 @@ namespace EMotionFX
         // This is because the presync time value of the second motion node is from the unsynced playback.
         // When we improve our syncing system we can handle this differently and we won't expect a zero trajectory delta anymore.
         GetEMotionFX().Update(0.15f);
-        EXPECT_FLOAT_EQ(m_actorInstance->GetTrajectoryDeltaTransform().mPosition.GetLength(), 0.0f);
+        EXPECT_FLOAT_EQ(m_actorInstance->GetTrajectoryDeltaTransform().m_position.GetLength(), 0.0f);
         EXPECT_FLOAT_EQ(m_motionNode1->GetCurrentPlayTime(m_animGraphInstance), m_motionNode2->GetCurrentPlayTime(m_animGraphInstance));
         EXPECT_EQ(m_animGraphInstance->GetEventBuffer().GetNumEvents(), 0);
 
         // The second frame should be as normal.
         GetEMotionFX().Update(0.15f);
-        EXPECT_GT(m_actorInstance->GetTrajectoryDeltaTransform().mPosition.GetLength(), 0.0f);
-        EXPECT_LE(m_actorInstance->GetTrajectoryDeltaTransform().mPosition.GetLength(), 0.3f);
+        EXPECT_GT(m_actorInstance->GetTrajectoryDeltaTransform().m_position.GetLength(), 0.0f);
+        EXPECT_LE(m_actorInstance->GetTrajectoryDeltaTransform().m_position.GetLength(), 0.3f);
         EXPECT_FLOAT_EQ(m_motionNode1->GetCurrentPlayTime(m_animGraphInstance), m_motionNode2->GetCurrentPlayTime(m_animGraphInstance));
         EXPECT_EQ(m_animGraphInstance->GetEventBuffer().GetNumEvents(), 0);
     }

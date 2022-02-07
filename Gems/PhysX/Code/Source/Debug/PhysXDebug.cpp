@@ -1,17 +1,19 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <PhysX_precompiled.h>
-
+#include <AzCore/std/functional.h>
 #include <Debug/PhysXDebug.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/std/string/conversions.h>
 #include <PxPhysicsAPI.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace PhysX
 {
@@ -106,8 +108,7 @@ namespace PhysX
                     AzFramework::StringFunc::Append(filename, m_config.m_pvdConfigurationData.m_fileName.c_str());
                     AzFramework::StringFunc::Append(filename, ".pxd2");
 
-                    AZStd::string rootDirectory;
-                    AZ::ComponentApplicationBus::BroadcastResult(rootDirectory, &AZ::ComponentApplicationRequests::GetAppRoot);
+                    AZStd::string rootDirectory{ AZStd::string_view(AZ::Utils::GetEnginePath()) };
 
                     // Create the full filepath.
                     AZStd::string safeFilePath;

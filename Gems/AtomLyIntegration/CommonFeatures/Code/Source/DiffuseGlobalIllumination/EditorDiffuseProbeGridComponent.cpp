@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/IO/SystemFile.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Utils/DdsFile.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -49,9 +51,10 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Atom")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
-                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
+                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/diffuse-probe-grid/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Probe Spacing")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -193,7 +196,7 @@ namespace AZ
                 {
                     // bake is complete, update configuration with the new baked texture asset
                     AzToolsFramework::ScopedUndoBatch undoBatch("DiffuseProbeGrid Texture Bake");
-                    configurationAsset = { textureAsset.GetAs<RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                    configurationAsset = textureAsset;
                     SetDirty();
 
                     if (m_controller.m_configuration.m_bakedIrradianceTextureAsset.IsReady() &&
@@ -387,7 +390,7 @@ namespace AZ
 
             // create the full paths
             char projectPath[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", projectPath, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", projectPath, AZ_MAX_PATH_LEN);
 
             AZStd::string irradianceTextureFullPath;
             AzFramework::StringFunc::Path::Join(projectPath, irradianceTextureRelativePath.c_str(), irradianceTextureFullPath, true, true);
@@ -479,7 +482,7 @@ namespace AZ
             AZStd::string fullPath;
 
             char projectPath[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", projectPath, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", projectPath, AZ_MAX_PATH_LEN);
 
             if (!relativePath.empty())
             {

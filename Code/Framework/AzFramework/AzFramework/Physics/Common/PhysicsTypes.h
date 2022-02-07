@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace Physics
 {
@@ -46,14 +48,16 @@ namespace AzPhysics
 
     using SceneIndex = AZ::s8;
     using SimulatedBodyIndex = AZ::s32;
+    using JointIndex = AZ::s32;
     static_assert(std::is_signed<SceneIndex>::value
-        && std::is_signed<SimulatedBodyIndex>::value, "SceneIndex and SimulatedBodyIndex must be signed integers.");
+        && std::is_signed<SimulatedBodyIndex>::value
+        && std::is_signed<JointIndex>::value, "SceneIndex, SimulatedBodyIndex and JointIndex must be signed integers.");
     
 
     //! A handle to a Scene within the physics simulation.
     //! A SceneHandle is a tuple of a Crc of the scenes name and the index in the Scene list.
     using SceneHandle = AZStd::tuple<AZ::Crc32, SceneIndex>;
-    static constexpr SceneHandle InvalidSceneHandle = { AZ::Crc32(), -1 };
+    static constexpr SceneHandle InvalidSceneHandle = { AZ::Crc32(), SceneIndex(-1) };
 
     //! Ease of use type for referencing a List of SceneHandle objects.
     using SceneHandleList = AZStd::vector<SceneHandle>;
@@ -64,11 +68,26 @@ namespace AzPhysics
     static constexpr SimulatedBodyHandle InvalidSimulatedBodyHandle = { AZ::Crc32(), -1 };
     using SimulatedBodyHandleList = AZStd::vector<SimulatedBodyHandle>;
 
+    //! A handle to a Joint within a physics scene.
+    //! A JointHandle is a tuple of a Crc of the scene's name and the index in the Joint list.
+    using JointHandle = AZStd::tuple<AZ::Crc32, JointIndex>;
+    static constexpr JointHandle InvalidJointHandle = { AZ::Crc32(), -1 };
+
     //! Helper used for pairing the ShapeConfiguration and ColliderConfiguration together which is used when creating a Simulated Body.
     using ShapeColliderPair = AZStd::pair<
         AZStd::shared_ptr<Physics::ColliderConfiguration>,
         AZStd::shared_ptr<Physics::ShapeConfiguration>>;
     using ShapeColliderPairList = AZStd::vector<ShapeColliderPair>;
+
+    //! Joint types are used to request for AZ::TypeId with the JointHelpersInterface::GetSupportedJointTypeId.
+    //! If the Physics backend supports this joint type JointHelpersInterface::GetSupportedJointTypeId will return a AZ::TypeId.
+    enum class JointType
+    {
+        D6Joint,
+        FixedJoint,
+        BallJoint,
+        HingeJoint
+    };
 
     //! Flags used to specifying which properties of a body to compute.
     enum class MassComputeFlags : AZ::u8

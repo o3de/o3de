@@ -1,0 +1,6 @@
+<download name="C18977330_NvCloth_AddClothSimulationToActor" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="E40" md5="9d58d7abc4cd4560a4d9c4e5ef2b99e4"/>
+ </files>
+</download>

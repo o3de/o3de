@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -15,6 +16,7 @@ from aws_cdk import (
 import os
 
 from . import aws_metrics_constants
+from .aws_utils import resource_name_sanitizer
 
 
 class RealTimeDataProcessing:
@@ -43,7 +45,8 @@ class RealTimeDataProcessing:
         self._analytics_application = analytics.CfnApplication(
             self._stack,
             'AnalyticsApplication',
-            application_name=f'{self._stack.stack_name}-AnalyticsApplication',
+            application_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-AnalyticsApplication', 'kinesis_application'),
             inputs=[
                 analytics.CfnApplication.InputProperty(
                     input_schema=analytics.CfnApplication.InputSchemaProperty(
@@ -110,7 +113,7 @@ class RealTimeDataProcessing:
             ),
         )
 
-        analytics_application_output = core.CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='AnalyticsApplicationName',
             description='Kinesis Data Analytics application to process the real-time metrics data',
@@ -161,7 +164,8 @@ class RealTimeDataProcessing:
         kinesis_analytics_role = iam.Role(
             self._stack,
             id='AnalyticsApplicationRole',
-            role_name=f'{self._stack.stack_name}-AnalyticsApplicationRole',
+            role_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-AnalyticsApplicationRole', 'iam_role'),
             assumed_by=iam.ServicePrincipal(
                 service='kinesisanalytics.amazonaws.com'
             ),
@@ -177,7 +181,8 @@ class RealTimeDataProcessing:
         """
         Generate the analytics processing lambda to send processed data to CloudWatch for visualization.
         """
-        analytics_processing_function_name = f'{self._stack.stack_name}-AnalyticsProcessingLambdaName'
+        analytics_processing_function_name = resource_name_sanitizer.sanitize_resource_name(
+            f'{self._stack.stack_name}-AnalyticsProcessingLambda', 'lambda_function')
         self._analytics_processing_lambda_role = self._create_analytics_processing_lambda_role(
             analytics_processing_function_name
         )
@@ -194,6 +199,12 @@ class RealTimeDataProcessing:
                 os.path.join(os.path.dirname(__file__), 'lambdas', 'analytics_processing_lambda')),
             role=self._analytics_processing_lambda_role
         )
+        core.CfnOutput(
+            self._stack,
+            id='AnalyticsProcessingLambdaName',
+            description='Lambda function for sending processed data to CloudWatch.',
+            export_name=f"{self._application_name}:AnalyticsProcessingLambda",
+            value=self._analytics_processing_lambda.function_name)
 
     def _create_analytics_processing_lambda_role(self, function_name: str) -> iam.Role:
         """
@@ -245,7 +256,8 @@ class RealTimeDataProcessing:
         analytics_processing_lambda_role = iam.Role(
             self._stack,
             id='AnalyticsLambdaRole',
-            role_name=f'{self._stack.stack_name}-AnalyticsLambdaRole',
+            role_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-AnalyticsLambdaRole', 'iam_role'),
             assumed_by=iam.ServicePrincipal(
                 service='lambda.amazonaws.com'
             ),

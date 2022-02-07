@@ -1,18 +1,19 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #include <Source/BallJointComponent.h>
 #include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
+#include <AzFramework/Physics/PhysicsScene.h>
 
 #include <PxPhysicsAPI.h>
 
@@ -28,69 +29,60 @@ namespace PhysX
         }
     }
 
-    BallJointComponent::BallJointComponent(const GenericJointConfiguration& config
-        , const GenericJointLimitsConfiguration& swingLimit)
-            : JointComponent(config, swingLimit)
+    BallJointComponent::BallJointComponent(
+        const JointComponentConfiguration& configuration, 
+        const JointGenericProperties& genericProperties,
+        const JointLimitProperties& limitProperties)
+        : JointComponent(configuration, genericProperties, limitProperties)
     {
     }
 
     void BallJointComponent::InitNativeJoint()
     {
-        if (m_joint)
+        if (m_jointHandle != AzPhysics::InvalidJointHandle)
         {
             return;
         }
 
         JointComponent::LeadFollowerInfo leadFollowerInfo;
         ObtainLeadFollowerInfo(leadFollowerInfo);
-        if (!leadFollowerInfo.m_followerActor)
-        {
-            return;
-        }
-        PHYSX_SCENE_READ_LOCK(leadFollowerInfo.m_followerActor->getScene());
-        m_joint = AZStd::make_shared<BallJoint>(physx::PxSphericalJointCreate(
-            PxGetPhysics(),
-            leadFollowerInfo.m_leadActor,
-            leadFollowerInfo.m_leadLocal,
-            leadFollowerInfo.m_followerActor,
-            leadFollowerInfo.m_followerLocal),
-            leadFollowerInfo.m_leadBody,
-            leadFollowerInfo.m_followerBody);
-
-        InitSwingLimits();
-    }
-
-    void BallJointComponent::InitSwingLimits()
-    {
-        if (!m_joint)
+        if (leadFollowerInfo.m_followerActor == nullptr ||
+            leadFollowerInfo.m_followerBody == nullptr)
         {
             return;
         }
 
-        physx::PxSphericalJoint* ballJointNative = static_cast<physx::PxSphericalJoint*>(m_joint->GetNativePointer());
-        if (!ballJointNative)
+        // if there is no lead body, this will be a constraint of the follower's global position, so use invalid body handle.
+        AzPhysics::SimulatedBodyHandle parentHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        if (leadFollowerInfo.m_leadBody != nullptr)
         {
-            return;
+            parentHandle = leadFollowerInfo.m_leadBody->m_bodyHandle;
         }
-
-        if (!m_limits.m_isLimited)
+        else
         {
-            ballJointNative->setSphericalJointFlag(physx::PxSphericalJointFlag::eLIMIT_ENABLED, false);
-            return;
+            AZ_TracePrintf(
+                "PhysX", "Entity [%s] Ball Joint component missing lead entity. This joint will be a global constraint on the follower's global position.",
+                GetEntity()->GetName().c_str());
         }
+        
 
-        // Hard limit uses a tolerance value (distance to limit at which limit becomes active).
-        // Soft limit allows angle to exceed limit but springs back with configurable spring stiffness and damping.
-        physx::PxJointLimitCone swingLimit(AZ::DegToRad(m_limits.m_limitFirst)
-            , AZ::DegToRad(m_limits.m_limitSecond)
-            , m_limits.m_tolerance);
-        if (m_limits.m_isSoftLimit)
+        BallJointConfiguration configuration;
+        configuration.m_parentLocalPosition = leadFollowerInfo.m_leadLocal.GetTranslation();
+        configuration.m_parentLocalRotation = leadFollowerInfo.m_leadLocal.GetRotation();
+        configuration.m_childLocalPosition = leadFollowerInfo.m_followerLocal.GetTranslation();
+        configuration.m_childLocalRotation = leadFollowerInfo.m_followerLocal.GetRotation();
+
+        configuration.m_genericProperties = m_genericProperties;
+        configuration.m_limitProperties = m_limits;
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            swingLimit.stiffness = m_limits.m_stiffness;
-            swingLimit.damping = m_limits.m_damping;
+            m_jointHandle = sceneInterface->AddJoint(
+                leadFollowerInfo.m_followerBody->m_sceneOwner,
+                &configuration,  
+                parentHandle,
+                leadFollowerInfo.m_followerBody->m_bodyHandle);
+            m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }
-
-        ballJointNative->setLimitCone(swingLimit);
-        ballJointNative->setSphericalJointFlag(physx::PxSphericalJointFlag::eLIMIT_ENABLED, true);
     }
 } // namespace PhysX

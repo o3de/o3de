@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -80,7 +81,7 @@ namespace AZ
             struct ByProducts
             {
                 AZStd::set<AZStd::string> m_intermediatePaths;  //!< intermediate file paths (like dxil text form)
-                static constexpr uint32_t UnknownDynamicBranchCount = -1;
+                static constexpr uint32_t UnknownDynamicBranchCount = std::numeric_limits<uint32_t>::max();
                 uint32_t m_dynamicBranchCount = UnknownDynamicBranchCount;
             };
 
@@ -144,6 +145,12 @@ namespace AZ
                 const ShaderResourceGroupInfoList& srgInfoList,
                 const RootConstantsInfo& rootConstantsInfo,
                 const ShaderCompilerArguments& shaderCompilerArguments) = 0;
+            
+            //! In general, shader compilation doesn't require SRG Layout data, but RHIs like
+            //! Metal don't do well if unused resources (descriptors) are not bound. If this function returns TRUE
+            //! the ShaderVariantAssetBuilder will invoke BuildPipelineLayoutDescriptor() so the RHI gets the chance to
+            //! build SRG Layout data which will be useful when compiling MetalISL to Metal byte code.
+            virtual bool VariantCompilationRequiresSrgLayoutData() const { return false; }
 
             //! See AZ::RHI::Factory::GetAPIUniqueIndex() for details.
             //! See AZ::RHI::Limits::APIType::PerPlatformApiUniqueIndexMax.

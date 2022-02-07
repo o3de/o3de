@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -82,9 +83,9 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            Transform mAdditiveTransform = Transform::CreateIdentity();
-            uint32 mNodeIndex = InvalidIndex32;
-            float mDeltaTime = 0.0f;
+            Transform m_additiveTransform = Transform::CreateIdentity();
+            size_t m_nodeIndex = InvalidIndex;
+            float m_deltaTime = 0.0f;
         };
 
         BlendTreeAccumTransformNode();

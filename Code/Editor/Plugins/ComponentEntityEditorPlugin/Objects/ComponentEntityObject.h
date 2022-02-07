@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -85,7 +86,7 @@ public:
     // Always returns false as Component entity highlighting (accenting) is taken care of elsewhere
     bool IsHighlighted() { return false; }
     // Component entity highlighting (accenting) is taken care of elsewhere
-    void DrawHighlight(DisplayContext& /*dc*/) {};
+    void DrawHighlight(DisplayContext& /*dc*/) override {};
 
     // Don't auto-clone children. Cloning happens in groups with reference fixups,
     // and individually selected objercts should be cloned as individuals.
@@ -163,7 +164,7 @@ protected:
 
     float GetRadius();
 
-    void DeleteThis() { delete this; };
+    void DeleteThis() override { delete this; };
 
     bool IsNonLayerAncestorSelected() const;
     bool IsLayer() const;

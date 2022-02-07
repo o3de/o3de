@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -34,7 +35,9 @@ function(ly_add_dependencies TARGET)
     if(TARGET ${TARGET})
         # Target already created, add it
         ly_parse_third_party_dependencies("${extra_function_args}")
-        add_dependencies(${TARGET} ${extra_function_args})
+        # Dependencies can only be added on non-alias target
+        ly_de_alias_target(${TARGET} de_aliased_target)
+        add_dependencies(${de_aliased_target} ${extra_function_args})
     else()
         set_property(GLOBAL APPEND PROPERTY LY_DELAYED_DEPENDENCIES_${TARGET} ${extra_function_args})
     endif()

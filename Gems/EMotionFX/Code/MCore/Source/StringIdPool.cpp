@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,14 +29,13 @@ namespace MCore
     {
         Lock();
 
-        const size_t numStrings = mStrings.size();
-        for (size_t i = 0; i < numStrings; ++i)
+        for (AZStd::basic_string<char>*& string : m_strings)
         {
-            delete mStrings[i];
+            delete string;
         }
-        mStrings.clear();
+        m_strings.clear();
 
-        mStringToIndex.clear();
+        m_stringToIndex.clear();
         Unlock();
     }
 
@@ -43,7 +43,7 @@ namespace MCore
     AZ::u32 StringIdPool::GenerateIdForStringWithoutLock(const AZStd::string& objectName)
     {
         // Try to insert it, if we hit a collision, we have the element.
-        auto iterator = mStringToIndex.emplace(objectName, static_cast<AZ::u32>(mStrings.size()));
+        auto iterator = m_stringToIndex.emplace(objectName, aznumeric_caster(m_strings.size()));
         if (!iterator.second)
         {
             // could not insert, we have the element
@@ -52,7 +52,7 @@ namespace MCore
 
         // Create the new string object and push it to the string list.
         AZStd::string* newString = new AZStd::string(objectName);
-        mStrings.push_back(newString);
+        m_strings.push_back(newString);
 
         // The string was already added to the hashmap
         return iterator.first->second;
@@ -68,20 +68,11 @@ namespace MCore
     }
 
 
-    const AZStd::string& StringIdPool::GetName(uint32 id)
+    const AZStd::string& StringIdPool::GetName(AZ::u32 id)
     {
         Lock();
-        MCORE_ASSERT(id != MCORE_INVALIDINDEX32);
-        const AZStd::string* stringAddress = mStrings[id];
-        Unlock();
-        return *stringAddress;
-    }
-
-    const AZStd::string& StringIdPool::GetStringById(AZ::u32 id)
-    {
-        Lock();
-        MCORE_ASSERT(id != MCORE_INVALIDINDEX32);
-        AZStd::string* stringAddress = mStrings[id];
+        MCORE_ASSERT(id != InvalidIndex32);
+        const AZStd::string* stringAddress = m_strings[id];
         Unlock();
         return *stringAddress;
     }
@@ -90,7 +81,7 @@ namespace MCore
     void StringIdPool::Reserve(size_t numStrings)
     {
         Lock();
-        mStrings.reserve(numStrings);
+        m_strings.reserve(numStrings);
         Unlock();
     }
 
@@ -98,27 +89,27 @@ namespace MCore
     // Wait with execution until we can set the lock.
     void StringIdPool::Lock()
     {
-        mMutex.Lock();
+        m_mutex.Lock();
     }
 
 
     // Release the lock again.
     void StringIdPool::Unlock()
     {
-        mMutex.Unlock();
+        m_mutex.Unlock();
     }
 
 
     void StringIdPool::Log(bool includeEntries)
     {
-        AZ_Printf("EMotionFX", "StringIdPool: NumEntries=%d\n", mStrings.size());
+        AZ_Printf("EMotionFX", "StringIdPool: NumEntries=%d\n", m_strings.size());
 
         if (includeEntries)
         {
-            const size_t numStrings = mStrings.size();
+            const size_t numStrings = m_strings.size();
             for (size_t i = 0; i < numStrings; ++i)
             {
-                AZ_Printf("EMotionFX", "   #%d: String='%s', Id=%d\n", i, mStrings[i]->c_str(), GenerateIdForString(mStrings[i]->c_str()));
+                AZ_Printf("EMotionFX", "   #%d: String='%s', Id=%d\n", i, m_strings[i]->c_str(), GenerateIdForString(m_strings[i]->c_str()));
             }
         }
     }
@@ -131,8 +122,8 @@ namespace MCore
         size_t Save(const void* classPtr, AZ::IO::GenericStream& stream, bool /*isDataBigEndian = false*/)
         {
             // Look up the string to save
-            const uint32 index = static_cast<const StringIdPoolIndex*>(classPtr)->m_index;
-            if (index == MCORE_INVALIDINDEX32)
+            const AZ::u32 index = static_cast<const StringIdPoolIndex*>(classPtr)->m_index;
+            if (index == InvalidIndex32)
             {
                 return 0;
             }
@@ -157,7 +148,7 @@ namespace MCore
         /// Convert binary data to text.
         size_t DataToText(AZ::IO::GenericStream& in, AZ::IO::GenericStream& out, bool /*isDataBigEndian = false*/)
         {
-            size_t dataSize = static_cast<size_t>(in.GetLength());
+            AZ::u64 dataSize = in.GetLength();
 
             AZStd::string outText;
             outText.resize(dataSize);

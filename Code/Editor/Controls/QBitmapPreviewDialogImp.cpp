@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -421,7 +422,7 @@ void QBitmapPreviewDialogImp::paintEvent(QPaintEvent* e)
 
 
             curr_x = histogramRect.left() + x + 1;
-            int i = ((float)x / (graphWidth - 1)) * (CImageHistogram::kNumColorLevels - 1);
+            int i = static_cast<int>(((float)x / (graphWidth - 1)) * (CImageHistogram::kNumColorLevels - 1));
             if (m_histrogramMode == eHistogramMode_SplitRGB)
             {
                 // Filter out to area which we are interested
@@ -445,7 +446,7 @@ void QBitmapPreviewDialogImp::paintEvent(QPaintEvent* e)
                 scale = (float)m_histogram.m_count[c][i] / m_histogram.m_maxCount[c];
             }
 
-            int height = graphBottom - graphHeight * scale;
+            int height = static_cast<int>(graphBottom - graphHeight * scale);
             if (last_height == INT_MAX)
             {
                 last_height = height;

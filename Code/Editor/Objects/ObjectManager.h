@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,8 +20,8 @@
 #include "ObjectManagerEventBus.h"
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Component/Component.h>
 #include <Include/SandboxAPI.h>
 
 // forward declarations.
@@ -51,47 +52,12 @@ public:
     }
 };
 
-//////////////////////////////////////////////////////////////////////////
-// Array of editor objects.
-//////////////////////////////////////////////////////////////////////////
-class CBaseObjectsCache
-{
-public:
-    int GetObjectCount() const { return m_objects.size(); }
-    CBaseObject* GetObject(int nIndex) const { return m_objects[nIndex]; }
-    void AddObject(CBaseObject* object);
-
-    void ClearObjects()
-    {
-        m_objects.clear();
-        m_entityIds.clear();
-    }
-
-    void Reserve(int nCount)
-    {
-        m_objects.reserve(nCount);
-        m_entityIds.reserve(nCount);
-    }
-
-    const AZStd::vector<AZ::EntityId>& GetEntityIdCache() const { return m_entityIds; }
-
-    /// Checksum is used as a dirty flag.
-    unsigned int GetSerialNumber() { return m_serialNumber; }
-    void SetSerialNumber(unsigned int serialNumber) { m_serialNumber = serialNumber; }
-private:
-    //! List of objects that was displayed at last frame.
-    std::vector<_smart_ptr<CBaseObject> > m_objects;
-    AZStd::vector<AZ::EntityId> m_entityIds;
-    unsigned int m_serialNumber = 0;
-};
-
 /*!
  *  CObjectManager is a singleton object that
  *  manages global set of objects in level.
  */
 class CObjectManager
     : public IObjectManager
-    , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
 {
 public:
     //! Selection functor callback.
@@ -102,143 +68,142 @@ public:
 
     void RegisterObjectClasses();
 
-    CBaseObject* NewObject(CObjectClassDesc* cls, CBaseObject* prev = 0, const QString& file = "", const char* newObjectName = nullptr);
-    CBaseObject* NewObject(const QString& typeName, CBaseObject* prev = 0, const QString& file = "", const char* newEntityName = nullptr);
+    CBaseObject* NewObject(CObjectClassDesc* cls, CBaseObject* prev = 0, const QString& file = "", const char* newObjectName = nullptr) override;
+    CBaseObject* NewObject(const QString& typeName, CBaseObject* prev = 0, const QString& file = "", const char* newEntityName = nullptr) override;
 
-    void    DeleteObject(CBaseObject* obj);
-    void    DeleteSelection(CSelectionGroup* pSelection);
-    void    DeleteAllObjects();
-    CBaseObject* CloneObject(CBaseObject* obj);
+    void    DeleteObject(CBaseObject* obj) override;
+    void    DeleteSelection(CSelectionGroup* pSelection) override;
+    void    DeleteAllObjects() override;
+    CBaseObject* CloneObject(CBaseObject* obj) override;
 
-    void BeginEditParams(CBaseObject* obj, int flags);
-    void EndEditParams(int flags = 0);
+    void BeginEditParams(CBaseObject* obj, int flags) override;
+    void EndEditParams(int flags = 0) override;
     // Hides all transform manipulators.
     void HideTransformManipulators();
 
     //! Get number of objects manager by ObjectManager (not contain sub objects of groups).
-    int     GetObjectCount() const;
+    int     GetObjectCount() const override;
 
     //! Get array of objects, managed by manager (not contain sub objects of groups).
     //! @param layer if 0 get objects for all layers, or layer to get objects from.
-    void GetObjects(CBaseObjectsArray& objects) const;
-    void GetObjects(DynArray<CBaseObject*>& objects) const;
+    void GetObjects(CBaseObjectsArray& objects) const override;
 
     //! Get array of objects that pass the filter.
     //! @param filter The filter functor, return true if you want to get the certain obj, return false if want to skip it.
-    void    GetObjects(CBaseObjectsArray& objects, BaseObjectFilterFunctor const& filter) const;
+    void    GetObjects(CBaseObjectsArray& objects, BaseObjectFilterFunctor const& filter) const override;
 
     //! Update objects.
     void    Update();
 
     //! Display objects on display context.
-    void    Display(DisplayContext& dc);
+    void    Display(DisplayContext& dc) override;
 
     //! Called when selecting without selection helpers - this is needed since
     //! the visible object cache is normally not updated when not displaying helpers.
-    void ForceUpdateVisibleObjectCache(DisplayContext& dc);
+    void ForceUpdateVisibleObjectCache(DisplayContext& dc) override;
 
     //! Check intersection with objects.
     //! Find intersection with nearest to ray origin object hit by ray.
     //! If distance tollerance is specified certain relaxation applied on collision test.
     //! @return true if hit any object, and fills hitInfo structure.
-    bool HitTest(HitContext& hitInfo);
+    bool HitTest(HitContext& hitInfo) override;
 
     //! Check intersection with an object.
     //! @return true if hit, and fills hitInfo structure.
-    bool HitTestObject(CBaseObject* obj, HitContext& hc);
+    bool HitTestObject(CBaseObject* obj, HitContext& hc) override;
 
     //! Send event to all objects.
     //! Will cause OnEvent handler to be called on all objects.
-    void    SendEvent(ObjectEvent event);
+    void    SendEvent(ObjectEvent event) override;
 
     //! Send event to all objects within given bounding box.
     //! Will cause OnEvent handler to be called on objects within bounding box.
-    void    SendEvent(ObjectEvent event, const AABB& bounds);
+    void    SendEvent(ObjectEvent event, const AABB& bounds) override;
 
     //////////////////////////////////////////////////////////////////////////
     //! Find object by ID.
-    CBaseObject* FindObject(REFGUID guid) const;
+    CBaseObject* FindObject(REFGUID guid) const override;
     //////////////////////////////////////////////////////////////////////////
     //! Find object by name.
-    CBaseObject* FindObject(const QString& sName) const;
+    CBaseObject* FindObject(const QString& sName) const override;
     //////////////////////////////////////////////////////////////////////////
     //! Find objects of given type.
     void FindObjectsOfType(const QMetaObject* pClass, std::vector<CBaseObject*>& result) override;
     void FindObjectsOfType(ObjectType type, std::vector<CBaseObject*>& result) override;
     //////////////////////////////////////////////////////////////////////////
     //! Find objects which intersect with a given AABB.
-    virtual void FindObjectsInAABB(const AABB& aabb, std::vector<CBaseObject*>& result) const;
+    void FindObjectsInAABB(const AABB& aabb, std::vector<CBaseObject*>& result) const override;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations on objects.
     //////////////////////////////////////////////////////////////////////////
     //! Makes object visible or invisible.
-    void HideObject(CBaseObject* obj, bool hide);
+    void HideObject(CBaseObject* obj, bool hide) override;
     //! Shows the last hidden object based on hidden ID
-    void ShowLastHiddenObject();
+    void ShowLastHiddenObject() override;
     //! Freeze object, making it unselectable.
-    void FreezeObject(CBaseObject* obj, bool freeze);
+    void FreezeObject(CBaseObject* obj, bool freeze) override;
     //! Unhide all hidden objects.
-    void UnhideAll();
+    void UnhideAll() override;
     //! Unfreeze all frozen objects.
-    void UnfreezeAll();
+    void UnfreezeAll() override;
 
     //////////////////////////////////////////////////////////////////////////
     // Object Selection.
     //////////////////////////////////////////////////////////////////////////
-    bool    SelectObject(CBaseObject* obj, bool bUseMask = true);
-    void    UnselectObject(CBaseObject* obj);
+    bool    SelectObject(CBaseObject* obj, bool bUseMask = true) override;
+    void    UnselectObject(CBaseObject* obj) override;
 
     //! Select objects within specified distance from given position.
     //! Return number of selected objects.
-    int SelectObjects(const AABB& box, bool bUnselect = false);
+    int SelectObjects(const AABB& box, bool bUnselect = false) override;
 
-    virtual void SelectEntities(std::set<CEntityObject*>& s);
+    void SelectEntities(std::set<CEntityObject*>& s) override;
 
-    int MoveObjects(const AABB& box, const Vec3& offset, ImageRotationDegrees rotation, bool bIsCopy = false);
+    int MoveObjects(const AABB& box, const Vec3& offset, ImageRotationDegrees rotation, bool bIsCopy = false) override;
 
     //! Selects/Unselects all objects within 2d rectangle in given viewport.
-    void SelectObjectsInRect(CViewport* view, const QRect& rect, bool bSelect);
-    void FindObjectsInRect(CViewport* view, const QRect& rect, std::vector<GUID>& guids);
+    void SelectObjectsInRect(CViewport* view, const QRect& rect, bool bSelect) override;
+    void FindObjectsInRect(CViewport* view, const QRect& rect, std::vector<GUID>& guids) override;
 
     //! Clear default selection set.
     //! @Return number of objects removed from selection.
-    int ClearSelection();
+    int ClearSelection() override;
 
     //! Deselect all current selected objects and selects object that were unselected.
     //! @Return number of selected objects.
-    int InvertSelection();
+    int InvertSelection() override;
 
     //! Get current selection.
-    CSelectionGroup*    GetSelection() const { return m_currSelection; };
+    CSelectionGroup*    GetSelection() const override { return m_currSelection; };
     //! Get named selection.
-    CSelectionGroup*    GetSelection(const QString& name) const;
+    CSelectionGroup*    GetSelection(const QString& name) const override;
     // Get selection group names
-    void GetNameSelectionStrings(QStringList& names);
+    void GetNameSelectionStrings(QStringList& names) override;
     //! Change name of current selection group.
     //! And store it in list.
-    void    NameSelection(const QString& name);
+    void    NameSelection(const QString& name) override;
     //! Set one of name selections as current selection.
-    void    SetSelection(const QString& name);
-    void    RemoveSelection(const QString& name);
+    void    SetSelection(const QString& name) override;
+    void    RemoveSelection(const QString& name) override;
 
     bool IsObjectDeletionAllowed(CBaseObject* pObject);
 
     //! Delete all objects in selection group.
-    void DeleteSelection();
+    void DeleteSelection() override;
 
-    uint32  ForceID() const{return m_ForceID; }
-    void    ForceID(uint32 FID){m_ForceID = FID; }
+    uint32  ForceID() const override{return m_ForceID; }
+    void    ForceID(uint32 FID) override{m_ForceID = FID; }
 
     //! Generates uniq name base on type name of object.
-    QString GenerateUniqueObjectName(const QString& typeName);
+    QString GenerateUniqueObjectName(const QString& typeName) override;
     //! Register object name in object manager, needed for generating uniq names.
-    void RegisterObjectName(const QString& name);
+    void RegisterObjectName(const QString& name) override;
     //! Decrease name number and remove if it was last in object manager, needed for generating uniq names.
     void UpdateRegisterObjectName(const QString& name);
     //! Enable/Disable generating of unique object names (Enabled by default).
     //! Return previous value.
-    bool EnableUniqObjectNames(bool bEnable);
+    bool EnableUniqObjectNames(bool bEnable) override;
 
     //! Register XML template of runtime class.
     void    RegisterClassTemplate(const XmlNodeRef& templ);
@@ -249,25 +214,25 @@ public:
     void RegisterCVars();
 
     //! Find object class by name.
-    CObjectClassDesc* FindClass(const QString& className);
-    void    GetClassCategories(QStringList& categories);
+    CObjectClassDesc* FindClass(const QString& className) override;
+    void    GetClassCategories(QStringList& categories) override;
     void    GetClassCategoryToolClassNamePairs(std::vector< std::pair<QString, QString> >& categoryToolClassNamePairs) override;
-    void    GetClassTypes(const QString& category, QStringList& types);
+    void    GetClassTypes(const QString& category, QStringList& types) override;
 
     //! Export objects to xml.
     //! When onlyShared is true ony objects with shared flags exported, overwise only not shared object exported.
-    void    Export(const QString& levelPath, XmlNodeRef& rootNode, bool onlyShared);
-    void    ExportEntities(XmlNodeRef& rootNode);
+    void    Export(const QString& levelPath, XmlNodeRef& rootNode, bool onlyShared) override;
+    void    ExportEntities(XmlNodeRef& rootNode) override;
 
     //! Serialize Objects in manager to specified XML Node.
     //! @param flags Can be one of SerializeFlags.
-    void    Serialize(XmlNodeRef& rootNode, bool bLoading, int flags = SERIALIZE_ALL);
+    void    Serialize(XmlNodeRef& rootNode, bool bLoading, int flags = SERIALIZE_ALL) override;
 
-    void SerializeNameSelection(XmlNodeRef& rootNode, bool bLoading);
+    void SerializeNameSelection(XmlNodeRef& rootNode, bool bLoading) override;
 
     //! Load objects from object archive.
     //! @param bSelect if set newly loaded object will be selected.
-    void LoadObjects(CObjectArchive& ar, bool bSelect);
+    void LoadObjects(CObjectArchive& ar, bool bSelect) override;
 
     //! Delete from Object manager all objects without SHARED flag.
     void    DeleteNotSharedObjects();
@@ -276,57 +241,57 @@ public:
 
     bool AddObject(CBaseObject* obj);
     void RemoveObject(CBaseObject* obj);
-    void ChangeObjectId(REFGUID oldId, REFGUID newId);
-    bool IsDuplicateObjectName(const QString& newName) const
+    void ChangeObjectId(REFGUID oldId, REFGUID newId) override;
+    bool IsDuplicateObjectName(const QString& newName) const override
     {
         return FindObject(newName) ? true : false;
     }
-    void ShowDuplicationMsgWarning(CBaseObject* obj, const QString& newName, bool bShowMsgBox) const;
-    void ChangeObjectName(CBaseObject* obj, const QString& newName);
+    void ShowDuplicationMsgWarning(CBaseObject* obj, const QString& newName, bool bShowMsgBox) const override;
+    void ChangeObjectName(CBaseObject* obj, const QString& newName) override;
 
     //! Convert object of one type to object of another type.
     //! Original object is deleted.
-    bool ConvertToType(CBaseObject* pObject, const QString& typeName);
+    bool ConvertToType(CBaseObject* pObject, const QString& typeName) override;
 
     //! Set new selection callback.
     //! @return previous selection callback.
-    IObjectSelectCallback* SetSelectCallback(IObjectSelectCallback* callback);
+    IObjectSelectCallback* SetSelectCallback(IObjectSelectCallback* callback) override;
 
     // Enables/Disables creating of game objects.
-    void SetCreateGameObject(bool enable) { m_createGameObjects = enable; };
+    void SetCreateGameObject(bool enable) override { m_createGameObjects = enable; };
     //! Return true if objects loaded from xml should immidiatly create game objects associated with them.
-    bool IsCreateGameObjects() const { return m_createGameObjects; };
+    bool IsCreateGameObjects() const override { return m_createGameObjects; };
 
     //////////////////////////////////////////////////////////////////////////
     //! Get access to gizmo manager.
-    IGizmoManager* GetGizmoManager();
+    IGizmoManager* GetGizmoManager() override;
 
     //////////////////////////////////////////////////////////////////////////
     //! Invalidate visibily settings of objects.
-    void InvalidateVisibleList();
+    void InvalidateVisibleList() override;
 
     //////////////////////////////////////////////////////////////////////////
     // ObjectManager notification Callbacks.
     //////////////////////////////////////////////////////////////////////////
-    void AddObjectEventListener(EventListener* listener);
-    void RemoveObjectEventListener(EventListener* listener);
+    void AddObjectEventListener(EventListener* listener) override;
+    void RemoveObjectEventListener(EventListener* listener) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Used to indicate starting and ending of objects loading.
     //////////////////////////////////////////////////////////////////////////
-    void StartObjectsLoading(int numObjects);
-    void EndObjectsLoading();
+    void StartObjectsLoading(int numObjects) override;
+    void EndObjectsLoading() override;
 
     //////////////////////////////////////////////////////////////////////////
     // Gathers all resources used by all objects.
-    void GatherUsedResources(CUsedResources& resources);
+    void GatherUsedResources(CUsedResources& resources) override;
 
-    virtual bool IsLightClass(CBaseObject* pObject);
+    bool IsLightClass(CBaseObject* pObject) override;
 
-    virtual void FindAndRenameProperty2(const char* property2Name, const QString& oldValue, const QString& newValue);
-    virtual void FindAndRenameProperty2If(const char* property2Name, const QString& oldValue, const QString& newValue, const char* otherProperty2Name, const QString& otherValue);
+    virtual void FindAndRenameProperty2(const char* property2Name, const QString& oldValue, const QString& newValue) override;
+    virtual void FindAndRenameProperty2If(const char* property2Name, const QString& oldValue, const QString& newValue, const char* otherProperty2Name, const QString& otherValue) override;
 
-    bool IsReloading() const { return m_bInReloading; }
+    bool IsReloading() const override { return m_bInReloading; }
     void SetSkipUpdate(bool bSkipUpdate) override { m_bSkipObjectUpdate = bSkipUpdate; }
 
     void SetExportingLevel(bool bExporting) override { m_bLevelExporting = bExporting; }
@@ -341,7 +306,7 @@ private:
     @param objectNode Xml node to serialize object info from.
     @param pUndoObject Pointer to deleted object for undo.
     */
-    CBaseObject* NewObject(CObjectArchive& archive, CBaseObject* pUndoObject, bool bMakeNewId);
+    CBaseObject* NewObject(CObjectArchive& archive, CBaseObject* pUndoObject, bool bMakeNewId) override;
 
     //! Update visibility of all objects.
     void UpdateVisibilityList();
@@ -362,10 +327,6 @@ private:
     void NotifyObjectListeners(CBaseObject* pObject, CBaseObject::EObjectListenerEvent event);
 
     void FindDisplayableObjects(DisplayContext& dc, bool bDisplay);
-
-    // EditorComponentModeNotificationBus
-    void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-    void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
 private:
     typedef std::map<GUID, CBaseObjectPtr, guid_less_predicate> Objects;

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 #include <RHI/Device.h>
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
@@ -26,10 +26,9 @@ namespace AZ
         RHI::ResultCode QueryPool::InitInternal(RHI::Device& baseDevice, const RHI::QueryPoolDescriptor& descriptor)
         {
             auto& device = static_cast<Device&>(baseDevice);
-            id<MTLDevice> mtlDevice = device.GetMtlDevice();
-            NSError* error = nil;
-            
+
 #if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
+            id<MTLDevice> mtlDevice = device.GetMtlDevice();
             NSArray<id<MTLCounterSet>> * counterSets = [mtlDevice counterSets];
             CacheCounterIndices(counterSets);
 #endif
@@ -77,6 +76,7 @@ namespace AZ
                 }
                 case RHI::QueryType::PipelineStatistics:
                 {
+                    NSError* error = nil;
                     NSUInteger statisticCounterIndex = [counterSets indexOfObjectPassingTest:^BOOL(id<MTLCounterSet> mtlCounterSet, NSUInteger idx, BOOL *stop)
                     {
                         if ([mtlCounterSet.name isEqualToString:MTLCommonCounterSetStatistic])
@@ -127,9 +127,6 @@ namespace AZ
 
         RHI::ResultCode QueryPool::GetResultsInternal(uint32_t startIndex, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, RHI::QueryResultFlagBits flags)
         {
-            auto& device = static_cast<Device&>(GetDevice());
-            MTLCommandBufferStatus commandBufferStatus = MTLCommandBufferStatusError;
-
             switch(GetDescriptor().m_type)
             {
                 case RHI::QueryType::Occlusion:

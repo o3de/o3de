@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -35,7 +36,7 @@ ly_append_configurations_options(
         AZ_BUILD_CONFIGURATION_TYPE="${LY_BUILD_CONFIGURATION_TYPE_DEBUG}"
     DEFINES_PROFILE
         _PROFILE
-        PROFILE
+        AZ_PROFILE_BUILD=1
         NDEBUG
         AZ_ENABLE_TRACING
         AZ_ENABLE_DEBUG_TOOLS
@@ -46,3 +47,18 @@ ly_append_configurations_options(
         NDEBUG
         AZ_BUILD_CONFIGURATION_TYPE="${LY_BUILD_CONFIGURATION_TYPE_RELEASE}"
 )
+
+# Ninja: parallel compile and link pool settings
+if(CMAKE_GENERATOR MATCHES "Ninja")
+    set(LY_PARALLEL_COMPILE_JOBS "" CACHE STRING "Number of compile jobs to use (Defaults to not set)")
+    set(LY_PARALLEL_LINK_JOBS "" CACHE STRING "Number of link jobs to use (Defaults to not set)")
+
+    if(LY_PARALLEL_COMPILE_JOBS)
+        set_property(GLOBAL APPEND PROPERTY JOB_POOLS compile_job_pool=${LY_PARALLEL_COMPILE_JOBS})
+        ly_set(CMAKE_JOB_POOL_COMPILE compile_job_pool)
+    endif()
+    if(LY_PARALLEL_LINK_JOBS)
+        set_property(GLOBAL APPEND PROPERTY JOB_POOLS link_job_pool=${LY_PARALLEL_LINK_JOBS})
+        ly_set(CMAKE_JOB_POOL_LINK link_job_pool)
+    endif()
+endif()

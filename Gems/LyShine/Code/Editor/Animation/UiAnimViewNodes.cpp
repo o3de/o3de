@@ -1,14 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "UiCanvasEditor_precompiled.h"
 #include "EditorDefs.h"
-#include "Resource.h"
+#include "Editor/Resource.h"
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewNodes.h"
 #include "UiAnimViewDopeSheetBase.h"
@@ -23,7 +23,6 @@
 
 #include "Objects/EntityObject.h"
 #include "ViewManager.h"
-#include "RenderViewport.h"
 #include "Export/ExportManager.h"
 #include <Editor/Util/fastlib.h>
 
@@ -96,88 +95,16 @@ public:
     }
 
 protected:
-    void dragMoveEvent(QDragMoveEvent* event)
+    void dragMoveEvent([[maybe_unused]] QDragMoveEvent* event)
     {
         // For now we do not support any drag and drop in the Nodes pane
         return;
-
-        CUiAnimViewNodesCtrl::CRecord* pRecord = (CUiAnimViewNodesCtrl::CRecord*) itemAt(event->pos());
-        if (!pRecord)
-        {
-            return;
-        }
-        CUiAnimViewNode* pTargetNode = pRecord->GetNode();
-
-        QTreeWidget::dragMoveEvent(event);
-        if (!event->isAccepted())
-        {
-            return;
-        }
-
-        if (pTargetNode && pTargetNode->IsGroupNode() /*&& !m_draggedNodes.DoesContain(pTargetNode)*/)
-        {
-            CUiAnimViewAnimNode* pDragTarget = static_cast<CUiAnimViewAnimNode*>(pTargetNode);
-            bool bAllValidReparenting = true;
-            QList<CUiAnimViewAnimNode*> nodes = draggedNodes(event);
-            Q_FOREACH(CUiAnimViewAnimNode * pDraggedNode, nodes)
-            {
-                if (!pDraggedNode->IsValidReparentingTo(pDragTarget))
-                {
-                    bAllValidReparenting = false;
-                    break;
-                }
-            }
-
-            if (!bAllValidReparenting)
-            {
-                event->ignore();
-            }
-
-            return;
-        }
     }
 
-    void dropEvent(QDropEvent* event)
+    void dropEvent([[maybe_unused]] QDropEvent* event)
     {
         // For now we do not support any drag and drop in the Nodes pane
         return;
-
-        CUiAnimViewNodesCtrl::CRecord* pRecord = (CUiAnimViewNodesCtrl::CRecord*) itemAt(event->pos());
-        if (!pRecord)
-        {
-            return;
-        }
-        CUiAnimViewNode* pTargetNode = pRecord->GetNode();
-
-        QTreeWidget::dropEvent(event);
-        if (!event->isAccepted())
-        {
-            return;
-        }
-
-        if (pTargetNode && pTargetNode->IsGroupNode() /*&& !m_draggedNodes.DoesContain(pTargetNode)*/)
-        {
-            CUiAnimViewAnimNode* pDragTarget = static_cast<CUiAnimViewAnimNode*>(pTargetNode);
-            bool bAllValidReparenting = true;
-            QList<CUiAnimViewAnimNode*> nodes = draggedNodes(event);
-            Q_FOREACH(CUiAnimViewAnimNode * pDraggedNode, nodes)
-            {
-                if (!pDraggedNode->IsValidReparentingTo(pDragTarget))
-                {
-                    bAllValidReparenting = false;
-                    break;
-                }
-            }
-
-            if (bAllValidReparenting)
-            {
-                UiAnimUndo undo("Drag and Drop UiAnimView Nodes");
-                Q_FOREACH(CUiAnimViewAnimNode * pDraggedNode, nodes)
-                {
-                    pDraggedNode->SetNewParent(pDragTarget);
-                }
-            }
-        }
     }
 
     void keyPressEvent(QKeyEvent* event)
@@ -486,7 +413,7 @@ CUiAnimViewNodesCtrl::CRecord* CUiAnimViewNodesCtrl::AddAnimNodeRecord(CRecord* 
 {
     CRecord* pNewRecord = new CRecord(pAnimNode);
 
-    pNewRecord->setText(0, QtUtil::ToQString(pAnimNode->GetName()));
+    pNewRecord->setText(0, QString::fromUtf8(pAnimNode->GetName().c_str()));
     UpdateUiAnimNodeRecord(pNewRecord, pAnimNode);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, pAnimNode), pNewRecord);
     FillNodesRec(pNewRecord, pAnimNode);
@@ -499,7 +426,7 @@ CUiAnimViewNodesCtrl::CRecord* CUiAnimViewNodesCtrl::AddTrackRecord(CRecord* pPa
 {
     CRecord* pNewTrackRecord = new CRecord(pTrack);
     pNewTrackRecord->setSizeHint(0, QSize(30, 18));
-    pNewTrackRecord->setText(0, QtUtil::ToQString(pTrack->GetName()));
+    pNewTrackRecord->setText(0, QString::fromUtf8(pTrack->GetName().c_str()));
     UpdateTrackRecord(pNewTrackRecord, pTrack);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, pTrack), pNewTrackRecord);
     FillNodesRec(pNewTrackRecord, pTrack);
@@ -649,7 +576,7 @@ void CUiAnimViewNodesCtrl::UpdateUiAnimNodeRecord(CRecord* pRecord, CUiAnimViewA
     int nNodeImage = GetIconIndexForNode(nodeType);
     assert(m_imageList.contains(nNodeImage));
 
-    QString nodeName = pAnimNode->GetName();
+    QString nodeName = QString::fromUtf8(pAnimNode->GetName().c_str());
 
     pRecord->setIcon(0, m_imageList[nNodeImage]);
 
@@ -708,7 +635,7 @@ void CUiAnimViewNodesCtrl::OnFillItems()
         m_nodeToRecordMap.clear();
 
         CRecord* pRootGroupRec = new CRecord(pSequence);
-        pRootGroupRec->setText(0, QtUtil::ToQString(pSequence->GetName()));
+        pRootGroupRec->setText(0, QString::fromUtf8(pSequence->GetName().c_str()));
         QFont f = font();
         f.setBold(true);
         pRootGroupRec->setData(0, Qt::FontRole, f);
@@ -1060,7 +987,7 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
         if (pAnimNode)
         {
             QString matName;
-            GetMatNameAndSubMtlIndexFromName(matName, pAnimNode->GetName());
+            GetMatNameAndSubMtlIndexFromName(matName, pAnimNode->GetName().c_str());
             QString newMatName;
             newMatName = QStringLiteral("%1.[%2]").arg(matName).arg(cmd - eMI_SelectSubmaterialBase + 1);
             UiAnimUndo undo("Rename Animation node");
@@ -1168,9 +1095,6 @@ void CUiAnimViewNodesCtrl::AddGroupNodeAddItems(UiAnimContextMenu& contextMenu, 
         contextMenu.main.addAction("Add Selected UI Element(s)")->setData(eMI_AddSelectedUiElements);
         contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
     }
-
-    const bool bIsDirectorOrSequence = (pAnimNode->GetType() == eUiAnimNodeType_Director || pAnimNode->GetNodeType() == eUiAVNT_Sequence);
-
 
 #if UI_ANIMATION_REMOVED
     contextMenu.main.addAction("Add Comment Node")->setData(eMI_AddCommentNode);
@@ -1305,7 +1229,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
     if (bOnNode && !pNode->IsGroupNode())
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        QString string = QString("%1 Tracks").arg(pAnimNode->GetName());
+        QString string = QString("%1 Tracks").arg(QString::fromUtf8(pAnimNode->GetName().c_str()));
         contextMenu.main.addAction(string)->setEnabled(false);
 
         bool bAppendedTrackFlag = false;
@@ -1323,7 +1247,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
                     continue;
                 }
 
-                QAction* a = contextMenu.main.addAction(QString("  %1").arg(QtUtil::ToQString(pTrack2->GetName())));
+                QAction* a = contextMenu.main.addAction(QString("  %1").arg(QString::fromUtf8(pTrack2->GetName().c_str())));
                 a->setData(eMI_ShowHideBase + childIndex);
                 a->setCheckable(true);
                 a->setChecked(!pTrack2->IsHidden());
@@ -1459,7 +1383,7 @@ void CUiAnimViewNodesCtrl::FillAutoCompletionListForFilter()
 
         for (unsigned int i = 0; i < animNodeCount; ++i)
         {
-            strings << QtUtil::ToQString(animNodes.GetNode(i)->GetName());
+            strings << QString::fromUtf8(animNodes.GetNode(i)->GetName().c_str());
         }
     }
     else
@@ -1512,7 +1436,7 @@ int CUiAnimViewNodesCtrl::GetMatNameAndSubMtlIndexFromName(QString& matName, con
     if (const char* pCh = strstr(nodeName, ".["))
     {
         char matPath[MAX_PATH];
-        cry_strcpy(matPath, nodeName, (size_t)(pCh - nodeName));
+        azstrncpy(matPath, AZ_ARRAY_SIZE(matPath), nodeName, (size_t)(pCh - nodeName));
         matName = matPath;
         pCh += 2;
         if ((*pCh) != 0)
@@ -1763,7 +1687,7 @@ void CUiAnimViewNodesCtrl::OnNodeRenamed(CUiAnimViewNode* pNode, [[maybe_unused]
     if (!m_bIgnoreNotifications)
     {
         CRecord* pNodeRecord = GetNodeRecord(pNode);
-        pNodeRecord->setText(0, QtUtil::ToQString(pNode->GetName()));
+        pNodeRecord->setText(0, QString::fromUtf8(pNode->GetName().c_str()));
 
         update();
     }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,6 +14,7 @@
 #include <Atom/Feature/PostProcess/ExposureControl/ExposureControlSettingsInterface.h>
 #include <Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h>
 #include <Atom/Feature/PostProcess/LookModification/LookModificationSettingsInterface.h>
+#include <Atom/Feature/PostProcess/ColorGrading/HDRColorGradingSettingsInterface.h>
 #include <Atom/Feature/ScreenSpace/DeferredFogSettingsInterface.h>
 #include <Atom/RPI.Public/View.h>
 

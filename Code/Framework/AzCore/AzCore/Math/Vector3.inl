@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -185,7 +186,7 @@ namespace AZ
     }
 
 
-    AZ_MATH_INLINE void Vector3::Set(float values[])
+    AZ_MATH_INLINE void Vector3::Set(const float values[])
     {
         m_value = Simd::Vec3::LoadImmediate(values[0], values[1], values[2]);
     }
@@ -477,6 +478,24 @@ namespace AZ
     AZ_MATH_INLINE bool Vector3::IsGreaterEqualThan(const Vector3& rhs) const
     {
         return Simd::Vec3::CmpAllGtEq(m_value, rhs.m_value);
+    }
+
+
+    AZ_MATH_INLINE Vector3 Vector3::GetFloor() const
+    {
+        return Vector3(Simd::Vec3::Floor(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector3 Vector3::GetCeil() const
+    {
+        return Vector3(Simd::Vec3::Ceil(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector3 Vector3::GetRound() const
+    {
+        return Vector3(Simd::Vec3::Round(m_value));
     }
 
 

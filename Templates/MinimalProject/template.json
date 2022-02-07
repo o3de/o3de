@@ -173,8 +173,20 @@
             "isOptional": false
         },
         {
-            "file": "EngineFinder.cmake",
-            "origin": "EngineFinder.cmake",
+            "file": "cmake/EngineFinder.cmake",
+            "origin": "cmake/EngineFinder.cmake",
+            "isTemplated": false,
+            "isOptional": false
+        },
+        {
+            "file": "cmake/CompilerSettings.cmake",
+            "origin": "cmake/CompilerSettings.cmake",
+            "isTemplated": false,
+            "isOptional": false
+        },
+        {
+            "file": "cmake/Platform/Linux/CompilerSettings_linux.cmake",
+            "origin": "cmake/Platform/Linux/CompilerSettings_linux.cmake",
             "isTemplated": false,
             "isOptional": false
         },
@@ -487,18 +499,6 @@
         {
             "file": "ShaderLib/viewsrg.srgi",
             "origin": "ShaderLib/viewsrg.srgi",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Shaders/CommonVS.azsli",
-            "origin": "Shaders/CommonVS.azsli",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Shaders/ShaderResourceGroups/SceneSrg.azsli",
-            "origin": "Shaders/ShaderResourceGroups/SceneSrg.azsli",
             "isTemplated": true,
             "isOptional": false
         },

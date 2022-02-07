@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
 
 #include <AzCore/base.h>
@@ -42,7 +42,7 @@ namespace AZ
         static Aabb CreateCenterRadius(const Vector3& center, float radius);
 
         //! Creates an AABB which contains the specified points.
-        static Aabb CreatePoints(const Vector3* pts, int numPts);
+        static Aabb CreatePoints(const Vector3* pts, size_t numPts);
 
         //! Creates an AABB which contains the specified OBB.
         static Aabb CreateFromObb(const Obb& obb);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,8 +9,6 @@
 
 #pragma once
 
-#include "CryThread.h"
-#include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
 #include <QString>
 #include <QFileInfo>
@@ -26,14 +25,9 @@ public:
 
     static void ShowInExplorer(const QString& path);
 
-    // Try to compile the given lua file: returns true if compilation succeeded, false on failure.
-    static bool CompileLuaFile(const char* luaFilename);
-
     static bool ExtractFile(QString& file, bool bMsgBoxAskForExtraction = true, const char* pDestinationFilename = nullptr);
     static void EditTextFile(const char* txtFile, int line = 0, IFileUtil::ETextFileType fileType = IFileUtil::FILE_TYPE_SCRIPT);
     static void EditTextureFile(const char* txtureFile, bool bUseGameFolder);
-    static bool EditMayaFile(const char* mayaFile, const bool bExtractFromPak, const bool bUseGameFolder);
-    static bool EditFile(const char* filePath, const bool bExtrackFromPak, const bool bUseGameFolder);
 
     //! dcc filename calculation and extraction sub-routines
     static bool CalculateDccFilename(const QString& assetFilename, QString& dccFilename);
@@ -122,7 +116,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     // @param LPPROGRESS_ROUTINE pfnProgress - called by the system to notify of file copy progress
-    // @param LPBOOL pbCancel - when the contents of this BOOL are set to TRUE, the system cancels the copy operation
+    // @param LPBOOL pbCancel - when the contents of this BOOL are set to true, the system cancels the copy operation
     static IFileUtil::ECopyTreeResult   CopyFile(const QString& strSourceFile, const QString& strTargetFile, bool boConfirmOverwrite = false, ProgressRoutine pfnProgress = nullptr, bool* pbCancel = nullptr);
 
 
@@ -133,18 +127,7 @@ public:
     // THIS FUNCTION IS NOT DESIGNED FOR MULTI-THREADED USAGE
     static IFileUtil::ECopyTreeResult   MoveTree(const QString& strSourceDirectory, const QString& strTargetDirectory, bool boRecurse = true, bool boConfirmOverwrite = false);
 
-    // Show Popup Menu with file commands include Source Control commands
-    // filename: a name of file without path
-    // fullGamePath: a game path to folder like "/Game/Objects" without filename
-    // wnd: pointer to window class, can be nullptr
-    // isSelected: output value indicated if Select menu item was chosen, if pointer is 0 - no Select menu item.
-    // pItems: you can specify additional menu items and get the result of selection using this parameter.
-    // return false if source control operation failed
-    static QString PopupQMenu(const QString& filename, const QString& fullGamePath, QWidget* parent);
-    static QString PopupQMenu(const QString& filename, const QString& fullGamePath, QWidget* parent, bool* pIsSelected, const QStringList& extraItemsFront);
-    static QString PopupQMenu(const QString& filename, const QString& fullGamePath, QWidget* parent, bool* pIsSelected, const QStringList& extraItemsFront, const QStringList& extraItemsBack);
-
-    static void PopulateQMenu(QWidget* caller, QMenu* menu, const QString& filename, const QString& fullGamePath);
+    static void PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath);
 
     static void GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, bool bMakeLowerCase = false, bool bMakeUnixPath = false);
 
@@ -171,7 +154,7 @@ private:
     static bool s_multiFileDlgPref[IFileUtil::EFILE_TYPE_LAST];
 
     // Keep this variant of this method private! pIsSelected is captured in a lambda, and so requires menu use exec() and never use show()
-    static void PopulateQMenu(QWidget* caller, QMenu* menu, const QString& filename, const QString& fullGamePath, bool* pIsSelected);
+    static void PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath, bool* pIsSelected);
 
     static bool ExtractDccFilenameFromAssetDatabase(const QString& assetFilename, QString& dccFilename);
     static bool ExtractDccFilenameUsingNamingConventions(const QString& assetFilename, QString& dccFilename);

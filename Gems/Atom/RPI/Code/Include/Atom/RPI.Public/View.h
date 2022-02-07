@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -91,6 +92,8 @@ namespace AZ
             const AZ::Matrix4x4& GetViewToWorldMatrix() const;
             const AZ::Matrix4x4& GetViewToClipMatrix() const;
             const AZ::Matrix4x4& GetWorldToClipMatrix() const;
+            const AZ::Matrix4x4& GetClipToWorldMatrix() const;
+
             //! Get the camera's world transform, converted from the viewToWorld matrix's native y-up to z-up
             AZ::Transform GetCameraTransform() const;
 
@@ -108,9 +111,6 @@ namespace AZ
             //! Returns the area of the given sphere projected into clip space in terms of percentage coverage of the viewport.
             //! Value returned is 1.0f when an area equal to the viewport height squared is covered. Useful for accurate LOD decisions.
             float CalculateSphereAreaInClipSpace(const AZ::Vector3& sphereWorldPosition, float sphereRadius) const;
-
-            //! Invalidate the view srg to rebuild the srg.
-            void InvalidateSrg();
 
             const AZ::Name& GetName() const { return m_name; }
             const UsageFlags GetUsageFlags() { return m_usageFlags; }
@@ -132,16 +132,21 @@ namespace AZ
             //! Returns the masked occlusion culling interface
             MaskedOcclusionCulling* GetMaskedOcclusionCulling();
 
+            //! This is called by RenderPipeline when this view is added to the pipeline.
+            void OnAddToRenderPipeline();
+
         private:
             View() = delete;
             View(const AZ::Name& name, UsageFlags usage);
-
 
             //! Sorts the finalized draw lists in this view
             void SortFinalizedDrawLists();
 
             //! Sorts a drawList using the sort function from a pass with the corresponding drawListTag
             void SortDrawList(RHI::DrawList& drawList, RHI::DrawListTag tag);
+
+            //! Attempt to create a shader resource group.
+            void TryCreateShaderResourceGroup();
 
             AZ::Name m_name;
             UsageFlags m_usageFlags;
@@ -190,9 +195,6 @@ namespace AZ
 
             // Clip space offset for camera jitter with taa
             Vector2 m_clipSpaceOffset = Vector2(0.0f, 0.0f);
-
-            // Flags whether view matrices are dirty which requires rebuild srg
-            bool m_needBuildSrg = true;
 
             MatrixChangedEvent m_onWorldToClipMatrixChange;
             MatrixChangedEvent m_onWorldToViewMatrixChange;

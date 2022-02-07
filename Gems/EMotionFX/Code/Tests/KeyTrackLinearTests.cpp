@@ -1,12 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
 #include "SystemComponentFixture.h"
 
 #include <AzTest/AzTest.h>
@@ -33,9 +32,9 @@ namespace EMotionFX
         void LogFloatTrack(KeyTrackLinearDynamic<float, float>& track)
         {
             AZ_Printf("EMotionFX", "----------\n");
-            for (AZ::u32 i=0; i < track.GetNumKeys(); ++i)
+            for (size_t i=0; i < track.GetNumKeys(); ++i)
             {
-                AZ_Printf("EMotionFX", "#%d = time:%f  value:%f\n", i, track.GetKey(i)->GetTime(), track.GetKey(i)->GetValue());
+                AZ_Printf("EMotionFX", "#%zu = time:%f  value:%f\n", i, track.GetKey(i)->GetTime(), track.GetKey(i)->GetValue());
             }
         }
 
@@ -186,16 +185,16 @@ namespace EMotionFX
         EMotionFX::KeyTrackLinearDynamic<float, float> track;
         FillFloatTrackZeroToThree(track);
 
-        ASSERT_EQ(track.FindKeyNumber(-1.0f), MCORE_INVALIDINDEX32);
+        ASSERT_EQ(track.FindKeyNumber(-1.0f), InvalidIndex);
         ASSERT_EQ(track.FindKeyNumber(0.0f), 0);
         ASSERT_EQ(track.FindKeyNumber(1.0f), 1);
         ASSERT_EQ(track.FindKeyNumber(2.0f), 2);
         ASSERT_EQ(track.FindKeyNumber(2.4f), 2);
         ASSERT_EQ(track.FindKeyNumber(2.8f), 2);
         ASSERT_EQ(track.FindKeyNumber(2.999f), 2);
-        ASSERT_EQ(track.FindKeyNumber(3.0f), MCORE_INVALIDINDEX32);
-        ASSERT_EQ(track.FindKeyNumber(3.001f), MCORE_INVALIDINDEX32);
-        ASSERT_EQ(track.FindKeyNumber(4.0f), MCORE_INVALIDINDEX32);
+        ASSERT_EQ(track.FindKeyNumber(3.0f), InvalidIndex);
+        ASSERT_EQ(track.FindKeyNumber(3.001f), InvalidIndex);
+        ASSERT_EQ(track.FindKeyNumber(4.0f), InvalidIndex);
    }
 
    TEST_F(KeyTrackLinearDynamicFixture, KeyTrackSetNumKeys)
@@ -232,7 +231,7 @@ namespace EMotionFX
         track.AddKey(2.01f, 1.0001f);
         track.AddKey(3.0f, 3.0f);
         track.Init();
-        const uint32 numKeysRemoved = track.Optimize(0.001f);
+        const size_t numKeysRemoved = track.Optimize(0.001f);
         ASSERT_EQ(numKeysRemoved, 1);
         ASSERT_EQ(track.GetNumKeys(), 4);
         ASSERT_FLOAT_EQ(track.GetKey(0)->GetTime(), 0.0f);
@@ -253,7 +252,7 @@ namespace EMotionFX
         ASSERT_FLOAT_EQ(track.GetValueAtTime(4.0f), 3.0f);
 
         uint8 cacheHit = 0;
-        uint32 cached = 0;
+        size_t cached = 0;
         ASSERT_FLOAT_EQ(track.GetValueAtTime(0.0f, &cached, &cacheHit), 0.0f);
         ASSERT_EQ(cached, 0);
         ASSERT_EQ(cacheHit, 1);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,14 +12,10 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "EditorAssetImporter_precompiled.h"
 #include "AssetImporterPlugin.h"
 
 
-#if defined(AZ_PLATFORM_WINDOWS)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
+#include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 PLUGIN_API IPlugin* CreatePluginInstance(PLUGIN_INIT_PARAM* pInitParam)

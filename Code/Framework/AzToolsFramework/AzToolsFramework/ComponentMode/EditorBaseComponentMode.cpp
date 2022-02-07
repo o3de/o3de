@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -54,8 +55,11 @@ namespace AzToolsFramework
                 GetEntityComponentIdPair(), elementIdsToDisplay);
             // create the component mode border with the specific name for this component mode
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateComponentModeBorder,
-                GetComponentModeName());
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, GetComponentModeName(),
+                []
+                {
+                    ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequests::EndComponentMode);
+                });
             // set the EntityComponentId for this ComponentMode to active in the ComponentModeViewportUi system
             ComponentModeViewportUiRequestBus::Event(
                 GetComponentType(), &ComponentModeViewportUiRequestBus::Events::SetViewportUiActiveEntityComponentId,

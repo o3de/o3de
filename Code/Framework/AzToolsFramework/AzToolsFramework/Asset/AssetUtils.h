@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,6 +17,9 @@ class QString;
 
 namespace AzToolsFramework::AssetUtils
 {
+    static constexpr const char* AssetImporterSettingsKey{ "/O3DE/SceneAPI/AssetImporter" };
+    static constexpr const char* AssetImporterSupportedFileTypeKey{ "SupportedFileTypeExtensions" };
+
     //! Reads the "/Amazon/AssetProcessor/Settings/Platforms" entry from the settings registry
     //! to retrieve all enabled platforms
     void ReadEnabledPlatformsFromSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry,
@@ -36,7 +40,7 @@ namespace AzToolsFramework::AssetUtils
     //! Also note that if the project has any "game project gems", then those will also be inserted last, 
     //! and thus have a higher priority than the root or non - project gems.
     //! Also note that the game project could be in a different location to the engine therefore we need the assetRoot param.
-    AZStd::vector<AZ::IO::Path> GetConfigFiles(AZStd::string_view engineRoot, AZStd::string_view assetRoot, AZStd::string_view projectPath,
+    AZStd::vector<AZ::IO::Path> GetConfigFiles(AZStd::string_view engineRoot, AZStd::string_view projectPath,
         bool addPlatformConfigs = true, bool addGemsConfigs = true, AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
     //! A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.

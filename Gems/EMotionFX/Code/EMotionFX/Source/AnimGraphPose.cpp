@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,16 +18,15 @@ namespace EMotionFX
     // constructor
     AnimGraphPose::AnimGraphPose()
     {
-        mFlags = 0;
+        m_flags = 0;
     }
 
 
     // copy constructor
     AnimGraphPose::AnimGraphPose(const AnimGraphPose& other)
     {
-        mFlags = 0;
-        mPose.InitFromPose(&other.mPose);
-        //mFlags = other.mFlags;
+        m_flags = 0;
+        m_pose.InitFromPose(&other.m_pose);
     }
 
 
@@ -39,8 +39,7 @@ namespace EMotionFX
     // = operator
     AnimGraphPose& AnimGraphPose::operator=(const AnimGraphPose& other)
     {
-        mPose.InitFromPose(&other.mPose);
-        //mFlags = other.mFlags;
+        m_pose.InitFromPose(&other.m_pose);
         return *this;
     }
 
@@ -49,7 +48,7 @@ namespace EMotionFX
     void AnimGraphPose::LinkToActorInstance(const ActorInstance* actorInstance)
     {
         // resize the transformation buffer, which contains the local space transformations
-        mPose.LinkToActorInstance(actorInstance);
+        m_pose.LinkToActorInstance(actorInstance);
     }
 
 
@@ -60,7 +59,7 @@ namespace EMotionFX
         LinkToActorInstance(actorInstance);
 
         // fill the local pose with the bind pose
-        mPose.InitFromBindPose(actorInstance);
+        m_pose.InitFromBindPose(actorInstance);
     }
 
 }   // namespace EMotionFX

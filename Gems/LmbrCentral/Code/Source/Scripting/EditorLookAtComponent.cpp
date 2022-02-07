@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "EditorLookAtComponent.h"
 #include "LookAtComponent.h"
 
@@ -31,8 +31,8 @@ namespace LmbrCentral
 
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Gameplay")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/LookAt.png")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/LookAt.png")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/LookAt.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/LookAt.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
 

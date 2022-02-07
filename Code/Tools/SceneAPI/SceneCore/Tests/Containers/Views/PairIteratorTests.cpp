@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,6 +18,18 @@
 #include <AzCore/std/sort.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Tests/Containers/Views/IteratorTestsBase.h>
+
+// This test gives trouble with /permissive-, the following instantiation workarounds the missing resolution
+namespace std
+{
+    template<>
+    void iter_swap(
+        AZ::SceneAPI::Containers::Views::PairIterator<int*, int*, std::random_access_iterator_tag> lhs,
+        AZ::SceneAPI::Containers::Views::PairIterator<int*, int*, std::random_access_iterator_tag> rhs)
+    {
+        AZStd::iter_swap(lhs, rhs);
+    }
+}
 
 namespace AZ
 {

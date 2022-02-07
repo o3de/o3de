@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 #include <AzCore/std/string/string_view.h>
 
 #include <ATLControlsModel.h>
+#include <AudioResourceSelectors.h>
 #include <IAudioInterfacesCommonData.h>
 #include <IAudioSystemEditor.h>
 #include <QATLControlsTreeModel.h>
@@ -67,6 +69,7 @@ private:
     static AudioControls::FilepathSet ms_currentFilenames;
     static Audio::IAudioProxy* ms_pIAudioProxy;
     static Audio::TAudioControlID ms_nAudioTriggerID;
-
     static CImplementationManager ms_implementationManager;
+
+    AudioControls::AudioControlSelectorHandler m_controlSelector;
 };

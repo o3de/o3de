@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -83,7 +84,7 @@ class ServiceClientJobConfigTest
     void ReloadConfigFile(bool reloadConfigFileName = false) override
     {
         AZ_UNUSED(reloadConfigFileName);
-    };
+    }
 };
 
 TEST_F(ServiceClientJobConfigTest, GetServiceUrl_CreateServiceWithServiceNameOnly_GetExpectedFeatureServiceUrl)

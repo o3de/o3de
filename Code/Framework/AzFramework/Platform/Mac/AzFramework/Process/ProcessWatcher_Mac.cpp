@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
@@ -23,7 +25,9 @@
 #include <sys/ioctl.h>
 #include <sys/resource.h> // for iopolicy
 #include <time.h>
+#include <unistd.h>
 
+extern char **environ;
 
 namespace AzFramework
 {
@@ -44,7 +48,7 @@ namespace AzFramework
             // result == 0 means child PID is still running, nothing to check
             if (result == -1)
             {
-                AZ_TracePrintf("ProcessWatcher", "IsChildProcessDone could not determine child process status (waitpid errno %d). assuming process either failed to launch or terminated unexpectedly\n", errno);
+                AZ_TracePrintf("ProcessWatcher", "IsChildProcessDone could not determine child process status (waitpid errno %d(%s)). assuming process either failed to launch or terminated unexpectedly\n", errno, strerror(errno));
                 exitCode = 0;
             }
             else if (result == childProcessId)
@@ -201,8 +205,6 @@ namespace AzFramework
 
     bool ProcessLauncher::LaunchProcess(const ProcessLaunchInfo& processLaunchInfo, ProcessData& processData)
     {
-        bool result = false;
-
         // note that the convention here is that it uses windows-shell style escaping of combined args with spaces in it
         // (so surrounding with quotes like param="hello world")
         // this is so that the callers (which could be numerous) do not have to worry about this and sprinkle ifdefs
@@ -273,43 +275,33 @@ namespace AzFramework
             azstrcat(commandAndArgs[i], token.size(), token.c_str());
         }
         commandAndArgs[commandTokens.size()] = nullptr;
-
-        char** environmentVariables = nullptr;
-        int numEnvironmentVars = 0;
+        
+        constexpr int MaxEnvVariables = 128;
+        using EnvironmentVariableContainer = AZStd::fixed_vector<char*, MaxEnvVariables>;
+        EnvironmentVariableContainer environmentVariables;
+        for (char **env = ::environ; *env; env++)
+        {
+            environmentVariables.push_back(*env);
+        }
         if (processLaunchInfo.m_environmentVariables)
         {
-            const int numEnvironmentVars = processLaunchInfo.m_environmentVariables->size();
-            // Adding one more as exec expects the array to have a nullptr as the last element
-            environmentVariables = new char*[numEnvironmentVars + 1];
-            for (int i = 0; i < numEnvironmentVars; i++)
+            for (AZStd::string& processLaunchEnv : *processLaunchInfo.m_environmentVariables)
             {
-                const AZStd::string& envVarString = processLaunchInfo.m_environmentVariables->at(i);
-                environmentVariables[i] = new char[envVarString.size() + 1];
-                environmentVariables[i][0] = '\0';
-                azstrcat(environmentVariables[i], envVarString.size(), envVarString.c_str());
+                environmentVariables.push_back(processLaunchEnv.data());
             }
-            environmentVariables[numEnvironmentVars] = NULL;
         }
+        environmentVariables.push_back(nullptr);
 
         pid_t child_pid = fork();
         if (IsIdChildProcess(child_pid))
         {
-            ExecuteCommandAsChild(commandAndArgs, environmentVariables, processLaunchInfo, processData.m_startupInfo);
+            ExecuteCommandAsChild(commandAndArgs, environmentVariables.data(), processLaunchInfo, processData.m_startupInfo);
         }
 
         processData.m_childProcessId = child_pid;
 
         // Close these handles as they are only to be used by the child process
         processData.m_startupInfo.CloseAllHandles();
-
-        if (processLaunchInfo.m_environmentVariables)
-        {
-            for (int i = 0; i < numEnvironmentVars; i++)
-            {
-                delete [] environmentVariables[i];
-            }
-            delete [] environmentVariables;
-        }
 
         for (int i = 0; i < commandTokens.size(); i++)
         {

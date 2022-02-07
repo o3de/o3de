@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,8 +41,8 @@ namespace EMotionFX
             Physics::RagdollConfiguration& ragdollConfig, const AZStd::optional<size_t>& index,
             AZStd::string& outResult);
 
-        static AZStd::unique_ptr<Physics::JointLimitConfiguration> CreateJointLimitByType(const AZ::TypeId& typeId,
-            const Skeleton* skeleton, const Node* node);
+        static AZStd::unique_ptr<AzPhysics::JointConfiguration> CreateJointLimitByType(
+            AzPhysics::JointType jointType, const Skeleton* skeleton, const Node* node);
 
         static void AddJointsToRagdoll(AZ::u32 actorId, const AZStd::vector<AZStd::string>& jointNames,
             MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false, bool addDefaultCollider = true);

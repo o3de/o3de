@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,7 +31,8 @@ namespace Multiplayer
         : m_byteStream(&m_buffer)
     {
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
-            AZ::Name(MPEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
+            AZ::Name(MpEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
+        m_networkEditorInterface->SetTimeoutMs(AZ::TimeMs{ 0 }); // Disable timeouts on this network interface
         if (editorsv_isDedicated)
         {
             uint16_t editorServerPort = DefaultServerEditorPort;
@@ -107,7 +109,7 @@ namespace Multiplayer
 
             // Setup the normal multiplayer connection
             AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
-            INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
+            INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
 
             uint16_t serverPort = DefaultServerPort;
             if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
@@ -143,14 +145,7 @@ namespace Multiplayer
                     console->GetCvarValue("sv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
                     {
                         // Connect the Editor to the editor server for Multiplayer simulation
-                        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
-                        INetworkInterface* networkInterface =
-                            AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
-
-                        const IpAddress ipAddress(remoteAddress.c_str(), remotePort, networkInterface->GetType());
-                        networkInterface->Connect(ipAddress);
-
-                        AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
+                        AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), remotePort);
                     }
             }
         }
@@ -172,7 +167,7 @@ namespace Multiplayer
         ;
     }
 
-    bool MultiplayerEditorConnection::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
+    AzNetworking::PacketDispatchResult MultiplayerEditorConnection::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
     {
         return MultiplayerEditorPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
@@ -184,6 +179,18 @@ namespace Multiplayer
 
     void MultiplayerEditorConnection::OnDisconnect([[maybe_unused]] AzNetworking::IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint)
     {
-        ;
+        bool editorLaunch = false;
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+        {
+            console->GetCvarValue("editorsv_launch", editorLaunch);
+        }
+
+        if (editorsv_isDedicated && editorLaunch && m_networkEditorInterface->GetConnectionSet().GetConnectionCount() == 1)
+        {
+            if (m_networkEditorInterface->GetPort() != 0)
+            {
+                m_networkEditorInterface->StopListening();
+            }
+        }
     }
 }

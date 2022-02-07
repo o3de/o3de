@@ -1,13 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <stdlib.h>
-#include <windows.h>
-#include <sysinfoapi.h>
-#include <fileapi.h>
+
+#include <AzCore/PlatformIncl.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/functional.h>
@@ -31,7 +30,7 @@ namespace AZ
             while (maxAttempts > 0)
             {
                 // Use the system's tick count to base the folder name
-                DWORD currentTick = GetTickCount64();
+                ULONGLONG currentTick = GetTickCount64();
                 azsnprintf(workingTempPathBuffer, bufferSize, "%sUnitTest-%X", tempDir, aznumeric_cast<unsigned int>(currentTick));
 
                 // Check if the requested directory name is available and re-generate if it already exists

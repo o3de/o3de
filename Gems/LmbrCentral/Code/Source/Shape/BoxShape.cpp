@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "LmbrCentral_precompiled.h"
 #include "BoxShape.h"
 
 #include <AzCore/Math/Color.h>
@@ -166,7 +166,7 @@ namespace LmbrCentral
             return intersection;
         }
 
-        const bool intersection = AZ::Intersect::IntersectRayObb(src, dir, m_intersectionDataCache.m_obb, distance) > 0;
+        const bool intersection = AZ::Intersect::IntersectRayObb(src, dir, m_intersectionDataCache.m_obb, distance);
         return intersection;
     }
 

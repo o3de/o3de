@@ -1,9 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -27,7 +30,7 @@ namespace Physics
     class MaterialLibraryAssetEventHandler
         : public AZ::SerializeContext::IEventHandler
     {
-        void OnReadBegin(void* classPtr)
+        void OnReadBegin(void* classPtr) override
         {
             auto matAsset = static_cast<MaterialLibraryAsset*>(classPtr);
             matAsset->GenerateMissingIds();
@@ -37,7 +40,7 @@ namespace Physics
     class MaterialSelectionEventHandler
         : public AZ::SerializeContext::IEventHandler
     {
-        void OnReadEnd(void* classPtr)
+        void OnReadEnd(void* classPtr) override
         {
             auto materialSelection = static_cast<MaterialSelection*>(classPtr);
             if (materialSelection->GetMaterialIdsAssignedToSlots().empty())
@@ -357,12 +360,17 @@ namespace Physics
                 ->Field("MaterialId", &Physics::MaterialId::m_id)
                 ;
         }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<Physics::MaterialId>()->Attribute(AZ::Script::Attributes::Category, "Physics");
+        }
     }
 
     MaterialId MaterialId::Create()
     {
-        MaterialId id; 
-        id.m_id = AZ::Uuid::Create(); 
+        MaterialId id;
+        id.m_id = AZ::Uuid::Create();
         return id;
     }
 
@@ -424,7 +432,7 @@ namespace Physics
         }
         else
         {
-            // If there is more than one material slot 
+            // If there is more than one material slot
             // the caller must use SetMaterialSlots function
             return "<error>";
         }

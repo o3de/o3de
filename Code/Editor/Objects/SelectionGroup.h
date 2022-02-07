@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -18,6 +19,8 @@ class CBaseObject;
 
 #include "ObjectEvent.h"
 #include "Objects/BaseObject.h"
+
+#include <Editor/EditorDefs.h>
 
 /*!
  *  CSelectionGroup is a named selection group of objects.
@@ -68,7 +71,7 @@ public:
     //! And save resulting objects to saveTo selection.
     void    FilterParents();
     //! Get number of child filtered objects.
-    int GetFilteredCount() const { return m_filtered.size(); }
+    int GetFilteredCount() const { return static_cast<int>(m_filtered.size()); }
     CBaseObject* GetFilteredObject(int i) const { return m_filtered[i]; }
 
     //////////////////////////////////////////////////////////////////////////

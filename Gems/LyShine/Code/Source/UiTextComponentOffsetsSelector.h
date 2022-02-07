@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,7 +29,7 @@ struct UiTextComponentOffsetsSelector
         , m_firstIndex(firstIndex)
         , m_lastIndex(lastIndex)
         , m_lastIndexLineNumber(lastIndexLineNumber)
-        , m_numLines(m_drawBatchLines.batchLines.size())
+        , m_numLines(static_cast<int>(m_drawBatchLines.batchLines.size()))
         , m_indexIter(0)
         , m_numCharsSelected(0)
         , m_lineCounter(0)

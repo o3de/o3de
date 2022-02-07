@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -123,7 +124,7 @@ namespace EMotionFX
     {
         using testing::_;
 
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset";
+        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset";
 
         MockAssetSystemRequests assetSystem;
         EXPECT_CALL(assetSystem, CompileAssetSync(_))

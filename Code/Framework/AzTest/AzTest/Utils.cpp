@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -120,12 +121,12 @@ namespace AZ
         char** SplitCommandLine(int& size, char* const cmdLine)
         {
             std::vector<char*> tokens;
-            char* next_token = nullptr;
+            [[maybe_unused]] char* next_token = nullptr;
             char* tok = azstrtok(cmdLine, 0, " ", &next_token);
-            while (tok != NULL)
+            while (tok != nullptr)
             {
                 tokens.push_back(tok);
-                tok = azstrtok(NULL, 0, " ", &next_token);
+                tok = azstrtok(nullptr, 0, " ", &next_token);
             }
             size = (int)tokens.size();
             char** token_array = new char*[size];

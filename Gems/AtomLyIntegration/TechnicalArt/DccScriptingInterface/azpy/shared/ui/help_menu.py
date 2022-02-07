@@ -1,8 +1,9 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -26,7 +27,7 @@ import PySide2.QtWidgets as QtWidgets
 
 # -------------------------------------------------------------------------
 #  global space debug flag
-_G_DEBUG = os.getenv('DCCSI_GDEBUG', False)
+_DCCSI_GDEBUG = os.getenv('DCCSI_GDEBUG', False)
 
 #  global space developer mode flag
 _DCCSI_DEV_MODE = os.getenv('DCCSI_DEV_MODE', False)

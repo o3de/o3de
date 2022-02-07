@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 #include "IEditor.h"
 #include "Include/IIconManager.h"
 #include "Include/IDisplayViewport.h"
+#include <Editor/Util/EditorUtils.h>
 
 #include <QDateTime>
 #include <QPoint>
@@ -24,7 +26,6 @@
 DisplayContext::DisplayContext()
 {
     view = 0;
-    renderer = 0;
     flags = 0;
     settings = 0;
     pIconManager = 0;
@@ -61,7 +62,7 @@ void DisplayContext::InternalDrawLine(const Vec3& v0, const ColorB& colV0, const
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DrawPoint(const Vec3& p, int nSize)
 {
-    pRenderAuxGeom->DrawPoint(ToWorldSpacePosition(p), m_color4b, nSize);
+    pRenderAuxGeom->DrawPoint(ToWorldSpacePosition(p), m_color4b, static_cast<uint8>(nSize));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -72,12 +73,12 @@ void DisplayContext::DrawTri(const Vec3& p1, const Vec3& p2, const Vec3& p3)
 
 void DisplayContext::DrawTriangles(const AZStd::vector<Vec3>& vertices, const ColorB& color)
 {
-    pRenderAuxGeom->DrawTriangles(vertices.begin(), vertices.size(), color);
+    pRenderAuxGeom->DrawTriangles(vertices.begin(), static_cast<uint32>(vertices.size()), color);
 }
 
 void DisplayContext::DrawTrianglesIndexed(const AZStd::vector<Vec3>& vertices, const AZStd::vector<vtx_idx>& indices, const ColorB& color)
 {
-    pRenderAuxGeom->DrawTriangles(vertices.begin(), vertices.size(), indices.begin(), indices.size(), color);
+    pRenderAuxGeom->DrawTriangles(vertices.begin(), static_cast<uint32>(vertices.size()), indices.begin(), static_cast<uint32_t>(indices.size()), color);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -854,13 +855,16 @@ void DisplayContext::DrawLine(const Vec3& p1, const Vec3& p2, const ColorF& col1
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DrawLine(const Vec3& p1, const Vec3& p2, const QColor& rgb1, const QColor& rgb2)
 {
-    InternalDrawLine(ToWorldSpacePosition(p1), ColorB(rgb1.red(), rgb1.green(), rgb1.blue(), 255), ToWorldSpacePosition(p2), ColorB(rgb2.red(), rgb2.green(), rgb2.blue(), 255));
+    InternalDrawLine(ToWorldSpacePosition(p1), 
+        ColorB(static_cast<uint8>(rgb1.red()), static_cast<uint8>(rgb1.green()), static_cast<uint8>(rgb1.blue()), 255), 
+        ToWorldSpacePosition(p2), 
+        ColorB(static_cast<uint8>(rgb2.red()), static_cast<uint8>(rgb2.green()), static_cast<uint8>(rgb2.blue()), 255));
 }
 
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DrawLines(const AZStd::vector<Vec3>& points, const ColorF& color)
 {
-    pRenderAuxGeom->DrawLines(points.begin(), points.size(), color, m_thickness);
+    pRenderAuxGeom->DrawLines(points.begin(), static_cast<uint32>(points.size()), color, m_thickness);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1078,7 +1082,10 @@ void DisplayContext::DrawTerrainLine(Vec3 worldPos1, Vec3 worldPos2)
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DrawTextLabel(const Vec3& pos, float size, const char* text, const bool bCenter, [[maybe_unused]] int srcOffsetX, [[maybe_unused]] int scrOffsetY)
 {
-    ColorF col(m_color4b.r * (1.0f / 255.0f), m_color4b.g * (1.0f / 255.0f), m_color4b.b * (1.0f / 255.0f), m_color4b.a * (1.0f / 255.0f));
+    AZ_ErrorOnce(nullptr, false, "DisplayContext::DrawTextLabel needs to be removed/ported to use Atom");
+
+#if 0
+      ColorF col(m_color4b.r * (1.0f / 255.0f), m_color4b.g * (1.0f / 255.0f), m_color4b.b * (1.0f / 255.0f), m_color4b.a * (1.0f / 255.0f));
 
     float fCol[4] = { col.r, col.g, col.b, col.a };
     if (flags & DISPLAY_2D)
@@ -1091,13 +1098,28 @@ void DisplayContext::DrawTextLabel(const Vec3& pos, float size, const char* text
     {
         renderer->DrawLabelEx(pos, size, fCol, true, true, text);
     }
+#else
+    AZ_UNUSED(pos);
+    AZ_UNUSED(size);
+    AZ_UNUSED(text);
+    AZ_UNUSED(bCenter);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter)
 {
+    AZ_ErrorOnce(nullptr, false, "DisplayContext::Draw2dTextLabel needs to be removed/ported to use Atom");
+#if 0
     float col[4] = { m_color4b.r * (1.0f / 255.0f), m_color4b.g * (1.0f / 255.0f), m_color4b.b * (1.0f / 255.0f), m_color4b.a * (1.0f / 255.0f) };
     renderer->Draw2dLabel(x, y, size, col, bCenter, "%s", text);
+#else
+    AZ_UNUSED(x);
+    AZ_UNUSED(y);
+    AZ_UNUSED(size);
+    AZ_UNUSED(text);
+    AZ_UNUSED(bCenter);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1256,10 +1278,6 @@ void DisplayContext::DrawTextureLabel(const Vec3& pos, int nWidth, int nHeight, 
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::Flush2D()
 {
-#ifndef PHYSICS_EDITOR
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-#endif
-
     if (m_textureLabels.empty())
     {
         return;
@@ -1267,6 +1285,9 @@ void DisplayContext::Flush2D()
 
     int rcw, rch;
     view->GetDimensions(&rcw, &rch);
+
+    AZ_ErrorOnce(nullptr, false, "DisplayContext::Flush2D needs to be removed/ported to use Atom");
+#if 0
 
     TransformationMatrices backupSceneMatrices;
 
@@ -1285,8 +1306,8 @@ void DisplayContext::Flush2D()
     uvs[3] = 0;
     uvt[3] = 0;
 
-    int nLabels = m_textureLabels.size();
-    for (int i = 0; i < nLabels; i++)
+    const size_t nLabels = m_textureLabels.size();
+    for (size_t i = 0; i < nLabels; i++)
     {
         STextureLabel& t = m_textureLabels[i];
         float w2 = t.w * 0.5f;
@@ -1309,6 +1330,7 @@ void DisplayContext::Flush2D()
     }
 
     renderer->Unset2DMode(backupSceneMatrices);
+#endif
 
     m_textureLabels.clear();
 }

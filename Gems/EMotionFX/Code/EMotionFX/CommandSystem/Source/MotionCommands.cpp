@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -78,27 +79,27 @@ namespace CommandSystem
     AZStd::string CommandPlayMotion::PlayBackInfoToCommandParameters(const EMotionFX::PlayBackInfo* playbackInfo)
     {
         return AZStd::string::format("-blendInTime %f -blendOutTime %f -playSpeed %f -targetWeight %f -eventWeightThreshold %f -maxPlayTime %f -numLoops %i -priorityLevel %i -blendMode %i -playMode %i -mirrorMotion %s -mix %s -playNow %s -motionExtraction %s -retarget %s -freezeAtLastFrame %s -enableMotionEvents %s -blendOutBeforeEnded %s -canOverwrite %s -deleteOnZeroWeight %s -inPlace %s",
-            playbackInfo->mBlendInTime,
-            playbackInfo->mBlendOutTime,
-            playbackInfo->mPlaySpeed,
-            playbackInfo->mTargetWeight,
-            playbackInfo->mEventWeightThreshold,
-            playbackInfo->mMaxPlayTime,
-            playbackInfo->mNumLoops,
-            playbackInfo->mPriorityLevel,
-            static_cast<AZ::u8>(playbackInfo->mBlendMode),
-            static_cast<AZ::u8>(playbackInfo->mPlayMode),
-            AZStd::to_string(playbackInfo->mMirrorMotion).c_str(),
-            AZStd::to_string(playbackInfo->mMix).c_str(),
-            AZStd::to_string(playbackInfo->mPlayNow).c_str(),
-            AZStd::to_string(playbackInfo->mMotionExtractionEnabled).c_str(),
-            AZStd::to_string(playbackInfo->mRetarget).c_str(),
-            AZStd::to_string(playbackInfo->mFreezeAtLastFrame).c_str(),
-            AZStd::to_string(playbackInfo->mEnableMotionEvents).c_str(),
-            AZStd::to_string(playbackInfo->mBlendOutBeforeEnded).c_str(),
-            AZStd::to_string(playbackInfo->mCanOverwrite).c_str(),
-            AZStd::to_string(playbackInfo->mDeleteOnZeroWeight).c_str(),
-            AZStd::to_string(playbackInfo->mInPlace).c_str());
+            playbackInfo->m_blendInTime,
+            playbackInfo->m_blendOutTime,
+            playbackInfo->m_playSpeed,
+            playbackInfo->m_targetWeight,
+            playbackInfo->m_eventWeightThreshold,
+            playbackInfo->m_maxPlayTime,
+            playbackInfo->m_numLoops,
+            playbackInfo->m_priorityLevel,
+            static_cast<AZ::u8>(playbackInfo->m_blendMode),
+            static_cast<AZ::u8>(playbackInfo->m_playMode),
+            AZStd::to_string(playbackInfo->m_mirrorMotion).c_str(),
+            AZStd::to_string(playbackInfo->m_mix).c_str(),
+            AZStd::to_string(playbackInfo->m_playNow).c_str(),
+            AZStd::to_string(playbackInfo->m_motionExtractionEnabled).c_str(),
+            AZStd::to_string(playbackInfo->m_retarget).c_str(),
+            AZStd::to_string(playbackInfo->m_freezeAtLastFrame).c_str(),
+            AZStd::to_string(playbackInfo->m_enableMotionEvents).c_str(),
+            AZStd::to_string(playbackInfo->m_blendOutBeforeEnded).c_str(),
+            AZStd::to_string(playbackInfo->m_canOverwrite).c_str(),
+            AZStd::to_string(playbackInfo->m_deleteOnZeroWeight).c_str(),
+            AZStd::to_string(playbackInfo->m_inPlace).c_str());
     }
 
 
@@ -107,87 +108,87 @@ namespace CommandSystem
     {
         if (parameters.CheckIfHasParameter("blendInTime") == true)
         {
-            outPlaybackInfo->mBlendInTime = parameters.GetValueAsFloat("blendInTime", command);
+            outPlaybackInfo->m_blendInTime = parameters.GetValueAsFloat("blendInTime", command);
         }
         if (parameters.CheckIfHasParameter("blendOutTime"))
         {
-            outPlaybackInfo->mBlendOutTime = parameters.GetValueAsFloat("blendOutTime", command);
+            outPlaybackInfo->m_blendOutTime = parameters.GetValueAsFloat("blendOutTime", command);
         }
         if (parameters.CheckIfHasParameter("playSpeed"))
         {
-            outPlaybackInfo->mPlaySpeed = parameters.GetValueAsFloat("playSpeed", command);
+            outPlaybackInfo->m_playSpeed = parameters.GetValueAsFloat("playSpeed", command);
         }
         if (parameters.CheckIfHasParameter("targetWeight"))
         {
-            outPlaybackInfo->mTargetWeight = parameters.GetValueAsFloat("targetWeight", command);
+            outPlaybackInfo->m_targetWeight = parameters.GetValueAsFloat("targetWeight", command);
         }
         if (parameters.CheckIfHasParameter("eventWeightThreshold"))
         {
-            outPlaybackInfo->mEventWeightThreshold = parameters.GetValueAsFloat("eventWeightThreshold", command);
+            outPlaybackInfo->m_eventWeightThreshold = parameters.GetValueAsFloat("eventWeightThreshold", command);
         }
         if (parameters.CheckIfHasParameter("maxPlayTime"))
         {
-            outPlaybackInfo->mMaxPlayTime = parameters.GetValueAsFloat("maxPlayTime", command);
+            outPlaybackInfo->m_maxPlayTime = parameters.GetValueAsFloat("maxPlayTime", command);
         }
         if (parameters.CheckIfHasParameter("numLoops"))
         {
-            outPlaybackInfo->mNumLoops = parameters.GetValueAsInt("numLoops", command);
+            outPlaybackInfo->m_numLoops = parameters.GetValueAsInt("numLoops", command);
         }
         if (parameters.CheckIfHasParameter("priorityLevel"))
         {
-            outPlaybackInfo->mPriorityLevel = parameters.GetValueAsInt("priorityLevel", command);
+            outPlaybackInfo->m_priorityLevel = parameters.GetValueAsInt("priorityLevel", command);
         }
         if (parameters.CheckIfHasParameter("blendMode"))
         {
-            outPlaybackInfo->mBlendMode = (EMotionFX::EMotionBlendMode)parameters.GetValueAsInt("blendMode", command);
+            outPlaybackInfo->m_blendMode = (EMotionFX::EMotionBlendMode)parameters.GetValueAsInt("blendMode", command);
         }
         if (parameters.CheckIfHasParameter("playMode"))
         {
-            outPlaybackInfo->mPlayMode = (EMotionFX::EPlayMode)parameters.GetValueAsInt("playMode", command);
+            outPlaybackInfo->m_playMode = (EMotionFX::EPlayMode)parameters.GetValueAsInt("playMode", command);
         }
         if (parameters.CheckIfHasParameter("mirrorMotion"))
         {
-            outPlaybackInfo->mMirrorMotion = parameters.GetValueAsBool("mirrorMotion", command);
+            outPlaybackInfo->m_mirrorMotion = parameters.GetValueAsBool("mirrorMotion", command);
         }
         if (parameters.CheckIfHasParameter("mix"))
         {
-            outPlaybackInfo->mMix = parameters.GetValueAsBool("mix", command);
+            outPlaybackInfo->m_mix = parameters.GetValueAsBool("mix", command);
         }
         if (parameters.CheckIfHasParameter("playNow"))
         {
-            outPlaybackInfo->mPlayNow = parameters.GetValueAsBool("playNow", command);
+            outPlaybackInfo->m_playNow = parameters.GetValueAsBool("playNow", command);
         }
         if (parameters.CheckIfHasParameter("motionExtraction"))
         {
-            outPlaybackInfo->mMotionExtractionEnabled = parameters.GetValueAsBool("motionExtraction", command);
+            outPlaybackInfo->m_motionExtractionEnabled = parameters.GetValueAsBool("motionExtraction", command);
         }
         if (parameters.CheckIfHasParameter("retarget"))
         {
-            outPlaybackInfo->mRetarget = parameters.GetValueAsBool("retarget", command);
+            outPlaybackInfo->m_retarget = parameters.GetValueAsBool("retarget", command);
         }
         if (parameters.CheckIfHasParameter("freezeAtLastFrame"))
         {
-            outPlaybackInfo->mFreezeAtLastFrame = parameters.GetValueAsBool("freezeAtLastFrame", command);
+            outPlaybackInfo->m_freezeAtLastFrame = parameters.GetValueAsBool("freezeAtLastFrame", command);
         }
         if (parameters.CheckIfHasParameter("enableMotionEvents"))
         {
-            outPlaybackInfo->mEnableMotionEvents = parameters.GetValueAsBool("enableMotionEvents", command);
+            outPlaybackInfo->m_enableMotionEvents = parameters.GetValueAsBool("enableMotionEvents", command);
         }
         if (parameters.CheckIfHasParameter("blendOutBeforeEnded"))
         {
-            outPlaybackInfo->mBlendOutBeforeEnded = parameters.GetValueAsBool("blendOutBeforeEnded", command);
+            outPlaybackInfo->m_blendOutBeforeEnded = parameters.GetValueAsBool("blendOutBeforeEnded", command);
         }
         if (parameters.CheckIfHasParameter("canOverwrite"))
         {
-            outPlaybackInfo->mCanOverwrite = parameters.GetValueAsBool("canOverwrite", command);
+            outPlaybackInfo->m_canOverwrite = parameters.GetValueAsBool("canOverwrite", command);
         }
         if (parameters.CheckIfHasParameter("deleteOnZeroWeight"))
         {
-            outPlaybackInfo->mDeleteOnZeroWeight = parameters.GetValueAsBool("deleteOnZeroWeight", command);
+            outPlaybackInfo->m_deleteOnZeroWeight = parameters.GetValueAsBool("deleteOnZeroWeight", command);
         }
         if (parameters.CheckIfHasParameter("inPlace"))
         {
-            outPlaybackInfo->mInPlace = parameters.GetValueAsBool("inPlace", command);
+            outPlaybackInfo->m_inPlace = parameters.GetValueAsBool("inPlace", command);
         }
     }
 
@@ -199,7 +200,7 @@ namespace CommandSystem
         m_oldData.clear();
 
         // check if there is any actor instance selected and if not return false so that the command doesn't get called and doesn't get inside the action history
-        const uint32 numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
+        const size_t numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
 
         // verify if we actually have selected an actor instance
         if (numSelectedActorInstances == 0)
@@ -235,7 +236,7 @@ namespace CommandSystem
         CommandParametersToPlaybackInfo(this, parameters, &playbackInfo);
 
         // iterate through all actor instances and start playing all selected motions
-        for (uint32 i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = GetCommandManager()->GetCurrentSelection().GetActorInstance(i);
 
@@ -326,7 +327,7 @@ namespace CommandSystem
 #define SYNTAX_MOTIONCOMMANDS                                                                                                                                                                                                                                                                                                          \
     GetSyntax().ReserveParameters(30);                                                                                                                                                                                                                                                                                                 \
     GetSyntax().AddRequiredParameter("filename", "The filename of the motion file to play.", MCore::CommandSyntax::PARAMTYPE_STRING);                                                                                                                                                                                                  \
-    /*GetSyntax().AddParameter( "mirrorPlaneNormal", "The motion mirror plane normal, which is (1,0,0) on default. This setting is only used when mMirrorMotion is set to true.", MCore::CommandSyntax::PARAMTYPE_VECTOR3, "(1, 0, 0)" );*/                                                                                            \
+    /*GetSyntax().AddParameter( "mirrorPlaneNormal", "The motion mirror plane normal, which is (1,0,0) on default. This setting is only used when mirrorMotion is set to true.", MCore::CommandSyntax::PARAMTYPE_VECTOR3, "(1, 0, 0)" );*/                                                                                            \
     GetSyntax().AddParameter("blendInTime", "The time, in seconds, which it will take to fully have blended to the target weight.", MCore::CommandSyntax::PARAMTYPE_FLOAT, "0.3");                                                                                                                                                     \
     GetSyntax().AddParameter("blendOutTime", "The time, in seconds, which it takes to smoothly fadeout the motion, after it has been stopped playing.", MCore::CommandSyntax::PARAMTYPE_FLOAT, "0.3");                                                                                                                                 \
     GetSyntax().AddParameter("playSpeed", "The playback speed factor. A value of 1 stands for the original speed, while for example 2 means twice the original speed.", MCore::CommandSyntax::PARAMTYPE_FLOAT, "1.0");                                                                                                                 \
@@ -339,7 +340,7 @@ namespace CommandSystem
     GetSyntax().AddParameter("retargetRootIndex", "The retargeting root node index.", MCore::CommandSyntax::PARAMTYPE_INT, "0");                                                                                                                                                                                                       \
     GetSyntax().AddParameter("blendMode", "The motion blend mode. Please read the MotionInstance::SetBlendMode(...) method for more information.", MCore::CommandSyntax::PARAMTYPE_INT, "0");   /* 4294967296 == MCORE_INVALIDINDEX32 */                                                                                               \
     GetSyntax().AddParameter("playMode", "The motion playback mode. This means forward or backward playback.", MCore::CommandSyntax::PARAMTYPE_INT, "0");                                                                                                                                                                              \
-    GetSyntax().AddParameter("mirrorMotion", "Is motion mirroring enabled or not? When set to true, the mMirrorPlaneNormal is used as mirroring axis.", MCore::CommandSyntax::PARAMTYPE_BOOLEAN, "false");                                                                                                                             \
+    GetSyntax().AddParameter("mirrorMotion", "Is motion mirroring enabled or not? When set to true, the mirrorPlaneNormal is used as mirroring axis.", MCore::CommandSyntax::PARAMTYPE_BOOLEAN, "false");                                                                                                                             \
     GetSyntax().AddParameter("mix", "Set to true if you want this motion to mix or not.", MCore::CommandSyntax::PARAMTYPE_BOOLEAN, "false");                                                                                                                                                                                           \
     GetSyntax().AddParameter("playNow", "Set to true if you want to start playing the motion right away. If set to false it will be scheduled for later by inserting it into the motion queue.", MCore::CommandSyntax::PARAMTYPE_BOOLEAN, "true");                                                                                     \
     GetSyntax().AddParameter("motionExtraction", "Set to true when you want to use motion extraction.", MCore::CommandSyntax::PARAMTYPE_BOOLEAN, "true");                                                                                                                                                                              \
@@ -466,8 +467,8 @@ namespace CommandSystem
         MCORE_UNUSED(outResult);
 
         // iterate through the motion instances and modify them
-        const uint32 numSelectedMotionInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedMotionInstances();
-        for (uint32 i = 0; i < numSelectedMotionInstances; ++i)
+        const size_t numSelectedMotionInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedMotionInstances();
+        for (size_t i = 0; i < numSelectedMotionInstances; ++i)
         {
             // get the current selected motion instance and adjust it based on the parameters
             EMotionFX::MotionInstance* selectedMotionInstance = GetCommandManager()->GetCurrentSelection().GetMotionInstance(i);
@@ -545,13 +546,13 @@ namespace CommandSystem
         EMotionFX::PlayBackInfo* defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
 
         // copy the current playback info to the undo data
-        mOldPlaybackInfo = *defaultPlayBackInfo;
+        m_oldPlaybackInfo = *defaultPlayBackInfo;
 
         // adjust the playback info based on the parameters
         CommandPlayMotion::CommandParametersToPlaybackInfo(this, parameters, defaultPlayBackInfo);
 
         // save the current dirty flag and tell the motion that something got changed
-        mOldDirtyFlag = motion->GetDirtyFlag();
+        m_oldDirtyFlag = motion->GetDirtyFlag();
         return true;
     }
 
@@ -584,10 +585,10 @@ namespace CommandSystem
         }
 
         // copy the saved playback info to the actual one
-        *defaultPlayBackInfo = mOldPlaybackInfo;
+        *defaultPlayBackInfo = m_oldPlaybackInfo;
 
         // set the dirty flag back to the old value
-        motion->SetDirtyFlag(mOldDirtyFlag);
+        motion->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -613,11 +614,8 @@ namespace CommandSystem
     // execute
     bool CommandStopMotionInstances::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
     {
-        // clear our old data so that we start fresh in case of a redo
-        //mOldData.Clear();
-
         // get the number of selected actor instances
-        const uint32 numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
+        const size_t numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
 
         // check if there is any actor instance selected and if not return false so that the command doesn't get called and doesn't get inside the action history
         if (numSelectedActorInstances == 0)
@@ -644,7 +642,7 @@ namespace CommandSystem
         }
 
         // iterate through all actor instances and stop all selected motion instances
-        for (uint32 i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             // get the actor instance and the corresponding motion system
             EMotionFX::ActorInstance*   actorInstance   = GetCommandManager()->GetCurrentSelection().GetActorInstance(i);
@@ -664,8 +662,8 @@ namespace CommandSystem
             }
 
             // get the number of motion instances and iterate through them
-            const uint32 numMotionInstances = motionSystem->GetNumMotionInstances();
-            for (uint32 j = 0; j < numMotionInstances; ++j)
+            const size_t numMotionInstances = motionSystem->GetNumMotionInstances();
+            for (size_t j = 0; j < numMotionInstances; ++j)
             {
                 EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(j);
 
@@ -715,12 +713,9 @@ namespace CommandSystem
         MCORE_UNUSED(parameters);
         MCORE_UNUSED(outResult);
 
-        // clear our old data so that we start fresh in case of a redo
-        //mOldData.Clear();
-
         // iterate through all actor instances and stop all selected motion instances
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the actor instance and the corresponding motion system
             EMotionFX::ActorInstance*   actorInstance   = EMotionFX::GetActorManager().GetActorInstance(i);
@@ -740,8 +735,8 @@ namespace CommandSystem
             }
 
             // get the number of motion instances and iterate through them
-            const uint32 numMotionInstances = motionSystem->GetNumMotionInstances();
-            for (uint32 j = 0; j < numMotionInstances; ++j)
+            const size_t numMotionInstances = motionSystem->GetNumMotionInstances();
+            for (size_t j = 0; j < numMotionInstances; ++j)
             {
                 // get the motion instance and stop it
                 EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(j);
@@ -822,26 +817,26 @@ namespace CommandSystem
         // adjust the dirty flag
         if (m_dirtyFlag)
         {
-            mOldDirtyFlag = motion->GetDirtyFlag();
+            m_oldDirtyFlag = motion->GetDirtyFlag();
             motion->SetDirtyFlag(m_dirtyFlag.value());
         }
 
         // adjust the name
         if (m_name)
         {
-            mOldName = motion->GetName();
+            m_oldName = motion->GetName();
             motion->SetName(m_name.value().c_str());
 
-            mOldDirtyFlag = motion->GetDirtyFlag();
+            m_oldDirtyFlag = motion->GetDirtyFlag();
             motion->SetDirtyFlag(true);
         }
 
         // Adjust the motion extraction flags.
         if (m_extractionFlags)
         {
-            mOldExtractionFlags = motion->GetMotionExtractionFlags();
+            m_oldExtractionFlags = motion->GetMotionExtractionFlags();
             motion->SetMotionExtractionFlags(m_extractionFlags.value());
-            mOldDirtyFlag = motion->GetDirtyFlag();
+            m_oldDirtyFlag = motion->GetDirtyFlag();
             motion->SetDirtyFlag(true);
         }
 
@@ -865,20 +860,20 @@ namespace CommandSystem
         // adjust the dirty flag
         if (m_dirtyFlag)
         {
-            motion->SetDirtyFlag(mOldDirtyFlag);
+            motion->SetDirtyFlag(m_oldDirtyFlag);
         }
 
         // adjust the name
         if (m_name)
         {
-            motion->SetName(mOldName.c_str());
-            motion->SetDirtyFlag(mOldDirtyFlag);
+            motion->SetName(m_oldName.c_str());
+            motion->SetDirtyFlag(m_oldDirtyFlag);
         }
 
         if (m_extractionFlags)
         {
-            motion->SetMotionExtractionFlags(mOldExtractionFlags);
-            motion->SetDirtyFlag(mOldDirtyFlag);
+            motion->SetMotionExtractionFlags(m_oldExtractionFlags);
+            motion->SetDirtyFlag(m_oldDirtyFlag);
         }
 
         return true;
@@ -932,7 +927,7 @@ namespace CommandSystem
     CommandRemoveMotion::CommandRemoveMotion(MCore::Command* orgCommand)
         : MCore::Command("RemoveMotion", orgCommand)
     {
-        mOldMotionID = MCORE_INVALIDINDEX32;
+        m_oldMotionId = MCORE_INVALIDINDEX32;
     }
 
 
@@ -973,8 +968,8 @@ namespace CommandSystem
         }
 
         // make sure the motion is not part of any motion set
-        const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        for (size_t i = 0; i < numMotionSets; ++i)
         {
             // get the current motion set and check if the motion we want to remove is used by it
             EMotionFX::MotionSet*               motionSet   = EMotionFX::GetMotionManager().GetMotionSet(i);
@@ -991,12 +986,12 @@ namespace CommandSystem
         GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult);
 
         // store the previously used id and remove the motion
-        mOldIndex           = EMotionFX::GetMotionManager().FindMotionIndex(motion);
-        mOldMotionID        = motion->GetID();
-        mOldFileName        = motion->GetFileName();
+        m_oldIndex           = EMotionFX::GetMotionManager().FindMotionIndex(motion);
+        m_oldMotionId        = motion->GetID();
+        m_oldFileName        = motion->GetFileName();
 
         // mark the workspace as dirty
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
 
         EMotionFX::GetMotionManager().RemoveMotionByID(motion->GetID());
@@ -1011,11 +1006,11 @@ namespace CommandSystem
 
         // execute the group command
         AZStd::string commandString;
-        commandString = AZStd::string::format("ImportMotion -filename \"%s\" -motionID %i", mOldFileName.c_str(), mOldMotionID);
+        commandString = AZStd::string::format("ImportMotion -filename \"%s\" -motionID %i", m_oldFileName.c_str(), m_oldMotionId);
         bool result = GetCommandManager()->ExecuteCommandInsideCommand(commandString.c_str(), outResult);
 
         // restore the workspace dirty flag
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         return result;
     }
@@ -1044,9 +1039,9 @@ namespace CommandSystem
     CommandScaleMotionData::CommandScaleMotionData(MCore::Command* orgCommand)
         : MCore::Command("ScaleMotionData", orgCommand)
     {
-        mMotionID       = MCORE_INVALIDINDEX32;
-        mScaleFactor    = 1.0f;
-        mOldDirtyFlag   = false;
+        m_motionId       = MCORE_INVALIDINDEX32;
+        m_scaleFactor    = 1.0f;
+        m_oldDirtyFlag   = false;
     }
 
 
@@ -1091,29 +1086,29 @@ namespace CommandSystem
             return false;
         }
 
-        mMotionID = motion->GetID();
-        mScaleFactor = parameters.GetValueAsFloat("scaleFactor", 1.0f);
+        m_motionId = motion->GetID();
+        m_scaleFactor = parameters.GetValueAsFloat("scaleFactor", 1.0f);
 
         AZStd::string targetUnitTypeString;
         parameters.GetValue("unitType", this, &targetUnitTypeString);
-        mUseUnitType = parameters.CheckIfHasParameter("unitType");
+        m_useUnitType = parameters.CheckIfHasParameter("unitType");
 
         MCore::Distance::EUnitType targetUnitType;
         bool stringConvertSuccess = MCore::Distance::StringToUnitType(targetUnitTypeString, &targetUnitType);
-        if (mUseUnitType && stringConvertSuccess == false)
+        if (m_useUnitType && stringConvertSuccess == false)
         {
             outResult = AZStd::string::format("The passed unitType '%s' is not a valid unit type.", targetUnitTypeString.c_str());
             return false;
         }
-        mOldUnitType = MCore::Distance::UnitTypeToString(motion->GetUnitType());
+        m_oldUnitType = MCore::Distance::UnitTypeToString(motion->GetUnitType());
 
-        mOldDirtyFlag = motion->GetDirtyFlag();
+        m_oldDirtyFlag = motion->GetDirtyFlag();
         motion->SetDirtyFlag(true);
 
         // perform the scaling
-        if (mUseUnitType == false)
+        if (m_useUnitType == false)
         {
-            motion->Scale(mScaleFactor);
+            motion->Scale(m_scaleFactor);
         }
         else
         {
@@ -1129,23 +1124,23 @@ namespace CommandSystem
     {
         MCORE_UNUSED(parameters);
 
-        if (mUseUnitType == false)
+        if (m_useUnitType == false)
         {
             AZStd::string commandString;
-            commandString = AZStd::string::format("ScaleMotionData -id %d -scaleFactor %.8f", mMotionID, 1.0f / mScaleFactor);
+            commandString = AZStd::string::format("ScaleMotionData -id %d -scaleFactor %.8f", m_motionId, 1.0f / m_scaleFactor);
             GetCommandManager()->ExecuteCommandInsideCommand(commandString.c_str(), outResult);
         }
         else
         {
             AZStd::string commandString;
-            commandString = AZStd::string::format("ScaleMotionData -id %d -unitType \"%s\"", mMotionID, mOldUnitType.c_str());
+            commandString = AZStd::string::format("ScaleMotionData -id %d -unitType \"%s\"", m_motionId, m_oldUnitType.c_str());
             GetCommandManager()->ExecuteCommandInsideCommand(commandString.c_str(), outResult);
         }
 
-        EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(mMotionID);
+        EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(m_motionId);
         if (motion)
         {
-            motion->SetDirtyFlag(mOldDirtyFlag);
+            motion->SetDirtyFlag(m_oldDirtyFlag);
         }
 
         return true;
@@ -1184,13 +1179,12 @@ namespace CommandSystem
         const size_t numFileNames = filenames.size();
 
         const AZStd::string commandGroupName = AZStd::string::format("%s %zu motion%s", reload ? "Reload" : "Load", numFileNames, (numFileNames > 1) ? "s" : "");
-        MCore::CommandGroup commandGroup(commandGroupName, static_cast<uint32>(numFileNames * 2));
+        MCore::CommandGroup commandGroup(commandGroupName, numFileNames * 2);
 
         AZStd::string command;
         const EMotionFX::MotionManager& motionManager = EMotionFX::GetMotionManager();
-        for (size_t i = 0; i < numFileNames; ++i)
+        for (const AZStd::string& filename : filenames)
         {
-            const AZStd::string& filename = filenames[i];
             const EMotionFX::Motion* motion = motionManager.FindMotionByFileName(filename.c_str());
 
             if (reload && motion)
@@ -1233,11 +1227,11 @@ namespace CommandSystem
     void ClearMotions(MCore::CommandGroup* commandGroup, bool forceRemove)
     {
         // iterate through the motions and put them into some array
-        const uint32 numMotions = EMotionFX::GetMotionManager().GetNumMotions();
+        const size_t numMotions = EMotionFX::GetMotionManager().GetNumMotions();
         AZStd::vector<EMotionFX::Motion*> motionsToRemove;
         motionsToRemove.reserve(numMotions);
 
-        for (uint32 i = 0; i < numMotions; ++i)
+        for (size_t i = 0; i < numMotions; ++i)
         {
             EMotionFX::Motion* motion = EMotionFX::GetMotionManager().GetMotion(i);
 
@@ -1282,10 +1276,8 @@ namespace CommandSystem
 
         // Iterate through all motions and remove them.
         AZStd::string commandString;
-        for (uint32 i = 0; i < numMotions; ++i)
+        for (const EMotionFX::Motion* motion : motions)
         {
-            EMotionFX::Motion* motion = motions[i];
-
             if (motion->GetIsOwnedByRuntime())
             {
                 continue;
@@ -1293,10 +1285,10 @@ namespace CommandSystem
 
             // Is the motion part of a motion set?
             bool isUsed = false;
-            const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-            for (uint32 j = 0; j < numMotionSets; ++j)
+            const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+            for (size_t i = 0; i < numMotionSets; ++i)
             {
-                EMotionFX::MotionSet*               motionSet   = EMotionFX::GetMotionManager().GetMotionSet(j);
+                EMotionFX::MotionSet*               motionSet   = EMotionFX::GetMotionManager().GetMotionSet(i);
                 EMotionFX::MotionSet::MotionEntry*  motionEntry = motionSet->FindMotionEntry(motion);
 
                 if (motionEntry)

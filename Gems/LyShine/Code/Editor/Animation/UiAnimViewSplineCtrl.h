@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,7 +26,7 @@ public:
     CUiAnimViewSplineCtrl(QWidget* parent);
     virtual ~CUiAnimViewSplineCtrl();
 
-    virtual void ClearSelection();
+    void ClearSelection() override;
 
     void AddSpline(ISplineInterpolator* pSpline, CUiAnimViewTrack* pTrack, const QColor& color);
     void AddSpline(ISplineInterpolator * pSpline, CUiAnimViewTrack * pTrack, QColor anColorArray[4]);
@@ -63,7 +64,7 @@ private:
     void AdjustTCB(float d_tension, float d_continuity, float d_bias);
     void MoveSelectedTangentHandleTo(const QPoint& point);
 
-    virtual ISplineCtrlUndo* CreateSplineCtrlUndoObject(std::vector<ISplineInterpolator*>& splineContainer);
+    ISplineCtrlUndo* CreateSplineCtrlUndoObject(std::vector<ISplineInterpolator*>& splineContainer) override;
 
     bool m_bKeysFreeze;
     bool m_bTangentsFreeze;

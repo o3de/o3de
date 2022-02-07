@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,8 +65,35 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // EBusTraits overrides - Application is a singleton
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-            typedef AZStd::recursive_mutex MutexType;
+            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+            using MutexType = AZStd::recursive_mutex;
+
+            static constexpr bool EnableEventQueue = true;
+            using EventQueueMutexType = AZStd::mutex;
+            struct PostThreadDispatchInvoker
+            {
+                ~PostThreadDispatchInvoker();
+            };
+
+            template <typename DispatchMutex>
+            struct ThreadDispatchLockGuard
+            {
+                ThreadDispatchLockGuard(DispatchMutex& contextMutex)
+                    : m_lock{ contextMutex }
+                {}
+                ThreadDispatchLockGuard(DispatchMutex& contextMutex, AZStd::adopt_lock_t adopt_lock)
+                    : m_lock{ contextMutex, adopt_lock }
+                {}
+                ThreadDispatchLockGuard(const ThreadDispatchLockGuard&) = delete;
+                ThreadDispatchLockGuard& operator=(const ThreadDispatchLockGuard&) = delete;
+            private:
+                PostThreadDispatchInvoker m_threadPolicyInvoker;
+                using LockType = AZStd::conditional_t<LocklessDispatch, AZ::Internal::NullLockGuard<DispatchMutex>, AZStd::scoped_lock<DispatchMutex>>;
+                LockType m_lock;
+            };
+
+            template <typename DispatchMutex, bool>
+            using DispatchLockGuard = ThreadDispatchLockGuard<DispatchMutex>;
             //////////////////////////////////////////////////////////////////////////
 
             virtual ~AssetCatalogRequests() = default;
@@ -198,6 +226,17 @@ namespace AZ
         };
 
         using AssetCatalogRequestBus = AZ::EBus<AssetCatalogRequests>;
+
+        inline AssetCatalogRequests::PostThreadDispatchInvoker::~PostThreadDispatchInvoker()
+        {
+            if (!AssetCatalogRequestBus::IsInDispatchThisThread())
+            {
+                if (AssetCatalogRequestBus::QueuedEventCount())
+                {
+                    AssetCatalogRequestBus::ExecuteQueuedEvents();
+                }
+            }
+        }
 
         /*
          * Events that AssetManager listens for

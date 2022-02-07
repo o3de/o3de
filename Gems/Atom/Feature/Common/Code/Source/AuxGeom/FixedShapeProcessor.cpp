@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,9 +10,9 @@
 #include "AuxGeomDrawProcessorShared.h"
 
 #include <AzCore/Debug/EventTrace.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/array.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 
@@ -69,11 +70,13 @@ namespace AZ
             SetupInputStreamLayout(m_objectStreamLayout[DrawStyle_Solid], RHI::PrimitiveTopology::TriangleList, false);
             SetupInputStreamLayout(m_objectStreamLayout[DrawStyle_Shaded], RHI::PrimitiveTopology::TriangleList, true);
 
-            CreateSphereBuffersAndViews();
+            CreateSphereBuffersAndViews(AuxGeomShapeType::ShapeType_Sphere);
+            CreateSphereBuffersAndViews(AuxGeomShapeType::ShapeType_Hemisphere);
             CreateQuadBuffersAndViews();
             CreateDiskBuffersAndViews();
             CreateConeBuffersAndViews();
-            CreateCylinderBuffersAndViews();
+            CreateCylinderBuffersAndViews(AuxGeomShapeType::ShapeType_Cylinder);
+            CreateCylinderBuffersAndViews(AuxGeomShapeType::ShapeType_CylinderNoEnds);
             CreateBoxBuffersAndViews();
 
             // cache scene pointer for RHI::PipelineState creation.
@@ -107,8 +110,8 @@ namespace AZ
         }
 
         void FixedShapeProcessor::PrepareFrame()
-        {            
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "FixedShapeProcessor: PrepareFrame");
+        {
+            AZ_PROFILE_SCOPE(AzRender, "FixedShapeProcessor: PrepareFrame");
             m_processSrgs.clear();
             m_drawPackets.clear();
 
@@ -126,8 +129,7 @@ namespace AZ
 
         void FixedShapeProcessor::ProcessObjects(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "FixedShapeProcessor: ProcessObjects");
+            AZ_PROFILE_SCOPE(AzRender, "FixedShapeProcessor: ProcessObjects");
 
             RHI::DrawPacketBuilder drawPacketBuilder;
 
@@ -294,8 +296,11 @@ namespace AZ
             }
         }
 
-        bool FixedShapeProcessor::CreateSphereBuffersAndViews()
+        bool FixedShapeProcessor::CreateSphereBuffersAndViews(AuxGeomShapeType sphereShapeType)
         {
+            AZ_Assert(sphereShapeType == ShapeType_Sphere || sphereShapeType == ShapeType_Hemisphere,
+                "Trying to create sphere buffers and views with a non-sphere shape type!");
+
             const uint32_t numSphereLods = 5;
             struct LodInfo
             {
@@ -312,13 +317,13 @@ namespace AZ
                 {  9,  9, 0.0000f}
             }};
 
-            auto& m_shape = m_shapes[ShapeType_Sphere];
+            auto& m_shape = m_shapes[sphereShapeType];
             m_shape.m_numLods = numSphereLods;
 
             for (uint32_t lodIndex = 0; lodIndex < numSphereLods; ++lodIndex)
             {
                 MeshData meshData;
-                CreateSphereMeshData(meshData, lodInfo[lodIndex].numRings, lodInfo[lodIndex].numSections);
+                CreateSphereMeshData(meshData, lodInfo[lodIndex].numRings, lodInfo[lodIndex].numSections, sphereShapeType);
 
                 ObjectBuffers objectBuffers;
 
@@ -335,12 +340,25 @@ namespace AZ
             return true;
         }
 
-        void FixedShapeProcessor::CreateSphereMeshData(MeshData& meshData, uint32_t numRings, uint32_t numSections)
+        void FixedShapeProcessor::CreateSphereMeshData(MeshData& meshData, uint32_t numRings, uint32_t numSections, AuxGeomShapeType sphereShapeType)
         {
             const float radius = 1.0f;
 
+            // calculate "inner" vertices
+            float sectionAngle(DegToRad(360.0f / static_cast<float>(numSections)));
+            float ringSlice(DegToRad(180.0f / static_cast<float>(numRings)));
+
+            uint32_t numberOfPoles = 2;
+
+            if (sphereShapeType == ShapeType_Hemisphere)
+            {
+                numberOfPoles = 1;
+                numRings = (numRings + 1) / 2;
+                ringSlice = DegToRad(90.0f / static_cast<float>(numRings));
+            }
+
             // calc required number of vertices/indices/triangles to build a sphere for the given parameters
-            uint32_t numVertices = (numRings - 1) * numSections + 2;
+            uint32_t numVertices = (numRings - 1) * numSections + numberOfPoles;
 
             // setup buffers
             auto& positions = meshData.m_positions;
@@ -355,30 +373,29 @@ namespace AZ
             using NormalType = AuxGeomNormal;
 
             // 1st pole vertex
-            positions.push_back(PosType(0.0f, 0.0f, radius));
-            normals.push_back(NormalType(0.0f, 0.0f, 1.0f));
+            positions.push_back(PosType(0.0f, radius, 0.0f));
+            normals.push_back(NormalType(0.0f, 1.0f, 0.0f));
 
-            // calculate "inner" vertices
-            float sectionAngle(DegToRad(360.0f / static_cast<float>(numSections)));
-            float ringSlice(DegToRad(180.0f / static_cast<float>(numRings)));
-
-            for (uint32_t ring = 1; ring < numRings; ++ring)
+            for (uint32_t ring = 1; ring < numRings - numberOfPoles + 2; ++ring)
             {
                 float w(sinf(ring * ringSlice));
                 for (uint32_t section = 0; section < numSections; ++section)
                 {
                     float x = radius * cosf(section * sectionAngle) * w;
-                    float y = radius * sinf(section * sectionAngle) * w;
-                    float z = radius * cosf(ring * ringSlice);
+                    float y = radius * cosf(ring * ringSlice);
+                    float z = radius * sinf(section * sectionAngle) * w;
                     Vector3 radialVector(x, y, z);
                     positions.push_back(radialVector);
                     normals.push_back(radialVector.GetNormalized());
                 }
             }
 
-            // 2nd vertex of pole (for end cap)
-            positions.push_back(PosType(0.0f, 0.0f, -radius));
-            normals.push_back(NormalType(0.0f, 0.0f, -1.0f));
+            if (sphereShapeType == ShapeType_Sphere)
+            {
+                // 2nd vertex of pole (for end cap)
+                positions.push_back(PosType(0.0f, -radius, 0.0f));
+                normals.push_back(NormalType(0.0f, -1.0f, 0.0f));
+            }
 
             // point indices
             {
@@ -394,7 +411,8 @@ namespace AZ
 
             // line indices
             {
-                const uint32_t numEdges = (numRings - 2) * numSections * 2 + 2 * numSections * 2;
+                // NumEdges = NumRingEdges + NumSectionEdges = (numRings * numSections) + (numRings * numSections)
+                const uint32_t numEdges = numRings * numSections * 2;
                 const uint32_t numLineIndices = numEdges * 2;
 
                 // build "inner" faces
@@ -402,45 +420,45 @@ namespace AZ
                 indices.clear();
                 indices.reserve(numLineIndices);
 
-                for (uint16_t ring = 0; ring < numRings - 2; ++ring)
+                for (uint16_t ring = 0; ring < numRings - numberOfPoles + 1; ++ring)
                 {
-                    uint16_t firstVertOfThisRing = 1 + ring * numSections;
-                    uint16_t firstVertOfNextRing = 1 + (ring + 1) * numSections;
+                    uint16_t firstVertOfThisRing = static_cast<uint16_t>(1 + ring * numSections);
                     for (uint16_t section = 0; section < numSections; ++section)
                     {
                         uint32_t nextSection = (section + 1) % numSections;
 
                         // line around ring
                         indices.push_back(firstVertOfThisRing + section);
-                        indices.push_back(firstVertOfThisRing + nextSection);
+                        indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + nextSection));
 
                         // line around section
-                        indices.push_back(firstVertOfThisRing + section);
-                        indices.push_back(firstVertOfNextRing + section);
+                        int currentVertexIndex = firstVertOfThisRing + section;
+                        // max 0 will implicitly handle the top pole
+                        int previousVertexIndex = AZStd::max(currentVertexIndex - (int)numSections, 0);
+                        indices.push_back(static_cast<uint16_t>(currentVertexIndex));
+                        indices.push_back(static_cast<uint16_t>(previousVertexIndex));
                     }
                 }
 
-                // build faces for end caps (to connect "inner" vertices with poles)
-                uint16_t firstPoleVert = 0;
-                uint16_t firstVertOfFirstRing = 1 + (0) * numSections;
-                for (uint16_t section = 0; section < numSections; ++section)
+                if (sphereShapeType == ShapeType_Sphere)
                 {
-                    indices.push_back(firstPoleVert);
-                    indices.push_back(firstVertOfFirstRing + section);
-                }
-
-                uint16_t lastPoleVert = (numRings - 1) * numSections + 1;
-                uint16_t firstVertOfLastRing = 1 + (numRings - 2) * numSections;
-                for (uint16_t section = 0; section < numSections; ++section)
-                {
-                    indices.push_back(firstVertOfLastRing + section);
-                    indices.push_back(lastPoleVert);
+                    // build faces for bottom pole (to connect "inner" vertices with poles)
+                    uint16_t lastPoleVert = static_cast<uint16_t>((numRings - 1) * numSections + 1);
+                    uint16_t firstVertOfLastRing = static_cast<uint16_t>(1 + (numRings - 2) * numSections);
+                    for (uint16_t section = 0; section < numSections; ++section)
+                    {
+                        indices.push_back(firstVertOfLastRing + section);
+                        indices.push_back(lastPoleVert);
+                    }
                 }
             }
 
             // triangle indices
             {
-                const uint32_t numTriangles = (numRings - 2) * numSections * 2  + 2 * numSections;
+                // NumTriangles = NumTrianglesAtPoles + NumQuads * 2
+                //              = (numSections * 2) + ((numRings - 2) * numSections * 2)
+                //              = (numSections * 2) * (numRings - 2 + 1)
+                const uint32_t numTriangles = (numRings - 1) * numSections * 2;
                 const uint32_t numTriangleIndices = numTriangles * 3;
 
                 // build "inner" faces
@@ -448,21 +466,21 @@ namespace AZ
                 indices.clear();
                 indices.reserve(numTriangleIndices);
 
-                for (uint32_t ring = 0; ring < numRings - 2; ++ring)
+                for (uint32_t ring = 0; ring < numRings - numberOfPoles; ++ring)
                 {
                     uint32_t firstVertOfThisRing = 1 + ring * numSections;
-                    uint32_t firstVertOfNextRing = 1 + (ring + 1) * numSections;
+                    uint32_t firstVertOfNextRing = firstVertOfThisRing + numSections;
 
                     for (uint32_t section = 0; section < numSections; ++section)
                     {
                         uint32_t nextSection = (section + 1) % numSections;
-                        indices.push_back((uint16_t)firstVertOfThisRing + nextSection);
-                        indices.push_back((uint16_t)firstVertOfThisRing + section);
-                        indices.push_back((uint16_t)firstVertOfNextRing + nextSection);
+                        indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + nextSection));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + section));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfNextRing + nextSection));
 
-                        indices.push_back((uint16_t)firstVertOfNextRing + section);
-                        indices.push_back((uint16_t)firstVertOfNextRing + nextSection);
-                        indices.push_back((uint16_t)firstVertOfThisRing + section);
+                        indices.push_back(static_cast<uint16_t>(firstVertOfNextRing + section));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfNextRing + nextSection));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfThisRing + section));
                     }
                 }
 
@@ -472,19 +490,22 @@ namespace AZ
                 for (uint32_t section = 0; section < numSections; ++section)
                 {
                     uint32_t nextSection = (section + 1) % numSections;
-                    indices.push_back((uint16_t)firstVertOfFirstRing + section);
-                    indices.push_back((uint16_t)firstVertOfFirstRing + nextSection);
-                    indices.push_back((uint16_t)firstPoleVert);
+                    indices.push_back(static_cast<uint16_t>(firstVertOfFirstRing + section));
+                    indices.push_back(static_cast<uint16_t>(firstVertOfFirstRing + nextSection));
+                    indices.push_back(static_cast<uint16_t>(firstPoleVert));
                 }
 
-                uint32_t lastPoleVert = (numRings - 1) * numSections + 1;
-                uint32_t firstVertOfLastRing = 1 + (numRings - 2) * numSections;
-                for (uint32_t section = 0; section < numSections; ++section)
+                if (sphereShapeType == ShapeType_Sphere)
                 {
-                    uint32_t nextSection = (section + 1) % numSections;
-                    indices.push_back((uint16_t)firstVertOfLastRing + nextSection);
-                    indices.push_back((uint16_t)firstVertOfLastRing + section);
-                    indices.push_back((uint16_t)lastPoleVert);
+                    uint32_t lastPoleVert = (numRings - 1) * numSections + 1;
+                    uint32_t firstVertOfLastRing = 1 + (numRings - 2) * numSections;
+                    for (uint32_t section = 0; section < numSections; ++section)
+                    {
+                        uint32_t nextSection = (section + 1) % numSections;
+                        indices.push_back(static_cast<uint16_t>(firstVertOfLastRing + nextSection));
+                        indices.push_back(static_cast<uint16_t>(firstVertOfLastRing + section));
+                        indices.push_back(static_cast<uint16_t>(lastPoleVert));
+                    }
                 }
             }
         }
@@ -636,12 +657,12 @@ namespace AZ
             {
                 // Line from center of disk to outer edge
                 meshData.m_lineIndices.push_back(centerIndex);
-                meshData.m_lineIndices.push_back(firstSection + section);
+                meshData.m_lineIndices.push_back(static_cast<uint16_t>(firstSection + section));
 
                 // Line from outer edge to next edge
-                meshData.m_lineIndices.push_back(firstSection + section);
+                meshData.m_lineIndices.push_back(static_cast<uint16_t>(firstSection + section));
                 uint32_t nextSection = (section + 1) % numSections;
-                meshData.m_lineIndices.push_back(firstSection + nextSection);
+                meshData.m_lineIndices.push_back(static_cast<uint16_t>(firstSection + nextSection));
             }
 
             // Create triangle indices
@@ -651,13 +672,13 @@ namespace AZ
                 meshData.m_triangleIndices.push_back(centerIndex);
                 if (isUp)
                 {
-                    meshData.m_triangleIndices.push_back(firstSection + nextSection);
-                    meshData.m_triangleIndices.push_back(firstSection + section);
+                    meshData.m_triangleIndices.push_back(static_cast<uint16_t>(firstSection + nextSection));
+                    meshData.m_triangleIndices.push_back(static_cast<uint16_t>(firstSection + section));
                 }
                 else
                 {
-                    meshData.m_triangleIndices.push_back(firstSection + section);
-                    meshData.m_triangleIndices.push_back(firstSection + nextSection);
+                    meshData.m_triangleIndices.push_back(static_cast<uint16_t>(firstSection + section));
+                    meshData.m_triangleIndices.push_back(static_cast<uint16_t>(firstSection + nextSection));
                 }
             }
         }
@@ -775,7 +796,7 @@ namespace AZ
             normals.push_back(AuxGeomNormal(0.0f, 1.0f, 0.0f));
 
             // vertex indexes for start of the cone sides and for the cone point
-            uint16_t indexOfSidesStart = numSections + 1;
+            uint16_t indexOfSidesStart = static_cast<uint16_t>(numSections + 1);
             uint32_t indexOfConePoint = indexOfSidesStart + numRings * numSections;
 
             // indices for points
@@ -794,8 +815,8 @@ namespace AZ
                 // build lines between already completed cap for each section
                 for (uint16_t section = 0; section < numSections; ++section)
                 {
-                    indices.push_back(indexOfSidesStart + numRings * section);
-                    indices.push_back(indexOfConePoint);
+                    indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * section));
+                    indices.push_back(static_cast<uint16_t>(indexOfConePoint));
                 }
             }
 
@@ -811,25 +832,28 @@ namespace AZ
                     // faces from end cap to close to point
                     for (uint32_t ring = 0; ring < numRings - 1; ++ring)
                     {
-                        indices.push_back(indexOfSidesStart + numRings * nextSection + ring + 1);
-                        indices.push_back(indexOfSidesStart + numRings * nextSection + ring);
-                        indices.push_back(indexOfSidesStart + numRings * section + ring);
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * nextSection + ring + 1));
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * nextSection + ring));
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * section + ring));
 
-                        indices.push_back(indexOfSidesStart + numRings * section + ring);
-                        indices.push_back(indexOfSidesStart + numRings * section + ring + 1);
-                        indices.push_back(indexOfSidesStart + numRings * nextSection + ring + 1);
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * section + ring));
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * section + ring + 1));
+                        indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * nextSection + ring + 1));
                     }
 
                     // faces for point (from last ring of verts to point)
-                    indices.push_back(indexOfConePoint);
-                    indices.push_back(indexOfSidesStart + numRings * nextSection + numRings - 1);
-                    indices.push_back(indexOfSidesStart + numRings * section + numRings - 1);
+                    indices.push_back(static_cast<uint16_t>(indexOfConePoint));
+                    indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * nextSection + numRings - 1));
+                    indices.push_back(static_cast<uint16_t>(indexOfSidesStart + numRings * section + numRings - 1));
                 }
             }
         }
 
-        bool FixedShapeProcessor::CreateCylinderBuffersAndViews()
+        bool FixedShapeProcessor::CreateCylinderBuffersAndViews(AuxGeomShapeType cylinderShapeType)
         {
+            AZ_Assert(cylinderShapeType == ShapeType_Cylinder || cylinderShapeType == ShapeType_CylinderNoEnds,
+                "Trying to create cylinder buffers and views with a non-cylinder shape type!");
+
             const uint32_t numCylinderLods = 5;
             struct LodInfo
             {
@@ -837,21 +861,21 @@ namespace AZ
                 float    screenPercentage;
             };
             const AZStd::array<LodInfo, numCylinderLods> lodInfo =
-            {{
+            { {
                 { 38, 0.1000f},
                 { 22, 0.0100f},
                 { 14, 0.0010f},
                 { 10, 0.0001f},
                 {  8, 0.0000f}
-            }};
+            } };
 
-            auto& m_shape = m_shapes[ShapeType_Cylinder];
+            auto& m_shape = m_shapes[cylinderShapeType];
             m_shape.m_numLods = numCylinderLods;
 
             for (uint32_t lodIndex = 0; lodIndex < numCylinderLods; ++lodIndex)
             {
                 MeshData meshData;
-                CreateCylinderMeshData(meshData, lodInfo[lodIndex].numSections);
+                CreateCylinderMeshData(meshData, lodInfo[lodIndex].numSections, cylinderShapeType);
 
                 ObjectBuffers objectBuffers;
 
@@ -868,13 +892,25 @@ namespace AZ
             return true;
         }
 
-        void FixedShapeProcessor::CreateCylinderMeshData(MeshData& meshData, uint32_t numSections)
+        void FixedShapeProcessor::CreateCylinderMeshData(MeshData& meshData, uint32_t numSections, AuxGeomShapeType cylinderShapeType)
         {
             const float radius = 1.0f;
             const float height = 1.0f;
 
+            //uint16_t indexOfBottomCenter = 0;
+            //uint16_t indexOfBottomStart = 1;
+            //uint16_t indexOfTopCenter = numSections + 1;
+            //uint16_t indexOfTopStart = numSections + 2;
+            uint16_t indexOfSidesStart = static_cast<uint16_t>(2 * numSections + 2);
+
+            if (cylinderShapeType == ShapeType_CylinderNoEnds)
+            {
+                // We won't draw disks at the ends of the cylinder, so no need to offset side indices
+                indexOfSidesStart = 0;
+            }
+
             // calc required number of vertices to build a cylinder for the given parameters
-            uint32_t numVertices = 4 * numSections + 2;
+            uint32_t numVertices = indexOfSidesStart + 2 * numSections;
 
             // setup buffers
             auto& positions = meshData.m_positions;
@@ -889,8 +925,11 @@ namespace AZ
             float topHeight = height * 0.5f;
 
             // Create caps
-            CreateDiskMeshData(meshData, numSections, Facing::Down, bottomHeight);
-            CreateDiskMeshData(meshData, numSections, Facing::Up, topHeight);
+            if (cylinderShapeType == ShapeType_Cylinder)
+            {
+                CreateDiskMeshData(meshData, numSections, Facing::Down, bottomHeight);
+                CreateDiskMeshData(meshData, numSections, Facing::Up, topHeight);
+            }
 
             // create vertices for side (so normal points out correctly)
             float sectionAngle(DegToRad(360.0f / (float)numSections));
@@ -906,12 +945,6 @@ namespace AZ
                 positions.push_back(top);
                 normals.push_back(normal);
             }
-
-            //uint16_t indexOfBottomCenter = 0;
-            //uint16_t indexOfBottomStart = 1;
-            //uint16_t indexOfTopCenter = numSections + 1;
-            //uint16_t indexOfTopStart = numSections + 2;
-            uint16_t indexOfSidesStart = 2 * numSections + 2;
 
             // build point indices
             {
@@ -930,6 +963,24 @@ namespace AZ
                     // line between the caps
                     indices.push_back(indexOfSidesStart + 2 * section);
                     indices.push_back(indexOfSidesStart + 2 * section + 1);
+                }
+
+                // If we're not drawing the disks at the ends of the cylinder, we still want to
+                // draw a ring around the end to join the tips of lines we created just above
+                if (cylinderShapeType == ShapeType_CylinderNoEnds)
+                {
+                    for (uint16_t section = 0; section < numSections; ++section)
+                    {
+                        uint16_t nextSection = (section + 1) % numSections;
+
+                        // line around the bottom cap
+                        indices.push_back(section * 2);
+                        indices.push_back(nextSection * 2);
+
+                        // line around the top cap
+                        indices.push_back(section * 2 + 1);
+                        indices.push_back(nextSection * 2 + 1);
+                    }
                 }
             }
 
@@ -1365,15 +1416,12 @@ namespace AZ
         void FixedShapeProcessor::FillShaderData(Data::Instance<RPI::Shader>& shader, ShaderData& shaderData)
         {
             // Get the per-object SRG and store the indices of the data we need to set per object
-            shaderData.m_perObjectSrgAsset = shader->FindShaderResourceGroupAsset(Name{ "ObjectSrg" });
-            if (!shaderData.m_perObjectSrgAsset.GetId().IsValid())
+            shaderData.m_shaderAsset = shader->GetAsset();
+            shaderData.m_supervariantIndex = shader->GetSupervariantIndex();
+            shaderData.m_perObjectSrgLayout = shader->FindShaderResourceGroupLayout(Name{ "ObjectSrg" });
+            if (!shaderData.m_perObjectSrgLayout)
             {
-                AZ_Error("FixedShapeProcessor", false, "Failed to get shader resource group asset");
-                return;
-            }
-            else if (!shaderData.m_perObjectSrgAsset.IsReady())
-            {
-                AZ_Error("FixedShapeProcessor", false, "Shader resource group asset is not loaded");
+                AZ_Error("FixedShapeProcessor", false, "Failed to get shader resource group layout");
                 return;
             }
 
@@ -1387,9 +1435,9 @@ namespace AZ
             const char* litObjectShaderFilePath = "Shaders/auxgeom/auxgeomobjectlit.azshader";
 
             // constant color shader
-            m_unlitShader = RPI::LoadShader(unlitObjectShaderFilePath);
+            m_unlitShader = RPI::LoadCriticalShader(unlitObjectShaderFilePath);
             // direction light shader
-            m_litShader = RPI::LoadShader(litObjectShaderFilePath);
+            m_litShader = RPI::LoadCriticalShader(litObjectShaderFilePath);
 
             if (m_unlitShader.get() == nullptr || m_litShader == nullptr)
             {
@@ -1564,7 +1612,7 @@ namespace AZ
 
             // Create a SRG for the shape to specify its transform and color
             // [GFX TODO] [ATOM-2333] Try to avoid doing SRG create/compile per draw. Possibly using instancing.
-            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_perObjectSrgAsset);
+            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_shaderAsset, shaderData.m_supervariantIndex, shaderData.m_perObjectSrgLayout->GetName());
             if (!srg)
             {
                 AZ_Warning("AuxGeom", false, "Failed to create a shader resource group for an AuxGeom draw, Ignoring the draw");
@@ -1663,7 +1711,7 @@ namespace AZ
         {
             ShaderData& shaderData = m_perObjectShaderData[drawStyle==DrawStyle_Shaded?1:0];
             // Create a SRG for the box to specify its transform and color
-            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_perObjectSrgAsset);
+            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_shaderAsset, shaderData.m_supervariantIndex, shaderData.m_perObjectSrgLayout->GetName());
             if (!srg)
             {
                 AZ_Warning("AuxGeom", false, "Failed to create a shader resource group for an AuxGeom draw, Ignoring the draw");

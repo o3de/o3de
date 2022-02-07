@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -154,9 +155,9 @@ namespace GraphCanvas
             required.push_back(AZ_CRC("GraphCanvas_StyledGraphicItemService", 0xeae4cdf4));
         }
 
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
         ////
         
         // WrapperNodeRequestBus

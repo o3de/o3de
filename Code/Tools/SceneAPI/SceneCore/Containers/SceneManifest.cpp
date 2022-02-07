@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,13 +18,14 @@
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -34,8 +36,7 @@ namespace AZ
     {
         namespace Containers
         {
-            //! Protects from allocating too much memory. The choice of a 5MB threshold is arbitrary.
-            const size_t MaxSceneManifestFileSizeInBytes = 5 * 1024 * 1024;
+            
 
             const char ErrorWindowName[] = "SceneManifest";
 
@@ -162,8 +163,7 @@ namespace AZ
                     return false;
                 }
 
-                AZ::IO::Path fileIoPath(absoluteFilePath);
-                auto saveToFileOutcome = AzFramework::FileFunc::WriteJsonFile(saveToJsonOutcome.GetValue(), fileIoPath);
+                auto saveToFileOutcome = AZ::JsonSerializationUtils::WriteJsonFile(saveToJsonOutcome.GetValue(), absoluteFilePath);
                 if (!saveToFileOutcome.IsSuccess())
                 {
                     AZ_Error(ErrorWindowName, false, "%s%s", errorMsg.c_str(), saveToFileOutcome.GetError().c_str());
@@ -308,7 +308,7 @@ namespace AZ
                 else
                 {
                     // Attempt to read the stream as JSON
-                    auto readJsonOutcome = AzFramework::FileFunc::ReadJsonFromString(fileContents);
+                    auto readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonString(fileContents);
                     AZStd::string errorMsg;
                     if (!readJsonOutcome.IsSuccess())
                     {

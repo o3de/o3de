@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -98,7 +99,6 @@ namespace UnitTest
         //create single entity
         AZ::Entity* newEntity = CreateEntity("New Entity", false);
         ASSERT_TRUE(newEntity);
-        AZ::EntityId entityId = newEntity->GetId();
 
         //create a first instance where the entity will be added
         AZStd::unique_ptr<Instance> testInstance = m_prefabSystemComponent->CreatePrefab({}, {}, "test/path");

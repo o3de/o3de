@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -157,7 +158,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
                 else:
                     cmd.append(f"--{key}")
             if append_defaults:
-                cmd.append(f"--project-path={workspace.project}")
+                cmd.append(f"--project-path={workspace.paths.project()}")
             return cmd
 
         # ******
@@ -341,7 +342,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
     # Run a full scan to ENSURE that both caches (pc and osx) are COMPLETELY POPULATED
     # Needed for asset bundling
     # fmt:off
-    assert asset_processor.batch_process(fastscan=False, timeout=timeout * len(platforms), platforms=platforms_list), \
+    assert asset_processor.batch_process(fastscan=True, timeout=timeout * len(platforms), platforms=platforms_list), \
         "AP Batch failed to process in bundler_batch_fixture"
     # fmt:on
 

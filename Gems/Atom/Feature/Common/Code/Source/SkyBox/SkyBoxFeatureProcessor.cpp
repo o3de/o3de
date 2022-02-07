@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,7 +12,6 @@
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -104,7 +104,7 @@ namespace AZ
 
         void SkyBoxFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SkyBoxFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "SkyBoxFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             m_sceneSrg->SetConstant(m_skyboxEnableIndex, m_enable);

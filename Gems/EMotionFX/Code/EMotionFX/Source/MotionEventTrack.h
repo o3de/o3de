@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -181,11 +182,11 @@ namespace EMotionFX
         AZStd::string m_name;
 
         /// The motion where this track belongs to.
-        Motion* mMotion;
+        Motion* m_motion;
 
         /// Is this track enabled?
-        bool mEnabled = true;
-        bool mDeletable = true;
+        bool m_enabled = true;
+        bool m_deletable = true;
 
     private:
         void ProcessEventsImpl(float startTime, float endTime, ActorInstance* actorInstance, const MotionInstance* motionInstance, const AZStd::function<void(EMotionFX::EventInfo&)>& processFunc);

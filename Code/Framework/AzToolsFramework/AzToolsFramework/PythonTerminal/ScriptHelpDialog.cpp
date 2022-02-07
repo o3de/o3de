@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 
 // Description : For listing available script commands with their descriptions
 
@@ -22,6 +22,7 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>    // for EditorPythonConsoleInterface
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AzToolsFramework/PythonTerminal/ui_ScriptHelpDialog.h>
@@ -250,7 +251,7 @@ namespace AzToolsFramework
         {
             EditorPythonConsoleInterface::GlobalFunctionCollection globalFunctionCollection;
             editorPythonConsoleInterface->GetGlobalFunctionList(globalFunctionCollection);
-            m_items.reserve(globalFunctionCollection.size());
+            m_items.reserve(static_cast<int>(globalFunctionCollection.size()));
             for (const EditorPythonConsoleInterface::GlobalFunction& globalFunction : globalFunctionCollection)
             {
                 Item item;
@@ -310,6 +311,45 @@ namespace AzToolsFramework
         setMinimumSize(QSize(480, 360));
 
         connect(ui->tableView, &ScriptTableView::doubleClicked, this, &CScriptHelpDialog::OnDoubleClick);
+    }
+
+    CScriptHelpDialog* CScriptHelpDialog::GetInstance()
+    {
+        static CScriptHelpDialog* pInstance = nullptr;
+        if (!pInstance)
+        {
+            QMainWindow* mainWindow = GetMainWindowOfCurrentApplication();
+            if (!mainWindow)
+            {
+                AZ_Assert(false, "Failed to find MainWindow.");
+                return nullptr;
+            }
+
+            QWidget* parentWidget = mainWindow->window()
+                ? mainWindow->window()
+                : mainWindow; // MainWindow might have a WindowDecorationWrapper parent. Makes a difference on macOS.
+            pInstance = new CScriptHelpDialog(parentWidget);
+        }
+        return pInstance;
+    }
+
+    QMainWindow* CScriptHelpDialog::GetMainWindowOfCurrentApplication()
+    {
+        QWidget* mainWindowWidget = nullptr;
+        EditorWindowRequestBus::BroadcastResult(mainWindowWidget, &EditorWindowRequests::GetAppMainWindow);
+        if (QMainWindow* mainWindow = qobject_cast<QMainWindow*>(mainWindowWidget))
+        {
+            return mainWindow;
+        }
+
+        for (QWidget* topLevelWidget : qApp->topLevelWidgets())
+        {
+            if (QMainWindow* mainWindow = qobject_cast<QMainWindow*>(topLevelWidget))
+            {
+                return mainWindow;
+            }
+        }
+        return nullptr;
     }
 
     void CScriptHelpDialog::OnDoubleClick(const QModelIndex& index)

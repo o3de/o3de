@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -395,8 +396,8 @@ namespace EMStudio
     {
         motionSet->SetDirtyFlag(dirtyFlag);
 
-        const uint32 numChildSets = motionSet->GetNumChildSets();
-        for (uint32 i = 0; i < numChildSets; ++i)
+        const size_t numChildSets = motionSet->GetNumChildSets();
+        for (size_t i = 0; i < numChildSets; ++i)
         {
             EMotionFX::MotionSet* childSet = motionSet->GetChildSet(i);
             RecursiveSetDirtyFlag(childSet, dirtyFlag);

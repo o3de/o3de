@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Vector2.h>
+#include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Ray.h>
 #include "MCommonConfig.h"
@@ -146,24 +148,24 @@ namespace MCommon
          * The projection matrix will be calculated every Update().
          * @return The projection matrix.
          */
-        MCORE_INLINE AZ::Matrix4x4& GetProjectionMatrix() { return mProjectionMatrix; }
-        MCORE_INLINE const AZ::Matrix4x4& GetProjectionMatrix() const { return mProjectionMatrix; }
+        MCORE_INLINE AZ::Matrix4x4& GetProjectionMatrix() { return m_projectionMatrix; }
+        MCORE_INLINE const AZ::Matrix4x4& GetProjectionMatrix() const { return m_projectionMatrix; }
 
         /**
          * Get the view matrix of the camera.
          * The view matrix will be calculated every Update().
          * @return The view matrix.
          */
-        MCORE_INLINE AZ::Matrix4x4& GetViewMatrix() { return mViewMatrix; }
-        MCORE_INLINE const AZ::Matrix4x4& GetViewMatrix() const { return mViewMatrix; }
+        MCORE_INLINE AZ::Matrix4x4& GetViewMatrix() { return m_viewMatrix; }
+        MCORE_INLINE const AZ::Matrix4x4& GetViewMatrix() const { return m_viewMatrix; }
 
         /**
          * Get the precalculated viewMatrix * projectionMatrix of the camera.
          * The viewproj matrix will be calculated every Update().
          * @return The precalculated matrix containing the result of viewMatrix * projectionMatrix.
          */
-        MCORE_INLINE AZ::Matrix4x4& GetViewProjMatrix() { return mViewProjMatrix; }
-        MCORE_INLINE const AZ::Matrix4x4& GetViewProjMatrix() const { return mViewProjMatrix; }
+        MCORE_INLINE AZ::Matrix4x4& GetViewProjMatrix() { return m_viewProjMatrix; }
+        MCORE_INLINE const AZ::Matrix4x4& GetViewProjMatrix() const { return m_viewProjMatrix; }
 
         /**
          * Get the translation speed.
@@ -259,20 +261,20 @@ namespace MCommon
         virtual void AutoUpdateLimits() {}
 
     protected:
-        AZ::Matrix4x4           mProjectionMatrix;          /**< The projection matrix. */
-        AZ::Matrix4x4           mViewMatrix;                /**< The view matrix. */
-        AZ::Matrix4x4           mViewProjMatrix;            /**< ViewMatrix * projectionMatrix. Will be recalculated every update call. */
-        AZ::Vector3             mPosition;                  /**< The camera position. */
-        AZ::Vector2             mOrthoClipDimensions;       /**< A two component vector which defines the distance to the left (x component) and to the top (y component) from the view origin. */
-        float                   mFOV;                       /**< The vertical field-of-view in degrees. */
-        float                   mNearClipDistance;          /**< Distance to the near clipping plane. */
-        float                   mFarClipDistance;           /**< Distance to the far clipping plane. */
-        float                   mAspect;                    /**< x/y viewport ratio. */
-        float                   mRotationSpeed;             /**< The angle in degrees that will be applied to the current rotation when the mouse is moving one pixel. */
-        float                   mTranslationSpeed;          /**< The value that will be applied to the current camera position when moving the mouse one pixel. */
-        ProjectionMode          mProjectionMode;            /**< The projection mode. The camera supports either perspective or orthographic projection. */
-        uint32                  mScreenWidth;               /**< The screen width in pixels where the camera is used. */
-        uint32                  mScreenHeight;              /**< The screen height in pixels where the camera is used. */
+        AZ::Matrix4x4           m_projectionMatrix;          /**< The projection matrix. */
+        AZ::Matrix4x4           m_viewMatrix;                /**< The view matrix. */
+        AZ::Matrix4x4           m_viewProjMatrix;            /**< ViewMatrix * projectionMatrix. Will be recalculated every update call. */
+        AZ::Vector3             m_position;                  /**< The camera position. */
+        AZ::Vector2             m_orthoClipDimensions;       /**< A two component vector which defines the distance to the left (x component) and to the top (y component) from the view origin. */
+        float                   m_fov;                       /**< The vertical field-of-view in degrees. */
+        float                   m_nearClipDistance;          /**< Distance to the near clipping plane. */
+        float                   m_farClipDistance;           /**< Distance to the far clipping plane. */
+        float                   m_aspect;                    /**< x/y viewport ratio. */
+        float                   m_rotationSpeed;             /**< The angle in degrees that will be applied to the current rotation when the mouse is moving one pixel. */
+        float                   m_translationSpeed;          /**< The value that will be applied to the current camera position when moving the mouse one pixel. */
+        ProjectionMode          m_projectionMode;            /**< The projection mode. The camera supports either perspective or orthographic projection. */
+        uint32                  m_screenWidth;               /**< The screen width in pixels where the camera is used. */
+        uint32                  m_screenHeight;              /**< The screen height in pixels where the camera is used. */
     };
 
     // include inline code

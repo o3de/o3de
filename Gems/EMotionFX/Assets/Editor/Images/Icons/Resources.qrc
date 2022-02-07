@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/EMotionFX">
         <file>ActorComponent.svg</file>
+        <file>Viewport/ActorComponent.svg</file>
         <file>AlignBottom.svg</file>
         <file>AlignLeft.svg</file>
         <file>AlignRight.svg</file>

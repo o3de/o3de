@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,23 +33,23 @@ class CScreenFaderKeyUIControls
 public:
     //-----------------------------------------------------------------------------
     //!
-    virtual bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
+    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
         return paramType == AnimParamType::ScreenFader;
     }
 
     //-----------------------------------------------------------------------------
     //!
-    virtual void OnCreateVars()
+    void OnCreateVars() override
     {
         AddVariable(mv_table, "Key Properties");
 
-        mv_fadeType->SetEnumList(NULL);
+        mv_fadeType->SetEnumList(nullptr);
         mv_fadeType->AddEnumItem("FadeIn", IScreenFaderKey::eFT_FadeIn);
         mv_fadeType->AddEnumItem("FadeOut", IScreenFaderKey::eFT_FadeOut);
         AddVariable(mv_table, mv_fadeType, "Type");
 
-        mv_fadechangeType->SetEnumList(NULL);
+        mv_fadechangeType->SetEnumList(nullptr);
         mv_fadechangeType->AddEnumItem("Linear", IScreenFaderKey::eFCT_Linear);
         mv_fadechangeType->AddEnumItem("Square", IScreenFaderKey::eFCT_Square);
         mv_fadechangeType->AddEnumItem("Cubic Square", IScreenFaderKey::eFCT_CubicSquare);
@@ -66,13 +67,13 @@ public:
 
     //-----------------------------------------------------------------------------
     //!
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& keys);
+    bool OnKeySelectionChange(CTrackViewKeyBundle& keys) override;
 
     //-----------------------------------------------------------------------------
     //!
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& keys);
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& keys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {
@@ -127,7 +128,7 @@ void CScreenFaderKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle&
 
     for (size_t keyIndex = 0, num = selectedKeys.GetKeyCount(); keyIndex < num; ++keyIndex)
     {
-        CTrackViewKeyHandle selectedKey = selectedKeys.GetKey(keyIndex);
+        CTrackViewKeyHandle selectedKey = selectedKeys.GetKey(static_cast<unsigned int>(keyIndex));
 
         CAnimParamType paramType = selectedKey.GetTrack()->GetParameterType();
         if (paramType == AnimParamType::ScreenFader)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -77,6 +78,6 @@ namespace EMStudio
         AZStd::unique_ptr<EMotionFX::Parameter> m_parameter;
         AZStd::string                       m_originalName;
 
-        static int                          m_parameterEditorMinWidth;
+        static int                          s_parameterEditorMinWidth;
     };
 } // namespace EMStudio

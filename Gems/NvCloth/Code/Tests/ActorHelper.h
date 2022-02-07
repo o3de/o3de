@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,9 +23,9 @@ namespace UnitTest
         explicit ActorHelper(const char* name);
 
         //! Adds a node to the skeleton.
-        AZ::u32 AddJoint(
+        size_t AddJoint(
             const AZStd::string& name,
-            const AZ::Transform localTransform = AZ::Transform::CreateIdentity(),
+            const AZ::Transform& localTransform = AZ::Transform::CreateIdentity(),
             const AZStd::string& parentName = "");
 
         //! Adds a collider to the cloh configuration.

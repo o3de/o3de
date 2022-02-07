@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -11,6 +12,7 @@ set(FILES
     testdata/config_broken_noscans/AssetProcessorPlatformConfig.setreg
     testdata/config_broken_recognizers/AssetProcessorPlatformConfig.setreg
     testdata/config_regular/AssetProcessorPlatformConfig.setreg
+    testdata/config_metadata/AssetProcessorPlatformConfig.setreg
     testdata/config_regular_platform_scanfolder/AssetProcessorPlatformConfig.setreg
     testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.setreg
     testdata/DummyProject/AssetProcessorGamePlatformConfig.setreg

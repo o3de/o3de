@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,7 @@ public:
         CRecord(CUiAnimViewNode* pNode = nullptr);
         CUiAnimViewNode* GetNode() const { return m_pNode; }
         bool IsGroup() const { return m_pNode->GetChildCount() != 0; }
-        const QString GetName() const { return m_pNode->GetName(); }
+        const QString GetName() const { return QString::fromUtf8(m_pNode->GetName().c_str()); }
 
         // Workaround: CXTPReportRecord::IsVisible is
         // unreliable after the last visible element
@@ -181,7 +182,6 @@ private:
 
     // Drag and drop
     CUiAnimViewAnimNodeBundle m_draggedNodes;
-    CUiAnimViewAnimNode* m_pDragTarget;
 
     std::unordered_map<const CUiAnimViewNode*, CRecord*> m_nodeToRecordMap;
 

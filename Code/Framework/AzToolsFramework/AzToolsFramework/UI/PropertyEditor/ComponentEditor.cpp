@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "ComponentEditor.hxx"
 #include "ComponentEditorHeader.hxx"
 
@@ -35,6 +35,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4244, "-Wunknown-warning-option") // 4251: 'QInputE
                                                                // 4244: 'return': conversion from 'qreal' to 'int', possible loss of data
 #include <QContextMenuEvent>
 AZ_POP_DISABLE_WARNING
+#include <QtWidgets/QApplication>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AzToolsFramework
@@ -394,12 +395,6 @@ namespace AzToolsFramework
     AzQtComponents::CardNotification* ComponentEditor::CreateNotificationForWarningComponents(const QString& message)
     {
         AzQtComponents::CardNotification * notification = CreateNotification(message);
-        const QPushButton * featureButton = notification->addButtonFeature(tr("Continue"));
-
-        connect(featureButton, &QPushButton::clicked, this, [this, notification]()
-        {
-            notification->close();
-        });
 
         return notification;
     }
@@ -526,7 +521,7 @@ namespace AzToolsFramework
 
     void ComponentEditor::SetComponentOverridden(const bool overridden)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const auto entityId = m_components[0]->GetEntityId();
         AZ::SliceComponent::SliceInstanceAddress sliceInstanceAddress;
@@ -588,7 +583,7 @@ namespace AzToolsFramework
         }
 
         AZStd::string iconPath;
-        EBUS_EVENT_RESULT(iconPath, AzToolsFramework::EditorRequests::Bus, GetComponentEditorIcon, componentType, const_cast<AZ::Component*>(&componentInstance));
+        AzToolsFramework::EditorRequestBus::BroadcastResult(iconPath, &AzToolsFramework::EditorRequests::GetComponentEditorIcon, componentType, const_cast<AZ::Component*>(&componentInstance));
         GetHeader()->SetIcon(QIcon(iconPath.c_str()));
 
         bool isExpanded = true;

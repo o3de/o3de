@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,7 +37,7 @@ namespace MaterialEditor
             behaviorContext->Class<MaterialEditorWindowSettings>("MaterialEditorWindowSettings")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "render")
+                ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
                 ->Constructor()
                 ->Constructor<const MaterialEditorWindowSettings&>()
                 ;

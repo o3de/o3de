@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "Microphone_precompiled.h"
 
 #include "MicrophoneSystemComponent.h"
 #include "SimpleDownsample.h"
@@ -38,7 +37,7 @@ namespace Audio
 
         virtual ~MicrophoneSystemEventsAndroid() = default;
 
-        virtual void HandleIncomingData(int8* data, int size) {}
+        virtual void HandleIncomingData(AZ::s8* data, int size) {}
     };
     using MicrophoneSystemEventsAndroidBus = AZ::EBus<MicrophoneSystemEventsAndroid>;
 
@@ -122,59 +121,57 @@ namespace Audio
 
         AZStd::size_t GetData(void** outputData, AZStd::size_t numFrames, const SAudioInputConfig& targetConfig, bool shouldDeinterleave)
         {
-
-            bool changeSampleType = (targetConfig.m_sampleType != m_config.m_sampleType);
-            bool changeSampleRate = (targetConfig.m_sampleRate != m_config.m_sampleRate);
-            bool changeNumChannels = (targetConfig.m_numChannels != m_config.m_numChannels);
-
         #if defined(USE_LIBSAMPLERATE)
             return {};            
         #else 
-        if (changeSampleType || changeNumChannels)
-        {
-            // Without the SRC library, any change is unsupported!
-            return {};
-        }
-        else if (changeSampleRate)
-        {
-            if(targetConfig.m_sampleRate > m_config.m_sampleRate)
+            bool changeSampleType = (targetConfig.m_sampleType != m_config.m_sampleType);
+            bool changeSampleRate = (targetConfig.m_sampleRate != m_config.m_sampleRate);
+            bool changeNumChannels = (targetConfig.m_numChannels != m_config.m_numChannels);
+            if (changeSampleType || changeNumChannels)
             {
-                AZ_Error("MacOSMicrophone", false, "Target sample rate is larger than source sample rate, this is not supported");
+                // Without the SRC library, any change is unsupported!
                 return {};
             }
-
-            auto sourceBuffer =  new AZ::s16[numFrames];
-            AZStd::size_t targetSize = GetDownsampleSize(numFrames, m_config.m_sampleRate, targetConfig.m_sampleRate);
-            auto targetBuffer = new AZ::s16[targetSize];
-
-            numFrames = m_captureData->ConsumeData(reinterpret_cast<void**>(&sourceBuffer), numFrames, m_config.m_numChannels, false);
-
-
-            if(numFrames > 0)
+            else if (changeSampleRate)
             {
-                Downsample(sourceBuffer, numFrames, m_config.m_sampleRate, targetBuffer, targetSize, targetConfig.m_sampleRate);
+                if(targetConfig.m_sampleRate > m_config.m_sampleRate)
+                {
+                    AZ_Error("MacOSMicrophone", false, "Target sample rate is larger than source sample rate, this is not supported");
+                    return {};
+                }
 
-                numFrames = targetSize;
-                // swap target data to output
-                ::memcpy(*outputData, targetBuffer, targetSize * 2); //*2 as two bytes per frame
+                auto sourceBuffer =  new AZ::s16[numFrames];
+                AZStd::size_t targetSize = GetDownsampleSize(numFrames, m_config.m_sampleRate, targetConfig.m_sampleRate);
+                auto targetBuffer = new AZ::s16[targetSize];
+
+                numFrames = m_captureData->ConsumeData(reinterpret_cast<void**>(&sourceBuffer), numFrames, m_config.m_numChannels, false);
+
+
+                if(numFrames > 0)
+                {
+                    Downsample(sourceBuffer, numFrames, m_config.m_sampleRate, targetBuffer, targetSize, targetConfig.m_sampleRate);
+
+                    numFrames = targetSize;
+                    // swap target data to output
+                    ::memcpy(*outputData, targetBuffer, targetSize * 2); //*2 as two bytes per frame
+                }
+
+                delete [] sourceBuffer;
+                delete [] targetBuffer;
+
+                return numFrames;
             }
-
-            delete [] sourceBuffer;
-            delete [] targetBuffer;
-
-            return numFrames;
-        }
-        else
-        {
-            // No change to the data from Input to Output
-            return m_captureData->ConsumeData(outputData, numFrames, m_config.m_numChannels, shouldDeinterleave);
-        }                
+            else
+            {
+                // No change to the data from Input to Output
+                return m_captureData->ConsumeData(outputData, numFrames, m_config.m_numChannels, shouldDeinterleave);
+            }
         #endif
         }
 
-        void HandleIncomingData(int8* data, int size) override
+        void HandleIncomingData(AZ::s8* data, int size) override
         {
-            m_captureData->AddData((int16*)data, size / 2, m_config.m_numChannels);
+            m_captureData->AddData((AZ::s16*)data, size / 2, m_config.m_numChannels);
         }
 
     private:

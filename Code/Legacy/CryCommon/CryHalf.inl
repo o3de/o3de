@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,7 +15,6 @@
 
 
 typedef uint16 CryHalf;
-class ICrySizer;
 
 typedef union floatint_union
 {
@@ -137,10 +137,6 @@ struct CryHalf2
     {
         return x != rhs.x || y != rhs.y;
     }
-
-    void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const {}
-
-    AUTO_STRUCT_INFO
 };
 
 struct CryHalf4
@@ -193,10 +189,6 @@ struct CryHalf4
     {
         return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
     }
-
-    void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const {}
-
-    AUTO_STRUCT_INFO
 };
 
 #endif // #ifndef CRY_HALF_INL

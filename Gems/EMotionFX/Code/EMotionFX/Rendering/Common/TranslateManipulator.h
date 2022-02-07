@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,7 @@
 #ifndef __MCOMMON_TRANSLATEMANIPULATOR_H
 #define __MCOMMON_TRANSLATEMANIPULATOR_H
 
-// include the Core system
+#include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Ray.h>
 #include "MCommonConfig.h"
@@ -90,24 +91,24 @@ namespace MCommon
 
     protected:
         // bounding volumes for the axes
-        MCore::AABB             mXAxisAABB;
-        MCore::AABB             mYAxisAABB;
-        MCore::AABB             mZAxisAABB;
-        MCore::AABB             mXYPlaneAABB;
-        MCore::AABB             mXZPlaneAABB;
-        MCore::AABB             mYZPlaneAABB;
+        MCore::AABB             m_xAxisAabb;
+        MCore::AABB             m_yAxisAabb;
+        MCore::AABB             m_zAxisAabb;
+        MCore::AABB             m_xyPlaneAabb;
+        MCore::AABB             m_xzPlaneAabb;
+        MCore::AABB             m_yzPlaneAabb;
 
         // the scaling factors for the translate manipulator
-        float                   mSize;
-        float                   mArrowLength;
-        float                   mBaseRadius;
-        float                   mPlaneSelectorPos;
-        AZ::Vector3             mMovementPlaneNormal;
-        AZ::Vector3             mMovementDirection;
-        AZ::Vector3             mMousePosRelative;
-        bool                    mXAxisVisible;
-        bool                    mYAxisVisible;
-        bool                    mZAxisVisible;
+        float                   m_size;
+        float                   m_arrowLength;
+        float                   m_baseRadius;
+        float                   m_planeSelectorPos;
+        AZ::Vector3             m_movementPlaneNormal;
+        AZ::Vector3             m_movementDirection;
+        AZ::Vector3             m_mousePosRelative;
+        bool                    m_xAxisVisible;
+        bool                    m_yAxisVisible;
+        bool                    m_zAxisVisible;
     };
 } // namespace MCommon
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -271,7 +272,7 @@ namespace ScriptCanvas
 
                             Data::Type outputType(AZ::BehaviorContextHelper::IsStringParameter(*result) ? Data::Type::String() : Data::FromAZType(result->m_typeId));
                             // multiple outs will need out value names
-                            const AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).c_str()));
+                            const AZStd::string resultSlotName(Data::GetName(outputType));
 
                             DataSlotConfiguration slotConfiguration;
 
@@ -342,7 +343,7 @@ namespace ScriptCanvas
                         {
                             Data::Type outputType(AZ::BehaviorContextHelper::IsStringParameter(*result) ? Data::Type::String() : Data::FromAZType(result->m_typeId));
                             // multiple outs will need out value names
-                            const AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).c_str()));
+                            const AZStd::string resultSlotName(Data::GetName(outputType));
 
                             Slot* slot = GetSlotByName(resultSlotName);
 

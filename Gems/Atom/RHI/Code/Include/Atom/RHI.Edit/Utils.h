@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -82,11 +83,12 @@ namespace AZ
                                    const AZStd::string& shaderSourcePathForDebug,
                                    const char* toolNameForLog);
 
-        //! Reports error messages to AZ_Error and/or AZ_Warning, given a text blob that potentially contains many lines of errors and warnings.
-        //! @param window  Debug window name used for AZ Trace functions
-        //! @param errorMessages  String that may contain many lines of errors and warnings
-        //! @param return  true if Errors were detected and reported (Warnings don't count)
-        bool ReportErrorMessages(AZStd::string_view window, AZStd::string_view errorMessages);
+        //! Reports messages with AZ_Error or AZ_Warning (See @reportAsErrors).
+        //! @param window  Debug window name used for AZ Trace functions.
+        //! @param errorMessages  Message string.
+        //! @param reportAsErrors  If true, messages are traced with AZ_Error, otherwise AZ_Warning is used.
+        //! @returns  true If the input text blob contains at least one line with the "error" string.
+        bool ReportMessages(AZStd::string_view window, AZStd::string_view errorMessages, bool reportAsErrors);
 
         //! Converts from a RHI::ShaderHardwareStage to an RHI::ShaderStage
         ShaderStage ToRHIShaderStage(ShaderHardwareStage stageType);

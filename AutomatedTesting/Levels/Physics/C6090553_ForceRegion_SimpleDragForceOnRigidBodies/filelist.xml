@@ -1,6 +1,0 @@
-<download name="C6090553_ForceRegion_SimpleDragForceOnRigidBodies" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39330" md5="09bb9d50fe488f0e32680e60866751d1"/>
- </files>
-</download>

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -56,12 +57,12 @@ struct SSystemUserCallback
     : public ISystemUserCallback
 {
     SSystemUserCallback(IInitializeUIInfo* logo) : m_threadErrorHandler(this) { m_pLogo = logo; };
-    virtual void OnSystemConnect(ISystem* pSystem)
+    void OnSystemConnect(ISystem* pSystem) override
     {
         ModuleInitISystem(pSystem, "Editor");
     }
 
-    virtual bool OnError(const char* szErrorString)
+    bool OnError(const char* szErrorString) override
     {
         // since we show a message box, we have to use the GUI thread
         if (QThread::currentThread() != qApp->thread())
@@ -94,7 +95,7 @@ struct SSystemUserCallback
 
         int res = IDNO;
 
-        ICVar* pCVar = gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : NULL;
+        ICVar* pCVar = gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : nullptr;
 
         if (!pCVar || pCVar->GetIVal() == 0)
         {
@@ -115,7 +116,7 @@ struct SSystemUserCallback
         return true;
     }
 
-    virtual bool OnSaveDocument()
+    bool OnSaveDocument() override
     {
         bool success = false;
 
@@ -132,7 +133,7 @@ struct SSystemUserCallback
         return success;
     }
 
-    virtual bool OnBackupDocument()
+    bool OnBackupDocument() override
     {
         CCryEditDoc* level = GetIEditor() ? GetIEditor()->GetDocument() : nullptr;
         if (level)
@@ -143,7 +144,7 @@ struct SSystemUserCallback
         return false;
     }
 
-    virtual void OnProcessSwitch()
+    void OnProcessSwitch() override
     {
         if (GetIEditor()->IsInGameMode())
         {
@@ -151,7 +152,7 @@ struct SSystemUserCallback
         }
     }
 
-    virtual void OnInitProgress(const char* sProgressMsg)
+    void OnInitProgress(const char* sProgressMsg) override
     {
         if (m_pLogo)
         {
@@ -159,7 +160,7 @@ struct SSystemUserCallback
         }
     }
 
-    virtual int ShowMessage(const char* text, const char* caption, unsigned int uType)
+    int ShowMessage(const char* text, const char* caption, unsigned int uType) override
     {
         if (CCryEditApp::instance()->IsInAutotestMode())
         {
@@ -173,11 +174,6 @@ struct SSystemUserCallback
             return IDOK;
         }
         return CryMessageBox(text, caption, uType);
-    }
-
-    virtual void GetMemoryUsage(ICrySizer* pSizer)
-    {
-        GetIEditor()->GetMemoryUsage(pSizer);
     }
 
     void OnSplashScreenDone()
@@ -214,7 +210,7 @@ public:
     {
         AzFramework::AssetSystemConnectionNotificationsBus::Handler::BusConnect();
     };
-    ~AssetProcessConnectionStatus()
+    ~AssetProcessConnectionStatus() override
     {
         AzFramework::AssetSystemConnectionNotificationsBus::Handler::BusDisconnect();
     }
@@ -246,33 +242,31 @@ private:
 
 AZ_PUSH_DISABLE_WARNING(4273, "-Wunknown-warning-option")
 CGameEngine::CGameEngine()
-    : m_gameDll(0)
+    : m_gameDll(nullptr)
     , m_bIgnoreUpdates(false)
     , m_ePendingGameMode(ePGM_NotPending)
     , m_modalWindowDismisser(nullptr)
 AZ_POP_DISABLE_WARNING
 {
-    m_pISystem = NULL;
+    m_pISystem = nullptr;
     m_bLevelLoaded = false;
     m_bInGameMode = false;
     m_bSimulationMode = false;
     m_bSyncPlayerPosition = true;
-    m_hSystemHandle = 0;
+    m_hSystemHandle = nullptr;
     m_bJustCreated = false;
     m_levelName = "Untitled";
     m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
     m_playerViewTM.SetIdentity();
     GetIEditor()->RegisterNotifyListener(this);
-    AZ::Interface<IEditorCameraController>::Register(this);
 }
 
 AZ_PUSH_DISABLE_WARNING(4273, "-Wunknown-warning-option")
 CGameEngine::~CGameEngine()
 {
 AZ_POP_DISABLE_WARNING
-    AZ::Interface<IEditorCameraController>::Unregister(this);
     GetIEditor()->UnregisterNotifyListener(this);
-    m_pISystem->GetIMovieSystem()->SetCallback(NULL);
+    m_pISystem->GetIMovieSystem()->SetCallback(nullptr);
 
     if (m_gameDll)
     {
@@ -280,7 +274,7 @@ AZ_POP_DISABLE_WARNING
     }
 
     delete m_pISystem;
-    m_pISystem = NULL;
+    m_pISystem = nullptr;
 
     if (m_hSystemHandle)
     {
@@ -341,38 +335,6 @@ static void CmdGotoEditor(IConsoleCmdArgs* pArgs)
 
         tm.SetTranslation(Vec3(x, y, z));
         tm.SetRotation33(Matrix33::CreateRotationXYZ(DEG2RAD(Ang3(wx, wy, wz))));
-        pRenderViewport->SetViewTM(tm);
-    }
-}
-
-void CGameEngine::SetCurrentViewPosition(const AZ::Vector3& position)
-{
-    CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport();
-    if (pRenderViewport)
-    {
-        CUndo undo("Set Current View Position");
-        if (CUndo::IsRecording())
-        {
-            CUndo::Record(new CUndoViewPosition());
-        }
-        Matrix34 tm = pRenderViewport->GetViewTM();
-        tm.SetTranslation(Vec3(position.GetX(), position.GetY(), position.GetZ()));
-        pRenderViewport->SetViewTM(tm);
-    }
-}
-
-void CGameEngine::SetCurrentViewRotation(const AZ::Vector3& rotation)
-{
-    CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport();
-    if (pRenderViewport)
-    {
-        CUndo undo("Set Current View Rotation");
-        if (CUndo::IsRecording())
-        {
-            CUndo::Record(new CUndoViewRotation());
-        }
-        Matrix34 tm = pRenderViewport->GetViewTM();
-        tm.SetRotationXYZ(Ang3(DEG2RAD(rotation.GetX()), DEG2RAD(rotation.GetY()), DEG2RAD(rotation.GetZ())), tm.GetTranslation());
         pRenderViewport->SetViewTM(tm);
     }
 }
@@ -530,8 +492,7 @@ bool CGameEngine::LoadLevel(
     [[maybe_unused]] bool bDeleteAIGraph,
     bool bReleaseResources)
 {
-    LOADING_TIME_PROFILE_SECTION(GetIEditor()->GetSystem());
-    m_bLevelLoaded = false;
+     m_bLevelLoaded = false;
     CLogFile::FormatLine("Loading map '%s' into engine...", m_levelPath.toUtf8().data());
     // Switch the current directory back to the Primary CD folder first.
     // The engine might have trouble to find some files when the current
@@ -599,13 +560,11 @@ void CGameEngine::SwitchToInGame()
         streamer->QueueRequest(flush);
         wait.acquire();
     }
-    
+
     GetIEditor()->Notify(eNotify_OnBeginGameMode);
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
     m_bInGameMode = true;
-
-    gEnv->pSystem->GetViewCamera().SetMatrix(m_playerViewTM);
 
     // Disable accelerators.
     GetIEditor()->EnableAcceleratos(false);
@@ -659,13 +618,6 @@ void CGameEngine::SwitchToInEditor()
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_OUTOFGAME);
 
     m_bInGameMode = false;
-
-    // save the current gameView matrix for editor
-    if (pGameViewport)
-    {
-        Matrix34 gameView = gEnv->pSystem->GetViewCamera().GetMatrix();
-        pGameViewport->SetGameTM(gameView);
-    }
 
     // Out of game in Editor mode.
     if (pGameViewport)
@@ -908,7 +860,7 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     {
     case eNotify_OnSplashScreenDestroyed:
     {
-        if (m_pSystemUserCallback != NULL)
+        if (m_pSystemUserCallback != nullptr)
         {
             m_pSystemUserCallback->OnSplashScreenDone();
         }

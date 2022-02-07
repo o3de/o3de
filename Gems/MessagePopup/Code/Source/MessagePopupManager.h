@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,7 +27,7 @@ namespace MessagePopup
         bool RemovePopup(AZ::u32 _popupID);
         void* GetPopupClientData(AZ::u32 _popupID);
         MessagePopupInfo* GetPopupInfo(AZ::u32 _popupID);
-        AZ::u32 GetNumActivePopups() const { return m_currentPopups.size(); }
+        AZ::u32 GetNumActivePopups() const { return static_cast<AZ::u32>(m_currentPopups.size()); }
 
     protected:
         //////////////////////////////////////////////////////////////////////////

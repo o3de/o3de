@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Model/ModelLod.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/BufferView.h>
@@ -78,15 +80,11 @@ namespace AZ
             m_dispatchItem.m_pipelineState = m_morphTargetShader->AcquirePipelineState(pipelineStateDescriptor);
 
             // Get the threads-per-group values from the compute shader [numthreads(x,y,z)]
-            const auto& numThreads = m_morphTargetShader->GetAsset()->GetAttribute(RHI::ShaderStage::Compute, AZ::Name{ "numthreads" });
             auto& arguments = m_dispatchItem.m_arguments.m_direct;
-            if (numThreads)
+            const auto outcome = RPI::GetComputeShaderNumThreads(m_morphTargetShader->GetAsset(), arguments);
+            if (!outcome.IsSuccess())
             {
-                const auto& args = *numThreads;
-                // Check that the arguments are valid integers, and fall back to 1,1,1 if there is an error
-                arguments.m_threadsPerGroupX = args[0].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[0]) : 1;
-                arguments.m_threadsPerGroupY = args[1].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[1]) : 1;
-                arguments.m_threadsPerGroupZ = args[2].type() == azrtti_typeid<int>() ? AZStd::any_cast<int>(args[2]) : 1;
+                AZ_Error("MorphTargetDispatchItem", false, outcome.GetError().c_str());
             }
 
             arguments.m_totalNumberOfThreadsX = m_morphTargetMetaData.m_vertexCount;
@@ -98,19 +96,14 @@ namespace AZ
 
         bool MorphTargetDispatchItem::InitPerInstanceSRG()
         {
-            auto perInstanceSrgAsset = m_morphTargetShader->FindShaderResourceGroupAsset(AZ::Name{ "MorphTargetInstanceSrg" });
-            if (!perInstanceSrgAsset.GetId().IsValid())
+            auto perInstanceSrgLayout = m_morphTargetShader->FindShaderResourceGroupLayout(AZ::Name{ "MorphTargetInstanceSrg" });
+            if (!perInstanceSrgLayout)
             {
-                AZ_Error("MorphTargetDispatchItem", false, "Failed to get shader resource group asset");
-                return false;
-            }
-            else if (!perInstanceSrgAsset.IsReady())
-            {
-                AZ_Error("MorphTargetDispatchItem", false, "Shader resource group asset is not loaded");
+                AZ_Error("MorphTargetDispatchItem", false, "Failed to get shader resource group layout");
                 return false;
             }
 
-            m_instanceSrg = RPI::ShaderResourceGroup::Create(perInstanceSrgAsset);
+            m_instanceSrg = RPI::ShaderResourceGroup::Create(m_morphTargetShader->GetAsset(), m_morphTargetShader->GetSupervariantIndex(), perInstanceSrgLayout->GetName());
             if (!m_instanceSrg)
             {
                 AZ_Error("MorphTargetDispatchItem", false, "Failed to create shader resource group for morph target");
@@ -166,7 +159,7 @@ namespace AZ
                 m_rootConstantData.SetConstant(colorOffsetIndex, m_morphInstanceMetaData.m_accumulatedColorDeltaOffsetInBytes / 4);
             }
 
-            m_dispatchItem.m_rootConstantSize = m_rootConstantData.GetConstantData().size();
+            m_dispatchItem.m_rootConstantSize = static_cast<uint8_t>(m_rootConstantData.GetConstantData().size());
             m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
         }
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -103,6 +104,8 @@ namespace AZ
                                            GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
             
             void ClearResourceTracking();
+            bool IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
+            bool IsNullDescHeapNeeded() const;
             
             //////////////////////////////////////////////////////////////////////////
             // RHI::DeviceObject
@@ -152,6 +155,7 @@ namespace AZ
             MemoryView m_argumentBuffer;
             MemoryView m_constantBuffer;
 #endif
+            bool m_useNullDescriptorHeap = false;
         };
     }
 }

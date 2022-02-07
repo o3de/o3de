@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,7 @@
 #pragma once
 
 #include <Multiplayer/ConnectionData/IConnectionData.h>
-#include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 
 namespace Multiplayer
 {
@@ -19,7 +20,8 @@ namespace Multiplayer
         ClientToServerConnectionData
         (
             AzNetworking::IConnection* connection,
-            AzNetworking::IConnectionListener& connectionListener
+            AzNetworking::IConnectionListener& connectionListener,
+            const AZStd::string& providerTicket = ""
         );
         ~ClientToServerConnectionData() override;
 
@@ -28,15 +30,22 @@ namespace Multiplayer
         ConnectionDataType GetConnectionDataType() const override;
         AzNetworking::IConnection* GetConnection() const override;
         EntityReplicationManager& GetReplicationManager() override;
-        void Update(AZ::TimeMs hostTimeMs) override;
+        void Update() override;
         bool CanSendUpdates() const override;
         void SetCanSendUpdates(bool canSendUpdates) override;
+        bool DidHandshake() const override;
+        void SetDidHandshake(bool didHandshake) override;
         //! @}
+
+        const AZStd::string& GetProviderTicket() const;
+        void SetProviderTicket(const AZStd::string&);
 
     private:
         EntityReplicationManager m_entityReplicationManager;
+        AZStd::string m_providerTicket;
         AzNetworking::IConnection* m_connection = nullptr;
         bool m_canSendUpdates = true;
+        bool m_didHandshake = false;
     };
 }
 

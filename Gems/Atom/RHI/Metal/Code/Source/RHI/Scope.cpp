@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
-#include <Atom/RHI/CpuProfiler.h>
+
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <AzCore/Debug/EventTrace.h>
@@ -17,10 +17,6 @@
 #include <RHI/Scope.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 
-namespace Platform
-{
-    void ApplyTileDimentions(MTLRenderPassDescriptor* mtlRenderPassDescriptor);
-}
 
 namespace AZ
 {
@@ -88,7 +84,6 @@ namespace AZ
             {
                 AZ_Assert(m_renderPassDescriptor == nil, "m_renderPassDescriptor should be null");
                 m_renderPassDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-                Platform::ApplyTileDimentions(m_renderPassDescriptor);
             }
 
             if(GetEstimatedItemCount())
@@ -120,12 +115,10 @@ namespace AZ
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
                 id<MTLTexture> imageViewMtlTexture = imageView->GetMemoryView().GetGpuAddress<id<MTLTexture>>();
                 
-                const bool isFullView           = imageView->IsFullView();
                 const bool isClearAction        = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
                 const bool isClearActionStencil = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
                 
                 const bool isLoadAction         = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Load;
-                const bool isLoadActionStencil  = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Load;
                 
                 const bool isStoreAction         = bindingDescriptor.m_loadStoreAction.m_storeAction == RHI::AttachmentStoreAction::Store;
                 const bool isStoreActionStencil  = bindingDescriptor.m_loadStoreAction.m_storeActionStencil == RHI::AttachmentStoreAction::Store;
@@ -163,7 +156,6 @@ namespace AZ
                 {
                     mtlStoreActionStencil = MTLStoreActionStore;
                 }
-                const RHI::ImageViewDescriptor& imgViewDescriptor = imageView->GetDescriptor();
                 const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
                 for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : usagesAndAccesses)
                 {

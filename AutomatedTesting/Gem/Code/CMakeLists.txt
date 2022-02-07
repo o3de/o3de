@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -34,31 +35,11 @@ ly_create_alias(NAME AutomatedTesting.Servers  NAMESPACE Gem TARGETS Gem::Automa
 # Gem dependencies
 ################################################################################
 
-# The GameLauncher uses "Clients" gem variants:
-ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
-    TARGETS AutomatedTesting.GameLauncher
-    VARIANTS Clients)
+# Enable the enabled_gems for the Project:
+ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake)
 
-# If we build a server, then apply the gems to the server
+# Add project to the list server projects to create the AutomatedTesting.ServerLauncher
 if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-    # if we're making a server, then add the "Server" gem variants to it:
-    ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
-        TARGETS AutomatedTesting.ServerLauncher
-        VARIANTS Servers)
-    
     set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS AutomatedTesting)
 endif()
 
-if (PAL_TRAIT_BUILD_HOST_TOOLS)
-    # The Editor uses "Tools" gem variants:
-    ly_enable_gems(
-        PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
-        TARGETS Editor
-        VARIANTS Tools)
-
-    # The pipeline tools use "Builders" gem variants:
-    ly_enable_gems(
-        PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
-        TARGETS AssetBuilder AssetProcessor AssetProcessorBatch
-        VARIANTS Builders)
-endif()

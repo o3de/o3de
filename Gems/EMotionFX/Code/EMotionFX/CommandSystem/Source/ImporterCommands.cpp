@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,6 +17,7 @@
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 #include "CommandManager.h"
 #include <AzFramework/API/ApplicationAPI.h>
+#include <Source/Integration/Assets/ActorAsset.h>
 
 
 namespace CommandSystem
@@ -28,7 +30,7 @@ namespace CommandSystem
     CommandImportActor::CommandImportActor(MCore::Command* orgCommand)
         : MCore::Command("ImportActor", orgCommand)
     {
-        mPreviouslyUsedID = MCORE_INVALIDINDEX32;
+        m_previouslyUsedId = MCORE_INVALIDINDEX32;
     }
 
 
@@ -64,35 +66,29 @@ namespace CommandSystem
             filename = EMotionFX::EMotionFXManager::ResolvePath(filename.c_str());
         }
 
-        // check if we have already loaded the actor
-        EMotionFX::Actor* actorFromManager = EMotionFX::GetActorManager().FindActorByFileName(filename.c_str());
-        if (actorFromManager)
+        AZ::Data::AssetId actorAssetId;
+        EBUS_EVENT_RESULT(
+            actorAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, filename.c_str(), AZ::Data::s_invalidAssetType, false);
+        if (!actorAssetId.IsValid())
         {
-            AZStd::to_string(outResult, actorFromManager->GetID());
-            return true;
-        }
-
-        // init the settings
-        EMotionFX::Importer::ActorSettings settings;
-
-        // extract default values from the command syntax automatically, if they aren't specified explicitly
-        settings.mLoadLimits                    = parameters.GetValueAsBool("loadLimits",           this);
-        settings.mLoadMorphTargets              = parameters.GetValueAsBool("loadMorphTargets",     this);
-        settings.mLoadSkeletalLODs              = parameters.GetValueAsBool("loadSkeletalLODs",     this);
-        settings.mDualQuatSkinning              = parameters.GetValueAsBool("dualQuatSkinning",     this);
-
-        // try to load the actor
-        AZStd::shared_ptr<EMotionFX::Actor> actor {EMotionFX::GetImporter().LoadActor(filename.c_str(), &settings)};
-        if (!actor)
-        {
-            outResult = AZStd::string::format("Failed to load actor from '%s'. File may not exist at this path or may have incorrect permissions", filename.c_str());
+            outResult = AZStd::string::format("Cannot import actor. Cannot find asset at path %s.", filename.c_str());
             return false;
         }
 
-        // Because the actor is directly loaded from disk (without going through an actor asset), we need to ask for a blocking
-        // load for the asset that actor is depend on.
-        actor->Finalize(EMotionFX::Actor::LoadRequirement::RequireBlockingLoad);
+        // check if we have already loaded the actor
+        const size_t actorIndex = EMotionFX::GetActorManager().FindActorIndex(actorAssetId);
+        if (actorIndex != InvalidIndex)
+        {
+            return true;
+        }
 
+        // Do a blocking load of the asset.
+        AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset =
+            AZ::Data::AssetManager::Instance().GetAsset<EMotionFX::Integration::ActorAsset>(
+                actorAssetId, AZ::Data::AssetLoadBehavior::Default);
+        actorAsset.BlockUntilLoadComplete();
+
+        EMotionFX::Actor* actor = actorAsset->GetActor();
         // set the actor id in case we have specified it as parameter
         if (actorID != MCORE_INVALIDINDEX32)
         {
@@ -100,11 +96,11 @@ namespace CommandSystem
         }
 
         // in case we are in a redo call assign the previously used id
-        if (mPreviouslyUsedID != MCORE_INVALIDINDEX32)
+        if (m_previouslyUsedId != MCORE_INVALIDINDEX32)
         {
-            actor->SetID(mPreviouslyUsedID);
+            actor->SetID(m_previouslyUsedId);
         }
-        mPreviouslyUsedID = actor->GetID();
+        m_previouslyUsedId = actor->GetID();
 
         // select the actor automatically
         if (parameters.GetValueAsBool("autoSelect", this))
@@ -112,15 +108,15 @@ namespace CommandSystem
             GetCommandManager()->ExecuteCommandInsideCommand(AZStd::string::format("Select -actorID %i", actor->GetID()).c_str(), outResult);
         }
 
-
         // mark the workspace as dirty
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
 
         // return the id of the newly created actor
         AZStd::to_string(outResult, actor->GetID());
 
-        EMotionFX::GetActorManager().RegisterActor(AZStd::move(actor));
+        // Register actor asset.
+        EMotionFX::GetActorManager().RegisterActor(AZStd::move(actorAsset));
 
         return true;
     }
@@ -133,7 +129,7 @@ namespace CommandSystem
         uint32 actorID = parameters.GetValueAsInt("actorID", MCORE_INVALIDINDEX32);
         if (actorID == MCORE_INVALIDINDEX32)
         {
-            actorID = mPreviouslyUsedID;
+            actorID = m_previouslyUsedId;
         }
 
         // check if we have to unselect the actors created by this command
@@ -144,21 +140,21 @@ namespace CommandSystem
         }
 
         // find the actor based on the given id
-        AZStd::shared_ptr<EMotionFX::Actor> actor = EMotionFX::GetActorManager().FindSharedActorByID(actorID);
-        if (actor == nullptr)
+        AZ::Data::AssetId actorAssetId = EMotionFX::GetActorManager().FindAssetIdByActorId(actorID);
+        if (!actorAssetId.IsValid())
         {
             outResult = AZStd::string::format("Cannot remove actor. Actor ID %i is not valid.", actorID);
             return false;
         }
 
-        EMotionFX::GetActorManager().UnregisterActor(actor);
+        EMotionFX::GetActorManager().UnregisterActor(actorAssetId);
 
         // update our render actors
         AZStd::string updateRenderActorsResult;
         GetCommandManager()->ExecuteCommandInsideCommand("UpdateRenderActors", updateRenderActorsResult);
 
         // restore the workspace dirty flag
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         return true;
     }
@@ -202,7 +198,7 @@ namespace CommandSystem
     CommandImportMotion::CommandImportMotion(MCore::Command* orgCommand)
         : MCore::Command("ImportMotion", orgCommand)
     {
-        mOldMotionID = MCORE_INVALIDINDEX32;
+        m_oldMotionId = MCORE_INVALIDINDEX32;
     }
 
 
@@ -254,7 +250,7 @@ namespace CommandSystem
         if (AzFramework::StringFunc::Equal(extension.c_str(), "motion", false /* no case */))
         {
             EMotionFX::Importer::MotionSettings settings;
-            settings.mLoadMotionEvents = parameters.GetValueAsBool("loadMotionEvents", this);
+            settings.m_loadMotionEvents = parameters.GetValueAsBool("loadMotionEvents", this);
             motion = EMotionFX::GetImporter().LoadMotion(filename.c_str(), &settings);
         }
 
@@ -272,12 +268,12 @@ namespace CommandSystem
         }
 
         // in case we are in a redo call assign the previously used id
-        if (mOldMotionID != MCORE_INVALIDINDEX32)
+        if (m_oldMotionId != MCORE_INVALIDINDEX32)
         {
-            motion->SetID(mOldMotionID);
+            motion->SetID(m_oldMotionId);
         }
-        mOldMotionID = motion->GetID();
-        mOldFileName = motion->GetFileName();
+        m_oldMotionId = motion->GetID();
+        m_oldFileName = motion->GetFileName();
 
         // set the motion name
         AZStd::string motionName;
@@ -291,7 +287,7 @@ namespace CommandSystem
         }
 
         // mark the workspace as dirty
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
 
         // reset the dirty flag
@@ -307,11 +303,11 @@ namespace CommandSystem
 
         // execute the group command
         AZStd::string commandString;
-        commandString = AZStd::string::format("RemoveMotion -filename \"%s\"", mOldFileName.c_str());
+        commandString = AZStd::string::format("RemoveMotion -filename \"%s\"", m_oldFileName.c_str());
         bool result = GetCommandManager()->ExecuteCommandInsideCommand(commandString.c_str(), outResult);
 
         // restore the workspace dirty flag
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         return result;
     }

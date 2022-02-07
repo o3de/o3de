@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,26 +17,26 @@ namespace MCore
     void BoundingSphere::Encapsulate(const AZ::Vector3& v)
     {
         // calculate the squared distance from the center to the point
-        const AZ::Vector3 diff = v - mCenter;
+        const AZ::Vector3 diff = v - m_center;
         const float dist = diff.Dot(diff);
 
         // if the current sphere doesn't contain the point, grow the sphere so that it contains the point
-        if (dist > mRadiusSq)
+        if (dist > m_radiusSq)
         {
-            const AZ::Vector3 diff2 = diff.GetNormalized() * mRadius;
+            const AZ::Vector3 diff2 = diff.GetNormalized() * m_radius;
             const AZ::Vector3 delta = 0.5f * (diff - diff2);
-            mCenter             += delta;
+            m_center             += delta;
             // TODO: KB- Was a 'safe' function, is there an AZ equivalent?
             float length = delta.GetLengthSq();
             if (length >= FLT_EPSILON)
             {
-                mRadius += sqrtf(length);
+                m_radius += sqrtf(length);
             }
             else
             {
-                mRadius = 0.0f;
+                m_radius = 0.0f;
             }
-            mRadiusSq = mRadius * mRadius;
+            m_radiusSq = m_radius * m_radius;
         }
     }
 
@@ -45,13 +46,13 @@ namespace MCore
     {
         float distance = 0.0f;
 
-        for (uint32 t = 0; t < 3; ++t)
+        for (int32_t t = 0; t < 3; ++t)
         {
             const AZ::Vector3& minVec = b.GetMin();
-            if (mCenter.GetElement(t) < minVec.GetElement(t))
+            if (m_center.GetElement(t) < minVec.GetElement(t))
             {
-                distance += (mCenter.GetElement(t) - minVec.GetElement(t)) * (mCenter.GetElement(t) - minVec.GetElement(t));
-                if (distance > mRadiusSq)
+                distance += (m_center.GetElement(t) - minVec.GetElement(t)) * (m_center.GetElement(t) - minVec.GetElement(t));
+                if (distance > m_radiusSq)
                 {
                     return false;
                 }
@@ -59,10 +60,10 @@ namespace MCore
             else
             {
                 const AZ::Vector3& maxVec = b.GetMax();
-                if (mCenter.GetElement(t) > maxVec.GetElement(t))
+                if (m_center.GetElement(t) > maxVec.GetElement(t))
                 {
-                    distance += (mCenter.GetElement(t) - maxVec.GetElement(t)) * (mCenter.GetElement(t) - maxVec.GetElement(t));
-                    if (distance > mRadiusSq)
+                    distance += (m_center.GetElement(t) - maxVec.GetElement(t)) * (m_center.GetElement(t) - maxVec.GetElement(t));
+                    if (distance > m_radiusSq)
                     {
                         return false;
                     }
@@ -78,23 +79,23 @@ namespace MCore
     bool BoundingSphere::Contains(const AABB& b) const
     {
         float distance = 0.0f;
-        for (uint32 t = 0; t < 3; ++t)
+        for (int32_t t = 0; t < 3; ++t)
         {
             const AZ::Vector3& maxVec = b.GetMax();
-            if (mCenter.GetElement(t) < maxVec.GetElement(t))
+            if (m_center.GetElement(t) < maxVec.GetElement(t))
             {
-                distance += (mCenter.GetElement(t) - maxVec.GetElement(t)) * (mCenter.GetElement(t) - maxVec.GetElement(t));
+                distance += (m_center.GetElement(t) - maxVec.GetElement(t)) * (m_center.GetElement(t) - maxVec.GetElement(t));
             }
             else
             {
                 const AZ::Vector3& minVec = b.GetMin();
-                if (mCenter.GetElement(t) > minVec.GetElement(t))
+                if (m_center.GetElement(t) > minVec.GetElement(t))
                 {
-                    distance += (mCenter.GetElement(t) - minVec.GetElement(t)) * (mCenter.GetElement(t) - minVec.GetElement(t));
+                    distance += (m_center.GetElement(t) - minVec.GetElement(t)) * (m_center.GetElement(t) - minVec.GetElement(t));
                 }
             }
 
-            if (distance > mRadiusSq)
+            if (distance > m_radiusSq)
             {
                 return false;
             }

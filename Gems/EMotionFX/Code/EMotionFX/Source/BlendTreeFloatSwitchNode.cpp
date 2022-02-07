@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -80,7 +81,7 @@ namespace EMotionFX
         UpdateAllIncomingNodes(animGraphInstance, timePassedInSeconds);
 
         // if the decision port has no incomming connection, there is nothing we can do
-        if (mInputPorts[INPUTPORT_DECISION].mConnection == nullptr)
+        if (m_inputPorts[INPUTPORT_DECISION].m_connection == nullptr)
         {
             return;
         }
@@ -90,7 +91,7 @@ namespace EMotionFX
         const int32 decisionValue = MCore::Clamp<int32>(GetInputNumberAsInt32(animGraphInstance, INPUTPORT_DECISION), 0, 4); // max 5 cases
 
         // return the value for that port
-        if (mInputPorts[INPUTPORT_0 + decisionValue].mConnection)
+        if (m_inputPorts[INPUTPORT_0 + decisionValue].m_connection)
         {
             //OutputIncomingNode( animGraphInstance, GetInputNode(INPUTPORT_0 + decisionValue) );
             GetOutputFloat(animGraphInstance, OUTPUTPORT_RESULT)->SetValue(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_0 + decisionValue));

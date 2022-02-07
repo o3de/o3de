@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -248,6 +249,40 @@ namespace AzToolsFramework
             }
 
             return false;
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+        // RegExpFilter
+        //////////////////////////////////////////////////////////////////////////
+        RegExpFilter::RegExpFilter()
+            : m_filterPattern("")
+        {
+        }
+
+        void RegExpFilter::SetFilterPattern(const QString& filterPattern)
+        {
+            m_filterPattern = filterPattern;
+            Q_EMIT updatedSignal();
+        }
+
+        QString RegExpFilter::GetNameInternal() const
+        {
+            return m_filterPattern;
+        }
+
+        bool RegExpFilter::MatchInternal(const AssetBrowserEntry* entry) const
+        {
+            // no filter pattern matches any asset
+            if (m_filterPattern.isEmpty())
+            {
+                return true;
+            }
+
+            // entry's name matches regular expression pattern
+            QRegExp regExp(m_filterPattern);
+            regExp.setPatternSyntax(QRegExp::Wildcard);
+
+            return regExp.exactMatch(entry->GetDisplayName());
         }
 
         //////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,215 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HDRColorGradingTemplate",
+            "PassClass": "HDRColorGradingPass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_framebuffer",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "ColorGradingOutput",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "Input"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "Input"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ColorGradingOutput"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "Input",
+                    "Output": "Output"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/HDRColorGrading.shader"
+                },
+                "ShaderDataMappings": {
+                    "FloatMappings": [
+                        {
+                            "Name": "m_colorGradingExposure",
+                            "Value": 0.0 // unconstrained, log2 stops
+                        },
+                        {
+                            "Name": "m_colorGradingContrast",
+                            "Value": 0.0 // -100 ... 100
+                        },
+                        {
+                            "Name": "m_colorGradingHueShift",
+                            "Value": 0.0 // 0 ... 1, can wrap
+                        },
+                        {
+                            "Name": "m_colorGradingPreSaturation",
+                            "Value": 1.0 // 0 ... 2
+                        },
+                        {
+                            "Name": "m_colorFilterIntensity",
+                            "Value": 1.0 // unconstrained, log2 stops
+                        },
+                        {
+                            "Name": "m_colorFilterMultiply",
+                            "Value": 0.0 // modulate, 0 ... 1
+                        },
+                        {
+                            "Name": "m_whiteBalanceKelvin",
+                            "Value": 6600.0 // 1000.0f ... 40000.0f kelvin
+                        },
+                        {
+                            "Name": "m_whiteBalanceTint",
+                            "Value": 0.0 // -100 ... 100
+                        },
+                        {
+                            "Name": "m_splitToneBalance",
+                            "Value": 0.0 // -1 ... 1
+                        },
+                        {
+                            "Name": "m_splitToneWeight",
+                            "Value": 0.0 // 0 ... 1
+                        },
+                        {
+                            "Name": "m_colorGradingPostSaturation",
+                            "Value": 1.0 // 0 ... 2
+                        },
+                        {
+                            "Name": "m_smhShadowsStart",
+                            "Value": 0.0 // 0 ... 1
+                        },
+                        {
+                            "Name": "m_smhShadowsEnd",
+                            "Value": 0.3 // 0 ... 1
+                        },
+                        {
+                            "Name": "m_smhHighlightsStart",
+                            "Value": 0.55 // 0 ... 1
+                        },
+                        {
+                            "Name": "m_smhHighlightsEnd",
+                            "Value": 1.0 // 0 ... 1
+                        },
+                        {
+                            "Name": "m_smhWeight",
+                            "Value": 0.0 // 0 ... 1
+                        }
+                    ],
+                    // The colors defined here are expected to be in linear rgb color space.
+                    // These are converted to ACEScg color space within the HDRColorGrading.azsl shader
+                    "ColorMappings": [
+                        {
+                            "Name": "m_colorFilterSwatch",
+                            "Value": [
+                                1.0,
+                                0.5,
+                                0.5,
+                                1.0
+                            ]
+                        },
+                        {
+                            "Name": "m_splitToneShadowsColor",
+                            "Value": [
+                                1.0,
+                                0.1,
+                                0.1,
+                                1.0
+                            ]
+                        },
+                        {
+                            "Name": "m_splitToneHighlightsColor",
+                            "Value": [
+                                0.1,
+                                1.0,
+                                0.1,
+                                1.0
+                            ]
+                        },
+                        {
+                            "Name": "m_smhShadowsColor",
+                            "Value": [
+                                1.0,
+                                0.25,
+                                0.25,
+                                1.0
+                            ]
+                        },
+                        {
+                            "Name": "m_smhMidtonesColor",
+                            "Value": [
+                                0.1,
+                                0.1,
+                                1.0,
+                                1.0
+                            ]
+                        },
+                        {
+                            "Name": "m_smhHighlightsColor",
+                            "Value": [
+                                1.0,
+                                0.0,
+                                1.0,
+                                1.0
+                            ]
+                        }
+                    ],
+                    "Float3Mappings": [
+                        {
+                            "Name": "m_channelMixingRed",
+                            "Value": [
+                                1.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "Name": "m_channelMixingGreen",
+                            "Value": [
+                                0.0,
+                                1.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "Name": "m_channelMixingBlue",
+                            "Value": [
+                                0.0,
+                                0.0,
+                                1.0
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

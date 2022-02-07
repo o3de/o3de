@@ -1,8 +1,9 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -46,7 +47,7 @@ import PySide2.QtUiTools as QtUiTools
 
 # -------------------------------------------------------------------------
 #  global space debug flag
-_G_DEBUG = settings.DCCSI_GDEBUG
+_DCCSI_GDEBUG = settings.DCCSI_GDEBUG
 
 #  global space debug flag
 _DCCSI_DEV_MODE = settings.DCCSI_DEV_MODE

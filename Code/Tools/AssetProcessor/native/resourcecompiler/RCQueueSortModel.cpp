@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -196,10 +197,20 @@ namespace AssetProcessor
         {
             return priorityLeft > priorityRight;
         }
+
+        // Optionally stabilize queue order on the source name.
+        // This is used in automated tests, to allow tests to have a stable
+        // order that jobs with otherwise equal priority run, so tests process
+        // assets in the same order each time they are run.
+        if (m_sortQueueOnDBSourceName)
+        {
+            return leftJob->GetJobEntry().m_databaseSourceName < rightJob->GetJobEntry().m_databaseSourceName;
+        }
         
         // if we get all the way down here it means we're dealing with two assets which are not
         // in any compile groups, not a priority platform, not a priority type, priority platform, etc.
         // we can arrange these any way we want, but must pick at least a stable order.
+
         return leftJob->GetJobEntry().m_jobRunKey < rightJob->GetJobEntry().m_jobRunKey;
     }
 

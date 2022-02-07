@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -45,7 +46,7 @@ namespace ScriptCanvasEditor
         void Undo() override;
         void Redo() override;
 
-        virtual void Capture(ScriptCanvasMemoryAsset& memoryAsset, bool captureUndo);
+        virtual void Capture(Graph* graph, bool captureUndo);
 
         bool Changed() const override;
 
@@ -75,7 +76,7 @@ namespace ScriptCanvasEditor
 
         void Undo() override;
         void Redo() override;
-        void Capture(ScriptCanvasMemoryAsset& memoryAsset, bool captureUndo) override;
+        void Capture(Graph* graph, bool captureUndo) override;
 
         void RestoreItem(const AZStd::vector<AZ::u8>& restoreBuffer) override;
 
@@ -102,7 +103,7 @@ namespace ScriptCanvasEditor
         void Undo() override;
         void Redo() override;
 
-        void Capture(ScriptCanvasMemoryAsset& memoryAsset, bool captureUndo) override;
+        void Capture(Graph* graph, bool captureUndo) override;
 
     protected:
         GraphItemAddCommand(const GraphItemAddCommand&) = delete;
@@ -123,7 +124,7 @@ namespace ScriptCanvasEditor
         void Undo() override;
         void Redo() override;
 
-        void Capture(ScriptCanvasMemoryAsset& memoryAsset, bool captureUndo) override;
+        void Capture(Graph* graph, bool captureUndo) override;
 
     protected:
         GraphItemRemovalCommand(const GraphItemRemovalCommand&) = delete;

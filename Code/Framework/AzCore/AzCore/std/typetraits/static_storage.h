@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,11 +9,12 @@
 
 #include <AzCore/std/typetraits/aligned_storage.h>
 #include <AzCore/std/typetraits/alignment_of.h>
-#include <AzCore/std/utils.h>
+#include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/std/parallel/atomic.h>
 
 namespace AZStd
 {
+    using std::forward;
     // Extension: static_storage: Used to initialize statics in a thread-safe manner
     // These are similar to default_delete/no_delete, except they just invoke the destructor (or not)
     template <class T>

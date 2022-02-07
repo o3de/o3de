@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,25 +27,25 @@ namespace CommandSystem
         };
         Action GetAction(const MCore::CommandLine& parameters);
 
-        AZStd::string                   mOldName;                   //! group parameter name before command execution.
-        AZStd::vector<AZStd::string>    mOldGroupParameterNames;
-        bool                            mOldDirtyFlag;
+        AZStd::string                   m_oldName;                   //! group parameter name before command execution.
+        AZStd::vector<AZStd::string>    m_oldGroupParameterNames;
+        bool                            m_oldDirtyFlag;
         AZStd::string                   m_oldDescription;
     MCORE_DEFINECOMMAND_END
 
     // Add a group parameter.
     MCORE_DEFINECOMMAND_START(CommandAnimGraphAddGroupParameter, "Add anim graph group parameter", true)
-        bool                mOldDirtyFlag;
-        AZStd::string       mOldName;
+        bool                m_oldDirtyFlag;
+        AZStd::string       m_oldName;
     MCORE_DEFINECOMMAND_END
 
     // Remove a group parameter.
     MCORE_DEFINECOMMAND_START(CommandAnimGraphRemoveGroupParameter, "Remove anim graph group parameter", true)
-        AZStd::string       mOldName;
-        AZStd::string       mOldParameterNames;
-        AZStd::string       mOldParent;
-        size_t              mOldIndex;
-        bool                mOldDirtyFlag;
+        AZStd::string       m_oldName;
+        AZStd::string       m_oldParameterNames;
+        AZStd::string       m_oldParent;
+        size_t              m_oldIndex;
+        bool                m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     // helper functions

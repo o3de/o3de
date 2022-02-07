@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,11 +39,12 @@ namespace TrackView
             CaptureFinishedCallback captureFinishedCallback);
 
         //! Update the internal view that is associated with the created pipeline.
-        void UpdateView(const AZ::Matrix3x4& cameraTransform, const AZ::Matrix4x4& cameraProjection);
+        void UpdateView(const AZ::Matrix3x4& cameraTransform, const AZ::Matrix4x4& cameraProjection, const AZ::RPI::ViewPtr targetView = nullptr);
 
     private:
         AZ::RPI::RenderPipelinePtr m_renderPipeline; //!< The internal render pipeline.
         AZ::RPI::ViewPtr m_view; //!< The view associated with the render pipeline.
+        AZ::RPI::ViewPtr m_targetView; //!< The view that this render pipeline will mimic.
         AZStd::vector<AZStd::string> m_passHierarchy; //!< Pass hierarchy (includes pipelineName and CopyToSwapChain).
         CaptureFinishedCallback m_captureFinishedCallback; //!< Stored callback called from OnCaptureFinished.
 

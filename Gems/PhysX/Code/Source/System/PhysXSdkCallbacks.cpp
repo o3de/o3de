@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,11 +45,11 @@ namespace PhysX
     {
         if (!detached)
         {
-            AZ_PROFILE_EVENT_BEGIN(AZ::Debug::ProfileCategory::Physics, eventName);
+            AZ_PROFILE_BEGIN(Physics, eventName);
         }
         else
         {
-            AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::Physics, AZ::Crc32(eventName), eventName);
+            AZ_PROFILE_INTERVAL_START(Physics, AZ::Crc32(eventName), eventName);
         }
         return nullptr;
     }
@@ -58,11 +59,11 @@ namespace PhysX
     {
         if (!detached)
         {
-            AZ_PROFILE_EVENT_END(AZ::Debug::ProfileCategory::Physics);
+            AZ_PROFILE_END(Physics);
         }
         else
         {
-            AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::Physics, AZ::Crc32(eventName));
+            AZ_PROFILE_INTERVAL_END(Physics, AZ::Crc32(eventName));
         }
     }
 }

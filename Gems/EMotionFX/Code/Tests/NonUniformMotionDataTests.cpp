@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -184,15 +185,15 @@ namespace EMotionFX
         EXPECT_FALSE(motionData.FindJointIndexByName("Blah").IsSuccess());
         EXPECT_FALSE(motionData.FindMorphIndexByName("Blah").IsSuccess());
         EXPECT_FALSE(motionData.FindFloatIndexByName("Blah").IsSuccess());
-        EXPECT_TRUE(motionData.FindJointIndexByName("Joint1").IsSuccess());
-        EXPECT_TRUE(motionData.FindJointIndexByName("Joint2").IsSuccess());
-        EXPECT_TRUE(motionData.FindJointIndexByName("Joint3").IsSuccess());
-        EXPECT_TRUE(motionData.FindMorphIndexByName("Morph1").IsSuccess());
-        EXPECT_TRUE(motionData.FindMorphIndexByName("Morph2").IsSuccess());
-        EXPECT_TRUE(motionData.FindMorphIndexByName("Morph3").IsSuccess());
-        EXPECT_TRUE(motionData.FindFloatIndexByName("Float1").IsSuccess());
-        EXPECT_TRUE(motionData.FindFloatIndexByName("Float2").IsSuccess());
-        EXPECT_TRUE(motionData.FindFloatIndexByName("Float3").IsSuccess());
+        ASSERT_TRUE(motionData.FindJointIndexByName("Joint1").IsSuccess());
+        ASSERT_TRUE(motionData.FindJointIndexByName("Joint2").IsSuccess());
+        ASSERT_TRUE(motionData.FindJointIndexByName("Joint3").IsSuccess());
+        ASSERT_TRUE(motionData.FindMorphIndexByName("Morph1").IsSuccess());
+        ASSERT_TRUE(motionData.FindMorphIndexByName("Morph2").IsSuccess());
+        ASSERT_TRUE(motionData.FindMorphIndexByName("Morph3").IsSuccess());
+        ASSERT_TRUE(motionData.FindFloatIndexByName("Float1").IsSuccess());
+        ASSERT_TRUE(motionData.FindFloatIndexByName("Float2").IsSuccess());
+        ASSERT_TRUE(motionData.FindFloatIndexByName("Float3").IsSuccess());
         EXPECT_EQ(motionData.FindJointIndexByName("Joint1").GetValue(), 0);
         EXPECT_EQ(motionData.FindJointIndexByName("Joint2").GetValue(), 1);
         EXPECT_EQ(motionData.FindJointIndexByName("Joint3").GetValue(), 2);
@@ -662,7 +663,7 @@ namespace EMotionFX
 
         // Test morph sampling.
         AZ::Outcome<size_t> index = motionData.FindMorphIndexByName("Morph1");
-        EXPECT_TRUE(index.IsSuccess());
+        ASSERT_TRUE(index.IsSuccess());
         if (index.IsSuccess())
         {
             float result = -1.0f;
@@ -692,7 +693,7 @@ namespace EMotionFX
 
         // Test float sampling.
         index = motionData.FindFloatIndexByName("Float1");
-        EXPECT_TRUE(index.IsSuccess());
+        ASSERT_TRUE(index.IsSuccess());
         if (index.IsSuccess())
         {
             float result = -1.0f;
@@ -744,15 +745,15 @@ namespace EMotionFX
         EXPECT_FALSE(motionData.IsJointAnimated(3));
         EXPECT_STREQ(motionData.GetJointName(3).c_str(), "Joint4");
 
-        EXPECT_THAT(motionData.GetJointPoseTransform(3).mPosition, IsClose(poseTransform.mPosition));
-        EXPECT_THAT(motionData.GetJointPoseTransform(3).mRotation, IsClose(poseTransform.mRotation));
+        EXPECT_THAT(motionData.GetJointPoseTransform(3).m_position, IsClose(poseTransform.m_position));
+        EXPECT_THAT(motionData.GetJointPoseTransform(3).m_rotation, IsClose(poseTransform.m_rotation));
 #ifndef EMFX_SCALE_DISABLED
-        EXPECT_THAT(motionData.GetJointPoseTransform(3).mScale, IsClose(poseTransform.mScale));
+        EXPECT_THAT(motionData.GetJointPoseTransform(3).m_scale, IsClose(poseTransform.m_scale));
 #endif
-        EXPECT_THAT(motionData.GetJointBindPoseTransform(3).mPosition, IsClose(bindTransform.mPosition));
-        EXPECT_THAT(motionData.GetJointBindPoseTransform(3).mRotation, IsClose(bindTransform.mRotation));
+        EXPECT_THAT(motionData.GetJointBindPoseTransform(3).m_position, IsClose(bindTransform.m_position));
+        EXPECT_THAT(motionData.GetJointBindPoseTransform(3).m_rotation, IsClose(bindTransform.m_rotation));
 #ifndef EMFX_SCALE_DISABLED
-        EXPECT_THAT(motionData.GetJointBindPoseTransform(3).mScale, IsClose(bindTransform.mScale));
+        EXPECT_THAT(motionData.GetJointBindPoseTransform(3).m_scale, IsClose(bindTransform.m_scale));
 #endif
 
         // Test adding a morph.
@@ -887,19 +888,19 @@ namespace EMotionFX
             sampleSettings.m_actorInstance = m_actorInstance;
             sampleSettings.m_sampleTime = expectation.first;
             const Transform sampledResult = motionData.SampleJointTransform(sampleSettings, 0);
-            EXPECT_THAT(sampledResult.mPosition, IsClose(expectation.second.mPosition));
-            EXPECT_THAT(sampledResult.mRotation, IsClose(expectation.second.mRotation));
+            EXPECT_THAT(sampledResult.m_position, IsClose(expectation.second.m_position));
+            EXPECT_THAT(sampledResult.m_rotation, IsClose(expectation.second.m_rotation));
 #ifndef EMFX_SCALE_DISABLED
-            EXPECT_THAT(sampledResult.mScale, IsClose(expectation.second.mScale));
+            EXPECT_THAT(sampledResult.m_scale, IsClose(expectation.second.m_scale));
 #endif
 
             // Fourth joint has no motion data to apply to our actor, so expect a bind pose.
             // It has motion data, but there is no joint in the skeleton that matches its name, so it is like motion data for a joint that doesn't exist in our actor.
             const Transform fourthJointTransform = motionData.SampleJointTransform(sampleSettings, 3);
-            EXPECT_THAT(fourthJointTransform.mPosition, IsClose(expectedBindTransform.mPosition));
-            EXPECT_THAT(fourthJointTransform.mRotation, IsClose(expectedBindTransform.mRotation));
+            EXPECT_THAT(fourthJointTransform.m_position, IsClose(expectedBindTransform.m_position));
+            EXPECT_THAT(fourthJointTransform.m_rotation, IsClose(expectedBindTransform.m_rotation));
 #ifndef EMFX_SCALE_DISABLED
-            EXPECT_THAT(fourthJointTransform.mScale, IsClose(expectedBindTransform.mScale));
+            EXPECT_THAT(fourthJointTransform.m_scale, IsClose(expectedBindTransform.m_scale));
 #endif
         }
 
@@ -916,19 +917,19 @@ namespace EMotionFX
 
             // We only verify the first joint, to see if it interpolated fine.
             const Transform sampledResult = pose.GetLocalSpaceTransform(0);
-            EXPECT_THAT(sampledResult.mPosition, IsClose(expectation.second.mPosition));
-            EXPECT_THAT(sampledResult.mRotation, IsClose(expectation.second.mRotation));
+            EXPECT_THAT(sampledResult.m_position, IsClose(expectation.second.m_position));
+            EXPECT_THAT(sampledResult.m_rotation, IsClose(expectation.second.m_rotation));
 #ifndef EMFX_SCALE_DISABLED
-            EXPECT_THAT(sampledResult.mScale, IsClose(expectation.second.mScale));
+            EXPECT_THAT(sampledResult.m_scale, IsClose(expectation.second.m_scale));
 #endif
 
             // Fourth joint has no motion data to apply to our actor, so expect a bind pose.
             // It has motion data, but there is no joint in the skeleton that matches its name, so it is like motion data for a joint that doesn't exist in our actor.
             const Transform fourthJointTransform = pose.GetLocalSpaceTransform(3);
-            EXPECT_THAT(fourthJointTransform.mPosition, IsClose(expectedBindTransform.mPosition));
-            EXPECT_THAT(fourthJointTransform.mRotation, IsClose(expectedBindTransform.mRotation));
+            EXPECT_THAT(fourthJointTransform.m_position, IsClose(expectedBindTransform.m_position));
+            EXPECT_THAT(fourthJointTransform.m_rotation, IsClose(expectedBindTransform.m_rotation));
 #ifndef EMFX_SCALE_DISABLED
-            EXPECT_THAT(fourthJointTransform.mScale, IsClose(expectedBindTransform.mScale));
+            EXPECT_THAT(fourthJointTransform.m_scale, IsClose(expectedBindTransform.m_scale));
 #endif
         }
     }

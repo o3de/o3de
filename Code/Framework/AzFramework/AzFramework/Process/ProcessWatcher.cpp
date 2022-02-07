@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,7 +22,7 @@ namespace AzFramework
         AZStd::scoped_ptr<ProcessWatcher> pWatcher(LaunchProcess(processLaunchInfo, communicationType));
         if (!pWatcher)
         {
-            AZ_TracePrintf("Process Watcher", "ProcessWatcher::LaunchProcessAndRetrieveOutput: Unable to launch process '%s %s'", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.m_commandlineParameters.c_str());
+            AZ_TracePrintf("Process Watcher", "ProcessWatcher::LaunchProcessAndRetrieveOutput: Unable to launch process '%s %s'\n", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.m_commandlineParameters.c_str());
             return false;
         }
         else
@@ -30,7 +31,7 @@ namespace AzFramework
             ProcessCommunicator* pCommunicator = pWatcher->GetCommunicator();
             if (!pCommunicator || !pCommunicator->IsValid())
             {
-                AZ_TracePrintf("Process Watcher", "ProcessWatcher::LaunchProcessAndRetrieveOutput: No communicator for watcher's process (%s %s)!", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.m_commandlineParameters.c_str());
+                AZ_TracePrintf("Process Watcher", "ProcessWatcher::LaunchProcessAndRetrieveOutput: No communicator for watcher's process (%s %s)!\n", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.m_commandlineParameters.c_str());
                 return false;
             }
             else

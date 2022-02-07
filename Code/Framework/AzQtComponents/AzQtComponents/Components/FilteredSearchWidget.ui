@@ -1,124 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FilteredSearchWidget</class>
- <widget class="QFrame" name="FilteredSearchWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>295</width>
-    <height>53</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
-   <item>
-    <widget class="QFrame" name="textSearchContainer" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QLineEdit" name="textSearch">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>1</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+    <class>FilteredSearchWidget</class>
+    <widget class="QFrame" name="FilteredSearchWidget">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>295</width>
+                <height>53</height>
+            </rect>
         </property>
-        <property name="inputMask">
-         <string/>
+        <property name="windowTitle">
+            <string>Form</string>
         </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="frame">
-         <bool>false</bool>
-        </property>
-        <property name="placeholderText">
-         <string>Search...</string>
-        </property>
-        <property name="clearButtonEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="acceptDrops">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="assetTypeSelector">
-        <property name="popupMode">
-         <enum>QToolButton::InstantPopup</enum>
-        </property>
-        <property name="autoRaise">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::MinimumExpanding</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>1</width>
-          <height>1</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+                <widget class="QFrame" name="textSearchContainer" native="true">
+                    <layout class="QHBoxLayout" name="horizontalLayout_2">
+                        <property name="spacing">
+                            <number>0</number>
+                        </property>
+                        <item>
+                            <widget class="QLineEdit" name="textSearch">
+                                <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                                        <horstretch>1</horstretch>
+                                        <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                </property>
+                                <property name="inputMask">
+                                    <string/>
+                                </property>
+                                <property name="text">
+                                    <string/>
+                                </property>
+                                <property name="frame">
+                                    <bool>false</bool>
+                                </property>
+                                <property name="placeholderText">
+                                    <string>Search...</string>
+                                </property>
+                                <property name="clearButtonEnabled">
+                                    <bool>true</bool>
+                                </property>
+                                <property name="acceptDrops">
+                                    <bool>false</bool>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QToolButton" name="assetTypeSelector">
+                                <property name="popupMode">
+                                    <enum>QToolButton::InstantPopup</enum>
+                                </property>
+                                <property name="autoRaise">
+                                    <bool>true</bool>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <spacer name="horizontalSpacer">
+                                <property name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                </property>
+                                <property name="sizeType">
+                                    <enum>QSizePolicy::MinimumExpanding</enum>
+                                </property>
+                                <property name="sizeHint" stdset="0">
+                                    <size>
+                                        <width>1</width>
+                                        <height>1</height>
+                                    </size>
+                                </property>
+                            </spacer>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+            <item>
+                <widget class="QFrame" name="filteredParent" native="true">
+                    <layout class="QHBoxLayout" name="horizontalLayout">
+                        <item>
+                            <widget class="QLabel" name="label">
+                                <property name="font">
+                                    <font>
+                                        <pointsize>10</pointsize>
+                                        <weight>75</weight>
+                                        <bold>true</bold>
+                                    </font>
+                                </property>
+                                <property name="text">
+                                    <string>&lt;b&gt;Filtered by:&lt;/b&gt;</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QFrame" name="filteredLayout" native="true">
+                                <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                                        <horstretch>0</horstretch>
+                                        <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+        </layout>
     </widget>
-   </item>
-   <item>
-    <widget class="QFrame" name="filteredParent" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>&lt;b&gt;Filtered by:&lt;/b&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QFrame" name="filteredLayout" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-  </layout>
- </widget>
- <customwidgets>
-  <customwidget>
-   <class>AzQtComponents::ExtendedLabel</class>
-   <extends>QLabel</extends>
-   <header>AzQtComponents/Components/ExtendedLabel.h</header>
-  </customwidget>
- </customwidgets>
- <resources>
-  <include location="resources.qrc"/>
- </resources>
- <connections/>
- <layoutdefault spacing="0" margin="0"/>
+    <customwidgets>
+        <customwidget>
+            <class>AzQtComponents::ExtendedLabel</class>
+            <extends>QLabel</extends>
+            <header>AzQtComponents/Components/ExtendedLabel.h</header>
+        </customwidget>
+    </customwidgets>
+    <resources>
+        <include location="resources.qrc"/>
+    </resources>
+    <connections/>
+    <layoutdefault spacing="0" margin="0"/>
 </ui>

@@ -1,11 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
+
+#include <AzCore/PlatformIncl.h>
 
 #if !defined(AZ_DX12_REFCOUNTED)
     #error "Incorrect include of DX12_Windows.h, please include DX12.h instead of this header"
@@ -13,12 +16,16 @@
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
+
+AZ_PUSH_DISABLE_WARNING(4265, "-Wunknown-warning-option") // class has virtual functions, but its non-trivial destructor is not virtual; 
 #include <wrl.h>
+AZ_POP_DISABLE_WARNING
 
 #include <d3dx12.h>
+#include <d3dcommon.h>
 
-// This define is enabled if winpixeventruntime SDK is downloaded and it's path is hooked up to Environment var ATOM_PIX_PATH.
-// Enabling this define will allow the runtime code to add PIX markers which will hel pwith pix and renderdoc gpu captures
+// This define is enabled if LY_PIX_ENABLED is enabled during configure. You can use LY_PIX_PATH to point where pix is downloaded.
+// Enabling this define will allow the runtime code to add PIX markers which will help with pix and renderdoc gpu captures
 #ifdef USE_PIX
     #include <WinPixEventRuntime/pix3.h>
 #else

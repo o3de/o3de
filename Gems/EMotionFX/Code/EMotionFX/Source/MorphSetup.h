@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,20 +34,20 @@ namespace EMotionFX
          * This does not influence the return value of GetNumMorphTargets().
          * @param numMorphTargets The number of morph targets to pre-allocate space for.
          */
-        void ReserveMorphTargets(uint32 numMorphTargets);
+        void ReserveMorphTargets(size_t numMorphTargets);
 
         /**
          * Get the number of morph targets inside this  morph setup.
          * @result The number of morph targets.
          */
-        MCORE_INLINE uint32 GetNumMorphTargets() const                      { return mMorphTargets.GetLength(); }
+        MCORE_INLINE size_t GetNumMorphTargets() const                      { return m_morphTargets.size(); }
 
         /**
          * Get a given morph target.
          * @param nr The morph target number, must be in range of [0..GetNumMorphTargets()-1].
          * @result A pointer to the morph target.
          */
-        MCORE_INLINE MorphTarget* GetMorphTarget(uint32 nr) const           { return mMorphTargets[nr]; }
+        MCORE_INLINE MorphTarget* GetMorphTarget(size_t nr) const           { return m_morphTargets[nr]; }
 
         /**
          * Add a morph target to this  morph setup.
@@ -60,7 +61,7 @@ namespace EMotionFX
          * @param delFromMem When set to true, the morph target will be deleted from memory as well. When false, it will
          *                   only be removed from the array of morph targets inside this class.
          */
-        void RemoveMorphTarget(uint32 nr, bool delFromMem = true);
+        void RemoveMorphTarget(size_t nr, bool delFromMem = true);
 
         /**
          * Remove a given morph target.
@@ -88,24 +89,24 @@ namespace EMotionFX
          * Find a morph target index by its unique ID, which has been calculated based on its name.
          * All morph targets with the same ID will also have the same name.
          * @param id The ID to search for.
-         * @result The morph target number, or MCORE_INVALIDINDEX32 when not found. You can use the returned number with the method
+         * @result The morph target number, or InvalidIndex when not found. You can use the returned number with the method
          *         GetMorphTarget(nr) in order to convert it into a direct pointer to the morph target.
          */
-        uint32 FindMorphTargetNumberByID(uint32 id) const;
+        size_t FindMorphTargetNumberByID(uint32 id) const;
 
         /**
          * Find a morph target index by its name.
          * Please remember that this is case sensitive.
          * @result The index of the morph target that you can pass to GetMorphTarget(index).
          */
-        uint32 FindMorphTargetIndexByName(const char* name) const;
+        size_t FindMorphTargetIndexByName(const char* name) const;
 
         /**
          * Find a morph target index by its name.
          * Please remember that this is case insensitive.
          * @result The index of the morph target that you can pass to GetMorphTarget(index).
          */
-        uint32 FindMorphTargetIndexByNameNoCase(const char* name) const;
+        size_t FindMorphTargetIndexByNameNoCase(const char* name) const;
 
         /**
          * Find a morph target by its name.
@@ -136,12 +137,12 @@ namespace EMotionFX
 
 
     protected:
-        MCore::Array<MorphTarget*>  mMorphTargets;  /**< The collection of morph targets. */
+        AZStd::vector<MorphTarget*>  m_morphTargets;  /**< The collection of morph targets. */
 
         /**
          * The constructor.
          */
-        MorphSetup();
+        MorphSetup() = default;
 
         /**
          * The destructor. Automatically removes all morph targets from memory.

@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "precompiled.h"
 
 #include <AzTest/AzTest.h>
 
@@ -406,26 +405,6 @@ namespace ScriptEventsTests
         systemTickBus->BusDisconnect();
 
         EXPECT_TRUE(behaviorEbus->m_destroyHandler->Invoke(handler));
-
-        auto onReady = [&assetData, &scriptEventName]() {
-            const char* renamedMethod = "__METHOD__1__";
-
-            ScriptEvents::ScriptEventsAsset* loadedScriptAsset = assetData.GetAs<ScriptEvents::ScriptEventsAsset>();
-            EXPECT_TRUE(loadedScriptAsset);
-
-            const ScriptEvents::ScriptEvent& loadedDefinition = loadedScriptAsset->m_definition;
-
-            EXPECT_EQ(loadedDefinition.GetVersion(), 0);
-            EXPECT_STREQ(loadedDefinition.GetName().data(), scriptEventName.c_str());
-
-
-            ScriptEvents::Method method;
-            bool foundMethod = loadedDefinition.FindMethod(renamedMethod, method);
-            EXPECT_TRUE(foundMethod);
-            EXPECT_EQ(method.GetNameProperty().GetVersion(), 1);
-
-            assetData = {};
-        };
 
         AssetEventHandler assetHandler2(assetId, []() {}, []() {});
         assetHandler2.BusConnect(assetId);

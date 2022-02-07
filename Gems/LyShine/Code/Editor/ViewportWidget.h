@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,9 +9,11 @@
 
 #if !defined(Q_MOC_RUN)
 #include "EditorCommon.h"
+#include "LyShinePassDataBus.h"
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 #include <IFont.h>
 
@@ -26,6 +29,8 @@ class ViewportWidget
     : public AtomToolsFramework::RenderViewportWidget
     , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     , private FontNotificationBus::Handler
+    , private LyShinePassDataRequestBus::Handler
+    , public AZ::RPI::ViewportContextNotificationBus::Handler
 {
     Q_OBJECT
 
@@ -117,12 +122,15 @@ protected:
     void wheelEvent(QWheelEvent* ev) override;
 
     //! Prevents shortcuts from interfering with preview mode.
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
+    //! Handle events from Qt.
     bool event(QEvent* ev) override;
 
-    //! Key press event from Qt
+    //! Key press event from Qt.
     void keyPressEvent(QKeyEvent* event) override;
 
-    //! Key release event from Qt
+    //! Key release event from Qt.
     void keyReleaseEvent(QKeyEvent* event) override;
 
     void focusOutEvent(QFocusEvent* ev) override;
@@ -137,15 +145,29 @@ private: // member functions
     void OnFontTextureUpdated(IFFont* font) override;
     // ~FontNotifications
 
+    // LyShinePassDataRequestBus
+    LyShine::AttachmentImagesAndDependencies GetRenderTargets() override;
+    // ~LyShinePassDataRequestBus
+
     // AZ::TickBus::Handler
     void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+    int GetTickOrder() override;
     // ~AZ::TickBus::Handler
 
+    // AZ::RPI::ViewportContextNotificationBus::Handler overrides...
+    void OnRenderTick() override;
+
+    //! Update UI canvases when in edit mode
+    void UpdateEditMode(float deltaTime);
+
     //! Render the viewport when in edit mode
-    void RenderEditMode(float deltaTime);
+    void RenderEditMode();
+
+    //! Update UI canvases when in preview mode
+    void UpdatePreviewMode(float deltaTime);
 
     //! Render the viewport when in preview mode
-    void RenderPreviewMode(float deltaTime);
+    void RenderPreviewMode();
 
     //! Fill the entire viewport area with a background color
     void RenderViewportBackground();

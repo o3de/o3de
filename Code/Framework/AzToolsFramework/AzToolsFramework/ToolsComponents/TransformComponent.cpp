@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "AzToolsFramework_precompiled.h"
 #include "TransformComponent.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -17,6 +17,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -28,6 +29,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponentSerializer.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -858,18 +860,20 @@ namespace AzToolsFramework
                     return;
                 }
 
-                bool isDuringUndoRedo = false;
-                EBUS_EVENT_RESULT(isDuringUndoRedo, AzToolsFramework::ToolsApplicationRequests::Bus, IsDuringUndoRedo);
-                if (!isDuringUndoRedo)
+                bool suppressTransformChangedEvent = m_suppressTransformChangedEvent;
+                // temporarily disable calling OnTransformChanged, because CheckApplyCachedWorldTransform is not guaranteed
+                // to call it when m_cachedWorldTransform is identity. We send it manually later.
+                m_suppressTransformChangedEvent = false;
+                // When parent comes online, compute local TM from world TM.
+                CheckApplyCachedWorldTransform(parentTransform->GetWorldTM());
+                if (!m_initialized)
                 {
-                    // When parent comes online, compute local TM from world TM.
-                    CheckApplyCachedWorldTransform(parentTransform->GetWorldTM());
-                }
-                else
-                {
-                    // During undo operations, just apply our local TM.
+                    m_initialized = true;
+                    // If this is the first time this entity is being activated, manually compute OnTransformChanged
+                    // this can occur when either the entity first created or undo/redo command is performed
                     OnTransformChanged(AZ::Transform::Identity(), parentTransform->GetWorldTM());
                 }
+                m_suppressTransformChangedEvent = suppressTransformChangedEvent;
 
                 auto& parentChildIds = GetParentTransformComponent()->m_childrenEntityIds;
                 if (parentChildIds.end() == AZStd::find(parentChildIds.begin(), parentChildIds.end(), GetEntityId()))
@@ -1180,7 +1184,7 @@ namespace AzToolsFramework
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                             Attribute(AZ::Edit::Attributes::FixedComponentListIndex, 0)->
                             Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Transform.svg")->
-                            Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Transform.png")->
+                            Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Transform.svg")->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_parentEntityId, "Parent entity", "")->
                             Attribute(AZ::Edit::Attributes::ChangeValidate, &TransformComponent::ValidatePotentialParent)->
@@ -1230,6 +1234,12 @@ namespace AzToolsFramework
             {
                 // string-name differs from class-name to avoid collisions with the other "TransformComponent" (AzFramework::TransformComponent).
                 behaviorContext->Class<TransformComponent>("EditorTransformBus")->RequestBus("TransformBus");
+            }
+
+            AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
+            if (jsonRegistration)
+            {
+                jsonRegistration->Serializer<JsonTransformComponentSerializer>()->HandlesType<TransformComponent>();
             }
         }
 

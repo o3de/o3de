@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,8 +14,8 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
@@ -324,7 +325,7 @@ namespace AZ
                 ASSERT_TRUE(writeToJsonResult.IsSuccess());
 
                 AZStd::string jsonText;
-                auto writeToStringResult = AzFramework::FileFunc::WriteJsonToString(writeToJsonResult.GetValue(), jsonText);
+                auto writeToStringResult = AZ::JsonSerializationUtils::WriteJsonString(writeToJsonResult.GetValue(), jsonText);
                 ASSERT_TRUE(writeToStringResult.IsSuccess());
 
                 MockSceneManifest loaded;
@@ -339,7 +340,7 @@ namespace AZ
                 ASSERT_TRUE(writeToJsonResult.IsSuccess());
 
                 AZStd::string jsonText;
-                auto writeToStringResult = AzFramework::FileFunc::WriteJsonToString(writeToJsonResult.GetValue(), jsonText);
+                auto writeToStringResult = AZ::JsonSerializationUtils::WriteJsonString(writeToJsonResult.GetValue(), jsonText);
                 ASSERT_TRUE(writeToStringResult.IsSuccess());
 
                 MockSceneManifest loaded;
@@ -370,7 +371,7 @@ namespace AZ
                 ASSERT_TRUE(writeToJsonResult.IsSuccess());
 
                 AZStd::string jsonText;
-                auto writeToStringResult = AzFramework::FileFunc::WriteJsonToString(writeToJsonResult.GetValue(), jsonText);
+                auto writeToStringResult = AZ::JsonSerializationUtils::WriteJsonString(writeToJsonResult.GetValue(), jsonText);
                 ASSERT_TRUE(writeToStringResult.IsSuccess());
 
                 // Deserialize JSON

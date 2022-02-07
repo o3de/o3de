@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,4 +13,3 @@
 #define AZ_TRAIT_IMAGEPROCESSING_PVRTEXLIB_USE_WINDLL_IMPORT 1
 #define AZ_TRAIT_IMAGEPROCESSING_SQUISH_DO_NOT_USE_FASTCALL 0
 #define AZ_TRAIT_IMAGEPROCESSING_USE_BASE10_BYTE_PREFIX 0
-#define AZ_TRAIT_IMAGEPROCESSING_USE_ISPC_TEXTURE_COMPRESSOR 1

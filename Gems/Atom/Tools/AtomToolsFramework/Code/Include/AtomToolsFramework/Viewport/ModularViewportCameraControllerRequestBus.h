@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -22,17 +23,31 @@ namespace AtomToolsFramework
     class ModularViewportCameraControllerRequests : public AZ::EBusTraits
     {
     public:
+        static inline constexpr float InterpolateToTransformDuration = 1.0f;
+
         using BusIdType = AzFramework::ViewportId;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         //! Begin a smooth transition of the camera to the requested transform.
         //! @param worldFromLocal The transform of where the camera should end up.
-        //! @param lookAtDistance The distance between the camera transform and the imagined look at point.
-        virtual void InterpolateToTransform(const AZ::Transform& worldFromLocal, float lookAtDistance) = 0;
+        //! @return Returns true if the call began an interpolation and false otherwise. Calls to InterpolateToTransform
+        //! will have no effect if an interpolation is currently in progress.
+        virtual bool InterpolateToTransform(const AZ::Transform& worldFromLocal) = 0;
 
-        //! Look at point after an interpolation has finished and no translation has occurred.
-        virtual AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const = 0;
+        //! Returns if the camera is currently interpolating to a new transform.
+        virtual bool IsInterpolating() const = 0;
+
+        //! Start tracking a transform.
+        //! Store the current camera transform and move to the next camera transform.
+        virtual void StartTrackingTransform(const AZ::Transform& worldFromLocal) = 0;
+
+        //! Stop tracking the set transform.
+        //! The previously stored camera transform is restored.
+        virtual void StopTrackingTransform() = 0;
+
+        //! Return if the tracking transform is set.
+        virtual bool IsTrackingTransform() const = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;

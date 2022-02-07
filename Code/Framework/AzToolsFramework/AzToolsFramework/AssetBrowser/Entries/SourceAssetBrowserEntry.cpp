@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,9 +27,7 @@ namespace AzToolsFramework
             if (EntryCache* cache = EntryCache::GetInstance())
             {
                 cache->m_fileIdMap.erase(m_fileId);
-                AZStd::string fullPath = m_fullPath;
-                AzFramework::StringFunc::Path::Normalize(fullPath);
-                cache->m_absolutePathToFileId.erase(fullPath);
+                cache->m_absolutePathToFileId.erase(m_fullPath.LexicallyNormal().Native());
 
                 if (m_sourceId != -1)
                 {

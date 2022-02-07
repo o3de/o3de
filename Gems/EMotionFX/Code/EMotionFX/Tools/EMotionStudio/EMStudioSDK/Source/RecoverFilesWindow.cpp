@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,7 +25,7 @@ namespace EMStudio
     RecoverFilesWindow::RecoverFilesWindow(QWidget* parent, const AZStd::vector<AZStd::string>& files)
         : QDialog(parent)
     {
-        mFiles = files;
+        m_files = files;
 
         // Update title of the dialog.
         setWindowTitle("Recover Files");
@@ -38,43 +39,43 @@ namespace EMStudio
         layout->addWidget(new QLabel("Some files have been corrupted but can be restored. The following files can be recovered:"));
 
         // Create the table widget.
-        mTableWidget = new QTableWidget();
-        mTableWidget->setAlternatingRowColors(true);
-        mTableWidget->setSelectionMode(QAbstractItemView::NoSelection);
-        mTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        mTableWidget->setMinimumHeight(250);
-        mTableWidget->setMinimumWidth(600);
-        mTableWidget->horizontalHeader()->setStretchLastSection(true);
-        mTableWidget->setCornerButtonEnabled(false);
-        mTableWidget->setSortingEnabled(false);
+        m_tableWidget = new QTableWidget();
+        m_tableWidget->setAlternatingRowColors(true);
+        m_tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
+        m_tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        m_tableWidget->setMinimumHeight(250);
+        m_tableWidget->setMinimumWidth(600);
+        m_tableWidget->horizontalHeader()->setStretchLastSection(true);
+        m_tableWidget->setCornerButtonEnabled(false);
+        m_tableWidget->setSortingEnabled(false);
 
-        mTableWidget->setColumnCount(3);
+        m_tableWidget->setColumnCount(3);
 
         // Set the header items.
         QTableWidgetItem* headerItem = new QTableWidgetItem("");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mTableWidget->setHorizontalHeaderItem(0, headerItem);
+        m_tableWidget->setHorizontalHeaderItem(0, headerItem);
         headerItem = new QTableWidgetItem("Filename");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mTableWidget->setHorizontalHeaderItem(1, headerItem);
+        m_tableWidget->setHorizontalHeaderItem(1, headerItem);
         headerItem = new QTableWidgetItem("Type");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mTableWidget->setHorizontalHeaderItem(2, headerItem);
+        m_tableWidget->setHorizontalHeaderItem(2, headerItem);
 
         // Set the horizontal header params.
-        QHeaderView* horizontalHeader = mTableWidget->horizontalHeader();
+        QHeaderView* horizontalHeader = m_tableWidget->horizontalHeader();
         horizontalHeader->setSectionResizeMode(0, QHeaderView::Fixed);
         horizontalHeader->setStretchLastSection(true);
 
-        mTableWidget->verticalHeader()->hide();
+        m_tableWidget->verticalHeader()->hide();
 
         // Set the left column smaller to only fits the checkbox.
-        mTableWidget->horizontalHeader()->resizeSection(0, 19);
+        m_tableWidget->horizontalHeader()->resizeSection(0, 19);
 
         // Set the row count.
         const size_t numFiles = files.size();
         const int rowCount = static_cast<int>(numFiles);
-        mTableWidget->setRowCount(rowCount);
+        m_tableWidget->setRowCount(rowCount);
 
         // For each file that might be recovered.
         AZStd::string backupFilename;
@@ -169,22 +170,22 @@ namespace EMStudio
             itemType->setData(Qt::UserRole, row);
 
             // Add table items to the current row.
-            mTableWidget->setCellWidget(row, 0, checkbox);
-            mTableWidget->setCellWidget(row, 1, filenameLabel);
-            mTableWidget->setItem(row, 2, itemType);
+            m_tableWidget->setCellWidget(row, 0, checkbox);
+            m_tableWidget->setCellWidget(row, 1, filenameLabel);
+            m_tableWidget->setItem(row, 2, itemType);
 
-            mTableWidget->setRowHeight(row, 21);
+            m_tableWidget->setRowHeight(row, 21);
         }
 
-        mTableWidget->setSortingEnabled(true);
+        m_tableWidget->setSortingEnabled(true);
 
         // Set the size of the filename column to take the whole space.
-        mTableWidget->setColumnWidth(1, 894);
+        m_tableWidget->setColumnWidth(1, 894);
 
         // Needed to have the last column stretching correctly.
-        mTableWidget->setColumnWidth(2, 0);
+        m_tableWidget->setColumnWidth(2, 0);
 
-        layout->addWidget(mTableWidget);
+        layout->addWidget(m_tableWidget);
 
         // Create the warning message.
         QLabel* warningLabel = new QLabel("<font color='yellow'>Warning: Files that will not be recovered will be deleted</font>");
@@ -264,16 +265,16 @@ namespace EMStudio
         AZStd::string backupFilename;
         AZStd::string originalFilename;
 
-        const int numRows = mTableWidget->rowCount();
+        const int numRows = m_tableWidget->rowCount();
         for (int i = 0; i < numRows; ++i)
         {
-            QWidget*            widget      = mTableWidget->cellWidget(i, 0);
+            QWidget*            widget      = m_tableWidget->cellWidget(i, 0);
             QCheckBox*          checkbox    = static_cast<QCheckBox*>(widget);
-            QTableWidgetItem*   item        = mTableWidget->item(i, 2);
+            QTableWidgetItem*   item        = m_tableWidget->item(i, 2);
             const int32         filesIndex  = item->data(Qt::UserRole).toInt();
 
             // Get the recover and the backup filenames
-            const AZStd::string& recoverFilename = mFiles[filesIndex];
+            const AZStd::string& recoverFilename = m_files[filesIndex];
             
             backupFilename = recoverFilename;
             AzFramework::StringFunc::Path::StripExtension(backupFilename);
@@ -358,17 +359,17 @@ namespace EMStudio
         using namespace AZ::IO;
         FileIOBase* fileIo = FileIOBase::GetInstance();
 
-        const size_t numFiles = mFiles.size();
+        const size_t numFiles = m_files.size();
         AZStd::string backupFilename;
         for (size_t i = 0; i < numFiles; ++i)
         {
-            backupFilename = mFiles[i];
+            backupFilename = m_files[i];
             AzFramework::StringFunc::Path::StripExtension(backupFilename);
 
             // Remove the recover file.
-            if (fileIo->Remove(mFiles[i].c_str()) == ResultCode::Error)
+            if (fileIo->Remove(m_files[i].c_str()) == ResultCode::Error)
             {
-                const AZStd::string errorMessage = AZStd::string::format("Cannot delete file '<b>%s</b>'.", mFiles[i].c_str());
+                const AZStd::string errorMessage = AZStd::string::format("Cannot delete file '<b>%s</b>'.", m_files[i].c_str());
                 CommandSystem::GetCommandManager()->AddError(errorMessage);
                 AZ_Error("EMotionFX", false, errorMessage.c_str());
             }

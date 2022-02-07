@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,8 +20,8 @@
 // AzToolsFramework
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
-CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::s_pFirst = 0;
-CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::s_pLast = 0;
+CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::s_pFirst = nullptr;
+CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::s_pLast = nullptr;
 
 CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::GetFirst()
 {
@@ -30,7 +31,7 @@ CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::GetFirst()
 CAutoRegisterCommandHelper::CAutoRegisterCommandHelper(void(*registerFunc)(CEditorCommandManager &))
 {
     m_registerFunc = registerFunc;
-    m_pNext = 0;
+    m_pNext = nullptr;
 
     if (!s_pLast)
     {
@@ -78,9 +79,9 @@ CEditorCommandManager::~CEditorCommandManager()
     m_uiCommands.clear();
 }
 
-string CEditorCommandManager::GetFullCommandName(const string& module, const string& name)
+AZStd::string CEditorCommandManager::GetFullCommandName(const AZStd::string& module, const AZStd::string& name)
 {
-    string fullName = module;
+    AZStd::string fullName = module;
     fullName += ".";
     fullName += name;
     return fullName;
@@ -90,10 +91,10 @@ bool CEditorCommandManager::AddCommand(CCommand* pCommand, TPfnDeleter deleter)
 {
     assert(pCommand);
 
-    string module = pCommand->GetModule();
-    string name = pCommand->GetName();
+    AZStd::string module = pCommand->GetModule();
+    AZStd::string name = pCommand->GetName();
 
-    if (IsRegistered(module, name) && m_bWarnDuplicate)
+    if (IsRegistered(module.c_str(), name.c_str()) && m_bWarnDuplicate)
     {
         QString errMsg;
 
@@ -117,7 +118,7 @@ bool CEditorCommandManager::AddCommand(CCommand* pCommand, TPfnDeleter deleter)
 
 bool CEditorCommandManager::UnregisterCommand(const char* module, const char* name)
 {
-    string fullName = GetFullCommandName(module, name);
+    AZStd::string fullName = GetFullCommandName(module, name);
     CommandTable::iterator itr = m_commands.find(fullName);
 
     if (itr != m_commands.end())
@@ -153,7 +154,7 @@ bool CEditorCommandManager::RegisterUICommand(
         return false;
     }
 
-    return AttachUIInfo(GetFullCommandName(module, name), uiInfo);
+    return AttachUIInfo(GetFullCommandName(module, name).c_str(), uiInfo);
 }
 
 bool CEditorCommandManager::AttachUIInfo(const char* fullCmdName, const CCommand0::SUIInfo& uiInfo)
@@ -189,14 +190,14 @@ bool CEditorCommandManager::AttachUIInfo(const char* fullCmdName, const CCommand
     return true;
 }
 
-bool CEditorCommandManager::GetUIInfo(const string& module, const string& name, CCommand0::SUIInfo& uiInfo) const
+bool CEditorCommandManager::GetUIInfo(const AZStd::string& module, const AZStd::string& name, CCommand0::SUIInfo& uiInfo) const
 {
-    string fullName = GetFullCommandName(module, name);
+    AZStd::string fullName = GetFullCommandName(module, name);
 
     return GetUIInfo(fullName, uiInfo);
 }
 
-bool CEditorCommandManager::GetUIInfo(const string& fullCmdName, CCommand0::SUIInfo& uiInfo) const
+bool CEditorCommandManager::GetUIInfo(const AZStd::string& fullCmdName, CCommand0::SUIInfo& uiInfo) const
 {
     CommandTable::const_iterator iter = m_commands.find(fullCmdName);
 
@@ -222,9 +223,9 @@ int CEditorCommandManager::GenNewCommandId()
     return uniqueId++;
 }
 
-QString CEditorCommandManager::Execute(const string& module, const string& name, const CCommand::CArgs& args)
+QString CEditorCommandManager::Execute(const AZStd::string& module, const AZStd::string& name, const CCommand::CArgs& args)
 {
-    string fullName = GetFullCommandName(module, name);
+    AZStd::string fullName = GetFullCommandName(module, name);
     CommandTable::iterator iter = m_commands.find(fullName);
 
     if (iter != m_commands.end())
@@ -235,27 +236,24 @@ QString CEditorCommandManager::Execute(const string& module, const string& name,
     }
     else
     {
-        QString errMsg;
-
-        errMsg = QStringLiteral("Error: Trying to execute a unknown command, '%1'!").arg(fullName.c_str());
-        CryLogAlways(errMsg.toUtf8().data());
+        CryLogAlways("Error: Trying to execute a unknown command, '%s'!", fullName.c_str());
     }
 
     return "";
 }
 
-QString CEditorCommandManager::Execute(const string& cmdLine)
+QString CEditorCommandManager::Execute(const AZStd::string& cmdLine)
 {
-    string cmdTxt, argsTxt;
+    AZStd::string cmdTxt, argsTxt;
     size_t argStart = cmdLine.find_first_of(' ');
 
     cmdTxt = cmdLine.substr(0, argStart);
     argsTxt = "";
 
-    if (argStart != string::npos)
+    if (argStart != AZStd::string::npos)
     {
         argsTxt = cmdLine.substr(argStart + 1);
-        argsTxt.Trim();
+        AZ::StringFunc::TrimWhiteSpace(argsTxt, true, true);
     }
 
     CommandTable::iterator itr = m_commands.find(cmdTxt);
@@ -271,10 +269,7 @@ QString CEditorCommandManager::Execute(const string& cmdLine)
     }
     else
     {
-        QString errMsg;
-
-        errMsg = QStringLiteral("Error: Trying to execute a unknown command, '%1'!").arg(cmdLine.c_str());
-        CryLogAlways(errMsg.toUtf8().data());
+        CryLogAlways("Error: Trying to execute a unknown command, '%s'!", cmdLine.c_str());
     }
 
     return "";
@@ -293,14 +288,11 @@ void CEditorCommandManager::Execute(int commandId)
     }
     else
     {
-        QString errMsg;
-
-        errMsg = QStringLiteral("Error: Trying to execute a unknown command of ID '%1'!").arg(commandId);
-        CryLogAlways(errMsg.toUtf8().data());
+        CryLogAlways("Error: Trying to execute a unknown command of ID '%d'!", commandId);
     }
 }
 
-void CEditorCommandManager::GetCommandList(std::vector<string>& cmds) const
+void CEditorCommandManager::GetCommandList(std::vector<AZStd::string>& cmds) const
 {
     cmds.clear();
     cmds.reserve(m_commands.size());
@@ -314,9 +306,9 @@ void CEditorCommandManager::GetCommandList(std::vector<string>& cmds) const
     std::sort(cmds.begin(), cmds.end());
 }
 
-string CEditorCommandManager::AutoComplete(const string& substr) const
+AZStd::string CEditorCommandManager::AutoComplete(const AZStd::string& substr) const
 {
-    std::vector<string> cmds;
+    std::vector<AZStd::string> cmds;
     GetCommandList(cmds);
 
     // If substring is empty return first command.
@@ -357,7 +349,7 @@ string CEditorCommandManager::AutoComplete(const string& substr) const
 
 bool CEditorCommandManager::IsRegistered(const char* module, const char* name) const
 {
-    string fullName = GetFullCommandName(module, name);
+    AZStd::string fullName = GetFullCommandName(module, name);
     CommandTable::const_iterator iter = m_commands.find(fullName);
 
     if (iter != m_commands.end())
@@ -372,7 +364,7 @@ bool CEditorCommandManager::IsRegistered(const char* module, const char* name) c
 
 bool CEditorCommandManager::IsRegistered(const char* cmdLine_) const
 {
-    string cmdTxt, argsTxt, cmdLine(cmdLine_);
+    AZStd::string cmdTxt, argsTxt, cmdLine(cmdLine_);
     size_t argStart = cmdLine.find_first_of(' ');
     cmdTxt = cmdLine.substr(0, argStart);
     CommandTable::const_iterator iter = m_commands.find(cmdTxt);
@@ -401,9 +393,9 @@ bool CEditorCommandManager::IsRegistered(int commandId) const
     return false;
 }
 
-void CEditorCommandManager::SetCommandAvailableInScripting(const string& module, const string& name)
+void CEditorCommandManager::SetCommandAvailableInScripting(const AZStd::string& module, const AZStd::string& name)
 {
-    string fullName = GetFullCommandName(module, name);
+    AZStd::string fullName = GetFullCommandName(module, name);
     CommandTable::iterator iter = m_commands.find(fullName);
 
     if (iter != m_commands.end())
@@ -412,7 +404,7 @@ void CEditorCommandManager::SetCommandAvailableInScripting(const string& module,
     }
 }
 
-bool CEditorCommandManager::IsCommandAvailableInScripting(const string& fullCmdName) const
+bool CEditorCommandManager::IsCommandAvailableInScripting(const AZStd::string& fullCmdName) const
 {
     CommandTable::const_iterator iter = m_commands.find(fullCmdName);
 
@@ -424,16 +416,16 @@ bool CEditorCommandManager::IsCommandAvailableInScripting(const string& fullCmdN
     return false;
 }
 
-bool CEditorCommandManager::IsCommandAvailableInScripting(const string& module, const string& name) const
+bool CEditorCommandManager::IsCommandAvailableInScripting(const AZStd::string& module, const AZStd::string& name) const
 {
-    string fullName = GetFullCommandName(module, name);
+    AZStd::string fullName = GetFullCommandName(module, name);
 
     return IsCommandAvailableInScripting(fullName);
 }
 
-void CEditorCommandManager::LogCommand(const string& fullCmdName, const CCommand::CArgs& args) const
+void CEditorCommandManager::LogCommand(const AZStd::string& fullCmdName, const CCommand::CArgs& args) const
 {
-    string cmdLine = fullCmdName;
+    AZStd::string cmdLine = fullCmdName;
 
     for (int i = 0; i < args.GetArgCount(); ++i)
     {
@@ -508,7 +500,7 @@ void CEditorCommandManager::LogCommand(const string& fullCmdName, const CCommand
 
     if (pScriptTermDialog)
     {
-        string text = "> ";
+        AZStd::string text = "> ";
         text += cmdLine;
         text += "\r\n";
         pScriptTermDialog->AppendText(text.c_str());
@@ -525,14 +517,14 @@ QString CEditorCommandManager::ExecuteAndLogReturn(CCommand* pCommand, const CCo
     return result;
 }
 
-void CEditorCommandManager::GetArgsFromString(const string& argsTxt, CCommand::CArgs& argList)
+void CEditorCommandManager::GetArgsFromString(const AZStd::string& argsTxt, CCommand::CArgs& argList)
 {
     const char quoteSymbol = '\'';
-    int curPos = 0;
-    int prevPos = 0;
-    string arg = argsTxt.Tokenize(" ", curPos);
-
-    while (!arg.empty())
+    size_t curPos = 0;
+    size_t prevPos = 0;
+    AZStd::vector<AZStd::string> tokens;
+    AZ::StringFunc::Tokenize(argsTxt, tokens, ' ');
+    for(AZStd::string& arg : tokens)
     {
         if (arg[0] == quoteSymbol)   // A special consideration for a quoted string
         {
@@ -541,11 +533,11 @@ void CEditorCommandManager::GetArgsFromString(const string& argsTxt, CCommand::C
                 size_t openingQuotePos = argsTxt.find(quoteSymbol, prevPos);
                 size_t closingQuotePos = argsTxt.find(quoteSymbol, curPos);
 
-                if (closingQuotePos != string::npos)
+                if (closingQuotePos != AZStd::string::npos)
                 {
                     arg = argsTxt.substr(openingQuotePos + 1, closingQuotePos - openingQuotePos - 1);
                     size_t nextArgPos = argsTxt.find(' ', closingQuotePos + 1);
-                    curPos = nextArgPos != string::npos ? nextArgPos + 1 : argsTxt.length();
+                    curPos = nextArgPos != AZStd::string::npos ? nextArgPos + 1 : argsTxt.length();
 
                     for (; curPos < argsTxt.length(); ++curPos)    // Skip spaces.
                     {
@@ -564,6 +556,5 @@ void CEditorCommandManager::GetArgsFromString(const string& argsTxt, CCommand::C
 
         argList.Add(arg.c_str());
         prevPos = curPos;
-        arg = argsTxt.Tokenize(" ", curPos);
     }
 }

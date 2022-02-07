@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,6 +35,7 @@ namespace AZ
             void ShutdownInternal() override;
             RHI::ResultCode MergeIntoInternal(AZStd::array_view<const RHI::PipelineLibrary*> libraries) override;
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override;
+            bool IsMergeRequired() const;
             //////////////////////////////////////////////////////////////////////////
 
             ID3D12DeviceX* m_dx12Device = nullptr;

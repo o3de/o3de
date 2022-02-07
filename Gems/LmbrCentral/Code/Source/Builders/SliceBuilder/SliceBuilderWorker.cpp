@@ -1,18 +1,17 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 #include "SliceBuilderWorker.h"
 
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/Debug/Trace.h>
@@ -27,6 +26,7 @@
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentExport.h>
@@ -37,6 +37,7 @@
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include "AzFramework/Asset/SimpleAsset.h"
+#include <AzCore/PlatformIncl.h>
 
 namespace SliceBuilder
 {
@@ -48,7 +49,7 @@ namespace SliceBuilder
         }
     } // namespace anonymous
 
-    static const char* const s_sliceBuilder = "SliceBuilder";
+    [[maybe_unused]] static const char* const s_sliceBuilder = "SliceBuilder";
     static const char* const s_sliceBuilderSettingsFilename = "SliceBuilderSettings.json";
 
     SliceBuilderWorker::SliceBuilderWorker()
@@ -72,9 +73,7 @@ namespace SliceBuilder
             AzFramework::StringFunc::Path::Join(relativePath.c_str(), settingsAssetInfo.m_relativePath.c_str(), sliceBuilderSettingsPath, true, true);
 
             // Attempt to load the Slice Builder Settings file
-            AZ::IO::LocalFileIO localFileIO;
-            AZ::IO::Path sliceBuilderSettingsIoPath(sliceBuilderSettingsPath);
-            auto result = AzFramework::FileFunc::ReadJsonFile(sliceBuilderSettingsIoPath, &localFileIO);
+            auto result = AZ::JsonSerializationUtils::ReadJsonFile(sliceBuilderSettingsPath);
             if (result.IsSuccess())
             {
                 AZ::JsonSerializationResult::ResultCode serializaionResult = AZ::JsonSerialization::Load(m_settings, result.GetValue());
@@ -212,7 +211,7 @@ namespace SliceBuilder
 
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
             jobDescriptor.m_additionalFingerprintInfo = AZStd::string(compilerVersion)
-                .append(AZStd::string::format("|%" PRIu64, static_cast<AZ::u64>(sourceSliceTypeFingerprint)));
+                .append(AZStd::string::format("|%zu", sourceSliceTypeFingerprint));
 
             for (const auto& sourceDependency : sourceFileDependencies)
             {
@@ -387,11 +386,11 @@ namespace SliceBuilder
             bool sliceWritable = AZ::IO::SystemFile::IsWritable(fullPath.c_str());
             if (!m_settings.m_enableSliceConversion || !sliceWritable)
             {
-                static const char* const s_OutOfDate = "This slice file is out of date: ";
-                static const char* const s_ToEnable = "To enable automatic upgrades:";
-                static const char* const s_FixSettings1 = "In the settings file ";
-                static const char* const s_FixSettings2 = ", Set 'EnableSliceConversion' to true and restart the Asset Processor";
-                static const char* const s_FixReadOnly = "Make sure the slice file isn't marked read-only. If using perforce, check out the slice file.";
+                [[maybe_unused]] static const char* const s_OutOfDate = "This slice file is out of date: ";
+                [[maybe_unused]] static const char* const s_ToEnable = "To enable automatic upgrades:";
+                [[maybe_unused]] static const char* const s_FixSettings1 = "In the settings file ";
+                [[maybe_unused]] static const char* const s_FixSettings2 = ", Set 'EnableSliceConversion' to true and restart the Asset Processor";
+                [[maybe_unused]] static const char* const s_FixReadOnly = "Make sure the slice file isn't marked read-only. If using perforce, check out the slice file.";
 
                 // The Slice isn't marked as read only but Slice Upgrades aren't Enabled in the builder settings file
                 if(!m_settings.m_enableSliceConversion && sliceWritable)
@@ -511,10 +510,10 @@ namespace SliceBuilder
                 // To avoid potential data loss, only delete the old file if there is a data patching error detected
                 if (m_sliceDataPatchError)
                 {
-                    static const char* const s_overrideWarning = "At least one Data Patch Upgrade wasn't completed:";
-                    static const char* const s_checkLogs = "Please check the slice processing log for more information.";
-                    static const char* const s_originalSliceAvailable = "The original slice file has been preserved at: ";
-                    static const char* const s_recomendReload = "It's recomended that this slice be loaded into the editor and repaired before upgrading.";
+                    [[maybe_unused]] static const char* const s_overrideWarning = "At least one Data Patch Upgrade wasn't completed:";
+                    [[maybe_unused]] static const char* const s_checkLogs = "Please check the slice processing log for more information.";
+                    [[maybe_unused]] static const char* const s_originalSliceAvailable = "The original slice file has been preserved at: ";
+                    [[maybe_unused]] static const char* const s_recomendReload = "It's recomended that this slice be loaded into the editor and repaired before upgrading.";
 
                     AZ_Warning(s_sliceBuilder, false, "%s\n%s\n%s%s\n%s", s_overrideWarning, s_checkLogs, s_originalSliceAvailable, oldPath.c_str(), s_recomendReload);
                 }

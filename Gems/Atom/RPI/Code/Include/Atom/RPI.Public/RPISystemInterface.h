@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,9 +9,11 @@
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RPI.Reflect/RPISystemDescriptor.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 #include <Atom/RPI.Public/Base.h>
 
+#include <AzCore/Name/Name.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
 namespace AZ
@@ -44,18 +47,24 @@ namespace AZ
             //! Unregister a scene from RPISystem. The scene won't be simulated or rendered.
             virtual void UnregisterScene(ScenePtr scene) = 0;
 
-            // [GFX TODO] to be removed when we have scene setup in AZ Core
-            virtual ScenePtr GetDefaultScene() const = 0;
-
+            //! Deprecated. Use GetSceneByName(name), GetSceneForEntityContextId(entityContextId) or Scene::GetSceneForEntityId(AZ::EntityId entityId) instead
+            AZ_DEPRECATED(virtual ScenePtr GetDefaultScene() const = 0;, "This method has been deprecated. Please use GetSceneByName(name), GetSceneForEntityContextId(entityContextId) or Scene::GetSceneForEntityId(AZ::EntityId entityId) instead.");
+            
             //! Get scene by using scene id.
-            virtual ScenePtr GetScene(const SceneId& sceneId) const = 0;
+            virtual Scene* GetScene(const SceneId& sceneId) const = 0;
+
+            //! Get scene by using scene name.
+            virtual Scene* GetSceneByName(const AZ::Name& name) const = 0;
 
             //! Get the render pipeline created for a window
             virtual RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) = 0;
 
-            virtual Data::Asset<ShaderResourceGroupAsset> GetSceneSrgAsset() const = 0;
+            //! Returns the shader asset that is being used as the source for the SceneSrg and ViewSrg layouts.
+            virtual Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const = 0;
 
-            virtual Data::Asset<ShaderResourceGroupAsset> GetViewSrgAsset() const = 0;
+            virtual RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSceneSrgLayout() const = 0;
+
+            virtual RHI::Ptr<RHI::ShaderResourceGroupLayout> GetViewSrgLayout() const = 0;
             
             //! Tick for graphics simulation that runs on the CPU. 
             //! This will drive FeatureProcessor simulation activity. It should be called once per game-tick.

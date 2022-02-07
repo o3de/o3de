@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiImageComponent.h"
 
 #include <AzCore/Math/Crc.h>
@@ -224,9 +224,9 @@ namespace
         IDraw2d::Rounding pixelRounding = isPixelAligned ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
         float z = 1.0f;
         int i = 0;
-        for (int y = 0; y < numY; ++y)
+        for (uint32 y = 0; y < numY; ++y)
         {
-            for (int x = 0; x < numX; x += 1)
+            for (uint32 x = 0; x < numX; x += 1)
             {
                 AZ::Vector3 point3(xValues[x], yValues[y], z);
                 point3 = transform * point3;
@@ -280,7 +280,7 @@ namespace
         AZ::Data::Instance<AZ::RPI::Image> image;
         if (sprite)
         {
-            CSprite* cSprite = dynamic_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+            CSprite* cSprite = static_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
             if (cSprite)
             {
                 image = cSprite->GetImage();
@@ -484,7 +484,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
 
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
         if (lyRenderGraph)
         {
             lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
@@ -699,7 +699,7 @@ const AZ::u32 UiImageComponent::GetImageIndexCount()
 {
     if (m_sprite)
     {
-        return m_sprite->GetSpriteSheetCells().size();
+        return static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
     }
 
     return 0;
@@ -1536,7 +1536,6 @@ void UiImageComponent::RenderSingleQuad(const AZ::Vector2* positions, const AZ::
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
     SVF_P2F_C4B_T2F_F4B vertices[numVertices];
-    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
     for (int i = 0; i < numVertices; ++i)
     {
         AZ::Vector2 roundedPoint = Draw2dHelper::RoundXY(positions[i], pixelRounding);
@@ -1596,7 +1595,6 @@ void UiImageComponent::RenderLinearFilledQuad(const AZ::Vector2* positions, cons
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
     SVF_P2F_C4B_T2F_F4B vertices[numVertices];
-    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
 
     for (int i = 0; i < numVertices; ++i)
     {
@@ -1666,7 +1664,7 @@ void UiImageComponent::RenderRadialFilledQuad(const AZ::Vector2* positions, cons
 
     const int numIndices = 15;
     uint16 indices[numIndices];
-    for (int ix = 0; ix < 5; ++ix)
+    for (uint16 ix = 0; ix < 5; ++ix)
     {
         indices[ix * 3 + firstIndexOffset] = ix + 1;
         indices[ix * 3 + secondIndexOffset] = ix + 2;
@@ -2030,7 +2028,7 @@ void UiImageComponent::ClipValuesForSlicedLinearFill(uint32 numValues, float* xV
     float previousPercentage = 0;
     int previousIndex = startClip;
     int clampIndex = -1; // to clamp all values greater than m_fillAmount in specified direction.
-    for (int arrayPos = 1; arrayPos < numValues; ++arrayPos)
+    for (uint32 arrayPos = 1; arrayPos < numValues; ++arrayPos)
     {
         int currentIndex = startClip + arrayPos * clipInc;
         float thisPercentage = (clipPosition[currentIndex] - clipPosition[startClip]) / totalLength;
@@ -2102,7 +2100,7 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
     if (m_fillAmount < 0.5f)
     {
         // Clips against first half line and then rotating line and adds results to render list.
-        for (int currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
+        for (uint32 currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
         {
             SVF_P2F_C4B_T2F_F4B intermediateVerts[maxTemporaryVerts];
             uint16 intermediateIndices[maxTemporaryIndices];
@@ -2118,7 +2116,7 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
     else
     {
         // Clips against first half line and adds results to render list then clips against the second half line and rotating line and also adds those results to render list.
-        for (int currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
+        for (uint32 currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
         {
             SVF_P2F_C4B_T2F_F4B intermediateVerts[maxTemporaryVerts];
             uint16 intermediateIndices[maxTemporaryIndices];
@@ -2201,7 +2199,7 @@ void UiImageComponent::ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVe
 
     int numIndicesToRender = 0;
     int vertexOffset = 0;
-    for (int ix = 0; ix < totalIndices; ix += 3)
+    for (uint32 ix = 0; ix < totalIndices; ix += 3)
     {
         int indicesUsed = ClipToLine(verts, &indices[ix], renderVerts, renderIndices, vertexOffset, numIndicesToRender, lineOrigin, lineEnd);
         numIndicesToRender += indicesUsed;
@@ -2268,20 +2266,20 @@ int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint
     int indicesAdded = 0;
     if (verticesAdded == 3)
     {
-        renderIndices[renderIndexOffset] = vertexOffset - 3;
-        renderIndices[renderIndexOffset + 1] = vertexOffset - 2;
-        renderIndices[renderIndexOffset + 2] = vertexOffset - 1;
+        renderIndices[renderIndexOffset] = static_cast<uint16>(vertexOffset - 3);
+        renderIndices[renderIndexOffset + 1] = static_cast<uint16>(vertexOffset - 2);
+        renderIndices[renderIndexOffset + 2] = static_cast<uint16>(vertexOffset - 1);
         indicesAdded = 3;
     }
     else if (verticesAdded == 4)
     {
-        renderIndices[renderIndexOffset] = vertexOffset - 4;
-        renderIndices[renderIndexOffset + 1] = vertexOffset - 3;
-        renderIndices[renderIndexOffset + 2] = vertexOffset - 2;
+        renderIndices[renderIndexOffset] = static_cast<uint16>(vertexOffset - 4);
+        renderIndices[renderIndexOffset + 1] = static_cast<uint16>(vertexOffset - 3);
+        renderIndices[renderIndexOffset + 2] = static_cast<uint16>(vertexOffset - 2);
 
-        renderIndices[renderIndexOffset + 3] = vertexOffset - 4;
-        renderIndices[renderIndexOffset + 4] = vertexOffset - 2;
-        renderIndices[renderIndexOffset + 5] = vertexOffset - 1;
+        renderIndices[renderIndexOffset + 3] = static_cast<uint16>(vertexOffset - 4);
+        renderIndices[renderIndexOffset + 4] = static_cast<uint16>(vertexOffset - 2);
+        renderIndices[renderIndexOffset + 5] = static_cast<uint16>(vertexOffset - 1);
         indicesAdded = 6;
     }
 
@@ -2635,7 +2633,7 @@ LyShine::AZu32ComboBoxVec UiImageComponent::PopulateIndexStringList() const
     // There may not be a sprite loaded for this component
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
 
         if (numCells != 0)
         {
@@ -2663,18 +2661,7 @@ bool UiImageComponent::VersionConverter(AZ::SerializeContext& context,
     // conversion from version 1:
     // - Need to convert CryString elements to AZStd::string
     // - Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() <= 1)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "SpritePath"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "Color", "Alpha"))
-        {
-            return false;
-        }
-    }
+    AZ_Assert(classElement.GetVersion() > 1, "Unsupported UiImageComponent version: %d", classElement.GetVersion());
 
     // conversion from version 1 or 2 to current:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>

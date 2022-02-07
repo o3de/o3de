@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
+
 #include <MCore/Source/Config.h>
 
 namespace EMotionFX
@@ -19,102 +21,77 @@ namespace EMotionFX
             SHARED_CHUNK_TIMESTAMP          = 51
         };
 
-
-        // a chunk
         struct FileChunk
         {
-            uint32 mChunkID;        // the chunk ID
-            uint32 mSizeInBytes;    // the size in bytes of this chunk (excluding this chunk struct)
-            uint32 mVersion;        // the version of the chunk
+            uint32 m_chunkId;        // the chunk ID
+            uint32 m_sizeInBytes;    // the size in bytes of this chunk (excluding this chunk struct)
+            uint32 m_version;        // the version of the chunk
         };
-
 
         // color [0..1] range
         struct FileColor
         {
-            float mR; // red
-            float mG; // green
-            float mB; // blue
-            float mA; // alpha
+            float m_r; // red
+            float m_g; // green
+            float m_b; // blue
+            float m_a; // alpha
         };
 
-
-        // a 2D vector
         struct FileVector2
         {
-            float mX;
-            float mY;
+            float m_x;
+            float m_y;
         };
 
-
-        // a 3D vector
         struct FileVector3
         {
-            float mX; // x+ = to the right
-            float mY; // y+ = forward
-            float mZ; // z+ = up
+            float m_x; // x+ = to the right
+            float m_y; // y+ = forward
+            float m_z; // z+ = up
         };
-
 
         // a compressed 3D vector
         struct File16BitVector3
         {
-            uint16 mX;  // x+ = to the right
-            uint16 mY;  // y+ = forward
-            uint16 mZ;  // z+ = up
+            uint16 m_x;  // x+ = to the right
+            uint16 m_y;  // y+ = forward
+            uint16 m_z;  // z+ = up
         };
-
 
         // a compressed 3D vector
         struct File8BitVector3
         {
-            uint8 mX;   // x+ = to the right
-            uint8 mY;   // y+ = forward
-            uint8 mZ;   // z+ = up
+            uint8 m_x;   // x+ = to the right
+            uint8 m_y;   // y+ = forward
+            uint8 m_z;   // z+ = up
         };
 
-
-        // a quaternion
         struct FileQuaternion
         {
-            float mX;
-            float mY;
-            float mZ;
-            float mW;
+            float m_x;
+            float m_y;
+            float m_z;
+            float m_w;
         };
-
 
         // the 16 bit component quaternion
         struct File16BitQuaternion
         {
-            int16   mX;
-            int16   mY;
-            int16   mZ;
-            int16   mW;
+            int16   m_x;
+            int16   m_y;
+            int16   m_z;
+            int16   m_w;
         };
-
 
         // a time stamp chunk
         struct FileTime
         {
-            uint16  mYear;
-            int8    mMonth;
-            int8    mDay;
-            int8    mHours;
-            int8    mMinutes;
-            int8    mSeconds;
-        };
-
-
-        // attribute
-        struct FileAttribute
-        {
-            uint32  mDataType;
-            uint32  mNumBytes;
-            uint32  mFlags;
-
-            // followed by:
-            //      uint8   mData[mNumBytes];
+            uint16  m_year;
+            int8    m_month;
+            int8    m_day;
+            int8    m_hours;
+            int8    m_minutes;
+            int8    m_seconds;
         };
     } // namespace FileFormat
-}   // namespace EMotionFX
+} // namespace EMotionFX

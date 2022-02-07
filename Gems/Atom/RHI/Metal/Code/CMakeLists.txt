@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -71,7 +72,6 @@ ly_add_target(
     NAME Atom_RHI_Metal.Private.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        atom_rhi_metal_common_files.cmake
         atom_rhi_metal_private_common_files.cmake
         Source/Platform/${PAL_PLATFORM_NAME}/platform_private_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES

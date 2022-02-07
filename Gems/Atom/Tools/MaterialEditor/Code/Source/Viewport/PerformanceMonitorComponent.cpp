@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,8 +9,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
@@ -66,12 +65,6 @@ namespace MaterialEditor
             AZ_Error("PerformanceMonitorComponent", false, "Failed to find root pass.");
         }
 
-        AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
-            AZ::RHI::FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics,
-            enabled);
-
-        AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(enabled);
-
         if (enabled)
         {
             ResetStats();
@@ -95,10 +88,10 @@ namespace MaterialEditor
             ResetStats();
         }
 
-        const AZ::RHI::CpuTimingStatistics* stats = AZ::RHI::RHISystemInterface::Get()->GetCpuTimingStatistics();
-        if (stats)
+        double frameTime = AZ::RHI::RHISystemInterface::Get()->GetCpuFrameTime();
+        if (frameTime > 0)
         {
-            m_cpuFrameTimeMs.PushSample(stats->GetFrameToFrameTimeMilliseconds());
+            m_cpuFrameTimeMs.PushSample(frameTime);
         }
 
         AZ::RHI::Ptr<AZ::RPI::ParentPass> rootPass = AZ::RPI::PassSystemInterface::Get()->GetRootPass();

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,8 @@
 
 // Editor
 #include "CryEdit.h"
+
+#include <AzCore/Utils/Utils.h>
 
 //////////////////////////////////////////////////////////////////////////
 CEditorFileMonitor::CEditorFileMonitor()
@@ -54,10 +57,10 @@ bool CEditorFileMonitor::RegisterListener(IFileChangeListener* pListener, const 
 
 
 //////////////////////////////////////////////////////////////////////////
-static string CanonicalizePath(const char* path)
+static AZStd::string CanonicalizePath(const char* path)
 {
     auto canon = QFileInfo(path).canonicalFilePath();
-    return canon.isEmpty() ? string(path) : string(canon.toUtf8());
+    return canon.isEmpty() ? AZStd::string(path) : AZStd::string(canon.toUtf8());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,8 +68,8 @@ bool CEditorFileMonitor::RegisterListener(IFileChangeListener* pListener, const 
 {
     bool success = true;
 
-    string gameFolder = Path::GetEditingGameDataFolder().c_str();
-    string naivePath;
+    AZStd::string gameFolder = Path::GetEditingGameDataFolder().c_str();
+    AZStd::string naivePath;
     CFileChangeMonitor* fileChangeMonitor = CFileChangeMonitor::Instance();
     AZ_Assert(fileChangeMonitor, "CFileChangeMonitor singleton missing.");
 
@@ -74,12 +77,12 @@ bool CEditorFileMonitor::RegisterListener(IFileChangeListener* pListener, const 
     // Append slash in preparation for appending the second part.
     naivePath = PathUtil::AddSlash(naivePath);
     naivePath += sFolderRelativeToGame;
-    naivePath.replace('/', '\\');
+    AZ::StringFunc::Replace(naivePath, '/', '\\');
 
     // Remove the final slash if the given item is a folder so the file change monitor correctly picks up on it.
     naivePath = PathUtil::RemoveSlash(naivePath);
 
-    string canonicalizedPath = CanonicalizePath(naivePath.c_str());
+    AZStd::string canonicalizedPath = CanonicalizePath(naivePath.c_str());
 
     if (fileChangeMonitor->IsDirectory(canonicalizedPath.c_str()) || fileChangeMonitor->IsFile(canonicalizedPath.c_str()))
     {
@@ -161,7 +164,7 @@ QString RemoveGameName(const QString &filename)
 void CEditorFileMonitor::OnFileMonitorChange(const SFileChangeInfo& rChange)
 {
     CCryEditApp* app = CCryEditApp::instance();
-    if (app == NULL || app->IsExiting())
+    if (app == nullptr || app->IsExiting())
     {
         return;
     }
@@ -176,26 +179,14 @@ void CEditorFileMonitor::OnFileMonitorChange(const SFileChangeInfo& rChange)
     // Make file relative to PrimaryCD folder.
     QString filename = rChange.filename;
 
-    // Remove game directory if present in path.
-    const QString rootPath =
-        QDir::fromNativeSeparators(QString::fromLatin1(Path::GetEditingRootFolder().c_str()));
-    if (filename.startsWith(rootPath, Qt::CaseInsensitive))
-    {
-        filename = filename.right(filename.length() - rootPath.length());
-    }
+    // Make path relative to the the project directory
+    AZ::IO::Path projectPath{ AZ::Utils::GetProjectPath() };
+    AZ::IO::FixedMaxPath projectRelativeFilePath = AZ::IO::PathView(filename.toUtf8().constData()).LexicallyProximate(
+        projectPath);
 
-    // Make sure there is no leading slash
-    if (!filename.isEmpty() && (filename[0] == '\\' || filename[0] == '/'))
+    if (!projectRelativeFilePath.empty())
     {
-        filename = filename.mid(1);
-    }
-
-    if (!filename.isEmpty())
-    {
-        //remove game name. Make it relative to the game folder
-        const QString filenameRelGame = RemoveGameName(filename);
-        const int extIndex = filename.lastIndexOf('.');
-        const QString ext = filename.right(filename.length() - 1 - extIndex);
+        AZ::IO::PathView ext = projectRelativeFilePath.Extension();
 
         // Check for File Monitor callback
         std::vector<SFileChangeCallback>::iterator iter;
@@ -206,15 +197,11 @@ void CEditorFileMonitor::OnFileMonitorChange(const SFileChangeInfo& rChange)
             // We compare against length of callback string, so we get directory matches as well as full filenames
             if (sCallback.pListener)
             {
-                if (sCallback.extension == "*" || ext.compare(sCallback.extension, Qt::CaseInsensitive) == 0)
+                if (sCallback.extension == "*" || AZ::IO::PathView(sCallback.extension.toUtf8().constData()) == ext)
                 {
-                    if (filenameRelGame.compare(sCallback.item, Qt::CaseInsensitive) == 0)
+                    if (AZ::IO::PathView(sCallback.item.toUtf8().constData()) == projectRelativeFilePath)
                     {
-                        sCallback.pListener->OnFileChange(qPrintable(filenameRelGame), IFileChangeListener::EChangeType(rChange.changeType));
-                    }
-                    else if (filename.compare(sCallback.item, Qt::CaseInsensitive) == 0)
-                    {
-                        sCallback.pListener->OnFileChange(qPrintable(filename), IFileChangeListener::EChangeType(rChange.changeType));
+                        sCallback.pListener->OnFileChange(qPrintable(projectRelativeFilePath.c_str()), IFileChangeListener::EChangeType(rChange.changeType));
                     }
                 }
             }

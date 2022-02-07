@@ -1,13 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <precompiled.h>
 
 #include <QButtonGroup>
 
+#include <AzQtComponents/Components/ToastNotification.h>
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
@@ -734,7 +735,7 @@ namespace ScriptCanvasEditor
     {
         ui->statusTableView->clearSelection();
 
-        if (auto model = GetActiveData().second->GetModel())
+        if (auto model = GetActiveData().second ? GetActiveData().second->GetModel() : nullptr)
         {
             model->Clear();
             model->RunValidation(m_activeGraphIds.scriptCanvasId);
@@ -810,7 +811,6 @@ namespace ScriptCanvasEditor
             const ScriptCanvas::ValidationEvent* validationEvent = model->FindItemForIndex(m_proxyModel->mapToSource(modelIndex));
         
             AZ::EntityId graphCanvasMemberId;
-            QRectF focusArea;
 
             if (const ScriptCanvas::FocusOnEntityEffect* focusOnEntityEffect = azrtti_cast<const ScriptCanvas::FocusOnEntityEffect*>(validationEvent))
             {
@@ -1435,31 +1435,28 @@ namespace ScriptCanvasEditor
         GraphCanvas::ViewId viewId;
         GraphCanvas::SceneRequestBus::EventResult(viewId, m_graphCanvasId, &GraphCanvas::SceneRequests::GetViewId);
 
-        GraphCanvas::ToastType toastType;
+        AzQtComponents::ToastType toastType;
         AZStd::string titleLabel = "Validation Issue";
         AZStd::string description = "";
 
         if (m_model->GetValidationResults().HasErrors())
         {
-            toastType = GraphCanvas::ToastType::Error;
+            toastType = AzQtComponents::ToastType::Error;
             description = AZStd::string::format("%i validation error(s) were found.", m_model->GetValidationResults().ErrorCount());
         }
         else
         {
-            toastType = GraphCanvas::ToastType::Warning;
+            toastType = AzQtComponents::ToastType::Warning;
             description = AZStd::string::format("%i validation warning(s) were found.", m_model->GetValidationResults().WarningCount());
         }
 
-        GraphCanvas::ToastConfiguration toastConfiguration(toastType, titleLabel, description);
+        AzQtComponents::ToastConfiguration toastConfiguration(toastType, titleLabel.c_str(), description.c_str());
 
-        toastConfiguration.SetCloseOnClick(true);
-        toastConfiguration.SetDuration(AZStd::chrono::milliseconds(5000));
-
-        GraphCanvas::ToastId validationToastId;
+        AzToolsFramework::ToastId validationToastId;
 
         GraphCanvas::ViewRequestBus::EventResult(validationToastId, viewId, &GraphCanvas::ViewRequests::ShowToastNotification, toastConfiguration);
 
-        GraphCanvas::ToastNotificationBus::MultiHandler::BusConnect(validationToastId);
+        AzToolsFramework::ToastNotificationBus::MultiHandler::BusConnect(validationToastId);
 
     }
 
@@ -1470,11 +1467,11 @@ namespace ScriptCanvasEditor
 
     void ValidationData::OnToastDismissed()
     {
-        const GraphCanvas::ToastId* toastId = GraphCanvas::ToastNotificationBus::GetCurrentBusId();
+        const AzToolsFramework::ToastId* toastId = AzToolsFramework::ToastNotificationBus::GetCurrentBusId();
 
         if (toastId)
         {
-            GraphCanvas::ToastNotificationBus::MultiHandler::BusDisconnect((*toastId));
+            AzToolsFramework::ToastNotificationBus::MultiHandler::BusDisconnect((*toastId));
         }
     }
 

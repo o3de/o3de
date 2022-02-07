@@ -2,7 +2,7 @@
  <Textures>
   <Texture Map="Diffuse" File="/engineassets/textures/hex.dds"/>
   <Texture Map="Bumpmap" File="./engineassets/textures/hex_ddn.dds"/>
-  <Texture Map="Specular" File="@assets@/engineassets/textures/hex_spec.dds"/>
+  <Texture Map="Specular" File="@products@/engineassets/textures/hex_spec.dds"/>
  </Textures>
  <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
 </Material>

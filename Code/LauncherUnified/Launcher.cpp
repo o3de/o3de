@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #include <Launcher.h>
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
@@ -41,20 +43,25 @@ extern "C" void CreateStaticModules(AZStd::vector<AZ::Module*>& modulesOut);
 #   define REMOTE_ASSET_PROCESSOR
 #endif
 
+void CVar_OnViewportPosition(const AZ::Vector2& value);
+
 namespace
 {
-    void OnViewportResize(const AZ::Vector2& value);
+    void CVar_OnViewportResize(const AZ::Vector2& value);
 
-    AZ_CVAR(AZ::Vector2, r_viewportSize, AZ::Vector2::CreateZero(), OnViewportResize, AZ::ConsoleFunctorFlags::DontReplicate,
+    AZ_CVAR(AZ::Vector2, r_viewportSize, AZ::Vector2::CreateZero(), CVar_OnViewportResize, AZ::ConsoleFunctorFlags::DontReplicate,
         "The default size for the launcher viewport, 0 0 means full screen");
 
-    void OnViewportResize(const AZ::Vector2& value)
+    void CVar_OnViewportResize(const AZ::Vector2& value)
     {
         AzFramework::NativeWindowHandle windowHandle = nullptr;
         AzFramework::WindowSystemRequestBus::BroadcastResult(windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
         AzFramework::WindowSize newSize = AzFramework::WindowSize(aznumeric_cast<int32_t>(value.GetX()), aznumeric_cast<int32_t>(value.GetY()));
         AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize);
     }
+    
+    AZ_CVAR(AZ::Vector2, r_viewportPos, AZ::Vector2::CreateZero(), CVar_OnViewportPosition, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The default position for the launcher viewport, 0 0 means top left corner of your main desktop");
 
     void ExecuteConsoleCommandFile(AzFramework::Application& application)
     {
@@ -226,12 +233,16 @@ namespace
         // our frame time to be managed by AzGameFramework::GameApplication
         // instead, which probably isn't going to happen anytime soon given
         // how many things depend on the ITimer interface).
-        bool continueRunning = true;
         ISystem* system = gEnv ? gEnv->pSystem : nullptr;
-        while (continueRunning)
+        while (!gameApplication.WasExitMainLoopRequested())
         {
             // Pump the system event loop
             gameApplication.PumpSystemEventLoopUntilEmpty();
+
+            if (gameApplication.WasExitMainLoopRequested())
+            {
+                break;
+            }
 
             // Update the AzFramework system tick bus
             gameApplication.TickSystem();
@@ -250,9 +261,6 @@ namespace
             {
                 system->UpdatePostTickBus();
             }
-
-            // Check for quit requests
-            continueRunning = !gameApplication.WasExitMainLoopRequested() && continueRunning;
         }
     }
 }
@@ -299,10 +307,20 @@ namespace O3DELauncher
             m_commandLine[m_commandLineLen++] = ' ';
         }
 
-        azsnprintf(m_commandLine + m_commandLineLen,
-            AZ_COMMAND_LINE_LEN - m_commandLineLen,
-            needsQuote ? "\"%s\"" : "%s",
-            arg);
+        if (needsQuote) // Branching instead of using a ternary on the format string to avoid warning 4774 (format literal expected)
+        {
+            azsnprintf(m_commandLine + m_commandLineLen,
+                AZ_COMMAND_LINE_LEN - m_commandLineLen,
+                "\"%s\"",
+                arg);
+        }
+        else
+        {
+            azsnprintf(m_commandLine + m_commandLineLen,
+                AZ_COMMAND_LINE_LEN - m_commandLineLen,
+                "%s",
+                arg);
+        }
 
         // Inject the argument in the argument buffer to preserve/replicate argC and argV
         azstrncpy(&m_commandLineArgBuffer[m_nextCommandLineArgInsertPoint],
@@ -351,7 +369,6 @@ namespace O3DELauncher
         }
     }
 
-    void CompileCriticalAssets();
     void CreateRemoteFileIO();
 
     bool ConnectToAssetProcessor()
@@ -379,27 +396,9 @@ namespace O3DELauncher
         {
             AZ_TracePrintf("Launcher", "Connected to Asset Processor\n");
             CreateRemoteFileIO();
-            CompileCriticalAssets();
         }
 
         return connectedToAssetProcessor;
-    }
-
-    //! Compiles the critical assets that are within the Engine directory of Open 3D Engine
-    //! This code should be in a centralized location, but doesn't belong in AzFramework
-    //! since it is specific to how Open 3D Engine projects has assets setup
-    void CompileCriticalAssets()
-    {
-        // VERY early on, as soon as we can, request that the asset system make sure the following assets take priority over others,
-        // so that by the time we ask for them there is a greater likelihood that they're already good to go.
-        // these can be loaded later but are still important:
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "/texturemsg/");
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/materials");
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/geomcaches");
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/objects");
-
-        // some are specifically extra important and will cause issues if missing completely:
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::CompileAssetSync, "engineassets/objects/default.cgf");
     }
 
     //! Remote FileIO to use as a Virtual File System
@@ -445,8 +444,6 @@ namespace O3DELauncher
         // The command line overrides are stored in the following fixed strings
         // until the ComponentApplication constructor can parse the command line parameters
         FixedValueString projectNameOptionOverride;
-        FixedValueString projectPathOptionOverride;
-        FixedValueString enginePathOptionOverride;
 
         // Insert the project_name option to the front
         const AZStd::string_view launcherProjectName = GetProjectName();
@@ -461,6 +458,8 @@ namespace O3DELauncher
         // Non-host platforms cannot use the project path that is #defined within the launcher.
         // In this case the the result of AZ::Utils::GetDefaultAppRoot is used instead
 #if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+        FixedValueString projectPathOptionOverride;
+        FixedValueString enginePathOptionOverride;
         AZStd::string_view projectPath;
         // Make sure the defaultAppRootPath variable is in scope long enough until the projectPath string_view is used below
         AZStd::optional<AZ::IO::FixedMaxPathString> defaultAppRootPath = AZ::Utils::GetDefaultAppRootPath();
@@ -611,10 +610,9 @@ namespace O3DELauncher
             AZ_TracePrintf("Launcher", "Log and cache files will be written to the Cache directory on your host PC");
 
 #if defined(AZ_ENABLE_TRACING)
-            const char* message = "If your game does not run, check any of the following:\n"
-                                  "\t- Verify the remote_ip address is correct in bootstrap.cfg";
+            constexpr const char* message = "If your game does not run, check any of the following:\n"
+                                            "\t- Verify the remote_ip address is correct in bootstrap.cfg";
 #endif
-
             if (mainInfo.m_additionalVfsResolution)
             {
                 AZ_TracePrintf("Launcher", "%s\n%s", message, mainInfo.m_additionalVfsResolution)
@@ -647,6 +645,8 @@ namespace O3DELauncher
     #else
         systemInitParams.pSystem = CreateSystemInterface(systemInitParams);
     #endif // !defined(AZ_MONOLITHIC_BUILD)
+
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacySystemInterfaceCreated", R"({})");
 
         ReturnCode status = ReturnCode::Success;
 

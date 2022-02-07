@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,7 +14,7 @@
 
 
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/Debug/Timer.h>
 #include <MysticQt/Source/DialogStack.h>
 #include <EMotionFX/Source/AnimGraph.h>
@@ -70,15 +71,15 @@ namespace EMStudio
         MCORE_INLINE bool GetIsGameControllerValid() const
         {
             #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-            if (mGameController == nullptr)
+            if (m_gameController == nullptr)
             {
                 return false;
             }
-            if (mGameControllerComboBox->currentIndex() == 0)
+            if (m_gameControllerComboBox->currentIndex() == 0)
             {
                 return false;
             }
-            return mGameController->GetIsValid();
+            return m_gameController->GetIsValid();
             #else
             return false;
             #endif
@@ -111,22 +112,22 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandUnselectCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandClearSelectionCallback);
 
-        CommandCreateBlendParameterCallback*    mCreateCallback;
-        CommandRemoveBlendParameterCallback*    mRemoveCallback;
-        CommandAdjustBlendParameterCallback*    mAdjustCallback;
-        CommandSelectCallback*                  mSelectCallback;
-        CommandUnselectCallback*                mUnselectCallback;
-        CommandClearSelectionCallback*          mClearSelectionCallback;
+        CommandCreateBlendParameterCallback*    m_createCallback;
+        CommandRemoveBlendParameterCallback*    m_removeCallback;
+        CommandAdjustBlendParameterCallback*    m_adjustCallback;
+        CommandSelectCallback*                  m_selectCallback;
+        CommandUnselectCallback*                m_unselectCallback;
+        CommandClearSelectionCallback*          m_clearSelectionCallback;
 
         struct ParameterInfo
         {
             MCORE_MEMORYOBJECTCATEGORY(GameControllerWindow::ParameterInfo, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
 
-            const EMotionFX::Parameter*         mParameter;
-            QComboBox*                          mAxis;
-            QComboBox*                          mMode;
-            QCheckBox*                          mInvert;
-            QLineEdit*                          mValue;
+            const EMotionFX::Parameter*         m_parameter;
+            QComboBox*                          m_axis;
+            QComboBox*                          m_mode;
+            QCheckBox*                          m_invert;
+            QLineEdit*                          m_value;
         };
 
         struct ButtonInfo
@@ -134,12 +135,12 @@ namespace EMStudio
             MCORE_MEMORYOBJECTCATEGORY(GameControllerWindow::ButtonInfo, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
             ButtonInfo(uint32 index, QWidget* widget)
             {
-                mButtonIndex    = index;
-                mWidget         = widget;
+                m_buttonIndex    = index;
+                m_widget         = widget;
             }
 
-            uint32                              mButtonIndex;
-            QWidget*                            mWidget;
+            uint32                              m_buttonIndex;
+            QWidget*                            m_widget;
         };
 
         ParameterInfo* FindParamInfoByModeComboBox(QComboBox* comboBox);
@@ -152,37 +153,37 @@ namespace EMStudio
         void UpdateParameterInterface(ParameterInfo* parameterInfo);
         void UpdateGameControllerComboBox();
 
-        AnimGraphPlugin*                mPlugin;
-        MCore::Array<QLabel*>           mPreviewLabels;
-        MCore::Array<ParameterInfo>     mParameterInfos;
-        MCore::Array<ButtonInfo>        mButtonInfos;
-        QBasicTimer                     mInterfaceTimer;
-        QBasicTimer                     mGameControllerTimer;
-        AZ::Debug::Timer                mDeltaTimer;
-        int                             mInterfaceTimerID;
-        int                             mGameControllerTimerID;
+        AnimGraphPlugin*                m_plugin;
+        AZStd::vector<QLabel*>           m_previewLabels;
+        AZStd::vector<ParameterInfo>     m_parameterInfos;
+        AZStd::vector<ButtonInfo>        m_buttonInfos;
+        QBasicTimer                     m_interfaceTimer;
+        QBasicTimer                     m_gameControllerTimer;
+        AZ::Debug::Timer                m_deltaTimer;
+        int                             m_interfaceTimerId;
+        int                             m_gameControllerTimerId;
 
         #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameController*             mGameController;
+        GameController*             m_gameController;
         #endif
-        EMotionFX::AnimGraph*          mAnimGraph;
+        EMotionFX::AnimGraph*          m_animGraph;
 
-        MysticQt::DialogStack*          mDialogStack;
+        MysticQt::DialogStack*          m_dialogStack;
 
-        QWidget*                        mDynamicWidget;
-        AzQtComponents::SliderInt*      mDeadZoneSlider;
-        QLabel*                         mDeadZoneValueLabel;
-        QGridLayout*                    mParameterGridLayout;
-        QGridLayout*                    mButtonGridLayout;
-        QComboBox*                      mGameControllerComboBox;
+        QWidget*                        m_dynamicWidget;
+        AzQtComponents::SliderInt*      m_deadZoneSlider;
+        QLabel*                         m_deadZoneValueLabel;
+        QGridLayout*                    m_parameterGridLayout;
+        QGridLayout*                    m_buttonGridLayout;
+        QComboBox*                      m_gameControllerComboBox;
 
         // preset interface elements
-        QComboBox*                      mPresetComboBox;
-        QLineEdit*                      mPresetNameLineEdit;
-        QPushButton*                    mAddPresetButton;
-        QPushButton*                    mRemovePresetButton;
+        QComboBox*                      m_presetComboBox;
+        QLineEdit*                      m_presetNameLineEdit;
+        QPushButton*                    m_addPresetButton;
+        QPushButton*                    m_removePresetButton;
 
-        AZStd::string                   mString;
+        AZStd::string                   m_string;
 
         void timerEvent(QTimerEvent* event);
         void InitGameController();

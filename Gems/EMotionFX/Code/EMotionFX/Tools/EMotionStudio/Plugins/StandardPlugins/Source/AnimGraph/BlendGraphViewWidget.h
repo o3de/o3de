@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -132,7 +133,7 @@ namespace EMStudio
         QHBoxLayout* m_toolbarLayout = nullptr;
         AZStd::array<QAction*, NUM_OPTIONS> m_actions{};
         AnimGraphPlugin* m_parentPlugin = nullptr;
-        NavigationLinkWidget* mNavigationLink = nullptr;
+        NavigationLinkWidget* m_navigationLink = nullptr;
         QStackedWidget m_viewportStack;
         QSplitter* m_viewportSplitter = nullptr;
 

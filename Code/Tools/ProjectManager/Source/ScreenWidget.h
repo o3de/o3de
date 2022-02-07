@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -46,15 +47,22 @@ namespace O3DE::ProjectManager
             return tr("Missing");
         }
 
+        virtual bool ContainsScreen(ProjectManagerScreen screen)
+        {
+            return GetScreenEnum() == screen;
+        }
+        virtual void GoToScreen([[maybe_unused]] ProjectManagerScreen screen)
+        {
+        }
+
         //! Notify this screen it is the current screen 
         virtual void NotifyCurrentScreen()
         {
-
         }
 
     signals:
         void ChangeScreenRequest(ProjectManagerScreen screen);
-        void GotoPreviousScreenRequest();
+        void GoToPreviousScreenRequest();
         void ResetScreenRequest(ProjectManagerScreen screen);
         void NotifyCurrentProject(const QString& projectPath);
         void NotifyBuildProject(const ProjectInfo& projectInfo);

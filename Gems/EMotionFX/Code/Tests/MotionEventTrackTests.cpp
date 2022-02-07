@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,11 +27,11 @@ namespace EMotionFX
 {
     struct ExtractEventsParams
     {
-        void (*eventFactory)(MotionEventTrack* track);
-        float startTime;
-        float endTime;
-        EPlayMode playMode;
-        std::vector<EventInfo> expectedEvents;
+        void (*m_eventFactory)(MotionEventTrack* track);
+        float m_startTime;
+        float m_endTime;
+        EPlayMode m_playMode;
+        std::vector<EventInfo> m_expectedEvents;
     };
 
     void PrintTo(const EMotionFX::EventInfo::EventState& state, ::std::ostream* os)
@@ -51,7 +52,7 @@ namespace EMotionFX
 
     void PrintTo(const EMotionFX::EventInfo& event, ::std::ostream* os)
     {
-        *os << "Time: " << event.mTimeValue
+        *os << "Time: " << event.m_timeValue
             << " State: "
             ;
         PrintTo(event.m_eventState, os);
@@ -59,23 +60,23 @@ namespace EMotionFX
 
     void PrintTo(const ExtractEventsParams& object, ::std::ostream* os)
     {
-        if (object.eventFactory == &MakeNoEvents)
+        if (object.m_eventFactory == &MakeNoEvents)
         {
             *os << "Events: 0";
         }
-        else if (object.eventFactory == &MakeOneEvent)
+        else if (object.m_eventFactory == &MakeOneEvent)
         {
             *os << "Events: 1";
         }
-        else if (object.eventFactory == &MakeTwoEvents)
+        else if (object.m_eventFactory == &MakeTwoEvents)
         {
             *os << "Events: 2";
         }
-        else if (object.eventFactory == &MakeThreeEvents)
+        else if (object.m_eventFactory == &MakeThreeEvents)
         {
             *os << "Events: 3";
         }
-        else if (object.eventFactory == &MakeThreeRangedEvents)
+        else if (object.m_eventFactory == &MakeThreeRangedEvents)
         {
             *os << "Events: 3 (ranged)";
         }
@@ -83,15 +84,15 @@ namespace EMotionFX
         {
             *os << "Events: Unknown";
         }
-        *os << " Start time: " << object.startTime
-            << " End time: " << object.endTime
-            << " Play mode: " << ((object.playMode == EPlayMode::PLAYMODE_FORWARD) ? "Forward" : "Backward")
+        *os << " Start time: " << object.m_startTime
+            << " End time: " << object.m_endTime
+            << " Play mode: " << ((object.m_playMode == EPlayMode::PLAYMODE_FORWARD) ? "Forward" : "Backward")
             << " Expected events: ["
             ;
-        for (const auto& entry : object.expectedEvents)
+        for (const auto& entry : object.m_expectedEvents)
         {
             PrintTo(entry, os);
-            if (&entry != &(*(object.expectedEvents.end() - 1)))
+            if (&entry != &(*(object.m_expectedEvents.end() - 1)))
             {
                 *os << ", ";
             }
@@ -121,7 +122,7 @@ namespace EMotionFX
             {
             }
 
-            virtual const AZStd::vector<EventTypes> GetHandledEventTypes() const
+            const AZStd::vector<EventTypes> GetHandledEventTypes() const override
             {
                 return { EVENT_TYPE_ON_EVENT };
             }
@@ -147,7 +148,7 @@ namespace EMotionFX
             m_motion->GetEventTable()->AutoCreateSyncTrack(m_motion);
             m_track = m_motion->GetEventTable()->GetSyncTrack();
 
-            GetParam().eventFactory(m_track);
+            GetParam().m_eventFactory(m_track);
 
             m_actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(5);
 
@@ -177,11 +178,11 @@ namespace EMotionFX
             const ExtractEventsParams& params = GetParam();
 
             // Call the function being tested
-            func(params.startTime, params.endTime, params.playMode, m_motionInstance);
+            func(params.m_startTime, params.m_endTime, params.m_playMode, m_motionInstance);
 
             // ProcessEvents filters out the ACTIVE events, remove those from our expected results
             AZStd::vector<EventInfo> expectedEvents;
-            for (const EventInfo& event : params.expectedEvents)
+            for (const EventInfo& event : params.m_expectedEvents)
             {
                 if (event.m_eventState != EventInfo::ACTIVE || m_shouldContainActiveEvents)
                 {
@@ -190,11 +191,11 @@ namespace EMotionFX
             }
 
             EXPECT_EQ(m_buffer->GetNumEvents(), expectedEvents.size()) << "Number of events is incorrect";
-            for (uint32 i = 0; i < AZStd::min(m_buffer->GetNumEvents(), static_cast<uint32>(expectedEvents.size())); ++i)
+            for (size_t i = 0; i < AZStd::min(m_buffer->GetNumEvents(), expectedEvents.size()); ++i)
             {
                 const EventInfo& gotEvent = m_buffer->GetEvent(i);
                 const EventInfo& expectedEvent = expectedEvents[i];
-                EXPECT_EQ(gotEvent.mTimeValue, expectedEvent.mTimeValue);
+                EXPECT_EQ(gotEvent.m_timeValue, expectedEvent.m_timeValue);
                 EXPECT_EQ(gotEvent.m_eventState, expectedEvent.m_eventState);
             }
         }

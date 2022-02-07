@@ -1,0 +1,68 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
+            "Name": "Reflectance",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "PixelFormat": "BC4",
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
+                "Name": "Reflectance",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "ASTC_6x6",
+                "Swizzle": "rrr1",
+                "MaxTextureSize": 2048,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
+                "Name": "Reflectance",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "ASTC_6x6",
+                "Swizzle": "rrr1",
+                "MaxTextureSize": 2048,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "mac": {
+                "UUID": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
+                "Name": "Reflectance",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "BC4",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{7A3CC95E-0A0C-4CA1-8357-5712B028B77D}",
+                "Name": "Reflectance",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "BC4",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

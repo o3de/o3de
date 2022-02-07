@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,7 +20,7 @@ namespace EMotionFX
     
     TEST_F(SimulatedObjectSerializeTests, SerializeTest)
     {
-        SimulatedObjectSetup* setup = m_actor->GetSimulatedObjectSetup().get();        
+        SimulatedObjectSetup* setup = GetActor()->GetSimulatedObjectSetup().get();        
 
         // Build some setup.
         SimulatedObject* object = setup->AddSimulatedObject();
@@ -28,13 +29,13 @@ namespace EMotionFX
         object->SetGravityFactor(3.0f);
         object->SetStiffnessFactor(4.0f);
         const AZStd::vector<AZStd::string> jointNames = { "l_upArm", "l_loArm", "l_hand" };
-        Skeleton* skeleton = m_actor->GetSkeleton();
+        Skeleton* skeleton = GetActor()->GetSkeleton();
         for (const AZStd::string& name : jointNames)
         {
-            AZ::u32 skeletonJointIndex;
+            size_t skeletonJointIndex;
             const Node* skeletonJoint = skeleton->FindNodeAndIndexByName(name, skeletonJointIndex);
             ASSERT_NE(skeletonJoint, nullptr);
-            ASSERT_NE(skeletonJointIndex, MCORE_INVALIDINDEX32);
+            ASSERT_NE(skeletonJointIndex, InvalidIndex);
 
             SimulatedJoint* simulatedJoint = object->AddSimulatedJoint(skeletonJointIndex);
             simulatedJoint->SetDamping(0.1f);
@@ -49,7 +50,7 @@ namespace EMotionFX
         object->GetSimulatedJoint(0)->SetPinned(true);
 
         // Serialize it and deserialize it.
-        const AZStd::string serialized = SerializeSimulatedObjectSetup(m_actor.get());
+        const AZStd::string serialized = SerializeSimulatedObjectSetup(GetActor());
         AZStd::unique_ptr<SimulatedObjectSetup> loadedSetup(DeserializeSimulatedObjectSetup(serialized));
 
         // Verify some of the contents of the deserialized version.
@@ -62,7 +63,7 @@ namespace EMotionFX
         ASSERT_FLOAT_EQ(loadedObject->GetStiffnessFactor(), 4.0f);
         for (size_t i = 0; i < jointNames.size(); ++i)
         {
-            const SimulatedJoint* loadedJoint = loadedObject->GetSimulatedJoint(static_cast<AZ::u32>(i));
+            const SimulatedJoint* loadedJoint = loadedObject->GetSimulatedJoint(i);
             ASSERT_STREQ(skeleton->GetNode(loadedJoint->GetSkeletonJointIndex())->GetName(), jointNames[i].c_str());
             ASSERT_FLOAT_EQ(loadedJoint->GetDamping(), 0.1f);
             ASSERT_FLOAT_EQ(loadedJoint->GetMass(), 2.0f);

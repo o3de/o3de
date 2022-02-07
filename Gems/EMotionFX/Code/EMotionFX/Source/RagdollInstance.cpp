@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,14 +45,14 @@ namespace EMotionFX
             const Actor* actor = m_actorInstance->GetActor();
             const Skeleton* skeleton = actor->GetSkeleton();
             const AZStd::shared_ptr<PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
-            const AZ::u32 jointCount = skeleton->GetNumNodes();
+            const size_t jointCount = skeleton->GetNumNodes();
             const Physics::RagdollConfiguration& ragdollConfig = physicsSetup->GetRagdollConfig();
             const size_t ragdollNodeCount = ragdollConfig.m_nodes.size();
 
             m_ragdollNodeIndices.resize(jointCount);
             m_jointIndicesByRagdollNodeIndices.resize(ragdollNodeCount);
 
-            for (AZ::u32 jointIndex = 0; jointIndex < jointCount; ++jointIndex)
+            for (size_t jointIndex = 0; jointIndex < jointCount; ++jointIndex)
             {
                 const Node* joint = skeleton->GetNode(jointIndex);
 
@@ -66,12 +67,12 @@ namespace EMotionFX
                 }
                 else
                 {
-                    m_ragdollNodeIndices[jointIndex] = MCORE_INVALIDINDEX32;
+                    m_ragdollNodeIndices[jointIndex] = InvalidIndex;
                 }
             }
 
             // Find and store the ragdoll root joint by iterating the skeleton top-down until we find the first node which is part of the ragdoll.
-            for (AZ::u32 jointIndex = 0; jointIndex < jointCount; ++jointIndex)
+            for (size_t jointIndex = 0; jointIndex < jointCount; ++jointIndex)
             {
                 Node* joint = skeleton->GetNode(jointIndex);
                 const AZ::Outcome<size_t> ragdollNodeIndex = GetRagdollNodeIndex(jointIndex);
@@ -161,7 +162,7 @@ namespace EMotionFX
             AZ_Assert(ragdollNodeCount == m_ragdoll->GetNumNodes(), "Ragdoll node index to animation skeleton joint index mapping not up to date. Expected the same number of joint indices than ragdoll nodes.");
             for (size_t ragdollNodeIndex = 0; ragdollNodeIndex < ragdollNodeCount; ++ragdollNodeIndex)
             {
-                const AZ::u32 jointIndex = GetJointIndex(ragdollNodeIndex);
+                const size_t jointIndex = GetJointIndex(ragdollNodeIndex);
                 Physics::RagdollNodeState& ragdollNodeState = m_targetState[ragdollNodeIndex];
 
                 if (ragdollNodeState.m_simulationType == Physics::SimulationType::Kinematic)
@@ -255,7 +256,7 @@ namespace EMotionFX
     const AZ::Outcome<size_t> RagdollInstance::GetRagdollNodeIndex(size_t jointIndex) const
     {
         const size_t ragdollNodeIndex = m_ragdollNodeIndices[jointIndex];
-        if (ragdollNodeIndex == MCORE_INVALIDINDEX32)
+        if (ragdollNodeIndex == InvalidIndex)
         {
             return AZ::Failure();
         }
@@ -263,7 +264,7 @@ namespace EMotionFX
         return AZ::Success(ragdollNodeIndex);
     }
 
-    AZ::u32 RagdollInstance::GetJointIndex(size_t ragdollNodeIndex) const
+    size_t RagdollInstance::GetJointIndex(size_t ragdollNodeIndex) const
     {
         return m_jointIndicesByRagdollNodeIndices[ragdollNodeIndex];
     }
@@ -329,15 +330,15 @@ namespace EMotionFX
         return m_velocityEvaluator.get();
     }
 
-    void RagdollInstance::GetWorldSpaceTransform(const Pose* pose, AZ::u32 jointIndex, AZ::Vector3& outPosition, AZ::Quaternion& outRotation)
+    void RagdollInstance::GetWorldSpaceTransform(const Pose* pose, size_t jointIndex, AZ::Vector3& outPosition, AZ::Quaternion& outRotation)
     {
         const Transform& globalTransform = pose->GetModelSpaceTransform(jointIndex);
-        const AZ::Quaternion actorInstanceRotation = m_actorInstance->GetLocalSpaceTransform().mRotation;
-        const AZ::Vector3& actorInstanceTranslation = m_actorInstance->GetLocalSpaceTransform().mPosition;
+        const AZ::Quaternion actorInstanceRotation = m_actorInstance->GetLocalSpaceTransform().m_rotation;
+        const AZ::Vector3& actorInstanceTranslation = m_actorInstance->GetLocalSpaceTransform().m_position;
 
         // Calculate the world space position and rotation (The actor instance position and rotation equal the entity transform).
-        outPosition = actorInstanceRotation.TransformVector(globalTransform.mPosition) + actorInstanceTranslation;
-        outRotation = actorInstanceRotation * globalTransform.mRotation;
+        outPosition = actorInstanceRotation.TransformVector(globalTransform.m_position) + actorInstanceTranslation;
+        outRotation = actorInstanceRotation * globalTransform.m_rotation;
     }
 
     void RagdollInstance::ReadRagdollStateFromActorInstance(Physics::RagdollState& outRagdollState, AZ::Vector3& outRagdollPos, AZ::Quaternion& outRagdollRot)
@@ -348,15 +349,15 @@ namespace EMotionFX
         const Skeleton* skeleton = actor->GetSkeleton();
         const Pose* currentPose = m_actorInstance->GetTransformData()->GetCurrentPose();
 
-        const AZ::Quaternion& actorInstanceRotation = m_actorInstance->GetLocalSpaceTransform().mRotation;
-        const AZ::Vector3& actorInstanceTranslation = m_actorInstance->GetLocalSpaceTransform().mPosition;
+        const AZ::Quaternion& actorInstanceRotation = m_actorInstance->GetLocalSpaceTransform().m_rotation;
+        const AZ::Vector3& actorInstanceTranslation = m_actorInstance->GetLocalSpaceTransform().m_position;
 
         const size_t ragdollNodeCount = m_ragdoll->GetNumNodes();
         outRagdollState.resize(ragdollNodeCount);
 
         for (size_t ragdollNodeIndex = 0; ragdollNodeIndex < ragdollNodeCount; ++ragdollNodeIndex)
         {
-            const AZ::u32 jointIndex = m_jointIndicesByRagdollNodeIndices[ragdollNodeIndex];
+            const size_t jointIndex = m_jointIndicesByRagdollNodeIndices[ragdollNodeIndex];
             const Node* joint = skeleton->GetNode(jointIndex);
 
             Physics::RagdollNodeState& ragdollNodeState = outRagdollState[ragdollNodeIndex];
@@ -370,14 +371,14 @@ namespace EMotionFX
         {
             // Calculate the ragdoll world space position and rotation from the ragdoll root node representative in the animation skeleton (e.g. the Pelvis).
             const Transform& globalTransform = currentPose->GetModelSpaceTransform(m_ragdollRootJoint->GetNodeIndex());
-            outRagdollPos = actorInstanceRotation.TransformVector(globalTransform.mPosition) + actorInstanceTranslation;
-            outRagdollRot = actorInstanceRotation * globalTransform.mRotation;
+            outRagdollPos = actorInstanceRotation.TransformVector(globalTransform.m_position) + actorInstanceTranslation;
+            outRagdollRot = actorInstanceRotation * globalTransform.m_rotation;
         }
         else
         {
             AZ_Assert(false, "Expected valid ragdoll root node. Either the ragdoll root node does not exist in the animation skeleton or the ragdoll is empty.");
-            outRagdollPos = m_actorInstance->GetLocalSpaceTransform().mPosition;
-            outRagdollRot = m_actorInstance->GetLocalSpaceTransform().mRotation;
+            outRagdollPos = m_actorInstance->GetLocalSpaceTransform().m_position;
+            outRagdollRot = m_actorInstance->GetLocalSpaceTransform().m_rotation;
         }
     }
 
@@ -432,9 +433,8 @@ namespace EMotionFX
         }
 
         const EMotionFX::TransformData* transformData = m_actorInstance->GetTransformData();
-        const AZ::u32 transformCount = transformData->GetNumTransforms();
         const EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
-        const AZ::u32 jointCount = skeleton->GetNumNodes();
+        const size_t jointCount = skeleton->GetNumNodes();
 
         const RagdollInstance* ragdollInstance = m_actorInstance->GetRagdollInstance();
         const Physics::Ragdoll* ragdoll = ragdollInstance->GetRagdoll();
@@ -458,7 +458,7 @@ namespace EMotionFX
         const size_t ragdollNodeCount = ragdoll->GetNumNodes();
         for (size_t i = 0; i < ragdollNodeCount; ++i)
         {
-            const AZ::u32 jointIndex = ragdollInstance->GetJointIndex(i);
+            const size_t jointIndex = ragdollInstance->GetJointIndex(i);
             const Physics::RagdollNodeState& targetJointPose = ragdollTargetPose[i];
 
             if (targetJointPose.m_simulationType == Physics::SimulationType::Dynamic)
@@ -467,7 +467,7 @@ namespace EMotionFX
             }
         }
 
-        for (AZ::u32 jointIndex = 0; jointIndex < jointCount; ++jointIndex)
+        for (size_t jointIndex = 0; jointIndex < jointCount; ++jointIndex)
         {
             const Node* joint = skeleton->GetNode(jointIndex);
             const AZ::Outcome<size_t> ragdollJointIndex = ragdollInstance->GetRagdollNodeIndex(jointIndex);
@@ -497,9 +497,7 @@ namespace EMotionFX
                     const AZ::Vector3 currentPos = currentNodeState.m_position;
                     const AZ::Vector3 currentParentPos = currentParentJointPose.m_position;
 
-                    const Physics::RagdollNodeState& targetJointPose = ragdollTargetPose[ragdollJointIndex.GetValue()];
                     const Physics::RagdollNodeState& targetParentJointPose = ragdollTargetPose[ragdollParentJointIndex.GetValue()];
-                    const float strength = targetJointPose.m_strength;
 
                     if (targetParentJointPose.m_simulationType == Physics::SimulationType::Dynamic)
                     {
@@ -511,8 +509,8 @@ namespace EMotionFX
                         drawLine(currentParentPos, simulatedColor, currentPos, simulatedColor, defaultLineThickness);
 
                         // Render target pose
-                        const AZ::Vector3& targetPos = targetPose.GetWorldSpaceTransform(jointIndex).mPosition;
-                        const AZ::Vector3& targetParentPos = targetPose.GetWorldSpaceTransform(ragdollParentJoint->GetNodeIndex()).mPosition;
+                        const AZ::Vector3& targetPos = targetPose.GetWorldSpaceTransform(jointIndex).m_position;
+                        const AZ::Vector3& targetParentPos = targetPose.GetWorldSpaceTransform(ragdollParentJoint->GetNodeIndex()).m_position;
                         drawLine(targetParentPos, simulatedTargetColor, targetPos, simulatedTargetColor, targetLineThickness);
                     }
                     else

@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -24,22 +25,21 @@ function(ly_add_autogen)
         list(FILTER AZCG_INPUTFILES INCLUDE REGEX ".*\.(xml|json|jinja)$")
         target_include_directories(${ly_add_autogen_NAME} PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated")
         execute_process(
-            COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/Code/Framework/AzAutoGen/AzAutoGen.py" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/" "${CMAKE_CURRENT_SOURCE_DIR}" "${AZCG_INPUTFILES}" "${ly_add_autogen_AUTOGEN_RULES}" "-n"
+            COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/" "${CMAKE_CURRENT_SOURCE_DIR}" "${AZCG_INPUTFILES}" "${ly_add_autogen_AUTOGEN_RULES}" "-n"
             OUTPUT_VARIABLE AUTOGEN_OUTPUTS
         )
         string(STRIP "${AUTOGEN_OUTPUTS}" AUTOGEN_OUTPUTS)
         set(AZCG_DEPENDENCIES ${AZCG_INPUTFILES})
-        list(APPEND AZCG_DEPENDENCIES "${LY_ROOT_FOLDER}/Code/Framework/AzAutoGen/AzAutoGen.py")
+        list(APPEND AZCG_DEPENDENCIES "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py")
         add_custom_command(
             OUTPUT ${AUTOGEN_OUTPUTS}
             DEPENDS ${AZCG_DEPENDENCIES}
-            COMMAND ${CMAKE_COMMAND} -E echo "Running AutoGen for ${ly_add_autogen_NAME}"
-            COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/Code/Framework/AzAutoGen/AzAutoGen.py" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/" "${CMAKE_CURRENT_SOURCE_DIR}" "${AZCG_INPUTFILES}" "${ly_add_autogen_AUTOGEN_RULES}"
+            COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/" "${CMAKE_CURRENT_SOURCE_DIR}" "${AZCG_INPUTFILES}" "${ly_add_autogen_AUTOGEN_RULES}"
+            COMMENT "Running AutoGen for ${ly_add_autogen_NAME}"
             VERBATIM
         )
         set_target_properties(${ly_add_autogen_NAME} PROPERTIES AUTOGEN_INPUT_FILES "${AZCG_INPUTFILES}")
         set_target_properties(${ly_add_autogen_NAME} PROPERTIES AUTOGEN_OUTPUT_FILES "${AUTOGEN_OUTPUTS}")
-        set_target_properties(${ly_add_autogen_NAME} PROPERTIES VS_USER_PROPS "${LY_ROOT_FOLDER}/Code/Framework/AzAutoGen/AzAutoGen.props")
         target_sources(${ly_add_autogen_NAME} PRIVATE ${AUTOGEN_OUTPUTS})
     endif()
 

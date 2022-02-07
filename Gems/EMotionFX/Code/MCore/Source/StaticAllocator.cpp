@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -38,7 +39,7 @@ namespace MCore
         return 0;
     }
 
-    StaticAllocator::size_type StaticAllocator::get_max_size() const
+    StaticAllocator::size_type StaticAllocator::max_size() const
     {
         return 0;
     }

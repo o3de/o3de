@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,13 +41,12 @@ namespace AZ
             void SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees) override;
 
             void SetEnableShadow(bool enabled) override;
+            void SetShadowBias(float bias) override;
             void SetShadowmapMaxSize(ShadowmapSize size) override;
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
-            void SetSofteningBoundaryWidthAngle(float widthInDegrees) override;
-            void SetPredictionSampleCount(uint32_t count) override;
             void SetFilteringSampleCount(uint32_t count) override;
-            void SetPcfMethod(PcfMethod method) override;
             void SetEsmExponent(float exponent) override;
+            void SetNormalShadowBias(float bias) override;
 
         private:
 

@@ -1,14 +1,14 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
-#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
@@ -36,6 +36,9 @@ namespace PhysX
 
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+
+        // EditorJointComponent
+        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> GetSubComponentModesState() override;
 
     private:
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,7 +32,7 @@ namespace AZ
         {
             if (m_rtPipeline)
             {
-                AZ::RPI::RPISystemInterface::Get()->GetDefaultScene()->RemoveRenderPipeline(m_rtPipeline->GetId());
+                m_rtPipeline->RemoveFromScene();
                 m_rtPipeline = nullptr;
             }
             
@@ -110,8 +111,12 @@ namespace AZ
                 parentPass->SetSourceTexture(m_texture, RHI::Format::R8G8B8A8_UNORM);
                 break;
             }
-
-            AZ::RPI::RPISystemInterface::Get()->GetDefaultScene()->AddRenderPipeline(m_rtPipeline);
+            
+            const auto mainScene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("RPI"));
+            if (mainScene)
+            {
+                mainScene->AddRenderPipeline(m_rtPipeline);
+            }
         }
 
         bool LuxCoreTexture::IsIBLTexture()

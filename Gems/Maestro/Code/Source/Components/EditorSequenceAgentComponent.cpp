@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Maestro_precompiled.h"
 #include "EditorSequenceAgentComponent.h"
 #include "SequenceAgentComponent.h"
 
@@ -146,7 +146,7 @@ namespace Maestro
         AZ::EntityId sequenceEntityId = busIdToDisconnect->first;
 
         // we only process DisconnectSequence events sent over an ID'ed bus - otherwise we don't know which SequenceComponent to disconnect
-        auto findIter = m_sequenceEntityIds.find(sequenceEntityId);
+        [[maybe_unused]] auto findIter = m_sequenceEntityIds.find(sequenceEntityId);
         AZ_Assert(findIter != m_sequenceEntityIds.end(), "A sequence not connected to SequenceAgentComponent on %s is requesting a disconnection", GetEntity()->GetName().c_str());
 
         m_sequenceEntityIds.erase(sequenceEntityId);
@@ -231,7 +231,7 @@ namespace Maestro
 
                 // check for paramType specialization attributes on the getter method of the virtual property. if found, reset
                 // to the eAnimParamType enum - this leaves the paramType name unchanged but changes the type.
-                for (int i = virtualProperty->m_getter->m_attributes.size(); --i >= 0;)
+                for (int i = static_cast<int>(virtualProperty->m_getter->m_attributes.size()); --i >= 0;)
                 {
                     if (virtualProperty->m_getter->m_attributes[i].first == AZ::Edit::Attributes::PropertyPosition)
                     {

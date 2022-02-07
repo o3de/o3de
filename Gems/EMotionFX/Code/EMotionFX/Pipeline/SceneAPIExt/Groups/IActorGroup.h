@@ -1,14 +1,20 @@
 #pragma once
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/RTTI/RTTI.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
+
+namespace AZ::SceneAPI::Containers
+{
+    class SceneGraph;
+}
 
 namespace EMotionFX
 {
@@ -26,6 +32,7 @@ namespace EMotionFX
 
                 virtual const AZStd::string& GetSelectedRootBone() const = 0;
                 virtual void SetSelectedRootBone(const AZStd::string& selectedRootBone) = 0;
+                virtual void SetBestMatchingRootBone(const AZ::SceneAPI::Containers::SceneGraph& sceneGraph) = 0;
             };
         }
     }

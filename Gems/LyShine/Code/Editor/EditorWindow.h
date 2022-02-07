@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -141,6 +142,9 @@ public: // member functions
 
     //! Returns the current mode of the editor (Edit or Preview)
     UiEditorMode GetEditorMode() { return m_editorMode; }
+
+    //! Returns the UI canvas for the current mode (Edit or Preview)
+    AZ::EntityId GetCanvasForCurrentEditorMode();
 
     //! Toggle the editor mode between Edit and Preview
     void ToggleEditorMode();

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -76,7 +77,7 @@ namespace GraphCanvas
         ////
 
         // SystemTick
-        void OnSystemTick();
+        void OnSystemTick() override;
         ////
 
         // TickBus
@@ -85,7 +86,7 @@ namespace GraphCanvas
 
         // GeometryNotificationBus::Handler
         void OnPositionChanged(const AZ::EntityId& /*targetEntity*/, const AZ::Vector2& /*position*/) override;
-        void OnBoundsChanged();
+        void OnBoundsChanged() override;
         ////
 
         // ViewNotificationBus

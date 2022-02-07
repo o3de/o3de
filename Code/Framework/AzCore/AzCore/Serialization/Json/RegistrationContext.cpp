@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -42,7 +43,7 @@ namespace AZ
 
             if (!overwriteExisting)
             {
-                auto emplaceResult = m_context->m_handledTypesMap.try_emplace(uuid, serializer);
+                [[maybe_unused]] auto emplaceResult = m_context->m_handledTypesMap.try_emplace(uuid, serializer);
                 AZ_Assert(
                     emplaceResult.second,
                     "Couldn't register Json serializer %s. Another serializer (%s) has already been registered for the same Uuid (%s).",

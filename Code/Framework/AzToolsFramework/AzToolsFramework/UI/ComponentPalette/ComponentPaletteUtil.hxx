@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,18 +25,6 @@ namespace AzToolsFramework
         using ComponentDataTable = AZStd::map <QString, AZStd::map <QString, const AZ::SerializeContext::ClassData* > >;
 
         using ComponentIconTable = AZStd::map<const AZ::SerializeContext::ClassData*, QString>;
-
-        // Returns true if the given component provides at least one of the services specified or no services are provided
-        bool OffersRequiredServices(
-            const AZ::SerializeContext::ClassData* componentClass,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
-        );
-
-        bool OffersRequiredServices(
-            const AZ::SerializeContext::ClassData* componentClass,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter
-        );
 
         // Returns true if the given component is addable by the user
         bool IsAddableByUser(const AZ::SerializeContext::ClassData* componentClass);

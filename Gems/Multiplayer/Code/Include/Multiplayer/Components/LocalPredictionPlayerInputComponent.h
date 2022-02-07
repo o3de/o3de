@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,11 +10,10 @@
 
 #include <Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <AzNetworking/Serialization/StringifySerializer.h>
 
 namespace Multiplayer
 {
-    using CorrectionEvent = AZ::Event<>;
-
     class LocalPredictionPlayerInputComponent
         : public LocalPredictionPlayerInputComponentBase
     {
@@ -21,6 +21,7 @@ namespace Multiplayer
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::LocalPredictionPlayerInputComponent, s_localPredictionPlayerInputComponentConcreteUuid, Multiplayer::LocalPredictionPlayerInputComponentBase);
 
         static void Reflect([[maybe_unused]] AZ::ReflectContext* context);
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
 
         void OnInit() override;
         void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override;
@@ -40,8 +41,7 @@ namespace Multiplayer
         (
             AzNetworking::IConnection* invokingConnection,
             const Multiplayer::NetworkInputArray& inputArray,
-            const AZ::HashValue32& stateHash,
-            const AzNetworking::PacketEncodingBuffer& clientState
+            const AZ::HashValue32& stateHash
         ) override;
 
         void HandleSendMigrateClientInput
@@ -57,10 +57,13 @@ namespace Multiplayer
             const AzNetworking::PacketEncodingBuffer& correction
         ) override;
 
-        //! Return true if we're currently replaying inputs after a correction.
-        //! If this value returns true, effects, audio, and other cosmetic triggers should be suppressed
-        //! @return true if we're within correction scope and replaying inputs
-        bool IsReplayingInput() const;
+        //! Forcibly enables ProcessInput to execute on the entity.
+        //! Note that this function is quite dangerous and should normally never be used
+        void ForceEnableAutonomousUpdate();
+
+        //! Forcibly disables ProcessInput from executing on the entity.
+        //! Note that this function is quite dangerous and should normally never be used
+        void ForceDisableAutonomousUpdate();
 
         //! Return true if we're currently migrating from one host to another.
         //! @return boolean true if we're currently migrating from one host to another
@@ -69,14 +72,17 @@ namespace Multiplayer
         ClientInputId GetLastInputId() const;
         HostFrameId GetInputFrameId(const NetworkInput& input) const;
 
-        void CorrectionEventAddHandle(CorrectionEvent::Handler& handler);
-
     private:
 
         void OnMigrateStart(ClientInputId migratedInputId);
         void OnMigrateEnd();
         void UpdateAutonomous(AZ::TimeMs deltaTimeMs);
         void UpdateBankedTime(AZ::TimeMs deltaTimeMs);
+
+        bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
+
+        using StateHistoryItem = AZStd::unique_ptr<AzNetworking::StringifySerializer>;
+        AZStd::map<ClientInputId, StateHistoryItem> m_predictiveStateHistory;
 
         // Implicitly sorted player input history, back() is the input that corresponds to the latest client input Id
         NetworkInputHistory m_inputHistory;
@@ -87,9 +93,8 @@ namespace Multiplayer
         AZ::ScheduledEvent m_autonomousUpdateEvent; // Drives autonomous input collection
         AZ::ScheduledEvent m_updateBankedTimeEvent; // Drives authority bank time updates
 
-        CorrectionEvent m_correctionEvent;
-        EntityMigrationStartEvent::Handler m_migrateStartHandler;
-        EntityMigrationEndEvent::Handler m_migrateEndHandler;
+        ClientMigrationStartEvent::Handler m_migrateStartHandler;
+        ClientMigrationEndEvent::Handler m_migrateEndHandler;
 
         double m_moveAccumulator = 0.0;
         double m_clientBankedTime = 0.0;
@@ -103,7 +108,6 @@ namespace Multiplayer
         ClientInputId m_lastMigratedInputId = ClientInputId{ 0 }; // Used to resend inputs that were queued during a migration event
         HostFrameId   m_serverMigrateFrameId = InvalidHostFrameId;
 
-        bool m_replayingInput = false; // True if we're replaying inputs under a correction event (use this to suppress effects or audio)
         bool m_allowMigrateClientInput = false; // True if this component was migrated, we will allow the client to send us migrated inputs (one time only)
     };
 }

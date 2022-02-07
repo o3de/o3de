@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,10 +15,10 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 
 #include <AzQtComponents/Components/StyledDockWidget.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
-#include <GraphCanvas/Components/ToastBus.h>
 
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
 #include <ScriptCanvas/Debugger/StatusBus.h>
@@ -182,7 +183,7 @@ namespace ScriptCanvasEditor
     //! Owns the model for each currently opened graph
     class ValidationData
         : private ScriptCanvas::StatusRequestBus::Handler
-        , private GraphCanvas::ToastNotificationBus::MultiHandler
+        , private AzToolsFramework::ToastNotificationBus::MultiHandler
     {
     public:
         AZ_CLASS_ALLOCATOR(ValidationData, AZ::SystemAllocator, 0);
@@ -226,7 +227,7 @@ namespace ScriptCanvasEditor
         : public AzQtComponents::StyledDockWidget
         , public GraphCanvas::AssetEditorNotificationBus::Handler
         , public GraphCanvas::SceneNotificationBus::Handler
-        , public GraphCanvas::ToastNotificationBus::Handler
+        , public AzToolsFramework::ToastNotificationBus::Handler
     {
         Q_OBJECT
     public:

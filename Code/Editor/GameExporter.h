@@ -1,13 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-
-#ifndef CRYINCLUDE_EDITOR_GAMEEXPORTER_H
-#define CRYINCLUDE_EDITOR_GAMEEXPORTER_H
 #pragma once
 
 #include "Util/PakFile.h"
@@ -61,7 +58,7 @@ public:
     // In auto exporting mode, highest possible settings will be chosen and no UI dialogs will be shown.
     void SetAutoExportMode(bool bAuto) { m_bAutoExportMode = bAuto; }
 
-    bool Export(unsigned int flags = 0, EEndian eExportEndian = GetPlatformEndian(), const char* subdirectory = 0);
+    bool Export(unsigned int flags = 0, EEndian eExportEndian = eEndianness_Little, const char* subdirectory = 0);
 
     static CGameExporter* GetCurrentExporter() { return m_pCurrentExporter; }
 
@@ -101,7 +98,6 @@ private:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     bool m_bAutoExportMode;
-    int m_numExportedMaterials;
 
     static CGameExporter* m_pCurrentExporter;
 };
@@ -116,5 +112,3 @@ void SetupTerrainInfo(const size_t octreeCompiledDataSize, Func&& setupTerrainFn
         setupTerrainFn(octreeCompiledDataSize);
     }
 }
-
-#endif // CRYINCLUDE_EDITOR_GAMEEXPORTER_H

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,22 +10,9 @@
 
 namespace AzNetworking
 {
-    StringifySerializer::StringifySerializer(char delimeter, bool outputFieldNames, const AZStd::string& seperator)
-        : m_delimeter(delimeter)
-        , m_outputFieldNames(outputFieldNames)
-        , m_separator(seperator)
+    const StringifySerializer::ValueMap& StringifySerializer::GetValueMap() const
     {
-        ;
-    }
-
-    const AZStd::string& StringifySerializer::GetString() const
-    {
-        return m_string;
-    }
-
-    const StringifySerializer::StringMap& StringifySerializer::GetValueMap() const
-    {
-        return m_map;
+        return m_valueMap;
     }
 
     SerializerMode StringifySerializer::GetSerializerMode() const
@@ -136,22 +124,9 @@ namespace AzNetworking
     template <typename T>
     bool StringifySerializer::ProcessData(const char* name, const T& value)
     {
-        // Only add delimeters after we have processed at least one element
-        if (!m_string.empty())
-        {
-            m_string += m_delimeter;
-        }
-
-        if (m_outputFieldNames)
-        {
-            m_string += m_prefix;
-            m_string += name;
-            m_string += m_separator;
-        }
-
-        AZ::CVarFixedString string = AZ::ConsoleTypeHelpers::ValueToString(value);
-        m_string += string.c_str();
-        m_map[m_prefix + name] = string.c_str();
+        const AZStd::string keyString = m_prefix + name;
+        AZ::CVarFixedString valueString = AZ::ConsoleTypeHelpers::ValueToString(value);
+        m_valueMap[keyString] = valueString.c_str();
         return true;
     }
 }

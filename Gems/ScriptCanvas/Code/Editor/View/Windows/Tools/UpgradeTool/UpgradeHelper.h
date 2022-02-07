@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,6 +35,8 @@ namespace Ui
 
 namespace ScriptCanvasEditor
 {
+    // class SourceHandle;
+
     //! A tool that collects and upgrades all Script Canvas graphs in the asset catalog
     class UpgradeHelper
         : public AzQtComponents::StyledDialog
@@ -50,6 +53,6 @@ namespace ScriptCanvasEditor
 
         AZStd::unique_ptr<Ui::UpgradeHelper> m_ui;
 
-        void OpenGraph(AZ::Data::AssetId assetId);
+        void OpenGraph(const SourceHandle& assetId);
     };
 }

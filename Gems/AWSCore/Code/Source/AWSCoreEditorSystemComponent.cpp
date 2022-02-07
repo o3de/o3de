@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -78,7 +79,7 @@ namespace AWSCore
         QMenuBar* menuBar = mainWindow->menuBar();
         QList<QAction*> actionList = menuBar->actions();
         QAction* insertPivot = nullptr;
-        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); itr++)
+        for (QList<QAction*>::iterator itr = actionList.begin(); itr != actionList.end(); ++itr)
         {
             if (QString::compare((*itr)->text(), EDITOR_HELP_MENU_TEXT) == 0)
             {
@@ -87,7 +88,7 @@ namespace AWSCore
             }
         }
 
-        auto menu = m_awsCoreEditorManager->GetAWSCoreEditorMenu();
+        const auto menu = m_awsCoreEditorManager->GetAWSCoreEditorMenu();
         if (insertPivot)
         {
             menuBar->insertMenu(insertPivot, menu);

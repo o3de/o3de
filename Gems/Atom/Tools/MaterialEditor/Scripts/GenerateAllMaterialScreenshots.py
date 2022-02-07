@@ -1,10 +1,12 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import azlmbr.bus
+import azlmbr.atomtools
 import azlmbr.materialeditor
 import azlmbr.name
 import azlmbr.render
@@ -14,10 +16,10 @@ import sys
 import os.path
 import filecmp
 
-g_devroot = azlmbr.paths.devroot
-sys.path.append(os.path.join(g_devroot, 'Tests', 'Atom', 'Automated'))
+g_engroot = azlmbr.paths.engroot
+sys.path.append(os.path.join(g_engroot, 'Tests', 'Atom', 'Automated'))
 
-g_materialTestFolder = os.path.join(g_devroot,'Gems','Atom','TestData','TestData','Materials','StandardPbrTestCases')
+g_materialTestFolder = os.path.join(g_engroot,'Gems','Atom','TestData','TestData','Materials','StandardPbrTestCases')
 
 # Change this to True to replace the expected screenshot images
 g_replaceExpectedScreenshots = False
@@ -91,11 +93,11 @@ def ToRadians(degrees):
     return 3.14159 * degrees / 180.0;
 
 def OpenMaterial(filename):
-    documentId = azlmbr.materialeditor.MaterialDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'OpenDocument', os.path.join(g_materialTestFolder, filename))
+    documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'OpenDocument', os.path.join(g_materialTestFolder, filename))
     return documentId
     
 def CloseMaterial(documentId):
-    azlmbr.materialeditor.MaterialDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'CloseDocument', documentId)
+    azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'CloseDocument', documentId)
 
 def SelectLightingPreset(presetName):
     azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, 'SelectLightingPresetByName', presetName)
@@ -113,20 +115,20 @@ def SetCameraPitch(pitch):
     azlmbr.render.ArcBallControllerRequestBus(azlmbr.bus.Broadcast, 'SetPitch', pitch)
 
 def IdleFrames(numFrames):
-    azlmbr.materialeditor.general.idle_wait_frames(numFrames)
+    azlmbr.atomtools.general.idle_wait_frames(numFrames)
 
 def CaptureScreenshot(screenshotOutputPath):
     print("Capturing screenshot to " + screenshotOutputPath + " ...")
-    return ScreenshotHelper(azlmbr.materialeditor.general.idle_wait_frames).capture_screenshot_blocking(screenshotOutputPath)
+    return ScreenshotHelper(azlmbr.atomtools.general.idle_wait_frames).capture_screenshot_blocking(screenshotOutputPath)
 
 def ResizeViewport(width, height):
     # This locks the size of the render target to the desired resolution
-    azlmbr.materialeditor.MaterialEditorWindowRequestBus(azlmbr.bus.Broadcast, 'LockViewportRenderTargetSize', width, height)
+    azlmbr.atomtools.AtomToolsMainWindowRequestBus(azlmbr.bus.Broadcast, 'LockViewportRenderTargetSize', width, height)
     # This resizes the window to closely match the render target resolution so it doesn't appear stretched while the script is running
-    azlmbr.materialeditor.MaterialEditorWindowRequestBus(azlmbr.bus.Broadcast, 'ResizeViewportRenderTarget', width, height)
+    azlmbr.atomtools.AtomToolsMainWindowRequestBus(azlmbr.bus.Broadcast, 'ResizeViewportRenderTarget', width, height)
 
 def ReleaseViewportResolutionLock():
-    azlmbr.materialeditor.MaterialEditorWindowRequestBus(azlmbr.bus.Broadcast, 'UnlockViewportRenderTargetSize')
+    azlmbr.atomtools.AtomToolsMainWindowRequestBus(azlmbr.bus.Broadcast, 'UnlockViewportRenderTargetSize')
 
 def GenerateMaterialScreenshot(materialName, 
                                uniqueSuffix="",

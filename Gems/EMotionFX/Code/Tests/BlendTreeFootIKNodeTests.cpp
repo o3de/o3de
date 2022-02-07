@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -135,14 +136,14 @@ namespace EMotionFX
         void ValidateFootHeight(BlendTreeFootIKNode::LegId legId, const char* jointName, float height, float tolerance)
         {
             // Check the left foot height.
-            AZ::u32 footIndex;
+            size_t footIndex = InvalidIndex;
             Skeleton* skeleton = m_actor->GetSkeleton();
             skeleton->FindNodeAndIndexByName(jointName, footIndex);
-            ASSERT_NE(footIndex, MCORE_INVALIDINDEX32);
+            ASSERT_NE(footIndex, InvalidIndex);
             EMotionFX::Transform transform = m_actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(footIndex);
             const BlendTreeFootIKNode::UniqueData* uniqueData = static_cast<const BlendTreeFootIKNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_ikNode));
-            const float correction = (m_actorInstance->GetWorldSpaceTransform().mRotation.TransformVector(AZ::Vector3(0.0f, 0.0f, uniqueData->m_legs[legId].m_footHeight))).GetZ();
-            const float pos = transform.mPosition.GetZ() - correction;
+            const float correction = (m_actorInstance->GetWorldSpaceTransform().m_rotation.TransformVector(AZ::Vector3(0.0f, 0.0f, uniqueData->m_legs[legId].m_footHeight))).GetZ();
+            const float pos = transform.m_position.GetZ() - correction;
             EXPECT_NEAR(pos, height, tolerance);
         }
 
@@ -208,15 +209,15 @@ namespace EMotionFX
         BlendTreeFootIKNode::UniqueData* uniqueData = static_cast<BlendTreeFootIKNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_ikNode));
         ASSERT_TRUE(uniqueData != nullptr);
         ASSERT_TRUE(!uniqueData->GetHasError());
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_hipJointIndex, MCORE_INVALIDINDEX32);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], InvalidIndex);
+        ASSERT_NE(uniqueData->m_hipJointIndex, InvalidIndex);
 
         // Make sure the weights are fully active.
         ASSERT_FLOAT_EQ(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_weight, 1.0f);
@@ -324,7 +325,7 @@ namespace EMotionFX
         // Rotate the actor instance 180 degrees over the X axis as well.
         EMotionFX::Transform transform;
         transform.Identity();
-        transform.mRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3(1.0f, 0.0f, 0.0f), MCore::Math::pi);
+        transform.m_rotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3(1.0f, 0.0f, 0.0f), MCore::Math::pi);
         m_actorInstance->SetLocalSpaceTransform(transform);
 
         // Tests where the leg can reach the target position just fine, make sure the hip adjustment doesn't break it.

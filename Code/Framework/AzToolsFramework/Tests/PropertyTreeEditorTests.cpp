@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContext.h>
@@ -72,7 +74,7 @@ namespace UnitTest
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<TestSimpleAsset>("TestSimpleAsset", "Test data block for a simple asset mock data block")
-                        ->DataElement(0, &TestSimpleAsset::m_data, "My Data", "A test bool value.")
+                        ->DataElement(nullptr, &TestSimpleAsset::m_data, "My Data", "A test bool value.")
                         ;
                 }
             }
@@ -170,7 +172,7 @@ namespace UnitTest
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &PropertyTreeEditorTester::m_myReadOnlyShort, "My Read Only", "A test read only node.")
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                        ->DataElement(0, &PropertyTreeEditorTester::m_mySubBlock, "My Sub Block", "sub block test")
+                        ->DataElement(nullptr, &PropertyTreeEditorTester::m_mySubBlock, "My Sub Block", "sub block test")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)                            
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Grouped")
@@ -426,7 +428,9 @@ namespace UnitTest
             AZStd::any keyString = AZStd::make_any<AZStd::string_view>("0");
 
             EXPECT_FALSE(propertyTree.GetContainerItem("My New Int", key).IsSuccess());
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_FALSE(propertyTree.GetContainerItem("My New List", keyString).IsSuccess());
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
             PropertyTreeEditor::PropertyAccessOutcome outcome = propertyTree.GetContainerItem("My New List", key);
             EXPECT_TRUE(outcome.IsSuccess());
@@ -446,7 +450,9 @@ namespace UnitTest
             AZStd::any value = AZStd::make_any<PropertyTreeEditorTester::PropertyTreeEditorNestedTester>(testUpdate);
 
             EXPECT_FALSE(propertyTree.UpdateContainerItem("My New Int", key, value).IsSuccess());
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_FALSE(propertyTree.UpdateContainerItem("My New List", keyString, value).IsSuccess());
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             EXPECT_TRUE(propertyTree.UpdateContainerItem("My New List", key, value).IsSuccess());
 
             PropertyTreeEditor::PropertyAccessOutcome outcome = propertyTree.GetContainerItem("My New List", key);
@@ -464,7 +470,9 @@ namespace UnitTest
             AZStd::any keyString = AZStd::make_any<AZStd::string_view>("0");
 
             EXPECT_FALSE(propertyTree.RemoveContainerItem("My New Int", key).IsSuccess());
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_FALSE(propertyTree.RemoveContainerItem("My New List", keyString).IsSuccess());
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
             PropertyTreeEditor::PropertyAccessOutcome outcomeAdd1 = propertyTree.RemoveContainerItem("My New List", key);
             EXPECT_TRUE(outcomeAdd1.IsSuccess());
@@ -755,7 +763,9 @@ namespace UnitTest
             EXPECT_TRUE(propertyTree.SetProperty("My Int", anEmpty).IsSuccess());
             EXPECT_TRUE(propertyTree.SetProperty("My Negative Short", anEmpty).IsSuccess());
             EXPECT_TRUE(propertyTree.SetProperty("My New List", anEmpty).IsSuccess());
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_TRUE(propertyTree.SetProperty("My Asset Data", anEmpty).IsSuccess());
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             EXPECT_TRUE(propertyTree.SetProperty("My Test Simple Asset", anEmpty).IsSuccess());
         }
 

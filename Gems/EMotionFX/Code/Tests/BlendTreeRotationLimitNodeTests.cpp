@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -100,10 +101,10 @@ namespace EMotionFX
 
         Transform expected = Transform::CreateIdentity();
         expected.Set(AZ::Vector3::CreateZero(), expectedRotation);
-        bool success = AZ::IsClose(expected.mRotation.GetW(), outputRoot.mRotation.GetW(), 0.0001f);
-        success = success && AZ::IsClose(expected.mRotation.GetX(), outputRoot.mRotation.GetX(), 0.0001f);
-        success = success && AZ::IsClose(expected.mRotation.GetY(), outputRoot.mRotation.GetY(), 0.0001f);
-        success = success && AZ::IsClose(expected.mRotation.GetZ(), outputRoot.mRotation.GetZ(), 0.0001f);
+        bool success = AZ::IsClose(expected.m_rotation.GetW(), outputRoot.m_rotation.GetW(), 0.0001f);
+        success = success && AZ::IsClose(expected.m_rotation.GetX(), outputRoot.m_rotation.GetX(), 0.0001f);
+        success = success && AZ::IsClose(expected.m_rotation.GetY(), outputRoot.m_rotation.GetY(), 0.0001f);
+        success = success && AZ::IsClose(expected.m_rotation.GetZ(), outputRoot.m_rotation.GetZ(), 0.0001f);
 
         ASSERT_TRUE(success);
     }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,11 +26,11 @@ namespace EMStudio
         : QOpenGLWidget(parentWidget)
         , RenderWidget(parentPlugin, parentWidget)
     {
-        mParentRenderPlugin = parentPlugin;
+        m_parentRenderPlugin = parentPlugin;
 
         // construct the font metrics used for overlay text rendering
-        mFont.setPointSize(10);
-        mFontMetrics = new QFontMetrics(mFont);
+        m_font.setPointSize(10);
+        m_fontMetrics = new QFontMetrics(m_font);
 
         // create our default camera
         SwitchCamera(CAMMODE_ORBIT);
@@ -46,27 +47,27 @@ namespace EMStudio
     GLWidget::~GLWidget()
     {
         // destruct the font metrics used for overlay text rendering
-        delete mFontMetrics;
+        delete m_fontMetrics;
     }
 
 
     // initialize the Qt OpenGL widget (overloaded from the widget base class)
     void GLWidget::initializeGL()
     {
-        // initializeOpenGLFunctions() and mParentRenderPlugin->InitializeGraphicsManager must be called first to ensure
+        // initializeOpenGLFunctions() and m_parentRenderPlugin->InitializeGraphicsManager must be called first to ensure
         // all OpenGL functions have been resolved before doing anything that could make GL calls (e.g. resizing)
         initializeOpenGLFunctions();
-        mParentRenderPlugin->InitializeGraphicsManager();
-        if (mParentRenderPlugin->GetGraphicsManager())
+        m_parentRenderPlugin->InitializeGraphicsManager();
+        if (m_parentRenderPlugin->GetGraphicsManager())
         {
-            mParentRenderPlugin->GetGraphicsManager()->SetGBuffer(&mGBuffer);
+            m_parentRenderPlugin->GetGraphicsManager()->SetGBuffer(&m_gBuffer);
         }
 
         // set minimum render view dimensions
         setMinimumHeight(100);
         setMinimumWidth(100);
 
-        mPerfTimer.StampAndGetDeltaTimeInSeconds();
+        m_perfTimer.StampAndGetDeltaTimeInSeconds();
     }
 
 
@@ -79,14 +80,14 @@ namespace EMStudio
             return;
         }
 
-        mParentRenderPlugin->GetRenderUtil()->Validate();
+        m_parentRenderPlugin->GetRenderUtil()->Validate();
 
-        mWidth  = width;
-        mHeight = height;
-        mGBuffer.Resize(width, height);
+        m_width  = width;
+        m_height = height;
+        m_gBuffer.Resize(width, height);
 
-        RenderGL::GraphicsManager* graphicsManager = mParentRenderPlugin->GetGraphicsManager();
-        if (graphicsManager == nullptr || mCamera == nullptr)
+        RenderGL::GraphicsManager* graphicsManager = m_parentRenderPlugin->GetGraphicsManager();
+        if (graphicsManager == nullptr || m_camera == nullptr)
         {
             return;
         }
@@ -114,23 +115,23 @@ namespace EMStudio
             return;
         }
 
-        mRenderTimer.Stamp();
+        m_renderTimer.Stamp();
 
         // render the scene
-        RenderGL::GraphicsManager* graphicsManager = mParentRenderPlugin->GetGraphicsManager();
-        if (graphicsManager == nullptr || mCamera == nullptr)
+        RenderGL::GraphicsManager* graphicsManager = m_parentRenderPlugin->GetGraphicsManager();
+        if (graphicsManager == nullptr || m_camera == nullptr)
         {
             return;
         }
 
         painter.beginNativePainting();
 
-        graphicsManager->SetGBuffer(&mGBuffer);
+        graphicsManager->SetGBuffer(&m_gBuffer);
 
-        RenderOptions* renderOptions = mParentRenderPlugin->GetRenderOptions();
+        RenderOptions* renderOptions = m_parentRenderPlugin->GetRenderOptions();
 
         // get a pointer to the render utility
-        RenderGL::GLRenderUtil* renderUtil = mParentRenderPlugin->GetGraphicsManager()->GetRenderUtil();
+        RenderGL::GLRenderUtil* renderUtil = m_parentRenderPlugin->GetGraphicsManager()->GetRenderUtil();
         if (renderUtil == nullptr)
         {
             return;
@@ -138,35 +139,23 @@ namespace EMStudio
 
         // set this as the active widget
         // note that this is done in paint() instead of by the plugin because of delay when glwidget::update is called
-        MCORE_ASSERT(mParentRenderPlugin->GetActiveViewWidget() == nullptr);
-        mParentRenderPlugin->SetActiveViewWidget(mViewWidget);
+        MCORE_ASSERT(m_parentRenderPlugin->GetActiveViewWidget() == nullptr);
+        m_parentRenderPlugin->SetActiveViewWidget(m_viewWidget);
 
         // set the background colors
         graphicsManager->SetClearColor(renderOptions->GetBackgroundColor());
         graphicsManager->SetGradientSourceColor(renderOptions->GetGradientSourceColor());
         graphicsManager->SetGradientTargetColor(renderOptions->GetGradientTargetColor());
-        graphicsManager->SetUseGradientBackground(mViewWidget->GetRenderFlag(RenderViewWidget::RENDER_USE_GRADIENTBACKGROUND));
+        graphicsManager->SetUseGradientBackground(m_viewWidget->GetRenderFlag(RenderViewWidget::RENDER_USE_GRADIENTBACKGROUND));
 
         // needed to make multiple viewports working
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_MULTISAMPLE);
 
         // tell the system about the current viewport
-        glViewport(0, 0, aznumeric_cast<GLsizei>(mWidth * devicePixelRatioF()), aznumeric_cast<GLsizei>(mHeight * devicePixelRatioF()));
+        glViewport(0, 0, aznumeric_cast<GLsizei>(m_width * devicePixelRatioF()), aznumeric_cast<GLsizei>(m_height * devicePixelRatioF()));
         renderUtil->SetDevicePixelRatio(aznumeric_cast<float>(devicePixelRatioF()));
 
-        // update advanced render settings
-        /*  graphicsManager->SetAdvancedRendering( renderOptions->mEnableAdvancedRendering );
-            graphicsManager->SetBloomEnabled    ( renderOptions->mBloomEnabled );
-            graphicsManager->SetBloomThreshold  ( renderOptions->mBloomThreshold );
-            graphicsManager->SetBloomIntensity  ( renderOptions->mBloomIntensity );
-            graphicsManager->SetBloomRadius     ( renderOptions->mBloomRadius );
-            graphicsManager->SetDOFEnabled      ( renderOptions->mDOFEnabled );
-            graphicsManager->SetDOFFocalDistance( renderOptions->mDOFFocalPoint );
-            graphicsManager->SetDOFNear         ( renderOptions->mDOFNear );
-            graphicsManager->SetDOFFar          ( renderOptions->mDOFFar );
-            graphicsManager->SetDOFBlurRadius   ( renderOptions->mDOFBlurRadius );
-        */
         graphicsManager->SetRimAngle        (renderOptions->GetRimAngle());
         graphicsManager->SetRimIntensity    (renderOptions->GetRimIntensity());
         graphicsManager->SetRimWidth        (renderOptions->GetRimWidth());
@@ -179,7 +168,7 @@ namespace EMStudio
         // update the camera
         UpdateCamera();
 
-        graphicsManager->SetCamera(mCamera);
+        graphicsManager->SetCamera(m_camera);
 
         graphicsManager->BeginRender();
 
@@ -215,16 +204,16 @@ namespace EMStudio
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
 
-        MCommon::Camera* camera = mCamera;
-        if (mCamera->GetType() == MCommon::OrthographicCamera::TYPE_ID)
+        MCommon::Camera* camera = m_camera;
+        if (m_camera->GetType() == MCommon::OrthographicCamera::TYPE_ID)
         {
-            camera = mAxisFakeCamera;
+            camera = m_axisFakeCamera;
         }
         graphicsManager->SetCamera(camera);
 
         RenderWidget::RenderAxis();
 
-        graphicsManager->SetCamera(mCamera);
+        graphicsManager->SetCamera(m_camera);
 
         glPopAttrib();
 
@@ -234,7 +223,7 @@ namespace EMStudio
         // render the border around the render view
         if (EMotionFX::GetRecorder().GetIsRecording() == false && EMotionFX::GetRecorder().GetIsInPlayMode() == false)
         {
-            if (mParentRenderPlugin->GetFocusViewWidget() == mViewWidget)
+            if (m_parentRenderPlugin->GetFocusViewWidget() == m_viewWidget)
             {
                 RenderBorder(MCore::RGBAColor(1.0f, 0.647f, 0.0f));
             }
@@ -260,16 +249,16 @@ namespace EMStudio
 
         // makes no GL context the current context, needed in multithreaded environments
         //doneCurrent(); // Ben: results in a white screen
-        mParentRenderPlugin->SetActiveViewWidget(nullptr);
+        m_parentRenderPlugin->SetActiveViewWidget(nullptr);
 
         painter.endNativePainting();
 
         if (renderOptions->GetShowFPS())
         {
-            const float renderTime = mRenderTimer.GetDeltaTimeInSeconds() * 1000.0f;
+            const float renderTime = m_renderTimer.GetDeltaTimeInSeconds() * 1000.0f;
 
             // get the time delta between the current time and the last frame
-            const float perfTimeDelta = mPerfTimer.StampAndGetDeltaTimeInSeconds();
+            const float perfTimeDelta = m_perfTimer.StampAndGetDeltaTimeInSeconds();
 
             static float fpsTimeElapsed = 0.0f;
             static uint32 fpsNumFrames = 0;
@@ -283,15 +272,10 @@ namespace EMStudio
                 fpsNumFrames    = 0;
             }
 
-            static AZStd::string perfTempString;
-            perfTempString = AZStd::string::format("%d FPS (%.1f ms)", lastFPS, renderTime);
+            const AZStd::string perfTempString = AZStd::string::format("%d FPS (%.1f ms)", lastFPS, renderTime);
 
             // initialize the painter and get the font metrics
-            //painter.setBrush( Qt::NoBrush );
-            //painter.setPen( QColor(130, 130, 130) );
-            //painter.setFont( mFont );
-            EMStudioManager::RenderText(painter, perfTempString.c_str(), QColor(150, 150, 150), mFont, *mFontMetrics, Qt::AlignRight, QRect(width() - 55, height() - 20, 50, 20));
-            //painter.drawText( QPoint(width() - 133, height() - 14), perfTempString.AsChar() );
+            EMStudioManager::RenderText(painter, perfTempString.c_str(), QColor(150, 150, 150), m_font, *m_fontMetrics, Qt::AlignRight, QRect(width() - 55, height() - 20, 50, 20));
         }
     }
 
@@ -300,7 +284,7 @@ namespace EMStudio
     {
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(0.0f, mWidth, mHeight, 0.0f, 0.0f, 1.0f);
+        glOrtho(0.0f, m_width, m_height, 0.0f, 0.0f, 1.0f);
         glMatrixMode (GL_MODELVIEW);
         glLoadIdentity();
         //glTranslatef(0.375f, 0.375f, 0.0f);
@@ -311,20 +295,20 @@ namespace EMStudio
 
         glLineWidth(3.0f);
 
-        glColor3f(color.r, color.g, color.b);
+        glColor3f(color.m_r, color.m_g, color.m_b);
         glBegin(GL_LINES);
         // left
         glVertex2f(0.0f, 0.0f);
-        glVertex2f(0.0f, aznumeric_cast<GLfloat>(mHeight));
+        glVertex2f(0.0f, aznumeric_cast<GLfloat>(m_height));
         // bottom
-        glVertex2f(0.0f, aznumeric_cast<GLfloat>(mHeight));
-        glVertex2f(aznumeric_cast<GLfloat>(mWidth), aznumeric_cast<GLfloat>(mHeight));
+        glVertex2f(0.0f, aznumeric_cast<GLfloat>(m_height));
+        glVertex2f(aznumeric_cast<GLfloat>(m_width), aznumeric_cast<GLfloat>(m_height));
         // top
         glVertex2f(0.0f, 0.0f);
-        glVertex2f(aznumeric_cast<GLfloat>(mWidth), 0);
+        glVertex2f(aznumeric_cast<GLfloat>(m_width), 0);
         // right
-        glVertex2f(aznumeric_cast<GLfloat>(mWidth), 0.0f);
-        glVertex2f(aznumeric_cast<GLfloat>(mWidth), aznumeric_cast<float>(mHeight));
+        glVertex2f(aznumeric_cast<GLfloat>(m_width), 0.0f);
+        glVertex2f(aznumeric_cast<GLfloat>(m_width), aznumeric_cast<float>(m_height));
         glEnd();
 
         glLineWidth(1.0f);
@@ -334,7 +318,7 @@ namespace EMStudio
     void GLWidget::focusInEvent(QFocusEvent* event)
     {
         MCORE_UNUSED(event);
-        mParentRenderPlugin->SetFocusViewWidget(mViewWidget);
+        m_parentRenderPlugin->SetFocusViewWidget(m_viewWidget);
         grabKeyboard();
     }
 
@@ -342,7 +326,7 @@ namespace EMStudio
     void GLWidget::focusOutEvent(QFocusEvent* event)
     {
         MCORE_UNUSED(event);
-        mParentRenderPlugin->SetFocusViewWidget(nullptr);
+        m_parentRenderPlugin->SetFocusViewWidget(nullptr);
         releaseKeyboard();
     }
 } // namespace EMStudio

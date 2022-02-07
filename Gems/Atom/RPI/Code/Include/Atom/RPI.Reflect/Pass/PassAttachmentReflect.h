@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -85,6 +86,13 @@ namespace AZ
             //! order of the slots (note: for this to work the slot order must match the order of the ShaderResourceGroup members)
             //! The keyword "NoBind" means the slot will not bind it's attachment to the SRG
             Name m_shaderInputName = Name("AutoBind");
+
+            //! Name of the shader resource group constant (must be float4) to which the pass can automatically bind the following:
+            //! X component = image width
+            //! Y component = image height
+            //! Z component = 1 / image width
+            //! W component = 1 / image height
+            Name m_shaderImageDimensionsName;
 
             //! This is to specify an array index if the shader input is an array.
             //! e.g. Texture2DMS<float4> m_color[4];

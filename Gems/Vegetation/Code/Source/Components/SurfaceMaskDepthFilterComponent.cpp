@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -202,7 +203,7 @@ namespace Vegetation
 
     bool SurfaceMaskDepthFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const bool useOverrides = m_configuration.m_allowOverrides && instanceData.m_descriptorPtr && !instanceData.m_descriptorPtr->m_surfaceTagDistance.m_tags.empty();
         const SurfaceData::SurfaceTagVector& surfaceTagsToCompare = useOverrides ? instanceData.m_descriptorPtr->m_surfaceTagDistance.m_tags : m_configuration.m_depthComparisonTags;

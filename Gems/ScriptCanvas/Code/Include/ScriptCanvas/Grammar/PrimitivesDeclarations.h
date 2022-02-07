@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -244,8 +245,25 @@ namespace ScriptCanvas
         AZ_CVAR_EXTERNED(bool, g_disableParseOnGraphValidation);
         AZ_CVAR_EXTERNED(bool, g_printAbstractCodeModel);
         AZ_CVAR_EXTERNED(bool, g_printAbstractCodeModelAtPrefabTime);
+        AZ_CVAR_EXTERNED(bool, g_processingErrorsForUnitTestsEnabled);
         AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFile);
         AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFileAtPrefabTime);
+
+        class SettingsCache
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(SettingsCache, AZ::SystemAllocator, 0);
+
+            SettingsCache();
+            ~SettingsCache();
+
+        private:
+            bool m_disableParseOnGraphValidation;
+            bool m_printAbstractCodeModel;
+            bool m_printAbstractCodeModelAtPrefabTime;
+            bool m_saveRawTranslationOuputToFile;
+            bool m_saveRawTranslationOuputToFileAtPrefabTime;
+        };
 
         struct DependencyInfo
         {
@@ -289,7 +307,7 @@ namespace ScriptCanvas
 
             Source() = default;
             Source
-            (const Graph& graph
+                ( const Graph& graph
                 , const AZ::Data::AssetId& id
                 , const GraphData& graphData
                 , const VariableData& variableData

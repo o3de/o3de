@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -143,7 +144,6 @@ namespace ScriptCanvas
 
     GraphVariable* VariableData::FindVariable(VariableId variableId)
     {
-        AZStd::pair<AZStd::string_view, GraphVariable*> resultPair;
         auto foundIt = m_variableMap.find(variableId);
         return foundIt != m_variableMap.end() ? &foundIt->second : nullptr;
     }

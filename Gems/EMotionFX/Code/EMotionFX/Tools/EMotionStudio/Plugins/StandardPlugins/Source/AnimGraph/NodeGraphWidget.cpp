@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,8 +37,8 @@ namespace EMStudio
     {
         setObjectName("NodeGraphWidget");
 
-        mPlugin = plugin;
-        mFontMetrics = new QFontMetrics(mFont);
+        m_plugin = plugin;
+        m_fontMetrics = new QFontMetrics(m_font);
 
         // update the active graph
         SetActiveGraph(activeGraph);
@@ -46,19 +47,19 @@ namespace EMStudio
         setMouseTracking(true);
 
         // init members
-        mShowFPS            = false;
-        mLeftMousePressed   = false;
-        mPanning            = false;
-        mMiddleMousePressed = false;
-        mRightMousePressed  = false;
-        mRectSelecting      = false;
-        mShiftPressed       = false;
-        mControlPressed     = false;
-        mAltPressed         = false;
-        mMoveNode           = nullptr;
-        mMouseLastPos       = QPoint(0, 0);
-        mMouseLastPressPos  = QPoint(0, 0);
-        mMousePos           = QPoint(0, 0);
+        m_showFps            = false;
+        m_leftMousePressed   = false;
+        m_panning            = false;
+        m_middleMousePressed = false;
+        m_rightMousePressed  = false;
+        m_rectSelecting      = false;
+        m_shiftPressed       = false;
+        m_controlPressed     = false;
+        m_altPressed         = false;
+        m_moveNode           = nullptr;
+        m_mouseLastPos       = QPoint(0, 0);
+        m_mouseLastPressPos  = QPoint(0, 0);
+        m_mousePos           = QPoint(0, 0);
 
         // setup to get focus when we click or use the mouse wheel
         setFocusPolicy((Qt::FocusPolicy)(Qt::ClickFocus | Qt::WheelFocus));
@@ -69,10 +70,10 @@ namespace EMStudio
         setAutoFillBackground(false);
         setAttribute(Qt::WA_OpaquePaintEvent);
 
-        mCurWidth       = geometry().width();
-        mCurHeight      = geometry().height();
-        mPrevWidth      = mCurWidth;
-        mPrevHeight     = mCurHeight;
+        m_curWidth       = geometry().width();
+        m_curHeight      = geometry().height();
+        m_prevWidth      = m_curWidth;
+        m_prevHeight     = m_curHeight;
     }
 
 
@@ -80,7 +81,7 @@ namespace EMStudio
     NodeGraphWidget::~NodeGraphWidget()
     {
         // delete the overlay font metrics
-        delete mFontMetrics;
+        delete m_fontMetrics;
     }
 
 
@@ -97,20 +98,20 @@ namespace EMStudio
     {
         static QPoint sizeDiff(0, 0);
 
-        mCurWidth = w;
-        mCurHeight = h;
+        m_curWidth = w;
+        m_curHeight = h;
 
         // specify the center of the window, so that that is the origin
-        if (mActiveGraph)
+        if (m_activeGraph)
         {
-            mActiveGraph->SetScalePivot(QPoint(w / 2, h / 2));
+            m_activeGraph->SetScalePivot(QPoint(w / 2, h / 2));
 
-            QPoint  scrollOffset    = mActiveGraph->GetScrollOffset();
+            QPoint  scrollOffset    = m_activeGraph->GetScrollOffset();
             int32   scrollOffsetX   = scrollOffset.x();
             int32   scrollOffsetY   = scrollOffset.y();
 
             // calculate the size delta
-            QPoint  oldSize         = QPoint(mPrevWidth, mPrevHeight);
+            QPoint  oldSize         = QPoint(m_prevWidth, m_prevHeight);
             QPoint  size            = QPoint(w, h);
             QPoint  diff            = oldSize - size;
             sizeDiff += diff;
@@ -135,35 +136,35 @@ namespace EMStudio
                 sizeDiff.setY(modRes);
             }
 
-            mActiveGraph->SetScrollOffset(QPoint(scrollOffsetX, scrollOffsetY));
+            m_activeGraph->SetScrollOffset(QPoint(scrollOffsetX, scrollOffsetY));
             //MCore::LOG("%d, %d", scrollOffsetX, scrollOffsetY);
         }
 
         QOpenGLWidget::resizeGL(w, h);
 
-        mPrevWidth = w;
-        mPrevHeight = h;
+        m_prevWidth = w;
+        m_prevHeight = h;
     }
 
 
     // set the active graph
     void NodeGraphWidget::SetActiveGraph(NodeGraph* graph)
     {
-        if (mActiveGraph == graph)
+        if (m_activeGraph == graph)
         {
             return;
         }
 
-        if (mActiveGraph)
+        if (m_activeGraph)
         {
-            mActiveGraph->StopCreateConnection();
-            mActiveGraph->StopRelinkConnection();
-            mActiveGraph->StopReplaceTransitionHead();
-            mActiveGraph->StopReplaceTransitionTail();
+            m_activeGraph->StopCreateConnection();
+            m_activeGraph->StopRelinkConnection();
+            m_activeGraph->StopReplaceTransitionHead();
+            m_activeGraph->StopReplaceTransitionTail();
         }
 
-        mActiveGraph = graph;
-        mMoveNode = nullptr;
+        m_activeGraph = graph;
+        m_moveNode = nullptr;
 
         emit ActiveGraphChanged();
     }
@@ -172,7 +173,7 @@ namespace EMStudio
     // get the active graph
     NodeGraph* NodeGraphWidget::GetActiveGraph() const
     {
-        return mActiveGraph;
+        return m_activeGraph;
     }
 
 
@@ -192,7 +193,7 @@ namespace EMStudio
         glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // calculate the time passed since the last render
-        const float timePassedInSeconds = mRenderTimer.StampAndGetDeltaTimeInSeconds();
+        const float timePassedInSeconds = m_renderTimer.StampAndGetDeltaTimeInSeconds();
 
         // start painting
         QPainter painter(this);
@@ -201,8 +202,8 @@ namespace EMStudio
         painter.setRenderHint(QPainter::TextAntialiasing);
 
         // get the width and height
-        const uint32 width  = mCurWidth;
-        const uint32 height = mCurHeight;
+        const uint32 width  = m_curWidth;
+        const uint32 height = m_curHeight;
 
         // fill the background
         //painter.fillRect( event->rect(), QColor(30, 30, 30) );
@@ -211,19 +212,19 @@ namespace EMStudio
         painter.drawRect(QRect(0, 0, width, height));
 
         // render the active graph
-        if (mActiveGraph)
+        if (m_activeGraph)
         {
-            mActiveGraph->Render(mPlugin->GetAnimGraphModel().GetSelectionModel(), painter, width, height, mMousePos, timePassedInSeconds);
+            m_activeGraph->Render(m_plugin->GetAnimGraphModel().GetSelectionModel(), painter, width, height, m_mousePos, timePassedInSeconds);
         }
 
         // render selection rect
-        if (mRectSelecting)
+        if (m_rectSelecting)
         {
             painter.resetTransform();
             QRect selectRect;
             CalcSelectRect(selectRect);
 
-            if (mAltPressed)
+            if (m_altPressed)
             {
                 painter.setBrush(QColor(0, 100, 200, 75));
                 painter.setPen(QColor(0, 100, 255));
@@ -241,10 +242,10 @@ namespace EMStudio
         OnDrawOverlay(painter);
 
         // render the callback overlay
-        if (mActiveGraph)
+        if (m_activeGraph)
         {
             painter.resetTransform();
-            mActiveGraph->DrawOverlay(painter);
+            m_activeGraph->DrawOverlay(painter);
         }
 
         // draw the border
@@ -276,7 +277,7 @@ namespace EMStudio
         //painter.setBackgroundMode(Qt::TransparentMode);
 
         // render FPS counter
-        if (mShowFPS)
+        if (m_showFps)
         {
             // get the time delta between the current time and the last frame
             static AZ::Debug::Timer perfTimer;
@@ -287,7 +288,7 @@ namespace EMStudio
             static uint32 fpsNumFrames = 0;
             static uint32 lastFPS = 0;
             fpsTimeElapsed += perfTimeDelta;
-            const float renderTime = mRenderTimer.StampAndGetDeltaTimeInSeconds() * 1000.0f;
+            const float renderTime = m_renderTimer.StampAndGetDeltaTimeInSeconds() * 1000.0f;
             fpsNumFrames++;
             if (fpsTimeElapsed > 1.0f)
             {
@@ -299,7 +300,7 @@ namespace EMStudio
             static AZStd::string perfTempString;
             perfTempString = AZStd::string::format("%i FPS (%.1f ms)", lastFPS, renderTime);
 
-            GraphNode::RenderText(painter, perfTempString.c_str(), QColor(150, 150, 150), mFont, *mFontMetrics, Qt::AlignRight, QRect(width - 55, height - 20, 50, 20));
+            GraphNode::RenderText(painter, perfTempString.c_str(), QColor(150, 150, 150), m_font, *m_fontMetrics, Qt::AlignRight, QRect(width - 55, height - 20, 50, 20));
         }
 
         // show the info to which actor the currently rendered graph belongs to
@@ -311,13 +312,13 @@ namespace EMStudio
             EMotionFX::ActorInstance* firstActorInstance = selectionList.GetFirstActorInstance();
 
             // update the stored short filename without path
-            if (mFullActorName != firstActorInstance->GetActor()->GetFileName())
+            if (m_fullActorName != firstActorInstance->GetActor()->GetFileName())
             {
-                AzFramework::StringFunc::Path::GetFileName(firstActorInstance->GetActor()->GetFileNameString().c_str(), mActorName);
+                AzFramework::StringFunc::Path::GetFileName(firstActorInstance->GetActor()->GetFileNameString().c_str(), m_actorName);
             }
 
-            mTempString = AZStd::string::format("Showing graph for ActorInstance with ID %d and Actor file \"%s\"", firstActorInstance->GetID(), mActorName.c_str());
-            GraphNode::RenderText(painter, mTempString.c_str(), QColor(150, 150, 150), mFont, *mFontMetrics, Qt::AlignLeft, QRect(8, 0, 50, 20));
+            m_tempString = AZStd::string::format("Showing graph for ActorInstance with ID %d and Actor file \"%s\"", firstActorInstance->GetID(), m_actorName.c_str());
+            GraphNode::RenderText(painter, m_tempString.c_str(), QColor(150, 150, 150), m_font, *m_fontMetrics, Qt::AlignLeft, QRect(8, 0, 50, 20));
         }
     }
 
@@ -325,9 +326,9 @@ namespace EMStudio
     // convert to a global position
     QPoint NodeGraphWidget::LocalToGlobal(const QPoint& inPoint) const
     {
-        if (mActiveGraph)
+        if (m_activeGraph)
         {
-            return mActiveGraph->GetTransform().inverted().map(inPoint);
+            return m_activeGraph->GetTransform().inverted().map(inPoint);
         }
 
         return inPoint;
@@ -337,9 +338,9 @@ namespace EMStudio
     // convert to a local position
     QPoint NodeGraphWidget::GlobalToLocal(const QPoint& inPoint) const
     {
-        if (mActiveGraph)
+        if (m_activeGraph)
         {
-            return mActiveGraph->GetTransform().map(inPoint);
+            return m_activeGraph->GetTransform().map(inPoint);
         }
 
         return inPoint;
@@ -350,19 +351,16 @@ namespace EMStudio
     {
         MCORE_UNUSED(cellSize);
 
-        //QPoint scaledMouseDelta = (mousePos - mMouseLastPos) * (1.0f / mActiveGraph->GetScale());
-        //QPoint unSnappedTopRight = oldTopRight + scaledMouseDelta;
         QPoint snapped;
         snapped.setX(inPoint.x() - aznumeric_cast<int>(MCore::Math::FMod(aznumeric_cast<float>(inPoint.x()), 10.0f)));
         snapped.setY(inPoint.y() - aznumeric_cast<int>(MCore::Math::FMod(aznumeric_cast<float>(inPoint.y()), 10.0f)));
-        //snapDelta = snappedTopRight - unSnappedTopRight;
         return snapped;
     }
 
     // mouse is moving over the widget
     void NodeGraphWidget::mouseMoveEvent(QMouseEvent* event)
     {
-        if (mActiveGraph == nullptr)
+        if (m_activeGraph == nullptr)
         {
             return;
         }
@@ -371,51 +369,51 @@ namespace EMStudio
         QPoint mousePos = event->pos();
 
         QPoint snapDelta(0, 0);
-        if (mMoveNode && mLeftMousePressed && mPanning == false && mRectSelecting == false)
+        if (m_moveNode && m_leftMousePressed && m_panning == false && m_rectSelecting == false)
         {
-            QPoint oldTopRight = mMoveNode->GetRect().topRight();
-            QPoint scaledMouseDelta = (mousePos - mMouseLastPos) * (1.0f / mActiveGraph->GetScale());
+            QPoint oldTopRight = m_moveNode->GetRect().topRight();
+            QPoint scaledMouseDelta = (mousePos - m_mouseLastPos) * (1.0f / m_activeGraph->GetScale());
             QPoint unSnappedTopRight = oldTopRight + scaledMouseDelta;
             QPoint snappedTopRight = SnapLocalToGrid(unSnappedTopRight, 10);
             snapDelta = snappedTopRight - unSnappedTopRight;
         }
 
-        mousePos += snapDelta * mActiveGraph->GetScale();
-        QPoint delta        = (mousePos - mMouseLastPos) * (1.0f / mActiveGraph->GetScale());
-        mMouseLastPos       = mousePos;
+        mousePos += snapDelta * m_activeGraph->GetScale();
+        QPoint delta        = (mousePos - m_mouseLastPos) * (1.0f / m_activeGraph->GetScale());
+        m_mouseLastPos       = mousePos;
         QPoint globalPos    = LocalToGlobal(mousePos);
         SetMousePos(globalPos);
 
         //if (delta.x() > 0 || delta.x() < -0 || delta.y() > 0 || delta.y() < -0)
         if (delta.x() != 0 || delta.y() != 0)
         {
-            mAllowContextMenu = false;
+            m_allowContextMenu = false;
         }
 
         // update modifiers
-        mAltPressed     = event->modifiers() & Qt::AltModifier;
-        mShiftPressed   = event->modifiers() & Qt::ShiftModifier;
-        mControlPressed = event->modifiers() & Qt::ControlModifier;
+        m_altPressed     = event->modifiers() & Qt::AltModifier;
+        m_shiftPressed   = event->modifiers() & Qt::ShiftModifier;
+        m_controlPressed = event->modifiers() & Qt::ControlModifier;
 
         /*GraphNode* node = */ UpdateMouseCursor(mousePos, globalPos);
-        if (mRectSelecting == false && mMoveNode == nullptr &&
-            mPlugin->GetActionFilter().m_editConnections &&
-            !mActiveGraph->IsInReferencedGraph())
+        if (m_rectSelecting == false && m_moveNode == nullptr &&
+            m_plugin->GetActionFilter().m_editConnections &&
+            !m_activeGraph->IsInReferencedGraph())
         {
             // check if we are clicking on a port
             GraphNode*  portNode    = nullptr;
             NodePort*   port        = nullptr;
-            uint32      portNr      = MCORE_INVALIDINDEX32;
+            AZ::u16     portNr      = InvalidIndex16;
             bool        isInputPort = true;
-            port = mActiveGraph->FindPort(globalPos.x(), globalPos.y(), &portNode, &portNr, &isInputPort);
+            port = m_activeGraph->FindPort(globalPos.x(), globalPos.y(), &portNode, &portNr, &isInputPort);
 
             // check if we are adjusting a transition head or tail
-            if (mActiveGraph->GetIsRepositioningTransitionHead() || mActiveGraph->GetIsRepositioningTransitionTail())
+            if (m_activeGraph->GetIsRepositioningTransitionHead() || m_activeGraph->GetIsRepositioningTransitionTail())
             {
-                NodeConnection* connection = mActiveGraph->GetRepositionedTransitionHead();
+                NodeConnection* connection = m_activeGraph->GetRepositionedTransitionHead();
                 if (connection == nullptr)
                 {
-                    connection = mActiveGraph->GetRepositionedTransitionTail();
+                    connection = m_activeGraph->GetRepositionedTransitionTail();
                 }
 
                 MCORE_ASSERT(connection->GetType() == StateConnection::TYPE_ID);
@@ -425,13 +423,13 @@ namespace EMStudio
                 if (transition)
                 {
                     // check if our mouse is-over a node
-                    GraphNode* hoveredNode = mActiveGraph->FindNode(mousePos);
+                    GraphNode* hoveredNode = m_activeGraph->FindNode(mousePos);
                     if (hoveredNode == nullptr && portNode)
                     {
                         hoveredNode = portNode;
                     }
 
-                    if (mActiveGraph->GetIsRepositioningTransitionHead())
+                    if (m_activeGraph->GetIsRepositioningTransitionHead())
                     {
                         // when adjusting the arrow head and we are over the source node with the mouse
                         if (hoveredNode
@@ -439,11 +437,11 @@ namespace EMStudio
                             && CheckIfIsValidTransition(stateConnection->GetSourceNode(), hoveredNode))
                         {
                             stateConnection->SetTargetNode(hoveredNode);
-                            mActiveGraph->SetReplaceTransitionValid(true);
+                            m_activeGraph->SetReplaceTransitionValid(true);
                         }
                         else
                         {
-                            mActiveGraph->SetReplaceTransitionValid(false);
+                            m_activeGraph->SetReplaceTransitionValid(false);
                         }
 
                         GraphNode* targetNode = stateConnection->GetTargetNode();
@@ -454,7 +452,7 @@ namespace EMStudio
                                 newEndOffset.x(), newEndOffset.y());
                         }
                     }
-                    else if (mActiveGraph->GetIsRepositioningTransitionTail())
+                    else if (m_activeGraph->GetIsRepositioningTransitionTail())
                     {
                         // when adjusting the arrow tail and we are over the target node with the mouse
                         if (hoveredNode
@@ -462,11 +460,11 @@ namespace EMStudio
                             && CheckIfIsValidTransition(hoveredNode, stateConnection->GetTargetNode()))
                         {
                             stateConnection->SetSourceNode(hoveredNode);
-                            mActiveGraph->SetReplaceTransitionValid(true);
+                            m_activeGraph->SetReplaceTransitionValid(true);
                         }
                         else
                         {
-                            mActiveGraph->SetReplaceTransitionValid(false);
+                            m_activeGraph->SetReplaceTransitionValid(false);
                         }
 
                         GraphNode* sourceNode = stateConnection->GetSourceNode();
@@ -483,19 +481,19 @@ namespace EMStudio
             // connection relinking or creation
             if (port)
             {
-                if (mActiveGraph->GetIsCreatingConnection())
+                if (m_activeGraph->GetIsCreatingConnection())
                 {
                     const bool isValid = CheckIfIsCreateConnectionValid(portNr, portNode, port, isInputPort);
-                    mActiveGraph->SetCreateConnectionIsValid(isValid);
-                    mActiveGraph->SetTargetPort(port);
+                    m_activeGraph->SetCreateConnectionIsValid(isValid);
+                    m_activeGraph->SetTargetPort(port);
                     //update();
                     return;
                 }
-                else if (mActiveGraph->GetIsRelinkingConnection())
+                else if (m_activeGraph->GetIsRelinkingConnection())
                 {
-                    bool isValid = NodeGraph::CheckIfIsRelinkConnectionValid(mActiveGraph->GetRelinkConnection(), portNode, portNr, isInputPort);
-                    mActiveGraph->SetCreateConnectionIsValid(isValid);
-                    mActiveGraph->SetTargetPort(port);
+                    bool isValid = NodeGraph::CheckIfIsRelinkConnectionValid(m_activeGraph->GetRelinkConnection(), portNode, portNr, isInputPort);
+                    m_activeGraph->SetCreateConnectionIsValid(isValid);
+                    m_activeGraph->SetTargetPort(port);
                     //update();
                     return;
                 }
@@ -511,12 +509,12 @@ namespace EMStudio
             }
             else
             {
-                mActiveGraph->SetTargetPort(nullptr);
+                m_activeGraph->SetTargetPort(nullptr);
             }
         }
 
         // if we are panning
-        if (mPanning)
+        if (m_panning)
         {
             // handle mouse wrapping, to enable smoother panning
             bool mouseWrapped = false;
@@ -524,26 +522,26 @@ namespace EMStudio
             {
                 mouseWrapped = true;
                 QCursor::setPos(QPoint(event->globalX() - width(), event->globalY()));
-                mMouseLastPos = QPoint(event->x() - width(), event->y());
+                m_mouseLastPos = QPoint(event->x() - width(), event->y());
             }
             else if (event->x() < 0)
             {
                 mouseWrapped = true;
                 QCursor::setPos(QPoint(event->globalX() + width(), event->globalY()));
-                mMouseLastPos = QPoint(event->x() + width(), event->y());
+                m_mouseLastPos = QPoint(event->x() + width(), event->y());
             }
 
             if (event->y() > (int32)height())
             {
                 mouseWrapped = true;
                 QCursor::setPos(QPoint(event->globalX(), event->globalY() - height()));
-                mMouseLastPos = QPoint(event->x(), event->y() - height());
+                m_mouseLastPos = QPoint(event->x(), event->y() - height());
             }
             else if (event->y() < 0)
             {
                 mouseWrapped = true;
                 QCursor::setPos(QPoint(event->globalX(), event->globalY() + height()));
-                mMouseLastPos = QPoint(event->x(), event->y() + height());
+                m_mouseLastPos = QPoint(event->x(), event->y() + height());
             }
 
             // don't apply the delta, if mouse has been wrapped
@@ -552,15 +550,15 @@ namespace EMStudio
                 delta = QPoint(0, 0);
             }
 
-            if (mActiveGraph)
+            if (m_activeGraph)
             {
                 // scrolling
-                if (mAltPressed == false)
+                if (m_altPressed == false)
                 {
-                    QPoint newOffset = mActiveGraph->GetScrollOffset();
+                    QPoint newOffset = m_activeGraph->GetScrollOffset();
                     newOffset += delta;
-                    mActiveGraph->SetScrollOffset(newOffset);
-                    mActiveGraph->StopAnimatedScroll();
+                    m_activeGraph->SetScrollOffset(newOffset);
+                    m_activeGraph->StopAnimatedScroll();
                     UpdateMouseCursor(mousePos, globalPos);
                     //update();
                     return;
@@ -569,12 +567,12 @@ namespace EMStudio
                 else
                 {
                     // stop the automated zoom
-                    mActiveGraph->StopAnimatedZoom();
+                    m_activeGraph->StopAnimatedZoom();
 
                     // calculate the new scale value
                     const float scaleDelta = (delta.y() / 120.0f) * 0.2f;
-                    float newScale = MCore::Clamp<float>(mActiveGraph->GetScale() + scaleDelta, mActiveGraph->GetLowestScale(), 1.0f);
-                    mActiveGraph->SetScale(newScale);
+                    float newScale = MCore::Clamp<float>(m_activeGraph->GetScale() + scaleDelta, m_activeGraph->GetLowestScale(), 1.0f);
+                    m_activeGraph->SetScale(newScale);
 
                     // redraw the viewport
                     //update();
@@ -583,15 +581,15 @@ namespace EMStudio
         }
 
         // if the left mouse button is pressed
-        if (mLeftMousePressed)
+        if (m_leftMousePressed)
         {
-            if (mMoveNode)
+            if (m_moveNode)
             {
-                if (mActiveGraph &&
-                    mPlugin->GetActionFilter().m_editNodes &&
-                    !mActiveGraph->IsInReferencedGraph())
+                if (m_activeGraph &&
+                    m_plugin->GetActionFilter().m_editNodes &&
+                    !m_activeGraph->IsInReferencedGraph())
                 {
-                    const AZStd::vector<GraphNode*> selectedGraphNodes = mActiveGraph->GetSelectedGraphNodes();
+                    const AZStd::vector<GraphNode*> selectedGraphNodes = m_activeGraph->GetSelectedGraphNodes();
                     if (!selectedGraphNodes.empty())
                     {
                         // move all selected nodes
@@ -600,9 +598,9 @@ namespace EMStudio
                             graphNode->MoveRelative(delta);
                         }
                     }
-                    else if (mMoveNode)
+                    else if (m_moveNode)
                     {
-                        mMoveNode->MoveRelative(delta);
+                        m_moveNode->MoveRelative(delta);
                     }
                     return;
                 }
@@ -611,9 +609,9 @@ namespace EMStudio
             {
                 //setCursor( Qt::ArrowCursor );
 
-                if (mRectSelecting)
+                if (m_rectSelecting)
                 {
-                    mSelectEnd = mousePos;
+                    m_selectEnd = mousePos;
                 }
             }
 
@@ -631,27 +629,27 @@ namespace EMStudio
     // mouse button has been pressed
     void NodeGraphWidget::mousePressEvent(QMouseEvent* event)
     {
-        if (!mActiveGraph)
+        if (!m_activeGraph)
         {
             return;
         }
 
         GetMainWindow()->DisableUndoRedo();
 
-        mAllowContextMenu = true;
+        m_allowContextMenu = true;
 
         // get the mouse position, calculate the global mouse position and update the relevant data
         QPoint mousePos     = event->pos();
-        mMouseLastPos       = mousePos;
-        mMouseLastPressPos  = mousePos;
+        m_mouseLastPos       = mousePos;
+        m_mouseLastPressPos  = mousePos;
         QPoint globalPos    = LocalToGlobal(mousePos);
         SetMousePos(globalPos);
 
         // update modifiers
-        mAltPressed     = event->modifiers() & Qt::AltModifier;
-        mShiftPressed   = event->modifiers() & Qt::ShiftModifier;
-        mControlPressed = event->modifiers() & Qt::ControlModifier;
-        const AnimGraphActionFilter& actionFilter = mPlugin->GetActionFilter();
+        m_altPressed     = event->modifiers() & Qt::AltModifier;
+        m_shiftPressed   = event->modifiers() & Qt::ShiftModifier;
+        m_controlPressed = event->modifiers() & Qt::ControlModifier;
+        const AnimGraphActionFilter& actionFilter = m_plugin->GetActionFilter();
 
         // check if we can start panning
         if ((event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton) || event->button() == Qt::RightButton || event->button() == Qt::MidButton)
@@ -659,21 +657,21 @@ namespace EMStudio
             // update button booleans
             if (event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton)
             {
-                mLeftMousePressed  = true;
-                mRightMousePressed = true;
+                m_leftMousePressed  = true;
+                m_rightMousePressed = true;
             }
 
             if (event->button() == Qt::RightButton)
             {
-                mRightMousePressed = true;
+                m_rightMousePressed = true;
 
                 GraphNode* node = UpdateMouseCursor(mousePos, globalPos);
                 if (node && node->GetCanVisualize() && node->GetIsInsideVisualizeRect(globalPos))
                 {
                     OnSetupVisualizeOptions(node);
-                    mRectSelecting = false;
-                    mPanning = false;
-                    mMoveNode = nullptr;
+                    m_rectSelecting = false;
+                    m_panning = false;
+                    m_moveNode = nullptr;
                     //update();
                     return;
                 }
@@ -681,7 +679,7 @@ namespace EMStudio
                 // Right click on the node will trigger a single selection, if the node is not already selected.
                 if (node && !node->GetIsSelected() && !node->GetIsInsideArrowRect(globalPos))
                 {
-                    mPlugin->GetAnimGraphModel().GetSelectionModel().select(QItemSelection(node->GetModelIndex(), node->GetModelIndex()),
+                    m_plugin->GetAnimGraphModel().GetSelectionModel().select(QItemSelection(node->GetModelIndex(), node->GetModelIndex()),
                         QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
                     return;
                 }
@@ -689,37 +687,33 @@ namespace EMStudio
 
             if (event->button() == Qt::MidButton)
             {
-                mMiddleMousePressed = true;
+                m_middleMousePressed = true;
             }
 
-            mPanning = true;
-            mRectSelecting = false;
+            m_panning = true;
+            m_rectSelecting = false;
             setCursor(Qt::ClosedHandCursor);
-            //mMoveNode = nullptr;
-
-            // update viewport and return
-            //update();
             return;
         }
 
         // if we press the left mouse button
         if (event->button() == Qt::LeftButton)
         {
-            mLeftMousePressed = true;
+            m_leftMousePressed = true;
 
             // get the node we click on
             GraphNode* node = UpdateMouseCursor(mousePos, globalPos);
 
             // if we pressed the visualize icon
-            GraphNode* orgNode = mActiveGraph->FindNode(mousePos);
+            GraphNode* orgNode = m_activeGraph->FindNode(mousePos);
             if (orgNode && orgNode->GetCanVisualize() && orgNode->GetIsInsideVisualizeRect(globalPos))
             {
                 const bool viz = !orgNode->GetIsVisualized();
                 orgNode->SetIsVisualized(viz);
                 OnVisualizeToggle(orgNode, viz);
-                mRectSelecting = false;
-                mPanning = false;
-                mMoveNode = nullptr;
+                m_rectSelecting = false;
+                m_panning = false;
+                m_moveNode = nullptr;
                 //update();
                 return;
             }
@@ -766,8 +760,8 @@ namespace EMStudio
                             if (motionEntry && motionEntry->GetMotion())
                             {
                                 EMotionFX::Motion* motion = motionEntry->GetMotion();
-                                uint32 motionIndex = motionManager.FindMotionIndexByName(motion->GetName());
-                                commandString = AZStd::string::format("Select -motionIndex %d", motionIndex);
+                                size_t motionIndex = motionManager.FindMotionIndexByName(motion->GetName());
+                                commandString = AZStd::string::format("Select -motionIndex %zu", motionIndex);
                                 commandGroup.AddCommandString(commandString);
                             }
                         }
@@ -804,37 +798,29 @@ namespace EMStudio
                 timeViewPlugin->SetMode(TimeViewMode::AnimGraph);
             }
             
-            if (!mActiveGraph->IsInReferencedGraph())
+            if (!m_activeGraph->IsInReferencedGraph())
             {
                 // check if we are clicking on an input port
                 GraphNode*  portNode = nullptr;
                 NodePort*   port = nullptr;
-                uint32      portNr = MCORE_INVALIDINDEX32;
+                AZ::u16     portNr = InvalidIndex16;
                 bool        isInputPort = true;
-                port = mActiveGraph->FindPort(globalPos.x(), globalPos.y(), &portNode, &portNr, &isInputPort);
+                port = m_activeGraph->FindPort(globalPos.x(), globalPos.y(), &portNode, &portNr, &isInputPort);
                 if (port)
                 {
-                    mMoveNode = nullptr;
-                    mPanning = false;
-                    mRectSelecting = false;
+                    m_moveNode = nullptr;
+                    m_panning = false;
+                    m_rectSelecting = false;
 
                     // relink existing connection
-                    NodeConnection* connection = mActiveGraph->FindInputConnection(portNode, portNr);
+                    NodeConnection* connection = m_activeGraph->FindInputConnection(portNode, portNr);
                     if (actionFilter.m_editConnections &&
                         isInputPort && connection && portNode->GetType() != StateGraphNode::TYPE_ID)
                     {
-                        //connection->SetColor();
-                        //MCore::LOG("%s(%i)->%s(%i)", connection->GetSourceNode()->GetName(), connection->GetOutputPortNr(), connection->GetTargetNode()->GetName(), connection->GetInputPortNr());
-                        //GraphNode*    createConNode   = connection->GetSourceNode();
-                        //uint32        createConPortNr = connection->GetOutputPortNr();
-                        //NodePort* createConPort   = createConNode->GetOutputPort( createConPortNr );
-                        //QPoint        createConOffset = QPoint(0,0);//globalPos - createConNode->GetRect().topLeft();
                         connection->SetIsDashed(true);
 
                         UpdateMouseCursor(mousePos, globalPos);
-                        //mActiveGraph->StartCreateConnection( createConPortNr, !isInputPort, createConNode, createConPort, createConOffset );
-                        mActiveGraph->StartRelinkConnection(connection, portNr, portNode);
-                        //update();
+                        m_activeGraph->StartRelinkConnection(connection, portNr, portNode);
                         return;
                     }
 
@@ -846,7 +832,7 @@ namespace EMStudio
                         {
                             QPoint offset = globalPos - portNode->GetRect().topLeft();
                             UpdateMouseCursor(mousePos, globalPos);
-                            mActiveGraph->StartCreateConnection(portNr, isInputPort, portNode, port, offset);
+                            m_activeGraph->StartCreateConnection(portNr, isInputPort, portNode, port, offset);
                             //update();
                             return;
                         }
@@ -854,7 +840,7 @@ namespace EMStudio
                 }
 
                 // check if we click on an transition arrow head or tail
-                NodeConnection* connection = mActiveGraph->FindConnection(globalPos);
+                NodeConnection* connection = m_activeGraph->FindConnection(globalPos);
                 if (actionFilter.m_editConnections &&
                     connection && connection->GetType() == StateConnection::TYPE_ID)
                 {
@@ -867,21 +853,21 @@ namespace EMStudio
 
                         if (!stateConnection->GetIsWildcardTransition() && stateConnection->CheckIfIsCloseToHead(globalPos))
                         {
-                            mMoveNode = nullptr;
-                            mPanning = false;
-                            mRectSelecting = false;
+                            m_moveNode = nullptr;
+                            m_panning = false;
+                            m_rectSelecting = false;
 
-                            mActiveGraph->StartReplaceTransitionHead(stateConnection, startOffset, endOffset, stateConnection->GetSourceNode(), stateConnection->GetTargetNode());
+                            m_activeGraph->StartReplaceTransitionHead(stateConnection, startOffset, endOffset, stateConnection->GetSourceNode(), stateConnection->GetTargetNode());
                             return;
                         }
 
                         if (!stateConnection->GetIsWildcardTransition() && stateConnection->CheckIfIsCloseToTail(globalPos))
                         {
-                            mMoveNode = nullptr;
-                            mPanning = false;
-                            mRectSelecting = false;
+                            m_moveNode = nullptr;
+                            m_panning = false;
+                            m_rectSelecting = false;
 
-                            mActiveGraph->StartReplaceTransitionTail(stateConnection, startOffset, endOffset, stateConnection->GetSourceNode(), stateConnection->GetTargetNode());
+                            m_activeGraph->StartReplaceTransitionTail(stateConnection, startOffset, endOffset, stateConnection->GetSourceNode(), stateConnection->GetTargetNode());
                             return;
                         }
                     }
@@ -890,32 +876,32 @@ namespace EMStudio
 
             // get the node we click on
             node = UpdateMouseCursor(mousePos, globalPos);
-            if (node && mShiftPressed)
+            if (node && m_shiftPressed)
             {
                 OnShiftClickedNode(node);
             }
             else
             {
-                if (node && mShiftPressed == false && mControlPressed == false && mAltPressed == false &&
+                if (node && m_shiftPressed == false && m_controlPressed == false && m_altPressed == false &&
                     actionFilter.m_editNodes &&
-                    !mActiveGraph->IsInReferencedGraph())
+                    !m_activeGraph->IsInReferencedGraph())
                 {
-                    mMoveNode   = node;
-                    mPanning    = false;
+                    m_moveNode   = node;
+                    m_panning    = false;
                     setCursor(Qt::ClosedHandCursor);
                 }
                 else
                 {
-                    mMoveNode       = nullptr;
-                    mPanning        = false;
-                    mRectSelecting  = true;
-                    mSelectStart    = mousePos;
-                    mSelectEnd      = mSelectStart;
+                    m_moveNode       = nullptr;
+                    m_panning        = false;
+                    m_rectSelecting  = true;
+                    m_selectStart    = mousePos;
+                    m_selectEnd      = m_selectStart;
                     setCursor(Qt::ArrowCursor);
                 }
             }
 
-            if (mActiveGraph)
+            if (m_activeGraph)
             {
                 // shift is used to activate a state, disable all selection behavior in case we press shift!
                 // check if we clicked a node and additionally not clicked its arrow rect
@@ -924,42 +910,42 @@ namespace EMStudio
                 {
                     nodeClicked = true;
                 }
-                if (!mShiftPressed)
+                if (!m_shiftPressed)
                 {
                     // check the node we're clicking on
-                    if (!mControlPressed)
+                    if (!m_controlPressed)
                     {
                         // only reset the selection in case we clicked in empty space or in case the node we clicked on is not part of
                         if (!node || (node && !node->GetIsSelected()))
                         {
-                            mPlugin->GetAnimGraphModel().GetSelectionModel().clear();
+                            m_plugin->GetAnimGraphModel().GetSelectionModel().clear();
                         }
                     }
 
                     // node clicked with shift only
-                    if (nodeClicked && mControlPressed)
+                    if (nodeClicked && m_controlPressed)
                     {
-                        mPlugin->GetAnimGraphModel().GetSelectionModel().select(QItemSelection(node->GetModelIndex(), node->GetModelIndex()),
+                        m_plugin->GetAnimGraphModel().GetSelectionModel().select(QItemSelection(node->GetModelIndex(), node->GetModelIndex()),
                             QItemSelectionModel::Toggle | QItemSelectionModel::Rows);
                     }
                     // node clicked with ctrl only
-                    else if (nodeClicked && !mControlPressed)
+                    else if (nodeClicked && !m_controlPressed)
                     {
-                        mPlugin->GetAnimGraphModel().GetSelectionModel().select(QItemSelection(node->GetModelIndex(), node->GetModelIndex()),
+                        m_plugin->GetAnimGraphModel().GetSelectionModel().select(QItemSelection(node->GetModelIndex(), node->GetModelIndex()),
                             QItemSelectionModel::Select | QItemSelectionModel::Rows);
                     }
                     // in case we didn't click on a node, check if we click on a connection
                     else if (!nodeClicked)
                     {
-                        mActiveGraph->SelectConnectionCloseTo(LocalToGlobal(event->pos()), mControlPressed == false, true);
+                        m_activeGraph->SelectConnectionCloseTo(LocalToGlobal(event->pos()), m_controlPressed == false, true);
                     }
                 }
                 else
                 {
                     // in case shift and control are both pressed, special case!
-                    if (mControlPressed && node)
+                    if (m_controlPressed && node)
                     {
-                        mPlugin->GetAnimGraphModel().GetSelectionModel().select(QItemSelection(node->GetModelIndex(), node->GetModelIndex()),
+                        m_plugin->GetAnimGraphModel().GetSelectionModel().select(QItemSelection(node->GetModelIndex(), node->GetModelIndex()),
                             QItemSelectionModel::Current | QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
                     }
                 }
@@ -976,7 +962,7 @@ namespace EMStudio
         const QPoint globalPos  = LocalToGlobal(mousePos);
         SetMousePos(globalPos);
 
-        if (mActiveGraph == nullptr)
+        if (m_activeGraph == nullptr)
         {
             return;
         }
@@ -984,24 +970,24 @@ namespace EMStudio
         GetMainWindow()->UpdateUndoRedo();
 
         // update modifiers
-        mAltPressed     = event->modifiers() & Qt::AltModifier;
-        mShiftPressed   = event->modifiers() & Qt::ShiftModifier;
-        mControlPressed = event->modifiers() & Qt::ControlModifier;
+        m_altPressed     = event->modifiers() & Qt::AltModifier;
+        m_shiftPressed   = event->modifiers() & Qt::ShiftModifier;
+        m_controlPressed = event->modifiers() & Qt::ControlModifier;
 
-        const AnimGraphActionFilter& actionFilter = mPlugin->GetActionFilter();
+        const AnimGraphActionFilter& actionFilter = m_plugin->GetActionFilter();
 
         // both left and right released at the same time
         if (event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton)
         {
-            mRightMousePressed  = false;
-            mLeftMousePressed   = false;
+            m_rightMousePressed  = false;
+            m_leftMousePressed   = false;
         }
 
         // right mouse button
         if (event->button() == Qt::RightButton)
         {
-            mRightMousePressed  = false;
-            mPanning            = false;
+            m_rightMousePressed  = false;
+            m_panning            = false;
             UpdateMouseCursor(mousePos, globalPos);
             //update();
             return;
@@ -1010,23 +996,23 @@ namespace EMStudio
         // middle mouse button
         if (event->button() == Qt::MidButton)
         {
-            mMiddleMousePressed = false;
-            mPanning            = false;
+            m_middleMousePressed = false;
+            m_panning            = false;
         }
 
         // if we release the left mouse button
         if (event->button() == Qt::LeftButton)
         {
-            const bool mouseMoved = (event->pos() != mMouseLastPressPos);
+            const bool mouseMoved = (event->pos() != m_mouseLastPressPos);
 
             // if we pressed the visualize icon
             GraphNode* node = UpdateMouseCursor(mousePos, globalPos);
             if (node && node->GetCanVisualize() && node->GetIsInsideVisualizeRect(globalPos))
             {
-                mRectSelecting = false;
-                mPanning = false;
-                mMoveNode = nullptr;
-                mLeftMousePressed = false;
+                m_rectSelecting = false;
+                m_panning = false;
+                m_moveNode = nullptr;
+                m_leftMousePressed = false;
                 UpdateMouseCursor(mousePos, globalPos);
                 //update();
                 return;
@@ -1034,80 +1020,80 @@ namespace EMStudio
 
             if (node && node->GetIsInsideArrowRect(globalPos))
             {
-                mRectSelecting = false;
-                mPanning = false;
-                mMoveNode = nullptr;
-                mLeftMousePressed = false;
+                m_rectSelecting = false;
+                m_panning = false;
+                m_moveNode = nullptr;
+                m_leftMousePressed = false;
                 UpdateMouseCursor(mousePos, globalPos);
                 //update();
                 return;
             }
 
             // if we were creating a connection
-            if (mActiveGraph->GetIsCreatingConnection())
+            if (m_activeGraph->GetIsCreatingConnection())
             {
-                AZ_Assert(!mActiveGraph->IsInReferencedGraph(), "Expected to not be in a referenced graph");
+                AZ_Assert(!m_activeGraph->IsInReferencedGraph(), "Expected to not be in a referenced graph");
 
                 // create the connection if needed
-                if (mActiveGraph->GetTargetPort())
+                if (m_activeGraph->GetTargetPort())
                 {
-                    if (mActiveGraph->GetIsCreateConnectionValid())
+                    if (m_activeGraph->GetIsCreateConnectionValid())
                     {
-                        uint32      targetPortNr;
+                        AZ::u16     targetPortNr;
                         bool        targetIsInputPort;
                         GraphNode*  targetNode;
 
-                        NodePort* targetPort = mActiveGraph->FindPort(globalPos.x(), globalPos.y(), &targetNode, &targetPortNr, &targetIsInputPort);
-                        if (targetPort && mActiveGraph->GetTargetPort() == targetPort
-                            && targetNode != mActiveGraph->GetCreateConnectionNode())
+                        NodePort* targetPort = m_activeGraph->FindPort(globalPos.x(), globalPos.y(), &targetNode, &targetPortNr, &targetIsInputPort);
+                        if (targetPort && m_activeGraph->GetTargetPort() == targetPort
+                            && targetNode != m_activeGraph->GetCreateConnectionNode())
                         {
 #ifndef MCORE_DEBUG
                             MCORE_UNUSED(targetPort);
 #endif
 
                             QPoint endOffset = globalPos - targetNode->GetRect().topLeft();
-                            mActiveGraph->SetCreateConnectionEndOffset(endOffset);
+                            m_activeGraph->SetCreateConnectionEndOffset(endOffset);
 
                             // trigger the callback
-                            OnCreateConnection(mActiveGraph->GetCreateConnectionPortNr(),
-                                mActiveGraph->GetCreateConnectionNode(),
-                                mActiveGraph->GetCreateConnectionIsInputPort(),
+                            OnCreateConnection(m_activeGraph->GetCreateConnectionPortNr(),
+                                m_activeGraph->GetCreateConnectionNode(),
+                                m_activeGraph->GetCreateConnectionIsInputPort(),
                                 targetPortNr,
                                 targetNode,
                                 targetIsInputPort,
-                                mActiveGraph->GetCreateConnectionStartOffset(),
-                                mActiveGraph->GetCreateConnectionEndOffset());
+                                m_activeGraph->GetCreateConnectionStartOffset(),
+                                m_activeGraph->GetCreateConnectionEndOffset());
                         }
                     }
                 }
 
-                mActiveGraph->StopCreateConnection();
-                mLeftMousePressed = false;
+                m_activeGraph->StopCreateConnection();
+                m_leftMousePressed = false;
                 UpdateMouseCursor(mousePos, globalPos);
                 //update();
                 return;
             }
 
             // if we were relinking a connection
-            if (mActiveGraph->GetIsRelinkingConnection())
+            if (m_activeGraph->GetIsRelinkingConnection())
             {
                 AZ_Assert(actionFilter.m_editConnections, "Expected edit connections being enabled.");
-                AZ_Assert(!mActiveGraph->IsInReferencedGraph(), "Expected to not be in a referenced graph");
+                AZ_Assert(!m_activeGraph->IsInReferencedGraph(), "Expected to not be in a referenced graph");
 
                 // get the information from the current mouse position
-                uint32      newTargetPortNr;
+                AZ::u16     newTargetPortNr;
                 bool        newTargetIsInputPort;
                 GraphNode*  newTargetNode;
-                NodePort*   newTargetPort = mActiveGraph->FindPort(globalPos.x(), globalPos.y(), &newTargetNode, &newTargetPortNr, &newTargetIsInputPort);
+                NodePort*   newTargetPort = m_activeGraph->FindPort(globalPos.x(), globalPos.y(), &newTargetNode, &newTargetPortNr, &newTargetIsInputPort);
 
                 // relink existing connection
                 NodeConnection* connection = nullptr;
                 if (newTargetPort)
                 {
-                    connection = mActiveGraph->FindInputConnection(newTargetNode, newTargetPortNr);
+                    connection = m_activeGraph->FindInputConnection(newTargetNode, newTargetPortNr);
                 }
 
-                NodeConnection* relinkedConnection = mActiveGraph->GetRelinkConnection();
+                NodeConnection* relinkedConnection = m_activeGraph->GetRelinkConnection();
                 if (relinkedConnection)
                 {
                     relinkedConnection->SetIsDashed(false);
@@ -1118,10 +1104,10 @@ namespace EMStudio
                     // get the information from the old connection which we want to relink
                     GraphNode*      sourceNode          = relinkedConnection->GetSourceNode();
                     AZStd::string   sourceNodeName      = sourceNode->GetName();
-                    uint32          sourcePortNr        = relinkedConnection->GetOutputPortNr();
+                    AZ::u16         sourcePortNr        = relinkedConnection->GetOutputPortNr();
                     GraphNode*      oldTargetNode       = relinkedConnection->GetTargetNode();
                     AZStd::string   oldTargetNodeName   = oldTargetNode->GetName();
-                    uint32          oldTargetPortNr     = relinkedConnection->GetInputPortNr();
+                    AZ::u16         oldTargetPortNr     = relinkedConnection->GetInputPortNr();
 
                     if (NodeGraph::CheckIfIsRelinkConnectionValid(relinkedConnection, newTargetNode, newTargetPortNr, newTargetIsInputPort))
                     {
@@ -1153,7 +1139,7 @@ namespace EMStudio
                         CommandSystem::RelinkConnectionTarget(&commandGroup, animGraph->GetID(), sourceNodeName.c_str(), sourcePortNr, oldTargetNodeName.c_str(), oldTargetPortNr, newTargetNodeName.c_str(), newTargetPortNr);
 
                         // call this before calling the commands as the commands will trigger a graph update
-                        mActiveGraph->StopRelinkConnection();
+                        m_activeGraph->StopRelinkConnection();
 
                         // execute the command group
                         AZStd::string commandResult;
@@ -1167,113 +1153,111 @@ namespace EMStudio
                     }
                 }
 
-                //mActiveGraph->StopCreateConnection();
-                mActiveGraph->StopRelinkConnection();
-                mLeftMousePressed = false;
+                m_activeGraph->StopRelinkConnection();
+                m_leftMousePressed = false;
                 UpdateMouseCursor(mousePos, globalPos);
-                //update();
                 return;
             }
 
             // in case we adjusted a transition start or end point
-            if (mActiveGraph->GetIsRepositioningTransitionHead() || mActiveGraph->GetIsRepositioningTransitionTail())
+            if (m_activeGraph->GetIsRepositioningTransitionHead() || m_activeGraph->GetIsRepositioningTransitionTail())
             {
                 AZ_Assert(actionFilter.m_editConnections, "Expected edit connections being enabled.");
-                AZ_Assert(!mActiveGraph->IsInReferencedGraph(), "Expected to not be in a referenced graph");
+                AZ_Assert(!m_activeGraph->IsInReferencedGraph(), "Expected to not be in a referenced graph");
 
                 NodeConnection* connection;
                 QPoint oldStartOffset, oldEndOffset;
                 GraphNode* oldSourceNode;
                 GraphNode* oldTargetNode;
-                mActiveGraph->GetReplaceTransitionInfo(&connection, &oldStartOffset, &oldEndOffset, &oldSourceNode, &oldTargetNode);
-                GraphNode* newDropNode = mActiveGraph->FindNode(event->pos());
+                m_activeGraph->GetReplaceTransitionInfo(&connection, &oldStartOffset, &oldEndOffset, &oldSourceNode, &oldTargetNode);
+                GraphNode* newDropNode = m_activeGraph->FindNode(event->pos());
 
                 if (newDropNode && newDropNode != oldSourceNode)
                 {
-                    if (mActiveGraph->GetIsRepositioningTransitionHead())
+                    if (m_activeGraph->GetIsRepositioningTransitionHead())
                     {
                         ReplaceTransition(connection, oldStartOffset, oldEndOffset, oldSourceNode, oldTargetNode, oldSourceNode, newDropNode);
-                        mActiveGraph->StopReplaceTransitionHead();
+                        m_activeGraph->StopReplaceTransitionHead();
                     }
-                    else if (mActiveGraph->GetIsRepositioningTransitionTail() && newDropNode != oldTargetNode)
+                    else if (m_activeGraph->GetIsRepositioningTransitionTail() && newDropNode != oldTargetNode)
                     {
                         ReplaceTransition(connection, oldStartOffset, oldEndOffset, oldSourceNode, oldTargetNode, newDropNode, oldTargetNode);
-                        mActiveGraph->StopReplaceTransitionTail();
+                        m_activeGraph->StopReplaceTransitionTail();
                     }
                 }
                 else
                 {
                     ReplaceTransition(connection, oldStartOffset, oldEndOffset, oldSourceNode, oldTargetNode, oldSourceNode, oldTargetNode);
-                    if (mActiveGraph->GetIsRepositioningTransitionHead())
+                    if (m_activeGraph->GetIsRepositioningTransitionHead())
                     {
-                        mActiveGraph->StopReplaceTransitionHead();
+                        m_activeGraph->StopReplaceTransitionHead();
                     }
-                    else if (mActiveGraph->GetIsRepositioningTransitionTail())
+                    else if (m_activeGraph->GetIsRepositioningTransitionTail())
                     {
-                        mActiveGraph->StopReplaceTransitionTail();
+                        m_activeGraph->StopReplaceTransitionTail();
                     }
                 }
                 return;
             }
 
             // if we are finished moving, trigger the OnMoveNode callbacks
-            if (mMoveNode && mouseMoved &&
+            if (m_moveNode && mouseMoved &&
                 actionFilter.m_editNodes &&
-                !mActiveGraph->IsInReferencedGraph())
+                !m_activeGraph->IsInReferencedGraph())
             {
                 OnMoveStart();
 
                 bool moveNodeSelected = false; // prevent moving the same node twice
-                const AZStd::vector<GraphNode*> selectedNodes = mActiveGraph->GetSelectedGraphNodes();
+                const AZStd::vector<GraphNode*> selectedNodes = m_activeGraph->GetSelectedGraphNodes();
                 for (GraphNode* currentNode : selectedNodes)
                 {
                     OnMoveNode(currentNode, currentNode->GetRect().topLeft().x(), currentNode->GetRect().topLeft().y());
-                    if (currentNode == mMoveNode)
+                    if (currentNode == m_moveNode)
                     {
                         moveNodeSelected = true;
                     }
                 }
-                if (!moveNodeSelected && !mMoveNode)
+                if (!moveNodeSelected && !m_moveNode)
                 {
-                    OnMoveNode(mMoveNode, mMoveNode->GetRect().topLeft().x(), mMoveNode->GetRect().topLeft().y());
+                    OnMoveNode(m_moveNode, m_moveNode->GetRect().topLeft().x(), m_moveNode->GetRect().topLeft().y());
                 }
 
                 OnMoveEnd();
             }
 
-            mPanning = false;
-            mMoveNode = nullptr;
+            m_panning = false;
+            m_moveNode = nullptr;
             UpdateMouseCursor(mousePos, globalPos);
 
             // get the node we click on
             node = UpdateMouseCursor(mousePos, globalPos);
 
-            if (mRectSelecting && mouseMoved)
+            if (m_rectSelecting && mouseMoved)
             {
                 // calc the selection rect
                 QRect selectRect;
                 CalcSelectRect(selectRect);
 
                 // select things inside it
-                if (selectRect.isEmpty() == false && mActiveGraph)
+                if (selectRect.isEmpty() == false && m_activeGraph)
                 {
-                    selectRect = mActiveGraph->GetTransform().inverted().mapRect(selectRect);
+                    selectRect = m_activeGraph->GetTransform().inverted().mapRect(selectRect);
 
                     // select nodes when alt is not pressed
-                    if (mAltPressed == false)
+                    if (m_altPressed == false)
                     {
-                        const bool overwriteSelection = (mControlPressed == false);
-                        mActiveGraph->SelectNodesInRect(selectRect, overwriteSelection, mControlPressed);
+                        const bool overwriteSelection = (m_controlPressed == false);
+                        m_activeGraph->SelectNodesInRect(selectRect, overwriteSelection, m_controlPressed);
                     }
                     else // zoom into the selected rect
                     {
-                        mActiveGraph->ZoomOnRect(selectRect, geometry().width(), geometry().height(), true);
+                        m_activeGraph->ZoomOnRect(selectRect, geometry().width(), geometry().height(), true);
                     }
                 }
             }
 
-            mLeftMousePressed = false;
-            mRectSelecting = false;
+            m_leftMousePressed = false;
+            m_rectSelecting = false;
         }
     }
 
@@ -1282,7 +1266,7 @@ namespace EMStudio
     void NodeGraphWidget::mouseDoubleClickEvent(QMouseEvent* event)
     {
         // only do things when a graph is active
-        if (mActiveGraph == nullptr)
+        if (m_activeGraph == nullptr)
         {
             return;
         }
@@ -1298,12 +1282,12 @@ namespace EMStudio
         if (event->button() == Qt::LeftButton)
         {
             // check if double clicked on a node
-            GraphNode* node = mActiveGraph->FindNode(mousePos);
+            GraphNode* node = m_activeGraph->FindNode(mousePos);
             if (node == nullptr)
             {
                 // if we didn't double click on a node zoom in to the clicked area
-                mActiveGraph->ScrollTo(-LocalToGlobal(mousePos) + geometry().center());
-                mActiveGraph->ZoomIn();
+                m_activeGraph->ScrollTo(-LocalToGlobal(mousePos) + geometry().center());
+                m_activeGraph->ZoomIn();
             }
         }
 
@@ -1311,18 +1295,18 @@ namespace EMStudio
         if (event->button() == Qt::RightButton)
         {
             // check if double clicked on a node
-            GraphNode* node = mActiveGraph->FindNode(mousePos);
+            GraphNode* node = m_activeGraph->FindNode(mousePos);
             if (node == nullptr)
             {
-                mActiveGraph->ScrollTo(-LocalToGlobal(mousePos) + geometry().center());
-                mActiveGraph->ZoomOut();
+                m_activeGraph->ScrollTo(-LocalToGlobal(mousePos) + geometry().center());
+                m_activeGraph->ZoomOut();
             }
         }
 
         setCursor(Qt::ArrowCursor);
 
         // reset flags
-        mRectSelecting = false;
+        m_rectSelecting = false;
 
         // redraw the viewport
         //update();
@@ -1333,7 +1317,7 @@ namespace EMStudio
     void NodeGraphWidget::wheelEvent(QWheelEvent* event)
     {
         // only do things when a graph is active
-        if (mActiveGraph == nullptr)
+        if (m_activeGraph == nullptr)
         {
             return;
         }
@@ -1351,12 +1335,12 @@ namespace EMStudio
         SetMousePos(globalPos);
 
         // stop the automated zoom
-        mActiveGraph->StopAnimatedZoom();
+        m_activeGraph->StopAnimatedZoom();
 
         // calculate the new scale value
         const float scaleDelta = (event->angleDelta().y() / 120.0f) * 0.05f;
-        float newScale = MCore::Clamp<float>(mActiveGraph->GetScale() + scaleDelta, mActiveGraph->GetLowestScale(), 1.0f);
-        mActiveGraph->SetScale(newScale);
+        float newScale = MCore::Clamp<float>(m_activeGraph->GetScale() + scaleDelta, m_activeGraph->GetLowestScale(), 1.0f);
+        m_activeGraph->SetScale(newScale);
 
         // redraw the viewport
         //update();
@@ -1367,20 +1351,20 @@ namespace EMStudio
     GraphNode* NodeGraphWidget::UpdateMouseCursor(const QPoint& localMousePos, const QPoint& globalMousePos)
     {
         // if there is no active graph
-        if (mActiveGraph == nullptr)
+        if (m_activeGraph == nullptr)
         {
             setCursor(Qt::ArrowCursor);
             return nullptr;
         }
 
-        if (mPanning || mMoveNode)
+        if (m_panning || m_moveNode)
         {
             setCursor(Qt::ClosedHandCursor);
             return nullptr;
         }
 
         // check if we hover above a node
-        GraphNode* node = mActiveGraph->FindNode(localMousePos);
+        GraphNode* node = m_activeGraph->FindNode(localMousePos);
 
         // check if the node is valid
         // we test firstly the node to have the visualize cursor correct
@@ -1411,10 +1395,10 @@ namespace EMStudio
             }
 
             // check if we're hovering over a port
-            uint32      portNr;
+            AZ::u16     portNr;
             GraphNode*  portNode;
             bool        isInputPort;
-            NodePort* nodePort = mActiveGraph->FindPort(globalMousePos.x(), globalMousePos.y(), &portNode, &portNr, &isInputPort);
+            NodePort* nodePort = m_activeGraph->FindPort(globalMousePos.x(), globalMousePos.y(), &portNode, &portNr, &isInputPort);
             if (nodePort)
             {
                 if ((isInputPort && portNode->GetCreateConFromOutputOnly() == false) || isInputPort == false)
@@ -1431,10 +1415,10 @@ namespace EMStudio
         else // not hovering a node, simply check for ports
         {
             // check if we're hovering over a port
-            uint32      portNr;
+            AZ::u16     portNr;
             GraphNode*  portNode;
             bool        isInputPort;
-            NodePort* nodePort = mActiveGraph->FindPort(globalMousePos.x(), globalMousePos.y(), &portNode, &portNr, &isInputPort);
+            NodePort* nodePort = m_activeGraph->FindPort(globalMousePos.x(), globalMousePos.y(), &portNode, &portNr, &isInputPort);
             if (nodePort)
             {
                 if ((isInputPort && portNode->GetCreateConFromOutputOnly() == false) || isInputPort == false)
@@ -1461,10 +1445,10 @@ namespace EMStudio
     // calculate the selection rect
     void NodeGraphWidget::CalcSelectRect(QRect& outRect)
     {
-        const int32 startX = MCore::Min<int32>(mSelectStart.x(), mSelectEnd.x());
-        const int32 startY = MCore::Min<int32>(mSelectStart.y(), mSelectEnd.y());
-        const int32 width  = abs(mSelectEnd.x() - mSelectStart.x());
-        const int32 height = abs(mSelectEnd.y() - mSelectStart.y());
+        const int32 startX = MCore::Min<int32>(m_selectStart.x(), m_selectEnd.x());
+        const int32 startY = MCore::Min<int32>(m_selectStart.y(), m_selectEnd.y());
+        const int32 width  = abs(m_selectEnd.x() - m_selectStart.x());
+        const int32 height = abs(m_selectEnd.y() - m_selectStart.y());
 
         outRect = QRect(startX, startY, width, height);
     }
@@ -1477,17 +1461,17 @@ namespace EMStudio
         {
         case Qt::Key_Shift:
         {
-            mShiftPressed     = true;
+            m_shiftPressed     = true;
             break;
         }
         case Qt::Key_Control:
         {
-            mControlPressed   = true;
+            m_controlPressed   = true;
             break;
         }
         case Qt::Key_Alt:
         {
-            mAltPressed       = true;
+            m_altPressed       = true;
             break;
         }
         }
@@ -1502,17 +1486,17 @@ namespace EMStudio
         {
         case Qt::Key_Shift:
         {
-            mShiftPressed     = false;
+            m_shiftPressed     = false;
             break;
         }
         case Qt::Key_Control:
         {
-            mControlPressed   = false;
+            m_controlPressed   = false;
             break;
         }
         case Qt::Key_Alt:
         {
-            mAltPressed       = false;
+            m_altPressed       = false;
             break;
         }
         }
@@ -1536,45 +1520,42 @@ namespace EMStudio
     void NodeGraphWidget::focusOutEvent(QFocusEvent* event)
     {
         MCORE_UNUSED(event);
-        mShiftPressed   = false;
-        mControlPressed = false;
-        mAltPressed     = false;
+        m_shiftPressed   = false;
+        m_controlPressed = false;
+        m_altPressed     = false;
         releaseKeyboard();
 
-        if (mActiveGraph && mActiveGraph->GetIsCreatingConnection())
+        if (m_activeGraph && m_activeGraph->GetIsCreatingConnection())
         {
-            mActiveGraph->StopCreateConnection();
-            mLeftMousePressed = false;
+            m_activeGraph->StopCreateConnection();
+            m_leftMousePressed = false;
         }
     }
 
 
     // return the number of selected nodes
-    uint32 NodeGraphWidget::CalcNumSelectedNodes() const
+    size_t NodeGraphWidget::CalcNumSelectedNodes() const
     {
-        if (mActiveGraph)
+        if (m_activeGraph)
         {
-            return mActiveGraph->CalcNumSelectedNodes();
+            return m_activeGraph->CalcNumSelectedNodes();
         }
-        else
-        {
-            return 0;
-        }
+        return 0;
     }
 
 
     // is the given connection valid
-    bool NodeGraphWidget::CheckIfIsCreateConnectionValid(uint32 portNr, GraphNode* portNode, NodePort* port, bool isInputPort)
+    bool NodeGraphWidget::CheckIfIsCreateConnectionValid(AZ::u16 portNr, GraphNode* portNode, NodePort* port, bool isInputPort)
     {
         MCORE_UNUSED(portNr);
         MCORE_UNUSED(port);
 
-        if (mActiveGraph == nullptr)
+        if (m_activeGraph == nullptr)
         {
             return false;
         }
 
-        GraphNode* sourceNode = mActiveGraph->GetCreateConnectionNode();
+        GraphNode* sourceNode = m_activeGraph->GetCreateConnectionNode();
         GraphNode* targetNode = portNode;
 
         // don't allow connection to itself
@@ -1584,7 +1565,7 @@ namespace EMStudio
         }
 
         // dont allow to connect an input port to another input port or output port to another output port
-        if (isInputPort == mActiveGraph->GetCreateConnectionIsInputPort())
+        if (isInputPort == m_activeGraph->GetCreateConnectionIsInputPort())
         {
             return false;
         }
@@ -1607,7 +1588,7 @@ namespace EMStudio
         return true;
     }
 
-    void NodeGraphWidget::OnCreateConnection(uint32 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, uint32 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset)
+    void NodeGraphWidget::OnCreateConnection(AZ::u16 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, AZ::u16 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset)
     {
         AZ_UNUSED(sourcePortNr);
         AZ_UNUSED(sourceNode);

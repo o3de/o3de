@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,10 +34,7 @@ namespace AZ
                 BaseColor
             };
 
-            MaterialWrapper(aiMaterial* assImpmaterial);
-            virtual ~MaterialWrapper();
-
-            aiMaterial* GetAssImpMaterial();
+            virtual ~MaterialWrapper() = default;
 
             virtual AZStd::string GetName() const;
             virtual AZ::u64 GetUniqueId() const;
@@ -46,9 +44,6 @@ namespace AZ
             virtual AZ::Vector3 GetEmissiveColor() const;
             virtual float GetOpacity() const;
             virtual float GetShininess() const;
-
-        protected:
-            aiMaterial* m_assImpMaterial = nullptr;
         };
     } // namespace SDKMaterial
 } // namespace AZ

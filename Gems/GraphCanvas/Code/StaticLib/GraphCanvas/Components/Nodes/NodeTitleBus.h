@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,6 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
 
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <GraphCanvas/Components/StyleBus.h>
 
 #include <GraphCanvas/Types/SceneMemberComponentSaveData.h>
@@ -37,18 +37,17 @@ namespace GraphCanvas
 
         virtual QGraphicsWidget* GetGraphicsWidget() = 0;
 
+        //! Set the node's details, title, subtitle, tooltip
+        virtual void SetDetails(const AZStd::string& title, const AZStd::string& subtitle) = 0;
+
         //! Set the Node's title.
         virtual void SetTitle(const AZStd::string& value) = 0;
-
-        virtual void SetTranslationKeyedTitle(const TranslationKeyedString& value) = 0;
 
         //! Get the Node's title.
         virtual AZStd::string GetTitle() const = 0;
 
         //! Set the Node's sub-title.
         virtual void SetSubTitle(const AZStd::string& value) = 0;
-
-        virtual void SetTranslationKeyedSubTitle(const TranslationKeyedString& value) = 0;
 
         //! Get the Node's sub-title.
         virtual AZStd::string GetSubTitle() const = 0;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,7 +22,7 @@ namespace AZStd
      *  Internally the buffer is allocated using aligned_storage.
      *  \note only allocate/deallocate are thread safe. 
      *  reset, leak_before_destroy and comparison operators are not thread safe.
-     *  get_max_size and get_allocated_size are thread safe but the returned value is not perfectly in 
+     *  get_allocated_size is thread safe but the returned value is not perfectly in 
      *  sync on the actual number of allocations (the number of allocations is incremented before the
      *  allocation happens and decremented after the allocation happens, trying to give a conservative
      *  number)
@@ -70,7 +71,7 @@ namespace AZStd
 
         AZ_FORCE_INLINE const char*  get_name() const           { return m_name; }
         AZ_FORCE_INLINE void         set_name(const char* name) { m_name = name; }
-        AZ_FORCE_INLINE size_type   get_max_size() const        { return (NumNodes - m_numOfAllocatedNodes.load(AZStd::memory_order_relaxed)) * sizeof(Node); }
+        constexpr size_type          max_size() const           { return NumNodes * sizeof(Node); }
         AZ_FORCE_INLINE size_type   get_allocated_size() const  { return m_numOfAllocatedNodes.load(AZStd::memory_order_relaxed) * sizeof(Node); }
 
         inline Node* allocate()

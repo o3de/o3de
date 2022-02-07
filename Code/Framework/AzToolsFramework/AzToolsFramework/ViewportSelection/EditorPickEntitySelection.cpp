@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include "EditorPickEntitySelection.h"
 
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <QApplication>
 
@@ -14,9 +16,12 @@ namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorPickEntitySelection, AZ::SystemAllocator, 0)
 
-    EditorPickEntitySelection::EditorPickEntitySelection(const EditorVisibleEntityDataCache* entityDataCache)
+    EditorPickEntitySelection::EditorPickEntitySelection(
+        const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
         : m_editorHelpers(AZStd::make_unique<EditorHelpers>(entityDataCache))
+        , m_viewportEditorModeTracker(viewportEditorModeTracker)
     {
+        m_viewportEditorModeTracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Pick);
     }
 
     EditorPickEntitySelection::~EditorPickEntitySelection()
@@ -25,6 +30,8 @@ namespace AzToolsFramework
         {
             ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, m_hoveredEntityId, false);
         }
+
+        m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Pick);
     }
 
     // note: entityIdUnderCursor is the authoritative entityId we get each frame by querying
@@ -36,7 +43,7 @@ namespace AzToolsFramework
     static void HandleAccents(
         const AZ::EntityId entityIdUnderCursor, AZ::EntityId& hoveredEntityId, const ViewportInteraction::MouseButtons mouseButtons)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const bool invalidMouseButtonHeld = mouseButtons.Middle() || mouseButtons.Right();
 
@@ -73,7 +80,7 @@ namespace AzToolsFramework
 
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
-        m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
+        m_cachedEntityIdUnderCursor = m_editorHelpers->FindEntityIdUnderCursor(cameraState, mouseInteraction).ContainerAncestorEntityId();
 
         // when left clicking, if we successfully clicked an entity, assign that
         // to the entity field selected in the entity inspector (RPE)

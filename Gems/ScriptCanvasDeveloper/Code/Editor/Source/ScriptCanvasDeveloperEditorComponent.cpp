@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QMainWindow>
 #include <QMenuBar>
@@ -99,9 +99,10 @@ namespace ScriptCanvasDeveloperEditor
         developerMenu->addSeparator();
 
         NodeListDumpAction::CreateNodeListDumpAction(developerMenu);
-        TSGenerateAction::SetupTSFileAction(developerMenu);
 
         developerMenu->addSeparator();
+
+        TranslationDatabaseFileAction(developerMenu, mainWindow);
 
         QAction* action = developerMenu->addAction("Open Menu Test");
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,17 +41,17 @@ namespace EMStudio
     AttributesWindow::AttributesWindow(AnimGraphPlugin* plugin, QWidget* parent)
         : QWidget(parent)
     {
-        mPlugin                 = plugin;
-        mPasteConditionsWindow  = nullptr;
-        mScrollArea             = new QScrollArea();
+        m_plugin                 = plugin;
+        m_pasteConditionsWindow  = nullptr;
+        m_scrollArea             = new QScrollArea();
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
         mainLayout->setMargin(0);
         mainLayout->setSpacing(1);
         setLayout(mainLayout);
 
-        mainLayout->addWidget(mScrollArea);
-        mScrollArea->setWidgetResizable(true);
+        mainLayout->addWidget(m_scrollArea);
+        m_scrollArea->setWidgetResizable(true);
 
         // The main reflected widget will contain the non-custom attribute version of the
         // attribute widget. The intention is to reuse the Reflected Property Editor and
@@ -110,7 +111,7 @@ namespace EMStudio
                 m_conditionsLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
                 conditionsVerticalLayout->addLayout(m_conditionsLayout);
 
-                m_addConditionButton = new AddConditionButton(mPlugin, m_conditionsWidget);
+                m_addConditionButton = new AddConditionButton(m_plugin, m_conditionsWidget);
                 m_addConditionButton->setObjectName("EMFX.AttributesWindowWidget.NodeTransition.AddConditionsWidget");
                 connect(m_addConditionButton, &AddConditionButton::ObjectTypeChosen, this, [=](AZ::TypeId conditionType)
                     {
@@ -136,7 +137,7 @@ namespace EMStudio
                 m_actionsLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
                 actionVerticalLayout->addLayout(m_actionsLayout);
 
-                AddActionButton* addActionButton = new AddActionButton(mPlugin, m_actionsWidget);
+                AddActionButton* addActionButton = new AddActionButton(m_plugin, m_actionsWidget);
                 connect(addActionButton, &AddActionButton::ObjectTypeChosen, this, [=](AZ::TypeId actionType)
                     {
                         const AnimGraphModel::ModelItemType itemType = m_displayingModelIndex.data(AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<AnimGraphModel::ModelItemType>();
@@ -170,9 +171,9 @@ namespace EMStudio
 
         if (m_mainReflectedWidget)
         {
-            if (mScrollArea->widget() == m_mainReflectedWidget)
+            if (m_scrollArea->widget() == m_mainReflectedWidget)
             {
-                mScrollArea->takeWidget();
+                m_scrollArea->takeWidget();
             }
             delete m_mainReflectedWidget;
         }
@@ -215,15 +216,15 @@ namespace EMStudio
 
         EMotionFX::AnimGraphObject* object = modelIndex.data(AnimGraphModel::ROLE_ANIM_GRAPH_OBJECT_PTR).value<EMotionFX::AnimGraphObject*>();
 
-        QWidget* attributeWidget = mPlugin->GetGraphNodeFactory()->CreateAttributeWidget(azrtti_typeid(object));
+        QWidget* attributeWidget = m_plugin->GetGraphNodeFactory()->CreateAttributeWidget(azrtti_typeid(object));
         if (attributeWidget)
         {
             // In the case we have a custom attribute widget, we cannot reuse the widget, so we just replace it
-            if (mScrollArea->widget() == m_mainReflectedWidget)
+            if (m_scrollArea->widget() == m_mainReflectedWidget)
             {
-                mScrollArea->takeWidget();
+                m_scrollArea->takeWidget();
             }
-            mScrollArea->setWidget(attributeWidget);
+            m_scrollArea->setWidget(attributeWidget);
         }
         else
         {
@@ -234,7 +235,7 @@ namespace EMStudio
             }
             else
             {
-                animGraph = mPlugin->GetActiveAnimGraph();
+                animGraph = m_plugin->GetActiveAnimGraph();
             }
 
             m_animGraphEditor->SetAnimGraph(animGraph);
@@ -269,9 +270,9 @@ namespace EMStudio
 
             m_objectCard->setVisible(object);
 
-            if (mScrollArea->widget() != m_mainReflectedWidget)
+            if (m_scrollArea->widget() != m_mainReflectedWidget)
             {
-                mScrollArea->setWidget(m_mainReflectedWidget);
+                m_scrollArea->setWidget(m_mainReflectedWidget);
             }
         }
 
@@ -471,7 +472,7 @@ namespace EMStudio
 
     void AttributesWindow::AddTransitionCopyPasteMenuEntries(QMenu* menu)
     {
-        const NodeGraph* activeGraph = mPlugin->GetGraphWidget()->GetActiveGraph();
+        const NodeGraph* activeGraph = m_plugin->GetGraphWidget()->GetActiveGraph();
         if (!activeGraph)
         {
             return;
@@ -532,7 +533,7 @@ namespace EMStudio
         AZ_UNUSED(selected);
         AZ_UNUSED(deselected);
 
-        const QModelIndexList modelIndexes = mPlugin->GetAnimGraphModel().GetSelectionModel().selectedRows();
+        const QModelIndexList modelIndexes = m_plugin->GetAnimGraphModel().GetSelectionModel().selectedRows();
         if (!modelIndexes.empty())
         {
             Init(modelIndexes.front());
@@ -728,9 +729,9 @@ namespace EMStudio
             if (contents.IsSuccess())
             {
                 CopyPasteConditionObject copyPasteObject;
-                copyPasteObject.mContents = contents.GetValue();
-                copyPasteObject.mConditionType = azrtti_typeid(condition);
-                condition->GetSummary(&copyPasteObject.mSummary);
+                copyPasteObject.m_contents = contents.GetValue();
+                copyPasteObject.m_conditionType = azrtti_typeid(condition);
+                condition->GetSummary(&copyPasteObject.m_summary);
                 m_copyPasteClipboard.m_conditions.push_back(copyPasteObject);
             }
         }
@@ -775,9 +776,9 @@ namespace EMStudio
                 CommandSystem::CommandAddTransitionCondition* addConditionCommand = aznew CommandSystem::CommandAddTransitionCondition(
                     transition->GetAnimGraph()->GetID(),
                     transition->GetId(),
-                    copyPasteObject.mConditionType,
+                    copyPasteObject.m_conditionType,
                     /*insertAt=*/AZStd::nullopt,
-                    copyPasteObject.mContents);
+                    copyPasteObject.m_contents);
                 commandGroup.AddCommand(addConditionCommand);
             }
         }
@@ -803,14 +804,14 @@ namespace EMStudio
             return;
         }
 
-        delete mPasteConditionsWindow;
-        mPasteConditionsWindow = nullptr;
+        delete m_pasteConditionsWindow;
+        m_pasteConditionsWindow = nullptr;
 
         EMotionFX::AnimGraphStateTransition* transition = m_displayingModelIndex.data(AnimGraphModel::ROLE_TRANSITION_POINTER).value<EMotionFX::AnimGraphStateTransition*>();
 
         // Open the select conditions window and return if the user canceled it.
-        mPasteConditionsWindow = new PasteConditionsWindow(this);
-        if (mPasteConditionsWindow->exec() == QDialog::Rejected)
+        m_pasteConditionsWindow = new PasteConditionsWindow(this);
+        if (m_pasteConditionsWindow->exec() == QDialog::Rejected)
         {
             return;
         }
@@ -823,7 +824,7 @@ namespace EMStudio
         for (size_t i = 0; i < numConditions; ++i)
         {
             // check if the condition was selected in the window, if not skip it
-            if (!mPasteConditionsWindow->GetIsConditionSelected(i))
+            if (!m_pasteConditionsWindow->GetIsConditionSelected(i))
             {
                 continue;
             }
@@ -831,9 +832,9 @@ namespace EMStudio
             CommandSystem::CommandAddTransitionCondition* addConditionCommand = aznew CommandSystem::CommandAddTransitionCondition(
                 transition->GetAnimGraph()->GetID(),
                 transition->GetId(),
-                m_copyPasteClipboard.m_conditions[i].mConditionType,
+                m_copyPasteClipboard.m_conditions[i].m_conditionType,
                 /*insertAt=*/AZStd::nullopt,
-                m_copyPasteClipboard.m_conditions[i].mContents);
+                m_copyPasteClipboard.m_conditions[i].m_contents);
             commandGroup.AddCommand(addConditionCommand);
 
             numPastedConditions++;
@@ -910,28 +911,28 @@ namespace EMStudio
 
         layout->addWidget(new QLabel("Please select the conditions you want to paste:"));
 
-        mCheckboxes.clear();
+        m_checkboxes.clear();
         const AttributesWindow::CopyPasteClipboard& copyPasteClipboard = attributeWindow->GetCopyPasteConditionClipboard();
         for (const AttributesWindow::CopyPasteConditionObject& copyPasteObject : copyPasteClipboard.m_conditions)
         {
-            QCheckBox* checkbox = new QCheckBox(copyPasteObject.mSummary.c_str());
-            mCheckboxes.push_back(checkbox);
+            QCheckBox* checkbox = new QCheckBox(copyPasteObject.m_summary.c_str());
+            m_checkboxes.push_back(checkbox);
             checkbox->setCheckState(Qt::Checked);
             layout->addWidget(checkbox);
         }
 
         // create the ok and cancel buttons
         QHBoxLayout* buttonLayout = new QHBoxLayout();
-        mOKButton = new QPushButton("OK");
-        mCancelButton = new QPushButton("Cancel");
-        buttonLayout->addWidget(mOKButton);
-        buttonLayout->addWidget(mCancelButton);
+        m_okButton = new QPushButton("OK");
+        m_cancelButton = new QPushButton("Cancel");
+        buttonLayout->addWidget(m_okButton);
+        buttonLayout->addWidget(m_cancelButton);
 
         layout->addLayout(buttonLayout);
         setLayout(layout);
 
-        connect(mOKButton, &QPushButton::clicked, this, &PasteConditionsWindow::accept);
-        connect(mCancelButton, &QPushButton::clicked, this, &PasteConditionsWindow::reject);
+        connect(m_okButton, &QPushButton::clicked, this, &PasteConditionsWindow::accept);
+        connect(m_cancelButton, &QPushButton::clicked, this, &PasteConditionsWindow::reject);
     }
 
 
@@ -944,7 +945,7 @@ namespace EMStudio
     // check if the condition is selected
     bool PasteConditionsWindow::GetIsConditionSelected(size_t index) const
     {
-        return mCheckboxes[index]->checkState() == Qt::Checked;
+        return m_checkboxes[index]->checkState() == Qt::Checked;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

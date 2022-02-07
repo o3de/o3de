@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Metastream_precompiled.h"
 
 #include <sstream>
 #include <string.h>
@@ -323,7 +323,7 @@ namespace Metastream
         {
             // Initialise and start the HTTP server
             m_server = std::unique_ptr<BaseHttpServer>(new CivetHttpServer(m_cache.get()));
-            string serverOptions = m_serverOptionsCVar->GetString();
+            AZStd::string serverOptions = m_serverOptionsCVar->GetString();
             CryLogAlways("Initializing Metastream: Options=\"%s\"", serverOptions.c_str());
 
             bool result = m_server->Start(serverOptions.c_str());
@@ -339,10 +339,9 @@ namespace Metastream
             // Server already started
             return true;
         }
-#endif // AZ_TRAIT_METASTREAM_USE_CIVET
-
-        // Metastream only supported on PC
+#else
         return false;
+#endif
     }
 
     void Metastream::MetastreamGem::StopHTTPServer()

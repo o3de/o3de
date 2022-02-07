@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "TextMarkup.h"
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/string/conversions.h>
@@ -162,7 +162,8 @@ namespace
                     }
                     else if (AZStd::string(key) == "color")
                     {
-                        AZStd::string colorValue(string(value).Trim());
+                        AZStd::string colorValue(value);
+                        AZ::StringFunc::TrimWhiteSpace(colorValue, true, true);
                         AZStd::string::size_type ExpectedNumChars = 7;
                         if (ExpectedNumChars == colorValue.size() && '#' == colorValue.at(0))
                         {

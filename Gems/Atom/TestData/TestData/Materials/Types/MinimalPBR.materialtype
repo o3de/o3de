@@ -1,27 +1,27 @@
 {
     "description": "Base Material with properties used to define Standard PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "version": 3,
     "propertyLayout": {
-        "version": 3,
         "groups": [
             {
-                "id": "settings",
+                "name": "settings",
                 "displayName": "Settings"
             }
         ],
         "properties": {
             "settings": [
                 {
-                    "id": "color",
+                    "name": "color",
                     "displayName": "Color",
                     "type": "Color",
                     "defaultValue": [ 1.0, 1.0, 1.0 ],
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_baseColor"
+                        "name": "m_baseColor"
                     }
                 },
                 {
-                    "id": "metallic",
+                    "name": "metallic",
                     "displayName": "Metallic",
                     "type": "Float",
                     "defaultValue": 0.0,
@@ -29,11 +29,11 @@
                     "max": 1.0,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_metallic"
+                        "name": "m_metallic"
                     }
                 },
                 {
-                    "id": "roughness",
+                    "name": "roughness",
                     "displayName": "Roughness",
                     "type": "Float",
                     "defaultValue": 1.0,
@@ -41,7 +41,7 @@
                     "max": 1.0,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_roughness"
+                        "name": "m_roughness"
                     }
                 }
             ]

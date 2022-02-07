@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ImGui_precompiled.h"
 #include "ImGuiLYAssetExplorer.h"
 
 #ifdef IMGUI_ENABLED
@@ -15,7 +15,6 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>
-#include <LmbrCentral/Rendering/MaterialOwnerBus.h>
 #include <LmbrCentral/Rendering/RenderNodeBus.h>
 #include <IRenderAuxGeom.h>
 #include <IViewSystem.h>

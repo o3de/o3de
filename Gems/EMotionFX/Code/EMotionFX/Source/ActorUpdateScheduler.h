@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -62,14 +63,14 @@ namespace EMotionFX
          * @param actorInstance The actor instance to insert.
          * @param startStep An offset in the schedule where to start trying to insert the actor instances.
          */
-        virtual void RecursiveInsertActorInstance(ActorInstance* actorInstance, uint32 startStep = 0) = 0;
+        virtual void RecursiveInsertActorInstance(ActorInstance* actorInstance, size_t startStep = 0) = 0;
 
         /**
          * Recursively remove an actor instance and its attachments from the schedule.
          * @param actorInstance The actor instance to remove.
          * @param startStep An offset in the schedule where to start trying to remove from.
          */
-        virtual void RecursiveRemoveActorInstance(ActorInstance* actorInstance, uint32 startStep = 0) = 0;
+        virtual void RecursiveRemoveActorInstance(ActorInstance* actorInstance, size_t startStep = 0) = 0;
 
         /**
          * Remove a single actor instance from the schedule. This will not remove its attachments.
@@ -77,16 +78,16 @@ namespace EMotionFX
          * @param startStep An offset in the schedule where to start trying to remove from.
          * @result Returns the offset in the schedule where the actor instance was removed.
          */
-        virtual uint32 RemoveActorInstance(ActorInstance* actorInstance, uint32 startStep = 0) = 0;
+        virtual size_t RemoveActorInstance(ActorInstance* actorInstance, size_t startStep = 0) = 0;
 
-        uint32 GetNumUpdatedActorInstances() const                  { return mNumUpdated.GetValue(); }
-        uint32 GetNumVisibleActorInstances() const                  { return mNumVisible.GetValue(); }
-        uint32 GetNumSampledActorInstances() const                  { return mNumSampled.GetValue(); }
+        size_t GetNumUpdatedActorInstances() const                  { return m_numUpdated.GetValue(); }
+        size_t GetNumVisibleActorInstances() const                  { return m_numVisible.GetValue(); }
+        size_t GetNumSampledActorInstances() const                  { return m_numSampled.GetValue(); }
 
     protected:
-        MCore::AtomicUInt32 mNumUpdated;
-        MCore::AtomicUInt32 mNumVisible;
-        MCore::AtomicUInt32 mNumSampled;
+        MCore::AtomicSizeT m_numUpdated;
+        MCore::AtomicSizeT m_numVisible;
+        MCore::AtomicSizeT m_numSampled;
 
         /**
          * The constructor.

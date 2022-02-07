@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -60,8 +61,12 @@ namespace AssetBundler
         {
             AZStd::string absolutePath = filePath.toUtf8().data();
             if (AZ::IO::FileIOBase::GetInstance()->Exists(absolutePath.c_str()))
-            { 
-                AZStd::string projectName = pathToProjectNameMap.at(absolutePath);
+            {
+                AZStd::string projectName;
+                if (pathToProjectNameMap.contains(absolutePath))
+                {
+                    projectName = pathToProjectNameMap.at(absolutePath);
+                }
 
                 // If a project name is already specified, then the associated file is a default file
                 LoadFile(absolutePath, projectName, !projectName.empty());

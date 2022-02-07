@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -47,12 +48,12 @@ namespace GraphCanvas
         // SlotNotificationBus
         void OnRegisteredToNode(const AZ::EntityId& nodeId) override;
 
-        void OnNameChanged(const TranslationKeyedString& name) override;
-        void OnTooltipChanged(const TranslationKeyedString& tooltip) override;
+        void OnNameChanged(const AZStd::string& name) override;
+        void OnTooltipChanged(const AZStd::string& tooltip) override;
         ////
 
         // StyleNotificationBus
-        void OnStyleChanged();
+        void OnStyleChanged() override;
         ////
 
     private:
@@ -81,9 +82,9 @@ namespace GraphCanvas
         ExtenderSlotLayoutComponent();
         ~ExtenderSlotLayoutComponent() override = default;
 
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
 
     private:
         

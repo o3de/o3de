@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,7 +36,7 @@ namespace AZ
         */
         int     m_stackSize;
 
-        JobManagerThreadDesc(int cpuId = -1, int priority = -100000, int stackSize = -1)
+        JobManagerThreadDesc(int cpuId = -1, int priority = 0, int stackSize = -1)
             : m_cpuId(cpuId)
             , m_priority(priority)
             , m_stackSize(stackSize)

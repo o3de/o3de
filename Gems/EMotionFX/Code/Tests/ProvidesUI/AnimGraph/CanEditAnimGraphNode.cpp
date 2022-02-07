@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -74,7 +75,7 @@ namespace EMotionFX
             ASSERT_TRUE(activeAnimGraph) << "An anim graph was not created with command: " << createAnimGraphCommand.c_str();
 
             // Create a new AnimGraph Node
-            const AZ::u32 nodeCount = activeAnimGraph->GetNumNodes();
+            const size_t nodeCount = activeAnimGraph->GetNumNodes();
             EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(createNodeCommand, result)) << result.c_str();
             EXPECT_EQ(activeAnimGraph->GetNumNodes(), nodeCount + 1) << "Expected one more anim graph node after running command: " << createNodeCommand.c_str();
         }

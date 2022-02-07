@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,8 +56,8 @@ namespace AZ
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 // This node has at least one mesh, verify that the color channel counts are the same for all meshes.
-                const int expectedColorChannels = scene->mMeshes[currentNode->mMeshes[0]]->GetNumColorChannels();
-                const bool allMeshesHaveSameNumberOfColorChannels =
+                const unsigned int expectedColorChannels = scene->mMeshes[currentNode->mMeshes[0]]->GetNumColorChannels();
+                [[maybe_unused]] const bool allMeshesHaveSameNumberOfColorChannels =
                     AZStd::all_of(currentNode->mMeshes + 1, currentNode->mMeshes + currentNode->mNumMeshes, [scene, expectedColorChannels](const unsigned int meshIndex)
                         {
                             return scene->mMeshes[meshIndex]->GetNumColorChannels() == expectedColorChannels;
@@ -79,17 +80,16 @@ namespace AZ
                 const uint64_t vertexCount = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
 
                 Events::ProcessingResultCombiner combinedVertexColorResults;
-                for (int colorSetIndex = 0; colorSetIndex < expectedColorChannels; ++colorSetIndex)
+                for (unsigned int colorSetIndex = 0; colorSetIndex < expectedColorChannels; ++colorSetIndex)
                 {
-
                     AZStd::shared_ptr<SceneData::GraphData::MeshVertexColorData> vertexColors =
                         AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexColorData>();
                     vertexColors->ReserveContainerSpace(vertexCount);
 
-                    for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
+                    for (unsigned int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                     {
                         const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
-                        for (int v = 0; v < mesh->mNumVertices; ++v)
+                        for (unsigned int v = 0; v < mesh->mNumVertices; ++v)
                         {
                             if (colorSetIndex < mesh->GetNumColorChannels())
                             {

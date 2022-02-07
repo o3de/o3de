@@ -1,16 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_VECTOR_H
-#define AZSTD_VECTOR_H 1
+#pragma once
 
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/typetraits/alignment_of.h>
+#include <AzCore/std/typetraits/is_integral.h>
 
 namespace AZStd
 {
@@ -430,7 +432,7 @@ namespace AZStd
         }
 
         AZ_FORCE_INLINE size_type   size() const        { return m_last - m_start; }
-        AZ_FORCE_INLINE size_type   max_size() const    { return m_allocator.get_max_size() / sizeof(node_type); }
+        AZ_FORCE_INLINE size_type   max_size() const    { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
         AZ_FORCE_INLINE bool        empty() const       { return m_start == m_last; }
 
         void reserve(size_type numElements)
@@ -1394,6 +1396,3 @@ namespace AZStd
         return removedCount;
     }
 }
-
-#endif // AZSTD_VECTOR_H
-#pragma once

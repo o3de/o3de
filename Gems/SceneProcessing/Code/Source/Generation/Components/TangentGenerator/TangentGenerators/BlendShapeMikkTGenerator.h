@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,6 +9,7 @@
 #pragma once
 
 #include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexBitangentData.h>
 
 namespace AZ::SceneData::GraphData
 {
@@ -23,5 +25,7 @@ namespace AZ::TangentGeneration::BlendShape::MikkT
     };
 
     // The main generation method.
-    bool GenerateTangents(AZ::SceneData::GraphData::BlendShapeData* blendShapeData, size_t uvSetIndex);
+    bool GenerateTangents(AZ::SceneData::GraphData::BlendShapeData* blendShapeData,
+        size_t uvSetIndex,
+        AZ::SceneAPI::DataTypes::MikkTSpaceMethod tSpaceMethod = AZ::SceneAPI::DataTypes::MikkTSpaceMethod::TSpace);
 } // namespace AZ::TangentGeneration::MikkT

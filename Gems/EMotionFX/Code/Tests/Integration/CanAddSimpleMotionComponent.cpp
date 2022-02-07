@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -65,7 +66,7 @@ namespace EMotionFX
             entity->GetId(),
             AZ::ComponentTypeList{azrtti_typeid<Integration::EditorSimpleMotionComponent>()}
         );
-        EXPECT_TRUE(componentOutcome.IsSuccess()) << componentOutcome.GetError().c_str();
+        ASSERT_TRUE(componentOutcome.IsSuccess()) << componentOutcome.GetError().c_str();
 
         bool hasComponent = false;
         AzToolsFramework::EditorComponentAPIBus::BroadcastResult(

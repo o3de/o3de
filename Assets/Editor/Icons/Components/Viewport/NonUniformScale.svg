@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon / Gameplay / Non Uniform Scale - box</title>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#ADADAD" stop-opacity="0" offset="0%"></stop>
+            <stop stop-color="#9D9D9D" offset="100%"></stop>
+        </linearGradient>
+        <path d="M20.924815,0 C23.1021676,0 23.9566542,1.77846722 23.9566542,3.01865122 C23.9566542,4.25883521 23.9566542,18.7815894 23.9566542,20.6420628 C23.9566542,22.3929727 22.7281352,23.9566542 20.924815,23.9566542 C19.1214948,23.9566542 4.64929841,23.9566542 2.80929064,23.9566542 C1.38661643,23.9566542 0,22.5147712 0,21.1586662 C0,19.8025612 0,4.03532882 0,2.67255351 C0,1.3097782 1.36539793,0 2.60955829,0 C3.85371865,0 18.9601214,0 20.924815,0 Z" id="path-2"></path>
+        <rect id="path-4" x="2.5" y="3" width="18" height="18"></rect>
+    </defs>
+    <g id="icon-/-Gameplay-/-Non-Uniform-Scale---box" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="icon/general/color/-box-template">
+            <mask id="mask-3" fill="white">
+                <use xlink:href="#path-2"></use>
+            </mask>
+            <use id="Path-3" fill="url(#linearGradient-1)" xlink:href="#path-2"></use>
+            <g id="Group" mask="url(#mask-3)" fill="#65C98C">
+                <g id="icon/color/AI" style="mix-blend-mode: multiply;">
+                    <rect id="Rectangle-2" x="0" y="0" width="24" height="24"></rect>
+                </g>
+            </g>
+        </g>
+        <rect id="Icon-Background" x="-0.5" y="0" width="24" height="24"></rect>
+        <polygon id="Path" fill="#FFFFFF" fill-rule="nonzero" points="8.28679662 5 12.4289322 9.14213562 9.262661 9.142 9.26310735 11.2132034 7.31048589 11.2132034 7.309661 9.142 4.144661 9.14213562"></polygon>
+        <polygon id="Path" fill="#FFFFFF" fill-rule="nonzero" points="14.1446608 10.857864 18.2867964 14.9999996 14.1446608 19.1421353 14.144593 15.975864 12.573593 15.9763104 12.573593 14.0236889 14.144593 14.022864"></polygon>
+        <rect id="Rectangle" stroke="#FFFFFF" fill="#FFFFFF" fill-rule="nonzero" x="3" y="12.5" width="8" height="8"></rect>
+        <mask id="mask-5" fill="white">
+            <use xlink:href="#path-4"></use>
+        </mask>
+        <g id="path-1"></g>
+        <path d="M21.5,4 L19.5,4 L19.5,3 L21.5,3 L21.5,4 Z M21.5,6 L19.5,6 L19.5,5 L21.5,5 L21.5,6 Z M21.5,8 L19.5,8 L19.5,7 L21.5,7 L21.5,8 Z M21.5,10 L19.5,10 L19.5,9 L21.5,9 L21.5,10 Z M21.5,12 L19.5,12 L19.5,11 L21.5,11 L21.5,12 Z M21.5,14 L19.5,14 L19.5,13 L21.5,13 L21.5,14 Z M21.5,16 L19.5,16 L19.5,15 L21.5,15 L21.5,16 Z M21.5,18 L19.5,18 L19.5,17 L21.5,17 L21.5,18 Z M21.5,20 L19.5,20 L19.5,19 L21.5,19 L21.5,20 Z M19.5,22 L19.5,20 L20.5,20 L20.5,22 L19.5,22 Z M17.5,22 L17.5,20 L18.5,20 L18.5,22 L17.5,22 Z M15.5,22 L15.5,20 L16.5,20 L16.5,22 L15.5,22 Z M13.5,22 L13.5,20 L14.5,20 L14.5,22 L13.5,22 Z M11.5,22 L11.5,20 L12.5,20 L12.5,22 L11.5,22 Z M9.5,22 L9.5,20 L10.5,20 L10.5,22 L9.5,22 Z M7.5,22 L7.5,20 L8.5,20 L8.5,22 L7.5,22 Z M5.5,22 L5.5,20 L6.5,20 L6.5,22 L5.5,22 Z M3.5,22 L3.5,20 L4.5,20 L4.5,22 L3.5,22 Z M1.5,20 L3.5,20 L3.5,21 L1.5,21 L1.5,20 Z M1.5,18 L3.5,18 L3.5,19 L1.5,19 L1.5,18 Z M1.5,16 L3.5,16 L3.5,17 L1.5,17 L1.5,16 Z M1.5,14 L3.5,14 L3.5,15 L1.5,15 L1.5,14 Z M1.5,12 L3.5,12 L3.5,13 L1.5,13 L1.5,12 Z M1.5,10 L3.5,10 L3.5,11 L1.5,11 L1.5,10 Z M1.5,8 L3.5,8 L3.5,9 L1.5,9 L1.5,8 Z M1.5,6 L3.5,6 L3.5,7 L1.5,7 L1.5,6 Z M1.5,4 L3.5,4 L3.5,5 L1.5,5 L1.5,4 Z M3.5,2 L3.5,4 L2.5,4 L2.5,2 L3.5,2 Z M5.5,2 L5.5,4 L4.5,4 L4.5,2 L5.5,2 Z M7.5,2 L7.5,4 L6.5,4 L6.5,2 L7.5,2 Z M9.5,2 L9.5,4 L8.5,4 L8.5,2 L9.5,2 Z M11.5,2 L11.5,4 L10.5,4 L10.5,2 L11.5,2 Z M13.5,2 L13.5,4 L12.5,4 L12.5,2 L13.5,2 Z M15.5,2 L15.5,4 L14.5,4 L14.5,2 L15.5,2 Z M17.5,2 L17.5,4 L16.5,4 L16.5,2 L17.5,2 Z M19.5,2 L19.5,4 L18.5,4 L18.5,2 L19.5,2 Z" id="path-1" fill="#FFFFFF" fill-rule="nonzero" mask="url(#mask-5)"></path>
+    </g>
+</svg>

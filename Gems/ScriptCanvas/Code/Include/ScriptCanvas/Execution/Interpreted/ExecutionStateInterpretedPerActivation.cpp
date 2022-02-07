@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -116,7 +117,7 @@ namespace ScriptCanvas
         lua_pushvalue(lua, -2);
         // Lua: instance, graph_VM.k_OnGraphStartFunctionName, instance
         const int result = Execution::InterpretedSafeCall(lua, 1, 0);
-        // Lua: instance ?
+        // Lua: instance, ?
         if (result == LUA_OK)
         {
             // Lua: instance

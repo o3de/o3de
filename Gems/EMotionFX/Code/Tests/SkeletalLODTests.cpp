@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -21,13 +22,13 @@ namespace EMotionFX
         void SetUp()
         {
             ActorFixture::SetUp();
-            m_actor->AddLODLevel();
+            GetActor()->AddLODLevel();
             DisableJointsForLOD(m_disabledJointNames, 1);
         }
 
-        void DisableJointsForLOD(const std::vector<std::string>& jointNames, AZ::u32 lodLevel)
+        void DisableJointsForLOD(const std::vector<std::string>& jointNames, size_t lodLevel)
         {
-            const Skeleton* skeleton = m_actor->GetSkeleton();
+            const Skeleton* skeleton = GetActor()->GetSkeleton();
             for (const std::string& jointName : jointNames)
             {
                 Node* joint = skeleton->FindNodeByName(jointName.c_str());
@@ -37,7 +38,7 @@ namespace EMotionFX
             }
         }
 
-        static void VerifySkeletalLODFlags(const ActorInstance* actorInstance, const std::vector<std::string>& disabledJointNames, AZ::u32 lodLevel)
+        static void VerifySkeletalLODFlags(const ActorInstance* actorInstance, const std::vector<std::string>& disabledJointNames, size_t lodLevel)
         {
             EXPECT_EQ(actorInstance->GetLODLevel(), lodLevel)
                 << "Please note that setting the LOD level is delayed and happend with the next UpdateTransforms().";
@@ -45,13 +46,13 @@ namespace EMotionFX
             const Actor* actor = actorInstance->GetActor();
             const Skeleton* skeleton = actor->GetSkeleton();
 
-            const MCore::Array<AZ::u16>& enabledJoints = actorInstance->GetEnabledNodes();
-            const AZ::u32 numEnabledJoints = enabledJoints.GetLength();
-            EXPECT_EQ(actorInstance->GetNumEnabledNodes(), actor->GetNumNodes() - static_cast<AZ::u32>(disabledJointNames.size()))
+            const AZStd::vector<AZ::u16>& enabledJoints = actorInstance->GetEnabledNodes();
+            const size_t numEnabledJoints = enabledJoints.size();
+            EXPECT_EQ(actorInstance->GetNumEnabledNodes(), actor->GetNumNodes() - disabledJointNames.size())
                 << "The enabled joints on the actor instance are not in sync with the enabledJoints.";
 
-            const AZ::u32 numJoints = skeleton->GetNumNodes();
-            for (AZ::u32 i = 0; i < numJoints; ++i)
+            const size_t numJoints = skeleton->GetNumNodes();
+            for (size_t i = 0; i < numJoints; ++i)
             {
                 const Node* joint = skeleton->GetNode(i);
 
@@ -62,7 +63,7 @@ namespace EMotionFX
 
                 // Check if the enabled joints on the actor instance is in sync.
                 bool foundInEnabledJoints = false;
-                for (AZ::u32 j = 0; j < numEnabledJoints; ++j)
+                for (size_t j = 0; j < numEnabledJoints; ++j)
                 {
                     const AZ::u16 enabledJointIndex = actorInstance->GetEnabledNode(j);
                     const Node* enabledJoint = skeleton->GetNode(enabledJointIndex);

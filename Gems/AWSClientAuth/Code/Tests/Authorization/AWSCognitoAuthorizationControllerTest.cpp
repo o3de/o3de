@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,6 +60,14 @@ TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Success)
     ASSERT_TRUE(m_mockController->m_formattedCognitoUserPoolId.find(AWSClientAuthUnitTest::TEST_RESOURCE_NAME_ID) != AZStd::string::npos);
     ASSERT_TRUE(m_mockController->m_awsAccountId == AWSClientAuthUnitTest::TEST_ACCOUNT_ID);
     ASSERT_TRUE(m_mockController->m_cognitoIdentityPoolId == AWSClientAuthUnitTest::TEST_RESOURCE_NAME_ID);
+}
+
+TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Success_GetAWSAccountEmpty)
+{
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(2);
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultAccountId()).Times(1).WillOnce(testing::Return(""));
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultRegion()).Times(1);
+    ASSERT_TRUE(m_mockController->Initialize());
 }
 
 TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_WithLogins_Success)
@@ -120,7 +129,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, MultipleCalls_UsesCacheCredentials
     m_mockController->RequestAWSCredentialsAsync();
 }
 
-TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetIdError)
+TEST_F(AWSCognitoAuthorizationControllerTest, RequestAWSCredentials_Fail_GetIdError) // fail
 {
     AWSClientAuth::AuthenticationTokens cognitoTokens(
         AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
@@ -320,7 +329,7 @@ TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersisted
     EXPECT_TRUE(actualCredentialsProvider == m_mockController->m_cognitoCachingAnonymousCredentialsProvider);
 }
 
-TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersistedLogins_NoAnonymousCredentials_ResultNullPtr)
+TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersistedLogins_NoAnonymousCredentials_ResultNullPtr) // fails
 {
     Aws::Client::AWSError<Aws::CognitoIdentity::CognitoIdentityErrors> error;
     error.SetExceptionName(AWSClientAuthUnitTest::TEST_EXCEPTION);
@@ -428,13 +437,5 @@ TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Fail_GetResourceNameEmp
 {
     EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1).WillOnce(testing::Return(""));
     EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultAccountId()).Times(1);
-    ASSERT_FALSE(m_mockController->Initialize());
-}
-
-TEST_F(AWSCognitoAuthorizationControllerTest, Initialize_Fail_GetAWSAccountEmpty)
-{
-    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(testing::_)).Times(1);
-    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultAccountId()).Times(1).WillOnce(testing::Return(""));
-    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultRegion()).Times(0);
     ASSERT_FALSE(m_mockController->Initialize());
 }

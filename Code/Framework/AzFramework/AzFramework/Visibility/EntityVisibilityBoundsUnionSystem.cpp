@@ -1,14 +1,18 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include "EntityVisibilityBoundsUnionSystem.h"
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <cstring>
+
+AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AzFramework
 {
@@ -41,8 +45,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnEntityActivated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
-
         // ignore any entity that might activate which does not have a TransformComponent
         if (entity->GetTransform() == nullptr)
         {
@@ -52,9 +54,6 @@ namespace AzFramework
         if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
             instance_it == m_entityVisibilityBoundsUnionInstanceMapping.end())
         {
-            AZ::TransformInterface* transformInterface = entity->GetTransform();
-            const AZ::Vector3 entityPosition = transformInterface->GetWorldTranslation();
-
             EntityVisibilityBoundsUnionInstance instance;
             instance.m_localEntityBoundsUnion = CalculateEntityLocalBoundsUnion(entity);
             instance.m_visibilityEntry.m_typeFlags = VisibilityEntry::TYPE_Entity;
@@ -67,8 +66,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnEntityDeactivated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
-
         // ignore any entity that might deactivate which does not have a TransformComponent
         if (entity->GetTransform() == nullptr)
         {
@@ -88,8 +85,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::UpdateVisibilitySystem(AZ::Entity* entity, EntityVisibilityBoundsUnionInstance& instance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
-
         if (const auto& localEntityBoundsUnions = instance.m_localEntityBoundsUnion; localEntityBoundsUnions.IsValid())
         {
             // note: worldEntityBounds will not be a 'tight-fit' Aabb but that of a transformed local aabb
@@ -133,9 +128,27 @@ namespace AzFramework
         return AZ::Aabb::CreateNull();
     }
 
+    AZ::Aabb EntityVisibilityBoundsUnionSystem::GetEntityWorldBoundsUnion(const AZ::EntityId entityId) const
+    {
+        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
+        if (entity != nullptr)
+        {
+            // if the entity is not found in the mapping then return a null Aabb, this is to mimic 
+            // as closely as possible the behavior of an individual GetLocalBounds call to an Entity that
+            // had been deleted (there would be no response, leaving the default value assigned)
+            if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
+                instance_it != m_entityVisibilityBoundsUnionInstanceMapping.end())
+            {
+                return instance_it->second.m_localEntityBoundsUnion.GetTranslated(entity->GetTransform()->GetWorldTranslation());
+            }
+        }
+
+        return AZ::Aabb::CreateNull();
+    }
+
     void EntityVisibilityBoundsUnionSystem::ProcessEntityBoundsUnionRequests()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         // iterate over all entities whose bounds changed and recalculate them
         for (const auto& entity : m_entityBoundsDirty)
@@ -154,8 +167,6 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnTransformUpdated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
-
         // update the world transform of the visibility bounds union
         if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
             instance_it != m_entityVisibilityBoundsUnionInstanceMapping.end())

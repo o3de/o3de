@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -70,6 +71,13 @@ namespace SceneBuilder
     void BuilderPluginComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.emplace_back(AZ_CRC_CE("AssetImportRequestHandler"));
+    }
+
+    void BuilderPluginComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        // Any components that can modify the analysis fingerprint via SceneBuilderDependencyRequests::AddFingerprintInfo must be activated first,
+        // so they contribute to the fingerprint calculated in BuilderPluginComponent::Activate().
+        services.emplace_back(AZ_CRC_CE("FingerprintModification"));
     }
 
     void BuilderPluginComponent::Reflect(AZ::ReflectContext* context)

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,11 +35,11 @@ namespace EMotionFX
         MotionSystem* motionSystem = actorInstance->GetMotionSystem();
 
         PlayBackInfo playBackInfo;
-        playBackInfo.mBlendInTime = 1.0f;
-        playBackInfo.mBlendOutTime = 1.0f;
-        playBackInfo.mNumLoops = 1;
-        playBackInfo.mPlayNow = false;
-        playBackInfo.mFreezeAtLastFrame = false;
+        playBackInfo.m_blendInTime = 1.0f;
+        playBackInfo.m_blendOutTime = 1.0f;
+        playBackInfo.m_numLoops = 1;
+        playBackInfo.m_playNow = false;
+        playBackInfo.m_freezeAtLastFrame = false;
 
         // Add 2 motions to the queue
         const MotionInstance* motionInstance1 = motionSystem->PlayMotion(motion1, &playBackInfo);
@@ -105,10 +106,10 @@ namespace EMotionFX
         MotionSystem* motionSystem = actorInstance->GetMotionSystem();
 
         PlayBackInfo playBackInfo;
-        playBackInfo.mBlendInTime = 1.0f;
-        playBackInfo.mBlendOutTime = 1.0f;
-        playBackInfo.mNumLoops = EMFX_LOOPFOREVER;
-        playBackInfo.mPlayNow = true;
+        playBackInfo.m_blendInTime = 1.0f;
+        playBackInfo.m_blendOutTime = 1.0f;
+        playBackInfo.m_numLoops = EMFX_LOOPFOREVER;
+        playBackInfo.m_playNow = true;
 
         const MotionInstance* walkInstance = motionSystem->PlayMotion(walk, &playBackInfo);
 
@@ -162,11 +163,11 @@ namespace EMotionFX
         MotionSystem* motionSystem = actorInstance->GetMotionSystem();
 
         PlayBackInfo playBackInfo;
-        playBackInfo.mBlendInTime = 1.0f;
-        playBackInfo.mBlendOutTime = 1.0f;
-        playBackInfo.mNumLoops = 1;
-        playBackInfo.mPlayNow = false;
-        playBackInfo.mFreezeAtLastFrame = false;
+        playBackInfo.m_blendInTime = 1.0f;
+        playBackInfo.m_blendOutTime = 1.0f;
+        playBackInfo.m_numLoops = 1;
+        playBackInfo.m_playNow = false;
+        playBackInfo.m_freezeAtLastFrame = false;
 
         // Add 2 motions to the queue
         const MotionInstance* motionInstance1 = motionSystem->PlayMotion(motion1, &playBackInfo);

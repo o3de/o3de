@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,9 +27,11 @@ namespace AzFramework
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
         NativeWindowHandle GetWindowHandle() const override;
-
+        uint32_t GetDisplayRefreshRate() const override;
+        
     private:
         UIWindow* m_nativeWindow;
+        uint32_t m_mainDisplayRefreshRate = 0;
     };
     
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
@@ -55,6 +58,7 @@ namespace AzFramework
 
         m_width = geometry.m_width;
         m_height = geometry.m_height;
+        m_mainDisplayRefreshRate = [[UIScreen mainScreen] maximumFramesPerSecond];
     }
     
     NativeWindowHandle NativeWindowImpl_Ios::GetWindowHandle() const
@@ -62,5 +66,9 @@ namespace AzFramework
         return m_nativeWindow;
     }
    
+    uint32_t NativeWindowImpl_Ios::GetDisplayRefreshRate() const
+    {
+        return m_mainDisplayRefreshRate;
+    }
 } // namespace AzFramework
 

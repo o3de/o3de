@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -96,8 +97,8 @@ namespace UnitTest
 
         //apply the patch
         PrefabDom& templateDomReference = m_prefabSystemComponent->FindTemplateDom(nestedTemplateId);
-        AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(templateDomReference,
-            templateDomReference.GetAllocator(), patch, AZ::JsonMergeApproach::JsonPatch);
+        [[maybe_unused]] AZ::JsonSerializationResult::ResultCode result =
+            PrefabDomUtils::ApplyPatches(templateDomReference, templateDomReference.GetAllocator(), patch);
 
         AZ_Error("Prefab", result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success,
             "Patch was not successfully applied");

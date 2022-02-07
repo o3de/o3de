@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LmbrCentral_precompiled.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -92,7 +92,7 @@ namespace LmbrCentral
                 ;
 
             behaviorContext->EBus<TagGlobalRequestBus>("TagGlobalRequestBus")
-                ->Event("RequestTaggedEntities", &TagGlobalRequestBus::Events::RequestTaggedEntities)
+                ->Event("Get Entity By Tag", &TagGlobalRequestBus::Events::RequestTaggedEntities, "RequestTaggedEntities")
                 ;
             
             behaviorContext->EBus<TagComponentNotificationsBus>("TagComponentNotificationsBus")

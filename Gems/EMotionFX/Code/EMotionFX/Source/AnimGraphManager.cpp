@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,16 +28,16 @@ namespace EMotionFX
 
     AnimGraphManager::AnimGraphManager()
         : BaseObject()
-        , mBlendSpaceManager(nullptr)
+        , m_blendSpaceManager(nullptr)
     {
     }
 
 
     AnimGraphManager::~AnimGraphManager()
     {
-        if (mBlendSpaceManager)
+        if (m_blendSpaceManager)
         {
-            mBlendSpaceManager->Destroy();
+            m_blendSpaceManager->Destroy();
         }
         // delete the anim graph instances and anim graphs
         //RemoveAllAnimGraphInstances(true);
@@ -52,10 +53,10 @@ namespace EMotionFX
 
     void AnimGraphManager::Init()
     {
-        mAnimGraphInstances.reserve(1024);
-        mAnimGraphs.reserve(128);
+        m_animGraphInstances.reserve(1024);
+        m_animGraphs.reserve(128);
 
-        mBlendSpaceManager = aznew BlendSpaceManager();
+        m_blendSpaceManager = aznew BlendSpaceManager();
 
         // register custom attribute types
         MCore::GetAttributeFactory().RegisterAttribute(aznew AttributePose());
@@ -65,51 +66,51 @@ namespace EMotionFX
 
     void AnimGraphManager::RemoveAllAnimGraphs(bool delFromMemory)
     {
-        MCore::LockGuardRecursive lock(mAnimGraphLock);
+        MCore::LockGuardRecursive lock(m_animGraphLock);
 
-        while (!mAnimGraphs.empty())
+        while (!m_animGraphs.empty())
         {
-            RemoveAnimGraph(mAnimGraphs.size() - 1, delFromMemory);
+            RemoveAnimGraph(m_animGraphs.size() - 1, delFromMemory);
         }
     }
 
 
     void AnimGraphManager::RemoveAllAnimGraphInstances(bool delFromMemory)
     {
-        MCore::LockGuardRecursive lock(mAnimGraphInstanceLock);
+        MCore::LockGuardRecursive lock(m_animGraphInstanceLock);
 
-        while (!mAnimGraphInstances.empty())
+        while (!m_animGraphInstances.empty())
         {
-            RemoveAnimGraphInstance(mAnimGraphInstances.size() - 1, delFromMemory);
+            RemoveAnimGraphInstance(m_animGraphInstances.size() - 1, delFromMemory);
         }
     }
     
 
     void AnimGraphManager::AddAnimGraph(AnimGraph* setup)
     {
-        MCore::LockGuardRecursive lock(mAnimGraphLock);
-        mAnimGraphs.push_back(setup);
+        MCore::LockGuardRecursive lock(m_animGraphLock);
+        m_animGraphs.push_back(setup);
     }
 
 
     // Remove a given anim graph by index.
     void AnimGraphManager::RemoveAnimGraph(size_t index, bool delFromMemory)
     {
-        MCore::LockGuardRecursive lock(mAnimGraphLock);
+        MCore::LockGuardRecursive lock(m_animGraphLock);
 
-        AnimGraph* animGraph = mAnimGraphs[index];
-        const int animGraphInstanceCount = static_cast<int>(mAnimGraphInstances.size());
+        AnimGraph* animGraph = m_animGraphs[index];
+        const int animGraphInstanceCount = static_cast<int>(m_animGraphInstances.size());
         for (int i = animGraphInstanceCount - 1; i >= 0; --i)
         {
-            if (mAnimGraphInstances[i]->GetAnimGraph() == animGraph)
+            if (m_animGraphInstances[i]->GetAnimGraph() == animGraph)
             {
-                RemoveAnimGraphInstance(mAnimGraphInstances[i]);
+                RemoveAnimGraphInstance(m_animGraphInstances[i]);
             }
         }
 
         // Need to remove it from the list of anim graphs first since deleting it can cause assets to get unloaded and
         // this function to be called recursively (making the index to shift)
-        mAnimGraphs.erase(mAnimGraphs.begin() + index);
+        m_animGraphs.erase(m_animGraphs.begin() + index);
 
         if (delFromMemory)
         {
@@ -124,11 +125,11 @@ namespace EMotionFX
     // Remove a given anim graph by pointer.
     bool AnimGraphManager::RemoveAnimGraph(AnimGraph* animGraph, bool delFromMemory)
     {
-        MCore::LockGuardRecursive lock(mAnimGraphLock);
+        MCore::LockGuardRecursive lock(m_animGraphLock);
 
         // find the index of the anim graph and return false in case the pointer is not valid
-        const uint32 animGraphIndex = FindAnimGraphIndex(animGraph);
-        if (animGraphIndex == MCORE_INVALIDINDEX32)
+        const size_t animGraphIndex = FindAnimGraphIndex(animGraph);
+        if (animGraphIndex == InvalidIndex)
         {
             return false;
         }
@@ -140,23 +141,23 @@ namespace EMotionFX
 
     void AnimGraphManager::AddAnimGraphInstance(AnimGraphInstance* animGraphInstance)
     {
-        MCore::LockGuardRecursive lock(mAnimGraphInstanceLock);
-        mAnimGraphInstances.push_back(animGraphInstance);
+        MCore::LockGuardRecursive lock(m_animGraphInstanceLock);
+        m_animGraphInstances.push_back(animGraphInstance);
     }
 
 
     void AnimGraphManager::RemoveAnimGraphInstance(size_t index, bool delFromMemory)
     {
-        MCore::LockGuardRecursive lock(mAnimGraphInstanceLock);
+        MCore::LockGuardRecursive lock(m_animGraphInstanceLock);
 
         if (delFromMemory)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraphInstances[index];
+            AnimGraphInstance* animGraphInstance = m_animGraphInstances[index];
             animGraphInstance->RemoveAllObjectData(true);
 
             // Remove all links to the anim graph instance that will get removed.
-            const uint32 numActorInstances = GetActorManager().GetNumActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = GetActorManager().GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 ActorInstance* actorInstance = GetActorManager().GetActorInstance(i);
                 if (animGraphInstance == actorInstance->GetAnimGraphInstance())
@@ -171,18 +172,18 @@ namespace EMotionFX
             animGraphInstance->Destroy();
         }
 
-        mAnimGraphInstances.erase(mAnimGraphInstances.begin() + index);
+        m_animGraphInstances.erase(m_animGraphInstances.begin() + index);
     }
 
 
     // remove a given anim graph instance by pointer
     bool AnimGraphManager::RemoveAnimGraphInstance(AnimGraphInstance* animGraphInstance, bool delFromMemory)
     {
-        MCore::LockGuardRecursive lock(mAnimGraphInstanceLock);
+        MCore::LockGuardRecursive lock(m_animGraphInstanceLock);
 
         // find the index of the anim graph instance and return false in case the pointer is not valid
-        const uint32 instanceIndex = FindAnimGraphInstanceIndex(animGraphInstance);
-        if (instanceIndex == MCORE_INVALIDINDEX32)
+        const size_t instanceIndex = FindAnimGraphInstanceIndex(animGraphInstance);
+        if (instanceIndex == InvalidIndex)
         {
             return false;
         }
@@ -195,20 +196,20 @@ namespace EMotionFX
 
     void AnimGraphManager::RemoveAnimGraphInstances(AnimGraph* animGraph, bool delFromMemory)
     {
-        MCore::LockGuardRecursive lock(mAnimGraphInstanceLock);
+        MCore::LockGuardRecursive lock(m_animGraphInstanceLock);
 
-        if (mAnimGraphInstances.empty())
+        if (m_animGraphInstances.empty())
         {
             return;
         }
 
         // Remove anim graph instances back to front in case they are linked to the given anim graph.
-        const size_t numInstances = mAnimGraphInstances.size();
+        const size_t numInstances = m_animGraphInstances.size();
         for (size_t i = 0; i < numInstances; ++i)
         {
             const size_t reverseIndex = numInstances - 1 - i;
 
-            AnimGraphInstance* instance = mAnimGraphInstances[reverseIndex];
+            AnimGraphInstance* instance = m_animGraphInstances[reverseIndex];
             if (instance->GetAnimGraph() == animGraph)
             {
                 RemoveAnimGraphInstance(reverseIndex, delFromMemory);
@@ -217,42 +218,42 @@ namespace EMotionFX
     }
 
 
-    uint32 AnimGraphManager::FindAnimGraphIndex(AnimGraph* animGraph) const
+    size_t AnimGraphManager::FindAnimGraphIndex(AnimGraph* animGraph) const
     {
-        MCore::LockGuardRecursive lock(mAnimGraphLock);
+        MCore::LockGuardRecursive lock(m_animGraphLock);
 
-        auto iterator = AZStd::find(mAnimGraphs.begin(), mAnimGraphs.end(), animGraph);
-        if (iterator == mAnimGraphs.end())
+        auto iterator = AZStd::find(m_animGraphs.begin(), m_animGraphs.end(), animGraph);
+        if (iterator == m_animGraphs.end())
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
-        const size_t index = iterator - mAnimGraphs.begin();
-        return static_cast<uint32>(index);
+        const size_t index = iterator - m_animGraphs.begin();
+        return index;
     }
 
 
-    uint32 AnimGraphManager::FindAnimGraphInstanceIndex(AnimGraphInstance* animGraphInstance) const
+    size_t AnimGraphManager::FindAnimGraphInstanceIndex(AnimGraphInstance* animGraphInstance) const
     {
-        MCore::LockGuardRecursive lock(mAnimGraphInstanceLock);
+        MCore::LockGuardRecursive lock(m_animGraphInstanceLock);
 
-        auto iterator = AZStd::find(mAnimGraphInstances.begin(), mAnimGraphInstances.end(), animGraphInstance);
-        if (iterator == mAnimGraphInstances.end())
+        auto iterator = AZStd::find(m_animGraphInstances.begin(), m_animGraphInstances.end(), animGraphInstance);
+        if (iterator == m_animGraphInstances.end())
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
-        const size_t index = iterator - mAnimGraphInstances.begin();
-        return static_cast<uint32>(index);
+        const size_t index = iterator - m_animGraphInstances.begin();
+        return index;
     }
 
 
     // find a anim graph with a given filename
     AnimGraph* AnimGraphManager::FindAnimGraphByFileName(const char* filename, bool isTool) const
     {
-        MCore::LockGuardRecursive lock(mAnimGraphLock);
+        MCore::LockGuardRecursive lock(m_animGraphLock);
 
-        for (EMotionFX::AnimGraph* animGraph : mAnimGraphs)
+        for (EMotionFX::AnimGraph* animGraph : m_animGraphs)
         {
             if (animGraph->GetIsOwnedByRuntime() == isTool)
             {
@@ -272,9 +273,9 @@ namespace EMotionFX
     // Find anim graph with a given id.
     AnimGraph* AnimGraphManager::FindAnimGraphByID(uint32 animGraphID) const
     {
-        MCore::LockGuardRecursive lock(mAnimGraphLock);
+        MCore::LockGuardRecursive lock(m_animGraphLock);
 
-        for (EMotionFX::AnimGraph* animGraph : mAnimGraphs)
+        for (EMotionFX::AnimGraph* animGraph : m_animGraphs)
         {
             if (animGraph->GetID() == animGraphID)
             {
@@ -289,11 +290,11 @@ namespace EMotionFX
     // Find the first available anim graph
     AnimGraph* AnimGraphManager::GetFirstAnimGraph() const
     {
-        MCore::LockGuardRecursive lock(mAnimGraphLock);
+        MCore::LockGuardRecursive lock(m_animGraphLock);
 
-        if (mAnimGraphs.size() > 0)
+        if (m_animGraphs.size() > 0)
         {
-            return mAnimGraphs[0];
+            return m_animGraphs[0];
         }
         return nullptr;
     }
@@ -301,10 +302,10 @@ namespace EMotionFX
 
     void AnimGraphManager::SetAnimGraphVisualizationEnabled(bool enabled)
     {
-        MCore::LockGuardRecursive lock(mAnimGraphInstanceLock);
+        MCore::LockGuardRecursive lock(m_animGraphInstanceLock);
 
         // Enable or disable anim graph visualization for all anim graph instances..
-        for (AnimGraphInstance* animGraphInstance : mAnimGraphInstances)
+        for (AnimGraphInstance* animGraphInstance : m_animGraphInstances)
         {
             animGraphInstance->SetVisualizationEnabled(enabled);
         }
@@ -313,7 +314,7 @@ namespace EMotionFX
 
     void AnimGraphManager::RecursiveCollectObjectsAffectedBy(AnimGraph* animGraph, AZStd::vector<EMotionFX::AnimGraphObject*>& affectedObjects)
     {
-        for (EMotionFX::AnimGraph* potentiallyAffected : mAnimGraphs)
+        for (EMotionFX::AnimGraph* potentiallyAffected : m_animGraphs)
         {
             if (potentiallyAffected != animGraph) // exclude the passed one since that will always be affected
             {
@@ -325,7 +326,7 @@ namespace EMotionFX
     void AnimGraphManager::InvalidateInstanceUniqueDataUsingMotionSet(EMotionFX::MotionSet* motionSet)
     {
         // Update unique datas for all anim graph instances that use the given motion set.
-        for (EMotionFX::AnimGraphInstance* animGraphInstance : mAnimGraphInstances)
+        for (EMotionFX::AnimGraphInstance* animGraphInstance : m_animGraphInstances)
         {
             if (animGraphInstance->GetMotionSet() == motionSet)
             {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,7 +60,7 @@ libtiffDummyReadProc (thandle_t fd, tdata_t buf, tsize_t size)
 
     memcpy(buf, &memImage->buffer[memImage->offset], size);
 
-    memImage->offset += size;
+    memImage->offset += static_cast<uint32>(size);
 
     // Return the amount of data read
     return size;
@@ -78,19 +79,19 @@ libtiffDummySeekProc (thandle_t fd, toff_t off, int i)
     switch (i)
     {
     case SEEK_SET:
-        memImage->offset = off;
+        memImage->offset = static_cast<uint32>(off);
         break;
 
     case SEEK_CUR:
-        memImage->offset += off;
+        memImage->offset += static_cast<uint32>(off);
         break;
 
     case SEEK_END:
-        memImage->offset = memImage->size - off;
+        memImage->offset = static_cast<uint32>(memImage->size - off);
         break;
 
     default:
-        memImage->offset = off;
+        memImage->offset = static_cast<uint32>(off);
         break;
     }
 
@@ -118,7 +119,7 @@ bool CImageTIF::Load(const QString& fileName, CImageEx& outImage)
 
     std::vector<uint8> data;
 
-    memImage.size = file.GetLength();
+    memImage.size = static_cast<uint32>(file.GetLength());
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];
@@ -141,7 +142,7 @@ bool CImageTIF::Load(const QString& fileName, CImageEx& outImage)
         uint32 dwWidth, dwHeight;
         size_t npixels;
         uint32* raster;
-        char* dccfilename = NULL;
+        char* dccfilename = nullptr;
 
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &dwWidth);
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &dwHeight);
@@ -209,7 +210,7 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
 
     std::vector<uint8> data;
 
-    memImage.size = file.GetLength();
+    memImage.size = static_cast<int>(file.GetLength());
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];
@@ -231,7 +232,7 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
     {
         uint32 width = 0, height = 0;
         uint16 spp = 0, bpp = 0, format = 0;
-        char* dccfilename = NULL;
+        char* dccfilename = nullptr;
 
         TIFFGetField(tif, TIFFTAG_IMAGEDESCRIPTION, &dccfilename);
 
@@ -251,17 +252,17 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
 
         // Check to see if it's a GeoTIFF, and if so, whether or not it has the ZScale parameter.
         uint32 tagCount = 0;
-        double *pixelScales = NULL;
+        double *pixelScales = nullptr;
         if (TIFFGetField(tif, GEOTIFF_MODELPIXELSCALE_TAG, &tagCount, &pixelScales) == 1)
         {
             // if there's an xyz scale, and the Z scale isn't 0, let's use it.
-            if ((tagCount == 3) && (pixelScales != NULL) && (pixelScales[2] != 0.0f))
+            if ((tagCount == 3) && (pixelScales != nullptr) && (pixelScales[2] != 0.0f))
             {
                 pixelValueScale = static_cast<float>(pixelScales[2]);
             }
         }
 
-        uint32 linesize = TIFFScanlineSize(tif);
+        uint32 linesize = static_cast<uint32>(TIFFScanlineSize(tif));
         uint8* linebuf = static_cast<uint8*>(_TIFFmalloc(linesize));
 
         // We assume that a scanline has all of the samples in it.  Validate the assumption.
@@ -398,8 +399,8 @@ bool CImageTIF::SaveRAW(const QString& fileName, const void* pData, int width, i
 
         if (preset && preset[0])
         {
-            string tiffphotoshopdata, valueheader;
-            string presetkeyvalue = string("/preset=") + string(preset);
+            AZStd::string tiffphotoshopdata, valueheader;
+            AZStd::string presetkeyvalue = AZStd::string("/preset=") + AZStd::string(preset);
 
             valueheader.push_back('\x1C');
             valueheader.push_back('\x02');
@@ -454,12 +455,12 @@ const char* CImageTIF::GetPreset(const QString& fileName)
     if (!file.Open(fileName.toUtf8().data(), "rb"))
     {
         CLogFile::FormatLine("File not found %s", fileName.toUtf8().data());
-        return NULL;
+        return nullptr;
     }
 
     MemImage memImage;
 
-    memImage.size = file.GetLength();
+    memImage.size = static_cast<uint32>(file.GetLength());
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];
@@ -471,8 +472,8 @@ const char* CImageTIF::GetPreset(const QString& fileName)
             libtiffDummyWriteProc, libtiffDummySeekProc,
             libtiffDummyCloseProc, libtiffDummySizeProc, libtiffDummyMapFileProc, libtiffDummyUnmapFileProc);
 
-    string strReturn;
-    char* preset = NULL;
+    AZStd::string strReturn;
+    char* preset = nullptr;
     int size;
     if (tif)
     {

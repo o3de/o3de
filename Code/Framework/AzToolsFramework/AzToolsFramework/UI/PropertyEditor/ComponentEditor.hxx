@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -89,7 +90,6 @@ namespace AzToolsFramework
 
         void SetComponentOverridden(const bool overridden);
 
-        // Calls match EditorComponentModeNotificationBus - called from EntityPropertyEditor
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void ActiveComponentModeChanged(const AZ::Uuid& componentType);
@@ -134,7 +134,6 @@ namespace AzToolsFramework
         QIcon m_warningIcon;
 
         ReflectedPropertyEditor* m_propertyEditor = nullptr;
-        QVBoxLayout* m_mainLayout = nullptr;
 
         AZ::SerializeContext* m_serializeContext;
 

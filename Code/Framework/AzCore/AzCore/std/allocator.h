@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,7 @@
 
 #include <AzCore/std/base.h>
 #include <AzCore/std/typetraits/integral_constant.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace AZStd
 {
@@ -48,8 +49,8 @@ namespace AZStd
      *  const char* get_name() const;
      *  void        set_name(const char* name);
      *
-     *  // Returns maximum size we can allocate from this allocator.
-     *  size_type               get_max_size() const;
+     *  // Returns theoretical maximum size of a single contiguous allocation from this allocator.
+     *  size_type               max_size() const;
      *  <optional> size_type    get_allocated_size() const;
      * };
      *
@@ -99,7 +100,8 @@ namespace AZStd
         pointer_type    allocate(size_type byteSize, size_type alignment, int flags = 0);
         void            deallocate(pointer_type ptr, size_type byteSize, size_type alignment);
         size_type       resize(pointer_type ptr, size_type newSize);
-        size_type       get_max_size() const;
+        // max_size actually returns the true maximum size of a single allocation
+        size_type       max_size() const;
         size_type       get_allocated_size() const;
 
         AZ_FORCE_INLINE bool is_lock_free()                             { return false; }
@@ -156,7 +158,7 @@ namespace AZStd
         AZ_FORCE_INLINE const char*  get_name() const;
         AZ_FORCE_INLINE void         set_name(const char* name);
 
-        AZ_FORCE_INLINE size_type   get_max_size() const;
+        AZ_FORCE_INLINE size_type   max_size() const;
 
         AZ_FORCE_INLINE bool is_lock_free();
         AZ_FORCE_INLINE bool is_stale_read_allowed();

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -26,11 +27,10 @@ namespace AZ
         struct AllocationInfo
         {
             size_t          m_byteSize{};
-            unsigned int    m_alignment{};
             const char*     m_name{};
-
             const char*     m_fileName{};
             int             m_lineNum{};
+            unsigned int    m_alignment{};
             void*           m_namesBlock{}; ///< Memory block if m_name and m_fileName have been allocated specifically for this allocation record
             size_t          m_namesBlockSize{};
 
@@ -40,7 +40,7 @@ namespace AZ
         };
 
         // We use OSAllocator which uses system calls to allocate memory, they are not recorded or tracked!
-        typedef AZStd::unordered_map<void*, AllocationInfo, AZStd::hash<void*>, AZStd::equal_to<void*>, OSStdAllocator>  AllocationRecordsType;
+        using AllocationRecordsType = AZStd::unordered_map<void*, AllocationInfo, AZStd::hash<void*>, AZStd::equal_to<void*>, OSStdAllocator>;
 
         /**
          * Records enumeration callback
@@ -49,7 +49,7 @@ namespace AZ
          * \param unsigned char number of stack records/levels, if AllocationInfo::m_stackFrames != NULL.
          * \returns true if you want to continue traverse of the records and false if you want to stop.
          */
-        typedef AZStd::function<bool (void*, const AllocationInfo&, unsigned char)> AllocationInfoCBType;
+        using AllocationInfoCBType = AZStd::function<bool (void*, const AllocationInfo&, unsigned char)>;
         /**
          * Example of records enumeration callback.
          */

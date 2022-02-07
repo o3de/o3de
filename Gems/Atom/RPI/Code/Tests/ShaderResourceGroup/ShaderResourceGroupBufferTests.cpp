@@ -1,15 +1,16 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzTest/AzTest.h>
 #include <Common/RPITestFixture.h>
+#include <Common/ShaderAssetTestUtils.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
@@ -23,7 +24,8 @@ namespace UnitTest
         : public RPITestFixture
     {
     protected:
-        Data::Asset<ShaderResourceGroupAsset> m_testSrgAsset;
+        Data::Asset<ShaderAsset> m_testSrgShaderAsset;
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> m_testSrgLayout;
         Data::Instance<ShaderResourceGroup> m_testSrg;
         Data::Asset<ResourcePoolAsset> m_bufferPoolAsset;
         Data::Asset<BufferAsset> m_shortBufferAsset;
@@ -42,21 +44,18 @@ namespace UnitTest
         const RHI::ShaderInputBufferIndex m_indexOfBufferArray{ 2 };
         const RHI::ShaderInputBufferIndex m_indexOfBufferInvalid{ 3 };
 
-        Data::Asset<ShaderResourceGroupAsset> CreateTestSrgAsset(const char* nameId)
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> CreateTestSrgLayout(const char* nameId)
         {
-            Data::Asset<ShaderResourceGroupAsset> asset;
-            ShaderResourceGroupAssetCreator srgCreator;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = RHI::ShaderResourceGroupLayout::Create();
 
-            srgCreator.Begin(Uuid::CreateRandom(), Name(nameId));
-            srgCreator.BeginAPI(RHI::Factory::Get().GetType());
-            srgCreator.SetBindingSlot(0);
-            srgCreator.AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferA" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 1 });
-            srgCreator.AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 2 });
-            srgCreator.AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferArray" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 3, 4, 3 });
-            srgCreator.EndAPI();
-            srgCreator.End(asset);
+            srgLayout->SetName(Name(nameId));
+            srgLayout->SetBindingSlot(0);
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferA" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 1 });
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, 2 });
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferArray" }, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 3, 4, 3 });
+            srgLayout->Finalize();
 
-            return asset;
+            return srgLayout;
         }
 
         Data::Asset<ResourcePoolAsset> CreateTestBufferPoolAsset()
@@ -96,8 +95,9 @@ namespace UnitTest
         {
             RPITestFixture::SetUp();
 
-            m_testSrgAsset = CreateTestSrgAsset("TestSrg");
-            m_testSrg = ShaderResourceGroup::Create(m_testSrgAsset);
+            m_testSrgLayout = CreateTestSrgLayout("TestSrg");
+            m_testSrgShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testSrgLayout);
+            m_testSrg = ShaderResourceGroup::Create(m_testSrgShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
 
             m_bufferPoolAsset = CreateTestBufferPoolAsset();
             m_shortBufferAsset = CreateTestBufferAsset("Short");
@@ -118,8 +118,9 @@ namespace UnitTest
 
         void TearDown() override
         {
+            m_testSrgLayout = nullptr;
             m_testSrg = nullptr;
-            m_testSrgAsset.Reset();
+            m_testSrgShaderAsset.Reset();
             m_shortBufferAsset.Reset();
             m_mediumBufferAsset.Reset();
             m_longBufferAsset.Reset();
@@ -193,7 +194,7 @@ namespace UnitTest
 
         // Test changing back to null...
 
-        ProcessQueuedSrgCompilations(m_testSrgAsset);
+        ProcessQueuedSrgCompilations(m_testSrgShaderAsset, m_testSrgLayout->GetName());
 
         EXPECT_TRUE(m_testSrg->SetBuffer(m_indexOfBufferA, nullptr));
         m_testSrg->Compile();
@@ -219,7 +220,7 @@ namespace UnitTest
 
         // Test changing back to null...
 
-        ProcessQueuedSrgCompilations(m_testSrgAsset);
+        ProcessQueuedSrgCompilations(m_testSrgShaderAsset, m_testSrgLayout->GetName());
 
         EXPECT_TRUE(m_testSrg->SetBuffer(m_indexOfBufferArray, nullptr, 1));
         m_testSrg->Compile();
@@ -247,7 +248,7 @@ namespace UnitTest
 
         // Test replacing just two buffers including changing one buffer back to null...
 
-        ProcessQueuedSrgCompilations(m_testSrgAsset);
+        ProcessQueuedSrgCompilations(m_testSrgShaderAsset, m_testSrgLayout->GetName());
 
         AZStd::vector<Data::Instance<Buffer>> alternateBuffers = { m_mediumBuffer, nullptr };
 
@@ -393,7 +394,7 @@ namespace UnitTest
 
         // Test replacing just two buffer views including changing one back to null...
 
-        ProcessQueuedSrgCompilations(m_testSrgAsset);
+        ProcessQueuedSrgCompilations(m_testSrgShaderAsset, m_testSrgLayout->GetName());
 
         AZStd::vector<const RHI::BufferView*> alternateBufferViews = { m_bufferViewB.get(), nullptr };
 

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Vulkan_precompiled.h"
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
@@ -117,10 +117,10 @@ namespace AZ
             const auto& device = static_cast<const Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
 
-            const uint16_t width = imgDesc.m_size.m_width;
-            const uint16_t height = imgDesc.m_size.m_height;
+            [[maybe_unused]] const uint16_t width = static_cast<uint16_t>(imgDesc.m_size.m_width);
+            [[maybe_unused]] const uint16_t height = static_cast<uint16_t>(imgDesc.m_size.m_height);
             const uint16_t depth = AZStd::min(static_cast<uint16_t>(imgViewDesc.m_depthSliceMax - imgViewDesc.m_depthSliceMin), static_cast<uint16_t>(imgDesc.m_size.m_depth - 1)) + 1;
-            const uint16_t samples = imgDesc.m_multisampleState.m_samples;
+            [[maybe_unused]] const uint16_t samples = imgDesc.m_multisampleState.m_samples;
             const uint16_t arrayLayers = AZStd::min(static_cast<uint16_t>(imgViewDesc.m_arraySliceMax - imgViewDesc.m_arraySliceMin), static_cast<uint16_t>(imgDesc.m_arraySize - 1)) + 1;
             // We cannot only use the number of layers of the ImageView to determinate if is a texture array. You can have a texture array with only 1 layer and the shader expects
             // an array type instead of a normal image type.
@@ -233,7 +233,7 @@ namespace AZ
                     // https://www.khronos.org/registry/vulkan/specs/1.1/html/chap11.html#VkImageSubresourceRange
                 {
                     range.m_arraySliceMin = descriptor.m_depthSliceMin;
-                    range.m_arraySliceMax = AZStd::GetMin<uint32_t>(descriptor.m_depthSliceMax, imageDesc.m_size.m_depth - 1);
+                    range.m_arraySliceMax = AZStd::GetMin<uint16_t>(descriptor.m_depthSliceMax, static_cast<uint16_t>(imageDesc.m_size.m_depth - 1));
                     break;
                 }
                 case VK_IMAGE_VIEW_TYPE_3D:

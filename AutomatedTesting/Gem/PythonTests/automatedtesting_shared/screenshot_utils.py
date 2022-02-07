@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -186,7 +187,3 @@ def prepare_for_screenshot_compare(remote_console_instance):
     """
     wait_for(lambda: _retry_command(remote_console_instance, 'r_displayinfo 0',
                                     '$3r_DisplayInfo = $60 $5[DUMPTODISK, RESTRICTEDMODE]$4'))
-    wait_for(lambda: _retry_command(remote_console_instance, 'r_antialiasingmode 0',
-                                    '$3r_AntialiasingMode = $60 $5[]$4'))
-    wait_for(lambda: _retry_command(remote_console_instance, 'e_WaterOcean 0',
-                                    '$3e_WaterOcean = $60 $5[]$4'))

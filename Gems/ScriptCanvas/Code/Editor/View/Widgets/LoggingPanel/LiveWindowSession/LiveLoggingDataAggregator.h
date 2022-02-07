@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,8 +38,8 @@ namespace ScriptCanvasEditor
         void OnCurrentTargetChanged() override;
         ////
 
-        bool CanCaptureData() const;
-        bool IsCapturingData() const;
+        bool CanCaptureData() const override;
+        bool IsCapturingData() const override;
 
         void StartCaptureData();
         void StopCaptureData();

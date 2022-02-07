@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 #include <LZ4Compressor.h>
 
 #include <AzCore/Compression/Compression.h>
+#include <AzCore/std/chrono/clocks.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzTest/AzTest.h>
@@ -41,9 +43,9 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
     memset(buffer.GetBuffer(), 255, buffer.GetCapacity());
 
     size_t maxCompressedSize = buffer.GetSize() + 32U;
-    size_t compressedSize = -1;
-    size_t uncompressedSize = -1;
-    size_t consumedSize = -1;
+    size_t compressedSize = std::numeric_limits<size_t>::max();
+    size_t uncompressedSize = std::numeric_limits<size_t>::max();
+    size_t consumedSize = std::numeric_limits<size_t>::max();
     char* pCompressedBuffer = new char[maxCompressedSize];
     char* pDecompressedBuffer = new char[buffer.GetSize()];
 
@@ -51,7 +53,7 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
     MultiplayerCompression::LZ4Compressor lz4Compressor;
     startTime = AZStd::chrono::system_clock::now();
     AzNetworking::CompressorError compressStatus = lz4Compressor.Compress(buffer.GetBuffer(), buffer.GetSize(), pCompressedBuffer, maxCompressedSize, compressedSize);
-    const AZ::u64 compressTime = (AZStd::chrono::system_clock::now() - startTime).count();
+    [[maybe_unused]] const AZ::u64 compressTime = (AZStd::chrono::system_clock::now() - startTime).count();
 
     ASSERT_TRUE(compressStatus == AzNetworking::CompressorError::Ok);
     EXPECT_TRUE(compressedSize < maxCompressedSize);
@@ -59,13 +61,11 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
     //Run and test decompress
     startTime = AZStd::chrono::system_clock::now();
     AzNetworking::CompressorError decompressStatus = lz4Compressor.Decompress(pCompressedBuffer, compressedSize, pDecompressedBuffer, buffer.GetSize(), consumedSize, uncompressedSize);
-    const AZ::u64 decompressTime = (AZStd::chrono::system_clock::now() - startTime).count();
+    [[maybe_unused]] const AZ::u64 decompressTime = (AZStd::chrono::system_clock::now() - startTime).count();
 
     ASSERT_TRUE(decompressStatus == AzNetworking::CompressorError::Ok);
     EXPECT_TRUE(uncompressedSize = buffer.GetSize());
     EXPECT_TRUE(memcmp(pDecompressedBuffer, buffer.GetBuffer(), uncompressedSize) == 0);
-
-    const AZ::u64 unmarshalTime = (AZStd::chrono::system_clock::now() - startTime).count();
 
     delete [] pCompressedBuffer;
     delete [] pDecompressedBuffer;

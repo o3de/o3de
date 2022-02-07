@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,10 +11,12 @@
 #define CRYINCLUDE_CRYCOMMON_INAVIGATIONSYSTEM_H
 #pragma once
 
+#include "CryCommon/Cry_Geo.h"
+
 #include <AzCore/std/functional.h>
 
 #include <IMNM.h>
-#include <physinterface.h>
+#include <ISystem.h>
 
 struct IOffMeshNavigationManager;
 
@@ -46,7 +49,6 @@ typedef TNavigationID<MeshIDTag> NavigationMeshID;
 typedef TNavigationID<AgentTypeIDTag> NavigationAgentTypeID;
 typedef TNavigationID<VolumeIDTag> NavigationVolumeID;
 typedef AZStd::function<void(NavigationAgentTypeID, NavigationMeshID, uint32)> NavigationMeshChangeCallback;
-typedef AZStd::function<bool(IPhysicalEntity&, uint32&)> NavigationMeshEntityCallback;
 
 struct INavigationSystemUser
 {
@@ -140,7 +142,6 @@ struct INavigationSystem
     virtual NavigationMeshID CreateMesh(const char* name, NavigationAgentTypeID agentTypeID, const CreateMeshParams& params, NavigationMeshID requestedID) = 0;
     virtual void DestroyMesh(NavigationMeshID meshID) = 0;
 
-    virtual void SetMeshEntityCallback(NavigationAgentTypeID agentTypeID, const NavigationMeshEntityCallback& callback) = 0;
     virtual void AddMeshChangeCallback(NavigationAgentTypeID agentTypeID, const NavigationMeshChangeCallback& callback) = 0;
     virtual void RemoveMeshChangeCallback(NavigationAgentTypeID agentTypeID, const NavigationMeshChangeCallback& callback) = 0;
 

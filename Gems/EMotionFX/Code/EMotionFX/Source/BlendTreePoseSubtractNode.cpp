@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -77,7 +78,7 @@ namespace EMotionFX
         AnimGraphNode* subtractNode = GetInputNode(INPUTPORT_POSE_B);
 
         // If we are disabled and we have an input node, or if we are no disabled but have no subtract input.
-        if ((mDisabled && inputNode) || (!mDisabled && inputNode && !subtractNode))
+        if ((m_disabled && inputNode) || (!m_disabled && inputNode && !subtractNode))
         {
             OutputIncomingNode(animGraphInstance, inputNode);
             RequestPoses(animGraphInstance);
@@ -85,7 +86,7 @@ namespace EMotionFX
             *outputPose = *inputNode->GetMainOutputPose(animGraphInstance);                
             return;
         }
-        else if (mDisabled || !inputNode) // If we are disabled or have no inputs.
+        else if (m_disabled || !inputNode) // If we are disabled or have no inputs.
         {
             RequestPoses(animGraphInstance);
             AnimGraphPose* outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
@@ -115,7 +116,7 @@ namespace EMotionFX
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
             AnimGraphPose* visualOutputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
-            animGraphInstance->GetActorInstance()->DrawSkeleton(visualOutputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(visualOutputPose->GetPose(), m_visualizeColor);
         }
     }
     
@@ -126,14 +127,14 @@ namespace EMotionFX
         AnimGraphNode* subtractNode = GetInputNode(INPUTPORT_POSE_B);
 
         // If we are disabled and we have an input node, or if we are no disabled but have no subtract input.
-        if ((mDisabled && inputNode) || (!mDisabled && inputNode && !subtractNode))
+        if ((m_disabled && inputNode) || (!m_disabled && inputNode && !subtractNode))
         {
             UpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
             uniqueData->Init(animGraphInstance, inputNode);
             return;
         }
-        else if (mDisabled || (!inputNode && !subtractNode))    // If we are disabled or have no inputs.
+        else if (m_disabled || (!inputNode && !subtractNode))    // If we are disabled or have no inputs.
         {
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
             uniqueData->Clear();
@@ -165,7 +166,7 @@ namespace EMotionFX
         data->ZeroTrajectoryDelta();
 
         // We are disabled and have no input pose, so output no delta.
-        if (mDisabled || !nodeA)
+        if (m_disabled || !nodeA)
         {
             return;
         }
@@ -190,7 +191,7 @@ namespace EMotionFX
         AnimGraphNode* inputNode = GetInputNode(INPUTPORT_POSE_A);
         AnimGraphNode* subtractNode = GetInputNode(INPUTPORT_POSE_B);
 
-        if (mDisabled)
+        if (m_disabled)
         {
             if (inputNode)
             {
@@ -210,7 +211,7 @@ namespace EMotionFX
             {
                 // Sync the input node to this node.
                 inputNode->AutoSync(animGraphInstance, this, 0.0f, SYNCMODE_TRACKBASED, false);
-                if (animGraphInstance->GetIsObjectFlagEnabled(mObjectIndex, AnimGraphInstance::OBJECTFLAGS_SYNCED) == false)
+                if (animGraphInstance->GetIsObjectFlagEnabled(m_objectIndex, AnimGraphInstance::OBJECTFLAGS_SYNCED) == false)
                 {
                     inputNode->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_SYNCED, true);
                 }
@@ -254,7 +255,7 @@ namespace EMotionFX
 
         // We are disabled but had an input pose, just forward that in this case.
         // Do the same if we are not disabled but have no second pose.
-        if ((mDisabled && inputNode) || (!mDisabled && inputNode && !subtractNode))
+        if ((m_disabled && inputNode) || (!m_disabled && inputNode && !subtractNode))
         {
             inputNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
             RequestRefDatas(animGraphInstance);
@@ -266,7 +267,7 @@ namespace EMotionFX
             data->SetTrajectoryDeltaMirrored(inputData->GetTrajectoryDelta());
             return;
         }
-        else if (mDisabled || !inputNode) // If we are disabled or have no inputs.
+        else if (m_disabled || !inputNode) // If we are disabled or have no inputs.
         {
             RequestRefDatas(animGraphInstance);
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);

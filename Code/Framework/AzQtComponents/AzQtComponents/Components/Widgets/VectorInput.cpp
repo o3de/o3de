@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -302,7 +303,7 @@ VectorInput::~VectorInput()
 void VectorInput::setLabel(int index, const QString& label)
 {
     AZ_Warning("PropertyGrid", index < m_elementCount,
-        "This control handles only %i controls", m_elementCount)
+        "This control handles only %i controls", m_elementCount);
     if (index < m_elementCount)
     {
         m_elements[index]->setLabel(label);
@@ -312,7 +313,7 @@ void VectorInput::setLabel(int index, const QString& label)
 void VectorInput::setLabelStyle(int index, const QString& qss)
 {
     AZ_Warning("PropertyGrid", index < m_elementCount,
-        "This control handles only %i controls", m_elementCount)
+        "This control handles only %i controls", m_elementCount);
     if (index < m_elementCount)
     {
         m_elements[index]->getLabelWidget()->setStyleSheet(qss);
@@ -322,7 +323,7 @@ void VectorInput::setLabelStyle(int index, const QString& qss)
 void VectorInput::setValuebyIndex(double value, int elementIndex)
 {
     AZ_Warning("PropertyGrid", elementIndex < m_elementCount,
-        "This control handles only %i controls", m_elementCount)
+        "This control handles only %i controls", m_elementCount);
     if (elementIndex < m_elementCount)
     {
         m_elements[elementIndex]->setValue(value);

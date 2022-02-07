@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,10 +33,13 @@ namespace O3DE::ProjectManager
         virtual bool Validate();
 
     protected slots:
-        virtual bool ValidateProjectName();
-        virtual bool ValidateProjectPath();
+        virtual void OnProjectNameUpdated();
+        virtual void OnProjectPathUpdated();
 
     protected:
+        bool ValidateProjectName();
+        virtual bool ValidateProjectPath();
+
         QString GetDefaultProjectPath();
 
         QHBoxLayout* m_horizontalLayout;

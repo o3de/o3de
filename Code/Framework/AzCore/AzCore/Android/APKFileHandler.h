@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -25,8 +26,8 @@
 #if AZ_ENABLED_VERBOSE_ANDROID_IO_PROFILING
     #include <AzCore/Debug/Profiler.h>
 
-    #define ANDROID_IO_PROFILE_SECTION           AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore)
-    #define ANDROID_IO_PROFILE_SECTION_ARGS(...) AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, __VA_ARGS__)
+    #define ANDROID_IO_PROFILE_SECTION           AZ_PROFILE_FUNCTION(AzCore)
+    #define ANDROID_IO_PROFILE_SECTION_ARGS(...) AZ_PROFILE_SCOPE(AzCore, __VA_ARGS__)
 #else
     #define ANDROID_IO_PROFILE_SECTION
     #define ANDROID_IO_PROFILE_SECTION_ARGS(...)

@@ -1,4 +1,5 @@
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -7,7 +8,7 @@ INTRODUCTION
 ------------
 
 EditorPythonBindings is a Python project that contains a collection of editor testing tools
-developed by the Lumberyard feature teams. The project contains tools for system level
+developed by the O3DE feature teams. The project contains tools for system level
 editor tests.
 
 
@@ -22,7 +23,7 @@ installed on your system.
 
 INSTALL
 -----------
-It is recommended to set up these these tools with Lumberyard's CMake build commands.
+It is recommended to set up these these tools with O3DE's CMake build commands.
 Assuming CMake is already setup on your operating system, below are some sample build commands:
     cd /path/to/od3e/
     mkdir windows_vs2019

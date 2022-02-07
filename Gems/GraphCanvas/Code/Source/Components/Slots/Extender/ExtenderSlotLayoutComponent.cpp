@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QCoreApplication>
 #include <QGraphicsLayoutItem>
@@ -119,13 +119,13 @@ namespace GraphCanvas
     {
         SlotRequestBus::EventResult(m_connectionType, m_owner.GetEntityId(), &SlotRequests::GetConnectionType);
 
-        TranslationKeyedString slotName;
-        SlotRequestBus::EventResult(slotName, m_owner.GetEntityId(), &SlotRequests::GetTranslationKeyedName);
+        AZStd::string slotName;
+        SlotRequestBus::EventResult(slotName, m_owner.GetEntityId(), &SlotRequests::GetName);
 
         m_slotText->SetLabel(slotName);
 
-        TranslationKeyedString toolTip;
-        SlotRequestBus::EventResult(toolTip, m_owner.GetEntityId(), &SlotRequests::GetTranslationKeyedTooltip);
+        AZStd::string toolTip;
+        SlotRequestBus::EventResult(toolTip, m_owner.GetEntityId(), &SlotRequests::GetTooltip);
 
         OnTooltipChanged(toolTip);
 
@@ -151,17 +151,15 @@ namespace GraphCanvas
         OnStyleChanged();
     }
 
-    void ExtenderSlotLayout::OnNameChanged(const TranslationKeyedString& name)
+    void ExtenderSlotLayout::OnNameChanged(const AZStd::string& name)
     {
         m_slotText->SetLabel(name);
     }
 
-    void ExtenderSlotLayout::OnTooltipChanged(const TranslationKeyedString& tooltip)
+    void ExtenderSlotLayout::OnTooltipChanged(const AZStd::string& tooltip)
     {
-        AZStd::string displayText = tooltip.GetDisplayString();
-
-        m_slotConnectionPin->setToolTip(displayText.c_str());
-        m_slotText->setToolTip(displayText.c_str());
+        m_slotConnectionPin->setToolTip(tooltip.c_str());
+        m_slotText->setToolTip(tooltip.c_str());
     }
     
     void ExtenderSlotLayout::OnStyleChanged()

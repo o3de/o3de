@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -8,7 +9,7 @@
 // include the required headers
 #include "NodeGroupCommands.h"
 #include "CommandManager.h"
-#include <EMotionFX/Source/NodeGroup.h>
+#include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/StringConversions.h>
@@ -19,230 +20,147 @@ namespace CommandSystem
     //--------------------------------------------------------------------------------
     // CommandAdjustNodeGroup
     //--------------------------------------------------------------------------------
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustNodeGroup, EMotionFX::CommandAllocator, 0)
 
-    // constructor
-    CommandAdjustNodeGroup::CommandAdjustNodeGroup(MCore::Command* orgCommand)
-        : MCore::Command("AdjustNodeGroup", orgCommand)
-        , mOldNodeGroup(nullptr)
+    CommandAdjustNodeGroup::CommandAdjustNodeGroup(
+        MCore::Command* orgCommand,
+        uint32 actorId,
+        const AZStd::string& name,
+        AZStd::optional<AZStd::string> newName,
+        AZStd::optional<bool> enabledOnDefault,
+        AZStd::optional<AZStd::vector<AZStd::string>> nodeNames,
+        AZStd::optional<NodeAction> nodeAction
+    )
+        : MCore::Command(s_commandName.data(), orgCommand)
+        , EMotionFX::ParameterMixinActorId(actorId)
+        , m_name(name)
+        , m_newName(AZStd::move(newName))
+        , m_enabledOnDefault(enabledOnDefault)
+        , m_nodeNames(AZStd::move(nodeNames))
+        , m_nodeAction(nodeAction)
     {
-    }
-
-
-    // destructor
-    CommandAdjustNodeGroup::~CommandAdjustNodeGroup()
-    {
-        if (mOldNodeGroup)
-        {
-            mOldNodeGroup->Destroy();
-        }
     }
 
 
     // execute
-    bool CommandAdjustNodeGroup::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
+    bool CommandAdjustNodeGroup::Execute(const MCore::CommandLine&, AZStd::string& outResult)
     {
-        AZStd::string valueString;
-
-        // get the motion id and the corresponding motion pointer
-        const int32 actorID = parameters.GetValueAsInt("actorID", this);
-        parameters.GetValue("name", this, &valueString);
-
         // get the actor
-        EMotionFX::Actor* actor = EMotionFX::GetActorManager().FindActorByID(actorID);
+        EMotionFX::Actor* actor = EMotionFX::GetActorManager().FindActorByID(m_actorId);
         if (actor == nullptr)
         {
-            outResult = AZStd::string::format("Cannot adjust node group. Actor with id='%i' does not exist.", actorID);
+            outResult = AZStd::string::format("Cannot adjust node group. Actor with id='%i' does not exist.", m_actorId);
             return false;
         }
 
         // get the node group
-        EMotionFX::NodeGroup* nodeGroup = actor->FindNodeGroupByNameNoCase(valueString.c_str());
+        EMotionFX::NodeGroup* nodeGroup = actor->FindNodeGroupByNameNoCase(m_name.c_str());
         if (nodeGroup == nullptr)
         {
-            outResult = AZStd::string::format("Cannot adjust node group. Node group with name='%s' does not exist.", valueString.c_str());
+            outResult = AZStd::string::format("Cannot adjust node group. Node group with name='%s' does not exist.", m_name.c_str());
             return false;
         }
 
-        // copy the old node group for undo
-        if (mOldNodeGroup)
-        {
-            mOldNodeGroup->Destroy();
-        }
-
-        mOldNodeGroup = aznew EMotionFX::NodeGroup(*nodeGroup);
+        m_oldNodeGroup = AZStd::make_unique<EMotionFX::NodeGroup>(*nodeGroup);
 
         // check if newName is set and apply new name
-        if (parameters.CheckIfHasParameter("newName"))
+        if (m_newName.has_value())
         {
-            parameters.GetValue("newName", this, &valueString);
-            nodeGroup->SetName(valueString.c_str());
+            nodeGroup->SetName(*m_newName);
         }
 
         // check if parameter disabledOnDefault is set and adjust it
-        if (parameters.CheckIfHasParameter("enabledOnDefault"))
+        if (m_enabledOnDefault.has_value())
         {
-            const bool enabledOnDefault = parameters.GetValueAsBool("enabledOnDefault", this);
-            nodeGroup->SetIsEnabledOnDefault(enabledOnDefault);
+            nodeGroup->SetIsEnabledOnDefault(*m_enabledOnDefault);
         }
 
         // check if parametes nodeNames is set
-        if (parameters.CheckIfHasParameter("nodeNames"))
+        if (m_nodeNames.has_value())
         {
-            // get the node action
-            AZStd::string nodeAction;
-            parameters.GetValue("nodeAction", this, &valueString);
-
-            // get the node names and split the string
-            AZStd::string nodeNameString;
-            parameters.GetValue("nodeNames", this, &nodeNameString);
-
-            // get the individual node names
-            AZStd::vector<AZStd::string> nodeNames;
-            AzFramework::StringFunc::Tokenize(nodeNameString.c_str(), nodeNames, MCore::CharacterConstants::semiColon, true /* keep empty strings */, true /* keep space strings */);
-
-            // get the number of nodes
-            const size_t numNodes = nodeNames.size();
-
-            // remove the selected nodes from the node group
-            if (AzFramework::StringFunc::Equal(valueString.c_str(), "remove", false /* no case */))
+            if (*m_nodeAction == NodeAction::Replace)
             {
-                for (size_t i = 0; i < numNodes; ++i)
-                {
-                    // get the node
-                    EMotionFX::Node* node = actor->GetSkeleton()->FindNodeByName(nodeNames[i].c_str());
-                    if (node == nullptr)
-                    {
-                        continue;
-                    }
-
-                    // remove the node
-                    nodeGroup->RemoveNodeByNodeIndex((uint16)node->GetNodeIndex());
-                }
+                nodeGroup->GetNodeArray().clear();
             }
-            else if (AzFramework::StringFunc::Equal(valueString.c_str(), "add", false /* no case */)) // add the selected nodes to the node group
+            for (const AZStd::string& nodeName : *m_nodeNames)
             {
-                for (size_t i = 0; i < numNodes; ++i)
+                EMotionFX::Node* node = actor->GetSkeleton()->FindNodeByName(nodeName);
+                if (!node)
                 {
-                    // get the node
-                    EMotionFX::Node* node = actor->GetSkeleton()->FindNodeByName(nodeNames[i].c_str());
-                    if (node == nullptr)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    // add the node
-                    uint16 nodeIndex = (uint16)node->GetNodeIndex();
-                    nodeGroup->RemoveNodeByNodeIndex(nodeIndex);
+                uint16 nodeIndex = (uint16)node->GetNodeIndex();
+                nodeGroup->RemoveNodeByNodeIndex(nodeIndex);
+                if (*m_nodeAction == NodeAction::Add || *m_nodeAction == NodeAction::Replace)
+                {
                     nodeGroup->AddNode(nodeIndex);
-                }
-            }
-            else // selected nodes form the new node group
-            {
-                // clear previous nodes
-                nodeGroup->GetNodeArray().Clear();
-
-                // add all nodes to the group
-                for (size_t i = 0; i < numNodes; ++i)
-                {
-                    // get the node
-                    EMotionFX::Node* node = actor->GetSkeleton()->FindNodeByName(nodeNames[i].c_str());
-
-                    // check if node exists
-                    if (node == nullptr)
-                    {
-                        continue;
-                    }
-
-                    // add the node
-                    nodeGroup->AddNode((uint16)node->GetNodeIndex());
                 }
             }
         }
 
         // save the current dirty flag and tell the actor that something got changed
-        mOldDirtyFlag = actor->GetDirtyFlag();
+        m_oldDirtyFlag = actor->GetDirtyFlag();
         actor->SetDirtyFlag(true);
         return true;
     }
 
 
     // undo the command
-    bool CommandAdjustNodeGroup::Undo(const MCore::CommandLine& parameters, AZStd::string& outResult)
+    bool CommandAdjustNodeGroup::Undo(const MCore::CommandLine&, AZStd::string& outResult)
     {
         // return if no information about the previous node group was stored
-        if (!mOldNodeGroup)
+        if (!m_oldNodeGroup)
         {
             return false;
         }
 
-        // get the motion id and the corresponding motion pointer
-        int32   actorID = parameters.GetValueAsInt("actorID", this);
-
-        // get the name
-        AZStd::string name;
-        if (parameters.CheckIfHasParameter("newName"))
-        {
-            parameters.GetValue("newName", this, &name);
-        }
-        else
-        {
-            parameters.GetValue("name", this, &name);
-        }
-
-        // get the actor
-        EMotionFX::Actor* actor = EMotionFX::GetActorManager().FindActorByID(actorID);
+        EMotionFX::Actor* actor = EMotionFX::GetActorManager().FindActorByID(m_actorId);
 
         // return error if actor was not found
         if (actor == nullptr)
         {
-            outResult = AZStd::string::format("Cannot adjust node group. Actor with id='%i' does not exist.", actorID);
+            outResult = AZStd::string::format("Cannot adjust node group. Actor with id='%i' does not exist.", m_actorId);
             return false;
         }
 
-        // get the node group
-        EMotionFX::NodeGroup* nodeGroup = actor->FindNodeGroupByNameNoCase(name.c_str());
+        EMotionFX::NodeGroup* nodeGroup = actor->FindNodeGroupByNameNoCase(m_newName.has_value() ? m_newName->c_str() : m_name.c_str());
 
-        // return error if node group name is not set
-        if (nodeGroup == nullptr)
+        if (!nodeGroup)
         {
-            outResult = AZStd::string::format("Cannot adjust node group. Node group with name='%s' does not exist.", name.c_str());
+            outResult = AZStd::string::format("Cannot adjust node group. Node group with name='%s' does not exist.", m_newName.has_value() ? m_newName->c_str() : m_name.c_str());
             return false;
         }
 
         // reset the old values
-        if (parameters.CheckIfHasParameter("enabledOnDefault"))
+        if (m_enabledOnDefault.has_value())
         {
-            nodeGroup->SetIsEnabledOnDefault(mOldNodeGroup->GetIsEnabledOnDefault());
+            nodeGroup->SetIsEnabledOnDefault(m_oldNodeGroup->GetIsEnabledOnDefault());
         }
 
-        if (parameters.CheckIfHasParameter("newName"))
+        if (m_newName.has_value())
         {
-            nodeGroup->SetName(mOldNodeGroup->GetName());
+            nodeGroup->SetName(m_oldNodeGroup->GetName());
         }
 
-        if (parameters.CheckIfHasParameter("nodeNames"))
+        if (m_nodeNames.has_value())
         {
             // clear previous nodes
-            nodeGroup->GetNodeArray().Clear();
-            const uint32 numNodes = mOldNodeGroup->GetNumNodes();
-            nodeGroup->SetNumNodes(static_cast<uint16>(numNodes));
+            nodeGroup->GetNodeArray().clear();
+            const size_t numNodes = m_oldNodeGroup->GetNumNodes();
+            nodeGroup->SetNumNodes(numNodes);
 
             // add all nodes to the group
-            for (uint32 i = 0; i < numNodes; ++i)
+            for (size_t i = 0; i < numNodes; ++i)
             {
-                nodeGroup->SetNode(static_cast<uint16>(i), mOldNodeGroup->GetNode(static_cast<uint16>(i)));
+                nodeGroup->SetNode(i, m_oldNodeGroup->GetNode(i));
             }
         }
 
-        // delete the old node group
-        if (mOldNodeGroup)
-        {
-            mOldNodeGroup->Destroy();
-        }
-        mOldNodeGroup = nullptr;
+        m_oldNodeGroup = nullptr;
 
         // set the dirty flag back to the old value
-        actor->SetDirtyFlag(mOldDirtyFlag);
+        actor->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -251,12 +169,51 @@ namespace CommandSystem
     void CommandAdjustNodeGroup::InitSyntax()
     {
         GetSyntax().ReserveParameters(6);
-        GetSyntax().AddRequiredParameter("actorID",          "The id of the actor the node group belongs to.",               MCore::CommandSyntax::PARAMTYPE_INT);
+        EMotionFX::ParameterMixinActorId::InitSyntax(GetSyntax(), /*isParameterRequired=*/ true);
         GetSyntax().AddRequiredParameter("name",             "The name of the node group to adjust.",                        MCore::CommandSyntax::PARAMTYPE_STRING);
         GetSyntax().AddParameter("newName",          "The new name of the node group.",                              MCore::CommandSyntax::PARAMTYPE_STRING,     "");
         GetSyntax().AddParameter("enabledOnDefault", "The enabled on default flag.",                                 MCore::CommandSyntax::PARAMTYPE_BOOLEAN,    "false");
         GetSyntax().AddParameter("nodeNames",        "A list of nodes that should be added to the node group.",      MCore::CommandSyntax::PARAMTYPE_STRING,     "");
         GetSyntax().AddParameter("nodeAction",       "The action to perform with the nodes passed to the command.",  MCore::CommandSyntax::PARAMTYPE_STRING,     "select");
+    }
+
+
+    bool CommandAdjustNodeGroup::SetCommandParameters(const MCore::CommandLine& parameters)
+    {
+        EMotionFX::ParameterMixinActorId::SetCommandParameters(parameters);
+
+        m_name = parameters.GetValue("name", this);
+        if (parameters.CheckIfHasParameter("newName"))
+        {
+            m_newName = parameters.GetValue("newName", this);
+        }
+        if (parameters.CheckIfHasParameter("enabledOnDefault"))
+        {
+            m_enabledOnDefault = parameters.GetValueAsBool("enabledOnDefault", this);
+        }
+        if (parameters.CheckIfHasParameter("nodeNames"))
+        {
+            m_nodeNames.emplace();
+            AzFramework::StringFunc::Tokenize(parameters.GetValue("nodeNames", this), m_nodeNames.value(), ";", false, true);
+        }
+        if (parameters.CheckIfHasParameter("nodeAction"))
+        {
+            const AZStd::string& nodeActionStr = parameters.GetValue("nodeAction", this);
+            if (nodeActionStr == "add")
+            {
+                m_nodeAction = NodeAction::Add;
+            }
+            else if (nodeActionStr == "remove")
+            {
+                m_nodeAction = NodeAction::Remove;
+            }
+            else if (nodeActionStr == "replace")
+            {
+                m_nodeAction = NodeAction::Replace;
+            }
+        }
+
+        return true;
     }
 
 
@@ -303,11 +260,11 @@ namespace CommandSystem
         }
 
         // add new node group to the actor
-        EMotionFX::NodeGroup* nodeGroup = EMotionFX::NodeGroup::Create(name.c_str());
+        EMotionFX::NodeGroup* nodeGroup = aznew EMotionFX::NodeGroup(name);
         actor->AddNodeGroup(nodeGroup);
 
         // save the current dirty flag and tell the actor that something got changed
-        mOldDirtyFlag = actor->GetDirtyFlag();
+        m_oldDirtyFlag = actor->GetDirtyFlag();
         actor->SetDirtyFlag(true);
         return true;
     }
@@ -338,7 +295,7 @@ namespace CommandSystem
         }
 
         // set the dirty flag back to the old value
-        actor->SetDirtyFlag(mOldDirtyFlag);
+        actor->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -365,7 +322,7 @@ namespace CommandSystem
     // constructor
     CommandRemoveNodeGroup::CommandRemoveNodeGroup(MCore::Command* orgCommand)
         : MCore::Command("RemoveNodeGroup", orgCommand)
-        , mOldNodeGroup(nullptr)
+        , m_oldNodeGroup(nullptr)
     {
     }
 
@@ -373,10 +330,7 @@ namespace CommandSystem
     // destructor
     CommandRemoveNodeGroup::~CommandRemoveNodeGroup()
     {
-        if (mOldNodeGroup)
-        {
-            mOldNodeGroup->Destroy();
-        }
+        delete m_oldNodeGroup;
     }
 
 
@@ -406,18 +360,14 @@ namespace CommandSystem
         }
 
         // copy the old node group for undo
-        if (mOldNodeGroup)
-        {
-            mOldNodeGroup->Destroy();
-        }
-
-        mOldNodeGroup = aznew EMotionFX::NodeGroup(*nodeGroup);
+        delete m_oldNodeGroup;
+        m_oldNodeGroup = aznew EMotionFX::NodeGroup(*nodeGroup);
 
         // remove the node group
         actor->RemoveNodeGroup(nodeGroup);
 
         // save the current dirty flag and tell the actor that something got changed
-        mOldDirtyFlag = actor->GetDirtyFlag();
+        m_oldDirtyFlag = actor->GetDirtyFlag();
         actor->SetDirtyFlag(true);
         return true;
     }
@@ -427,7 +377,7 @@ namespace CommandSystem
     bool CommandRemoveNodeGroup::Undo(const MCore::CommandLine& parameters, AZStd::string& outResult)
     {
         // check if old node group exists
-        if (!mOldNodeGroup)
+        if (!m_oldNodeGroup)
         {
             return false;
         }
@@ -447,13 +397,13 @@ namespace CommandSystem
         }
 
         // add the node to the group again
-        if (name == mOldNodeGroup->GetName())
+        if (name == m_oldNodeGroup->GetName())
         {
-            actor->AddNodeGroup(aznew EMotionFX::NodeGroup(*mOldNodeGroup));
+            actor->AddNodeGroup(aznew EMotionFX::NodeGroup(*m_oldNodeGroup));
         }
 
         // set the dirty flag back to the old value
-        actor->SetDirtyFlag(mOldDirtyFlag);
+        actor->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 

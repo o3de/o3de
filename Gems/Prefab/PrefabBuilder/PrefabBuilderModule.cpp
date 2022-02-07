@@ -1,12 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/Module/Module.h>
 #include <PrefabBuilderComponent.h>
+#include <PrefabGroup/PrefabGroupBehavior.h>
 
 namespace AZ::Prefab
 {
@@ -21,7 +23,8 @@ namespace AZ::Prefab
             : Module()
         {
             m_descriptors.insert(m_descriptors.end(), {
-                PrefabBuilderComponent::CreateDescriptor()
+                PrefabBuilderComponent::CreateDescriptor(),
+                AZ::SceneAPI::Behaviors::PrefabGroupBehavior::CreateDescriptor()
             });
         }
     };

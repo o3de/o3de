@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,7 +18,7 @@ namespace LmbrCentral
         : public AZ::Data::AssetData
     {
     public:
-        using MeshPtr = _smart_ptr<IStatObj>;
+        using MeshPtr = IStatObj*;
 
         AZ_RTTI(MeshAsset, "{C2869E3B-DDA0-4E01-8FE3-6770D788866B}", AZ::Data::AssetData);
         AZ_CLASS_ALLOCATOR(MeshAsset, AZ::SystemAllocator, 0);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,6 +10,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -66,6 +68,17 @@ namespace AzPhysics
         }
     }
 
+    // class for exposing free functions to script
+    class SceneQueries
+    {
+    public:
+        AZ_TYPE_INFO(SceneQueries, "{4EFA3DA5-C0E3-4753-8C55-202228CA527E}");
+        AZ_CLASS_ALLOCATOR(SceneQueries, AZ::SystemAllocator, 0);
+
+        SceneQueries() = default;
+        ~SceneQueries() = default;
+    };
+
     /*static*/ void SceneQueryRequest::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azdynamic_cast<AZ::SerializeContext*>(context))
@@ -95,6 +108,7 @@ namespace AzPhysics
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
                 ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Property("Collision", BehaviorValueProperty(&SceneQueryRequest::m_collisionGroup))
                 // Until enum class support for behavior context is done, expose this as an int
                 ->Property("QueryType", [](const SceneQueryRequest& self) { return static_cast<int>(self.m_queryType); },
@@ -133,10 +147,28 @@ namespace AzPhysics
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
                 ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Property("Distance", BehaviorValueProperty(&RayCastRequest::m_distance))
                 ->Property("Start", BehaviorValueProperty(&RayCastRequest::m_start))
                 ->Property("Direction", BehaviorValueProperty(&RayCastRequest::m_direction))
+                ->Property("ReportMultipleHits", BehaviorValueProperty(&RayCastRequest::m_reportMultipleHits))
                 ;
+
+            behaviorContext->Class<SceneQueries>("SceneQueries")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Method(
+                    "CreateRayCastRequest",
+                    [](const AZ::Vector3& start, const AZ::Vector3& direction, float distance, const AZStd::string& collisionGroup)
+                    {
+                        RayCastRequest request;
+                        request.m_start = start;
+                        request.m_direction = direction;
+                        request.m_distance = distance;
+                        request.m_collisionGroup = CollisionGroup(collisionGroup);
+                        return request;
+                    });
         }
     }
 
@@ -152,6 +184,44 @@ namespace AzPhysics
                 ->Field("HitFlags", &ShapeCastRequest::m_hitFlags)
                 ->Field("ReportMultipleHits", &ShapeCastRequest::m_reportMultipleHits)
                 ;
+        }
+
+        if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<ShapeCastRequest>("ShapeCastRequest")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Property("Distance", BehaviorValueProperty(&ShapeCastRequest::m_distance))
+                ->Property("Start", BehaviorValueProperty(&ShapeCastRequest::m_start))
+                ->Property("Direction", BehaviorValueProperty(&ShapeCastRequest::m_direction))
+                ;
+
+            behaviorContext->Method(
+                "CreateSphereCastRequest",
+                [](float radius, const AZ::Transform& startPose, const AZ::Vector3& direction, float distance,
+                   SceneQuery::QueryType queryType, CollisionGroup collisionGroup)
+                {
+                    return ShapeCastRequestHelpers::CreateSphereCastRequest(
+                        radius, startPose, direction, distance, queryType, collisionGroup, nullptr);
+                });
+            behaviorContext->Method(
+                "CreateBoxCastRequest",
+                [](const AZ::Vector3& boxDimensions, const AZ::Transform& startPose, const AZ::Vector3& direction, float distance,
+                   SceneQuery::QueryType queryType, CollisionGroup collisionGroup)
+                {
+                    return ShapeCastRequestHelpers::CreateBoxCastRequest(
+                        boxDimensions, startPose, direction, distance, queryType, collisionGroup, nullptr);
+                });
+            behaviorContext->Method(
+                "CreateCapsuleCastRequest",
+                [](float capsuleRadius, float capsuleHeight, const AZ::Transform& startPose, const AZ::Vector3& direction, float distance,
+                   SceneQuery::QueryType queryType, CollisionGroup collisionGroup)
+                {
+                    return ShapeCastRequestHelpers::CreateCapsuleCastRequest(
+                        capsuleRadius, capsuleHeight, startPose, direction, distance, queryType, collisionGroup, nullptr);
+                });
         }
     }
 
@@ -219,6 +289,41 @@ namespace AzPhysics
                 ->Field("ShapeConfiguration", &OverlapRequest::m_shapeConfiguration)
                 ;
         }
+
+        if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<OverlapRequest>("OverlapRequest")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Property("Pose", BehaviorValueProperty(&OverlapRequest::m_pose))
+                ;
+
+            behaviorContext->Method(
+                "CreateSphereOverlapRequest",
+                [](float radius, const AZ::Transform& pose)
+                {
+                    return OverlapRequestHelpers::CreateSphereOverlapRequest(
+                        radius, pose, nullptr);
+                });
+
+            behaviorContext->Method(
+                "CreateBoxOverlapRequest",
+                [](const AZ::Vector3& boxDimensions, const AZ::Transform& pose)
+                {
+                    return OverlapRequestHelpers::CreateBoxOverlapRequest(
+                        boxDimensions, pose, nullptr);
+                });
+
+            behaviorContext->Method(
+                "CreateCapsuleOverlapRequest",
+                [](float height, float radius, const AZ::Transform& pose)
+                {
+                    return OverlapRequestHelpers::CreateCapsuleOverlapRequest(
+                        height, radius, pose, nullptr);
+                });
+        }
     }
 
     namespace OverlapRequestHelpers
@@ -274,6 +379,7 @@ namespace AzPhysics
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
                 ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Property("Distance", BehaviorValueProperty(&SceneQueryHit::m_distance))
                 ->Property("Position", BehaviorValueProperty(&SceneQueryHit::m_position))
                 ->Property("Normal", BehaviorValueProperty(&SceneQueryHit::m_normal))

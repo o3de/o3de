@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,7 +31,7 @@ namespace AWSMetrics
         static const unsigned int DesiredMaxWorkers = 2;
 
         MetricsManager();
-        ~MetricsManager();
+        virtual ~MetricsManager();
 
         //! Initializing the metrics manager
         //! @return Whether the operation is successful.
@@ -92,6 +93,12 @@ namespace AWSMetrics
         //! @return Total number of requests for sending metrics events.
         int GetNumTotalRequests() const;
 
+    protected:
+        //! Send metrics to a local file.
+        //! @param metricsQueue metricsQueue Metrics queue that stores the metrics.
+        //! @return Outcome of the operation.
+        virtual AZ::Outcome<void, AZStd::string> SendMetricsToFile(AZStd::shared_ptr<MetricsQueue> metricsQueue);
+
     private:
         //! Job management
         void SetupJobContext();
@@ -110,11 +117,6 @@ namespace AWSMetrics
         //! Send the batched metrics events to the Service API asynchronously.
         //! @param metricsQueue Metrics events to send.
         void SendMetricsToServiceApiAsync(const MetricsQueue& metricsQueue);
-
-        //! Send metrics to a local file.
-        //! @param metricsQueue metricsQueue Metrics queue that stores the metrics.
-        //! @return Outcome of the operation.
-        AZ::Outcome<void, AZStd::string> SendMetricsToFile(AZStd::shared_ptr<MetricsQueue> metricsQueue);
 
         //! Push metrics events to the front of the queue for retry.
         //! @param metricsEventsForRetry Metrics events for retry.

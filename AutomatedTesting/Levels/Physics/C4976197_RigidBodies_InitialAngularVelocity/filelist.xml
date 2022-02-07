@@ -1,6 +1,0 @@
-<download name="C4976197_RigidBodies_InitialAngularVelocity" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39329" md5="16eb7841e86051d0a6887b53092c7702"/>
- </files>
-</download>

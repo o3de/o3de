@@ -1,10 +1,11 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-# bit more complex example set to demo connecting Lumberyard tech to PySide2 widgets
+# bit more complex example set to demo connecting O3DE tech to PySide2 widgets
 import azlmbr.bus
 from PySide2 import QtWidgets
 from PySide2 import QtGui

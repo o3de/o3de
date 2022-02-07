@@ -1,0 +1,6 @@
+<download name="RigidBody_LinearDampingAffectsMotion" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="41479" md5="01877b618f3bffa477010692fa438d7c"/>
+ </files>
+</download>

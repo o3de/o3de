@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,16 +15,13 @@
 #include "XConsoleVariable.h"
 #include "System.h"
 #include "ConsoleBatchFile.h"
-#include "StringUtils.h"
-#include "UnicodeFunctions.h"
-#include "UnicodeIterator.h"
 
 #include <ITimer.h>
 #include <IRenderer.h>
 #include <ISystem.h>
 #include <ILog.h>
-#include <IProcess.h>
-#include <IRenderAuxGeom.h>
+#include <IFont.h>
+#include <ITexture.h>
 #include "ConsoleHelpGen.h"         // CConsoleHelpGen
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -33,6 +31,19 @@
 
 #include <LyShine/Bus/UiCursorBus.h>
 //#define DEFENCE_CVAR_HASH_LOGGING
+
+// s should point to a buffer at least 65 chars long
+inline void BitsAlpha64(uint64 n, char* s)
+{
+    for (int i = 0; n != 0; n >>= 1, i++)
+    {
+        if (n & 1)
+        {
+            *s++ = i < 32 ? static_cast<char>(i + 'z' - 31) : static_cast<char>(i + 'Z' - 63);
+        }
+    }
+    *s++ = '\0';
+}
 
 static inline void AssertName([[maybe_unused]] const char* szName)
 {
@@ -86,33 +97,6 @@ inline int GetCharPrio(char x)
         return x;
     }
 }
-// case sensitive
-inline bool less_CVar(const char* left, const char* right)
-{
-    for (;; )
-    {
-        uint32 l = GetCharPrio(*left), r = GetCharPrio(*right);
-
-        if (l < r)
-        {
-            return true;
-        }
-        if (l > r)
-        {
-            return false;
-        }
-
-        if (*left == 0 || *right == 0)
-        {
-            break;
-        }
-
-        ++left;
-        ++right;
-    }
-
-    return false;
-}
 
 void Command_SetWaitSeconds(IConsoleCmdArgs* pCmd)
 {
@@ -148,7 +132,7 @@ void Bind(IConsoleCmdArgs* cmdArgs)
 {
     if (cmdArgs->GetArgCount() >= 3)
     {
-        string arg;
+        AZStd::string arg;
         for (int i = 2; i < cmdArgs->GetArgCount(); ++i)
         {
             arg += cmdArgs->GetArg(i);
@@ -326,7 +310,7 @@ void CXConsole::Init(ISystem* pSystem)
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
 
-#if defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
+#if defined(_RELEASE)
     static const int kDeactivateConsoleDefault = 1;
 #else
     static const int kDeactivateConsoleDefault = 0;
@@ -347,34 +331,7 @@ void CXConsole::Init(ISystem* pSystem)
         con_restricted = 0;
     }
 
-    // test cases -----------------------------------------------
-    assert(GetCVar("con_debug") != 0);        // should be registered a few lines above
-    assert(GetCVar("Con_Debug") == GetCVar("con_debug"));     // different case
-
-    // editor
-    assert(strcmp(AutoComplete("con_"), "con_debug") == 0);
-    assert(strcmp(AutoComplete("CON_"), "con_debug") == 0);
-    assert(strcmp(AutoComplete("con_debug"), "con_display_last_messages") == 0);       // actually we should reconsider this behavior
-    assert(strcmp(AutoComplete("Con_Debug"), "con_display_last_messages") == 0);       // actually we should reconsider this behavior
-
-    // game
-    assert(strcmp(ProcessCompletion("con_"), "con_debug ") == 0);
-    ResetAutoCompletion();
-    assert(strcmp(ProcessCompletion("CON_"), "con_debug ") == 0);
-    ResetAutoCompletion();
-    assert(strcmp(ProcessCompletion("con_debug"), "con_debug ") == 0);
-    ResetAutoCompletion();
-    assert(strcmp(ProcessCompletion("Con_Debug"), "con_debug ") == 0);
-    ResetAutoCompletion();
-
-    // ----------------------------------------------------------
-
     m_nLoadingBackTexID = -1;
-
-    if (gEnv->IsDedicated())
-    {
-        m_bConsoleActive = true;
-    }
 
     REGISTER_COMMAND("ConsoleShow", &ConsoleShow, VF_NULL, "Opens the console");
     REGISTER_COMMAND("ConsoleHide", &ConsoleHide, VF_NULL, "Closes the console");
@@ -413,9 +370,7 @@ void CXConsole::Init(ISystem* pSystem)
 void CXConsole::LogChangeMessage(const char* name, const bool isConst, const bool isCheat, const bool isReadOnly, const bool isDeprecated,
     const char* oldValue, const char* newValue, [[maybe_unused]] const bool isProcessingGroup, const bool allowChange)
 {
-    string logMessage;
-
-    logMessage.Format
+    AZStd::string logMessage = AZStd::string::format
         ("[CVARS]: [%s] variable [%s] from [%s] to [%s]%s; Marked as%s%s%s%s",
         (allowChange) ? "CHANGED" : "IGNORED CHANGE",
         name,
@@ -429,12 +384,12 @@ void CXConsole::LogChangeMessage(const char* name, const bool isConst, const boo
 
     if (allowChange)
     {
-        gEnv->pLog->LogWarning(logMessage.c_str());
+        gEnv->pLog->LogWarning("%s", logMessage.c_str());
         gEnv->pLog->LogWarning("Modifying marked variables will not be allowed in Release mode!");
     }
     else
     {
-        gEnv->pLog->LogError(logMessage.c_str());
+        gEnv->pLog->LogError("%s", logMessage.c_str());
     }
 }
 
@@ -451,7 +406,7 @@ void CXConsole::RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc)
     bool isReadOnly = ((pCVar->GetFlags() & VF_READONLY) != 0);
     bool isDeprecated = ((pCVar->GetFlags() & VF_DEPRECATED) != 0);
 
-    ConfigVars::iterator it = m_configVars.find(CONST_TEMP_STRING(pCVar->GetName()));
+    ConfigVars::iterator it = m_configVars.find(pCVar->GetName());
     if (it != m_configVars.end())
     {
         SConfigVar& var = it->second;
@@ -621,35 +576,6 @@ ICVar* CXConsole::Register(const char* sName, int* src, int iValue, int nFlags, 
 
 
 //////////////////////////////////////////////////////////////////////////
-ICVar* CXConsole::RegisterCVarGroup(const char* szName, const char* szFileName)
-{
-    AssertName(szName);
-    assert(szFileName);
-
-    // suppress cvars not starting with sys_spec_ as
-    // cheaters might create cvars before we created ours
-    if (_strnicmp(szName, "sys_spec_", 9) != 0)
-    {
-        return 0;
-    }
-
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, szName, NULL);
-    if (pCVar)
-    {
-        AZ_Error("System", false, "CVar groups should only be registered once");
-        return pCVar;
-    }
-
-    CXConsoleVariableCVarGroup* pCVarGroup = new CXConsoleVariableCVarGroup(this, szName, szFileName, VF_COPYNAME);
-
-    pCVar = pCVarGroup;
-
-    RegisterVar(pCVar, CXConsoleVariableCVarGroup::OnCVarChangeFunc);
-
-    return pCVar;
-}
-
-//////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::Register(const char* sName, float* src, float fValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify)
 {
     AssertName(sName);
@@ -673,7 +599,6 @@ ICVar* CXConsole::Register(const char* sName, float* src, float fValue, int nFla
     return pCVar;
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::Register(const char* sName, const char** src, const char* defaultValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify)
 {
@@ -696,7 +621,6 @@ ICVar* CXConsole::Register(const char* sName, const char** src, const char* defa
     RegisterVar(pCVar, pChangeFunc);
     return pCVar;
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::RegisterString(const char* sName, const char* sValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)
@@ -757,30 +681,6 @@ ICVar* CXConsole::RegisterInt(const char* sName, int iValue, int nFlags, const c
     RegisterVar(pCVar, pChangeFunc);
     return pCVar;
 }
-
-
-
-//////////////////////////////////////////////////////////////////////////
-ICVar* CXConsole::RegisterInt64(const char* sName, int64 iValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)
-{
-    AssertName(sName);
-
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
-    if (pCVar)
-    {
-        gEnv->pLog->Log("[CVARS]: [DUPLICATE] CXConsole::RegisterInt64(): variable [%s] is already registered", pCVar->GetName());
-#if LOG_CVAR_INFRACTIONS_CALLSTACK
-        gEnv->pSystem->debug_LogCallStack();
-#endif // LOG_CVAR_INFRACTIONS_CALLSTACK
-        return pCVar;
-    }
-
-    pCVar = new CXConsoleVariableInt64(this, sName, iValue, nFlags, help);
-    RegisterVar(pCVar, pChangeFunc);
-    return pCVar;
-}
-
-
 
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::UnregisterVariable(const char* sVarName, [[maybe_unused]] bool bDelete)
@@ -905,7 +805,7 @@ void CXConsole::DumpKeyBinds(IKeyBindDumpSink* pCallback)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const char* CXConsole::FindKeyBind(const char* sCmd) const
 {
-    ConsoleBindsMap::const_iterator it = m_mapBinds.find(CONST_TEMP_STRING(sCmd));
+    ConsoleBindsMap::const_iterator it = m_mapBinds.find(sCmd);
 
     if (it != m_mapBinds.end())
     {
@@ -1262,9 +1162,7 @@ bool CXConsole::ProcessInput(const AzFramework::InputChannel& inputChannel)
         if (m_nCursorPos)
         {
             const char* pCursor = m_sInputBuffer.c_str() + m_nCursorPos;
-            Unicode::CIterator<const char*, false> pUnicode(pCursor);
-            --pUnicode; // Note: This moves back one UCS code-point, but doesn't necessarily match one displayed character (ie, combining diacritics)
-            pCursor = pUnicode.GetPosition();
+            pCursor -= Utf8::Internal::sequence_length(pCursor); // Note: This moves back one UCS code-point, but doesn't necessarily match one displayed character (ie, combining diacritics)
             m_nCursorPos = pCursor - m_sInputBuffer.c_str();
         }
         return true;
@@ -1274,9 +1172,7 @@ bool CXConsole::ProcessInput(const AzFramework::InputChannel& inputChannel)
         if (m_nCursorPos < (int)(m_sInputBuffer.length()))
         {
             const char* pCursor = m_sInputBuffer.c_str() + m_nCursorPos;
-            Unicode::CIterator<const char*, false> pUnicode(pCursor);
-            ++pUnicode; // Note: This moves forward one UCS code-point, but doesn't necessarily match one displayed character (ie, combining diacritics)
-            pCursor = pUnicode.GetPosition();
+            pCursor += Utf8::Internal::sequence_length(pCursor); // Note: This moves forward one UCS code-point, but doesn't necessarily match one displayed character (ie, combining diacritics)
             m_nCursorPos = pCursor - m_sInputBuffer.c_str();
         }
         return true;
@@ -1340,7 +1236,7 @@ bool CXConsole::ProcessInput(const AzFramework::InputChannel& inputChannel)
     {
         if (isCtrlModifierActive)
         {
-            m_nScrollLine = m_dqConsoleBuffer.size() - 1;
+            m_nScrollLine = static_cast<int>(m_dqConsoleBuffer.size() - 1);
         }
         else
         {
@@ -1445,7 +1341,7 @@ bool CXConsole::GetLineNo(const int indwLineNo, char* outszBuffer, const int ind
     {
         buf++;                          // to jump over verbosity level character
     }
-    cry_strcpy(outszBuffer, indwBufferSize, buf);
+    azstrcpy(outszBuffer, indwBufferSize, buf);
 
     return true;
 }
@@ -1453,7 +1349,7 @@ bool CXConsole::GetLineNo(const int indwLineNo, char* outszBuffer, const int ind
 //////////////////////////////////////////////////////////////////////////
 int CXConsole::GetLineCount() const
 {
-    return m_dqConsoleBuffer.size();
+    return static_cast<int>(m_dqConsoleBuffer.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1551,33 +1447,33 @@ const char* CXConsole::GetFlagsString(const uint32 dwFlags)
     static char sFlags[256];
 
     // hiding this makes it a bit more difficult for cheaters
-    //  if(dwFlags&VF_CHEAT)                  cry_strcat( sFlags,"CHEAT, ");
+    //  if(dwFlags&VF_CHEAT)                  azstrcat( sFlags,"CHEAT, ");
 
-    cry_strcpy(sFlags, "");
+    azstrcpy(sFlags, AZ_ARRAY_SIZE(sFlags), "");
 
     if (dwFlags & VF_READONLY)
     {
-        cry_strcat(sFlags, "READONLY, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "READONLY, ");
     }
     if (dwFlags & VF_DEPRECATED)
     {
-        cry_strcat(sFlags, "DEPRECATED, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "DEPRECATED, ");
     }
     if (dwFlags & VF_DUMPTODISK)
     {
-        cry_strcat(sFlags, "DUMPTODISK, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "DUMPTODISK, ");
     }
     if (dwFlags & VF_REQUIRE_LEVEL_RELOAD)
     {
-        cry_strcat(sFlags, "REQUIRE_LEVEL_RELOAD, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "REQUIRE_LEVEL_RELOAD, ");
     }
     if (dwFlags & VF_REQUIRE_APP_RESTART)
     {
-        cry_strcat(sFlags, "REQUIRE_APP_RESTART, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "REQUIRE_APP_RESTART, ");
     }
     if (dwFlags & VF_RESTRICTEDMODE)
     {
-        cry_strcat(sFlags, "RESTRICTEDMODE, ");
+        azstrcat(sFlags, AZ_ARRAY_SIZE(sFlags), "RESTRICTEDMODE, ");
     }
 
     if (sFlags[0] != 0)
@@ -1793,7 +1689,7 @@ void CXConsole::DisplayHelp(const char* help, const char* name)
         char* start, * pos;
         for (pos = strstr((char*)help, "\n"), start = (char*)help; pos; start = ++pos)
         {
-            string s = start;
+            AZStd::string s = start;
             s.resize(pos - start);
             ConsoleLogInputResponse("    $3%s", s.c_str());
             pos = strstr(pos, "\n");
@@ -1815,11 +1711,12 @@ void CXConsole::ExecuteString(const char* command, const bool bSilentMode, const
 
     // Store the string commands into a list and defer the execution for later.
     // The commands will be processed in CXConsole::Update()
-    string str(command);
-    str.TrimLeft();
+    AZStd::string str(command);
+    AZ::StringFunc::TrimWhiteSpace(str, true, false);
 
     // Unroll the exec command
-    bool unroll = (0 == str.Left(strlen("exec")).compareNoCase("exec"));
+
+    bool unroll = (0 == AZ::StringFunc::Find(str, "exec", 0, false, false));
 
     if (unroll)
     {
@@ -1857,10 +1754,10 @@ void CXConsole::ResetCVarsToDefaults()
 
 }
 
-void CXConsole::SplitCommands(const char* line, std::list<string>& split)
+void CXConsole::SplitCommands(const char* line, std::list<AZStd::string>& split)
 {
     const char* start = line;
-    string working;
+    AZStd::string working;
 
     while (true)
     {
@@ -1880,7 +1777,7 @@ void CXConsole::SplitCommands(const char* line, std::list<string>& split)
         case '\0':
         {
             working.assign(start, line - 1);
-            working.Trim();
+            AZ::StringFunc::TrimWhiteSpace(working, true, true);
 
             if (!working.empty())
             {
@@ -1930,15 +1827,15 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
     ConsoleCommandsMapItor itrCmd;
     ConsoleVariablesMapItor itrVar;
 
-    std::list<string> lineCommands;
+    std::list<AZStd::string> lineCommands;
     SplitCommands(command, lineCommands);
 
-    string sTemp;
-    string sCommand, sLineCommand;
+    AZStd::string sTemp;
+    AZStd::string sCommand, sLineCommand;
 
     while (!lineCommands.empty())
     {
-        string::size_type nPos;
+        AZStd::string::size_type nPos;
 
         {
             sTemp = lineCommands.front();
@@ -1950,17 +1847,17 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
             {
                 if (GetStatus())
                 {
-                    AddLine(sTemp);
+                    AddLine(sTemp.c_str());
                 }
             }
 
             nPos = sTemp.find_first_of('=');
 
-            if (nPos != string::npos)
+            if (nPos != AZStd::string::npos)
             {
                 sCommand = sTemp.substr(0, nPos);
             }
-            else if ((nPos = sTemp.find_first_of(' ')) != string::npos)
+            else if ((nPos = sTemp.find_first_of(' ')) != AZStd::string::npos)
             {
                 sCommand = sTemp.substr(0, nPos);
             }
@@ -1969,7 +1866,7 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
                 sCommand = sTemp;
             }
 
-            sCommand.Trim();
+            AZ::StringFunc::TrimWhiteSpace(sCommand, true, true);
 
             //////////////////////////////////////////
             // Search for CVars
@@ -2004,7 +1901,7 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
 
         //////////////////////////////////////////
         //Check  if is a variable
-        itrVar = m_mapVariables.find(sCommand);
+        itrVar = m_mapVariables.find(sCommand.c_str());
         if (itrVar != m_mapVariables.end())
         {
             ICVar* pCVar = itrVar->second;
@@ -2016,10 +1913,10 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
                     m_blockCounter++;
                 }
 
-                if (nPos != string::npos)
+                if (nPos != AZStd::string::npos)
                 {
                     sTemp = sTemp.substr(nPos + 1);     // remove the command from sTemp
-                    sTemp.Trim(" \t\r\n\"\'");
+                    AZ::StringFunc::StripEnds(sTemp, " \t\r\n\"\'");
 
                     if (sTemp == "?")
                     {
@@ -2093,12 +1990,12 @@ void CXConsole::ExecuteDeferredCommands()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDevMode)
+void CXConsole::ExecuteCommand(CConsoleCommand& cmd, AZStd::string& str, bool bIgnoreDevMode)
 {
     CryLog ("[CONSOLE] Executing console command '%s'", str.c_str());
     INDENT_LOG_DURING_SCOPE();
 
-    std::vector<string> args;
+    std::vector<AZStd::string> args;
     size_t t;
 
     {
@@ -2117,7 +2014,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
                 {
                     ;
                 }
-                args.push_back(string(start + 1, commandLine - 1));
+                args.push_back(AZStd::string(start + 1, commandLine - 1));
                 start = commandLine;
                 break;
             }
@@ -2128,7 +2025,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
             {
                 if ((*commandLine == ' ') || !*commandLine)
                 {
-                    args.push_back(string(start, commandLine));
+                    args.push_back(AZStd::string(start, commandLine));
                     start = commandLine + 1;
                 }
             }
@@ -2138,7 +2035,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
 
         if (args.size() >= 2 && args[1] == "?")
         {
-            DisplayHelp(cmd.m_sHelp, cmd.m_sName.c_str());
+            DisplayHelp(cmd.m_sHelp.c_str(), cmd.m_sName.c_str());
             return;
         }
 
@@ -2165,13 +2062,13 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
         return;
     }
 
-    string buf;
+    AZStd::string buf;
     {
         // only do this for commands with script implementation
         for (;; )
         {
             t = str.find_first_of("\\", t);
-            if (t == string::npos)
+            if (t == AZStd::string::npos)
             {
                 break;
             }
@@ -2182,7 +2079,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
         for (t = 1;; )
         {
             t = str.find_first_of("\"", t);
-            if (t == string::npos)
+            if (t == AZStd::string::npos)
             {
                 break;
             }
@@ -2193,9 +2090,9 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
         buf = cmd.m_sCommand;
 
         size_t pp = buf.find("%%");
-        if (pp != string::npos)
+        if (pp != AZStd::string::npos)
         {
-            string list = "";
+            AZStd::string list = "";
             for (unsigned int i = 1; i < args.size(); i++)
             {
                 list += "\"" + args[i] + "\"";
@@ -2206,9 +2103,9 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
             }
             buf.replace(pp, 2, list);
         }
-        else if ((pp = buf.find("%line")) != string::npos)
+        else if ((pp = buf.find("%line")) != AZStd::string::npos)
         {
-            string tmp = "\"" + str.substr(str.find(" ") + 1) + "\"";
+            AZStd::string tmp = "\"" + str.substr(str.find(" ") + 1) + "\"";
             if (args.size() > 1)
             {
                 buf.replace(pp, 5, tmp);
@@ -2225,7 +2122,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
                 char pat[10];
                 azsprintf(pat, "%%%d", i);
                 size_t pos = buf.find(pat);
-                if (pos == string::npos)
+                if (pos == AZStd::string::npos)
                 {
                     if (i != args.size())
                     {
@@ -2240,7 +2137,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDe
                         ConsoleWarning("Not enough arguments for: %s", cmd.m_sName.c_str());
                         return;
                     }
-                    string arg = "\"" + args[i] + "\"";
+                    AZStd::string arg = "\"" + args[i] + "\"";
                     buf.replace(pos, strlen(pat), arg);
                 }
             }
@@ -2339,15 +2236,15 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
     }
     //try to search in command list
     bool bArgumentAutoComplete = false;
-    std::vector<string> matches;
+    std::vector<AZStd::string> matches;
 
-    if (m_sPrevTab.find(' ') != string::npos)
+    if (m_sPrevTab.find(' ') != AZStd::string::npos)
     {
         bool bProcessAutoCompl = true;
 
         // Find command.
-        string sVar = m_sPrevTab.substr(0, m_sPrevTab.find(' '));
-        ICVar* pCVar = GetCVar(sVar);
+        AZStd::string sVar = m_sPrevTab.substr(0, m_sPrevTab.find(' '));
+        ICVar* pCVar = GetCVar(sVar.c_str());
         if (pCVar)
         {
             if (!(pCVar->GetFlags() & VF_RESTRICTEDMODE) && con_restricted)            // in restricted mode we allow only VF_RESTRICTEDMODE CVars&CCmd
@@ -2375,7 +2272,7 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
                 int nMatches = pArgumentAutoComplete->GetCount();
                 for (int i = 0; i < nMatches; i++)
                 {
-                    string cmd = string(sVar) + " " + pArgumentAutoComplete->GetValue(i);
+                    AZStd::string cmd = AZStd::string(sVar) + " " + pArgumentAutoComplete->GetValue(i);
                     if (_strnicmp(m_sPrevTab.c_str(), cmd.c_str(), m_sPrevTab.length()) == 0)
                     {
                         {
@@ -2429,16 +2326,16 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
 
     if (!matches.empty())
     {
-        std::sort(matches.begin(), matches.end(), less_CVar);       // to sort commands with variables
+        std::sort(matches.begin(), matches.end());       // to sort commands with variables
     }
     if (showlist && !matches.empty())
     {
         ConsoleLogInput(" ");       // empty line before auto completion
 
-        for (std::vector<string>::iterator i = matches.begin(); i != matches.end(); ++i)
+        for (std::vector<AZStd::string>::iterator i = matches.begin(); i != matches.end(); ++i)
         {
             // List matching variables
-            const char* sVar = *i;
+            const char* sVar = i->c_str();
             ICVar* pVar = GetCVar(sVar);
 
             if (pVar)
@@ -2452,7 +2349,7 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
         }
     }
 
-    for (std::vector<string>::iterator i = matches.begin(); i != matches.end(); ++i)
+    for (std::vector<AZStd::string>::iterator i = matches.begin(); i != matches.end(); ++i)
     {
         if (m_nTabCount <= nMatch)
         {
@@ -2484,8 +2381,8 @@ void CXConsole::DisplayVarValue(ICVar* pVar)
 
     const char* sFlagsString = GetFlagsString(pVar->GetFlags());
 
-    string sValue = (pVar->GetFlags() & VF_INVISIBLE) ? "" : pVar->GetString();
-    string sVar = pVar->GetName();
+    AZStd::string sValue = (pVar->GetFlags() & VF_INVISIBLE) ? "" : pVar->GetString();
+    AZStd::string sVar = pVar->GetName();
 
     char szRealState[40] = "";
 
@@ -2520,8 +2417,9 @@ void CXConsole::DisplayVarValue(ICVar* pVar)
             sValue += " (";
             if (nonAlphaBits != 0)
             {
-                char nonAlphaChars[3];  // 1..63 + '\0'
-                sValue += azitoa(nonAlphaBits, nonAlphaChars, AZ_ARRAY_SIZE(nonAlphaChars), 10);
+                char nonAlphaChars[3] = { 0 };  // 1..63 + '\0'
+                azitoa(nonAlphaBits, nonAlphaChars, AZ_ARRAY_SIZE(nonAlphaChars), 10);
+                sValue += nonAlphaChars;
                 sValue += ", ";
             }
             sValue += alphaChars;
@@ -2622,12 +2520,8 @@ void CXConsole::AddLine(const char* inputStr)
 
 void CXConsole::PostLine(const char* lineOfText, size_t len)
 {
-    string line;
-
-    {
-        line = string(lineOfText, len);
-        m_dqConsoleBuffer.push_back(line);
-    }
+    AZStd::string line = AZStd::string(lineOfText, len);
+    m_dqConsoleBuffer.push_back(line);
 
     int nBufferSize = con_line_buffer_size;
 
@@ -2674,7 +2568,7 @@ void CXConsole::RemoveOutputPrintSink(IOutputPrintSink* inpSink)
 {
     assert(inpSink);
 
-    int nCount = m_OutputSinks.size();
+    int nCount = static_cast<int>(m_OutputSinks.size());
 
     for (int i = 0; i < nCount; i++)
     {
@@ -2700,7 +2594,7 @@ void CXConsole::RemoveOutputPrintSink(IOutputPrintSink* inpSink)
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::AddLinePlus(const char* inputStr)
 {
-    string str, tmpStr;
+    AZStd::string str, tmpStr;
 
     {
         if (!m_dqConsoleBuffer.size())
@@ -2716,13 +2610,13 @@ void CXConsole::AddLinePlus(const char* inputStr)
             str.resize(str.size() - 1);
         }
 
-        string::size_type nPos;
-        while ((nPos = str.find('\n')) != string::npos)
+        AZStd::string::size_type nPos;
+        while ((nPos = str.find('\n')) != AZStd::string::npos)
         {
             str.replace(nPos, 1, 1, ' ');
         }
 
-        while ((nPos = str.find('\r')) != string::npos)
+        while ((nPos = str.find('\r')) != AZStd::string::npos)
         {
             str.replace(nPos, 1, 1, ' ');
         }
@@ -2782,7 +2676,7 @@ void CXConsole::AddInputUTF8(const AZStd::string& textUTF8)
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::ExecuteInputBuffer()
 {
-    string sTemp = m_sInputBuffer;
+    AZStd::string sTemp = m_sInputBuffer;
     if (m_sInputBuffer.empty())
     {
         return;
@@ -2813,9 +2707,7 @@ void CXConsole::RemoveInputChar(bool bBackSpace)
             const char* const pBase = m_sInputBuffer.c_str();
             const char* pCursor = pBase + m_nCursorPos;
             const char* const pEnd = pCursor;
-            Unicode::CIterator<const char*, false> pUnicode(pCursor);
-            pUnicode--; // Remove one UCS code-point, doesn't account for combining diacritics
-            pCursor = pUnicode.GetPosition();
+            pCursor -= Utf8::Internal::sequence_length(pCursor); // Remove one UCS code-point, doesn't account for combining diacritics
             size_t length = pEnd - pCursor;
             m_sInputBuffer.erase(pCursor - pBase, length);
             m_nCursorPos -= length;
@@ -2828,9 +2720,7 @@ void CXConsole::RemoveInputChar(bool bBackSpace)
             const char* const pBase = m_sInputBuffer.c_str();
             const char* pCursor = pBase + m_nCursorPos;
             const char* const pBegin = pCursor;
-            Unicode::CIterator<const char*, false> pUnicode(pCursor);
-            pUnicode--; // Remove one UCS code-point, doesn't account for combining diacritics
-            pCursor = pUnicode.GetPosition();
+            pCursor -= Utf8::Internal::sequence_length(pCursor); // Remove one UCS code-point, doesn't account for combining diacritics
             size_t length = pCursor - pBegin;
             m_sInputBuffer.erase(pBegin - pBase, length);
         }
@@ -2904,29 +2794,29 @@ void CXConsole::Paste()
 #if defined(AZ_PLATFORM_WINDOWS)
     if (OpenClipboard(NULL) != 0)
     {
-        wstring data;
+        AZStd::string data;
         const HANDLE wideData = GetClipboardData(CF_UNICODETEXT);
         if (wideData)
         {
             const LPCWSTR pWideData = (LPCWSTR)GlobalLock(wideData);
             if (pWideData)
             {
-                // Note: This conversion is just to make sure we discard malicious or malformed data
-                Unicode::ConvertSafe<Unicode::eErrorRecovery_Discard>(data, pWideData);
+                AZStd::to_string(data, pWideData);
                 GlobalUnlock(wideData);
             }
         }
         CloseClipboard();
 
-        for (Unicode::CIterator<wstring::const_iterator> it(data.begin(), data.end()); it != data.end(); ++it)
+        Utf8::Unchecked::octet_iterator end(data.end());
+        for (Utf8::Unchecked::octet_iterator it(data.begin()); it != end; ++it)
         {
-            const uint32 cp = *it;
+            const wchar_t cp = static_cast<wchar_t>(*it);
             if (cp != '\r')
             {
                 // Convert UCS code-point into UTF-8 string
-                char utf8_buf[5];
-                Unicode::Convert(utf8_buf, cp);
-                AddInputUTF8(utf8_buf);
+                AZStd::fixed_string<5> utf8_buf = {0};
+                AZStd::to_string(utf8_buf.data(), 5, { &cp, 1 });
+                AddInputUTF8(utf8_buf.c_str());
             }
         }
     }
@@ -2937,7 +2827,7 @@ void CXConsole::Paste()
 //////////////////////////////////////////////////////////////////////////
 int CXConsole::GetNumVars()
 {
-    return (int)m_mapVariables.size();
+    return static_cast<int>(m_mapVariables.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2954,249 +2844,12 @@ int CXConsole::GetNumVisibleVars()
     return numVars;
 }
 
-
 //////////////////////////////////////////////////////////////////////////
-bool CXConsole::IsHashCalculated()
+size_t CXConsole::GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix)
 {
-    return m_bCheatHashDirty == false;
-}
+    // This method used to insert instead of push_back, so we need to clear first
+    pszArray.clear();
 
-//////////////////////////////////////////////////////////////////////////
-int CXConsole::GetNumCheatVars()
-{
-    return m_randomCheckedVariables.size();
-}
-
-//////////////////////////////////////////////////////////////////////////
-uint64 CXConsole::GetCheatVarHash()
-{
-    return m_nCheatHash;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::SetCheatVarHashRange(size_t firstVar, size_t lastVar)
-{
-    // check inputs are sane
-#if !defined(NDEBUG)
-    size_t numVars = GetNumCheatVars();
-    assert(firstVar < numVars && lastVar < numVars && lastVar >= firstVar);
-#endif
-
-#if defined(DEFENCE_CVAR_HASH_LOGGING)
-    if (m_bCheatHashDirty)
-    {
-        CryLog("HASHING: WARNING - trying to set up new cvar hash range while existing hash still calculating!");
-    }
-#endif
-
-    m_nCheatHashRangeFirst = firstVar;
-    m_nCheatHashRangeLast = lastVar;
-    m_bCheatHashDirty = true;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::CalcCheatVarHash()
-{
-    if (!m_bCheatHashDirty)
-    {
-        return;
-    }
-
-    CCrc32 runningNameCrc32;
-    CCrc32 runningNameValueCrc32;
-
-    AddCVarsToHash(m_randomCheckedVariables.begin() + m_nCheatHashRangeFirst, m_randomCheckedVariables.begin() + m_nCheatHashRangeLast, runningNameCrc32, runningNameValueCrc32);
-    AddCVarsToHash(m_alwaysCheckedVariables.begin(), m_alwaysCheckedVariables.end() - 1, runningNameCrc32, runningNameValueCrc32);
-
-    // store hash
-    m_nCheatHash = (((uint64)runningNameCrc32.Get()) << 32) | runningNameValueCrc32.Get();
-    m_bCheatHashDirty = false;
-
-#if defined(DEFENCE_CVAR_HASH_LOGGING)
-    if (!gEnv->IsDedicated())
-    {
-        CryLog("HASHING: Range %d->%d = %llx(%x,%x), max cvars = %d", m_nCheatHashRangeFirst, m_nCheatHashRangeLast,
-            m_nCheatHash, runningNameCrc32.Get(), runningNameValueCrc32.Get(),
-            GetNumCheatVars());
-        PrintCheatVars(true);
-    }
-#endif
-}
-
-void CXConsole::AddCVarsToHash(ConsoleVariablesVector::const_iterator begin, ConsoleVariablesVector::const_iterator end, CCrc32& runningNameCrc32, CCrc32& runningNameValueCrc32)
-{
-    for (ConsoleVariablesVector::const_iterator it = begin; it <= end; ++it)
-    {
-        // add name & variable to string. We add both since adding only the value could cause
-        // many collisions with variables all having value 0 or all 1.
-        string hashStr = it->first;
-
-        runningNameCrc32.Add(hashStr.c_str(), hashStr.length());
-        hashStr += it->second->GetDataProbeString();
-        runningNameValueCrc32.Add(hashStr.c_str(), hashStr.length());
-    }
-}
-
-void CXConsole::CmdDumpAllAnticheatVars([[maybe_unused]] IConsoleCmdArgs* pArgs)
-{
-#if defined(DEFENCE_CVAR_HASH_LOGGING)
-    CXConsole* pConsole = (CXConsole*)gEnv->pConsole;
-
-    if (pConsole->IsHashCalculated())
-    {
-        CryLog("HASHING: Displaying Full Anticheat Cvar list:");
-        pConsole->PrintCheatVars(false);
-    }
-    else
-    {
-        CryLogAlways("DumpAllAnticheatVars - cannot complete, cheat vars are in a state of flux, please retry.");
-    }
-#endif
-}
-
-void CXConsole::CmdDumpLastHashedAnticheatVars([[maybe_unused]] IConsoleCmdArgs* pArgs)
-{
-#if defined(DEFENCE_CVAR_HASH_LOGGING)
-    CXConsole* pConsole = (CXConsole*)gEnv->pConsole;
-
-    if (pConsole->IsHashCalculated())
-    {
-        CryLog("HASHING: Displaying Last Hashed Anticheat Cvar list:");
-        pConsole->PrintCheatVars(true);
-    }
-    else
-    {
-        CryLogAlways("DumpLastHashedAnticheatVars - cannot complete, cheat vars are in a state of flux, please retry.");
-    }
-#endif
-}
-
-void CXConsole::PrintCheatVars([[maybe_unused]] bool bUseLastHashRange)
-{
-#if defined(DEFENCE_CVAR_HASH_LOGGING)
-    if (m_bCheatHashDirty)
-    {
-        return;
-    }
-
-    size_t i = 0;
-    char floatFormatBuf[64];
-
-    size_t nStart = 0;
-    size_t nEnd = m_mapVariables.size();
-
-    if (bUseLastHashRange)
-    {
-        nStart = m_nCheatHashRangeFirst;
-        nEnd = m_nCheatHashRangeLast;
-    }
-
-    // iterate over all const cvars in our range
-    // then hash the string.
-    CryLog("VF_CHEAT & ~VF_CHEAT_NOCHECK list:");
-
-    ConsoleVariablesMap::const_iterator it, end = m_mapVariables.end();
-    for (it = m_mapVariables.begin(); it != end; ++it)
-    {
-        // only count cheat cvars
-        if ((it->second->GetFlags() & VF_CHEAT) == 0 ||
-            (it->second->GetFlags() & VF_CHEAT_NOCHECK) != 0)
-        {
-            continue;
-        }
-
-        // count up
-        i++;
-
-        // if we haven't reached the first var, or have passed the last var, break out
-        if (i - 1 < nStart)
-        {
-            continue;
-        }
-        if (i - 1 > nEnd)
-        {
-            break;
-        }
-
-        // add name & variable to string. We add both since adding only the value could cause
-        // many collisions with variables all having value 0 or all 1.
-        string hashStr = it->first;
-        if (it->second->GetType() == CVAR_FLOAT)
-        {
-            sprintf(floatFormatBuf, "%.1g", it->second->GetFVal());
-            hashStr += floatFormatBuf;
-        }
-        else
-        {
-            hashStr += it->second->GetString();
-        }
-
-        CryLog("%s", hashStr.c_str());
-    }
-
-    // iterate over any must-check variables
-    CryLog("VF_CHEAT_ALWAYS_CHECK list:");
-
-    for (it = m_mapVariables.begin(); it != end; ++it)
-    {
-        // only count cheat cvars
-        if ((it->second->GetFlags() & VF_CHEAT_ALWAYS_CHECK) == 0)
-        {
-            continue;
-        }
-
-        // add name & variable to string. We add both since adding only the value could cause
-        // many collisions with variables all having value 0 or all 1.
-        string hashStr = it->first;
-        hashStr += it->second->GetString();
-
-        CryLog("%s", hashStr.c_str());
-    }
-#endif
-}
-
-char* CXConsole::GetCheatVarAt(uint32 nOffset)
-{
-    if (m_bCheatHashDirty)
-    {
-        return NULL;
-    }
-
-    size_t i = 0;
-    size_t nStart = nOffset;
-
-    // iterate over all const cvars in our range
-    // then hash the string.
-    ConsoleVariablesMap::const_iterator it, end = m_mapVariables.end();
-    for (it = m_mapVariables.begin(); it != end; ++it)
-    {
-        // only count cheat cvars
-        if ((it->second->GetFlags() & VF_CHEAT) == 0 ||
-            (it->second->GetFlags() & VF_CHEAT_NOCHECK) != 0)
-        {
-            continue;
-        }
-
-        // count up
-        i++;
-
-        // if we haven't reached the first var continue
-        if (i - 1 < nStart)
-        {
-            continue;
-        }
-
-        return (char*)it->first;
-    }
-
-    return NULL;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const char* szPrefix)
-{
-    size_t i = 0;
     size_t iPrefixLen = szPrefix ? strlen(szPrefix) : 0;
 
     // variables
@@ -3204,11 +2857,6 @@ size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const ch
         ConsoleVariablesMap::const_iterator it, end = m_mapVariables.end();
         for (it = m_mapVariables.begin(); it != end; ++it)
         {
-            if (pszArray && i >= numItems)
-            {
-                break;
-            }
-
             if (szPrefix)
             {
                 if (_strnicmp(it->first, szPrefix, iPrefixLen) != 0)
@@ -3222,12 +2870,7 @@ size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const ch
                 continue;
             }
 
-            if (pszArray)
-            {
-                pszArray[i] = it->first;
-            }
-
-            i++;
+            pszArray.push_back(it->first);
         }
     }
 
@@ -3236,11 +2879,6 @@ size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const ch
         ConsoleCommandsMap::iterator it, end = m_mapCommands.end();
         for (it = m_mapCommands.begin(); it != end; ++it)
         {
-            if (pszArray && i >= numItems)
-            {
-                break;
-            }
-
             if (szPrefix)
             {
                 if (_strnicmp(it->first.c_str(), szPrefix, iPrefixLen) != 0)
@@ -3254,42 +2892,32 @@ size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const ch
                 continue;
             }
 
-            if (pszArray)
-            {
-                pszArray[i] = it->first.c_str();
-            }
-
-            i++;
+            pszArray.push_back(it->first.c_str());
         }
     }
 
-    if (i != 0 && pszArray)
-    {
-        std::sort(pszArray, pszArray + i, less_CVar);
-    }
-
-    return i;
+    std::sort(pszArray.begin(), pszArray.end());
+    return pszArray.size();
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::FindVar(const char* substr)
 {
-    std::vector<const char*> cmds;
-    cmds.resize(GetNumVars() + m_mapCommands.size());
-    size_t cmdCount = GetSortedVars(&cmds[0], cmds.size());
+    AZStd::vector<AZStd::string_view> cmds;
+    size_t cmdCount = GetSortedVars(cmds);
 
     for (size_t i = 0; i < cmdCount; i++)
     {
-        if (CryStringUtils::stristr(cmds[i], substr))
+        if (AZ::StringFunc::Find(cmds[i], substr) != AZStd::string::npos)
         {
-            ICVar* pCvar = gEnv->pConsole->GetCVar(cmds[i]);
+            ICVar* pCvar = gEnv->pConsole->GetCVar(cmds[i].data());
             if (pCvar)
             {
                 DisplayVarValue(pCvar);
             }
             else
             {
-                ConsoleLogInputResponse("    $3%s $6(Command)", cmds[i]);
+                ConsoleLogInputResponse("    $3%.*s $6(Command)", aznumeric_cast<int>(cmds[i].size()), cmds[i].data());
             }
         }
     }
@@ -3300,23 +2928,22 @@ const char* CXConsole::AutoComplete(const char* substr)
 {
     // following code can be optimized
 
-    std::vector<const char*> cmds;
-    cmds.resize(GetNumVars() + m_mapCommands.size());
-    size_t cmdCount = GetSortedVars(&cmds[0], cmds.size());
+    AZStd::vector<AZStd::string_view> cmds;
+    size_t cmdCount = GetSortedVars(cmds);
 
-    size_t substrLen = strlen(substr);
+    size_t substrLen = substr ? strlen(substr) : 0;
 
     // If substring is empty return first command.
     if (substrLen == 0 && cmdCount > 0)
     {
-        return cmds[0];
+        return cmds[0].data();
     }
 
     // find next
     for (size_t i = 0; i < cmdCount; i++)
     {
-        const char* szCmd = cmds[i];
-        size_t cmdlen = strlen(szCmd);
+        const char* szCmd = cmds[i].data();
+        size_t cmdlen = cmds[i].size();
         if (cmdlen >= substrLen && memcmp(szCmd, substr, substrLen) == 0)
         {
             if (substrLen == cmdlen)
@@ -3324,32 +2951,32 @@ const char* CXConsole::AutoComplete(const char* substr)
                 i++;
                 if (i < cmdCount)
                 {
-                    return cmds[i];
+                    return cmds[i].data();
                 }
-                return cmds[i - 1];
+                return cmds[i - 1].data();
             }
-            return cmds[i];
+            return cmds[i].data();
         }
     }
 
     // then first matching case insensitive
     for (size_t i = 0; i < cmdCount; i++)
     {
-        const char* szCmd = cmds[i];
+        const char* szCmd = cmds[i].data();
 
-        size_t cmdlen = strlen(szCmd);
-        if (cmdlen >= substrLen && azmemicmp(szCmd, substr, substrLen) == 0)
+        size_t cmdlen = cmds[i].size();
+        if (cmdlen >= substrLen && azstrnicmp(szCmd, substr, substrLen) == 0)
         {
             if (substrLen == cmdlen)
             {
                 i++;
                 if (i < cmdCount)
                 {
-                    return cmds[i];
+                    return cmds[i].data();
                 }
-                return cmds[i - 1];
+                return cmds[i - 1].data();
             }
-            return cmds[i];
+            return cmds[i].data();
         }
     }
 
@@ -3370,35 +2997,27 @@ void CXConsole::SetInputLine(const char* szLine)
 //////////////////////////////////////////////////////////////////////////
 const char* CXConsole::AutoCompletePrev(const char* substr)
 {
-    std::vector<const char*> cmds;
-    cmds.resize(GetNumVars() + m_mapCommands.size());
-    size_t cmdCount = GetSortedVars(&cmds[0], cmds.size());
+    AZStd::vector<AZStd::string_view> cmds;
+    GetSortedVars(cmds);
 
     // If substring is empty return last command.
-    if (strlen(substr) == 0 && cmds.size() > 0)
+    if (strlen(substr) == 0 && !cmds.empty())
     {
-        return cmds[cmdCount - 1];
+        return cmds.back().data();
     }
 
-    for (unsigned int i = 0; i < cmdCount; i++)
+    for (const AZStd::string_view& cmd : cmds)
     {
-        if (azstricmp(substr, cmds[i]) == 0)
+        if (azstricmp(substr, cmd.data()) == 0)
         {
-            if (i > 0)
-            {
-                return cmds[i - 1];
-            }
-            else
-            {
-                return cmds[0];
-            }
+            return cmd.data();
         }
     }
     return AutoComplete(substr);
 }
 
 //////////////////////////////////////////////////////////////////////////
-inline size_t sizeOf (const string& str)
+inline size_t sizeOf (const AZStd::string& str)
 {
     return str.capacity() + 1;
 }
@@ -3407,18 +3026,6 @@ inline size_t sizeOf (const string& str)
 inline size_t sizeOf (const char* sz)
 {
     return sz ? strlen(sz) + 1 : 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::GetMemoryUsage (class ICrySizer* pSizer) const
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_sInputBuffer);
-    pSizer->AddObject(m_sPrevTab);
-    pSizer->AddObject(m_dqConsoleBuffer);
-    pSizer->AddObject(m_dqHistory);
-    pSizer->AddObject(m_mapCommands);
-    pSizer->AddObject(m_mapBinds);
 }
 
 //////////////////////////////////////////////////////////////////////////

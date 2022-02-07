@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -52,7 +53,7 @@ namespace EMotionFX
 
     //---------------------------------------------------------------------------------------------------------------------
 
-    void AnimGraphPropertyUtils::ReinitJointIndices(const Actor* actor, const AZStd::vector<AZStd::string>& jointNames, AZStd::vector<AZ::u32>& outJointIndices)
+    void AnimGraphPropertyUtils::ReinitJointIndices(const Actor* actor, const AZStd::vector<AZStd::string>& jointNames, AZStd::vector<size_t>& outJointIndices)
     {
         const Skeleton* skeleton = actor->GetSkeleton();
         const size_t jointCount = jointNames.size();

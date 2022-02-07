@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -50,88 +51,86 @@
 #   define azvscprintf(_format, _va_list)                   _vscprintf(_format, _va_list)
 #   define azscwprintf                                      _scwprintf
 #   define azvscwprintf                                     _vscwprintf
-#   define azstrtok(_buffer, _size, _delim, _context)  strtok_s(_buffer, _delim, _context)
-#   define azstrcat         strcat_s
-#   define azstrncat        strncat_s
-#   define strtoll          _strtoi64
-#   define strtoull         _strtoui64
-#   define azsscanf         sscanf_s
-#   define azstrcpy         strcpy_s
-#   define azstrncpy        strncpy_s
-#   define azstricmp        _stricmp
-#   define azstrnicmp       _strnicmp
-#   define azisfinite       _finite
-#   define azltoa           _ltoa_s
-#   define azitoa           _itoa_s
-#   define azui64toa        _ui64toa_s
-#   define azswscanf        swscanf_s
-#   define azwcsicmp        _wcsicmp
-#   define azwcsnicmp       _wcsnicmp
-#   define azmemicmp        _memicmp
+#   define azstrtok(_buffer, _size, _delim, _context)       strtok_s(_buffer, _delim, _context)
+#   define azstrcat(_dest, _destSize, _src)                 strcat_s(_dest, _destSize, _src)
+#   define azstrncat(_dest, _destSize, _src, _count)        strncat_s(_dest, _destSize, _src, _count)
+#   define strtoll                                          _strtoi64
+#   define strtoull                                         _strtoui64
+#   define azsscanf                                         sscanf_s
+#   define azstrcpy(_dest, _destSize, _src)                 strcpy_s(_dest, _destSize, _src)
+#   define azstrncpy(_dest, _destSize, _src, _count)        strncpy_s(_dest, _destSize, _src, _count)
+#   define azstricmp                                        _stricmp
+#   define azstrnicmp                                       _strnicmp
+#   define azisfinite                                       _finite
+#   define azltoa                                           _ltoa_s
+#   define azitoa                                           _itoa_s
+#   define azui64toa                                        _ui64toa_s
+#   define azswscanf                                        swscanf_s
+#   define azwcsicmp                                        _wcsicmp
+#   define azwcsnicmp                                       _wcsnicmp
 
 // note: for cross-platform compatibility, do not use the return value of azfopen. On Windows, it's an errno_t and 0 indicates success. On other platforms, the return value is a FILE*, and a 0 value indicates failure.
-#   define azfopen          fopen_s
-#   define azfscanf         fscanf_s
+#   define azfopen(_fp, _filename, _attrib)                 fopen_s(_fp, _filename, _attrib)
+#   define azfscanf                                         fscanf_s
 
-#   define azsprintf(_buffer, ...)      sprintf_s(_buffer, AZ_ARRAY_SIZE(_buffer), __VA_ARGS__)
-#   define azstrlwr         _strlwr_s
-#   define azvsprintf       vsprintf_s
-#   define azwcscpy         wcscpy_s
-#   define azstrtime        _strtime_s
-#   define azstrdate        _strdate_s
-#   define azlocaltime(time, result) localtime_s(result, time)
+#   define azsprintf(_buffer, ...)                          sprintf_s(_buffer, AZ_ARRAY_SIZE(_buffer), __VA_ARGS__)
+#   define azstrlwr                                         _strlwr_s
+#   define azvsprintf                                       vsprintf_s
+#   define azwcscpy                                         wcscpy_s
+#   define azstrtime                                        _strtime_s
+#   define azstrdate                                        _strdate_s
+#   define azlocaltime(time, result)                        localtime_s(result, time)
 #else
-#   define azsnprintf       snprintf
-#   define azvsnprintf      vsnprintf
+#   define azsnprintf                                       snprintf
+#   define azvsnprintf                                      vsnprintf
 #   if AZ_TRAIT_COMPILER_DEFINE_AZSWNPRINTF_AS_SWPRINTF
-#       define azsnwprintf  swprintf
-#       define azvsnwprintf vswprintf
+#       define azsnwprintf                                  swprintf
+#       define azvsnwprintf                                 vswprintf
 #   else
-#       define azsnwprintf  snwprintf
-#       define azvsnwprintf vsnwprintf
+#       define azsnwprintf                                  snwprintf
+#       define azvsnwprintf                                 vsnwprintf
 #   endif
-#   define azscprintf(...)                  azsnprintf(nullptr, static_cast<size_t>(0), __VA_ARGS__);
-#   define azvscprintf(_format, _va_list)   azvsnprintf(nullptr, static_cast<size_t>(0), _format, _va_list);
-#   define azscwprintf(...)                 azsnwprintf(nullptr, static_cast<size_t>(0), __VA_ARGS__);
-#   define azvscwprintf(_format, _va_list)  azvsnwprintf(nullptr, static_cast<size_t>(0), _format, _va_list);
-#   define azstrtok(_buffer, _size, _delim, _context)  strtok(_buffer, _delim)
-#   define azstrcat(_dest, _destSize, _src) strcat(_dest, _src)
-#   define azstrncat(_dest, _destSize, _src, _count) strncat(_dest, _src, _count)
-#   define azsscanf         sscanf
-#   define azstrcpy(_dest, _destSize, _src) strcpy(_dest, _src)
-#   define azstrncpy(_dest, _destSize, _src, _count) strncpy(_dest, _src, _count)
-#   define azstricmp        strcasecmp
-#   define azstrnicmp       strncasecmp
+#   define azscprintf(...)                                  azsnprintf(nullptr, static_cast<size_t>(0), __VA_ARGS__);
+#   define azvscprintf(_format, _va_list)                   azvsnprintf(nullptr, static_cast<size_t>(0), _format, _va_list);
+#   define azscwprintf(...)                                 azsnwprintf(nullptr, static_cast<size_t>(0), __VA_ARGS__);
+#   define azvscwprintf(_format, _va_list)                  azvsnwprintf(nullptr, static_cast<size_t>(0), _format, _va_list);
+#   define azstrtok(_buffer, _size, _delim, _context)       strtok(_buffer, _delim)
+#   define azstrcat(_dest, _destSize, _src)                 strcat(_dest, _src)
+#   define azstrncat(_dest, _destSize, _src, _count)        strncat(_dest, _src, _count)
+#   define azsscanf                                         sscanf
+#   define azstrcpy(_dest, _destSize, _src)                 strcpy(_dest, _src)
+#   define azstrncpy(_dest, _destSize, _src, _count)        strncpy(_dest, _src, _count)
+#   define azstricmp                                        strcasecmp
+#   define azstrnicmp                                       strncasecmp
 #   if defined(NDK_REV_MAJOR) && NDK_REV_MAJOR < 16
-#       define azisfinite   __isfinitef
+#       define azisfinite                                   __isfinitef
 #   else
-#       define azisfinite   isfinite
+#       define azisfinite                                   isfinite
 #   endif
-#   define azltoa(_value, _buffer, _size, _radix) ltoa(_value, _buffer, _radix)
-#   define azitoa(_value, _buffer, _size, _radix) itoa(_value, _buffer, _radix)
-#   define azui64toa(_value, _buffer, _size, _radix) _ui64toa(_value, _buffer, _radix)
-#   define azswscanf        swscanf
-#   define azwcsicmp        wcsicmp
-#   define azwcsnicmp       wcsnicmp
-#   define azmemicmp        memicmp
+#   define azltoa(_value, _buffer, _size, _radix)           ltoa(_value, _buffer, _radix)
+#   define azitoa(_value, _buffer, _size, _radix)           itoa(_value, _buffer, _radix)
+#   define azui64toa(_value, _buffer, _size, _radix)        _ui64toa(_value, _buffer, _radix)
+#   define azswscanf                                        swscanf
+#   define azwcsicmp                                        wcscasecmp
+#   define azwcsnicmp                                       wcsnicmp
 
 // note: for cross-platform compatibility, do not use the return value of azfopen. On Windows, it's an errno_t and 0 indicates success. On other platforms, the return value is a FILE*, and a 0 value indicates failure.
-#   define azfopen(_fp, _filename, _attrib) *(_fp) = fopen(_filename, _attrib)
-#   define azfscanf         fscanf
+#   define azfopen(_fp, _filename, _attrib)                 *(_fp) = fopen(_filename, _attrib)
+#   define azfscanf                                         fscanf
 
-#   define azsprintf       sprintf
-#   define azstrlwr(_buffer, _size)             strlwr(_buffer)
-#   define azvsprintf       vsprintf
-#   define azwcscpy(_dest, _size, _buffer)      wcscpy(_dest, _buffer)
-#   define azstrtime        _strtime
-#   define azstrdate        _strdate
-#   define azlocaltime      localtime_r
+#   define azsprintf                                        sprintf
+#   define azstrlwr(_buffer, _size)                         strlwr(_buffer)
+#   define azvsprintf                                       vsprintf
+#   define azwcscpy(_dest, _size, _buffer)                  wcscpy(_dest, _buffer)
+#   define azstrtime                                        _strtime
+#   define azstrdate                                        _strdate
+#   define azlocaltime                                      localtime_r
 #endif
 
 #if AZ_TRAIT_USE_POSIX_STRERROR_R
-#   define azstrerror_s(_dst, _num, _err)   strerror_r(_err, _dst, _num)
+#   define azstrerror_s(_dst, _num, _err)                   strerror_r(_err, _dst, _num)
 #else
-#   define azstrerror_s strerror_s
+#   define azstrerror_s                                     strerror_s
 #endif
 
 #define AZ_INVALID_POINTER  reinterpret_cast<void*>(0x0badf00dul)
@@ -144,6 +143,9 @@
  * example. AZ_VA_NUM_ARGS(x,y,z) -> expands to 3
  */
 #ifndef AZ_VA_NUM_ARGS
+
+#   define AZ_VA_HAS_ARGS(...) ""#__VA_ARGS__[0] != 0
+
 // we add the zero to avoid the case when we require at least 1 param at the end...
 #   define AZ_VA_NUM_ARGS(...) AZ_VA_NUM_ARGS_IMPL_((__VA_ARGS__, 125, 124, 123, 122, 121, 120, 119, 118, 117, 116, 115, 114, 113, 112, 111, 110, 109, 108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98, 97, 96, 95, 94, 93, 92, 91, 90, 89, 88, 87, 86, 85, 84, 83, 82, 81, 80, 79, 78, 77, 76, 75, 74, 73, 72, 71, 70, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
 #   define AZ_VA_NUM_ARGS_IMPL_(tuple) AZ_VA_NUM_ARGS_IMPL tuple
@@ -171,15 +173,15 @@
 // This is a pain they we use macros to call functions (with no params).
 
 // we implement functions for up to 10 params
-#define AZ_FUNCTION_CALL_1(_1)                                  _1()
-#define AZ_FUNCTION_CALL_2(_1, _2)                               _1(_2)
-#define AZ_FUNCTION_CALL_3(_1, _2, _3)                           _1(_2, _3)
-#define AZ_FUNCTION_CALL_4(_1, _2, _3, _4)                        _1(_2, _3, _4)
-#define AZ_FUNCTION_CALL_5(_1, _2, _3, _4, _5)                     _1(_2, _3, _4, _5)
-#define AZ_FUNCTION_CALL_6(_1, _2, _3, _4, _5, _6)                  _1(_2, _3, _4, _5, _6)
-#define AZ_FUNCTION_CALL_7(_1, _2, _3, _4, _5, _6, _7)               _1(_2, _3, _4, _5, _6, _7)
-#define AZ_FUNCTION_CALL_8(_1, _2, _3, _4, _5, _6, _7, _8)            _1(_2, _3, _4, _5, _6, _7, _8)
-#define AZ_FUNCTION_CALL_9(_1, _2, _3, _4, _5, _6, _7, _8, _9)         _1(_2, _3, _4, _5, _6, _7, _8, _9)
+#define AZ_FUNCTION_CALL_1(_1)                                          _1()
+#define AZ_FUNCTION_CALL_2(_1, _2)                                      _1(_2)
+#define AZ_FUNCTION_CALL_3(_1, _2, _3)                                  _1(_2, _3)
+#define AZ_FUNCTION_CALL_4(_1, _2, _3, _4)                              _1(_2, _3, _4)
+#define AZ_FUNCTION_CALL_5(_1, _2, _3, _4, _5)                          _1(_2, _3, _4, _5)
+#define AZ_FUNCTION_CALL_6(_1, _2, _3, _4, _5, _6)                      _1(_2, _3, _4, _5, _6)
+#define AZ_FUNCTION_CALL_7(_1, _2, _3, _4, _5, _6, _7)                  _1(_2, _3, _4, _5, _6, _7)
+#define AZ_FUNCTION_CALL_8(_1, _2, _3, _4, _5, _6, _7, _8)              _1(_2, _3, _4, _5, _6, _7, _8)
+#define AZ_FUNCTION_CALL_9(_1, _2, _3, _4, _5, _6, _7, _8, _9)          _1(_2, _3, _4, _5, _6, _7, _8, _9)
 #define AZ_FUNCTION_CALL_10(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10)    _1(_2, _3, _4, _5, _6, _7, _8, _9, _10)
 
 // We require at least 1 param FunctionName
@@ -294,7 +296,20 @@ namespace AZ
 #define AZ_DEFAULT_COPY_MOVE(_Class) AZ_DEFAULT_COPY(_Class) AZ_DEFAULT_MOVE(_Class)
 
 // Macro that can be used to avoid unreferenced variable warnings
-#define AZ_UNUSED(x) (void)x;
+#define AZ_UNUSED_1(x)                                          (void)(x);
+#define AZ_UNUSED_2(x1, x2)                                     AZ_UNUSED_1(x1)                     AZ_UNUSED_1(x2)
+#define AZ_UNUSED_3(x1, x2, x3)                                 AZ_UNUSED_1(x1)                     AZ_UNUSED_2(x2, x3)
+#define AZ_UNUSED_4(x1, x2, x3, x4)                             AZ_UNUSED_2(x1, x2)                 AZ_UNUSED_2(x3, x4)
+#define AZ_UNUSED_5(x1, x2, x3, x4, x5)                         AZ_UNUSED_2(x1, x2)                 AZ_UNUSED_3(x3, x4, x5)
+#define AZ_UNUSED_6(x1, x2, x3, x4, x5, x6)                     AZ_UNUSED_3(x1, x2, x3)             AZ_UNUSED_3(x4, x5, x6)
+#define AZ_UNUSED_7(x1, x2, x3, x4, x5, x6, x7)                 AZ_UNUSED_3(x1, x2, x3)             AZ_UNUSED_4(x4, x5, x6, x7)
+#define AZ_UNUSED_8(x1, x2, x3, x4, x5, x6, x7, x8)             AZ_UNUSED_4(x1, x2, x3, x4)         AZ_UNUSED_4(x5, x6, x7, x8)
+#define AZ_UNUSED_9(x1, x2, x3, x4, x5, x6, x7, x8, x9)         AZ_UNUSED_4(x1, x2, x3, x4)         AZ_UNUSED_5(x5, x6, x7, x8, x9)
+#define AZ_UNUSED_10(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10)   AZ_UNUSED_5(x1, x2, x3, x4, x5)     AZ_UNUSED_5(x6, x7, x8, x9, x10)
+#define AZ_UNUSED_11(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11)   AZ_UNUSED_5(x1, x2, x3, x4, x5)     AZ_UNUSED_6(x6, x7, x8, x9, x10, x11)
+#define AZ_UNUSED_12(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)   AZ_UNUSED_6(x1, x2, x3, x4, x5, x6)     AZ_UNUSED_6(x7, x8, x9, x10, x11, x12)
+
+#define AZ_UNUSED(...) AZ_MACRO_SPECIALIZE(AZ_UNUSED_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
 #define AZ_DEFINE_ENUM_BITWISE_OPERATORS(EnumType) \
 inline constexpr EnumType operator | (EnumType a, EnumType b) \

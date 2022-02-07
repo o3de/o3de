@@ -1,20 +1,23 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#include "EMotionFX_precompiled.h"
-
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include <MCore/Source/AttributeString.h>
+#include <MCore/Source/AzCoreConversions.h>
 #include <EMotionFX/Source/AnimGraph.h>
+#include <EMotionFX/Source/AnimGraphInstance.h>
+#include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/MotionSet.h>
 
 #include <Integration/Components/AnimGraphComponent.h>
 
@@ -41,32 +44,32 @@ namespace EMotionFX
                 Call(FN_OnAnimGraphInstanceDestroyed, animGraphInstance);
             }
 
-            void OnAnimGraphFloatParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, AZ::u32 parameterIndex, float beforeValue, float afterValue) override
+            void OnAnimGraphFloatParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, size_t parameterIndex, float beforeValue, float afterValue) override
             {
                 Call(FN_OnAnimGraphFloatParameterChanged, animGraphInstance, parameterIndex, beforeValue, afterValue);
             }
 
-            void OnAnimGraphBoolParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, AZ::u32 parameterIndex, bool beforeValue, bool afterValue) override
+            void OnAnimGraphBoolParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, size_t parameterIndex, bool beforeValue, bool afterValue) override
             {
                 Call(FN_OnAnimGraphBoolParameterChanged, animGraphInstance, parameterIndex, beforeValue, afterValue);
             }
 
-            void OnAnimGraphStringParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, AZ::u32 parameterIndex, const char* beforeValue, const char* afterValue) override
+            void OnAnimGraphStringParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, size_t parameterIndex, const char* beforeValue, const char* afterValue) override
             {
                 Call(FN_OnAnimGraphStringParameterChanged, animGraphInstance, parameterIndex, beforeValue, afterValue);
             }
 
-            void OnAnimGraphVector2ParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, AZ::u32 parameterIndex, const AZ::Vector2& beforeValue, const AZ::Vector2& afterValue) override
+            void OnAnimGraphVector2ParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, size_t parameterIndex, const AZ::Vector2& beforeValue, const AZ::Vector2& afterValue) override
             {
                 Call(FN_OnAnimGraphVector2ParameterChanged, animGraphInstance, parameterIndex, beforeValue, afterValue);
             }
 
-            void OnAnimGraphVector3ParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, AZ::u32 parameterIndex, const AZ::Vector3& beforeValue, const AZ::Vector3& afterValue) override
+            void OnAnimGraphVector3ParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, size_t parameterIndex, const AZ::Vector3& beforeValue, const AZ::Vector3& afterValue) override
             {
                 Call(FN_OnAnimGraphVector3ParameterChanged, animGraphInstance, parameterIndex, beforeValue, afterValue);
             }
 
-            void OnAnimGraphRotationParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, AZ::u32 parameterIndex, const AZ::Quaternion& beforeValue, const AZ::Quaternion& afterValue) override
+            void OnAnimGraphRotationParameterChanged(EMotionFX::AnimGraphInstance* animGraphInstance, size_t parameterIndex, const AZ::Quaternion& beforeValue, const AZ::Quaternion& afterValue) override
             {
                 Call(FN_OnAnimGraphVector3ParameterChanged, animGraphInstance, parameterIndex, beforeValue, afterValue);
             }
@@ -136,7 +139,7 @@ namespace EMotionFX
             auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
             if (behaviorContext)
             {
-                behaviorContext->Constant("InvalidParameterIndex", BehaviorConstant(static_cast<AZ::u32>(MCORE_INVALIDINDEX32)));
+                behaviorContext->Constant("InvalidParameterIndex", BehaviorConstant(InvalidIndex));
 
                 behaviorContext->EBus<AnimGraphComponentRequestBus>("AnimGraphComponentRequestBus")
                     // General API
@@ -544,24 +547,24 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        AZ::u32 AnimGraphComponent::FindParameterIndex(const char* parameterName)
+        size_t AnimGraphComponent::FindParameterIndex(const char* parameterName)
         {
             if (m_animGraphInstance)
             {
                 const AZ::Outcome<size_t> parameterIndex = m_animGraphInstance->FindParameterIndex(parameterName);
                 if (parameterIndex.IsSuccess())
                 {
-                    return static_cast<AZ::u32>(parameterIndex.GetValue());
+                    return parameterIndex.GetValue();
                 }
             }
 
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
         //////////////////////////////////////////////////////////////////////////
-        const char* AnimGraphComponent::FindParameterName(AZ::u32 parameterIndex)
+        const char* AnimGraphComponent::FindParameterName(size_t parameterIndex)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32 || !m_animGraphInstance || !m_animGraphInstance->GetAnimGraph())
+            if (parameterIndex == InvalidIndex || !m_animGraphInstance || !m_animGraphInstance->GetAnimGraph())
             {
                 return "";
             }
@@ -570,11 +573,11 @@ namespace EMotionFX
 
 
         //////////////////////////////////////////////////////////////////////////
-        void AnimGraphComponent::SetParameterFloat(AZ::u32 parameterIndex, float value)
+        void AnimGraphComponent::SetParameterFloat(size_t parameterIndex, float value)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return;
             }
 
@@ -608,7 +611,7 @@ namespace EMotionFX
                 }
                 default:
                 {
-                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %u can not be set as float, is of type: %s", parameterIndex, param->GetTypeString());
+                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %zu can not be set as float, is of type: %s", parameterIndex, param->GetTypeString());
                     return;
                 }
                 }
@@ -625,11 +628,11 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void AnimGraphComponent::SetParameterBool(AZ::u32 parameterIndex, bool value)
+        void AnimGraphComponent::SetParameterBool(size_t parameterIndex, bool value)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return;
             }
 
@@ -663,7 +666,7 @@ namespace EMotionFX
                 }
                 default:
                 {
-                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %u can not be set as bool, is of type: %s", parameterIndex, param->GetTypeString());
+                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %zu can not be set as bool, is of type: %s", parameterIndex, param->GetTypeString());
                     return;
                 }
                 }
@@ -680,11 +683,11 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void AnimGraphComponent::SetParameterString(AZ::u32 parameterIndex, const char* value)
+        void AnimGraphComponent::SetParameterString(size_t parameterIndex, const char* value)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return;
             }
 
@@ -711,17 +714,17 @@ namespace EMotionFX
                 }
                 else
                 {
-                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %u is not a string", parameterIndex);
+                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %zu is not a string", parameterIndex);
                 }
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void AnimGraphComponent::SetParameterVector2(AZ::u32 parameterIndex, const AZ::Vector2& value)
+        void AnimGraphComponent::SetParameterVector2(size_t parameterIndex, const AZ::Vector2& value)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return;
             }
 
@@ -744,17 +747,17 @@ namespace EMotionFX
                 }
                 else
                 {
-                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %u is not a vector2", parameterIndex);
+                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %zu is not a vector2", parameterIndex);
                 }
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void AnimGraphComponent::SetParameterVector3(AZ::u32 parameterIndex, const AZ::Vector3& value)
+        void AnimGraphComponent::SetParameterVector3(size_t parameterIndex, const AZ::Vector3& value)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return;
             }
 
@@ -777,17 +780,17 @@ namespace EMotionFX
                 }
                 else
                 {
-                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %u is not a vector3", parameterIndex);
+                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %zu is not a vector3", parameterIndex);
                 }
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void AnimGraphComponent::SetParameterRotationEuler(AZ::u32 parameterIndex, const AZ::Vector3& value)
+        void AnimGraphComponent::SetParameterRotationEuler(size_t parameterIndex, const AZ::Vector3& value)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return;
             }
 
@@ -806,7 +809,7 @@ namespace EMotionFX
                     break;
                 }
                 default:
-                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %u can not be set as rotation euler, is of type: %s", parameterIndex, param->GetTypeString());
+                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %zu can not be set as rotation euler, is of type: %s", parameterIndex, param->GetTypeString());
                     return;
                 }
 
@@ -822,11 +825,11 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void AnimGraphComponent::SetParameterRotation(AZ::u32 parameterIndex, const AZ::Quaternion& value)
+        void AnimGraphComponent::SetParameterRotation(size_t parameterIndex, const AZ::Quaternion& value)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return;
             }
 
@@ -845,7 +848,7 @@ namespace EMotionFX
                     break;
                 }
                 default:
-                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %u can not be set as rotation, is of type: %s", parameterIndex, param->GetTypeString());
+                    AZ_Warning("EMotionFX", false, "Anim graph parameter index: %zu can not be set as rotation, is of type: %s", parameterIndex, param->GetTypeString());
                     return;
                 }
 
@@ -871,7 +874,7 @@ namespace EMotionFX
                     AZ_Warning("EmotionFX", false, "Invalid anim graph parameter name: %s", parameterName);
                     return;
                 }
-                SetParameterFloat(parameterIndex.GetValue(), value);
+                SetParameterFloat(static_cast<AZ::u32>(parameterIndex.GetValue()), value);
             }
         }
 
@@ -886,7 +889,7 @@ namespace EMotionFX
                     AZ_Warning("EmotionFX", false, "Invalid anim graph parameter name: %s", parameterName);
                     return;
                 }
-                SetParameterBool(parameterIndex.GetValue(), value);
+                SetParameterBool(static_cast<AZ::u32>(parameterIndex.GetValue()), value);
             }
         }
 
@@ -901,7 +904,7 @@ namespace EMotionFX
                     AZ_Warning("EmotionFX", false, "Invalid anim graph parameter name: %s", parameterName);
                     return;
                 }
-                SetParameterString(parameterIndex.GetValue(), value);
+                SetParameterString(static_cast<AZ::u32>(parameterIndex.GetValue()), value);
             }
         }
 
@@ -916,7 +919,7 @@ namespace EMotionFX
                     AZ_Warning("EmotionFX", false, "Invalid anim graph parameter name: %s", parameterName);
                     return;
                 }
-                SetParameterVector2(parameterIndex.GetValue(), value);
+                SetParameterVector2(static_cast<AZ::u32>(parameterIndex.GetValue()), value);
             }
         }
 
@@ -931,7 +934,7 @@ namespace EMotionFX
                     AZ_Warning("EmotionFX", false, "Invalid anim graph parameter name: %s", parameterName);
                     return;
                 }
-                SetParameterVector3(parameterIndex.GetValue(), value);
+                SetParameterVector3(static_cast<AZ::u32>(parameterIndex.GetValue()), value);
             }
         }
 
@@ -946,7 +949,7 @@ namespace EMotionFX
                     AZ_Warning("EmotionFX", false, "Invalid anim graph parameter name: %s", parameterName);
                     return;
                 }
-                SetParameterRotationEuler(parameterIndex.GetValue(), value);
+                SetParameterRotationEuler(static_cast<AZ::u32>(parameterIndex.GetValue()), value);
             }
         }
 
@@ -961,7 +964,7 @@ namespace EMotionFX
                     AZ_Warning("EmotionFX", false, "Invalid anim graph parameter name: %s", parameterName);
                     return;
                 }
-                SetParameterRotation(parameterIndex.GetValue(), value);
+                SetParameterRotation(static_cast<AZ::u32>(parameterIndex.GetValue()), value);
             }
         }
 
@@ -984,11 +987,11 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        float AnimGraphComponent::GetParameterFloat(AZ::u32 parameterIndex)
+        float AnimGraphComponent::GetParameterFloat(size_t parameterIndex)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return 0.f;
             }
 
@@ -1001,11 +1004,11 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        bool AnimGraphComponent::GetParameterBool(AZ::u32 parameterIndex)
+        bool AnimGraphComponent::GetParameterBool(size_t parameterIndex)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return false;
             }
 
@@ -1018,11 +1021,11 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        AZStd::string AnimGraphComponent::GetParameterString(AZ::u32 parameterIndex)
+        AZStd::string AnimGraphComponent::GetParameterString(size_t parameterIndex)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return AZStd::string();
             }
 
@@ -1038,11 +1041,11 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        AZ::Vector2 AnimGraphComponent::GetParameterVector2(AZ::u32 parameterIndex)
+        AZ::Vector2 AnimGraphComponent::GetParameterVector2(size_t parameterIndex)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return AZ::Vector2::CreateZero();
             }
 
@@ -1056,11 +1059,11 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        AZ::Vector3 AnimGraphComponent::GetParameterVector3(AZ::u32 parameterIndex)
+        AZ::Vector3 AnimGraphComponent::GetParameterVector3(size_t parameterIndex)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return AZ::Vector3::CreateZero();
             }
 
@@ -1074,11 +1077,11 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        AZ::Vector3 AnimGraphComponent::GetParameterRotationEuler(AZ::u32 parameterIndex)
+        AZ::Vector3 AnimGraphComponent::GetParameterRotationEuler(size_t parameterIndex)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return AZ::Vector3::CreateZero();
             }
 
@@ -1092,11 +1095,11 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        AZ::Quaternion AnimGraphComponent::GetParameterRotation(AZ::u32 parameterIndex)
+        AZ::Quaternion AnimGraphComponent::GetParameterRotation(size_t parameterIndex)
         {
-            if (parameterIndex == MCORE_INVALIDINDEX32)
+            if (parameterIndex == InvalidIndex)
             {
-                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %u", parameterIndex);
+                AZ_Warning("EMotionFX", false, "Invalid anim graph parameter index: %zu", parameterIndex);
                 return AZ::Quaternion::CreateZero();
             }
 
@@ -1117,7 +1120,7 @@ namespace EMotionFX
                 const AZ::Outcome<size_t> parameterIndex = m_animGraphInstance->FindParameterIndex(parameterName);
                 if (parameterIndex.IsSuccess())
                 {
-                    return GetParameterFloat(parameterIndex.GetValue());
+                    return GetParameterFloat(static_cast<AZ::u32>(parameterIndex.GetValue()));
                 }
             }
             return 0.f;
@@ -1131,7 +1134,7 @@ namespace EMotionFX
                 const AZ::Outcome<size_t> parameterIndex = m_animGraphInstance->FindParameterIndex(parameterName);
                 if (parameterIndex.IsSuccess())
                 {
-                    return GetParameterBool(parameterIndex.GetValue());
+                    return GetParameterBool(static_cast<AZ::u32>(parameterIndex.GetValue()));
                 }
             }
             return false;
@@ -1145,7 +1148,7 @@ namespace EMotionFX
                 const AZ::Outcome<size_t> parameterIndex = m_animGraphInstance->FindParameterIndex(parameterName);
                 if (parameterIndex.IsSuccess())
                 {
-                    return GetParameterString(parameterIndex.GetValue());
+                    return GetParameterString(static_cast<AZ::u32>(parameterIndex.GetValue()));
                 }
             }
             return AZStd::string();
@@ -1159,7 +1162,7 @@ namespace EMotionFX
                 const AZ::Outcome<size_t> parameterIndex = m_animGraphInstance->FindParameterIndex(parameterName);
                 if (parameterIndex.IsSuccess())
                 {
-                    return GetParameterVector2(parameterIndex.GetValue());
+                    return GetParameterVector2(static_cast<AZ::u32>(parameterIndex.GetValue()));
                 }
             }
             return AZ::Vector2::CreateZero();
@@ -1173,7 +1176,7 @@ namespace EMotionFX
                 const AZ::Outcome<size_t> parameterIndex = m_animGraphInstance->FindParameterIndex(parameterName);
                 if (parameterIndex.IsSuccess())
                 {
-                    return GetParameterVector3(parameterIndex.GetValue());
+                    return GetParameterVector3(static_cast<AZ::u32>(parameterIndex.GetValue()));
                 }
             }
             return AZ::Vector3::CreateZero();
@@ -1187,7 +1190,7 @@ namespace EMotionFX
                 const AZ::Outcome<size_t> parameterIndex = m_animGraphInstance->FindParameterIndex(parameterName);
                 if (parameterIndex.IsSuccess())
                 {
-                    return GetParameterRotationEuler(parameterIndex.GetValue());
+                    return GetParameterRotationEuler(static_cast<AZ::u32>(parameterIndex.GetValue()));
                 }
             }
             return AZ::Vector3::CreateZero();
@@ -1201,7 +1204,7 @@ namespace EMotionFX
                 const AZ::Outcome<size_t> parameterIndex = m_animGraphInstance->FindParameterIndex(parameterName);
                 if (parameterIndex.IsSuccess())
                 {
-                    return GetParameterRotation(parameterIndex.GetValue());
+                    return GetParameterRotation(static_cast<AZ::u32>(parameterIndex.GetValue()));
                 }
             }
             return AZ::Quaternion::CreateIdentity();

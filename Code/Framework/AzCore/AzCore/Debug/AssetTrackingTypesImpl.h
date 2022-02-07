@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,6 +30,8 @@ namespace AZ
                 m_parent(parent)
             {
             }
+
+            ~AssetTreeNode() override = default;
 
             const AssetPrimaryInfo* GetAssetPrimaryInfo() const override
             {
@@ -66,6 +69,8 @@ namespace AZ
         class AssetTree : public AssetTreeBase
         {
         public:
+            ~AssetTree() override = default;
+
             AssetTreeNodeBase& GetRoot() override
             {
                 return m_rootAssets;
@@ -98,6 +103,7 @@ namespace AZ
             AllocationTable(mutex_type& mutex) : m_mutex(mutex)
             {
             }
+            ~AllocationTable() override = default;
 
             AssetTreeNodeBase* FindAllocation(void* ptr) const override
             {

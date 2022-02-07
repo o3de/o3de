@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <LmbrCentral_precompiled.h>
 
 #include <Audio/AudioSystemComponent.h>
 
@@ -15,7 +15,10 @@
 
 #include <LmbrCentral/Audio/AudioTriggerComponentBus.h>
 
+#include <AzCore/IO/Path/Path.h>
+
 #include <IAudioSystem.h>
+#include <ISystem.h>
 
 using namespace Audio;
 
@@ -32,12 +35,12 @@ namespace LmbrCentral
             OnGameUnpaused
         );
 
-        void OnGamePaused()
+        void OnGamePaused() override
         {
             Call(FN_OnGamePaused);
         }
 
-        void OnGameUnpaused()
+        void OnGameUnpaused() override
         {
             Call(FN_OnGameUnpaused);
         }
@@ -68,11 +71,16 @@ namespace LmbrCentral
         {
             behaviorContext->EBus<AudioSystemComponentRequestBus>("AudioSystemComponentRequestBus")
                 ->Event("GlobalStopAllSounds", &AudioSystemComponentRequestBus::Events::GlobalStopAllSounds)
+                ->Event("GlobalMuteAudio", &AudioSystemComponentRequestBus::Events::GlobalMuteAudio)
+                ->Event("GlobalUnmuteAudio", &AudioSystemComponentRequestBus::Events::GlobalUnmuteAudio)
+                ->Event("GlobalRefreshAudio", &AudioSystemComponentRequestBus::Events::GlobalRefreshAudio)
                 ->Event("GlobalExecuteAudioTrigger", &AudioSystemComponentRequestBus::Events::GlobalExecuteAudioTrigger)
                 ->Event("GlobalKillAudioTrigger", &AudioSystemComponentRequestBus::Events::GlobalKillAudioTrigger)
                 ->Event("GlobalSetAudioRtpc", &AudioSystemComponentRequestBus::Events::GlobalSetAudioRtpc)
                 ->Event("GlobalResetAudioRtpcs", &AudioSystemComponentRequestBus::Events::GlobalResetAudioRtpcs)
                 ->Event("GlobalSetAudioSwitchState", &AudioSystemComponentRequestBus::Events::GlobalSetAudioSwitchState)
+                ->Event("LevelLoadAudio", &AudioSystemComponentRequestBus::Events::LevelLoadAudio)
+                ->Event("LevelUnloadAudio", &AudioSystemComponentRequestBus::Events::LevelUnloadAudio)
                 ;
 
             behaviorContext->EBus<AudioSystemComponentNotificationBus>("Audio System Component Notifications", "AudioSystemComponentNotificationBus")
@@ -115,6 +123,12 @@ namespace LmbrCentral
     }
 
     ////////////////////////////////////////////////////////////////////////
+    bool AudioSystemComponent::IsAudioSystemInitialized()
+    {
+        return Audio::AudioSystemRequestBus::HasHandlers();
+    }
+
+    ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::GlobalStopAllSounds()
     {
         SAudioRequest request;
@@ -122,6 +136,32 @@ namespace LmbrCentral
         request.pData = &requestData;
 
         AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    void AudioSystemComponent::GlobalMuteAudio()
+    {
+        SAudioRequest request;
+        SAudioManagerRequestData<eAMRT_MUTE_ALL> requestData;
+        request.pData = &requestData;
+
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    void AudioSystemComponent::GlobalUnmuteAudio()
+    {
+        SAudioRequest request;
+        SAudioManagerRequestData<eAMRT_UNMUTE_ALL> requestData;
+        request.pData = &requestData;
+
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    void AudioSystemComponent::GlobalRefreshAudio(AZStd::string_view levelName)
+    {
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::RefreshAudioSystem, levelName.data());
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -231,33 +271,105 @@ namespace LmbrCentral
     }
 
     ////////////////////////////////////////////////////////////////////////
-    void AudioSystemComponent::OnCrySystemInitialized(ISystem&, const SSystemInitParams&)
+    void AudioSystemComponent::LevelLoadAudio(AZStd::string_view levelName)
     {
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::AddRequestListener,
-            &AudioSystemComponent::OnAudioEvent,
-            this,
-            Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST,
-            Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE
-        );
+        const char* controlsPath = nullptr;
+        AudioSystemRequestBus::BroadcastResult(controlsPath, &AudioSystemRequestBus::Events::GetControlsPath);
+        if (!controlsPath)
+        {
+            return;
+        }
+
+        AZ::IO::FixedMaxPath levelControlsPath{ controlsPath };
+        levelControlsPath /= "levels";
+        levelControlsPath /= levelName;
+
+        SAudioRequest request;
+        SAudioManagerRequestData<eAMRT_PARSE_CONTROLS_DATA> requestData(levelControlsPath.Native().data(), eADS_LEVEL_SPECIFIC);
+        request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
+        request.pData = &requestData;
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+
+        SAudioManagerRequestData<eAMRT_PARSE_PRELOADS_DATA> requestData2(levelControlsPath.Native().data(), eADS_LEVEL_SPECIFIC);
+        request.pData = &requestData2;
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+
+        TAudioPreloadRequestID preloadRequestId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
+        AudioSystemRequestBus::BroadcastResult(
+            preloadRequestId, &AudioSystemRequestBus::Events::GetAudioPreloadRequestID, levelName.data());
+        if (preloadRequestId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
+        {
+            SAudioManagerRequestData<eAMRT_PRELOAD_SINGLE_REQUEST> requestData3(preloadRequestId);
+            request.pData = &requestData3;
+            AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////
-    void AudioSystemComponent::OnCrySystemShutdown(ISystem&)
+    void AudioSystemComponent::LevelUnloadAudio()
     {
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RemoveRequestListener,
+        SAudioRequest request;
+
+        // Unload level-specific banks...
+        SAudioManagerRequestData<eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE> requestData(eADS_LEVEL_SPECIFIC);
+        request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
+        request.pData = &requestData;
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+
+        // Now unload level-specific audio config data (controls then preloads)...
+        SAudioManagerRequestData<eAMRT_CLEAR_CONTROLS_DATA> requestData2(eADS_LEVEL_SPECIFIC);
+        request.pData = &requestData2;
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+
+        SAudioManagerRequestData<eAMRT_CLEAR_PRELOADS_DATA> requestData3(eADS_LEVEL_SPECIFIC);
+        request.pData = &requestData3;
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    void AudioSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
+    {
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::AddRequestListener,
+            &AudioSystemComponent::OnAudioEvent,
+            this,
+            eART_AUDIO_CALLBACK_MANAGER_REQUEST,
+            eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE
+        );
+
+        system.GetILevelSystem()->AddListener(this);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    void AudioSystemComponent::OnCrySystemShutdown(ISystem& system)
+    {
+        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::RemoveRequestListener,
             &AudioSystemComponent::OnAudioEvent,
             this
         );
+
+        system.GetILevelSystem()->RemoveListener(this);
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    void AudioSystemComponent::OnLoadingStart(const char* levelName)
+    {
+        LevelLoadAudio(AZStd::string_view{ levelName });
+    }
+
+    ////////////////////////////////////////////////////////////////////////
+    void AudioSystemComponent::OnUnloadComplete([[maybe_unused]] const char* levelName)
+    {
+        LevelUnloadAudio();
     }
 
     ////////////////////////////////////////////////////////////////////////
     // static
-    void AudioSystemComponent::OnAudioEvent(const Audio::SAudioRequestInfo* const requestInfo)
+    void AudioSystemComponent::OnAudioEvent(const SAudioRequestInfo* const requestInfo)
     {
-        if (requestInfo->eAudioRequestType == Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST)
+        if (requestInfo->eAudioRequestType == eART_AUDIO_CALLBACK_MANAGER_REQUEST)
         {
-            const auto notificationType = static_cast<Audio::EAudioCallbackManagerRequestType>(requestInfo->nSpecificAudioRequest);
-            if (notificationType == Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE && requestInfo->eResult == Audio::eARR_SUCCESS)
+            const auto notificationType = static_cast<EAudioCallbackManagerRequestType>(requestInfo->nSpecificAudioRequest);
+            if (notificationType == eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE && requestInfo->eResult == eARR_SUCCESS)
             {
                 AZ::EntityId callbackOwnerEntityId(reinterpret_cast<AZ::u64>(requestInfo->pUserData));
                 AudioTriggerComponentNotificationBus::Event(callbackOwnerEntityId, &AudioTriggerComponentNotificationBus::Events::OnTriggerFinished, requestInfo->nAudioControlID);

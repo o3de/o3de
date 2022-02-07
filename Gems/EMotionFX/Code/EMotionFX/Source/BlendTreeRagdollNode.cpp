@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,10 +30,10 @@ namespace EMotionFX
 
     void BlendTreeRagdollNode::UniqueData::Update()
     {
-        BlendTreeRagdollNode* ragdollNode = azdynamic_cast<BlendTreeRagdollNode*>(mObject);
+        BlendTreeRagdollNode* ragdollNode = azdynamic_cast<BlendTreeRagdollNode*>(m_object);
         AZ_Assert(ragdollNode, "Unique data linked to incorrect node type.");
 
-        const Actor* actor = mAnimGraphInstance->GetActorInstance()->GetActor();
+        const Actor* actor = m_animGraphInstance->GetActorInstance()->GetActor();
         const Skeleton* skeleton = actor->GetSkeleton();
         const size_t jointCount = skeleton->GetNumNodes();
 
@@ -53,7 +54,7 @@ namespace EMotionFX
         }
 
         // Check if we selected the ragdoll root node to be added to the simulation.
-        const ActorInstance* actorInstance = mAnimGraphInstance->GetActorInstance();
+        const ActorInstance* actorInstance = m_animGraphInstance->GetActorInstance();
         const RagdollInstance* ragdollInstance = actorInstance->GetRagdollInstance();
         m_isRagdollRootNodeSimulated = false;
         if (ragdollInstance)
@@ -125,7 +126,7 @@ namespace EMotionFX
         RequestRefDatas(animGraphInstance);
         AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
 
-        if (mDisabled)
+        if (m_disabled)
         {
             data->ClearEventBuffer();
             data->ZeroTrajectoryDelta();
@@ -169,13 +170,13 @@ namespace EMotionFX
                 if (ragdollInstance && motionExtractionNode)
                 {
                     // Move the trajectory node based on the ragdoll's movement.
-                    trajectoryDelta.mPosition = ragdollInstance->GetTrajectoryDeltaPos();
+                    trajectoryDelta.m_position = ragdollInstance->GetTrajectoryDeltaPos();
 
                     // Do the same for rotation, but extract and apply z rotation only to the trajectory node.
-                    trajectoryDelta.mRotation = ragdollInstance->GetTrajectoryDeltaRot();
-                    trajectoryDelta.mRotation.SetX(0.0f);
-                    trajectoryDelta.mRotation.SetY(0.0f);
-                    trajectoryDelta.mRotation.Normalize();
+                    trajectoryDelta.m_rotation = ragdollInstance->GetTrajectoryDeltaRot();
+                    trajectoryDelta.m_rotation.SetX(0.0f);
+                    trajectoryDelta.m_rotation.SetY(0.0f);
+                    trajectoryDelta.m_rotation.Normalize();
                 }
 
                 data->SetTrajectoryDelta(trajectoryDelta);
@@ -206,7 +207,7 @@ namespace EMotionFX
         }
 
         // As we already forwarded the target pose at this point, we can just return in case the node is disabled.
-        if (mDisabled)
+        if (m_disabled)
         {
             return;
         }
@@ -214,7 +215,7 @@ namespace EMotionFX
         Pose& outputPose = animGraphOutputPose->GetPose();
         if (GetCanVisualize(animGraphInstance))
         {
-            actorInstance->DrawSkeleton(outputPose, mVisualizeColor);
+            actorInstance->DrawSkeleton(outputPose, m_visualizeColor);
         }
 
         if (HasConnectionAtInputPort(INPUTPORT_ACTIVATE))
@@ -240,8 +241,8 @@ namespace EMotionFX
             // Copy ragdoll transforms (world space) and reconstruct the rest of the skeleton using the target input pose.
             // If the current node is part of the ragdoll, copy the world transforms from the ragdoll node to the pose and recalculate the local transform.
             // In case the current node is not part of the ragdoll, update the world transforms based on the local transform from the bind pose.
-            const AZ::u32 jointCount = skeleton->GetNumNodes();
-            for (AZ::u32 jointIndex = 0; jointIndex < jointCount; ++jointIndex)
+            const size_t jointCount = skeleton->GetNumNodes();
+            for (size_t jointIndex = 0; jointIndex < jointCount; ++jointIndex)
             {
                 Node* joint = skeleton->GetNode(jointIndex);
                 const AZ::Outcome<size_t> ragdollNodeIndex = ragdollInstance->GetRagdollNodeIndex(jointIndex);
@@ -263,7 +264,7 @@ namespace EMotionFX
                             Transform newGlobalTransform(
                                 currentRagdollRootNodeState.m_position,
                                 currentRagdollRootNodeState.m_orientation,
-                                outputPose.GetWorldSpaceTransform(jointIndex).mScale);
+                                outputPose.GetWorldSpaceTransform(jointIndex).m_scale);
                         #else
                             Transform newGlobalTransform(
                                 currentRagdollRootNodeState.m_position,
@@ -297,7 +298,7 @@ namespace EMotionFX
                             Transform newGlobalTransform = Transform(
                                     currentRagdollNodeState.m_position,
                                     currentRagdollNodeState.m_orientation,
-                                    outputPose.GetWorldSpaceTransform(jointIndex).mScale);
+                                    outputPose.GetWorldSpaceTransform(jointIndex).m_scale);
                         #else
                             Transform newGlobalTransform = Transform(
                                     currentRagdollNodeState.m_position,
@@ -314,12 +315,12 @@ namespace EMotionFX
                             Transform globalTransform = Transform(
                                     currentRagdollNodeState.m_position,
                                     currentRagdollNodeState.m_orientation,
-                                    outputPose.GetWorldSpaceTransform(jointIndex).mScale);
+                                    outputPose.GetWorldSpaceTransform(jointIndex).m_scale);
 
                             Transform parentGlobalTransform = Transform(
                                     currentParentRagdollNodeState.m_position,
                                     currentParentRagdollNodeState.m_orientation,
-                                    outputPose.GetWorldSpaceTransform(ragdollParentJoint->GetNodeIndex()).mScale);
+                                    outputPose.GetWorldSpaceTransform(ragdollParentJoint->GetNodeIndex()).m_scale);
                         #else
                             Transform globalTransform = Transform(
                                     currentRagdollNodeState.m_position,
@@ -342,15 +343,15 @@ namespace EMotionFX
                         // Set the target pose for the selected and thus simulated joints in the anim graph node has a target pose connected to its input port.
                         // Set the local space transform for powered ragdoll nodes.
                         const Transform& localTransform = targetPose->GetLocalSpaceTransform(jointIndex);
-                        targetRagdollNodeState.m_position = localTransform.mPosition;
-                        targetRagdollNodeState.m_orientation = localTransform.mRotation;
+                        targetRagdollNodeState.m_position = localTransform.m_position;
+                        targetRagdollNodeState.m_orientation = localTransform.m_rotation;
                     }
                     else
                     {
                         // We do not have a target pose connected to the input port, just forward what is currently in the output pose (bind pose).
                         const Transform& localTransform = outputPose.GetLocalSpaceTransform(jointIndex);
-                        targetRagdollNodeState.m_position = localTransform.mPosition;
-                        targetRagdollNodeState.m_orientation = localTransform.mRotation;
+                        targetRagdollNodeState.m_position = localTransform.m_position;
+                        targetRagdollNodeState.m_orientation = localTransform.m_rotation;
                     }
                 }
                 else

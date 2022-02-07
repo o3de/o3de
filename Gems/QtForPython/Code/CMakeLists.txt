@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -20,7 +21,8 @@ ly_add_target(
     NAME QtForPython.Editor.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        qtforpython_editor_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        qtforpython_editor_files.cmake
+        ${CMAKE_CURRENT_SOURCE_DIR}/Source/Platform/${PAL_PLATFORM_NAME}/qtforpython_editor_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/qtforpython_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -44,6 +46,9 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         qtforpython_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/Source/Platform/${PAL_PLATFORM_NAME}
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::QtForPython.Editor.Static

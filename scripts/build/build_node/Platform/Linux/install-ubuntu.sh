@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
@@ -39,6 +40,13 @@ then
     exit 1
 fi
 
+# Add mountpoint for Jenkins
+if [ ! -d /data ]
+then
+    echo Data folder does not exist. Creating it.
+    mkdir /data
+    chown $USER /data
+fi
 
 echo Packages and tools for O3DE setup complete
 exit 0

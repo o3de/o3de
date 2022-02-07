@@ -1,14 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "UiCanvasEditor_precompiled.h"
 #include "SpriteBorderEditorCommon.h"
 
 #include <QMessageBox>
 #include <QApplication>
+#include <Util/PathUtil.h>
 //-------------------------------------------------------------------------------
 
 namespace
@@ -190,9 +191,9 @@ void SpriteBorderEditor::UpdateSpriteSheetCellInfo(int newNumRows, int newNumCol
 
     // Calculate uniformly sized sprite-sheet cell UVs based on the given
     // row and column cell configuration.
-    for (int row = 0; row < m_numRows; ++row)
+    for (unsigned int row = 0; row < m_numRows; ++row)
     {
-        for (int col = 0; col < m_numCols; ++col)
+        for (unsigned int col = 0; col < m_numCols; ++col)
         {
             AZ::Vector2 min(col / floatNumCols, row / floatNumRows);
             AZ::Vector2 max((col + 1) / floatNumCols, (row + 1) / floatNumRows);
@@ -226,7 +227,6 @@ void SpriteBorderEditor::DisplaySelectedCell(AZ::u32 cellIndex)
     // Determine how much we need to scale the view to fit the cell 
     // contents to the displayed properties image.
     const AZ::Vector2 cellSize = m_sprite->GetCellSize(cellIndex);
-    const AZ::Vector2 cellScale = AZ::Vector2(m_unscaledSpriteSheet.size().width() / cellSize.GetX(), m_unscaledSpriteSheet.size().height() / cellSize.GetY());
 
     // Scale-to-fit, while preserving aspect ratio.
     QRect croppedRect = m_unscaledSpriteSheet.rect();
@@ -285,8 +285,8 @@ void SpriteBorderEditor::AddConfigureSection(QGridLayout* gridLayout, int& rowNu
 
     // Count the number of unique entries along each axis to determine number
     // of rows/cols contained within the spritesheet.
-    m_numRows = vSet.size() > 1 ? vSet.size() - 1 : 1;
-    m_numCols = uSet.size() > 1 ? uSet.size() - 1 : 1;
+    m_numRows = static_cast<uint>(vSet.size() > 1 ? vSet.size() - 1 : 1);
+    m_numCols = static_cast<uint>(uSet.size() > 1 ? uSet.size() - 1 : 1);
 
     // Text input fields displaying row/col information for auto-extracting 
     // spritesheet cells
@@ -309,7 +309,7 @@ void SpriteBorderEditor::AddConfigureSection(QGridLayout* gridLayout, int& rowNu
             int newNumCols = numColsLineEdit->text().toInt(&colConversionSuccess);
 
             const bool positiveInputs = newNumRows > 0 && newNumCols > 0;
-            const bool valueChanged = m_numRows != newNumRows || m_numCols != newNumCols;
+            const bool valueChanged = m_numRows != static_cast<uint>(newNumRows) || m_numCols != static_cast<uint>(newNumCols);
 
             // This number of cells is just nearly unusable in the sprite editor UI. Supporting
             // more would likely require reworking of UX/UI and even implementation.
@@ -920,7 +920,7 @@ void SpriteBorderEditor::AddButtonsSection(QGridLayout* gridLayout, int& rowNum)
                 // The texture is guaranteed to exist so use that to get the full path.
                 QString fullTexturePath = Path::GamePathToFullPath(m_sprite->GetTexturePathname().c_str());
                 const char* const spriteExtension = "sprite";
-                string fullSpritePath = PathUtil::ReplaceExtension(fullTexturePath.toUtf8().data(), spriteExtension);
+                AZStd::string fullSpritePath = PathUtil::ReplaceExtension(fullTexturePath.toUtf8().data(), spriteExtension);
 
                 FileHelpers::SourceControlAddOrEdit(fullSpritePath.c_str(), QApplication::activeWindow());
 

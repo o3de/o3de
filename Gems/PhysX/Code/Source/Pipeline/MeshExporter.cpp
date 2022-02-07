@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -36,6 +35,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/XML/rapidxml.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <GFxFramework/MaterialIO/Material.h>
 
 // A utility macro helping set/clear bits in a single line
@@ -155,13 +155,13 @@ namespace PhysX
 
                 if (materialIndexIter != materialIndexByName.end())
                 {
-                    return materialIndexIter->second;
+                    return static_cast<AZ::u16>(materialIndexIter->second);
                 }
 
                 // Add it to the list otherwise
                 sourceSceneMaterialNames.push_back(materialName);
 
-                AZ::u16 newIndex = sourceSceneMaterialNames.size() - 1;
+                AZ::u16 newIndex = static_cast<AZ::u16>(sourceSceneMaterialNames.size() - 1);
                 materialIndexByName[materialName] = newIndex;
 
                 return newIndex;
@@ -290,7 +290,7 @@ namespace PhysX
                         AZ_TracePrintf(
                             AZ::SceneAPI::Utilities::WarningWindow,
                             "Node '%.*s' does not have any material assigned to it. Material '%s' will be used.",
-                            nodeName.size(), nodeName, DefaultMaterialName
+                            AZ_STRING_ARG(nodeName), DefaultMaterialName
                         );
                     }
 
@@ -298,8 +298,10 @@ namespace PhysX
 
                     assetMaterialData.m_nodesToPerFaceMaterialIndices.emplace(nodeName, AZStd::vector<AZ::u16>(faceCount));
 
-                    // Convex and primitive methods can only have 1 material
+                    // Convex and primitive methods can only have 1 material per node.
                     const bool limitToOneMaterial = meshGroup.GetExportAsConvex() || meshGroup.GetExportAsPrimitive();
+                    AZStd::string firstMaterial;
+                    AZStd::set<AZStd::string> nodeMaterials;
 
                     for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
                     {
@@ -318,17 +320,27 @@ namespace PhysX
 
                             materialName = localSourceSceneMaterialsList[materialId];
 
-                            // Keep using the first material when it has to be limited to one.
-                            if (limitToOneMaterial &&
-                                assetMaterialData.m_sourceSceneMaterialNames.size() == 1 &&
-                                assetMaterialData.m_sourceSceneMaterialNames[0] != materialName)
+                            // Use the first material found in the mesh when it has to be limited to one.
+                            if (limitToOneMaterial)
                             {
-                                materialName = assetMaterialData.m_sourceSceneMaterialNames[0];
+                                nodeMaterials.insert(materialName);
+                                if (firstMaterial.empty())
+                                {
+                                    firstMaterial = materialName;
+                                }
+                                materialName = firstMaterial;
                             }
                         }
 
                         const AZ::u16 materialIndex = InsertMaterialIndexByName(materialName, assetMaterialData);
                         assetMaterialData.m_nodesToPerFaceMaterialIndices[nodeName][faceIndex] = materialIndex;
+                    }
+
+                    if (limitToOneMaterial && nodeMaterials.size() > 1)
+                    {
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow,
+                            "Node '%s' has %d materials, but cooking methods Convex and Primitive support one material per node. The first material '%s' will be used.",
+                            sceneNodeSelectionList.GetSelectedNode(index).c_str(), nodeMaterials.size(), firstMaterial.c_str());
                     }
                 }
 
@@ -417,7 +429,7 @@ namespace PhysX
             AZ_Assert(pxCooking, "Failed to create PxCooking");
 
             physx::PxBoundedData strideData;
-            strideData.count = vertices.size();
+            strideData.count = static_cast<physx::PxU32>(vertices.size());
             strideData.stride = sizeof(Vec3);
             strideData.data = vertices.data();
 
@@ -453,7 +465,7 @@ namespace PhysX
                 physx::PxTriangleMeshDesc meshDesc;
                 meshDesc.points = strideData;
 
-                meshDesc.triangles.count = indices.size() / 3;
+                meshDesc.triangles.count = static_cast<physx::PxU32>(indices.size() / 3);
                 meshDesc.triangles.stride = sizeof(AZ::u32) * 3;
                 meshDesc.triangles.data = indices.data();
 
@@ -638,9 +650,9 @@ namespace PhysX
             {
                 decomposer->Compute(
                     vhacdVertices.data(),
-                    vhacdVertices.size() / 3,
+                    static_cast<uint32_t>(vhacdVertices.size() / 3),
                     nodeExportData.m_indices.data(),
-                    nodeExportData.m_indices.size() / 3,
+                    static_cast<uint32_t>(nodeExportData.m_indices.size() / 3),
                     vhacdParams
                 );
             }
@@ -656,9 +668,9 @@ namespace PhysX
 
                 decomposer->Compute(
                     vhacdVertices.data(),
-                    vhacdVertices.size() / 3,
+                    static_cast<uint32_t>(vhacdVertices.size() / 3),
                     vhacdIndices.data(),
-                    vhacdIndices.size() / 3,
+                    static_cast<uint32_t>(vhacdIndices.size() / 3),
                     vhacdParams
                 );
             }
@@ -841,7 +853,7 @@ namespace PhysX
                     // by the amount of vertices already added in the last iteration
                     for (const NodeCollisionGeomExportData& exportData : totalExportData)
                     {
-                        vtx_idx startingIndex = mergedVertices.size();
+                        vtx_idx startingIndex = static_cast<vtx_idx>(mergedVertices.size());
 
                         mergedVertices.insert(mergedVertices.end(), exportData.m_vertices.begin(), exportData.m_vertices.end());
 

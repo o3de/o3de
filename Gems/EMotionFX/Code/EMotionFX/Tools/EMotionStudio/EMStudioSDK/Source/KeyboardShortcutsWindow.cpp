@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,8 +34,8 @@ namespace EMStudio
     KeyboardShortcutsWindow::KeyboardShortcutsWindow(QWidget* parent)
         : QWidget(parent)
     {
-        mSelectedGroup          = -1;
-        mShortcutReceiverDialog = nullptr;
+        m_selectedGroup          = -1;
+        m_shortcutReceiverDialog = nullptr;
 
         // fill the table
         Init();
@@ -51,51 +52,51 @@ namespace EMStudio
     void KeyboardShortcutsWindow::Init()
     {
         // create the node groups table
-        mTableWidget = new QTableWidget();
+        m_tableWidget = new QTableWidget();
 
         // create the table widget
-        mTableWidget->setSortingEnabled(false);
-        mTableWidget->setAlternatingRowColors(true);
-        mTableWidget->setCornerButtonEnabled(false);
-        mTableWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        mTableWidget->setContextMenuPolicy(Qt::DefaultContextMenu);
+        m_tableWidget->setSortingEnabled(false);
+        m_tableWidget->setAlternatingRowColors(true);
+        m_tableWidget->setCornerButtonEnabled(false);
+        m_tableWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        m_tableWidget->setContextMenuPolicy(Qt::DefaultContextMenu);
 
         // set the table to row single selection
-        mTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+        m_tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
-        connect(mTableWidget, &QTableWidget::cellDoubleClicked, this, &KeyboardShortcutsWindow::OnShortcutChange);
+        connect(m_tableWidget, &QTableWidget::cellDoubleClicked, this, &KeyboardShortcutsWindow::OnShortcutChange);
 
         // create the list widget
-        mListWidget = new QListWidget();
-        mListWidget->setAlternatingRowColors(true);
-        connect(mListWidget, &QListWidget::itemSelectionChanged, this, &KeyboardShortcutsWindow::OnGroupSelectionChanged);
+        m_listWidget = new QListWidget();
+        m_listWidget->setAlternatingRowColors(true);
+        connect(m_listWidget, &QListWidget::itemSelectionChanged, this, &KeyboardShortcutsWindow::OnGroupSelectionChanged);
 
         // build the layout
-        mHLayout = new QHBoxLayout();
-        mHLayout->setMargin(0);
-        mHLayout->setAlignment(Qt::AlignLeft);
+        m_hLayout = new QHBoxLayout();
+        m_hLayout->setMargin(0);
+        m_hLayout->setAlignment(Qt::AlignLeft);
 
-        mHLayout->addWidget(mListWidget);
+        m_hLayout->addWidget(m_listWidget);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
-        vLayout->addWidget(mTableWidget);
+        vLayout->addWidget(m_tableWidget);
 
         QLabel* label = new QLabel("Double-click to adjust shortcut");
         label->setAlignment(Qt::AlignCenter);
         vLayout->addWidget(label);
-        mHLayout->addLayout(vLayout);
+        m_hLayout->addLayout(vLayout);
 
         // set the main layout
-        setLayout(mHLayout);
+        setLayout(m_hLayout);
 
         ReInit();
 
         // automatically select the first entry
-        if (mListWidget->count() > 0)
+        if (m_listWidget->count() > 0)
         {
-            mListWidget->setCurrentRow(0);
+            m_listWidget->setCurrentRow(0);
         }
     }
 
@@ -114,14 +115,14 @@ namespace EMStudio
     // reconstruct the whole interface
     void KeyboardShortcutsWindow::ReInit()
     {
-        mTableWidget->blockSignals(true);
+        m_tableWidget->blockSignals(true);
 
         // clear
-        mListWidget->clear();
+        m_listWidget->clear();
 
         // make the list widget smaller than the table
-        mListWidget->setMinimumWidth(150);
-        mListWidget->setMaximumWidth(150);
+        m_listWidget->setMinimumWidth(150);
+        m_listWidget->setMaximumWidth(150);
 
         // add the groups to the left list widget
         MysticQt::KeyboardShortcutManager* shortcutManager = GetMainWindow()->GetShortcutManager();
@@ -129,13 +130,13 @@ namespace EMStudio
         for (uint32 i = 0; i < numGroups; ++i)
         {
             MysticQt::KeyboardShortcutManager::Group* group = shortcutManager->GetGroup(i);
-            mListWidget->addItem(FromStdString(group->GetName()));
+            m_listWidget->addItem(FromStdString(group->GetName()));
         }
 
-        mTableWidget->blockSignals(false);
+        m_tableWidget->blockSignals(false);
 
         // automatically select the first entry
-        mListWidget->setCurrentRow(mSelectedGroup);
+        m_listWidget->setCurrentRow(m_selectedGroup);
     }
 
 
@@ -143,37 +144,37 @@ namespace EMStudio
     void KeyboardShortcutsWindow::OnGroupSelectionChanged()
     {
         // get the group index
-        mSelectedGroup = mListWidget->currentRow();
-        if (mSelectedGroup == -1)
+        m_selectedGroup = m_listWidget->currentRow();
+        if (m_selectedGroup == -1)
         {
             return;
         }
 
         // clear the table
-        mTableWidget->clear();
+        m_tableWidget->clear();
 
         // set header item for the table
-        mTableWidget->setColumnCount(2);
+        m_tableWidget->setColumnCount(2);
 
         QTableWidgetItem* headerItem = new QTableWidgetItem("Action");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mTableWidget->setHorizontalHeaderItem(0, headerItem);
+        m_tableWidget->setHorizontalHeaderItem(0, headerItem);
 
         headerItem = new QTableWidgetItem("Shortcut");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mTableWidget->setHorizontalHeaderItem(1, headerItem);
+        m_tableWidget->setHorizontalHeaderItem(1, headerItem);
 
         // set the vertical header not visible
-        QHeaderView* verticalHeader = mTableWidget->verticalHeader();
+        QHeaderView* verticalHeader = m_tableWidget->verticalHeader();
         verticalHeader->setVisible(false);
 
         // get access to the shortcut group and some data
         MysticQt::KeyboardShortcutManager*          shortcutManager = GetMainWindow()->GetShortcutManager();
-        MysticQt::KeyboardShortcutManager::Group*   group           = shortcutManager->GetGroup(mSelectedGroup);
+        MysticQt::KeyboardShortcutManager::Group*   group           = shortcutManager->GetGroup(m_selectedGroup);
         const size_t                                numActions      = group->GetNumActions();
 
         // set the row count
-        mTableWidget->setRowCount(aznumeric_caster(numActions));
+        m_tableWidget->setRowCount(aznumeric_caster(numActions));
 
         // fill the table with the media root folders
         for (uint32 i = 0; i < numActions; ++i)
@@ -184,25 +185,25 @@ namespace EMStudio
             // add the item to the table and set the row height
             QTableWidgetItem* item = new QTableWidgetItem(action->m_qaction->text());
             item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-            mTableWidget->setItem(i, 0, item);
+            m_tableWidget->setItem(i, 0, item);
 
             const QString keyText = ConstructStringFromShortcut(action->m_qaction->shortcut());
 
             item = new QTableWidgetItem(keyText);
             item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-            mTableWidget->setItem(i, 1, item);
+            m_tableWidget->setItem(i, 1, item);
 
-            mTableWidget->setRowHeight(i, 21);
+            m_tableWidget->setRowHeight(i, 21);
         }
 
         // resize the first column
-        mTableWidget->resizeColumnToContents(0);
+        m_tableWidget->resizeColumnToContents(0);
 
         // needed to have the last column stretching correctly
-        mTableWidget->setColumnWidth(1, 0);
+        m_tableWidget->setColumnWidth(1, 0);
 
         // set the last column to take the whole space
-        mTableWidget->horizontalHeader()->setStretchLastSection(true);
+        m_tableWidget->horizontalHeader()->setStretchLastSection(true);
     }
 
 
@@ -210,7 +211,7 @@ namespace EMStudio
     MysticQt::KeyboardShortcutManager::Group* KeyboardShortcutsWindow::GetCurrentGroup() const
     {
         // get access to the group
-        int32 groupIndex = mListWidget->currentRow();
+        int32 groupIndex = m_listWidget->currentRow();
         if (groupIndex == -1)
         {
             return nullptr;
@@ -236,17 +237,17 @@ namespace EMStudio
         MysticQt::KeyboardShortcutManager::Action* action = group->GetAction(row);
 
         ShortcutReceiverDialog shortcutWindow(this, action, group);
-        mShortcutReceiverDialog = &shortcutWindow;
+        m_shortcutReceiverDialog = &shortcutWindow;
         if (shortcutWindow.exec() == QDialog::Accepted)
         {
             // handle conflicts
-            if (shortcutWindow.mConflictDetected)
+            if (shortcutWindow.m_conflictDetected)
             {
-                shortcutWindow.mConflictAction->m_qaction->setShortcut({});
+                shortcutWindow.m_conflictAction->m_qaction->setShortcut({});
             }
 
             // adjust the shortcut action
-            action->m_qaction->setShortcut(shortcutWindow.mKey);
+            action->m_qaction->setShortcut(shortcutWindow.m_key);
 
             // save the new shortcuts
             QSettings settings(FromStdString(AZStd::string(GetManager()->GetAppDataFolder() + "EMStudioKeyboardShortcuts.cfg")), QSettings::IniFormat, this);
@@ -255,7 +256,7 @@ namespace EMStudio
             // reinit the window
             ReInit();
         }
-        mShortcutReceiverDialog = nullptr;
+        m_shortcutReceiverDialog = nullptr;
     }
 
 
@@ -274,12 +275,12 @@ namespace EMStudio
     // reset to default after pressing context menu
     void KeyboardShortcutsWindow::OnResetToDefault()
     {
-        if (mContextMenuAction == nullptr)
+        if (m_contextMenuAction == nullptr)
         {
             return;
         }
 
-        mContextMenuAction->m_qaction->setShortcut(mContextMenuAction->m_defaultKeySequence);
+        m_contextMenuAction->m_qaction->setShortcut(m_contextMenuAction->m_defaultKeySequence);
 
         ReInit();
     }
@@ -288,13 +289,13 @@ namespace EMStudio
     // assign a new key after pressing the context menu item
     void KeyboardShortcutsWindow::OnAssignNewKey()
     {
-        if (mContextMenuAction == nullptr)
+        if (m_contextMenuAction == nullptr)
         {
             return;
         }
 
         // assign the new shortcut
-        OnShortcutChange(mContextMenuActionIndex, 0);
+        OnShortcutChange(m_contextMenuActionIndex, 0);
     }
 
 
@@ -302,7 +303,7 @@ namespace EMStudio
     void KeyboardShortcutsWindow::contextMenuEvent(QContextMenuEvent* event)
     {
         // find the table widget item at the clicked position
-        QTableWidgetItem* clickedItem = mTableWidget->itemAt(mTableWidget->viewport()->mapFromGlobal(event->globalPos()));
+        QTableWidgetItem* clickedItem = m_tableWidget->itemAt(m_tableWidget->viewport()->mapFromGlobal(event->globalPos()));
         if (clickedItem == nullptr)
         {
             return;
@@ -314,8 +315,8 @@ namespace EMStudio
         MysticQt::KeyboardShortcutManager::Group* group = GetCurrentGroup();
 
         // get access to the action
-        mContextMenuAction      = group->GetAction(actionIndex);
-        mContextMenuActionIndex = actionIndex;
+        m_contextMenuAction      = group->GetAction(actionIndex);
+        m_contextMenuActionIndex = actionIndex;
 
         // create the context menu
         QMenu menu(this);
@@ -342,33 +343,33 @@ namespace EMStudio
         setWindowTitle(" ");
         layout->addWidget(new QLabel("Press the new shortcut on the keyboard:"));
 
-        mOrgAction          = action;
-        mOrgGroup           = group;
+        m_orgAction          = action;
+        m_orgGroup           = group;
 
-        mConflictAction     = nullptr;
-        mConflictDetected   = false;
-        mKey                = action->m_qaction->shortcut();
+        m_conflictAction     = nullptr;
+        m_conflictDetected   = false;
+        m_key                = action->m_qaction->shortcut();
 
-        QString keyText = KeyboardShortcutsWindow::ConstructStringFromShortcut(mKey);
+        QString keyText = KeyboardShortcutsWindow::ConstructStringFromShortcut(m_key);
 
-        mLabel = new QLabel(keyText);
-        mLabel->setAlignment(Qt::AlignHCenter);
-        QFont font = mLabel->font();
+        m_label = new QLabel(keyText);
+        m_label->setAlignment(Qt::AlignHCenter);
+        QFont font = m_label->font();
         font.setPointSize(14);
         font.setBold(true);
-        mLabel->setFont(font);
-        layout->addWidget(mLabel);
+        m_label->setFont(font);
+        layout->addWidget(m_label);
 
-        mConflictKeyLabel = new QLabel("");
-        mConflictKeyLabel->setAlignment(Qt::AlignHCenter);
-        layout->addWidget(mConflictKeyLabel);
+        m_conflictKeyLabel = new QLabel("");
+        m_conflictKeyLabel->setAlignment(Qt::AlignHCenter);
+        layout->addWidget(m_conflictKeyLabel);
 
         QHBoxLayout* buttonLayout = new QHBoxLayout();
         buttonLayout->setMargin(0);
 
-        mOKButton = new QPushButton("OK");
-        buttonLayout->addWidget(mOKButton);
-        connect(mOKButton, &QPushButton::clicked, this, &ShortcutReceiverDialog::accept);
+        m_okButton = new QPushButton("OK");
+        buttonLayout->addWidget(m_okButton);
+        connect(m_okButton, &QPushButton::clicked, this, &ShortcutReceiverDialog::accept);
 
         QPushButton* defaultButton = new QPushButton("Default");
         buttonLayout->addWidget(defaultButton);
@@ -390,7 +391,7 @@ namespace EMStudio
     // reset the shortcut to its default value
     void ShortcutReceiverDialog::ResetToDefault()
     {
-        mKey    = mOrgAction->m_defaultKeySequence;
+        m_key    = m_orgAction->m_defaultKeySequence;
 
         UpdateInterface();
     }
@@ -402,41 +403,41 @@ namespace EMStudio
         MysticQt::KeyboardShortcutManager* shortcutManager = GetMainWindow()->GetShortcutManager();
 
         // check if the currently assigned shortcut is already taken by another shortcut
-        mConflictAction = shortcutManager->FindShortcut(mKey, mOrgGroup);
-        if (mConflictAction == nullptr || mConflictAction == mOrgAction)
+        m_conflictAction = shortcutManager->FindShortcut(m_key, m_orgGroup);
+        if (m_conflictAction == nullptr || m_conflictAction == m_orgAction)
         {
-            mOKButton->setToolTip("");
-            mLabel->setStyleSheet("");
-            mConflictKeyLabel->setStyleSheet("");
-            mConflictKeyLabel->setText("");
-            mConflictDetected = false;
+            m_okButton->setToolTip("");
+            m_label->setStyleSheet("");
+            m_conflictKeyLabel->setStyleSheet("");
+            m_conflictKeyLabel->setText("");
+            m_conflictDetected = false;
         }
         else
         {
-            mLabel->setStyleSheet("color: rgb(244, 156, 28);");
-            mConflictKeyLabel->setStyleSheet("color: rgb(244, 156, 28);");
+            m_label->setStyleSheet("color: rgb(244, 156, 28);");
+            m_conflictKeyLabel->setStyleSheet("color: rgb(244, 156, 28);");
 
-            mConflictDetected = true;
+            m_conflictDetected = true;
 
-            if (mConflictAction)
+            if (m_conflictAction)
             {
-                mOKButton->setToolTip(QString("Assigning new shortcut will unassign '%1' automatically.").arg(mConflictAction->m_qaction->text()));
+                m_okButton->setToolTip(QString("Assigning new shortcut will unassign '%1' automatically.").arg(m_conflictAction->m_qaction->text()));
 
-                MysticQt::KeyboardShortcutManager::Group* conflictGroup = shortcutManager->FindGroupForShortcut(mConflictAction);
+                MysticQt::KeyboardShortcutManager::Group* conflictGroup = shortcutManager->FindGroupForShortcut(m_conflictAction);
                 if (conflictGroup)
                 {
-                    mConflictKeyLabel->setText(QString("Conflicts with: %1 -> %2").arg(FromStdString(conflictGroup->GetName())).arg(mConflictAction->m_qaction->text()));
+                    m_conflictKeyLabel->setText(QString("Conflicts with: %1 -> %2").arg(FromStdString(conflictGroup->GetName())).arg(m_conflictAction->m_qaction->text()));
                 }
                 else
                 {
-                    mConflictKeyLabel->setText(QString("Conflicts with: %1").arg(mConflictAction->m_qaction->text()));
+                    m_conflictKeyLabel->setText(QString("Conflicts with: %1").arg(m_conflictAction->m_qaction->text()));
                 }
             }
         }
 
         // adjust the label text to the new shortcut
-        const QString keyText = KeyboardShortcutsWindow::ConstructStringFromShortcut(mKey);
-        mLabel->setText(keyText);
+        const QString keyText = KeyboardShortcutsWindow::ConstructStringFromShortcut(m_key);
+        m_label->setText(keyText);
     }
 
     // called when the user pressed a new shortcut
@@ -459,7 +460,7 @@ namespace EMStudio
         }
         else
         {
-            mKey = event->key() | event->modifiers();
+            m_key = event->key() | event->modifiers();
         }
 
         UpdateInterface();

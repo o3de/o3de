@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -186,7 +187,7 @@ void
 HSM::ClearStateHandler(StateId id)
 {
     m_states[id].handler.clear();
-    m_states[id].name = NULL;
+    m_states[id].name = nullptr;
     m_states[id].superId = InvalidStateId;
 }
 

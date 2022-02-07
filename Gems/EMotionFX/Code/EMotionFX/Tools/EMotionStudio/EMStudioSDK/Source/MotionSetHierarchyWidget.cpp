@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -31,10 +32,10 @@ namespace EMStudio
     MotionSetHierarchyWidget::MotionSetHierarchyWidget(QWidget* parent, bool useSingleSelection, CommandSystem::SelectionList* selectionList)
         : QWidget(parent)
     {
-        mCurrentSelectionList = selectionList;
+        m_currentSelectionList = selectionList;
         if (selectionList == nullptr)
         {
-            mCurrentSelectionList = &(GetCommandManager()->GetCurrentSelection());
+            m_currentSelectionList = &(GetCommandManager()->GetCurrentSelection());
         }
 
         QVBoxLayout* layout = new QVBoxLayout();
@@ -45,34 +46,34 @@ namespace EMStudio
         connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged, this, &MotionSetHierarchyWidget::OnTextFilterChanged);
 
         // create the tree widget
-        mHierarchy = new QTreeWidget();
+        m_hierarchy = new QTreeWidget();
 
         // create header items
-        mHierarchy->setColumnCount(2);
+        m_hierarchy->setColumnCount(2);
         QStringList headerList;
         headerList.append("ID");
         headerList.append("FileName");
-        mHierarchy->setHeaderLabels(headerList);
+        m_hierarchy->setHeaderLabels(headerList);
 
         // set optical stuff for the tree
-        mHierarchy->setColumnWidth(0, 400);
-        mHierarchy->setSortingEnabled(false);
-        mHierarchy->setSelectionMode(QAbstractItemView::SingleSelection);
-        mHierarchy->setMinimumWidth(620);
-        mHierarchy->setMinimumHeight(500);
-        mHierarchy->setAlternatingRowColors(true);
-        mHierarchy->setExpandsOnDoubleClick(true);
-        mHierarchy->setAnimated(true);
+        m_hierarchy->setColumnWidth(0, 400);
+        m_hierarchy->setSortingEnabled(false);
+        m_hierarchy->setSelectionMode(QAbstractItemView::SingleSelection);
+        m_hierarchy->setMinimumWidth(620);
+        m_hierarchy->setMinimumHeight(500);
+        m_hierarchy->setAlternatingRowColors(true);
+        m_hierarchy->setExpandsOnDoubleClick(true);
+        m_hierarchy->setAnimated(true);
 
         // disable the move of section to have column order fixed
-        mHierarchy->header()->setSectionsMovable(false);
+        m_hierarchy->header()->setSectionsMovable(false);
 
         layout->addWidget(m_searchWidget);
-        layout->addWidget(mHierarchy);
+        layout->addWidget(m_hierarchy);
         setLayout(layout);
 
-        connect(mHierarchy, &QTreeWidget::itemSelectionChanged, this, &MotionSetHierarchyWidget::UpdateSelection);
-        connect(mHierarchy, &QTreeWidget::itemDoubleClicked, this, &MotionSetHierarchyWidget::ItemDoubleClicked);
+        connect(m_hierarchy, &QTreeWidget::itemSelectionChanged, this, &MotionSetHierarchyWidget::UpdateSelection);
+        connect(m_hierarchy, &QTreeWidget::itemDoubleClicked, this, &MotionSetHierarchyWidget::ItemDoubleClicked);
 
         // connect the window activation signal to refresh if reactivated
         //connect( this, SIGNAL(visibilityChanged(bool)), this, SLOT(OnVisibilityChanged(bool)) );
@@ -90,12 +91,12 @@ namespace EMStudio
     // update from a motion set and selection list
     void MotionSetHierarchyWidget::Update(EMotionFX::MotionSet* motionSet, CommandSystem::SelectionList* selectionList)
     {
-        mMotionSet = motionSet;
-        mCurrentSelectionList = selectionList;
+        m_motionSet = motionSet;
+        m_currentSelectionList = selectionList;
 
         if (selectionList == nullptr)
         {
-            mCurrentSelectionList = &(GetCommandManager()->GetCurrentSelection());
+            m_currentSelectionList = &(GetCommandManager()->GetCurrentSelection());
         }
 
         Update();
@@ -105,18 +106,18 @@ namespace EMStudio
     // update the widget
     void MotionSetHierarchyWidget::Update()
     {
-        mHierarchy->clear();
+        m_hierarchy->clear();
 
-        mHierarchy->blockSignals(true);
-        if (mMotionSet)
+        m_hierarchy->blockSignals(true);
+        if (m_motionSet)
         {
-            AddMotionSetWithParents(mMotionSet);
+            AddMotionSetWithParents(m_motionSet);
         }
         else
         {
             // add all root motion sets
-            const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-            for (uint32 i = 0; i < numMotionSets; ++i)
+            const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+            for (size_t i = 0; i < numMotionSets; ++i)
             {
                 EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
 
@@ -127,12 +128,12 @@ namespace EMStudio
 
                 if (motionSet->GetParentSet() == nullptr)
                 {
-                    RecursiveAddMotionSet(nullptr, EMotionFX::GetMotionManager().GetMotionSet(i), mCurrentSelectionList);
+                    RecursiveAddMotionSet(nullptr, EMotionFX::GetMotionManager().GetMotionSet(i), m_currentSelectionList);
                 }
             }
         }
 
-        mHierarchy->blockSignals(false);
+        m_hierarchy->blockSignals(false);
         UpdateSelection();
     }
 
@@ -143,8 +144,8 @@ namespace EMStudio
         QTreeWidgetItem* motionSetItem;
         if (parent == nullptr)
         {
-            motionSetItem = new QTreeWidgetItem(mHierarchy);
-            mHierarchy->addTopLevelItem(motionSetItem);
+            motionSetItem = new QTreeWidgetItem(m_hierarchy);
+            m_hierarchy->addTopLevelItem(motionSetItem);
         }
         else
         {
@@ -184,8 +185,8 @@ namespace EMStudio
         }
 
         // add all child sets
-        const uint32 numChildSets = motionSet->GetNumChildSets();
-        for (uint32 i = 0; i < numChildSets; ++i)
+        const size_t numChildSets = motionSet->GetNumChildSets();
+        for (size_t i = 0; i < numChildSets; ++i)
         {
             RecursiveAddMotionSet(motionSetItem, motionSet->GetChildSet(i), selectionList);
         }
@@ -195,7 +196,7 @@ namespace EMStudio
     void MotionSetHierarchyWidget::AddMotionSetWithParents(EMotionFX::MotionSet* motionSet)
     {
         // create the motion set item
-        QTreeWidgetItem* motionSetItem = new QTreeWidgetItem(mHierarchy);
+        QTreeWidgetItem* motionSetItem = new QTreeWidgetItem(m_hierarchy);
 
         // set the name
         motionSetItem->setText(0, motionSet->GetName());
@@ -231,7 +232,7 @@ namespace EMStudio
         while (parentMotionSet)
         {
             // create the motion set item
-            QTreeWidgetItem* parentMotionSetItem = new QTreeWidgetItem(mHierarchy);
+            QTreeWidgetItem* parentMotionSetItem = new QTreeWidgetItem(m_hierarchy);
 
             // set the name
             parentMotionSetItem->setText(0, parentMotionSet->GetName());
@@ -263,7 +264,7 @@ namespace EMStudio
             }
 
             // add the last motion set item as child and set this parent as last motion set item
-            parentMotionSetItem->addChild(mHierarchy->takeTopLevelItem(mHierarchy->indexOfTopLevelItem(motionSetItem)));
+            parentMotionSetItem->addChild(m_hierarchy->takeTopLevelItem(m_hierarchy->indexOfTopLevelItem(motionSetItem)));
             motionSetItem = parentMotionSetItem;
 
             // set the next parent motion set
@@ -271,19 +272,19 @@ namespace EMStudio
         }
 
         // expand all to show all items
-        mHierarchy->expandAll();
+        m_hierarchy->expandAll();
     }
 
 
     void MotionSetHierarchyWidget::Select(const AZStd::vector<MotionSetSelectionItem>& selectedItems)
     {
-        mSelected = selectedItems;
+        m_selected = selectedItems;
 
         for (const MotionSetSelectionItem& selectionItem : selectedItems)
         {
-            const AZStd::string& motionId = selectionItem.mMotionId;
+            const AZStd::string& motionId = selectionItem.m_motionId;
 
-            QTreeWidgetItemIterator itemIterator(mHierarchy);
+            QTreeWidgetItemIterator itemIterator(m_hierarchy);
             while (*itemIterator)
             {
                 QTreeWidgetItem* item = *itemIterator;
@@ -301,22 +302,20 @@ namespace EMStudio
     void MotionSetHierarchyWidget::UpdateSelection()
     {
         // Get the selected items in the tree widget.
-        QList<QTreeWidgetItem*> selectedItems = mHierarchy->selectedItems();
-        const uint32 numSelectedItems = selectedItems.count();
+        QList<QTreeWidgetItem*> selectedItems = m_hierarchy->selectedItems();
 
         // Reset the selection.
-        mSelected.clear();
-        mSelected.reserve(numSelectedItems);
+        m_selected.clear();
+        m_selected.reserve(selectedItems.size());
 
         AZStd::string motionId;
-        for (uint32 i = 0; i < numSelectedItems; ++i)
+        for (const QTreeWidgetItem* item : selectedItems)
         {
-            QTreeWidgetItem* item = selectedItems[i];
-            motionId = item->text(0).toUtf8().data();
+             motionId = item->text(0).toUtf8().data();
 
             // Extract the motion set id.
             QString motionSetIdAsString = item->whatsThis(0);
-            const AZ::u32 motionSetId = AzFramework::StringFunc::ToInt(motionSetIdAsString.toUtf8().data());
+            const uint32 motionSetId = AzFramework::StringFunc::ToInt(motionSetIdAsString.toUtf8().data());
 
             // Find the motion set based on the id.
             EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByID(motionSetId);
@@ -326,7 +325,7 @@ namespace EMStudio
             }
 
             MotionSetSelectionItem selectionItem(motionId, motionSet);
-            mSelected.push_back(selectionItem);
+            m_selected.push_back(selectionItem);
         }
     }
 
@@ -335,14 +334,14 @@ namespace EMStudio
     {
         if (useSingleSelection)
         {
-            mHierarchy->setSelectionMode(QAbstractItemView::SingleSelection);
+            m_hierarchy->setSelectionMode(QAbstractItemView::SingleSelection);
         }
         else
         {
-            mHierarchy->setSelectionMode(QAbstractItemView::ExtendedSelection);
+            m_hierarchy->setSelectionMode(QAbstractItemView::ExtendedSelection);
         }
 
-        mUseSingleSelection = useSingleSelection;
+        m_useSingleSelection = useSingleSelection;
     }
 
 
@@ -365,14 +364,14 @@ namespace EMStudio
 
     void MotionSetHierarchyWidget::FireSelectionDoneSignal()
     {
-        emit SelectionChanged(mSelected);
+        emit SelectionChanged(m_selected);
     }
 
 
     AZStd::vector<MotionSetSelectionItem>& MotionSetHierarchyWidget::GetSelectedItems()
     {
         UpdateSelection();
-        return mSelected;
+        return m_selected;
     }
 
 
@@ -385,9 +384,9 @@ namespace EMStudio
 
         for (const MotionSetSelectionItem& selectedItem : selectedItems)
         {
-            if (selectedItem.mMotionSet == motionSet)
+            if (selectedItem.m_motionSet == motionSet)
             {
-                result.push_back(selectedItem.mMotionId);
+                result.push_back(selectedItem.m_motionId);
             }
         }
 
@@ -396,9 +395,9 @@ namespace EMStudio
 
     void MotionSetHierarchyWidget::SelectItemsWithText(QString text)
     {
-        QList<QTreeWidgetItem*> items = mHierarchy->findItems(text, Qt::MatchWrap | Qt::MatchWildcard | Qt::MatchRecursive);
+        QList<QTreeWidgetItem*> items = m_hierarchy->findItems(text, Qt::MatchWrap | Qt::MatchWildcard | Qt::MatchRecursive);
 
-        mHierarchy->clearSelection();
+        m_hierarchy->clearSelection();
 
         for (QTreeWidgetItem* item : items)
         {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -118,8 +119,8 @@ struct CNullMiniLog
     //   The default implementation just won't do anything
     //##@{
     void LogV([[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
-    void LogV([[maybe_unused]] ELogType nType, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
-    void LogV ([[maybe_unused]] ELogType nType, [[maybe_unused]] int flags, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
+    void LogV([[maybe_unused]] ELogType nType, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) override {}
+    void LogV ([[maybe_unused]] ELogType nType, [[maybe_unused]] int flags, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) override {}
     //##@}
 };
 

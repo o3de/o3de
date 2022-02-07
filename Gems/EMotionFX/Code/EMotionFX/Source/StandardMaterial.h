@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -222,15 +223,15 @@ namespace EMotionFX
         float GetRotationRadians() const;
 
     private:
-        uint32          mFileNameID;        /**< The filename of the texture, without extension or path. */
-        uint32          mLayerTypeID;       /**< The layer type. See the enum for some possibilities. */
-        float           mAmount;            /**< The amount value, between 0 and 1. This can for example represent how intens the layer is. */
-        float           mUOffset;           /**< U offset (horizontal texture shift). */
-        float           mVOffset;           /**< V offset (vertical texture shift). */
-        float           mUTiling;           /**< Horizontal tiling factor. */
-        float           mVTiling;           /**< Vertical tiling factor. */
-        float           mRotationRadians;   /**< Texture rotation in radians. */
-        unsigned char   mBlendMode;         /**< The blend mode is used to control how successive layers of textures are combined together. */
+        uint32          m_fileNameId;        /**< The filename of the texture, without extension or path. */
+        uint32          m_layerTypeId;       /**< The layer type. See the enum for some possibilities. */
+        float           m_amount;            /**< The amount value, between 0 and 1. This can for example represent how intens the layer is. */
+        float           m_uOffset;           /**< U offset (horizontal texture shift). */
+        float           m_vOffset;           /**< V offset (vertical texture shift). */
+        float           m_uTiling;           /**< Horizontal tiling factor. */
+        float           m_vTiling;           /**< Vertical tiling factor. */
+        float           m_rotationRadians;   /**< Texture rotation in radians. */
+        unsigned char   m_blendMode;         /**< The blend mode is used to control how successive layers of textures are combined together. */
 
         /**
          * Default constructor.
@@ -402,7 +403,7 @@ namespace EMotionFX
          * This does not influence the return value of GetNumLayers().
          * @param numLayers The number of layers to pre-allocate space for.
          */
-        void ReserveLayers(uint32 numLayers);
+        void ReserveLayers(size_t numLayers);
 
         /**
          * Add a given layer to this material.
@@ -414,21 +415,21 @@ namespace EMotionFX
          * Get the number of texture layers in this material.
          * @result The number of layers.
          */
-        uint32 GetNumLayers() const;
+        size_t GetNumLayers() const;
 
         /**
          * Get a specific layer.
          * @param nr The material layer number to get.
          * @result A pointer to the material layer.
          */
-        StandardMaterialLayer* GetLayer(uint32 nr);
+        StandardMaterialLayer* GetLayer(size_t nr);
 
         /**
          * Remove a specified material layer (also deletes it from memory).
          * @param nr The material layer number to remove.
          * @param delFromMem Set to true if it should be deleted from memory as well.
          */
-        void RemoveLayer(uint32 nr, bool delFromMem = true);
+        void RemoveLayer(size_t nr, bool delFromMem = true);
 
         /**
          * Removes all material layers from this material (includes deletion from memory).
@@ -441,14 +442,14 @@ namespace EMotionFX
          * Find the layer number which is of the given type.
          * If you for example want to search for a diffuse layer, you make a call like:
          *
-         * uint32 layerNumber = material->FindLayer( StandardMaterialLayer::LAYERTYPE_DIFFUSE );
+         * size_t layerNumber = material->FindLayer( StandardMaterialLayer::LAYERTYPE_DIFFUSE );
          *
          * This will return a value the layer number, which can be accessed with the GetLayer(layerNumber) method.
          * A value of MCORE_INVALIDINDEX32 will be returned in case no layer of the specified type could be found.
          * @param layerType The layer type you want to search on, for a list of valid types, see the enum inside StandardMaterialLayer.
          * @result Returns the layer number or MCORE_INVALIDINDEX32 when it could not be found.
          */
-        uint32 FindLayer(uint32 layerType) const;
+        size_t FindLayer(uint32 layerType) const;
 
         /**
          * Creates a clone of the material, including it's layers.
@@ -470,17 +471,17 @@ namespace EMotionFX
 
 
     protected:
-        MCore::Array< StandardMaterialLayer* > mLayers; /**< StandardMaterial layers. */
-        MCore::RGBAColor    mAmbient;           /**< Ambient color. */
-        MCore::RGBAColor    mDiffuse;           /**< Diffuse color. */
-        MCore::RGBAColor    mSpecular;          /**< Specular color. */
-        MCore::RGBAColor    mEmissive;          /**< Self illumination color. */
-        float               mShine;             /**< The shine value, from the phong component (the power). */
-        float               mShineStrength;     /**< Shine strength. */
-        float               mOpacity;           /**< The opacity amount [1.0=full opac, 0.0=full transparent]. */
-        float               mIOR;               /**< Index of refraction. */
-        bool                mDoubleSided;       /**< Double sided?. */
-        bool                mWireFrame;         /**< Render in wireframe?. */
+        AZStd::vector< StandardMaterialLayer* > m_layers; /**< StandardMaterial layers. */
+        MCore::RGBAColor    m_ambient;           /**< Ambient color. */
+        MCore::RGBAColor    m_diffuse;           /**< Diffuse color. */
+        MCore::RGBAColor    m_specular;          /**< Specular color. */
+        MCore::RGBAColor    m_emissive;          /**< Self illumination color. */
+        float               m_shine;             /**< The shine value, from the phong component (the power). */
+        float               m_shineStrength;     /**< Shine strength. */
+        float               m_opacity;           /**< The opacity amount [1.0=full opac, 0.0=full transparent]. */
+        float               m_ior;               /**< Index of refraction. */
+        bool                m_doubleSided;       /**< Double sided?. */
+        bool                m_wireFrame;         /**< Render in wireframe?. */
 
         /**
          * Constructor.

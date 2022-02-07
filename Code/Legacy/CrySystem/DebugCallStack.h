@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,20 +35,20 @@ public:
 
     ISystem* GetSystem() { return m_pSystem; };
 
-    virtual string GetModuleNameForAddr(void* addr);
-    virtual void GetProcNameForAddr(void* addr, string& procName, void*& baseAddr, string& filename, int& line);
-    virtual string GetCurrentFilename();
+    virtual AZStd::string GetModuleNameForAddr(void* addr);
+    virtual void GetProcNameForAddr(void* addr, AZStd::string& procName, void*& baseAddr, AZStd::string& filename, int& line);
+    virtual AZStd::string GetCurrentFilename();
 
     void installErrorHandler(ISystem* pSystem);
     virtual int handleException(EXCEPTION_POINTERS* exception_pointer);
 
     virtual void ReportBug(const char*);
 
-    void dumpCallStack(std::vector<string>& functions);
+    void dumpCallStack(std::vector<AZStd::string>& functions);
 
     void SetUserDialogEnable(const bool bUserDialogEnable);
 
-    typedef std::map<void*, string> TModules;
+    typedef std::map<void*, AZStd::string> TModules;
 protected:
     static void RemoveOldFiles();
     static void RemoveFile(const char* szFileName);

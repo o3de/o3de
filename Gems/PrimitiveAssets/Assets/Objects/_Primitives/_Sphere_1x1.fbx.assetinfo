@@ -1,44 +1,43 @@
-<ObjectStream version="2">
-	<Class name="SceneManifest" specializationTypeId="{9274AD17-3212-4651-9F3B-7DCCB080E467}" type="{9274AD17-3212-4651-9F3B-7DCCB080E467}" version="1">
-		<Class field="values" name="AZStd::vector" specializationTypeId="{5D6A7C67-11CA-59A4-829B-0B20B781B292}" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}">
-			<Class field="element" name="AZStd::shared_ptr" specializationTypeId="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}" type="{D5B5ACA6-A81E-410E-8151-80C97B8CD2A0}">
-				<Class field="element" name="MeshGroup" specializationTypeId="{07B356B7-3635-40B5-878A-FAC4EFD5AD86}" type="{07B356B7-3635-40B5-878A-FAC4EFD5AD86}" version="2">
-					<Class field="BaseClass1" name="IMeshGroup" specializationTypeId="{74D45E45-81EE-4AD4-83B5-F37EB98D847C}" type="{74D45E45-81EE-4AD4-83B5-F37EB98D847C}" version="2">
-						<Class field="BaseClass1" name="ISceneNodeGroup" specializationTypeId="{1D20FA11-B184-429E-8C86-745852234845}" type="{1D20FA11-B184-429E-8C86-745852234845}" version="1">
-							<Class field="BaseClass1" name="IGroup" specializationTypeId="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}" type="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}" version="1">
-								<Class field="BaseClass1" name="IManifestObject" specializationTypeId="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}" />
-							</Class>
-						</Class>
-					</Class>
-					<Class field="name" name="AZStd::string" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="_Sphere_1x1" />
-					<Class field="nodeSelectionList" name="SceneNodeSelectionList" specializationTypeId="{D0CE66CE-1BAD-42F5-86ED-3923573B3A02}" type="{D0CE66CE-1BAD-42F5-86ED-3923573B3A02}" version="1">
-						<Class field="BaseClass1" name="ISceneNodeSelectionList" specializationTypeId="{DC3F9996-E550-4780-A03B-80B0DDA1DA45}" type="{DC3F9996-E550-4780-A03B-80B0DDA1DA45}" version="1" />
-						<Class field="selectedNodes" name="AZStd::vector" specializationTypeId="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}">
-							<Class field="element" name="AZStd::string" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="RootNode" />
-							<Class field="element" name="AZStd::string" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="RootNode.pSphere1" />
-							<Class field="element" name="AZStd::string" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="RootNode.pSphere1.transform" />
-							<Class field="element" name="AZStd::string" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="RootNode.pSphere1.lambert3" />
-							<Class field="element" name="AZStd::string" specializationTypeId="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}" type="{EF8FF807-DDEE-4EB0-B678-4CA3A2C490A4}" value="RootNode.pSphere1.map1" />
-						</Class>
-						<Class field="unselectedNodes" name="AZStd::vector" specializationTypeId="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}" />
-					</Class>
-					<Class field="rules" name="RuleContainer" specializationTypeId="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}" type="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}" version="1">
-						<Class field="rules" name="AZStd::vector" specializationTypeId="{B5BDB053-178F-5D55-8663-70897A71B7C9}" type="{2BADE35A-6F1B-4698-B2BC-3373D010020C}">
-							<Class field="element" name="AZStd::shared_ptr" specializationTypeId="{81267F8B-3963-423B-9FF7-D276D82CD110}" type="{D5B5ACA6-A81E-410E-8151-80C97B8CD2A0}">
-								<Class field="element" name="MaterialRule" specializationTypeId="{35620013-A27C-4F6D-87BF-72F11688ACAD}" type="{35620013-A27C-4F6D-87BF-72F11688ACAD}" version="2">
-									<Class field="BaseClass1" name="IMaterialRule" specializationTypeId="{428C9752-6EDF-4FA2-9BDF-DBDFCEB4CC0F}" type="{428C9752-6EDF-4FA2-9BDF-DBDFCEB4CC0F}" version="1">
-										<Class field="BaseClass1" name="IRule" specializationTypeId="{81267F8B-3963-423B-9FF7-D276D82CD110}" type="{81267F8B-3963-423B-9FF7-D276D82CD110}" version="1">
-											<Class field="BaseClass1" name="IManifestObject" specializationTypeId="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}" />
-										</Class>
-									</Class>
-									<Class field="updateMaterials" name="bool" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" />
-									<Class field="removeMaterials" name="bool" specializationTypeId="{A0CA880C-AFE4-43CB-926C-59AC48496112}" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}" value="false" />
-								</Class>
-							</Class>
-						</Class>
-					</Class>
-				</Class>
-			</Class>
-		</Class>
-	</Class>
-</ObjectStream>
+{
+    "values": [
+        {
+            "$type": "{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup",
+            "id": "{60A96B34-ED33-52A2-A335-2210D1B2FFEB}",
+            "name": "_Sphere_1x1",
+            "NodeSelectionList": {
+                "selectedNodes": [
+                    "RootNode",
+                    "RootNode.pSphere1",
+                    "RootNode.pSphere1.transform",
+                    "RootNode.pSphere1.map1",
+                    "RootNode.pSphere1.lambert3"
+                ]
+            },
+            "export method": 2,
+            "PrimitiveAssetParams": {
+                "PrimitiveShapeTarget": 1
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "_Sphere_1x1",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    "RootNode",
+                    "RootNode.pSphere1",
+                    "RootNode.pSphere1.transform",
+                    "RootNode.pSphere1.map1",
+                    "RootNode.pSphere1.lambert3"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MaterialRule"
+                    }
+                ]
+            },
+            "id": "{2321260D-A38B-56BD-A168-35F0FF7D70AB}"
+        }
+    ]
+}

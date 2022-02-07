@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -52,7 +53,7 @@ namespace AzNetworking
         m_timeoutItemMap.erase(timeoutId);
     }
 
-    void TimeoutQueue::UpdateTimeouts(ITimeoutHandler& timeoutHandler, int32_t maxTimeouts)
+    void TimeoutQueue::UpdateTimeouts(const TimeoutHandler& timeoutHandler, int32_t maxTimeouts)
     {
         int32_t numTimeouts = 0;
         if (maxTimeouts < 0)
@@ -102,7 +103,7 @@ namespace AzNetworking
 
             // By this point, the item is definitely timed out
             // Invoke the timeout function to see how to proceed
-            const TimeoutResult result = timeoutHandler.HandleTimeout(mapItem);
+            const TimeoutResult result = timeoutHandler(mapItem);
 
             if (result == TimeoutResult::Refresh)
             {
@@ -120,5 +121,11 @@ namespace AzNetworking
                 aznumeric_cast<uint32_t>(currentTimeMs));
             m_timeoutItemMap.erase(itemTimeoutId);
         }
+    }
+
+    void TimeoutQueue::UpdateTimeouts(ITimeoutHandler& timeoutHandler, int32_t maxTimeouts)
+    {
+        TimeoutHandler handler([&timeoutHandler](TimeoutQueue::TimeoutItem& item) { return timeoutHandler.HandleTimeout(item); });
+        UpdateTimeouts(handler, maxTimeouts);
     }
 }

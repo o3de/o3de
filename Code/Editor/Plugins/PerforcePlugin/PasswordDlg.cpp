@@ -1,12 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#include "PerforcePlugin_precompiled.h"
 #include "PerforcePlugin.h"
 #include "PasswordDlg.h"
 #include <ui_settings.h> // generated
@@ -54,7 +53,7 @@ namespace PerforceConnection
 
         setEnabled(false);
 
-        int numSettingsToGet = m_retrievedSettings.size();
+        int numSettingsToGet = static_cast<int>(m_retrievedSettings.size());
 
         auto applySettingResultFunction = [this, &numSettingsToGet](AZStd::string setting, const SourceControlSettingInfo& info) -> void
         {

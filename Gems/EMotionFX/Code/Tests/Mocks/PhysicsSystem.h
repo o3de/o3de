@@ -1,12 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
@@ -19,6 +22,20 @@ namespace Physics
         , AZ::Interface<Physics::System>::Registrar
     {
     public:
+        // This uses the same uuid as the production PhysX::SystemComponent.
+        // The Ragdoll UI uses this UUID to see if physx is available.
+        AZ_RTTI(MockPhysicsSystem, "{85F90819-4D9A-4A77-AB89-68035201F34B}");
+
+        static void Reflect(AZ::ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<MockPhysicsSystem>()
+                    ->Version(0)
+                    ;
+            }
+        }
+
         MockPhysicsSystem()
         {
             BusConnect();
@@ -29,12 +46,8 @@ namespace Physics
         }
         MOCK_METHOD2(CreateShape, AZStd::shared_ptr<Physics::Shape>(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration));
         MOCK_METHOD1(ReleaseNativeMeshObject, void(void* nativeMeshObject));
+        MOCK_METHOD1(ReleaseNativeHeightfieldObject, void(void* nativeMeshObject));
         MOCK_METHOD1(CreateMaterial, AZStd::shared_ptr<Physics::Material>(const Physics::MaterialConfiguration& materialConfiguration));
-        MOCK_METHOD0(GetSupportedJointTypes, AZStd::vector<AZ::TypeId>());
-        MOCK_METHOD1(CreateJointLimitConfiguration, AZStd::shared_ptr<Physics::JointLimitConfiguration>(AZ::TypeId jointType));
-        MOCK_METHOD3(CreateJoint, AZStd::shared_ptr<Physics::Joint>(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration, AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody));
-        MOCK_METHOD10(GenerateJointLimitVisualizationData, void(const Physics::JointLimitConfiguration& configuration, const AZ::Quaternion& parentRotation, const AZ::Quaternion& childRotation, float scale, AZ::u32 angularSubdivisions, AZ::u32 radialSubdivisions, AZStd::vector<AZ::Vector3>& vertexBufferOut, AZStd::vector<AZ::u32>& indexBufferOut, AZStd::vector<AZ::Vector3>& lineBufferOut, AZStd::vector<bool>& lineValidityBufferOut));
-        MOCK_METHOD5(ComputeInitialJointLimitConfiguration, AZStd::unique_ptr<Physics::JointLimitConfiguration>(const AZ::TypeId& jointLimitTypeId, const AZ::Quaternion& parentWorldRotation, const AZ::Quaternion& childWorldRotation, const AZ::Vector3& axis, const AZStd::vector<AZ::Quaternion>& exampleLocalRotations));
         MOCK_METHOD3(CookConvexMeshToFile, bool(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount));
         MOCK_METHOD3(CookConvexMeshToMemory, bool(const AZ::Vector3* vertices, AZ::u32 vertexCount, AZStd::vector<AZ::u8>& result));
         MOCK_METHOD5(CookTriangleMeshToFile, bool(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount, const AZ::u32* indices, AZ::u32 indexCount));
@@ -67,6 +80,36 @@ namespace Physics
         MOCK_CONST_METHOD0(GetDefaultSceneConfiguration, const AzPhysics::SceneConfiguration& ());
     };
 
+    class MockJointHelpersInterface : AZ::Interface<AzPhysics::JointHelpersInterface>::Registrar
+    {
+    public:
+        MOCK_CONST_METHOD0(GetSupportedJointTypeIds, const AZStd::vector<AZ::TypeId>());
+        MOCK_CONST_METHOD1(GetSupportedJointTypeId, AZStd::optional<const AZ::TypeId>(AzPhysics::JointType typeEnum));
+
+        MOCK_METHOD5(
+            ComputeInitialJointLimitConfiguration,
+            AZStd::unique_ptr<AzPhysics::JointConfiguration>(
+                const AZ::TypeId& jointLimitTypeId,
+                const AZ::Quaternion& parentWorldRotation,
+                const AZ::Quaternion& childWorldRotation,
+                const AZ::Vector3& axis,
+                const AZStd::vector<AZ::Quaternion>& exampleLocalRotations));
+
+        MOCK_METHOD10(
+            GenerateJointLimitVisualizationData,
+            void(
+                const AzPhysics::JointConfiguration& configuration,
+                const AZ::Quaternion& parentRotation,
+                const AZ::Quaternion& childRotation,
+                float scale,
+                AZ::u32 angularSubdivisions,
+                AZ::u32 radialSubdivisions,
+                AZStd::vector<AZ::Vector3>& vertexBufferOut,
+                AZStd::vector<AZ::u32>& indexBufferOut,
+                AZStd::vector<AZ::Vector3>& lineBufferOut,
+                AZStd::vector<bool>& lineValidityBufferOut));
+    };
+
     //Mocked of the AzPhysics Scene Interface. To keep things simple just mocked functions that have a return value OR required for a test.
     class MockPhysicsSceneInterface
         : AZ::Interface<AzPhysics::SceneInterface>::Registrar
@@ -92,6 +135,9 @@ namespace Physics
         void DisableSimulationOfBody(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
             [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle) override {}
+        void RemoveJoint(
+            [[maybe_unused]]AzPhysics::SceneHandle sceneHandle,
+            [[maybe_unused]] AzPhysics::JointHandle jointHandle) override {}
         void SuppressCollisionEvents(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
             [[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleA,
@@ -140,6 +186,9 @@ namespace Physics
         MOCK_METHOD2(AddSimulatedBodies, AzPhysics::SimulatedBodyHandleList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs));
         MOCK_METHOD2(GetSimulatedBodyFromHandle, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle));
         MOCK_METHOD2(GetSimulatedBodiesFromHandle, AzPhysics::SimulatedBodyList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyHandleList& bodyHandles));
+        MOCK_METHOD4(AddJoint, AzPhysics::JointHandle(AzPhysics::SceneHandle sceneHandle, const AzPhysics::JointConfiguration* jointConfig,
+            AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody));
+        MOCK_METHOD2(GetJointFromHandle, AzPhysics::Joint* (AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle bodyHandle));
         MOCK_CONST_METHOD1(GetGravity, AZ::Vector3(AzPhysics::SceneHandle sceneHandle));
         MOCK_METHOD2(RegisterSceneSimulationFinishHandler, void(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationFinishHandler& handler));
         MOCK_CONST_METHOD2(GetLegacyBody, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle handle));

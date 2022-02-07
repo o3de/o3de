@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,7 +38,7 @@ namespace EMotionFX
         EXPECT_EQ(table->rowCount(), 1) << "Expected the table to have no rows yet";
 
         // Create actor and actor instance.
-        const char* actorFilename = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor";
+        const char* actorFilename = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor";
         AZStd::unique_ptr<EMotionFX::Actor> m_actor = EMotionFX::GetImporter().LoadActor(actorFilename);
         EXPECT_TRUE(m_actor.get() != nullptr) << "Actor not loaded.";
         EMotionFX::ActorInstance* m_actorInstance = ActorInstance::Create(m_actor.get());

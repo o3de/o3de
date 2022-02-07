@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,7 +28,7 @@ namespace Vegetation
         static constexpr const char* const s_componentName = "Vegetation Layer Spawner";
         static constexpr const char* const s_componentDescription = "Creates dynamic vegetation in a specified area";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Vegetation.svg";
-        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Vegetation.png";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/vegetation-layer-spawner/";
+        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Vegetation.svg";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/vegetation/layer-spawner/";
     };
 }

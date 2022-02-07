@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "WhiteBox_precompiled.h"
 
 #include "Asset/EditorWhiteBoxMeshAsset.h"
 #include "Asset/WhiteBoxMeshAssetHandler.h"
@@ -17,14 +16,17 @@
 #include "Util/WhiteBoxEditorUtil.h"
 #include "WhiteBoxComponent.h"
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/numeric.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
@@ -32,7 +34,6 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <WhiteBox/EditorWhiteBoxColliderBus.h>
 #include <WhiteBox/WhiteBoxBus.h>
@@ -62,7 +63,7 @@ namespace WhiteBox
     // to be used to generate concrete render mesh
     static WhiteBoxRenderData CreateWhiteBoxRenderData(const WhiteBoxMesh& whiteBox, const WhiteBoxMaterial& material)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         WhiteBoxRenderData renderData;
         WhiteBoxFaces& faceData = renderData.m_faces;
@@ -129,7 +130,7 @@ namespace WhiteBox
 
         AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
             &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
-            "@devroot@/Gems/WhiteBox/Editor/Scripts/default_shapes.py", scriptArgs);
+            "@engroot@/Gems/WhiteBox/Editor/Scripts/default_shapes.py", scriptArgs);
 
         EditorWhiteBoxComponentNotificationBus::Event(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()),
@@ -194,10 +195,10 @@ namespace WhiteBox
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/WhiteBox.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/WhiteBox.png")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/WhiteBox.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
-                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/white-box/")
+                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/white-box/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_defaultShape, "Default Shape",
@@ -408,7 +409,7 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::RebuildRenderMesh()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // reset caches when the mesh changes
         m_worldAabb.reset();
@@ -475,7 +476,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponent::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         m_worldAabb.reset();
         m_localAabb.reset();
@@ -491,7 +492,7 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::RebuildPhysicsMesh()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         EditorWhiteBoxColliderRequestBus::Event(
             GetEntityId(), &EditorWhiteBoxColliderRequests::CreatePhysics, *GetWhiteBoxMesh());
@@ -499,13 +500,13 @@ namespace WhiteBox
 
     static AZStd::string WhiteBoxPathAtProjectRoot(const AZStd::string_view name, const AZStd::string_view extension)
     {
-        const char* projectFolder = nullptr;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            projectFolder, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAbsoluteDevGameFolderPath);
-
-        return AZStd::string::format(
-            "%s\\%.*s_whitebox.%.*s", projectFolder, aznumeric_cast<int>(name.size()), name.data(),
-            aznumeric_cast<int>(extension.size()), extension.data());
+        AZ::IO::Path whiteBoxPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(whiteBoxPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+        }
+        whiteBoxPath /= AZ::IO::FixedMaxPathString::format("%.*s.%.*s", AZ_STRING_ARG(name), AZ_STRING_ARG(extension));
+        return whiteBoxPath.Native();
     }
 
     void EditorWhiteBoxComponent::ExportToFile()
@@ -514,7 +515,7 @@ namespace WhiteBox
             WhiteBoxPathAtProjectRoot(GetEntity()->GetName(), ObjExtension);
 
         const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
-        const QString absoluteSaveFilePath = QFileDialog::getSaveFileName(
+        const QString absoluteSaveFilePath = AzQtComponents::FileDialog::GetSaveFileName(
             nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
 
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
@@ -578,7 +579,7 @@ namespace WhiteBox
         {
             const QString fileFilter =
                 AZStd::string::format("*.%s", Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension).c_str();
-            const QString absolutePath = QFileDialog::getSaveFileName(
+            const QString absolutePath = AzQtComponents::FileDialog::GetSaveFileName(
                 nullptr, "Save As Asset...", QString(initialAbsolutePath.c_str()), fileFilter);
 
             return AZStd::string(absolutePath.toUtf8());
@@ -674,7 +675,7 @@ namespace WhiteBox
 
     AZ::Aabb EditorWhiteBoxComponent::GetWorldBounds()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_worldAabb.has_value())
         {
@@ -687,7 +688,7 @@ namespace WhiteBox
 
     AZ::Aabb EditorWhiteBoxComponent::GetLocalBounds()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_localAabb.has_value())
         {
@@ -709,7 +710,7 @@ namespace WhiteBox
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir,
         float& distance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_faces.has_value())
         {
@@ -906,7 +907,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponent::DisplayEntityViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (DebugDrawingEnabled())
         {

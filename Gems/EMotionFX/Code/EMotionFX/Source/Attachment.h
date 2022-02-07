@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -62,7 +63,7 @@ namespace EMotionFX
          * This can be implemented for say skin attachments, which copy over joint transforms from the actor instance they are attached to.
          * @param outPose The pose that will be modified.
          */
-        virtual void UpdateJointTransforms(Pose& outPose) { AZ_UNUSED(outPose) };
+        virtual void UpdateJointTransforms(Pose& outPose) { AZ_UNUSED(outPose); };
 
         /**
          * Get the actor instance object of the attachment.

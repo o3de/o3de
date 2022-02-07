@@ -1,14 +1,14 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 
-#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
@@ -56,7 +56,7 @@ namespace PhysX
         AngleLimitsFloatPair GetLinearValuePair(const AZStd::string& parameterName) override;
         AZ::Transform GetTransformValue(const AZStd::string& parameterName) override;
         AZ::Vector3 GetVector3Value(const AZStd::string& parameterName) override;
-        bool IsParameterUsed(const AZStd::string& parameterName) override;
+        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> GetSubComponentModesState() override;
         void SetBoolValue(const AZStd::string& parameterName, bool value) override;
         void SetEntityIdValue(const AZStd::string& parameterName, AZ::EntityId value) override;
         void SetLinearValue(const AZStd::string& parameterName, float value) override;

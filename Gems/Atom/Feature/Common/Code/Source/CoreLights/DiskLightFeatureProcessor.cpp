@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,7 +16,6 @@
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
@@ -49,7 +49,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_diskLights";
             desc.m_elementCountSrgName = "m_diskLightCount";
             desc.m_elementSize = sizeof(DiskLightData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
             m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
@@ -122,7 +122,7 @@ namespace AZ
 
         void DiskLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "DiskLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "DiskLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -134,7 +134,7 @@ namespace AZ
 
         void DiskLightFeatureProcessor::Render(const DiskLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "DiskLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "DiskLightFeatureProcessor: Simulate");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -307,6 +307,16 @@ namespace AZ
                 AZStd::invoke(AZStd::forward<Functor>(functor), m_shadowFeatureProcessor, shadowId, AZStd::forward<ParamType>(param));
             }
         }
+        
+        void DiskLightFeatureProcessor::SetShadowBias(LightHandle handle, float bias)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowBias, bias);
+        }
+
+        void DiskLightFeatureProcessor::SetNormalShadowBias(LightHandle handle, float bias)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetNormalShadowBias, bias);
+        }
 
         void DiskLightFeatureProcessor::SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize)
         {
@@ -317,25 +327,10 @@ namespace AZ
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowFilterMethod, method);
         }
-            
-        void DiskLightFeatureProcessor::SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
-        }
-        
-        void DiskLightFeatureProcessor::SetPredictionSampleCount(LightHandle handle, uint16_t count)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPredictionSampleCount, count);
-        }
         
         void DiskLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetFilteringSampleCount, count);
-        }
-
-        void DiskLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPcfMethod, method);
         }
 
         void DiskLightFeatureProcessor::SetEsmExponent(LightHandle handle, float exponent)

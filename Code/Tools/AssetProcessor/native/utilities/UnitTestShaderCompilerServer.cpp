@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,7 +49,7 @@ void UnitTestShaderCompilerServer::startServer()
 {
     if (!m_server->isListening())
     {
-        if (!m_server->listen(QHostAddress(m_serverAddress), m_serverPort))
+        if (!m_server->listen(QHostAddress(m_serverAddress), static_cast<quint16>(m_serverPort)))
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Server %s could not start.\n", m_serverAddress.toUtf8().data());
             emit errorMessage("Server could not start ");

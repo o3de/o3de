@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -38,6 +39,7 @@ set(FILES
     Include/Atom/Feature/ParamMacros/StartParamCopySettingsTo.inl
     Include/Atom/Feature/ParamMacros/StartParamFunctions.inl
     Include/Atom/Feature/ParamMacros/StartParamFunctionsOverride.inl
+    Include/Atom/Feature/ParamMacros/StartParamFunctionsOverrideImpl.inl
     Include/Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl
     Include/Atom/Feature/ParamMacros/StartParamMembers.inl
     Include/Atom/Feature/ParamMacros/StartParamSerializeContext.inl
@@ -49,6 +51,8 @@ set(FILES
     Include/Atom/Feature/PostProcess/Bloom/BloomConstants.h
     Include/Atom/Feature/PostProcess/Bloom/BloomParams.inl
     Include/Atom/Feature/PostProcess/Bloom/BloomSettingsInterface.h
+    Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingParams.inl
+    Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingSettingsInterface.h
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldConstants.h
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldParams.inl
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldSettingsInterface.h

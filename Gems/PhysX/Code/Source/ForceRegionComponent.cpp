@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "PhysX_precompiled.h"
-
 #include <Source/ForceRegionComponent.h>
 #include <Source/ForceRegionForces.h>
 
@@ -116,7 +115,7 @@ namespace PhysX
 
     void ForceRegionComponent::PostPhysicsSubTick(float fixedDeltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         for (auto entityId : m_entities)
         {

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -66,12 +67,18 @@ namespace Multiplayer
     }
 
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
+    inline const BASE_TYPE& RewindableObject<BASE_TYPE, REWIND_SIZE>::GetPrevious() const
+    {
+        return GetValueForTime(GetPreviousTimeForProperty());
+    }
+
+    template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
     inline BASE_TYPE& RewindableObject<BASE_TYPE, REWIND_SIZE>::Modify()
     {
         const HostFrameId frameTime = GetCurrentTimeForProperty();
         if (frameTime < m_headTime)
         {
-            AZ_Assert(false, "Trying to mutate a rewindable in the past");
+            AZ_Assert(false, "Trying to mutate a rewindable value in the past");
         }
         else if (m_headTime < frameTime)
         {
@@ -111,7 +118,22 @@ namespace Multiplayer
     inline HostFrameId RewindableObject<BASE_TYPE, REWIND_SIZE>::GetCurrentTimeForProperty() const
     {
         INetworkTime* networkTime = Multiplayer::GetNetworkTime();
-        return networkTime->GetHostFrameIdForRewindingConnection(m_owningConnectionId);
+        if (networkTime->IsTimeRewound() && (m_owningConnectionId == networkTime->GetRewindingConnectionId()))
+        {
+            return networkTime->GetUnalteredHostFrameId();
+        }
+        return networkTime->GetHostFrameId();
+    }
+
+    template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
+    inline HostFrameId RewindableObject<BASE_TYPE, REWIND_SIZE>::GetPreviousTimeForProperty() const
+    {
+        INetworkTime* networkTime = Multiplayer::GetNetworkTime();
+        if (networkTime->IsTimeRewound() && (m_owningConnectionId == networkTime->GetRewindingConnectionId()))
+        {
+            return networkTime->GetUnalteredHostFrameId();
+        }
+        return networkTime->GetHostFrameId() - HostFrameId(1);
     }
 
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>

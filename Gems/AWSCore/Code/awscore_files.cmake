@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -32,7 +33,6 @@ set(FILES
     Include/Public/Framework/ServiceRequestJobConfig.h
     Include/Public/Framework/Util.h
     Include/Public/ResourceMapping/AWSResourceMappingBus.h
-    Include/Public/ScriptCanvas/AWSScriptBehaviorBase.h
     Include/Public/ScriptCanvas/AWSScriptBehaviorDynamoDB.h
     Include/Public/ScriptCanvas/AWSScriptBehaviorLambda.h
     Include/Public/ScriptCanvas/AWSScriptBehaviorS3.h

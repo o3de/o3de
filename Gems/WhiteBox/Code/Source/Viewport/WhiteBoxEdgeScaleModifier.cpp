@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "WhiteBox_precompiled.h"
 
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
 #include "Util/WhiteBoxMathUtil.h"
@@ -107,7 +106,7 @@ namespace WhiteBox
                     WhiteBoxMesh* whiteBox = nullptr;
                     EditorWhiteBoxComponentRequestBus::EventResult(
                         whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
-                    m_selectedHandleIndex = vertexIndex;
+                    m_selectedHandleIndex = static_cast<AZ::u32>(vertexIndex);
                     InitializeScaleModifier(whiteBox, action);
                 });
 

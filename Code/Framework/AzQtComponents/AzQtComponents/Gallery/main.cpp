@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,13 +40,8 @@ const QString g_ui_1_0_SettingKey = QStringLiteral("useUI_1_0");
 
 static void LogToDebug([[maybe_unused]] QtMsgType Type, [[maybe_unused]] const QMessageLogContext& Context, const QString& message)
 {
-#ifdef Q_OS_WIN
-    OutputDebugStringW(L"Qt: ");
-    OutputDebugStringW(reinterpret_cast<const wchar_t*>(message.utf16()));
-    OutputDebugStringW(L"\n");
-#else
-    std::wcerr << L"Qt: " << message.toStdWString() << std::endl;
-#endif
+    AZ::Debug::Platform::OutputToDebugger("Qt", message.toStdString().c_str());
+    AZ::Debug::Platform::OutputToDebugger(nullptr, "\n");
 }
 
 /*
@@ -132,8 +128,6 @@ int main(int argc, char **argv)
     QApplication::setOrganizationName("O3DE");
     QApplication::setOrganizationDomain("o3de.org");
     QApplication::setApplicationName("O3DEWidgetGallery");
-
-    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
 
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);

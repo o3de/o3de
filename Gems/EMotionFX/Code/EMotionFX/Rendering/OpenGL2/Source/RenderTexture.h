@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -48,8 +49,8 @@ namespace RenderGL
 
         void Render();
 
-        AZ::u32 GetDepthBuffer() const                                  { return mDepthBuffer; }
-        int32 GetFormat() const                                         { return mFormat; }
+        AZ::u32 GetDepthBuffer() const                                  { return m_depthBuffer; }
+        int32 GetFormat() const                                         { return m_format; }
 
         /**
          *    Formats:   GL_RGBA32F_ARB
@@ -59,11 +60,11 @@ namespace RenderGL
         bool Init(int32 format, uint32 width, uint32 height, AZ::u32 depthBuffer = 0);
 
     private:
-        int32   mFormat;        /*< . */
-        uint32  mPrevHeight;    /*< . */
-        uint32  mPrevWidth;     /*< . */
-        AZ::u32 mFrameBuffer;
-        AZ::u32 mDepthBuffer;
+        int32   m_format;        /*< . */
+        uint32  m_prevHeight;    /*< . */
+        uint32  m_prevWidth;     /*< . */
+        AZ::u32 m_frameBuffer;
+        AZ::u32 m_depthBuffer;
     };
 }
 

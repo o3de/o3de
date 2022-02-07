@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -77,10 +78,10 @@ void CTVNewSequenceDialog::OnOK()
         return;
     }
 
-    for (int k = 0; k < GetIEditor()->GetSequenceManager()->GetCount(); ++k)
+    for (unsigned int k = 0; k < GetIEditor()->GetSequenceManager()->GetCount(); ++k)
     {
         CTrackViewSequence* pSequence = GetIEditor()->GetSequenceManager()->GetSequenceByIndex(k);
-        QString fullname = QtUtil::ToQString(pSequence->GetName());
+        QString fullname = QString::fromUtf8(pSequence->GetName().c_str());
 
         if (fullname.compare(m_sequenceName, Qt::CaseInsensitive) == 0)
         {

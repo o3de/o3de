@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,6 @@
 
 SERIALIZATION_TYPE(bool)
 SERIALIZATION_TYPE(float)
-SERIALIZATION_TYPE(double)
 SERIALIZATION_TYPE(Vec2)
 SERIALIZATION_TYPE(Vec3)
 SERIALIZATION_TYPE(Quat)
@@ -23,5 +23,3 @@ SERIALIZATION_TYPE(uint16)
 SERIALIZATION_TYPE(uint32)
 SERIALIZATION_TYPE(uint64)
 SERIALIZATION_TYPE(CTimeValue)
-SERIALIZATION_TYPE(SNetObjectID)
-SERIALIZATION_TYPE(XmlNodeRef) // not for network - only for save games

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,7 +35,7 @@ namespace AzToolsFramework
         : public AZ::Component
         , public EditorLayerTrackViewRequestBus::Handler
     {
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     public:
         AZ_COMPONENT(TrackViewComponent, "{3CF943CC-6F10-4B19-88FC-CFB697558FFD}")

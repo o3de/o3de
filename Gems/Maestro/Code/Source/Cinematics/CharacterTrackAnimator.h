@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,7 +11,7 @@
         Utility class to handle Animation of Character Tracks (aka 'Animation' Tracks in the TrackView UI)
     */
 
-#include <CrySizer.h>
+#include <Cry_Math.h>
 
 struct SAnimContext;
 struct ICharacterKey;
@@ -34,11 +35,6 @@ public:
         bool m_bTimeJumped[3];
         float m_jumpTime[3];
     };
-
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(this, sizeof(*this));
-    }
 
     void OnReset(IAnimNode* animNode);
 

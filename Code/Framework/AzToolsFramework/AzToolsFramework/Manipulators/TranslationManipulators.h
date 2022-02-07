@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,6 +65,9 @@ namespace AzToolsFramework
 
         void ConfigureSurfaceView(float radius, const AZ::Color& color);
 
+        //! Sets the bound width to use for the line/axis of a linear manipulator.
+        void SetLineBoundWidth(float lineBoundWidth);
+
     private:
         AZ_DISABLE_COPY_MOVE(TranslationManipulators)
 
@@ -75,6 +79,7 @@ namespace AzToolsFramework
         AZStd::vector<AZStd::shared_ptr<LinearManipulator>> m_linearManipulators;
         AZStd::vector<AZStd::shared_ptr<PlanarManipulator>> m_planarManipulators;
         AZStd::shared_ptr<SurfaceManipulator> m_surfaceManipulator = nullptr;
+        float m_lineBoundWidth = 0.01f; //!< The default line bound width for the linear manipulator axis.
     };
 
     //! IndexedTranslationManipulator wraps a standard TranslationManipulators and allows it to be linked

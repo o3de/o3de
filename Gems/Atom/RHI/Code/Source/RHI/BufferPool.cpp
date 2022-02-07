@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/Debug/EventTrace.h>
 
@@ -142,7 +142,7 @@ namespace AZ
                 resultCode = MapBufferInternal(mapRequest, mapResponse);
                 if (resultCode == ResultCode::Success)
                 {
-                    memcpy(mapResponse.m_data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
+                    BufferCopy(mapResponse.m_data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
                     UnmapBufferInternal(*initRequest.m_buffer);
                 }
             }
@@ -162,7 +162,7 @@ namespace AZ
                 return ResultCode::InvalidArgument;
             }
             
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "BufferPool::OrphanBuffer");
+            AZ_PROFILE_SCOPE(RHI, "BufferPool::OrphanBuffer");
             return OrphanBufferInternal(buffer);
         }
 
@@ -216,6 +216,11 @@ namespace AZ
         const BufferPoolDescriptor& BufferPool::GetDescriptor() const
         {
             return m_descriptor;
+        }
+
+        void BufferPool::BufferCopy(void* destination, const void* source, size_t num)
+        {
+            memcpy(destination, source, num);
         }
 
         ResultCode BufferPool::StreamBufferInternal([[maybe_unused]] const BufferStreamRequest& request)

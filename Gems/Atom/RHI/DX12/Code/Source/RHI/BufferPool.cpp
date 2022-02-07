@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <RHI/BufferPool.h>
@@ -203,7 +203,7 @@ namespace AZ
 
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(descriptorBase.m_heapMemoryLevel);
 
-            uint32_t bufferPageSize = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+            uint32_t bufferPageSize = static_cast<uint32_t>(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes);
 
             // The DX12 descriptor provides an explicit buffer page size override.
             if (const DX12::BufferPoolDescriptor* descriptor = azrtti_cast<const DX12::BufferPoolDescriptor*>(&descriptorBase))

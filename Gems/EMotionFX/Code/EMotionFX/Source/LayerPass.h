@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,14 +41,14 @@ namespace EMotionFX
 
 
     protected:
-        MotionLayerSystem*  mMotionSystem;  /**< The motion system where this layer pass works on. */
+        MotionLayerSystem*  m_motionSystem;  /**< The motion system where this layer pass works on. */
 
         /**
          * The constructor.
          * @param motionLayerSystem The motion layer system where this pass will be added to.
          */
         LayerPass(MotionLayerSystem* motionLayerSystem)
-            : BaseObject()                  { mMotionSystem = motionLayerSystem; }
+            : BaseObject()                  { m_motionSystem = motionLayerSystem; }
 
         /**
          * The destructor.

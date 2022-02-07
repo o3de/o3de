@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +11,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ::IO
 {

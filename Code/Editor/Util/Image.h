@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -177,7 +178,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     void GetSubImage(int x1, int y1, int width, int height, TImage<T>& img) const
     {
-        int size = width * height;
         img.Allocate(width, height);
         for (int y = 0; y < height; y++)
         {

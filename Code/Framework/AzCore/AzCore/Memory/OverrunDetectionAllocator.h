@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -76,17 +77,18 @@ namespace AZ
         //---------------------------------------------------------------------
         // IAllocatorAllocate
         //---------------------------------------------------------------------
-        virtual pointer_type Allocate(size_type byteSize, size_type alignment, int flags, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
-        virtual void DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
-        virtual pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
-        virtual size_type Resize(pointer_type ptr, size_type newSize) override;
-        virtual size_type AllocationSize(pointer_type ptr) override;
+        pointer_type Allocate(size_type byteSize, size_type alignment, int flags, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
+        void DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
+        size_type Resize(pointer_type ptr, size_type newSize) override;
+        size_type AllocationSize(pointer_type ptr) override;
 
-        virtual size_type NumAllocatedBytes() const override;
-        virtual size_type Capacity() const override;
-        virtual size_type GetMaxAllocationSize() const override;
-        virtual IAllocatorAllocate* GetSubAllocator() override;
-        virtual void GarbageCollect() override;
+        size_type NumAllocatedBytes() const override;
+        size_type Capacity() const override;
+        size_type GetMaxAllocationSize() const override;
+        size_type GetMaxContiguousAllocationSize() const override;
+        IAllocatorAllocate* GetSubAllocator() override;
+        void GarbageCollect() override;
 
     private:
         OverrunDetectionSchemaImpl* m_impl;

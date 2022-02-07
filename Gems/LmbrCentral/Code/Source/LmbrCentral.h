@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,8 +14,6 @@
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/functional.h>
-
-#include <CrySystemBus.h>
 
 /*!
  * \namespace LmbrCentral
@@ -48,7 +47,6 @@ namespace LmbrCentral
      */
     class LmbrCentralSystemComponent
         : public AZ::Component
-        , private CrySystemEventBus::Handler
         , private AZ::Data::AssetManagerNotificationBus::Handler
     {
     public:
@@ -68,13 +66,6 @@ namespace LmbrCentral
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////////
-        // CrySystemEvents
-        void OnCrySystemPreInitialize(ISystem& system, const SSystemInitParams& systemInitParams) override;
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override;
-        void OnCrySystemShutdown(ISystem& system) override;
         ////////////////////////////////////////////////////////////////////////////
 
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler> > m_assetHandlers;

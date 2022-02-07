@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -190,7 +191,6 @@ void CAxisHelper::DrawAxis(const Matrix34& worldTM, const SGizmoParameters& setu
     {
         if (axis)
         {
-            float col[4] = { 1, 0, 0, 1 };
             if (axis == AXIS_X || axis == AXIS_XY || axis == AXIS_XZ || axis == AXIS_XYZ)
             {
                 colX = colSelected;
@@ -435,7 +435,6 @@ void CAxisHelper::DrawAxis(const Matrix34& worldTM, const SGizmoParameters& setu
             {
                 dc.SetColor(QColor(128, 32, 32), 0.4f);
             }
-            Vec3 org = worldTM.GetTranslation();
             dc.DrawBall(Vec3(0.0f),  m_size * kSelectionBallScale);
         }
 
@@ -545,7 +544,7 @@ bool CAxisHelper::HitTestForRotationCircle(const Matrix34& worldTM, IDisplayView
     Vec3 vShortestHitPos;
     float shortestDist = 3e11f;
 
-    for (int i = 0, iCount(vList.size()); i < iCount; ++i)
+    for (int i = 0, iCount(static_cast<int>(vList.size())); i < iCount; ++i)
     {
         const Vec3& v0 = vList[i];
         const Vec3& v1 = vList[(i + 1) % iCount];

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,8 +60,6 @@ public:
         IViewSystem * ());
     MOCK_METHOD0(GetILevelSystem,
         ILevelSystem * ());
-    MOCK_METHOD0(GetINameTable,
-        INameTable * ());
     MOCK_METHOD0(GetICmdLine,
         ICmdLine * ());
     MOCK_METHOD0(GetILog,
@@ -99,10 +98,6 @@ public:
         XmlNodeRef(const char*, bool));
     MOCK_METHOD0(GetXmlUtils,
         IXmlUtils * ());
-    MOCK_METHOD1(SetViewCamera,
-        void(CCamera & Camera));
-    MOCK_METHOD0(GetViewCamera,
-        CCamera & ());
     MOCK_METHOD1(IgnoreUpdates,
         void(bool bIgnore));
     MOCK_METHOD1(SetIProcess,
@@ -121,7 +116,7 @@ public:
         const SFileVersion&());
 
     MOCK_METHOD1(AddCVarGroupDirectory,
-        void(const string&));
+        void(const AZStd::string&));
     MOCK_METHOD0(SaveConfiguration,
         void());
     MOCK_METHOD3(LoadConfiguration,

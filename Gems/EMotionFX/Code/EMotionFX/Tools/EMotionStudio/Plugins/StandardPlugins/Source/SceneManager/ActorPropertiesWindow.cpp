@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,7 +24,7 @@ namespace EMStudio
     ActorPropertiesWindow::ActorPropertiesWindow(QWidget* parent, SceneManagerPlugin* plugin)
         : QWidget(parent)
     {
-        mPlugin = plugin;
+        m_plugin = plugin;
     }
 
     // init after the parent dock window has been created
@@ -43,9 +44,9 @@ namespace EMStudio
         // actor name
         rowNr = 0;
         layout->addWidget(new QLabel("Actor name"), rowNr, 0);
-        mNameEdit = new QLineEdit();
-        connect(mNameEdit, &QLineEdit::editingFinished, this, &ActorPropertiesWindow::NameEditChanged);
-        layout->addWidget(mNameEdit, rowNr, 1);
+        m_nameEdit = new QLineEdit();
+        connect(m_nameEdit, &QLineEdit::editingFinished, this, &ActorPropertiesWindow::NameEditChanged);
+        layout->addWidget(m_nameEdit, rowNr, 1);
 
         // Motion extraction joint.
         rowNr++;
@@ -93,14 +94,14 @@ namespace EMStudio
 
         // mirror setup
         rowNr++;
-        mMirrorSetupWindow = new MirrorSetupWindow(mPlugin->GetDockWidget(), mPlugin);
-        mMirrorSetupLink = new AzQtComponents::BrowseEdit();
-        mMirrorSetupLink->setClearButtonEnabled(true);
-        mMirrorSetupLink->setLineEditReadOnly(true);
-        mMirrorSetupLink->setPlaceholderText("Click folder to setup");
+        m_mirrorSetupWindow = new MirrorSetupWindow(m_plugin->GetDockWidget(), m_plugin);
+        m_mirrorSetupLink = new AzQtComponents::BrowseEdit();
+        m_mirrorSetupLink->setClearButtonEnabled(true);
+        m_mirrorSetupLink->setLineEditReadOnly(true);
+        m_mirrorSetupLink->setPlaceholderText("Click folder to setup");
         layout->addWidget(new QLabel("Mirror setup"), rowNr, 0);
-        layout->addWidget(mMirrorSetupLink, rowNr, 1);
-        connect(mMirrorSetupLink, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &ActorPropertiesWindow::OnMirrorSetup);
+        layout->addWidget(m_mirrorSetupLink, rowNr, 1);
+        connect(m_mirrorSetupLink, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &ActorPropertiesWindow::OnMirrorSetup);
 
         UpdateInterface();
     }
@@ -108,8 +109,8 @@ namespace EMStudio
 
     void ActorPropertiesWindow::UpdateInterface()
     {
-        mActor         = nullptr;
-        mActorInstance = nullptr;
+        m_actor         = nullptr;
+        m_actorInstance = nullptr;
 
         EMotionFX::ActorInstance*   actorInstance   = GetCommandManager()->GetCurrentSelection().GetSingleActorInstance();
         EMotionFX::Actor*           actor           = GetCommandManager()->GetCurrentSelection().GetSingleActor();
@@ -117,29 +118,29 @@ namespace EMStudio
         // in case we have selected a single actor instance
         if (actorInstance)
         {
-            mActorInstance  = actorInstance;
-            mActor          = actorInstance->GetActor();
+            m_actorInstance  = actorInstance;
+            m_actor          = actorInstance->GetActor();
         }
         // in case we have selected a single actor
         else if (actor)
         {
-            mActor = actor;
+            m_actor = actor;
 
-            const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 EMotionFX::ActorInstance* currentInstance = EMotionFX::GetActorManager().GetActorInstance(i);
                 if (currentInstance->GetActor() == actor)
                 {
-                    mActorInstance = currentInstance;
+                    m_actorInstance = currentInstance;
                     break;
                 }
             }
         }
 
-        mMirrorSetupWindow->Reinit();
+        m_mirrorSetupWindow->Reinit();
 
-        if (mActorInstance == nullptr || mActor == nullptr)
+        if (m_actorInstance == nullptr || m_actor == nullptr)
         {
             // reset data and disable interface elements
             m_motionExtractionJointBrowseEdit->setEnabled(false);
@@ -154,37 +155,37 @@ namespace EMStudio
             m_excludeFromBoundsBrowseEdit->SetSelectedJoints({});
 
             // actor name
-            mNameEdit->setEnabled(false);
-            mNameEdit->setText("");
+            m_nameEdit->setEnabled(false);
+            m_nameEdit->setText("");
 
-            mMirrorSetupLink->setEnabled(false);
+            m_mirrorSetupLink->setEnabled(false);
 
             return;
         }
 
-        mMirrorSetupLink->setEnabled(true);
+        m_mirrorSetupLink->setEnabled(true);
 
         // Motion extraction node
-        EMotionFX::Node* extractionNode = mActor->GetMotionExtractionNode();
+        EMotionFX::Node* extractionNode = m_actor->GetMotionExtractionNode();
         m_motionExtractionJointBrowseEdit->setEnabled(true);
         if (extractionNode)
         {
-            m_motionExtractionJointBrowseEdit->SetSelectedJoints({SelectionItem(mActorInstance->GetID(), extractionNode->GetName())});
+            m_motionExtractionJointBrowseEdit->SetSelectedJoints({SelectionItem(m_actorInstance->GetID(), extractionNode->GetName())});
         }
         else
         {
             m_motionExtractionJointBrowseEdit->SetSelectedJoints({});
         }
 
-        EMotionFX::Node* bestMatchingNode = mActor->FindBestMotionExtractionNode();
-        m_findBestMatchButton->setVisible(bestMatchingNode && mActor->GetMotionExtractionNode() != bestMatchingNode);
+        EMotionFX::Node* bestMatchingNode = m_actor->FindBestMotionExtractionNode();
+        m_findBestMatchButton->setVisible(bestMatchingNode && m_actor->GetMotionExtractionNode() != bestMatchingNode);
 
         // Retarget root node
-        EMotionFX::Node* retargetRootNode = mActor->GetRetargetRootNode();
+        EMotionFX::Node* retargetRootNode = m_actor->GetRetargetRootNode();
         m_retargetRootJointBrowseEdit->setEnabled(true);
         if (retargetRootNode)
         {
-            m_retargetRootJointBrowseEdit->SetSelectedJoints({SelectionItem(mActorInstance->GetID(), retargetRootNode->GetName())});
+            m_retargetRootJointBrowseEdit->SetSelectedJoints({SelectionItem(m_actorInstance->GetID(), retargetRootNode->GetName())});
         }
         else
         {
@@ -195,47 +196,23 @@ namespace EMStudio
         m_excludeFromBoundsBrowseEdit->setEnabled(true);
 
         AZStd::vector<SelectionItem> jointsExcludedFromBounds;
-        if (mActorInstance)
+        if (m_actorInstance)
         {
-            const uint32 numNodes = mActor->GetNumNodes();
-            for (uint32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = m_actor->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
-                EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(i);
+                EMotionFX::Node* node = m_actor->GetSkeleton()->GetNode(i);
                 if (!node->GetIncludeInBoundsCalc())
                 {
-                    jointsExcludedFromBounds.emplace_back(mActorInstance->GetID(), node->GetName());
+                    jointsExcludedFromBounds.emplace_back(m_actorInstance->GetID(), node->GetName());
                 }
             }
         }
         m_excludeFromBoundsBrowseEdit->SetSelectedJoints(jointsExcludedFromBounds);
 
         // actor name
-        mNameEdit->setEnabled(true);
-        mNameEdit->setText(mActor->GetName());
-    }
-
-    void ActorPropertiesWindow::GetNodeName(const MCore::Array<SelectionItem>& selection, AZStd::string* outNodeName, uint32* outActorID)
-    {
-        outNodeName->clear();
-        *outActorID = MCORE_INVALIDINDEX32;
-
-        if (selection.GetLength() != 1 || selection[0].GetNodeNameString().empty())
-        {
-            AZ_Warning("EMotionFX", false, "Cannot adjust motion extraction node. No valid node selected.");
-            return;
-        }
-
-        const uint32                actorInstanceID = selection[0].mActorInstanceID;
-        const char*                 nodeName        = selection[0].GetNodeName();
-        EMotionFX::ActorInstance*   actorInstance   = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);
-        if (actorInstance == nullptr)
-        {
-            return;
-        }
-
-        EMotionFX::Actor* actor = actorInstance->GetActor();
-        *outActorID     = actor->GetID();
-        *outNodeName    = nodeName;
+        m_nameEdit->setEnabled(true);
+        m_nameEdit->setText(m_actor->GetName());
     }
 
     void ActorPropertiesWindow::GetNodeName(const AZStd::vector<SelectionItem>& joints, AZStd::string* outNodeName, uint32* outActorID)
@@ -249,7 +226,7 @@ namespace EMStudio
             return;
         }
 
-        const uint32 actorInstanceID = joints[0].mActorInstanceID;
+        const uint32 actorInstanceID = joints[0].m_actorInstanceId;
         const char* nodeName = joints[0].GetNodeName();
         EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);
         if (!actorInstance)
@@ -322,13 +299,13 @@ namespace EMStudio
     void ActorPropertiesWindow::OnFindBestMatchingNode()
     {
         // check if the actor is invalid
-        if (mActor == nullptr)
+        if (m_actor == nullptr)
         {
             return;
         }
 
         // find the best motion extraction node
-        EMotionFX::Node* bestMatchingNode = mActor->FindBestMotionExtractionNode();
+        EMotionFX::Node* bestMatchingNode = m_actor->FindBestMotionExtractionNode();
         if (bestMatchingNode == nullptr)
         {
             return;
@@ -338,7 +315,7 @@ namespace EMStudio
         MCore::CommandGroup commandGroup("Adjust motion extraction node");
 
         // adjust the actor
-        const AZStd::string command = AZStd::string::format("AdjustActor -actorID %i -motionExtractionNodeName \"%s\"", mActor->GetID(), bestMatchingNode->GetName());
+        const AZStd::string command = AZStd::string::format("AdjustActor -actorID %i -motionExtractionNodeName \"%s\"", m_actor->GetID(), bestMatchingNode->GetName());
         commandGroup.AddCommandString(command);
 
         // execute the command group
@@ -352,13 +329,13 @@ namespace EMStudio
     // actor name changed
     void ActorPropertiesWindow::NameEditChanged()
     {
-        if (mActor == nullptr)
+        if (m_actor == nullptr)
         {
             return;
         }
 
         // execute the command
-        const AZStd::string command = AZStd::string::format("AdjustActor -actorID %i -name \"%s\"", mActor->GetID(), mNameEdit->text().toUtf8().data());
+        const AZStd::string command = AZStd::string::format("AdjustActor -actorID %i -name \"%s\"", m_actor->GetID(), m_nameEdit->text().toUtf8().data());
 
         AZStd::string result;
         if (!EMStudio::GetCommandManager()->ExecuteCommand(command, result))
@@ -376,13 +353,13 @@ namespace EMStudio
             return;
         }
 
-        AZStd::string command = AZStd::string::format("AdjustActor -actorID %i -nodesExcludedFromBounds \"", mActor->GetID());
+        AZStd::string command = AZStd::string::format("AdjustActor -actorID %i -nodesExcludedFromBounds \"", m_actor->GetID());
 
         // prepare the nodes excluded from bounds string
         size_t addedItems = 0;
         for (const SelectionItem& selectedJoint : selectedJoints)
         {
-            EMotionFX::Node* node = mActor->GetSkeleton()->FindNodeByName(selectedJoint.GetNodeName());
+            EMotionFX::Node* node = m_actor->GetSkeleton()->FindNodeByName(selectedJoint.GetNodeName());
             if (node)
             {
                 if (addedItems > 0)
@@ -418,10 +395,10 @@ namespace EMStudio
 
         EMotionFX::Actor* actor = actorInstance->GetActor();
         EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
-        const uint32 numJoints = mActor->GetNumNodes();
+        const size_t numJoints = m_actor->GetNumNodes();
 
         // Include all joints first.
-        for (uint32 i = 0; i < numJoints; ++i)
+        for (size_t i = 0; i < numJoints; ++i)
         {
             skeleton->GetNode(i)->SetIncludeInBoundsCalc(true);
         }
@@ -440,9 +417,9 @@ namespace EMStudio
     // open the mirror setup
     void ActorPropertiesWindow::OnMirrorSetup()
     {
-        if (mMirrorSetupWindow)
+        if (m_mirrorSetupWindow)
         {
-            mMirrorSetupWindow->exec();
+            m_mirrorSetupWindow->exec();
         }
     }
 } // namespace EMStudio

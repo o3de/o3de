@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -1031,7 +1032,7 @@ namespace UnitTest
         auto CreateArray = []() constexpr -> AZStd::array<int, 3>
         {
             AZStd::array<int, 3> localArray = { {1, 2, 3} };
-            auto resultFunc = AZStd::for_each(localArray.begin(), localArray.end(), [](int& element) { ++element; });
+            AZStd::for_each(localArray.begin(), localArray.end(), [](int& element) { ++element; });
             return localArray;
         };
         constexpr AZStd::array<int, 3> testArray = CreateArray();
@@ -1270,7 +1271,6 @@ namespace UnitTest
 
     TEST_F(Algorithms, Unique_Compile_WhenUsedInConstexpr)
     {
-        constexpr AZStd::array<int, 3> testList = { { 1, 2, 3 } };
         auto TestUnique = []() constexpr
         {
             AZStd::array<int, 6> localArray{ { 1, 2, 2, 5, 5, 6} };

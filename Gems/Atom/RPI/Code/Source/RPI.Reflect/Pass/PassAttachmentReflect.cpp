@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,9 +56,10 @@ namespace AZ
                     ;
 
                 serializeContext->Class<PassSlot>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("Name", &PassSlot::m_name)
                     ->Field("ShaderInputName", &PassSlot::m_shaderInputName)
+                    ->Field("ShaderImageDimensionsConstant", &PassSlot::m_shaderImageDimensionsName)
                     ->Field("ShaderInputArrayIndex", &PassSlot::m_shaderInputArrayIndex)
                     ->Field("SlotType", &PassSlot::m_slotType)
                     ->Field("ScopeAttachmentUsage", &PassSlot::m_scopeAttachmentUsage)

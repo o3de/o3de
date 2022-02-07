@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -50,15 +51,12 @@ namespace EMStudio
     private slots:
         void OnBrowseButtonClicked();
         void OnSelectionDone(const AZStd::vector<SelectionItem>& selectedJoints);
-        void OnSelectionDoneMCoreArray(const MCore::Array<SelectionItem>& selectedJoints);
         void OnSelectionChanged();
         void OnSelectionRejected();
         void OnTextEdited(const QString& text);
 
     private:
         void UpdatePlaceholderText();
-
-        AZStd::vector<SelectionItem> FromMCoreArray(const MCore::Array<SelectionItem>& in) const;
 
         AZStd::vector<SelectionItem> m_previouslySelectedJoints; /// Selected joints before selection window opened.
         AZStd::vector<SelectionItem> m_selectedJoints;

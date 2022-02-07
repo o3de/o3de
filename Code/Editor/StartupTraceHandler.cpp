@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -167,7 +168,7 @@ namespace SandboxEditor
 
     void StartupTraceHandler::ShowMessageBox(const QString& message)
     {
-        AZ::SystemTickBus::QueueFunction([this, message]()
+        AZ::SystemTickBus::QueueFunction([message]()
         {
             // Parent to the main window, so that the error dialog doesn't
             // show up as a separate window when alt-tabbing.

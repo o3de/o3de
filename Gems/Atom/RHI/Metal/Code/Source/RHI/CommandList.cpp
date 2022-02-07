@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <Atom/RHI.Reflect/Bits.h>
 #include <AzCore/Debug/EventTrace.h>
@@ -245,6 +245,8 @@ namespace AZ
  
         bool CommandList::SetArgumentBuffers(const PipelineState* pipelineState, RHI::PipelineStateType stateType)
         {
+            bool bindNullDescriptorHeap = false;
+            MTLRenderStages mtlRenderStagesForNullDescHeap = 0;
             ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(stateType);
             const PipelineLayout& pipelineLayout = pipelineState->GetPipelineLayout();
             
@@ -280,7 +282,8 @@ namespace AZ
 
                 uint32_t srgVisIndex = pipelineLayout.GetIndexBySlot(shaderResourceGroup->GetBindingSlot());
                 const RHI::ShaderStageMask& srgVisInfo = pipelineLayout.GetSrgVisibility(srgVisIndex);
-
+                const ShaderResourceGroupVisibility& srgResourcesVisInfo = pipelineLayout.GetSrgResourcesVisibility(srgVisIndex);
+                
                 bool isSrgUpdatd = bindings.m_srgsByIndex[slot] != shaderResourceGroup;
                 if(isSrgUpdatd)
                 {
@@ -291,6 +294,9 @@ namespace AZ
                                                             
                     if(srgVisInfo != RHI::ShaderStageMask::None)
                     {
+                        bool isNullDescHeapNeeded = compiledArgBuffer.IsNullDescHeapNeeded();
+                        bindNullDescriptorHeap |= isNullDescHeapNeeded;
+                        
                         //For graphics and compute shader stages, cache all the argument buffers, offsets and track the min/max indices
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
@@ -300,7 +306,9 @@ namespace AZ
                                 mtlVertexArgBuffers[slotIndex] = argBuffer;
                                 mtlVertexArgBufferOffsets[slotIndex] = argBufferOffset;
                                 bufferVertexRegisterIdMin = AZStd::min(slotIndex, bufferVertexRegisterIdMin);
-                                bufferVertexRegisterIdMax = AZStd::max(slotIndex, bufferVertexRegisterIdMax);
+                                bufferVertexRegisterIdMax = AZStd::max(slotIndex, bufferVertexRegisterIdMax);                                
+                                mtlRenderStagesForNullDescHeap = shaderResourceGroup->IsNullHeapNeededForVertexStage(srgResourcesVisInfo) ?
+                                                    mtlRenderStagesForNullDescHeap | MTLRenderStageVertex : mtlRenderStagesForNullDescHeap;
                             }
                             
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Fragment)
@@ -309,6 +317,7 @@ namespace AZ
                                 mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
                                 bufferFragmentOrComputeRegisterIdMin = AZStd::min(slotIndex, bufferFragmentOrComputeRegisterIdMin);
                                 bufferFragmentOrComputeRegisterIdMax = AZStd::max(slotIndex, bufferFragmentOrComputeRegisterIdMax);
+                                mtlRenderStagesForNullDescHeap = isNullDescHeapNeeded ? mtlRenderStagesForNullDescHeap | MTLRenderStageFragment : mtlRenderStagesForNullDescHeap;
                             }
                         }
                         else if(m_commandEncoderType == CommandEncoderType::Compute)
@@ -329,7 +338,7 @@ namespace AZ
                     bindings.m_srgVisHashByIndex[slot] = srgResourcesVisHash;
                     if(srgVisInfo != RHI::ShaderStageMask::None)
                     {
-                        const ShaderResourceGroupVisibility& srgResourcesVisInfo = pipelineLayout.GetSrgResourcesVisibility(srgVisIndex);
+                        
                         
                         //For graphics and compute encoder make the resource resident (call UseResource) for the duration
                         //of the work associated with the current scope and ensure that it's in a
@@ -396,6 +405,10 @@ namespace AZ
                                      stages: key.first.second];
             }
             
+            if(bindNullDescriptorHeap)
+            {
+                MakeHeapsResident(mtlRenderStagesForNullDescHeap);
+            }
             return true;
         }
     

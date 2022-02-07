@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
-
 #include "UiImageSequenceComponent.h"
 #include "Sprite.h"
 #include "RenderGraph.h"
@@ -98,7 +97,7 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
         return;
     }
 
-    CSprite* sprite = dynamic_cast<CSprite*>(m_spriteList[m_sequenceIndex]);
+    CSprite* sprite = static_cast<CSprite*>(m_spriteList[m_sequenceIndex]); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
 
     // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
     float fade = renderGraph->GetAlphaFade();
@@ -106,7 +105,6 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     if (m_isRenderCacheDirty)
     {
-        const int defaultIndex = 0;
         uint32 packedColor = 0xffffffff;
         switch (m_imageType)
         {
@@ -167,7 +165,7 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
         LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
 
         // Add the quad to the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
         if (lyRenderGraph)
         {
             lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image,
@@ -269,7 +267,7 @@ const AZ::u32 UiImageSequenceComponent::GetImageIndex()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 const AZ::u32 UiImageSequenceComponent::GetImageIndexCount()
 {
-    return m_spriteList.size();
+    return static_cast<AZ::u32>(m_spriteList.size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -543,7 +541,6 @@ void UiImageSequenceComponent::RenderSingleQuad(const AZ::Vector2* positions, co
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
     SVF_P2F_C4B_T2F_F4B vertices[numVertices];
-    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
     for (int i = 0; i < numVertices; ++i)
     {
         AZ::Vector2 roundedPoint = Draw2dHelper::RoundXY(positions[i], pixelRounding);

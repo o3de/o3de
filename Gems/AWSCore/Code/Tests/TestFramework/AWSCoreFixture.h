@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -106,8 +107,8 @@ class AWSCoreFixture
     : public UnitTest::ScopedAllocatorSetupFixture
 {
 public:
-    AWSCoreFixture() {}
-    virtual ~AWSCoreFixture() = default;
+    AWSCoreFixture() = default;
+    ~AWSCoreFixture() override = default;
 
     void SetUp() override
     {
@@ -129,10 +130,12 @@ public:
         m_settingsRegistry.reset();
 
         AZ::IO::FileIOBase::SetInstance(nullptr);
-        
+
+        delete m_localFileIO;
+        m_localFileIO = nullptr;
+
         if (m_otherFileIO)
         {
-            delete m_localFileIO;
             AZ::IO::FileIOBase::SetInstance(m_otherFileIO);
         }
 

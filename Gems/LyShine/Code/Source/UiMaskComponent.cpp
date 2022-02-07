@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LyShine_precompiled.h"
 #include "UiMaskComponent.h"
 #include <LyShine/Draw2d.h>
 
@@ -14,11 +14,16 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include "IRenderer.h"
+#include "RenderToTextureBus.h"
+#include "RenderGraph.h"
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiRenderBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
+
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
+#include <AtomCore/Instance/Instance.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -79,7 +84,7 @@ void UiMaskComponent::Render(LyShine::IRenderGraph* renderGraph, UiElementInterf
                 AZ::Vector2 renderTargetSize = pixelAlignedBottomRight - pixelAlignedTopLeft;
 
                 bool needsResize = static_cast<int>(renderTargetSize.GetX()) != m_renderTargetWidth || static_cast<int>(renderTargetSize.GetY()) != m_renderTargetHeight;
-                if (m_contentRenderTargetHandle == -1 || needsResize)
+                if (m_contentAttachmentImageId.IsEmpty() || needsResize)
                 {
                     // Need to create or resize the render target
                     CreateOrResizeRenderTarget(pixelAlignedTopLeft, pixelAlignedBottomRight);
@@ -89,7 +94,7 @@ void UiMaskComponent::Render(LyShine::IRenderGraph* renderGraph, UiElementInterf
                 // in theory the child mask element could still be non-zero size and could reveal things. But the way gradient masks
                 // currently work is that the size of the render target is defined by the size of this element, therefore nothing would
                 // be revealed by the mask if it is zero sized.
-                if (m_contentRenderTargetHandle == -1)
+                if (m_contentAttachmentImageId.IsEmpty())
                 {
                     return;
                 }
@@ -101,7 +106,7 @@ void UiMaskComponent::Render(LyShine::IRenderGraph* renderGraph, UiElementInterf
         else
         {
             // using stencil mask, not going to use render targets, destroy previous render target, if exists
-            if (m_contentRenderTargetHandle != -1)
+            if (!m_contentAttachmentImageId.IsEmpty())
             {
                 DestroyRenderTarget();
             }
@@ -113,7 +118,7 @@ void UiMaskComponent::Render(LyShine::IRenderGraph* renderGraph, UiElementInterf
     else
     {
         // masking disabled, not going to use render targets, destroy previous render target, if exists
-        if (m_contentRenderTargetHandle != -1)
+        if (!m_contentAttachmentImageId.IsEmpty())
         {
             DestroyRenderTarget();
         }
@@ -553,77 +558,30 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
     m_viewportTopLeft = pixelAlignedTopLeft;
     m_viewportSize = renderTargetSize;
 
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
-    // Check if the render target already exists
-    if (m_contentRenderTargetHandle != -1)
-    {
-        // Render target exists, resize it to the given size
-        if (!gEnv->pRenderer->ResizeRenderTarget(m_contentRenderTargetHandle, static_cast<int>(renderTargetSize.GetX()), static_cast<int>(renderTargetSize.GetY())))
-        {
-            AZ_Warning("UI", false, "Failed to resize content render target for UiMaskComponent");
-            DestroyRenderTarget();
-        }
-    }
-    else
-    {
-        // Create a render target that this element and its children will be rendered to.
-        m_contentRenderTargetHandle = gEnv->pRenderer->CreateRenderTarget(m_renderTargetName.c_str(),
-            static_cast<int>(renderTargetSize.GetX()), static_cast<int>(renderTargetSize.GetY()), Clr_Transparent, eTF_R8G8B8A8);
+    // LYSHINE_ATOM_TODO: optimize by reusing/resizing targets
+    DestroyRenderTarget();
 
-        if (m_contentRenderTargetHandle == -1)
-        {
-            AZ_Warning("UI", false, "Failed to create content render target for UiMaskComponent");
-        }
+    // Create a render target that this element and its children will be rendered to
+    AZ::EntityId canvasEntityId;
+    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
+    EBUS_EVENT_ID_RESULT(m_contentAttachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
+    if (m_contentAttachmentImageId.IsEmpty())
+    {
+        AZ_Warning("UI", false, "Failed to create content render target for UiMaskComponent");
     }
 
-    // if depth surface already exists then destroy it
-    if (m_renderTargetDepthSurface)
+    // Create separate render target for the mask texture
+    EBUS_EVENT_ID_RESULT(m_maskAttachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_maskRenderTargetName.c_str()), imageSize);
+    if (m_maskAttachmentImageId.IsEmpty())
     {
-        gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
-        m_renderTargetDepthSurface = nullptr;
+        AZ_Warning("UI", false, "Failed to create mask render target for UiMaskComponent");
+        DestroyRenderTarget();
     }
-
-    if (m_contentRenderTargetHandle != -1)
-    {
-        // Also create a depth surface to render the canvas to, we need depth for masking
-        // since that uses the stencil buffer. We support any combination of nesting faders and masks
-        m_renderTargetDepthSurface = gEnv->pRenderer->CreateDepthSurface(
-                static_cast<int>(renderTargetSize.GetX()), static_cast<int>(renderTargetSize.GetY()));
-
-        if (!m_renderTargetDepthSurface)
-        {
-            AZ_Warning("UI", false, "Failed to create depth surface for UiMaskComponent");
-            DestroyRenderTarget();
-        }
-    }
-
-    // Check if the mask render target already exists
-    if (m_maskRenderTargetHandle != -1)
-    {
-        // Render target exists, resize it to the given size
-        if (!gEnv->pRenderer->ResizeRenderTarget(m_maskRenderTargetHandle, static_cast<int>(renderTargetSize.GetX()), static_cast<int>(renderTargetSize.GetY())))
-        {
-            AZ_Warning("UI", false, "Failed to resize mask render target for UiMaskComponent");
-            DestroyRenderTarget();
-        }
-    }
-    else
-    {
-        // create separate render target for the mask texture
-        m_maskRenderTargetHandle = gEnv->pRenderer->CreateRenderTarget(m_maskRenderTargetName.c_str(),
-            static_cast<int>(renderTargetSize.GetX()), static_cast<int>(renderTargetSize.GetY()), Clr_Transparent, eTF_R8G8B8A8);
-
-        if (m_maskRenderTargetHandle == -1)
-        {
-            AZ_Warning("UI", false, "Failed to create mask render target for UiMaskComponent");
-            DestroyRenderTarget();
-        }
-    }
-#endif
 
     // at this point either all render targets and depth surfaces are created or none are.
     // If all succeeded then update the render target size
-    if (m_contentRenderTargetHandle != -1)
+    if (!m_contentAttachmentImageId.IsEmpty())
     {
         m_renderTargetWidth = static_cast<int>(renderTargetSize.GetX());
         m_renderTargetHeight = static_cast<int>(renderTargetSize.GetY());
@@ -635,22 +593,22 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiMaskComponent::DestroyRenderTarget()
 {
-    if (m_contentRenderTargetHandle != -1)
+    if (!m_contentAttachmentImageId.IsEmpty())
     {
-        gEnv->pRenderer->DestroyRenderTarget(m_contentRenderTargetHandle);
-        m_contentRenderTargetHandle = -1;
+        AZ::EntityId canvasEntityId;
+        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        EBUS_EVENT_ID(canvasEntityId, LyShine::RenderToTextureRequestBus, ReleaseRenderTarget, m_contentAttachmentImageId);
+
+        m_contentAttachmentImageId = AZ::RHI::AttachmentId{};
     }
 
-    if (m_renderTargetDepthSurface)
+    if (!m_maskAttachmentImageId.IsEmpty())
     {
-        gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
-        m_renderTargetDepthSurface = nullptr;
-    }
+        AZ::EntityId canvasEntityId;
+        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        EBUS_EVENT_ID(canvasEntityId, LyShine::RenderToTextureRequestBus, ReleaseRenderTarget, m_maskAttachmentImageId);
 
-    if (m_maskRenderTargetHandle != -1)
-    {
-        gEnv->pRenderer->DestroyRenderTarget(m_maskRenderTargetHandle);
-        m_maskRenderTargetHandle = -1;
+        m_maskAttachmentImageId = AZ::RHI::AttachmentId{};
     }
 }
 
@@ -747,6 +705,14 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // we always clear to transparent black - the accumulation of alpha in the render target requires it
     AZ::Color clearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+    // Get the render targets
+    AZ::Data::Instance<AZ::RPI::AttachmentImage> contentAttachmentImage;
+    AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage;
+    AZ::EntityId canvasEntityId;
+    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    EBUS_EVENT_ID_RESULT(contentAttachmentImage, canvasEntityId, LyShine::RenderToTextureRequestBus, GetRenderTarget, m_contentAttachmentImageId);
+    EBUS_EVENT_ID_RESULT(maskAttachmentImage, canvasEntityId, LyShine::RenderToTextureRequestBus, GetRenderTarget, m_maskAttachmentImageId);
+
     // We don't want parent faders to affect what is rendered to the render target since we will
     // apply those fades when we render from the render target.
     // Note that this means that, if there are parent (no render to texture) faders, we get a "free"
@@ -756,8 +722,8 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // mask render target
     {
         // Start building the render to texture node in the render graph
-        renderGraph->BeginRenderToTexture(m_maskRenderTargetHandle, m_renderTargetDepthSurface,
-            m_viewportTopLeft, m_viewportSize, clearColor);
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
+        lyRenderGraph->BeginRenderToTexture(maskAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the visual component for this element (if there is one) plus the child mask element (if there is one)
         RenderMaskPrimitives(renderGraph, renderInterface, childMaskElementInterface, isInGame);
@@ -769,8 +735,8 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // content render target
     {
         // Start building the render to texture node for the content render target in the render graph
-        renderGraph->BeginRenderToTexture(m_contentRenderTargetHandle, m_renderTargetDepthSurface,
-            m_viewportTopLeft, m_viewportSize, clearColor);
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
+        lyRenderGraph->BeginRenderToTexture(contentAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the "content" - the child elements excluding the child mask element (if any)
         RenderContentPrimitives(renderGraph, elementInterface, childMaskElementInterface, numChildren, isInGame);
@@ -790,14 +756,13 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
             float desiredAlpha = renderGraph->GetAlphaFade();
             uint32 desiredPackedAlpha = static_cast<uint8>(desiredAlpha * 255.0f);
 
-            UCol desiredPackedColor;
-            // This is a special case. We have an input texture that already has premultiplied alpha.
-            // So we tell the shader not to premultiply the output colors and we premultiply the alpha
-            // into the vertex colors so that they are premultiplied too.
-            desiredPackedColor.r = desiredPackedColor.g = desiredPackedColor.b = desiredPackedColor.a = desiredPackedAlpha;
-            if (m_cachedPrimitive.m_vertices[0].color.dcolor != desiredPackedColor.dcolor)
+            // If the fade value has changed we need to update the alpha values in the vertex colors but we do
+            // not want to touch or recompute the RGB values
+            if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
             {
-                // go through the cached vertices and update the color values
+                // go through all the cached vertices and update the alpha values
+                UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+                desiredPackedColor.a = static_cast<uint8>(desiredPackedAlpha);
                 for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
                 {
                     m_cachedPrimitive.m_vertices[i].color = desiredPackedColor;
@@ -805,22 +770,29 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
             }
         }
 
-#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
         // Add a primitive to do the alpha mask
         {
-            // Set the texture and other render state required
-            ITexture* texture = gEnv->pRenderer->EF_GetTextureByID(m_contentRenderTargetHandle);
-            ITexture* maskTexture = gEnv->pRenderer->EF_GetTextureByID(m_maskRenderTargetHandle);
-            bool isClampTextureMode = true;
-            bool isTextureSRGB = true;
-            bool isTexturePremultipliedAlpha = true;
-            LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
+            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
+            if (lyRenderGraph)
+            {
+                // Set the texture and other render state required
+                AZ::Data::Instance<AZ::RPI::Image> contentImage = contentAttachmentImage;
+                AZ::Data::Instance<AZ::RPI::Image> maskImage = maskAttachmentImage;
+                bool isClampTextureMode = true;
+                bool isTextureSRGB = true;
+                bool isTexturePremultipliedAlpha = false;
+                LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
 
-            // add a render node to render using the two render targets, one as an alpha mask of the other
-            renderGraph->AddAlphaMaskPrimitive(&m_cachedPrimitive, texture, maskTexture,
-                isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+                // add a render node to render using the two render targets, one as an alpha mask of the other
+                lyRenderGraph->AddAlphaMaskPrimitiveAtom(&m_cachedPrimitive,
+                    contentAttachmentImage,
+                    maskAttachmentImage,
+                    isClampTextureMode,
+                    isTextureSRGB,
+                    isTexturePremultipliedAlpha,
+                    blendMode);
+            }
         }
-#endif
     }
 }
 

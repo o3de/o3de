@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -50,12 +51,13 @@ namespace ScriptCanvas
             AZStd::string_view GetGraphName() const;
             AZStd::string_view GetFullPath() const;
             AZStd::sys_time_t GetTranslationDuration() const;
-            AZStd::string ResolveScope(const AZStd::vector<AZStd::string>& namespaces);
-            void SingleLineComment(Writer& writer);
+            AZStd::vector<ValidationConstPtr>&& MoveErrors();
             void OpenBlockComment(Writer& writer);
             void OpenFunctionBlock(Writer& writer);
             void OpenNamespace(Writer& writer, AZStd::string_view ns);
             void OpenScope(Writer& writer);
+            AZStd::string ResolveScope(const AZStd::vector<AZStd::string>& namespaces);
+            void SingleLineComment(Writer& writer);
             void WriteCopyright(Writer& writer);
             void WriteDoNotModify(Writer& writer);
             void WriteLastWritten(Writer& writer);

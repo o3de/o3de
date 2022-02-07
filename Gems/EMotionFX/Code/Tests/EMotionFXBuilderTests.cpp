@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -53,7 +55,7 @@ namespace EMotionFX
         // By using this mock catalog, we can pretend to load the specific referenced assets without actually loading anything.
         UnitTest::MockLoadAssetCatalogAndHandler testAssetCatalog({ referencedAnimGraph, referencedMotionSet });
 
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExample.animgraph";
+        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExample.animgraph";
         AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
         EMotionFXBuilder::AnimGraphBuilderWorker builderWorker;
 
@@ -66,7 +68,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestAnimGraphAsset_NoDependency_OutputNoProductDependencies)
     {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExampleNoDependency.animgraph";
+        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExampleNoDependency.animgraph";
         AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
         EMotionFXBuilder::AnimGraphBuilderWorker builderWorker;
 
@@ -76,7 +78,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestAnimGraphAsset_InvalidFilePath_OutputNoProductDependencies)
     {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/InvalidPathExample.animgraph";
+        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/InvalidPathExample.animgraph";
         AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
         EMotionFXBuilder::AnimGraphBuilderWorker builderWorker;
 
@@ -86,7 +88,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestAnimGraphAsset_EmptyFile_OutputNoProductDependencies)
     {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyAnimGraphExample.animgraph";
+        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyAnimGraphExample.animgraph";
         AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
         EMotionFXBuilder::AnimGraphBuilderWorker builderWorker;
 
@@ -96,19 +98,9 @@ namespace EMotionFX
         ASSERT_EQ(productDependencies.size(), 0);
     }
 
-    TEST_F(EMotionFXBuilderTests, TestLegacyAnimGraphAsset_NoDependency_OutputNoProductDependencies)
-    {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/LegacyAnimGraphExample.animgraph";
-        AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
-        EMotionFXBuilder::AnimGraphBuilderWorker builderWorker;
-
-        ASSERT_TRUE(builderWorker.ParseProductDependencies(ResolvePath(fileName.c_str()), fileName, productDependencies));
-        ASSERT_EQ(productDependencies.size(), 0);
-    }
-
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_HasReferenceNode_OutputProductDependencies)
     {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset";
+        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset";
         ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
@@ -120,7 +112,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_NoDependency_OutputNoProductDependencies)
     {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExampleNoDependency.motionset";
+        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExampleNoDependency.motionset";
         ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
@@ -130,7 +122,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_InvalidFilePath_OutputNoProductDependencies)
     {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/InvalidPathExample.motionset";
+        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/InvalidPathExample.motionset";
         ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
@@ -140,7 +132,7 @@ namespace EMotionFX
 
     TEST_F(EMotionFXBuilderTests, TestMotionSetAsset_EmptyFile_OutputNoProductDependencies)
     {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyMotionSetExample.motionset";
+        const AZStd::string fileName = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyMotionSetExample.motionset";
         ProductPathDependencySet productDependencies;
         EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
 
@@ -148,15 +140,5 @@ namespace EMotionFX
         ASSERT_FALSE(builderWorker.ParseProductDependencies(fileName, fileName, productDependencies));
         AZ_TEST_STOP_ASSERTTEST(2);
         ASSERT_EQ(productDependencies.size(), 0);
-    }
-
-    TEST_F(EMotionFXBuilderTests, TestLegacyMotionSetAsset_ReferenceMotionAssets_OutputProductDependencies)
-    {
-        const AZStd::string fileName = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/EMotionFXBuilderTestAssets/LegacyMotionSetExample.motionset";
-        ProductPathDependencySet productDependencies;
-        EMotionFXBuilder::MotionSetBuilderWorker builderWorker;
-
-        ASSERT_TRUE(builderWorker.ParseProductDependencies(ResolvePath(fileName.c_str()), fileName, productDependencies));
-        ASSERT_EQ(productDependencies.size(), 25);
     }
 } // namespace EMotionFX

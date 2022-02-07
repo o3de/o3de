@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,9 +13,7 @@
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/ScopeProducer.h>
 
-#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
-#include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ
@@ -28,7 +27,6 @@ namespace AZ
 
     namespace RPI
     {
-        class ImageAttachmentCopy;
         class RenderPass;
         class Query;
 
@@ -39,8 +37,6 @@ namespace AZ
             public RHI::ScopeProducer
         {
             AZ_RPI_PASS(RenderPass);
-
-            friend class ImageAttachmentPreviewPass;
 
             using ScopeQuery = AZStd::array<RHI::Ptr<Query>, static_cast<size_t>(ScopeQueryType::Count)>;
 
@@ -118,7 +114,7 @@ namespace AZ
 
         private:
             // Helper function that binds a single attachment to the pass shader resource group
-            void BindAttachment(const RHI::FrameGraphCompileContext& context, const PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex);
+            void BindAttachment(const RHI::FrameGraphCompileContext& context, PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex);
 
             // Helper function to get the query by the scope index and query type
             RHI::Ptr<Query> GetQuery(ScopeQueryType queryType);
@@ -141,8 +137,6 @@ namespace AZ
 
             // Readback the results from the ScopeQueries
             void ReadbackScopeQueryResults();
-
-            AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
 
             // Readback results from the Timestamp queries
             TimestampResult m_timestampResult;

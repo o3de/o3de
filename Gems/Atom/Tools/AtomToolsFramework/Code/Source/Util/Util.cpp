@@ -1,34 +1,68 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QProcess>
 AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
 {
+    void LoadImageAsync(const AZStd::string& path, LoadImageAsyncCallback callback)
+    {
+        AZ::Job* job = AZ::CreateJobFunction(
+            [path, callback]()
+            {
+                ImageProcessingAtom::IImageObjectPtr imageObject;
+                ImageProcessingAtom::ImageProcessingRequestBus::BroadcastResult(
+                    imageObject, &ImageProcessingAtom::ImageProcessingRequests::LoadImagePreview, path);
+
+                if (imageObject)
+                {
+                    AZ::u8* imageBuf = nullptr;
+                    AZ::u32 pitch = 0;
+                    AZ::u32 mip = 0;
+                    imageObject->GetImagePointer(mip, imageBuf, pitch);
+                    const AZ::u32 width = imageObject->GetWidth(mip);
+                    const AZ::u32 height = imageObject->GetHeight(mip);
+
+                    QImage image(imageBuf, width, height, pitch, QImage::Format_RGBA8888);
+
+                    if (callback)
+                    {
+                        callback(image);
+                    }
+                }
+            },
+            true);
+        job->Start();
+    }
+
     QFileInfo GetSaveFileInfo(const QString& initialPath)
     {
         const QFileInfo initialFileInfo(initialPath);
         const QString initialExt(initialFileInfo.completeSuffix());
 
-        const QFileInfo selectedFileInfo(QFileDialog::getSaveFileName(
+        const QFileInfo selectedFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
             QApplication::activeWindow(),
             "Save File",
             initialFileInfo.absolutePath() +
@@ -103,7 +137,7 @@ namespace AtomToolsFramework
         const QFileInfo initialFileInfo(initialPath);
         const QString initialExt(initialFileInfo.completeSuffix());
 
-        const QFileInfo duplicateFileInfo(QFileDialog::getSaveFileName(
+        const QFileInfo duplicateFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
             QApplication::activeWindow(),
             "Duplicate File",
             GetUniqueFileInfo(initialPath).absoluteFilePath(),
@@ -132,29 +166,12 @@ namespace AtomToolsFramework
 
     bool LaunchTool(const QString& baseName, const QString& extension, const QStringList& arguments)
     {
-        const char* engineRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-        AZ_Assert(engineRoot != nullptr, "AzFramework::ApplicationRequests::GetEngineRoot failed");
+        AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+        AZ_Assert(!engineRoot.empty(), "Cannot query Engine Path");
 
-        char binFolderName[AZ_MAX_PATH_LEN] = {};
-        AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(binFolderName, AZ_MAX_PATH_LEN);
+        AZ::IO::FixedMaxPath launchPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory())
+            / (baseName + extension).toUtf8().constData();
 
-        // If it contains the filename, zero out the last path separator character...
-        if (ret.m_pathIncludesFilename)
-        {
-            char* lastSlash = strrchr(binFolderName, AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            if (lastSlash)
-            {
-                *lastSlash = '\0';
-            }
-        }
-
-        const QString path = QString("%1%2%3%4")
-            .arg(binFolderName)
-            .arg(AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING)
-            .arg(baseName)
-            .arg(extension);
-
-        return QProcess::startDetached(path, arguments, engineRoot);
+        return QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }
 }

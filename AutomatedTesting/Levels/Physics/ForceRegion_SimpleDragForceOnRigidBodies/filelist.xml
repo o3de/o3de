@@ -1,0 +1,6 @@
+<download name="ForceRegion_SimpleDragForceOnRigidBodies" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="9859" md5="e6f4abd8f280cbb835d5b08ea270dd24"/>
+ </files>
+</download>

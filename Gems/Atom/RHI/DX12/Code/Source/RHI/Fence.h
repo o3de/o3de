@@ -1,10 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
+
+// NOTE: We are careful to include platform headers *before* we include AzCore/Debug/Profiler.h to ensure that d3d12 symbols
+// are defined prior to the inclusion of the pix3 runtime.
+#include <RHI/DX12.h>
 
 #include <Atom/RHI/Fence.h>
 #include <Atom/RHI/Scope.h>

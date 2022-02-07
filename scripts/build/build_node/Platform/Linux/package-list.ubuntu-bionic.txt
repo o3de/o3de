@@ -2,15 +2,22 @@
 
 # Build Tools Packages
 cmake/3.20.1-0kitware1ubuntu18.04.1     # For cmake
-clang-6.0                               # For Ninja Build System
+clang-12                                # For Ninja Build System
 ninja-build                             # For the compiler and its dependencies
+java-11-amazon-corretto-jdk             # For Jenkins and Android
 
 # Build Libraries
 libglu1-mesa-dev                        # For Qt (GL dependency)
 libxcb-xinerama0                        # For Qt plugins at runtime
 libxcb-xinput0                          # For Qt plugins at runtime
+libfontconfig1-dev                      # For Qt plugins at runtime
 libcurl4-openssl-dev                    # For HttpRequestor
-libsdl2-dev                             # for WWise/Audio
+# libsdl2-dev                             # For WWise/Audio
+libxcb-xkb-dev                          # For xcb keyboard input
+libxkbcommon-x11-dev                    # For xcb keyboard input
+libxkbcommon-dev                        # For xcb keyboard input
+libxcb-xfixes0-dev                      # For mouse input
+libxcb-xinput-dev                       # For mouse input
 zlib1g-dev
 mesa-common-dev
 

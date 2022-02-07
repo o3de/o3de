@@ -1,8 +1,9 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -14,7 +15,7 @@ from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 #  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = 'azpy.dev.ide'

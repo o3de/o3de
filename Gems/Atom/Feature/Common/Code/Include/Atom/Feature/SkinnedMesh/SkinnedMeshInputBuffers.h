@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -44,7 +45,7 @@ namespace AZ
             uint32_t m_vertexOffset = 0;
             uint32_t m_vertexCount = 0;
             Aabb m_aabb = Aabb::CreateNull();
-            Data::Asset<RPI::MaterialAsset> m_material;
+            AZ::RPI::ModelMaterialSlot m_materialSlot;
         };
 
         //! Buffer views for a specific sub-mesh that are not modified during skinning and thus are shared by all instances of the same skinned mesh

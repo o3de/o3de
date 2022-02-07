@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <RHI/ArgumentBuffer.h>
 #include <RHI/ImageView.h>
@@ -35,6 +35,11 @@ namespace AZ
                                                             ArgumentBuffer::GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const
         {
             GetCompiledArgumentBuffer().CollectUntrackedResources(commandEncoder, srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
+        }
+    
+        bool ShaderResourceGroup::IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
+        {
+            return GetCompiledArgumentBuffer().IsNullHeapNeededForVertexStage(srgResourcesVisInfo);
         }
     }
 }

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
 #include <AzCore/Debug/EventTrace.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/Buffer.h>
@@ -83,7 +83,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create BLAS scratch buffer");
 
             MemoryView& scratchMemoryView = static_cast<Buffer*>(buffers.m_scratchBuffer.get())->GetMemoryView();
-            scratchMemoryView.SetName("BLAS Scratch");
+            scratchMemoryView.SetName(L"BLAS Scratch");
 
             // create BLAS buffer
             buffers.m_blasBuffer = RHI::Factory::Get().CreateBuffer();
@@ -98,7 +98,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create BLAS buffer");
 
             MemoryView& blasMemoryView = static_cast<Buffer*>(buffers.m_blasBuffer.get())->GetMemoryView();
-            blasMemoryView.SetName("BLAS");
+            blasMemoryView.SetName(L"BLAS");
 #endif
             return RHI::ResultCode::Success;
         }

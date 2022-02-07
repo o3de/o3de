@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,11 +30,11 @@ namespace MCommon
          */
         ManipulatorCallback(EMotionFX::ActorInstance* actorInstance, const AZ::Vector3& oldValue)
         {
-            mActorInstance  = actorInstance;
-            mOldValueVec    = oldValue;
-            mCurrValueVec   = oldValue;
-            mCurrValueQuat  = AZ::Quaternion::CreateIdentity();
-            mOldValueQuat   = AZ::Quaternion::CreateIdentity();
+            m_actorInstance  = actorInstance;
+            m_oldValueVec    = oldValue;
+            m_currValueVec   = oldValue;
+            m_currValueQuat  = AZ::Quaternion::CreateIdentity();
+            m_oldValueQuat   = AZ::Quaternion::CreateIdentity();
         }
 
         /**
@@ -41,11 +42,11 @@ namespace MCommon
          */
         ManipulatorCallback(EMotionFX::ActorInstance* actorInstance, const AZ::Quaternion& oldValue)
         {
-            mActorInstance  = actorInstance;
-            mOldValueQuat   = oldValue;
-            mCurrValueQuat  = oldValue;
-            mOldValueVec    = AZ::Vector3::CreateZero();
-            mCurrValueVec   = AZ::Vector3::CreateZero();
+            m_actorInstance  = actorInstance;
+            m_oldValueQuat   = oldValue;
+            m_currValueQuat  = oldValue;
+            m_oldValueVec    = AZ::Vector3::CreateZero();
+            m_currValueVec   = AZ::Vector3::CreateZero();
         }
 
         /**
@@ -56,8 +57,8 @@ namespace MCommon
         /**
          * Update the actor instance.
          */
-        virtual void Update(const AZ::Vector3& value)           { mCurrValueVec = value; }
-        virtual void Update(const AZ::Quaternion& value)     { mCurrValueQuat = value; }
+        virtual void Update(const AZ::Vector3& value)           { m_currValueVec = value; }
+        virtual void Update(const AZ::Quaternion& value)     { m_currValueQuat = value; }
 
         /**
          * Update old transformation values of the callback
@@ -68,35 +69,35 @@ namespace MCommon
          * Functions to get the current value.
          * @return the position/scale/rotation of the actor instance.
          */
-        virtual AZ::Vector3 GetCurrValueVec()           { return mCurrValueVec; }
-        virtual AZ::Quaternion GetCurrValueQuat()       { return mCurrValueQuat; }
+        virtual AZ::Vector3 GetCurrValueVec()           { return m_currValueVec; }
+        virtual AZ::Quaternion GetCurrValueQuat()       { return m_currValueQuat; }
 
         /**
          * Return the old value.
          * @return the old value.
          */
-        const AZ::Vector3& GetOldValueVec() const       { return mOldValueVec; }
-        const AZ::Quaternion& GetOldValueQuat() const   { return mOldValueQuat; }
+        const AZ::Vector3& GetOldValueVec() const       { return m_oldValueVec; }
+        const AZ::Quaternion& GetOldValueQuat() const   { return m_oldValueQuat; }
 
         /**
          * Apply transformation.
          */
-        virtual void ApplyTransformation() { mOldValueVec = mCurrValueVec; mOldValueQuat = mCurrValueQuat; }
+        virtual void ApplyTransformation() { m_oldValueVec = m_currValueVec; m_oldValueQuat = m_currValueQuat; }
 
         /**
          * returns the actor instance, if there is one assigned to the callback.
          * @return The actor instance.
          */
-        EMotionFX::ActorInstance* GetActorInstance()        { return mActorInstance; }
+        EMotionFX::ActorInstance* GetActorInstance()        { return m_actorInstance; }
 
         virtual bool GetResetFollowMode() const             { return false; }
 
     protected:
-        AZ::Quaternion              mOldValueQuat;
-        AZ::Quaternion              mCurrValueQuat;
-        AZ::Vector3                 mOldValueVec;
-        AZ::Vector3                 mCurrValueVec;
-        EMotionFX::ActorInstance*   mActorInstance;
+        AZ::Quaternion              m_oldValueQuat;
+        AZ::Quaternion              m_currValueQuat;
+        AZ::Vector3                 m_oldValueVec;
+        AZ::Vector3                 m_currValueVec;
+        EMotionFX::ActorInstance*   m_actorInstance;
     };
 
     /**
@@ -120,12 +121,12 @@ namespace MCommon
          */
         TransformationManipulator(float scalingFactor = 1.0f, bool isVisible = true)
         {
-            mScalingFactor      = scalingFactor;
-            mIsVisible          = isVisible;
-            mSelectionLocked    = false;
-            mPosition           = AZ::Vector3::CreateZero();
-            mRenderOffset       = AZ::Vector3::CreateZero();
-            mCallback           = nullptr;
+            m_scalingFactor      = scalingFactor;
+            m_isVisible          = isVisible;
+            m_selectionLocked    = false;
+            m_position           = AZ::Vector3::CreateZero();
+            m_renderOffset       = AZ::Vector3::CreateZero();
+            m_callback           = nullptr;
         }
 
         /**
@@ -133,48 +134,48 @@ namespace MCommon
          */
         virtual ~TransformationManipulator()
         {
-            delete mCallback;
+            delete m_callback;
         }
 
         /**
          * Function to init the position of the gizmo.
          */
-        void Init(const AZ::Vector3& position)                          { mPosition = position + mRenderOffset; UpdateBoundingVolumes(); }
+        void Init(const AZ::Vector3& position)                          { m_position = position + m_renderOffset; UpdateBoundingVolumes(); }
 
         /**
          * Function to set the name of the gizmo.
          * @param name The name of the gizmo. (e.g. used to identify different parameters)
          */
-        void SetName(const AZStd::string& name)                         { mName = name; }
+        void SetName(const AZStd::string& name)                         { m_name = name; }
 
         /**
          * Function to get the gizmo name.
          * @return The name of the gizmo.
          */
-        const AZStd::string& GetName() const                            { return mName; }
+        const AZStd::string& GetName() const                            { return m_name; }
 
         /**
          * Get the selection lock state.
          * @return the selection lock state.
          */
-        void SetSelectionLocked(bool selectionLocked)                   { mSelectionLocked = selectionLocked; }
-        bool GetSelectionLocked()                                       { return mSelectionLocked; }
+        void SetSelectionLocked(bool selectionLocked)                   { m_selectionLocked = selectionLocked; }
+        bool GetSelectionLocked()                                       { return m_selectionLocked; }
 
         /**
          * Set the visible state of the manipulator.
          */
-        void SetIsVisible(bool isVisible = true)                          { mIsVisible = isVisible; }
+        void SetIsVisible(bool isVisible = true)                          { m_isVisible = isVisible; }
 
         /**
          * Set the scale of the gizmo.
          * @param scale The new scale value for the gizmo.
          */
-        void SetScale(float scale, MCommon::Camera* camera = nullptr)     { mScalingFactor = scale; UpdateBoundingVolumes(camera); }
+        void SetScale(float scale, MCommon::Camera* camera = nullptr)     { m_scalingFactor = scale; UpdateBoundingVolumes(camera); }
 
         /**
          * Set mode of the gizmo.
          */
-        void SetMode(uint32 mode)                                       { mMode = mode; }
+        void SetMode(uint32 mode)                                       { m_mode = mode; }
 
         /**
          * Set the render offset of the gizmo.
@@ -184,7 +185,7 @@ namespace MCommon
         void SetRenderOffset(const AZ::Vector3& offset)
         {
             AZ::Vector3 oldPos = GetPosition();
-            mRenderOffset = offset;
+            m_renderOffset = offset;
             Init(oldPos);
         }
 
@@ -192,39 +193,39 @@ namespace MCommon
          * Get the position of the gizmo.
          * @return The position of the gizmo.
          */
-        AZ::Vector3 GetPosition() const                                 { return mPosition - mRenderOffset; }
+        AZ::Vector3 GetPosition() const                                 { return m_position - m_renderOffset; }
 
         /**
          * Get the position offset of the gizmo.
          * Only affects rendering position of the gizmo, not the actual value it modifies.
          * @return The offset position of the gizmo.
          */
-        const AZ::Vector3& GetRenderOffset() const                      { return mRenderOffset; }
+        const AZ::Vector3& GetRenderOffset() const                      { return m_renderOffset; }
 
         /**
          * Set the callback.
          * @param callback Pointer to the callback used to manipulate the actorinstance.
          */
-        void SetCallback(ManipulatorCallback* callback)                 { delete mCallback; mCallback = callback; }
+        void SetCallback(ManipulatorCallback* callback)                 { delete m_callback; m_callback = callback; }
 
         /**
          * Returns the current callback of the manipulator.
          * Used to apply the transformation upon mouse release for example.
          * @return The manipulator callback.
          */
-        ManipulatorCallback* GetCallback()                              { return mCallback; }
+        ManipulatorCallback* GetCallback()                              { return m_callback; }
 
         /**
          * Function to get the mode of the transformation manipulator.
          * @return The mode of the manipulator.
          */
-        uint32 GetMode()                                                { return mMode; }
+        uint32 GetMode()                                                { return m_mode; }
 
         /**
          * Returns the visible state of the gizmo.
-         * @return mIsVisible The visible state of the gizmo.
+         * @return m_isVisible The visible state of the gizmo.
          */
-        bool GetIsVisible()                                             { return mIsVisible; }
+        bool GetIsVisible()                                             { return m_isVisible; }
 
         /**
          * Function to get the type of a gizmo. Has to be set by the constructor of the inherited classes.
@@ -269,14 +270,14 @@ namespace MCommon
         }
 
     protected:
-        AZ::Vector3             mPosition;
-        AZ::Vector3             mRenderOffset;
-        AZStd::string           mName;
-        AZStd::string           mTempString;
-        uint32                  mMode;
-        float                   mScalingFactor;
-        ManipulatorCallback*    mCallback;
-        bool                    mSelectionLocked;
-        bool                    mIsVisible;
+        AZ::Vector3             m_position;
+        AZ::Vector3             m_renderOffset;
+        AZStd::string           m_name;
+        AZStd::string           m_tempString;
+        uint32                  m_mode;
+        float                   m_scalingFactor;
+        ManipulatorCallback*    m_callback;
+        bool                    m_selectionLocked;
+        bool                    m_isVisible;
     };
 } // namespace MCommon

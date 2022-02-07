@@ -1,0 +1,883 @@
+{
+    "entries": [
+        {
+            "base": "MetastreamRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Metastream"
+            },
+            "methods": [
+                {
+                    "base": "AddDoubleToArray",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Double To Array"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Double To Array is invoked"
+                    },
+                    "details": {
+                        "name": "Add Double To Array"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddEntityIdToArray",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Entity Id To Array"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Entity Id To Array is invoked"
+                    },
+                    "details": {
+                        "name": "Add Entity Id To Array"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddStringToArray",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add String To Array"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add String To Array is invoked"
+                    },
+                    "details": {
+                        "name": "Add String To Array"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddStringToObject",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add String To Object"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add String To Object is invoked"
+                    },
+                    "details": {
+                        "name": "Add String To Object"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddSigned64ToCache",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Signed 64 To Cache"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Signed 64 To Cache is invoked"
+                    },
+                    "details": {
+                        "name": "Add Signed 64 To Cache"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
+                            "details": {
+                                "name": "AZ::s 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddUnsigned64ToArray",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Unsigned 64 To Array"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Unsigned 64 To Array is invoked"
+                    },
+                    "details": {
+                        "name": "Add Unsigned 64 To Array"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddSigned64ToObject",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Signed 64 To Object"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Signed 64 To Object is invoked"
+                    },
+                    "details": {
+                        "name": "Add Signed 64 To Object"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
+                            "details": {
+                                "name": "AZ::s 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddUnsigned64ToCache",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Unsigned 64 To Cache"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Unsigned 64 To Cache is invoked"
+                    },
+                    "details": {
+                        "name": "Add Unsigned 64 To Cache"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddStringToCache",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add String To Cache"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add String To Cache is invoked"
+                    },
+                    "details": {
+                        "name": "Add String To Cache"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddBoolToCache",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Bool To Cache"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Bool To Cache is invoked"
+                    },
+                    "details": {
+                        "name": "Add Bool To Cache"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddDoubleToCache",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Double To Cache"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Double To Cache is invoked"
+                    },
+                    "details": {
+                        "name": "Add Double To Cache"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddArrayToObject",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Array To Object"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Array To Object is invoked"
+                    },
+                    "details": {
+                        "name": "Add Array To Object"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddObjectToObject",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Object To Object"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Object To Object is invoked"
+                    },
+                    "details": {
+                        "name": "Add Object To Object"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddBoolToArray",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Bool To Array"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Bool To Array is invoked"
+                    },
+                    "details": {
+                        "name": "Add Bool To Array"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddBoolToObject",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Bool To Object"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Bool To Object is invoked"
+                    },
+                    "details": {
+                        "name": "Add Bool To Object"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddEntityIdToObject",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Entity Id To Object"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Entity Id To Object is invoked"
+                    },
+                    "details": {
+                        "name": "Add Entity Id To Object"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "StopHTTPServer",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke StopHTTP Server"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after StopHTTP Server is invoked"
+                    },
+                    "details": {
+                        "name": "StopHTTP Server"
+                    }
+                },
+                {
+                    "base": "AddEntityIdToCache",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Entity Id To Cache"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Entity Id To Cache is invoked"
+                    },
+                    "details": {
+                        "name": "Add Entity Id To Cache"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddArrayToCache",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Array To Cache"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Array To Cache is invoked"
+                    },
+                    "details": {
+                        "name": "Add Array To Cache"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddObjectToCache",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Object To Cache"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Object To Cache is invoked"
+                    },
+                    "details": {
+                        "name": "Add Object To Cache"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddUnsigned64ToObject",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Unsigned 64 To Object"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Unsigned 64 To Object is invoked"
+                    },
+                    "details": {
+                        "name": "Add Unsigned 64 To Object"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "StartHTTPServer",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke StartHTTP Server"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after StartHTTP Server is invoked"
+                    },
+                    "details": {
+                        "name": "StartHTTP Server"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddObjectToArray",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Object To Array"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Object To Array is invoked"
+                    },
+                    "details": {
+                        "name": "Add Object To Array"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddSigned64ToArray",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Signed 64 To Array"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Signed 64 To Array is invoked"
+                    },
+                    "details": {
+                        "name": "Add Signed 64 To Array"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
+                            "details": {
+                                "name": "AZ::s 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AddDoubleToObject",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Double To Object"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Double To Object is invoked"
+                    },
+                    "details": {
+                        "name": "Add Double To Object"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

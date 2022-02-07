@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -366,6 +367,21 @@ namespace Platform
         {
             return access(fileName, F_OK) == 0;
         }
+    }
+
+    bool IsDirectory(const char* filePath)
+    {
+        if (AZ::Android::Utils::IsApkPath(filePath))
+        {
+            return AZ::Android::APKFileHandler::IsDirectory(AZ::Android::Utils::StripApkPrefix(filePath).c_str());
+        }
+
+        struct stat result;
+        if (stat(filePath, &result) == 0)
+        {
+            return S_ISDIR(result.st_mode);
+        }
+        return false;
     }
 } // namespace AZ::IO::Platform
 

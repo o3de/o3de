@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,20 +34,20 @@ namespace EMotionFX
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // CommandSimulatedObjectHelpers
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    void CommandSimulatedObjectHelpers::JointIndicesToString(const AZStd::vector<AZ::u32>& jointIndices, AZStd::string& outJointIndicesString)
+    void CommandSimulatedObjectHelpers::JointIndicesToString(const AZStd::vector<size_t>& jointIndices, AZStd::string& outJointIndicesString)
     {
         outJointIndicesString.clear();
-        for (AZ::u32 jointIndex : jointIndices)
+        for (size_t jointIndex : jointIndices)
         {
             if (!outJointIndicesString.empty())
             {
                 outJointIndicesString += ';';
             }
-            outJointIndicesString += AZStd::string::format("%d", jointIndex);
+            outJointIndicesString += AZStd::string::format("%zu", jointIndex);
         }
     }
 
-    void CommandSimulatedObjectHelpers::StringToJointIndices(const AZStd::string& jointIndicesString, AZStd::vector<AZ::u32>& outJointIndices)
+    void CommandSimulatedObjectHelpers::StringToJointIndices(const AZStd::string& jointIndicesString, AZStd::vector<size_t>& outJointIndices)
     {
         outJointIndices.clear();
         AZStd::vector<AZStd::string> jointIndicesStrings;
@@ -85,7 +86,7 @@ namespace EMotionFX
         return CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
     }
 
-    bool CommandSimulatedObjectHelpers::AddSimulatedJoints(AZ::u32 actorId, const AZStd::vector<AZ::u32>& jointIndices, size_t objectIndex, bool addChildren,
+    bool CommandSimulatedObjectHelpers::AddSimulatedJoints(AZ::u32 actorId, const AZStd::vector<size_t>& jointIndices, size_t objectIndex, bool addChildren,
         MCore::CommandGroup* commandGroup, bool executeInsideCommand)
     {
         AZStd::string jointIndicesStr;
@@ -101,7 +102,7 @@ namespace EMotionFX
         return CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
     }
 
-    bool CommandSimulatedObjectHelpers::RemoveSimulatedJoints(AZ::u32 actorId, const AZStd::vector<AZ::u32>& jointIndices, size_t objectIndex, bool removeChildren,
+    bool CommandSimulatedObjectHelpers::RemoveSimulatedJoints(AZ::u32 actorId, const AZStd::vector<size_t>& jointIndices, size_t objectIndex, bool removeChildren,
         MCore::CommandGroup* commandGroup, bool executeInsideCommand)
     {
         AZStd::string jointIndicesStr;
@@ -736,7 +737,7 @@ namespace EMotionFX
         }
         else
         {
-            for (AZ::u32 jointIndex: m_jointIndices)
+            for (size_t jointIndex: m_jointIndices)
             {
                 object->AddSimulatedJointAndChildren(jointIndex);
             }
@@ -877,7 +878,7 @@ namespace EMotionFX
         // and having to deal with merging two object. Since we are rebuilding the simulated object model when removing joints anyway, it's more convenient to serialize the whole object.
         m_oldContents = MCore::ReflectionSerializer::Serialize(object).GetValue();
 
-        for (AZ::u32 jointIndex : m_jointIndices)
+        for (size_t jointIndex : m_jointIndices)
         {
             if (!object->FindSimulatedJointBySkeletonJointIndex(jointIndex))
             {
@@ -1234,8 +1235,8 @@ namespace EMotionFX
     bool CommandAdjustSimulatedJoint::SetCommandParameters(const MCore::CommandLine& parameters)
     {
         ParameterMixinActorId::SetCommandParameters(parameters);
-        m_objectIndex = static_cast<size_t>(parameters.GetValueAsInt(s_objectIndexParameterName, this));
-        m_jointIndex = static_cast<AZ::u32>(parameters.GetValueAsInt(s_jointIndexParameterName, this));
+        m_objectIndex = parameters.GetValueAsInt(s_objectIndexParameterName, this);
+        m_jointIndex = parameters.GetValueAsInt(s_jointIndexParameterName, this);
 
         if (parameters.CheckIfHasParameter(s_coneAngleLimitParameterName))
         {

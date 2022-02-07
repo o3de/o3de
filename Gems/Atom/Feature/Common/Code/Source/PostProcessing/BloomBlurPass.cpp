@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -152,8 +153,8 @@ namespace AZ
             inBinding.m_connectedBinding = isHorizontalPass ? &parentInOutBinding : &parentInBinding;
 
             RHI::ImageViewDescriptor viewDesc;
-            viewDesc.m_mipSliceMin = mipLevel;
-            viewDesc.m_mipSliceMax = mipLevel;
+            viewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel);
+            viewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel);
             inBinding.m_unifiedScopeDesc.SetAsImage(viewDesc);
 
             pass->AddAttachmentBinding(inBinding);
@@ -270,8 +271,6 @@ namespace AZ
 
         void BloomBlurPass::BuildKernelData()
         {
-            RHI::Size sourceImageSize;
-
             m_weightData.clear();
             m_offsetData.clear();
             m_kernelRadiusData.clear();

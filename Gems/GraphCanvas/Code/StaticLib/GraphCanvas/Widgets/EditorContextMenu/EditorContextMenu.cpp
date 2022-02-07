@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -117,6 +118,11 @@ namespace GraphCanvas
         m_nodePalette = aznew NodePaletteWidget(nullptr);
         m_nodePalette->setProperty("HasNoWindowDecorations", true);
         m_nodePalette->SetupNodePalette(config);
+
+        if (m_userNodePaletteWidth > 0)
+        {
+            m_nodePalette->setFixedWidth(m_userNodePaletteWidth);
+        }
 
         QWidgetAction* actionWidget = new QWidgetAction(this);
         actionWidget->setDefaultWidget(m_nodePalette);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -190,7 +191,7 @@ namespace AzQtComponents
         };
         QMap<QObject*, ScrollAreaData> m_widgets;
 
-        void perScrollBar(QObject* scrollArea, void (QScrollBar::*callback)(void))
+        void perScrollBar(QObject* scrollArea, void (QScrollBar::*callback)())
         {
             auto iterator = m_widgets.find(scrollArea);
             if (iterator != m_widgets.end())

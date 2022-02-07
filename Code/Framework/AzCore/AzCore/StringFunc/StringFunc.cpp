@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -341,8 +342,8 @@ namespace AZ::StringFunc::Internal
         {
             for (const char stripCharacter : stripCharacters)
             {
-                const char lower = tolower(stripCharacter);
-                const char upper = toupper(stripCharacter);
+                const char lower = static_cast<char>(tolower(stripCharacter));
+                const char upper = static_cast<char>(toupper(stripCharacter));
                 if (lower != upper)
                 {
                     combinedStripCharacters.push_back(lower);
@@ -1426,26 +1427,36 @@ namespace AZ
 
         namespace AssetPath
         {
-            void CalculateBranchToken(const AZStd::string& appRootPath, AZStd::string& token)
+            namespace Internal
             {
-                // Normalize the token to prepare for CRC32 calculation
-                AZStd::string normalized = appRootPath;
+                AZ::u32 CalculateBranchTokenHash(AZStd::string_view engineRootPath)
+                {
+                    // Normalize the token to prepare for CRC32 calculation
+                    auto NormalizeEnginePath = [](const char element) -> char
+                    {
+                        // Substitute path separators with '_' and lower case
+                        return element == AZ::IO::WindowsPathSeparator || element == AZ::IO::PosixPathSeparator
+                            ? '_' : static_cast<char>(std::tolower(element));
+                    };
 
-                // Strip out any trailing path separators
-                AZ::StringFunc::Strip(normalized, AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING  AZ_WRONG_FILESYSTEM_SEPARATOR_STRING,false, false, true);
+                    // Trim off trailing path separators
+                    engineRootPath = RStrip(engineRootPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+                    AZ::IO::FixedMaxPathString enginePath;
+                    AZStd::transform(engineRootPath.begin(), engineRootPath.end(),
+                        AZStd::back_inserter(enginePath), AZStd::move(NormalizeEnginePath));
 
-                // Lower case always
-                AZStd::to_lower(normalized.begin(), normalized.end());
-
-                // Substitute path separators with '_'
-                AZStd::replace(normalized.begin(), normalized.end(), '\\', '_');
-                AZStd::replace(normalized.begin(), normalized.end(), '/', '_');
-
-                // Perform the CRC32 calculation
-                const AZ::Crc32 branchTokenCrc(normalized.c_str(), normalized.size(), true);
-                char branchToken[12];
-                azsnprintf(branchToken, AZ_ARRAY_SIZE(branchToken), "0x%08X", static_cast<AZ::u32>(branchTokenCrc));
-                token = AZStd::string(branchToken);
+                    // Perform the CRC32 calculation
+                    constexpr bool forceLowercase = true;
+                    return static_cast<AZ::u32>(AZ::Crc32(enginePath.c_str(), enginePath.size(), forceLowercase));
+                }
+            }
+            void CalculateBranchToken(AZStd::string_view engineRootPath, AZStd::string& token)
+            {
+                token = AZStd::string::format("0x%08X", Internal::CalculateBranchTokenHash(engineRootPath));
+            }
+            void CalculateBranchToken(AZStd::string_view engineRootPath, AZ::IO::FixedMaxPathString& token)
+            {
+                token = AZ::IO::FixedMaxPathString::format("0x%08X", Internal::CalculateBranchTokenHash(engineRootPath));
             }
         }
 

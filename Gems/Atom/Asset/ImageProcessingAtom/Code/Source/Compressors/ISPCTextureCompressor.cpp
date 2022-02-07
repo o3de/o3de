@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <AzCore/std/function/function_template.h>
 
@@ -57,6 +57,12 @@ namespace ImageProcessingAtom
 
     bool ISPCCompressor::IsCompressedPixelFormatSupported(EPixelFormat fmt)
     {
+        // Even though the ISPC compressor support ASTC formats. But it has restrictions
+        //      1. Only supports LDR color profile
+        //      2. Only supports a subset of 2D block sizes
+        // Also it has overall lower quality compare to astc-encoder
+        // So we won't add ASTC as part of supported formats here
+        // Ref: https://solidpixel.github.io/2020/03/02/astc-compared.html
         switch (fmt)
         {
         case ePixelFormat_BC3:
@@ -111,6 +117,11 @@ namespace ImageProcessingAtom
         return ColorSpace::autoSelect;
     }
 
+    const char* ISPCCompressor::GetName() const
+    {
+        return "ISPCCompressor";
+    }
+
     IImageObjectPtr ISPCCompressor::CompressImage(IImageObjectPtr sourceImage, EPixelFormat destinationFormat, const CompressOption* compressOption) const
     {
         // Used to find the profile setters, depending on the image quality
@@ -147,7 +158,7 @@ namespace ImageProcessingAtom
         if (compressOption)
         {
             quality = compressOption->compressQuality;
-            discardAlpha = compressOption->ispcDiscardAlpha;
+            discardAlpha = compressOption->discardAlpha;
         }
 
         // Get the compression profile
@@ -225,24 +236,12 @@ namespace ImageProcessingAtom
             }
             break;
             default:
-                if (IsASTCFormat(destinationFormat))
-                {
-                    const PixelFormatInfo* info = CPixelFormats::GetInstance().GetPixelFormatInfo(destinationFormat);
-                    astc_enc_settings settings = {};
-
-                    const auto setProfile = compressionProfile->GetASTC(discardAlpha);
-                    setProfile(&settings, info->blockWidth, info->blockHeight);
-
-                    // Compress with ASTC
-                    CompressBlocksASTC(&sourceSurface, destinationImageData, &settings);
-                }
-                else
-                {
-                    // No valid pixel format
-                    AZ_Assert(false, "Unhandled pixel format %d", destinationFormat);
-                    return nullptr;
-                }
-                break;
+            {
+                // No valid pixel format
+                AZ_Assert(false, "Unhandled pixel format %d", destinationFormat);
+                return nullptr;
+            }
+            break;
             }
         }
 

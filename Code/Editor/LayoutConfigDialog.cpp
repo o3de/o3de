@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,7 +68,7 @@ QVariant LayoutConfigModel::data(const QModelIndex& index, int role) const
 
 // CLayoutConfigDialog dialog
 
-CLayoutConfigDialog::CLayoutConfigDialog(QWidget* pParent /*=NULL*/)
+CLayoutConfigDialog::CLayoutConfigDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_model(new LayoutConfigModel(this))
     , ui(new Ui::CLayoutConfigDialog)

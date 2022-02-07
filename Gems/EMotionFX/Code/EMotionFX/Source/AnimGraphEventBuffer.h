@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,8 +38,8 @@ namespace EMotionFX
         AnimGraphEventBuffer& operator=(const AnimGraphEventBuffer&) = default;
         AnimGraphEventBuffer& operator=(AnimGraphEventBuffer&&) = default;
 
-        void Reserve(uint32 numEvents);
-        void Resize(uint32 numEvents);
+        void Reserve(size_t numEvents);
+        void Resize(size_t numEvents);
         void AddEvent(const EventInfo& newEvent);
         void AddAllEventsFrom(const AnimGraphEventBuffer& eventBuffer);
 
@@ -48,11 +49,11 @@ namespace EMotionFX
             m_events.emplace_back(AZStd::forward<Args>(args)...);
         }
 
-        void SetEvent(uint32 index, const EventInfo& eventInfo);
+        void SetEvent(size_t index, const EventInfo& eventInfo);
         void Clear();
 
-        MCORE_INLINE uint32 GetNumEvents() const                    { return static_cast<uint32>(m_events.size()); }
-        MCORE_INLINE const EventInfo& GetEvent(uint32 index) const  { return m_events[index]; }
+        MCORE_INLINE size_t GetNumEvents() const                    { return m_events.size(); }
+        MCORE_INLINE const EventInfo& GetEvent(size_t index) const  { return m_events[index]; }
 
         void TriggerEvents() const;
         void UpdateWeights(AnimGraphInstance* animGraphInstance);

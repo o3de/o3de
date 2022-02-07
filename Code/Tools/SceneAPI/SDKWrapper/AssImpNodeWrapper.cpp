@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,14 +17,16 @@ namespace AZ
     namespace AssImpSDKWrapper
     {
         AssImpNodeWrapper::AssImpNodeWrapper(aiNode* sourceNode)
-            :SDKNode::NodeWrapper(sourceNode)
+            : m_assImpNode(sourceNode)
         {
             AZ_Assert(m_assImpNode, "Asset Importer Node cannot be null");
         }
 
-        AssImpNodeWrapper::~AssImpNodeWrapper()
+        aiNode* AssImpNodeWrapper::GetAssImpNode() const
         {
+            return m_assImpNode;
         }
+
         const char* AssImpNodeWrapper::GetName() const
         {
             return m_assImpNode->mName.C_Str();

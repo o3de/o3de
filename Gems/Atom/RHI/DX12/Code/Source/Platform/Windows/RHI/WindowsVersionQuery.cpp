@@ -1,11 +1,13 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "RHI/Atom_RHI_DX12_precompiled.h"
+
 #include <RHI/WindowsVersionQuery.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -16,7 +18,7 @@ namespace AZ
             bool GetWindowsVersionFromSystemDLL(WindowsVersion* windowsVersion)
             {
                 // We get the file version of one of the system DLLs to get the OS version.
-                constexpr const char* dllName = "Kernel32.dll";
+                constexpr const wchar_t* dllName = L"Kernel32.dll";
                 VS_FIXEDFILEINFO* fileInfo = nullptr;
                 DWORD handle;
                 DWORD infoSize = GetFileVersionInfoSize(dllName, &handle);
@@ -26,7 +28,7 @@ namespace AZ
                     if (GetFileVersionInfo(dllName, handle, infoSize, versionData.data()) != 0)
                     {
                         UINT len;
-                        const char* subBlock = "\\";
+                        const wchar_t* subBlock = L"\\";
                         if (VerQueryValue(versionData.data(), subBlock, reinterpret_cast<LPVOID*>(&fileInfo), &len) != 0)
                         {
                             windowsVersion->m_majorVersion = HIWORD(fileInfo->dwProductVersionMS);

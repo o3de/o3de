@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,10 +33,10 @@ namespace GraphCanvas
 
         m_database.clear();
 
-        AZStd::function<void()> reloadFn = [this]()
+        AZStd::function<void()> reloadFn = []()
         {
             // Collects all script assets for reloading
-            AZ::Data::AssetCatalogRequests::AssetEnumerationCB collectAssetsCb = [this](const AZ::Data::AssetId, const AZ::Data::AssetInfo& info)
+            AZ::Data::AssetCatalogRequests::AssetEnumerationCB collectAssetsCb = [](const AZ::Data::AssetId, const AZ::Data::AssetInfo& info)
             {
                 // Check asset type
                 if (info.m_assetType == azrtti_typeid<TranslationAsset>())
@@ -103,35 +104,49 @@ namespace GraphCanvas
         return m_database.find(key) != m_database.end();
     }
 
-    GraphCanvas::TranslationRequests::Details TranslationDatabase::GetDetails(const AZStd::string& key)
+    GraphCanvas::TranslationRequests::Details TranslationDatabase::GetDetails(const AZStd::string& key, const Details& fallbackDetails)
     {
-        const char* name = Get(key + ".name");
-        const char* tooltip = Get(key + ".tooltip");
-        const char* subtitle = Get(key + ".subtitle");
-        const char* category = Get(key + ".category");
-
-        static bool s_traceMissingItems = true;
-        if (s_traceMissingItems)
+        Details details;
+        if (!Get(key + ".name", details.m_name))
         {
-            AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value (name) not found for key: %s", key.c_str()).c_str());
-            AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value (tooltip) not found for key: %s", key.c_str()).c_str());
-            AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value (subtitle) not found for key: %s", key.c_str()).c_str());
-            AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value (category) not found for key: %s", key.c_str()).c_str());
+            details.m_name = fallbackDetails.m_name;
         }
 
-        return Details(name ? name : "", tooltip ? tooltip : "", subtitle ? subtitle : "", category ? category : "");
+        if (!Get(key + ".tooltip", details.m_tooltip))
+        {
+            details.m_tooltip = fallbackDetails.m_tooltip;
+        }
+
+        if (!Get(key + ".subtitle", details.m_subtitle))
+        {
+            details.m_subtitle = fallbackDetails.m_subtitle;
+        }
+
+        if (!Get(key + ".category", details.m_category))
+        {
+            details.m_category = fallbackDetails.m_category;
+        }
+
+        return details;
     }
 
-    const char* TranslationDatabase::Get(const AZStd::string& key)
+    bool TranslationDatabase::Get(const AZStd::string& key, AZStd::string& value)
     {
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
         if (m_database.find(key) != m_database.end())
         {
-            return m_database[key].c_str();
+            value = m_database[key];
+            return true;
         }
 
-        return "";
+        static bool s_traceMissingItems = false;
+        if (s_traceMissingItems)
+        {
+            AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value not found for key: %s", key.c_str()).c_str());
+        }
+
+        return false;
     }
 
     bool TranslationDatabase::Add(const TranslationFormat& format)

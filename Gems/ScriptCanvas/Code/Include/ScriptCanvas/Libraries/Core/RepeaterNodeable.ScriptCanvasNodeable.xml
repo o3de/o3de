@@ -10,17 +10,17 @@
            Category="Nodeables"
            GeneratePropertyFriend="True"
            Namespace="ScriptCanvas"
-           Description="Repeats the output signal the given number of times using the specified delay to space the signals out">
+           Description="Repeats the output signal the given number of times using the specified delay to space the signals out.">
 
 
       <!-- Input tag is for an execution input that has optional data (parameters) -->
       <Input Name="Start" Description="">
         <Parameter Name="Repetitions" Type="Data::NumberType" DefaultValue="0.0" Description="How many times to repeat."/>
-        <Parameter Name="Interval" Type="Data::NumberType" DefaultValue="0.0" Description="The Interval between repetitions."/>
+        <Parameter Name="Interval" Type="Data::NumberType" DefaultValue="0.0" Description="The Interval between repetitions. If zero, all repititions execute immediately, before On Start"/>
       </Input>
 
       <Output Name="Complete" Description="Signaled upon node exit"/>
-      <Output Name="Action" Description="Signaled every repeition"/>
+      <Output Name="Action" Description="Signaled every repetition"/>
 
       <PropertyInterface Property="m_timeUnitsInterface" Name="Units" Type="Input" Description="Units to represent the time in."/>
 

@@ -1,5 +1,5 @@
 {
-    "Source": "LinearSkinningCS",
+    "Source": "LinearSkinningCS.azsl",
 
     "ProgramSettings":
     {

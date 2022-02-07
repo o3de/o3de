@@ -1,18 +1,20 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
-
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <AzCore/Asset/AssetManager.h>
 
 #include <Scene/PhysXScene.h>
 #include <System/PhysXSystem.h>
 #include <System/PhysXAllocator.h>
 #include <System/PhysXCpuDispatcher.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 #include <PxPhysicsAPI.h>
 
@@ -97,7 +99,20 @@ namespace PhysX
             m_systemConfig = *physXConfig;
         }
 
-        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+        // If the settings registry isn't available, something earlier in startup will report that failure.
+        if (auto* settingsRegistry = AZ::SettingsRegistry::Get();
+            settingsRegistry != nullptr)
+        {
+            // Automatically register the event if it's not registered, because
+            // this system is initialized before the settings registry has loaded the event list.
+            AZ::ComponentApplicationLifecycle::RegisterHandler(
+                *settingsRegistry, m_componentApplicationLifecycleHandler,
+                [this]([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type)
+                {
+                    InitializeMaterialLibrary();
+                },
+                "LegacySystemInterfaceCreated"); // LegacySystemInterfaceCreated is signaled after critical assets have been processed
+        }
 
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
@@ -118,7 +133,7 @@ namespace PhysX
 
         RemoveAllScenes();
 
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        m_componentApplicationLifecycleHandler.Disconnect();
         m_materialLibraryAssetHelper.Disconnect();
         // Clear the asset reference in deactivate. The asset system is shut down before destructors are called
         // for system components, causing any hanging asset references to become crashes on shutdown in release builds.
@@ -130,7 +145,7 @@ namespace PhysX
 
     void PhysXSystem::Simulate(float deltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (m_state != State::Initialized)
         {
@@ -219,7 +234,7 @@ namespace PhysX
 
         if (m_sceneList.size() < std::numeric_limits<AzPhysics::SceneIndex>::max()) //add a new scene if it is under the limit
         {
-            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), (m_sceneList.size()));
+            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), static_cast<AzPhysics::SceneIndex>(m_sceneList.size()));
             m_sceneList.emplace_back(AZStd::make_unique<PhysXScene>(config, sceneHandle));
             m_sceneAddedEvent.Signal(sceneHandle);
             return sceneHandle;
@@ -251,7 +266,7 @@ namespace PhysX
 
         if (sceneItr != m_sceneList.end())
         {
-            return AzPhysics::SceneHandle((*sceneItr)->GetId(), AZStd::distance(m_sceneList.begin(), sceneItr));
+            return AzPhysics::SceneHandle((*sceneItr)->GetId(), static_cast<AzPhysics::SceneIndex>(AZStd::distance(m_sceneList.begin(), sceneItr)));
         }
         return AzPhysics::InvalidSceneHandle;
     }
@@ -312,7 +327,7 @@ namespace PhysX
                 {
                     m_sceneRemovedEvent.Signal(handle);
                     m_sceneList[index].reset();
-                    m_freeSceneSlots.push(index);
+                    m_freeSceneSlots.push(static_cast<AzPhysics::SceneIndex>(index));
                 }
             }
         }
@@ -362,10 +377,8 @@ namespace PhysX
         return &m_systemConfig;
     }
 
-    void PhysXSystem::OnCatalogLoaded([[maybe_unused]]const char* catalogFile)
+    void PhysXSystem::InitializeMaterialLibrary()
     {
-        // now that assets can be resolved, lets load the default material library.
-        
         if (!m_systemConfig.m_materialLibraryAsset.GetId().IsValid())
         {
             m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::InvalidId);
@@ -511,10 +524,12 @@ namespace PhysX
 
         materialLibrary.BlockUntilLoadComplete();
 
-        AZ_Warning("PhysX", (materialLibrary.GetData() != nullptr),
+        const bool loadedSuccessfully = materialLibrary.GetData() != nullptr && !materialLibrary.IsError();
+
+        AZ_Warning("PhysX", loadedSuccessfully,
             "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
         
-        return materialLibrary.GetData() != nullptr && !materialLibrary.IsError();
+        return loadedSuccessfully;
     }
 
     //TEMP -- until these are fully moved over here

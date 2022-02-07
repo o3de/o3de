@@ -1,0 +1,6 @@
+<download name="ForceRegion_ImpulsesPxMeshShapedRigidBody" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="9892" md5="904e8e900ef5fe6c71c131a773b6503b"/>
+ </files>
+</download>

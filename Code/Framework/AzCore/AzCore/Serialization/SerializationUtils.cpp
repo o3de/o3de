@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -23,7 +24,7 @@ namespace AZ
     {
         bool LoadObjectFromStreamInPlace(IO::GenericStream& stream, AZ::SerializeContext* context, const SerializeContext::ClassData* objectClassData, void* targetPointer, const FilterDescriptor& filterDesc)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             AZ_Assert(objectClassData, "Class data is required.");
 
@@ -41,7 +42,7 @@ namespace AZ
             AZ_Assert(targetPointer, "You must provide a target pointer");
 
             bool foundSuccess = false;
-            typedef AZStd::function<void(void**, const SerializeContext::ClassData**, const Uuid&, SerializeContext*)> CreationCallback;
+            using CreationCallback = AZStd::function<void (void **, const SerializeContext::ClassData **, const Uuid &, SerializeContext *)>;
             auto handler = [&targetPointer, objectClassData, &foundSuccess](void** instance, const SerializeContext::ClassData** classData, const Uuid& classId, SerializeContext* context)
                 {
                     void* convertibleInstance{};
@@ -71,7 +72,7 @@ namespace AZ
 
         bool LoadObjectFromStreamInPlace(IO::GenericStream& stream, AZ::SerializeContext* context, const Uuid& targetClassId, void* targetPointer, const FilterDescriptor& filterDesc)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             if (!context)
             {
@@ -110,7 +111,7 @@ namespace AZ
 
         void* LoadObjectFromStream(IO::GenericStream& stream, AZ::SerializeContext* context, const Uuid* targetClassId, const FilterDescriptor& filterDesc)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             if (!context)
             {
@@ -168,7 +169,7 @@ namespace AZ
 
         void* LoadObjectFromFile(const AZStd::string& filePath, const Uuid& targetClassId, SerializeContext* context, const FilterDescriptor& filterDesc, int /*platformFlags*/)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             AZ::IO::FileIOStream fileStream;           
             if (!fileStream.Open(filePath.c_str(), IO::OpenMode::ModeRead | IO::OpenMode::ModeBinary))
@@ -182,7 +183,7 @@ namespace AZ
 
         bool SaveObjectToStream(IO::GenericStream& stream, DataStream::StreamType streamType, const void* classPtr, const Uuid& classId, SerializeContext* context, const SerializeContext::ClassData* classData)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             if (!context)
             {
@@ -242,7 +243,7 @@ namespace AZ
 
         bool SaveObjectToFile(const AZStd::string& filePath, DataStream::StreamType fileType, const void* classPtr, const Uuid& classId, SerializeContext* context, int platformFlags)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             // \note This is ok for tools, but we should use the streamer to write objects directly (no memory store)
             AZStd::vector<AZ::u8> dstData;

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,6 +25,9 @@ namespace AZ
                 const Data::Asset<Data::AssetData>& asset,
                 AZStd::shared_ptr<Data::AssetDataStream> stream,
                 const Data::AssetFilterCB& assetLoadFilterCB) override;
+
+            // Return a default fallback image if an asset is missing
+            Data::AssetId AssetMissingInCatalog(const Data::Asset<Data::AssetData>& /*asset*/) override;
         };
     }
 }

@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
-    <title>icon / Environmental / Fog Volume</title>
-    <desc>Created with Sketch.</desc>
+    <title>icon / Environmental / FogVolume</title>
     <defs>
-        <path d="M3.375,12.27 C3.48477691,10.3828508 4.93117226,8.86321338 6.76061606,8.68509376 C7.6521371,6.66004803 9.64445163,5.25 11.9591906,5.25 C14.1747379,5.25 16.0949018,6.54178988 17.0371512,8.42821107 C18.9538811,8.68993253 20.4575939,10.2848877 20.625,12.27 L3.375,12.27 Z M3.375,13.35 L20.625,13.35 L20.625,14.43 L3.375,14.43 L3.375,13.35 Z M3.375,15.51 L20.625,15.51 L20.625,16.59 L3.375,16.59 L3.375,15.51 Z M3.375,17.67 L20.625,17.67 L20.625,18.75 L3.375,18.75 L3.375,17.67 Z" id="path-1"></path>
+        <path d="M20.625,17.67 L20.625,18.75 L3.375,18.75 L3.375,17.67 L20.625,17.67 Z M20.625,15.51 L20.625,16.59 L3.375,16.59 L3.375,15.51 L20.625,15.51 Z M20.625,13.35 L20.625,14.43 L3.375,14.43 L3.375,13.35 L20.625,13.35 Z M11.9591906,5.25 C14.1747379,5.25 16.0949018,6.54178988 17.0371512,8.42821107 C18.9538811,8.68993253 20.4575939,10.2848877 20.625,12.27 L3.375,12.27 C3.48477691,10.3828508 4.93117226,8.86321338 6.76061606,8.68509376 C7.6521371,6.66004803 9.64445163,5.25 11.9591906,5.25 Z" id="path-1"></path>
     </defs>
-    <g id="icon-/-Environmental-/-Fog-Volume" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g id="icon-/-Environmental-/-FogVolume" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <mask id="mask-2" fill="white">
             <use xlink:href="#path-1"></use>
         </mask>

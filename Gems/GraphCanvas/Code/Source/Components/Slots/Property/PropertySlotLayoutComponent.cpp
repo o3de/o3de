@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "precompiled.h"
 
 #include <QCoreApplication>
 #include <qgraphicslayoutitem.h>
@@ -90,10 +90,10 @@ namespace GraphCanvas
         TryAndSetupSlot();
     }
 
-    void PropertySlotLayout::OnTooltipChanged(const TranslationKeyedString& tooltip)
+    void PropertySlotLayout::OnTooltipChanged(const AZStd::string& tooltip)
     {
-        m_slotText->setToolTip(Tools::qStringFromUtf8(tooltip.GetDisplayString()));
-        m_nodePropertyDisplay->setToolTip(Tools::qStringFromUtf8(tooltip.GetDisplayString()));
+        m_slotText->setToolTip(Tools::qStringFromUtf8(tooltip));
+        m_nodePropertyDisplay->setToolTip(Tools::qStringFromUtf8(tooltip));
     }
     
     void PropertySlotLayout::OnStyleChanged()

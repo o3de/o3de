@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include "../StandardPluginsConfig.h"
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include <EMotionFX/Source/Recorder.h>
@@ -49,7 +50,7 @@ namespace EMStudio
         void resizeGL(int w, int h) override;
         void paintGL() override;
 
-        void RemoveTrack(AZ::u32 trackIndex);
+        void RemoveTrack(size_t trackIndex);
         
     protected:
         //void paintEvent(QPaintEvent* event);
@@ -69,11 +70,11 @@ namespace EMStudio
         void MotionEventChanged(TimeTrackElement* element, double startTime, double endTime);
         void TrackAdded(TimeTrack* track);
         void SelectionChanged();
-        void ElementTrackChanged(uint32 eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName);
+        void ElementTrackChanged(size_t eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName);
 
     private slots:
-        void OnRemoveElement()                          { RemoveMotionEvent(mContextMenuX, mContextMenuY); }
-        void OnAddElement()                             { AddMotionEvent(mContextMenuX, mContextMenuY); }
+        void OnRemoveElement()                          { RemoveMotionEvent(m_contextMenuX, m_contextMenuY); }
+        void OnAddElement()                             { AddMotionEvent(m_contextMenuX, m_contextMenuY); }
         void OnAddTrack();
         void OnCreatePresetEvent();
         void RemoveSelectedMotionEventsInTrack();
@@ -105,38 +106,38 @@ namespace EMStudio
         void PaintRelativeGraph(QPainter& painter, const QRect& rect, const EMotionFX::Recorder::ActorInstanceData* actorInstanceData);
         uint32 PaintSeparator(QPainter& painter, int32 heightOffset, float animationLength);
 
-        QBrush              mBrushBackground;
-        QBrush              mBrushBackgroundClipped;
-        QBrush              mBrushBackgroundOutOfRange;
-        TimeViewPlugin*     mPlugin;
-        bool                mMouseLeftClicked;
-        bool                mMouseMidClicked;
-        bool                mMouseRightClicked;
-        bool                mDragging;
-        bool                mResizing;
-        bool                mRectZooming;
-        bool                mIsScrolling;
-        int32               mLastLeftClickedX;
-        int32               mLastMouseMoveX;
-        int32               mLastMouseX;
-        int32               mLastMouseY;
-        uint32              mNodeHistoryItemHeight;
-        uint32              mEventHistoryTotalHeight;
-        bool                mAllowContextMenu;
+        QBrush              m_brushBackground;
+        QBrush              m_brushBackgroundClipped;
+        QBrush              m_brushBackgroundOutOfRange;
+        TimeViewPlugin*     m_plugin;
+        bool                m_mouseLeftClicked;
+        bool                m_mouseMidClicked;
+        bool                m_mouseRightClicked;
+        bool                m_dragging;
+        bool                m_resizing;
+        bool                m_rectZooming;
+        bool                m_isScrolling;
+        int32               m_lastLeftClickedX;
+        int32               m_lastMouseMoveX;
+        int32               m_lastMouseX;
+        int32               m_lastMouseY;
+        uint32              m_nodeHistoryItemHeight;
+        uint32              m_eventHistoryTotalHeight;
+        bool                m_allowContextMenu;
 
-        TimeTrackElement*   mDraggingElement;
-        TimeTrack*          mDragElementTrack;
-        TimeTrackElement*   mResizeElement;
-        uint32              mResizeID;
-        int32               mContextMenuX;
-        int32               mContextMenuY;
-        uint32              mGraphStartHeight;
-        uint32              mEventsStartHeight;
-        uint32              mNodeRectsStartHeight;
-        double              mOldCurrentTime;
+        TimeTrackElement*   m_draggingElement;
+        TimeTrack*          m_dragElementTrack;
+        TimeTrackElement*   m_resizeElement;
+        uint32              m_resizeId;
+        int32               m_contextMenuX;
+        int32               m_contextMenuY;
+        uint32              m_graphStartHeight;
+        uint32              m_eventsStartHeight;
+        uint32              m_nodeRectsStartHeight;
+        double              m_oldCurrentTime;
 
-        MCore::Array<EMotionFX::Recorder::ExtractedNodeHistoryItem> mActiveItems;
-        MCore::Array<uint32>                                        mTrackRemap;
+        AZStd::vector<EMotionFX::Recorder::ExtractedNodeHistoryItem> m_activeItems;
+        AZStd::vector<size_t>                                        m_trackRemap;
 
         // copy and paste
         struct CopyElement
@@ -157,21 +158,21 @@ namespace EMStudio
             }
         };
 
-        bool GetIsReadyForPaste() const                                                             { return mCopyElements.empty() == false; }
+        bool GetIsReadyForPaste() const                                                             { return m_copyElements.empty() == false; }
         void FillCopyElements(bool selectedItemsOnly);
 
-        AZStd::vector<CopyElement>      mCopyElements;
-        bool                            mCutMode;
+        AZStd::vector<CopyElement>      m_copyElements;
+        bool                            m_cutMode;
 
-        QFont           mDataFont;
-        AZStd::string   mTempString;
+        QFont           m_dataFont;
+        AZStd::string   m_tempString;
 
         // rect selection
-        QPoint          mSelectStart;
-        QPoint          mSelectEnd;
-        bool            mRectSelecting;
+        QPoint          m_selectStart;
+        QPoint          m_selectEnd;
+        bool            m_rectSelecting;
 
-        QRect           mNodeHistoryRect;
+        QRect           m_nodeHistoryRect;
 
         void CalcSelectRect(QRect& outRect);
         void SelectElementsInRect(const QRect& rect, bool overwriteCurSelection, bool select, bool toggleMode);
@@ -180,7 +181,7 @@ namespace EMStudio
         void UpdateMouseOverCursor(int32 x, int32 y);
         void DrawTimeMarker(QPainter& painter, const QRect& rect);
 
-        bool GetIsInsideNodeHistory(int32 y) const                                              { return mNodeHistoryRect.contains(1, y); }
+        bool GetIsInsideNodeHistory(int32 y) const                                              { return m_nodeHistoryRect.contains(1, y); }
         void DoRecorderContextMenuEvent(QContextMenuEvent* event);
 
         void UpdateRects();

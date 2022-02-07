@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -33,12 +34,12 @@ namespace CommandSystem
 struct AnimGraphSelectionItem
 {
     AnimGraphSelectionItem(uint32 animGraphID, const AZStd::string& nodeName)
-        : mAnimGraphID(animGraphID)
-        , mNodeName(nodeName)
+        : m_animGraphId(animGraphID)
+        , m_nodeName(nodeName)
     {}
 
-    uint32          mAnimGraphID;
-    AZStd::string   mNodeName;
+    uint32          m_animGraphId;
+    AZStd::string   m_nodeName;
 };
 
 namespace EMotionFX

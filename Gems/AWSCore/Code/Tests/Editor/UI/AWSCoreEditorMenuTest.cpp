@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,8 +21,8 @@
 
 using namespace AWSCore;
 
-static constexpr const int ExpectedActionNumOnWindowsPlatform = 8;
-static constexpr const int ExpectedActionNumOnOtherPlatform = 6;
+static constexpr const int ExpectedActionNumOnWindowsPlatform = 9;
+static constexpr const int ExpectedActionNumOnOtherPlatform = 7;
 
 class AWSCoreEditorMenuTest
     : public AWSCoreFixture
@@ -31,7 +32,7 @@ class AWSCoreEditorMenuTest
     {
         AWSCoreEditorUIFixture::SetUp();
         AWSCoreFixture::SetUp();
-        m_localFileIO->SetAlias("@devroot@", "dummy engine root");
+        m_localFileIO->SetAlias("@engroot@", "dummy engine root");
     }
 
     void TearDown() override
@@ -41,18 +42,9 @@ class AWSCoreEditorMenuTest
     }
 };
 
-TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_NoEngineRootFolder_ExpectOneError)
-{
-    AZ_TEST_START_TRACE_SUPPRESSION;
-    AWSCoreEditorMenu testMenu("dummy title");
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
-}
-
 TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_GetAllActions_GetExpectedNumberOfActions)
 {
-    AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCoreEditorMenu testMenu("dummy title");
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
 
     QList<QAction*> actualActions = testMenu.actions();
 #ifdef AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
@@ -64,12 +56,11 @@ TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_GetAllActions_GetExpectedNumberO
 
 TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_BroadcastFeatureGemsAreEnabled_CorrespondingActionsAreEnabled)
 {
-    AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCoreEditorMenu testMenu("dummy title");
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
 
     AWSCoreEditorRequestBus::Broadcast(&AWSCoreEditorRequests::SetAWSClientAuthEnabled);
     AWSCoreEditorRequestBus::Broadcast(&AWSCoreEditorRequests::SetAWSMetricsEnabled);
+    AWSCoreEditorRequestBus::Broadcast(&AWSCoreEditorRequests::SetAWSGameLiftEnabled);
 
     QList<QAction*> actualActions = testMenu.actions();
     for (QList<QAction*>::iterator itr = actualActions.begin(); itr != actualActions.end(); itr++)
@@ -80,6 +71,11 @@ TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_BroadcastFeatureGemsAreEnabled_C
         }
 
         if (QString::compare((*itr)->text(), AWSMetricsActionText) == 0)
+        {
+            EXPECT_TRUE((*itr)->isEnabled());
+        }
+
+        if (QString::compare((*itr)->text(), AWSGameLiftActionText) == 0)
         {
             EXPECT_TRUE((*itr)->isEnabled());
         }

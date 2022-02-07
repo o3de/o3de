@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,8 +38,7 @@ namespace UnitTest
     };
 
     class PrefabTestFixture
-        : public ToolsApplicationFixture,
-          public UnitTest::TraceBusRedirector
+        : public ToolsApplicationFixture
     {
     protected:
 
@@ -49,10 +49,13 @@ namespace UnitTest
         inline static const char* CarPrefabMockFilePath = "SomePathToCar";
 
         void SetUpEditorFixtureImpl() override;
+        void TearDownEditorFixtureImpl() override;
 
         AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
-        AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
+        void CreateRootPrefab();
+        AZ::Entity* CreateEntity(AZStd::string entityName, const bool shouldActivate = true);
+        AZ::EntityId CreateEntityUnderRootPrefab(AZStd::string name, AZ::EntityId parentId = AZ::EntityId());
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
             bool shouldCompareContainerEntities = true);
@@ -62,10 +65,20 @@ namespace UnitTest
         //! Validates that all entities within a prefab instance are in 'Active' state.
         void ValidateInstanceEntitiesActive(Instance& instance);
 
+        // Kicks off any updates scheduled for the next tick
+        virtual void ProcessDeferredUpdates();
+
+        // Performs an undo operation and ensures the tick-scheduled updates happen
+        void Undo();
+
+        // Performs a redo operation and ensures the tick-scheduled updates happen
+        void Redo();
+
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+        AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
     };
 }

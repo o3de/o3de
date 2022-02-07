@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,6 +25,8 @@
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <AzCore/Interface/Interface.h>
+
+#include <ScriptCanvas/Core/Core.h>
 
 namespace GraphCanvas
 {
@@ -69,7 +72,7 @@ namespace ScriptCanvasEditor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        virtual void SetAssetId(const AZ::Data::AssetId& assetId) = 0;
+        virtual void SetAssetId(const SourceHandle& assetId) = 0;
         virtual bool HasAssetId() const = 0;
     };
 
@@ -88,39 +91,12 @@ namespace ScriptCanvasEditor
     };
 
     using EditorContextMenuRequestBus = AZ::EBus<EditorContextMenuRequests>;
-
-    class EditorScriptCanvasAssetNotifications : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::Data::AssetId;
-
-        //! Notification which fires after an EditorGraph has received it's on AssetReady callback
-        //! \param scriptCanvasAsset Script Canvas asset which is now ready for use in the Editor
-        virtual void OnScriptCanvasAssetReady(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& /*scriptCanvasAsset*/) {};
-
-        //! Notification which fires after an EditorGraph has received it's on AssetReloaded callback
-        //! \param scriptCanvasAsset Script Canvas asset which is now ready for use in the Editor
-        virtual void OnScriptCanvasAssetReloaded(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& /*scriptCanvaAsset */) {};
-
-        //! Notification which fires after an EditorGraph has received it's on AssetReady callback
-        //! \param AssetId AssetId of unloaded ScriptCanvas
-        virtual void OnScriptCanvasAssetUnloaded(const AZ::Data::AssetId& /*assetId*/) {};
-
-        //! Notification which fires after an EditorGraph has received an onAssetSaved callback
-        //! \param scriptCanvasAsset Script Canvas asset which was attempted to be saved
-        //! \param isSuccessful specified where the Script Canvas asset was successfully saved
-        virtual void OnScriptCanvasAssetSaved(const AZ::Data::AssetId) {};
-    };
-    using EditorScriptCanvasAssetNotificationBus = AZ::EBus<EditorScriptCanvasAssetNotifications>;
-    
+        
     class EditorGraphRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = ScriptCanvas::ScriptCanvasId;
-
-        virtual void SetAssetId(const AZ::Data::AssetId& assetId) = 0;
 
         virtual void CreateGraphCanvasScene() = 0;
         virtual void ClearGraphCanvasScene() = 0;
@@ -214,21 +190,6 @@ namespace ScriptCanvasEditor
 
     using EditorLoggingComponentNotificationBus = AZ::EBus<EditorLoggingComponentNotifications>;
 
-    class IUpgradeRequests
-    {
-    public:
-        AZ_TYPE_INFO(IUpgradeRequests, "{D25318F2-4DDA-4E76-98CB-6D561BB6234D}");
-
-        using AssetList = AZStd::list<AZ::Data::AssetInfo>;
-        virtual AssetList& GetAssetsToUpgrade() = 0;
-
-        virtual void GraphNeedsManualUpgrade(const AZ::Data::AssetId&) = 0;
-        virtual AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() = 0;
-
-        virtual bool IsUpgrading() = 0;
-        virtual void SetIsUpgrading(bool isUpgrading) = 0;
-    };
-
     class UpgradeNotifications
         : public AZ::EBusTraits
     {
@@ -236,15 +197,11 @@ namespace ScriptCanvasEditor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        using Bus = AZ::EBus<UpgradeNotifications>;
-
         virtual void OnUpgradeStart() {}
-        virtual void OnUpgradeComplete() {}
         virtual void OnUpgradeCancelled() {}
 
-        virtual void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) { (void)skipped; }
+        virtual void OnGraphUpgradeComplete(SourceHandle&, bool skipped = false) { (void)skipped; }
     };
 
-
-
+    using UpgradeNotificationsBus = AZ::EBus<UpgradeNotifications>;
 }

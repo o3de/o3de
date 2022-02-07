@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -130,7 +131,8 @@ namespace EMotionFX
 
     void SimulatedObjectColliderWidget::InternalReinit()
     {
-        if (m_selectedModelIndices.size() == 1)
+        const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
+        if (selectedModelIndices.size() == 1)
         {
             Physics::CharacterColliderNodeConfiguration* nodeConfig = GetNodeConfig();
             if (nodeConfig)
@@ -171,12 +173,13 @@ namespace EMotionFX
         }
 
         AZStd::string labelText;
+        const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
         const AZStd::vector<SimulatedObject*>& simObjs = actor->GetSimulatedObjectSetup()->GetSimulatedObjects();
         for (const SimulatedObject* obj : simObjs)
         {
-            for (int i = 0; i < m_selectedModelIndices.size(); ++i)
+            for (int i = 0; i < selectedModelIndices.size(); ++i)
             {
-                Node* node = m_selectedModelIndices[i].data(SkeletonModel::ROLE_POINTER).value<Node*>();
+                Node* node = selectedModelIndices[i].data(SkeletonModel::ROLE_POINTER).value<Node*>();
                 if (obj->FindSimulatedJointBySkeletonJointIndex(node->GetNodeIndex()))
                 {
                     if (!labelText.empty())
@@ -207,8 +210,9 @@ namespace EMotionFX
             return;
         }
 
+        const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
         // Only show the notification when it is single selection. 
-        if (m_selectedModelIndices.size() != 1)
+        if (selectedModelIndices.size() != 1)
         {
             return;
         }
@@ -249,17 +253,18 @@ namespace EMotionFX
 
     void SimulatedObjectColliderWidget::OnAddCollider(const AZ::TypeId& colliderType)
     {
-        ColliderHelpers::AddCollider(m_selectedModelIndices, PhysicsSetup::SimulatedObjectCollider, colliderType);
+        ColliderHelpers::AddCollider(GetSelectedModelIndices(), PhysicsSetup::SimulatedObjectCollider, colliderType);
     }
 
     void SimulatedObjectColliderWidget::OnCopyCollider(size_t colliderIndex)
     {
-        ColliderHelpers::CopyColliderToClipboard(m_selectedModelIndices.first(), colliderIndex, PhysicsSetup::SimulatedObjectCollider);
+        ColliderHelpers::CopyColliderToClipboard(GetSelectedModelIndices().first(), colliderIndex, PhysicsSetup::SimulatedObjectCollider);
     }
 
     void SimulatedObjectColliderWidget::OnPasteCollider(size_t colliderIndex, bool replace)
     {
-        ColliderHelpers::PasteColliderFromClipboard(m_selectedModelIndices.first(), colliderIndex, PhysicsSetup::SimulatedObjectCollider, replace);
+        ColliderHelpers::PasteColliderFromClipboard(
+            GetSelectedModelIndices().first(), colliderIndex, PhysicsSetup::SimulatedObjectCollider, replace);
     }
 
     void SimulatedObjectColliderWidget::OnRemoveCollider(size_t colliderIndex)
@@ -269,7 +274,7 @@ namespace EMotionFX
 
     Physics::CharacterColliderNodeConfiguration* SimulatedObjectColliderWidget::GetNodeConfig() const
     {
-        AZ_Assert(m_selectedModelIndices.size() == 1, "Get Node config function only return the config when it is single seleted");
+        AZ_Assert(GetSelectedModelIndices().size() == 1, "Get Node config function only return the config when it is single seleted");
         Actor* actor = GetActor();
         Node* joint = GetNode();
         if (!actor || !joint)

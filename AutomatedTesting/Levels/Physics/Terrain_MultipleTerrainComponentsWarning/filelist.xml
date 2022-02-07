@@ -1,0 +1,6 @@
+<download name="Terrain_MultipleTerrainComponentsWarning" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="39322" md5="fa76840374c3294aebda8d174175f44d"/>
+ </files>
+</download>

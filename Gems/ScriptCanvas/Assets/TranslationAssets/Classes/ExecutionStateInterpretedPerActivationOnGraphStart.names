@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "ExecutionStateInterpretedPerActivationOnGraphStart",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ExecutionStateInterpretedPerActivationOnGraphStart"
+            }
+        }
+    ]
+}

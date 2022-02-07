@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,6 +35,43 @@ namespace AZ
 
             AssetBus::MultiHandler::BusDisconnect();
             AssetLoadBus::MultiHandler::BusDisconnect();
+        }
+
+        AZStd::vector<AZStd::pair<AssetInfo, Asset<AssetData>>> AssetContainer::CreateAndQueueDependentAssets(
+            const AZStd::vector<AssetInfo>& dependencyInfoList, const AssetLoadParameters& loadParamsCopyWithNoLoadingFilter)
+        {
+            AZStd::vector<AZStd::pair<AssetInfo, Asset<AssetData>>> dependencyAssets;
+
+            for (auto& thisInfo : dependencyInfoList)
+            {
+                auto dependentAsset = AssetManager::Instance().FindOrCreateAsset(
+                    thisInfo.m_assetId, thisInfo.m_assetType, AZ::Data::AssetLoadBehavior::Default);
+
+                if (!dependentAsset || !dependentAsset.GetId().IsValid())
+                {
+                    AZ_Warning("AssetContainer", false, "Dependency Asset %s (%s) was not found\n",
+                               thisInfo.m_assetId.ToString<AZStd::string>().c_str(), thisInfo.m_relativePath.c_str());
+                    RemoveWaitingAsset(thisInfo.m_assetId);
+                    continue;
+                }
+                dependencyAssets.emplace_back(thisInfo, AZStd::move(dependentAsset));
+            }
+
+            // Queue the loading of all of the dependent assets before loading the root asset.
+            for (auto& [dependentAssetInfo, dependentAsset] : dependencyAssets)
+            {
+                // Queue each asset to load.
+                auto queuedDependentAsset = AssetManager::Instance().GetAssetInternal(
+                    dependentAsset.GetId(), dependentAsset.GetType(),
+                    AZ::Data::AssetLoadBehavior::Default, loadParamsCopyWithNoLoadingFilter,
+                    dependentAssetInfo, HasPreloads(dependentAsset.GetId()));
+
+                // Verify that the returned asset reference matches the one that we found or created and queued to load.
+                AZ_Assert(dependentAsset == queuedDependentAsset, "GetAssetInternal returned an unexpected asset reference for Asset %s",
+                          dependentAsset.GetId().ToString<AZStd::string>().c_str());
+            }
+
+            return dependencyAssets;
         }
 
         void AssetContainer::AddDependentAssets(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams)
@@ -152,6 +190,7 @@ namespace AZ
                 // behavior, we would need to rework the way filters work as well as the code in AssetSerializer.cpp to pass down
                 // the loadParams.m_assetLoadFilterCB that was passed into the AddDependentAssets() methods to use as the dependent
                 // asset filter instead of this lambda function.
+                AZ_UNUSED(handledAssetDependencyList); // Prevent unused warning in release builds
                 AZ_Assert(AZStd::find(handledAssetDependencyList.begin(), handledAssetDependencyList.end(), filterInfo.m_assetId) !=
                     handledAssetDependencyList.end(),
                     "Dependent Asset ID (%s) is expected to load, but the Asset Catalog has no dependency recorded. "
@@ -181,34 +220,7 @@ namespace AZ
             // Since we've set the load filter to not load dependencies, we need to ensure all the assets are created beforehand
             // so the dependencies can be hooked up as soon as each asset gets serialized in, even if they start getting serialized
             // while we're still in the middle of triggering all of the asset loads below.
-            for (auto& thisInfo : dependencyInfoList)
-            {
-                auto dependentAsset = AssetManager::Instance().FindOrCreateAsset(
-                    thisInfo.m_assetId, thisInfo.m_assetType, AZ::Data::AssetLoadBehavior::Default);
-
-                if (!dependentAsset || !dependentAsset.GetId().IsValid())
-                {
-                    AZ_Warning("AssetContainer", false, "Dependency Asset %s (%s) was not found\n",
-                        thisInfo.m_assetId.ToString<AZStd::string>().c_str(), thisInfo.m_relativePath.c_str());
-                    RemoveWaitingAsset(thisInfo.m_assetId);
-                    continue;
-                }
-                dependencyAssets.emplace_back(thisInfo, AZStd::move(dependentAsset));
-            }
-
-            // Queue the loading of all of the dependent assets before loading the root asset.  
-            for (auto& [dependentAssetInfo, dependentAsset] : dependencyAssets)
-            {
-                // Queue each asset to load.
-                auto queuedDependentAsset = AssetManager::Instance().GetAssetInternal(
-                    dependentAsset.GetId(), dependentAsset.GetType(),
-                    AZ::Data::AssetLoadBehavior::Default, loadParamsCopyWithNoLoadingFilter,
-                    dependentAssetInfo, HasPreloads(dependentAsset.GetId()));
-
-                // Verify that the returned asset reference matches the one that we found or created and queued to load.
-                AZ_Assert(dependentAsset == queuedDependentAsset, "GetAssetInternal returned an unexpected asset reference for Asset %s",
-                    dependentAsset.GetId().ToString<AZStd::string>().c_str());
-            }
+            dependencyAssets = CreateAndQueueDependentAssets(dependencyInfoList, loadParamsCopyWithNoLoadingFilter);
 
             // Add all of the queued dependent assets as dependencies
             {
@@ -347,8 +359,15 @@ namespace AZ
 
         void AssetContainer::HandleReadyAsset(Asset<AssetData> asset)
         {
-            RemoveFromAllWaitingPreloads(asset->GetId());
-            RemoveWaitingAsset(asset->GetId());
+            // Wait until we've finished initialization before allowing this
+            // If a ready event happens before we've gotten all the maps/structures set up, there may be some missing data
+            // which can lead to a crash
+            // We'll go through and check the ready status of every dependency immediately after finishing initialization anyway
+            if (m_initComplete)
+            {
+                RemoveFromAllWaitingPreloads(asset->GetId());
+                RemoveWaitingAsset(asset->GetId());
+            }
         }
 
         void AssetContainer::OnAssetDataLoaded(Asset<AssetData> asset)
@@ -387,7 +406,7 @@ namespace AZ
             AssetManager::Instance().ValidateAndPostLoad(thisAsset, true, false, nullptr);
         }
 
-        void AssetContainer::RemoveFromAllWaitingPreloads(const AssetId& thisId) 
+        void AssetContainer::RemoveFromAllWaitingPreloads(const AssetId& thisId)
         {
             AZStd::unordered_set<AssetId> checkList;
             {
@@ -545,7 +564,7 @@ namespace AZ
             if (!preloadList.empty())
             {
                 // This method can be entered as additional NoLoad dependency groups are loaded - the container could
-                // be in the middle of loading so we need to grab both mutexes.  
+                // be in the middle of loading so we need to grab both mutexes.
                 AZStd::scoped_lock<AZStd::recursive_mutex, AZStd::recursive_mutex> lock(m_readyMutex, m_preloadMutex);
 
                 for (auto thisListPair = preloadList.begin(); thisListPair != preloadList.end();)
@@ -566,7 +585,7 @@ namespace AZ
                         // will load the assets but won't/can't create a circular preload dependency chain
                         if (*thisAsset == rootAssetId)
                         {
-                            AZ_Error("AssetContainer", false, "Circular preload dependency found - %s has a preload" 
+                            AZ_Error("AssetContainer", false, "Circular preload dependency found - %s has a preload"
                                 "dependency back to root %s\n",
                                 thisListPair->first.ToString<AZStd::string>().c_str(),
                                 rootAssetId.ToString<AZStd::string>().c_str());

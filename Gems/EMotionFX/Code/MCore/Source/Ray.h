@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -45,9 +46,9 @@ namespace MCore
          * @param endPoint The end (destination) point of the ray.
          */
         MCORE_INLINE Ray(const AZ::Vector3& org, const AZ::Vector3& endPoint)
-            : mOrigin(org)
-            , mDest(endPoint)
-            , mDirection((endPoint - org).GetNormalized()) {}
+            : m_origin(org)
+            , m_dest(endPoint)
+            , m_direction((endPoint - org).GetNormalized()) {}
 
         /**
          * Constructor which sets the origin, destination point and direction.
@@ -56,9 +57,9 @@ namespace MCore
          * @param dir The normalized direction vector of the ray, which should be (endPoint - startPoint).Normalize()
          */
         MCORE_INLINE Ray(const AZ::Vector3& org, const AZ::Vector3& endPoint, const AZ::Vector3& dir)
-            : mOrigin(org)
-            , mDest(endPoint)
-            , mDirection(dir) {}
+            : m_origin(org)
+            , m_dest(endPoint)
+            , m_direction(dir) {}
 
         /**
          * Set the origin and destination point (end point) of the ray.
@@ -66,37 +67,37 @@ namespace MCore
          * @param org The origin of the ray, so the start point.
          * @param endPoint The destination of the ray, so the end point.
          */
-        MCORE_INLINE void Set(const AZ::Vector3& org, const AZ::Vector3& endPoint)                              { mOrigin = org; mDest = endPoint; mDirection = (mDest - mOrigin).GetNormalized(); }
+        MCORE_INLINE void Set(const AZ::Vector3& org, const AZ::Vector3& endPoint)                              { m_origin = org; m_dest = endPoint; m_direction = (m_dest - m_origin).GetNormalized(); }
 
         /**
          * Set the origin of the ray, so the start point. The direction will automatically be updated as well.
          * @param org The origin.
          */
-        MCORE_INLINE void SetOrigin(const AZ::Vector3& org)                                                     { mOrigin = org; mDirection = (mDest - mOrigin).GetNormalized(); }
+        MCORE_INLINE void SetOrigin(const AZ::Vector3& org)                                                     { m_origin = org; m_direction = (m_dest - m_origin).GetNormalized(); }
 
         /**
          * Set the destination point of the ray.
          * @param dest The destination of the ray.
          */
-        MCORE_INLINE void SetDest(const AZ::Vector3& dest)                                                      { mDest = dest; mDirection = (mDest - mOrigin).GetNormalized(); }
+        MCORE_INLINE void SetDest(const AZ::Vector3& dest)                                                      { m_dest = dest; m_direction = (m_dest - m_origin).GetNormalized(); }
 
         /**
          * Get the origin of the ray.
          * @result The origin of the ray, so where it starts.
          */
-        MCORE_INLINE const AZ::Vector3& GetOrigin() const                                                       { return mOrigin; }
+        MCORE_INLINE const AZ::Vector3& GetOrigin() const                                                       { return m_origin; }
 
         /**
          * Get the destination of the ray.
          * @result The destination point of the ray, so where it ends.
          */
-        MCORE_INLINE const AZ::Vector3& GetDest() const                                                         { return mDest; }
+        MCORE_INLINE const AZ::Vector3& GetDest() const                                                         { return m_dest; }
 
         /**
          * Get the direction of the ray.
          * @result The normalized direction vector of the ray, so the direction its heading to.
          */
-        MCORE_INLINE const AZ::Vector3& GetDirection() const                                                    { return mDirection; }
+        MCORE_INLINE const AZ::Vector3& GetDirection() const                                                    { return m_direction; }
 
         /**
          * Perform a ray/sphere intersection test.
@@ -160,11 +161,11 @@ namespace MCore
          * Calculates the length of the ray.
          * @result The length of the ray.
          */
-        MCORE_INLINE float Length() const                                                                       { return SafeLength(mDest - mOrigin); }
+        MCORE_INLINE float Length() const                                                                       { return SafeLength(m_dest - m_origin); }
 
     private:
-        AZ::Vector3 mOrigin;    /**< The origin of the ray. */
-        AZ::Vector3 mDest;      /**< The destination of the ray. */
-        AZ::Vector3 mDirection; /**< The normalized direction vector of the ray. */
+        AZ::Vector3 m_origin;    /**< The origin of the ray. */
+        AZ::Vector3 m_dest;      /**< The destination of the ray. */
+        AZ::Vector3 m_direction; /**< The normalized direction vector of the ray. */
     };
 }   // namespace MCore

@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -19,8 +20,6 @@ set(FILES
     Source/Generation/Components/TangentGenerator/TangentGenerators/MikkTGenerator.cpp
     Source/Generation/Components/TangentGenerator/TangentGenerators/BlendShapeMikkTGenerator.h
     Source/Generation/Components/TangentGenerator/TangentGenerators/BlendShapeMikkTGenerator.cpp
-    Source/Generation/Components/MeshOptimizer/Array2D.h
-    Source/Generation/Components/MeshOptimizer/Array2D.inl
     Source/Generation/Components/MeshOptimizer/MeshBuilder.cpp
     Source/Generation/Components/MeshOptimizer/MeshBuilder.h
     Source/Generation/Components/MeshOptimizer/MeshBuilderInvalidIndex.h

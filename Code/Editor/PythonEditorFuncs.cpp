@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,6 +18,7 @@
 #include <AzCore/Utils/Utils.h>
 
 // AzToolsFramework
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
@@ -32,18 +34,6 @@
 
 namespace
 {
-    //////////////////////////////////////////////////////////////////////////
-    const char* PyGetCVar(const char* pName)
-    {
-        ICVar* pCVar = GetIEditor()->GetSystem()->GetIConsole()->GetCVar(pName);
-        if (!pCVar)
-        {
-            Warning("PyGetCVar: Attempt to access non-existent CVar '%s'", pName ? pName : "(null)");
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid cvar.").toUtf8().data());
-        }
-        return pCVar->GetString();
-    }
-
     //////////////////////////////////////////////////////////////////////////
     const char* PyGetCVarAsString(const char* pName)
     {
@@ -75,7 +65,7 @@ namespace
         }
         else if (pCVar->GetType() == CVAR_FLOAT)
         {
-            PySetCVarFromFloat(pName, std::stod(pValue));
+            PySetCVarFromFloat(pName, static_cast<float>(std::stod(pValue)));
         }
         else if (pCVar->GetType() != CVAR_STRING)
         {
@@ -151,11 +141,11 @@ namespace
         }
         else if (pCVar->GetType() == CVAR_INT)
         {
-            PySetCVarFromInt(pName, AZStd::any_cast<AZ::s64>(value));
+            PySetCVarFromInt(pName, static_cast<int>(AZStd::any_cast<AZ::s64>(value)));
         }
         else if (pCVar->GetType() == CVAR_FLOAT)
         {
-            PySetCVarFromFloat(pName, AZStd::any_cast<double>(value));
+            PySetCVarFromFloat(pName, static_cast<float>(AZStd::any_cast<double>(value)));
         }
         else if (pCVar->GetType() == CVAR_STRING)
         {
@@ -209,52 +199,6 @@ namespace
     bool PyIsInSimulationMode()
     {
         return GetIEditor()->IsInSimulationMode();
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    QString PyNewObject(const char* typeName, const char* fileName, const char* name, float x, float y, float z)
-    {
-        CBaseObject* object = GetIEditor()->NewObject(typeName, fileName, name, x, y, z);
-        if (object)
-        {
-            return object->GetName();
-        }
-        else
-        {
-            return "";
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    QString PyNewObjectAtCursor(const char* typeName, const char* fileName, const char* name)
-    {
-        CUndo undo("Create new object");
-
-        Vec3 pos(0, 0, 0);
-
-        QPoint p = QCursor::pos();
-        CViewport* viewport = GetIEditor()->GetViewManager()->GetViewportAtPoint(p);
-        if (viewport)
-        {
-            viewport->ScreenToClient(p);
-            if (GetIEditor()->GetAxisConstrains() != AXIS_TERRAIN)
-            {
-                pos = viewport->MapViewToCP(p);
-            }
-            else
-            {
-                // Snap to terrain.
-                bool hitTerrain;
-                pos = viewport->ViewToWorld(p, &hitTerrain);
-                if (hitTerrain)
-                {
-                    pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y) + 1.0f;
-                }
-                pos = viewport->SnapToGrid(pos);
-            }
-        }
-
-        return PyNewObject(typeName, fileName, name, pos.x, pos.y, pos.z);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -322,7 +266,7 @@ namespace
     //////////////////////////////////////////////////////////////////////////
     void GetPythonArgumentsVector(const char* pArguments, QStringList& inputArguments)
     {
-        if (pArguments == NULL)
+        if (pArguments == nullptr)
         {
             return;
         }
@@ -370,7 +314,7 @@ namespace
     {
         if (strcmp(pMessage, "") != 0)
         {
-            CryLogAlways(pMessage);
+            CryLogAlways("%s", pMessage);
         }
     }
 
@@ -547,13 +491,11 @@ namespace
         if (title.empty())
         {
             throw std::runtime_error("Incorrect title argument passed in. ");
-            return result;
         }
 
         if (values.size() == 0)
         {
             throw std::runtime_error("Empty value list passed in. ");
-            return result;
         }
 
         QStringList list;
@@ -684,7 +626,7 @@ namespace
     }
 
     //////////////////////////////////////////////////////////////////////////
-    const char* PyGetPakFromFile(const char* filename)
+    AZ::IO::Path PyGetPakFromFile(const char* filename)
     {
         auto pIPak = GetIEditor()->GetSystem()->GetIPak();
         AZ::IO::HandleType fileHandle = pIPak->FOpen(filename, "rb");
@@ -692,8 +634,9 @@ namespace
         {
             throw std::logic_error("Invalid file name.");
         }
-        const char* pArchPath = pIPak->GetFileArchivePath(fileHandle);
+        AZ::IO::Path pArchPath = pIPak->GetFileArchivePath(fileHandle);
         pIPak->FClose(fileHandle);
+
         return pArchPath;
     }
 
@@ -1099,7 +1042,7 @@ namespace AzToolsFramework
         return PySetAxisConstraint(pConstrain);
     }
 
-    const char* PythonEditorComponent::GetPakFromFile(const char* filename)
+    AZ::IO::Path PythonEditorComponent::GetPakFromFile(const char* filename)
     {
         return PyGetPakFromFile(filename);
     }
@@ -1173,7 +1116,7 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("get_axis_constraint", PyGetAxisConstraint, nullptr, "Gets axis."));
             addLegacyGeneral(behaviorContext->Method("set_axis_constraint", PySetAxisConstraint, nullptr, "Sets axis."));
 
-            addLegacyGeneral(behaviorContext->Method("get_pak_from_file", PyGetPakFromFile, nullptr, "Finds a pak file name for a given file."));
+            addLegacyGeneral(behaviorContext->Method("get_pak_from_file", [](const char* filename) -> AZStd::string { return PyGetPakFromFile(filename).Native(); }, nullptr, "Finds a pak file name for a given file."));
 
             addLegacyGeneral(behaviorContext->Method("log", PyLog, nullptr, "Prints the message to the editor console window."));
 

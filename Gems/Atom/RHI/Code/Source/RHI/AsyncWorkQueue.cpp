@@ -1,10 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include <Atom/RHI/AsyncWorkQueue.h>
+
+#include <AzCore/Debug/Profiler.h>
+
+AZ_DECLARE_BUDGET(RHI);
 
 namespace AZ
 {
@@ -21,7 +26,7 @@ namespace AZ
             m_workItemIndex = 0;
             m_lastCompletedWorkItem = AsyncWorkHandle::Null;
             AZStd::thread_desc threadDesc{ "AsyncWorkQueue" };
-            m_thread = AZStd::thread([&]() { ProcessQueue(); }, &threadDesc);
+            m_thread = AZStd::thread(threadDesc, [&]() { ProcessQueue(); });
             m_isInitialized = true;
         }
 
@@ -123,7 +128,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "AsyncWorkQueue: WaitToFinish");
 
             AZStd::unique_lock<AZStd::mutex> lock(m_waitWorkItemMutex);
             m_waitWorkItemCondition.wait(lock, [&]() {return HasFinishedWork(workHandle); });

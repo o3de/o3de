@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -28,6 +29,10 @@ namespace AZ
 
             //! Assigns a name to the model
             void SetName(AZStd::string_view name);
+            
+            //! Adds a new material slot to the asset.
+            //! If a slot with the same stable ID already exists, it will be replaced.
+            void AddMaterialSlot(const ModelMaterialSlot& materialSlot);
 
             //! Adds a Lod to the model.
             void AddLodAsset(Data::Asset<ModelLodAsset>&& lodAsset);

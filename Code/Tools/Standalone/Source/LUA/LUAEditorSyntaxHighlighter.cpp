@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "StandaloneTools_precompiled.h"
 #include "LUAEditorSyntaxHighlighter.hxx"
 #include <Source/LUA/moc_LUAEditorSyntaxHighlighter.cpp>
 #include "LUAEditorStyleMessages.h"
@@ -16,9 +16,8 @@ namespace LUAEditor
     namespace
     {
         template<typename Container>
-        void CreateTypes(Container& container)
+        void CreateTypes([[maybe_unused]] Container& container)
         {
-            container;
         }
 
         template<typename Container, typename Type, typename ... Types>
@@ -44,11 +43,11 @@ namespace LUAEditor
         {
         public:
             virtual ~BaseParserState() {}
-            virtual bool IsMultilineState(LUASyntaxHighlighter::StateMachine& machine) const { (void*)&machine; return false; }
-            virtual void StartState(LUASyntaxHighlighter::StateMachine& machine) { (void*)&machine; }
+            virtual bool IsMultilineState([[maybe_unused]] LUASyntaxHighlighter::StateMachine& machine) const { return false; }
+            virtual void StartState([[maybe_unused]] LUASyntaxHighlighter::StateMachine& machine) {}
             //note you only get 13 bits of usable space here. see QTBlockState m_syntaxHighlighterStateExtra
             virtual AZ::u16 GetSaveState() const { return 0; }
-            virtual void SetSaveState(AZ::u16 state) { state; }
+            virtual void SetSaveState([[maybe_unused]] AZ::u16 state) {}
             virtual void Parse(LUASyntaxHighlighter::StateMachine& machine, const QChar& nextChar) = 0;
         };
 
@@ -87,7 +86,7 @@ namespace LUAEditor
         class LongCommentParserState
             : public BaseParserState
         {
-            bool IsMultilineState(LUASyntaxHighlighter::StateMachine& machine) const override { (void*)&machine;  return true; }
+            bool IsMultilineState([[maybe_unused]] LUASyntaxHighlighter::StateMachine& machine) const override { return true; }
             void StartState(LUASyntaxHighlighter::StateMachine& machine) override;
             AZ::u16 GetSaveState() const override { return m_bracketLevel; }
             void SetSaveState(AZ::u16 state) override;
@@ -341,9 +340,8 @@ namespace LUAEditor
         }
     }
 
-    void ShortCommentParserState::StartState(LUASyntaxHighlighter::StateMachine& machine)
+    void ShortCommentParserState::StartState([[maybe_unused]] LUASyntaxHighlighter::StateMachine& machine)
     {
-        machine;
         m_mightBeLong = true;
     }
 
@@ -365,10 +363,8 @@ namespace LUAEditor
         m_endNextChar = false;
     }
 
-    void LongCommentParserState::Parse(LUASyntaxHighlighter::StateMachine& machine, const QChar& nextChar)
+    void LongCommentParserState::Parse(LUASyntaxHighlighter::StateMachine& machine, [[maybe_unused]] const QChar& nextChar)
     {
-        nextChar;
-
         if (m_endNextChar)
         {
             machine.SetState(ParserStates::Null);

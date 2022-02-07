@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 
@@ -29,7 +30,8 @@ cd $DIR
 python_exitcode=$?
 if [ $python_exitcode == 0 ]; then
     echo get_python.sh: Python is already downloaded: $(./python.sh --version)
-    $DIR/pip.sh install -r $DIR/requirements.txt --quiet --disable-pip-version-check
+    $DIR/pip.sh install -r $DIR/requirements.txt --disable-pip-version-check --no-warn-script-location
+    $DIR/pip.sh install -e $DIR/../scripts/o3de --no-deps --disable-pip-version-check  --no-warn-script-location
     exit 0
 fi
 if [[ "$OSTYPE" = *"darwin"* ]];
@@ -72,5 +74,6 @@ if [ $retVal -ne 0 ]; then
 fi
 
 echo installing via pip...
-$DIR/pip.sh install -r $DIR/requirements.txt --disable-pip-version-check
+$DIR/pip.sh install -r $DIR/requirements.txt --disable-pip-version-check --no-warn-script-location
+$DIR/pip.sh install -e $DIR/../scripts/o3de --no-deps --disable-pip-version-check  --no-warn-script-location
 exit $?

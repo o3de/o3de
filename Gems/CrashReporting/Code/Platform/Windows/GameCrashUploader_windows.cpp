@@ -1,20 +1,16 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/std/string/conversions.h>
 
 #include <CrashReporting/GameCrashUploader.h>
 #include <CrashSupport.h>
-
-#include <stdlib.h>
-#include <locale>
-#include <codecvt>
-
-#pragma warning(disable : 4996)
 
 namespace O3de
 {
@@ -23,21 +19,26 @@ namespace O3de
     {
         if (!m_noConfirmation)
         {
+#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
+            char noConfirmation[64]{};
+            size_t variableSize = 0;
+            getenv_s(&variableSize, noConfirmation, AZ_ARRAY_SIZE(noConfirmation), "LY_NO_CONFIRM");
+            if (variableSize == 0)
+#else
             const char* noConfirmation = getenv("LY_NO_CONFIRM");
             if (noConfirmation == nullptr)
+#endif
+            
             {
-
-                std::wstring sendDialogMessage;
-
-                std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-                sendDialogMessage = converter.from_bytes(m_executableName);
+                AZStd::wstring sendDialogMessage;
+                AZStd::to_wstring(sendDialogMessage, m_executableName.c_str());
 
                 sendDialogMessage += L" has encountered a fatal error.  We're sorry for the inconvenience.\n\nA crash debugging file has been created at:\n";
-                sendDialogMessage += report.file_path.value();
+                sendDialogMessage += report.file_path.value().c_str();
                 sendDialogMessage += L"\n\nIf you are willing to submit this file to Amazon it will help us improve the Lumberyard experience.  We will treat this report as confidential.\n\nWould you like to send the error report?";
 
                 int msgboxID = MessageBoxW(
-                    NULL,
+                    nullptr,
                     sendDialogMessage.data(),
                     L"Send Error Report",
                     (MB_ICONEXCLAMATION | MB_YESNO | MB_SYSTEMMODAL)

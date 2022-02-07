@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
-#include "Maestro_precompiled.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include "CommentNode.h"
 #include "AnimSplineTrack.h"
@@ -114,13 +114,13 @@ void CCommentNode::Reflect(AZ::ReflectContext* context)
 //-----------------------------------------------------------------------------
 unsigned int CCommentNode::GetParamCount() const
 {
-    return s_nodeParameters.size();
+    return static_cast<unsigned int>(s_nodeParameters.size());
 }
 
 //-----------------------------------------------------------------------------
 CAnimParamType CCommentNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_nodeParameters.size())
+    if (nIndex < s_nodeParameters.size())
     {
         return s_nodeParameters[nIndex].paramType;
     }

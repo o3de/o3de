@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -131,7 +132,7 @@ namespace ScriptCanvas
 
         void BooleanExpression::InitializeBooleanExpression()
         {
-            AZ_Assert(false, "InitializeBooleanExpression must be overridden");
+            AZ_Error("Script Canvas", false, "InitializeBooleanExpression implementation should be provided");
         }
 
         void BooleanExpression::OnInit()

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -62,7 +63,7 @@ namespace AZStd
         
         AZ_FORCE_INLINE const char* get_name() const            { return m_name; }
         AZ_FORCE_INLINE void        set_name(const char* name)  { m_name = name; }
-        AZ_FORCE_INLINE size_type   get_max_size() const { return Size - (m_freeData - reinterpret_cast<const char*>(&m_data)); }
+        constexpr size_type         max_size() const { return Size; }
         AZ_FORCE_INLINE size_type   get_allocated_size() const { return m_freeData - reinterpret_cast<const char*>(&m_data); }
                 
         pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0)
@@ -189,7 +190,7 @@ namespace AZStd
 
         AZ_FORCE_INLINE const char*  get_name() const           { return m_name; }
         AZ_FORCE_INLINE void         set_name(const char* name) { m_name = name; }
-        AZ_FORCE_INLINE size_type   get_max_size() const        { return (NumNodes - m_numOfAllocatedNodes) * sizeof(Node); }
+        constexpr size_type          max_size() const           { return NumNodes * sizeof(Node); }
         AZ_FORCE_INLINE size_type   get_allocated_size() const  { return m_numOfAllocatedNodes * sizeof(Node); }
 
         inline Node* allocate()

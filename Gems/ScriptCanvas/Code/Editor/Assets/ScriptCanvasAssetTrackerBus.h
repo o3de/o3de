@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,6 +17,7 @@
 
 #include <Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h>
 #include <Editor/Assets/ScriptCanvasMemoryAsset.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
 
 class QWidget;
 
@@ -77,6 +79,9 @@ namespace ScriptCanvasEditor
 
         //! Used to make sure assets that are unloaded also get removed from tracking
         virtual void UntrackAsset([[maybe_unused]] AZ::Data::AssetId assetId) {}
+
+        //! Recreates the view for all tracked assets
+        virtual void RefreshAll() {}
 
         using AssetList = AZStd::vector<ScriptCanvasMemoryAsset::pointer>;
 
@@ -150,17 +155,5 @@ namespace ScriptCanvasEditor
         using MemoryAssetSystemNotificationBus = AZ::EBus<MemoryAssetSystemNotifications>;
     }
     
-    class MemoryAssetNotifications
-        : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::Data::AssetId;
-
-        virtual void OnFileStateChanged(Tracker::ScriptCanvasFileState) {}
-    };
-
-    using MemoryAssetNotificationBus = AZ::EBus<MemoryAssetNotifications>;
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

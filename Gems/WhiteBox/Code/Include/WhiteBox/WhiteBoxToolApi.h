@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,6 +12,8 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/string/string.h>
 
 namespace AZ::IO
 {

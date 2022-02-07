@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -101,7 +102,7 @@ protected:
     void AddFavorites(const AZStd::vector<const AZ::SerializeContext::ClassData*>& classDataContainer) override;
     //////////////////////////////////////////////////////////////////////////
 
-    void rowsInserted(const QModelIndex& parent, int start, int end);
+    void rowsInserted(const QModelIndex& parent, int start, int end) override;
 
     // Context menu handlers
     void ShowContextMenu(const QPoint&);

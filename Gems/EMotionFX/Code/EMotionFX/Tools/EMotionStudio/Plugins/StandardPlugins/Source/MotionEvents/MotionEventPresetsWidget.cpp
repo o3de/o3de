@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,7 +33,7 @@ namespace EMStudio
 {
     MotionEventPresetsWidget::MotionEventPresetsWidget(QWidget* parent, MotionEventsPlugin* plugin)
         : QWidget(parent)
-        , mPlugin(plugin)
+        , m_plugin(plugin)
     {
         Init();
     }
@@ -47,17 +48,17 @@ namespace EMStudio
         layout->setSpacing(2);
 
         // create the table widget
-        mTableWidget = new DragTableWidget(0, 2, nullptr);
-        mTableWidget->setCornerButtonEnabled(false);
-        mTableWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        mTableWidget->setContextMenuPolicy(Qt::DefaultContextMenu);
-        mTableWidget->setShowGrid(false);
+        m_tableWidget = new DragTableWidget(0, 2, nullptr);
+        m_tableWidget->setCornerButtonEnabled(false);
+        m_tableWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        m_tableWidget->setContextMenuPolicy(Qt::DefaultContextMenu);
+        m_tableWidget->setShowGrid(false);
 
         // set the table to row single selection
-        mTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mTableWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        m_tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_tableWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-        QHeaderView* horizontalHeader = mTableWidget->horizontalHeader();
+        QHeaderView* horizontalHeader = m_tableWidget->horizontalHeader();
         horizontalHeader->setStretchLastSection(true);
         horizontalHeader->setVisible(false);
 
@@ -88,15 +89,15 @@ namespace EMStudio
         }
 
         layout->addWidget(toolBar);
-        layout->addWidget(mTableWidget);
+        layout->addWidget(m_tableWidget);
         layout->addLayout(ioButtonsLayout);
 
         // set the main layout
         setLayout(layout);
 
         // connect the signals and the slots
-        connect(mTableWidget, &MotionEventPresetsWidget::DragTableWidget::itemSelectionChanged, this, &MotionEventPresetsWidget::SelectionChanged);
-        connect(mTableWidget, &QTableWidget::cellDoubleClicked, this, [this](int row, int column)
+        connect(m_tableWidget, &MotionEventPresetsWidget::DragTableWidget::itemSelectionChanged, this, &MotionEventPresetsWidget::SelectionChanged);
+        connect(m_tableWidget, &QTableWidget::cellDoubleClicked, this, [this](int row, int column)
         {
             AZ_UNUSED(column);
             MotionEventPreset* preset = GetEventPresetManager()->GetPreset(row);
@@ -107,7 +108,7 @@ namespace EMStudio
 
                 GetEventPresetManager()->SetDirtyFlag(true);
                 ReInit();
-                mPlugin->FireColorChangedSignal();
+                m_plugin->FireColorChangedSignal();
             }
         });
 
@@ -115,14 +116,14 @@ namespace EMStudio
         // initialize everything
         ReInit();
         UpdateInterface();
-        mPlugin->ReInit();
+        m_plugin->ReInit();
     }
 
 
     void MotionEventPresetsWidget::ReInit()
     {
         // Remember selected items
-        QList<QTableWidgetItem*> selectedItems = mTableWidget->selectedItems();
+        QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
         AZStd::vector<AZ::u32> selectedRows;
         selectedRows.reserve(selectedItems.size());
         for (const QTableWidgetItem* selectedItem : selectedItems)
@@ -132,11 +133,11 @@ namespace EMStudio
         }
 
         // clear the table widget
-        mTableWidget->clear();
-        mTableWidget->setColumnCount(2);
+        m_tableWidget->clear();
+        m_tableWidget->setColumnCount(2);
 
         const size_t numEventPresets = GetEventPresetManager()->GetNumPresets();
-        mTableWidget->setRowCount(static_cast<int>(numEventPresets));
+        m_tableWidget->setRowCount(static_cast<int>(numEventPresets));
 
         // set header items for the table
         QTableWidgetItem* colorHeaderItem = new QTableWidgetItem("Color");
@@ -144,11 +145,11 @@ namespace EMStudio
         colorHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         presetNameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
-        mTableWidget->setHorizontalHeaderItem(0, colorHeaderItem);
-        mTableWidget->setHorizontalHeaderItem(1, presetNameHeaderItem);
+        m_tableWidget->setHorizontalHeaderItem(0, colorHeaderItem);
+        m_tableWidget->setHorizontalHeaderItem(1, presetNameHeaderItem);
 
-        mTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
-        mTableWidget->setColumnWidth(0, 39);
+        m_tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
+        m_tableWidget->setColumnWidth(0, 39);
 
         for (AZ::u32 i = 0; i < numEventPresets; ++i)
         {
@@ -172,8 +173,8 @@ namespace EMStudio
             tableItemColor->setWhatsThis(whatsThisString.c_str());
             tableItemPresetName->setWhatsThis(whatsThisString.c_str());
 
-            mTableWidget->setItem(i, 0, tableItemColor);
-            mTableWidget->setItem(i, 1, tableItemPresetName);
+            m_tableWidget->setItem(i, 0, tableItemColor);
+            m_tableWidget->setItem(i, 1, tableItemPresetName);
 
             // Editing will be handled in the double click signal handler
             tableItemPresetName->setFlags(tableItemPresetName->flags() ^ Qt::ItemIsEditable);
@@ -187,23 +188,23 @@ namespace EMStudio
         }
 
         // set the vertical header not visible
-        QHeaderView* verticalHeader = mTableWidget->verticalHeader();
+        QHeaderView* verticalHeader = m_tableWidget->verticalHeader();
         verticalHeader->setVisible(false);
 
-        mTableWidget->resizeColumnToContents(1);
-        mTableWidget->resizeColumnToContents(2);
+        m_tableWidget->resizeColumnToContents(1);
+        m_tableWidget->resizeColumnToContents(2);
 
-        if (mTableWidget->columnWidth(1) < 36)
+        if (m_tableWidget->columnWidth(1) < 36)
         {
-            mTableWidget->setColumnWidth(1, 36);
+            m_tableWidget->setColumnWidth(1, 36);
         }
 
-        if (mTableWidget->columnWidth(2) < 70)
+        if (m_tableWidget->columnWidth(2) < 70)
         {
-            mTableWidget->setColumnWidth(2, 70);
+            m_tableWidget->setColumnWidth(2, 70);
         }
 
-        mTableWidget->horizontalHeader()->setStretchLastSection(true);
+        m_tableWidget->horizontalHeader()->setStretchLastSection(true);
         
         // update the interface
         UpdateInterface();
@@ -242,7 +243,7 @@ namespace EMStudio
 
     void MotionEventPresetsWidget::RemoveSelectedMotionEventPresets()
     {
-        QList<QTableWidgetItem*> selectedItems = mTableWidget->selectedItems();
+        QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
         if (selectedItems.isEmpty())
         {
             ClearMotionEventPresetsButton();
@@ -271,13 +272,13 @@ namespace EMStudio
         ReInit();
 
         // selected the next row
-        if (firstSelectedRow > (mTableWidget->rowCount() - 1))
+        if (firstSelectedRow > (m_tableWidget->rowCount() - 1))
         {
-            mTableWidget->selectRow(firstSelectedRow - 1);
+            m_tableWidget->selectRow(firstSelectedRow - 1);
         }
         else
         {
-            mTableWidget->selectRow(firstSelectedRow);
+            m_tableWidget->selectRow(firstSelectedRow);
         }
     }
 
@@ -302,7 +303,7 @@ namespace EMStudio
 
     void MotionEventPresetsWidget::ClearMotionEventPresets()
     {
-        mTableWidget->selectAll();
+        m_tableWidget->selectAll();
         RemoveSelectedMotionEventPresets();
         UpdateInterface();
     }
@@ -328,7 +329,7 @@ namespace EMStudio
 
         ReInit();
         UpdateInterface();
-        mPlugin->ReInit();
+        m_plugin->ReInit();
     }
 
 
@@ -365,7 +366,7 @@ namespace EMStudio
 
     void MotionEventPresetsWidget::contextMenuEvent(QContextMenuEvent* event)
     {
-        QList<QTableWidgetItem*> selectedItems = mTableWidget->selectedItems();
+        QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
         if (selectedItems.isEmpty())
         {
             return;

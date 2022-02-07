@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -19,7 +20,7 @@ namespace AWSCore
     {
 
     public:
-        virtual const AZStd::string GetServiceUrl() = 0;
+        virtual AZStd::string GetServiceUrl() = 0;
     };
 
     /// Encapsulates what code needs to know about a service in order to 
@@ -59,16 +60,11 @@ namespace AWSCore
             static const char* GetRESTApiStageKeyName() { return RESTAPI_STAGE; } \
         };
 
-#ifdef _MSC_VER
-#pragma warning( push )
-#pragma warning( disable: 4250 )
     // warning C4250: 'AWSCore::ServiceClientJobConfig<ServiceTraitsType>' : inherits 'AWSCore::AwsApiJobConfig::AWSCore::AwsApiJobConfig::GetJobContext' via dominance
     // Thanks to http://stackoverflow.com/questions/11965596/diamond-inheritance-scenario-compiles-fine-in-g-but-produces-warnings-errors for the explanation
     // This is the expected and desired behavior. The warning is superfluous.
-
-#endif
-
-/// Provides service job configuration using settings properties.
+    AZ_PUSH_DISABLE_WARNING(4250, "-Wunknown-warning-option")
+    /// Provides service job configuration using settings properties.
     template<class ServiceTraitsType>
     class ServiceClientJobConfig
         : public ServiceJobConfig
@@ -84,9 +80,6 @@ namespace AWSCore
         using InitializerFunction = AZStd::function<void(ServiceClientJobConfig& config)>;
 
         /// Initialize an ServiceClientJobConfig object.
-        ///
-        /// \param DefaultConfigType - the type of the config object from which
-        /// default values will be taken.
         ///
         /// \param defaultConfig - the config object that provides values when
         /// no override has been set in this object. The default is nullptr, which
@@ -106,7 +99,7 @@ namespace AWSCore
 
         /// This implementation assumes the caller will cache this value as 
         /// needed. See it's use in ServiceRequestJobConfig.
-        const AZStd::string GetServiceUrl() override
+        AZStd::string GetServiceUrl() override
         {
             if (endpointOverride.has_value())
             {
@@ -131,10 +124,7 @@ namespace AWSCore
         }
 
     };
-
-#ifdef _MSC_VER 
-#pragma warning( pop ) // C4250
-#endif
+    AZ_POP_DISABLE_WARNING
 
 } // namespace AWSCore
 

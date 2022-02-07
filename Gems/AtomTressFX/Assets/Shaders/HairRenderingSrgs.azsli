@@ -1,0 +1,203 @@
+/*
+ * Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+ *
+ */
+ 
+//------------------------------------------------------------------------------
+// Shader code related to lighting and shadowing for TressFX
+//------------------------------------------------------------------------------
+//
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+// originated from: TressFXRendering.hlsl
+
+#pragma once
+
+#include <viewsrg.srgi>
+
+//------------------------------------------------------------------------------
+#define g_mVP               ViewSrg::m_viewProjectionMatrix
+#define g_vEye              ViewSrg::m_worldPosition.xyz
+#define g_vViewport         ViewSrg::m_unprojectionConstants    // xy = normaliz scale, zw = offset in 0..1 scale
+#define cInvViewProjMatrix  ViewSrg::m_viewProjectionInverseMatrix
+//------------------------------------------------------------------------------
+
+#define AMD_PI 3.1415926
+#define AMD_e 2.71828183
+#define AMD_TRESSFX_KERNEL_SIZE 5
+#define KBUFFER_SIZE 8
+#define MAX_FRAGMENTS 512
+// Using value 0 as indicator will skip the first hair fragment to allow 
+// for clear screen value (0). 
+// If Atom will allow other value (0xffffffff) this can be avoided.
+#define FRAGMENT_LIST_NULL 0    
+//!=============================================================================
+//!
+//!                             Render Pass only
+//! 
+//!=============================================================================
+// If you change this, you MUST also change TressFXRenderParams in TressFXConstantBuffers.h
+// originally: cbuffer TressFXParameters : register(b3, space0)
+struct TressFXRenderParameters
+{
+    // General information
+    float       m_hairFiberRadius;
+
+    // For deep approximated shadow lookup
+    float       m_shadowAlpha;
+    float       m_fiberSpacing;
+
+    // Original TressFX Kajiya lighting model parameters
+    float       m_hairKs2;
+    float       m_hairEx2;
+    float3      m_fPadding0;           
+    float4      m_matKValue;
+
+    int         m_maxShadowFibers;
+
+    // Marschner lighting model parameters 
+    float       m_roughness;
+    float       m_cuticleTilt;
+
+    float       m_fPadding1;
+};
+
+// Separate strand params from pixel render params (so we can index for PPLL)
+// If you change this, you MUST change TressFXStrandParams in TressFXConstantBuffers.h
+// originally: cbuffer TressFXStrandParameters : register(b4, space0)
+struct TressFXStrandParameters
+{
+    float4      m_matBaseColor;
+    float4      m_matTipColor;
+
+    float       m_tipPercentage;
+    float       m_strandUVTilingFactor;
+    float       m_fiberRatio;
+    float       m_fiberRadius;
+
+    int         m_numVerticesPerStrand;
+    int         m_enableThinTip;
+    int         m_nodePoolSize;
+    int         m_renderParamsIndex;    // Material index in the hair material array
+
+    // Other params
+    int         m_enableStrandUV;
+    int         m_enableStrandTangent;
+    int2        m_iPadding1;
+};
+
+//!------------------------------ SRG Structure --------------------------------
+//! Used by the rendering raster pass only - might be possible to harness 
+//! the material pipeline / tooling.  
+//! This is the per draw Srg containing the specific per hair object parameters 
+//! for the physics simulation and material rendering.
+//! Originally at space0 in TressFXRendering.hlsl 
+//!-----------------------------------------------------------------------------
+ShaderResourceGroup HairRenderingMaterialSrg : SRG_PerMaterial
+{
+    // Generated 
+    Buffer<float>     m_hairThicknessCoeffs;  // Does not seem to be used!
+    Buffer<float2>    m_hairStrandTexCd;
+
+    //! The hair textures defining the color of the hair at its base
+    Texture2D<float4>           m_baseAlbedoTexture;
+    Texture2D<float4>           m_strandAlbedoTexture;
+
+    //! The hair render material properties (combined with the above textures)
+    TressFXRenderParameters     m_tressFXRenderParameters;
+
+    //! The hair object physical material properties.
+    TressFXStrandParameters     m_tressFXStrandParameters;
+
+    Sampler LinearWrapSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+};
+//------------------------------------------------------------------------------
+#define g_HairThicknessCoeffs   HairRenderingMaterialSrg::m_hairThicknessCoeffs
+#define g_HairStrandTexCd       HairRenderingMaterialSrg::m_hairStrandTexCd
+#define BaseAlbedoTexture       HairRenderingMaterialSrg::m_baseAlbedoTexture
+#define StrandAlbedoTexture     HairRenderingMaterialSrg::m_strandAlbedoTexture
+#define LinearWrapSampler       HairRenderingMaterialSrg::LinearWrapSampler
+
+#define HairFiberRadius         HairRenderingMaterialSrg::m_tressFXRenderParameters.m_hairFiberRadius
+#define ShadowAlpha             HairRenderingMaterialSrg::m_tressFXRenderParameters.m_shadowAlpha
+#define FiberSpacing            HairRenderingMaterialSrg::m_tressFXRenderParameters.m_fiberSpacing
+#define HairKs2                 HairRenderingMaterialSrg::m_tressFXRenderParameters.m_hairKs2
+#define HairEx2                 HairRenderingMaterialSrg::m_tressFXRenderParameters.m_hairEx2
+#define MatKValue               HairRenderingMaterialSrg::m_tressFXRenderParameters.m_matKValue
+#define MaxShadowFibers         HairRenderingMaterialSrg::m_tressFXRenderParameters.m_maxShadowFibers
+
+#define MatBaseColor            HairRenderingMaterialSrg::m_tressFXStrandParameters.m_matBaseColor
+#define MatTipColor             HairRenderingMaterialSrg::m_tressFXStrandParameters.m_matTipColor
+#define TipPercentage           HairRenderingMaterialSrg::m_tressFXStrandParameters.m_tipPercentage
+#define StrandUVTilingFactor    HairRenderingMaterialSrg::m_tressFXStrandParameters.m_strandUVTilingFactor
+#define FiberRatio              HairRenderingMaterialSrg::m_tressFXStrandParameters.m_fiberRatio
+#define FiberRadius             HairRenderingMaterialSrg::m_tressFXStrandParameters.m_fiberRadius
+#define NumVerticesPerStrand    HairRenderingMaterialSrg::m_tressFXStrandParameters.m_numVerticesPerStrand
+#define EnableThinTip           HairRenderingMaterialSrg::m_tressFXStrandParameters.m_enableThinTip
+#define NodePoolSize            HairRenderingMaterialSrg::m_tressFXStrandParameters.m_nodePoolSize
+#define RenderParamsIndex       HairRenderingMaterialSrg::m_tressFXStrandParameters.m_renderParamsIndex
+#define EnableStrandUV          HairRenderingMaterialSrg::m_tressFXStrandParameters.m_enableStrandUV
+#define EnableStrandTangent     HairRenderingMaterialSrg::m_tressFXStrandParameters.m_enableStrandTangent
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+//! If you change this, you MUST also change TressFXShadeParams in TressFXConstantBuffers.h 
+//!  and ShadeParams in TressFXShortcut.hlsl
+struct HairObjectShadeParams
+{
+    // General information
+    float       m_fiberRadius;
+    // For deep approximated shadow lookup
+    float       m_shadowAlpha;
+    float       m_fiberSpacing;
+
+    // Original TressFX Kajiya lighting model parameters
+    float       m_hairEx2;
+    float4      m_matKValue;   // KAmbient, KDiffuse, KSpec1, Exp1
+    float       m_hairKs2;
+
+    // Marschner lighting model parameters 
+    float       m_roughness;
+    float       m_cuticleTilt;
+
+    float       fPadding0;
+};
+
+//------------------------------------------------------------------------------
+struct PPLL_STRUCT
+{
+    uint    depth;
+    uint    data;
+    uint    color;
+    uint    uNext;
+};
+//------------------------------------------------------------------------------

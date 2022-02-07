@@ -1,24 +1,22 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_ICONSOLE_H
-#define CRYINCLUDE_CRYCOMMON_ICONSOLE_H
 #pragma once
 
 #include <CryCommon/platform.h>
-
-struct SFunctor;
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/function/function_template.h>
+#include <AzCore/std/string/string_view.h>
 
 struct ConsoleBind;
 
 struct ICVar;
 class ITexture;
-class ICrySizer;
 struct ISystem;
 
 #define     CVAR_INT              1
@@ -84,7 +82,7 @@ enum EVarFlags
 struct ICVarDumpSink
 {
     // <interfuscator:shuffle>
-    virtual ~ICVarDumpSink(){}
+    virtual ~ICVarDumpSink()= default;
     virtual void OnElementFound(ICVar* pCVar) = 0;
     // </interfuscator:shuffle>
 };
@@ -92,7 +90,7 @@ struct ICVarDumpSink
 struct IKeyBindDumpSink
 {
     // <interfuscator:shuffle>
-    virtual ~IKeyBindDumpSink(){}
+    virtual ~IKeyBindDumpSink()= default;
     virtual void OnKeyBindFound(const char* sBind, const char* sCommand) = 0;
     // </interfuscator:shuffle>
 };
@@ -100,7 +98,7 @@ struct IKeyBindDumpSink
 struct IOutputPrintSink
 {
     // <interfuscator:shuffle>
-    virtual ~IOutputPrintSink(){}
+    virtual ~IOutputPrintSink()= default;
     virtual void Print(const char* inszText) = 0;
     // </interfuscator:shuffle>
 };
@@ -109,7 +107,7 @@ struct IOutputPrintSink
 struct IConsoleVarSink
 {
     // <interfuscator:shuffle>
-    virtual ~IConsoleVarSink(){}
+    virtual ~IConsoleVarSink()= default;
     // Called by Console before changing console var value, to validate if var can be changed.
     // Return value: true if ok to change value, false if should not change value.
     virtual bool OnBeforeVarChange(ICVar* pVar, const char* sNewValue) = 0;
@@ -118,15 +116,11 @@ struct IConsoleVarSink
     // </interfuscator:shuffle>
 };
 
-#if defined(GetCommandLine)
-#undef GetCommandLine
-#endif
-
 // Interface to the arguments of the console command.
 struct IConsoleCmdArgs
 {
     // <interfuscator:shuffle>
-    virtual ~IConsoleCmdArgs(){}
+    virtual ~IConsoleCmdArgs()= default;
     // Gets number of arguments supplied to the command (including the command itself)
     virtual int GetArgCount() const = 0;
     // Gets argument by index, nIndex must be in 0 <= nIndex < GetArgCount()
@@ -140,7 +134,7 @@ struct IConsoleCmdArgs
 struct IConsoleArgumentAutoComplete
 {
     // <interfuscator:shuffle>
-    virtual ~IConsoleArgumentAutoComplete(){}
+    virtual ~IConsoleArgumentAutoComplete()= default;
     // Gets number of matches for the argument to auto complete.
     virtual int GetCount() const = 0;
     // Gets argument value by index, nIndex must be in 0 <= nIndex < GetCount()
@@ -149,10 +143,10 @@ struct IConsoleArgumentAutoComplete
 };
 
 // This a definition of the console command function that can be added to console with AddCommand.
-typedef void (* ConsoleCommandFunc)(IConsoleCmdArgs*);
+using ConsoleCommandFunc = void (*)(IConsoleCmdArgs*);
 
 // This a definition of the callback function that is called when variable change.
-typedef void (* ConsoleVarFunc)(ICVar*);
+using ConsoleVarFunc = void (*)(ICVar*);
 
 /* Summary: Interface to the engine console.
 
@@ -169,7 +163,7 @@ typedef void (* ConsoleVarFunc)(ICVar*);
 struct IConsole
 {
     // <interfuscator:shuffle>
-    virtual ~IConsole(){}
+    virtual ~IConsole()= default;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Deletes the console
     virtual void Release() = 0;
@@ -186,7 +180,7 @@ struct IConsole
     //   help - help text that is shown when you use <sName> ? in the console
     // Return:
     //   pointer to the interface ICVar
-    virtual ICVar* RegisterString(const char* sName, const char* sValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) = 0;
+    virtual ICVar* RegisterString(const char* sName, const char* sValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr) = 0;
     // Create a new console variable that store the value in a int
     // Arguments:
     //   sName - console variable name
@@ -195,16 +189,7 @@ struct IConsole
     //   help - help text that is shown when you use <sName> ? in the console
     // Return:
     //   pointer to the interface ICVar
-    virtual ICVar* RegisterInt(const char* sName, int iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) = 0;
-    // Create a new console variable that store the value in a int64
-    // Arguments:
-    //   sName - console variable name
-    //   iValue - default value
-    //   nFlags - user defined flag, this parameter is used by other subsystems and doesn't affect the console variable (basically of user data)
-    //   help - help text that is shown when you use <sName> ? in the console
-    // Return:
-    //   pointer to the interface ICVar
-    virtual ICVar* RegisterInt64(const char* sName, int64 iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) = 0;
+    virtual ICVar* RegisterInt(const char* sName, int iValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr) = 0;
     // Create a new console variable that store the value in a float
     // Arguments:
     //   sName - console variable name
@@ -213,7 +198,7 @@ struct IConsole
     //   help - help text that is shown when you use <sName> ? in the console
     // Return:
     //   pointer to the interface ICVar
-    virtual ICVar* RegisterFloat(const char* sName, float fValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = 0) = 0;
+    virtual ICVar* RegisterFloat(const char* sName, float fValue, int nFlags, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr) = 0;
 
     // Create a new console variable that will update the user defined float
     // Arguments:
@@ -224,7 +209,7 @@ struct IConsole
     //   allowModify - allow modification through config vars, prevents missing modifications in release mode
     // Return:
     //   pointer to the interface ICVar
-    virtual ICVar* Register(const char* name, float* src, float defaultvalue, int nFlags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) = 0;
+    virtual ICVar* Register(const char* name, float* src, float defaultvalue, int nFlags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr, bool allowModify = true) = 0;
     // Create a new console variable that will update the user defined integer
     // Arguments:
     //   sName - console variable name
@@ -234,7 +219,7 @@ struct IConsole
     //   allowModify - allow modification through config vars, prevents missing modifications in release mode
     // Return:
     //   pointer to the interface ICVar
-    virtual ICVar* Register(const char* name, int* src, int defaultvalue, int nFlags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) = 0;
+    virtual ICVar* Register(const char* name, int* src, int defaultvalue, int nFlags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr, bool allowModify = true) = 0;
 
     // Create a new console variable that will update the user defined pointer to null terminated string
     // Arguments:
@@ -245,15 +230,7 @@ struct IConsole
     //   allowModify - allow modification through config vars, prevents missing modifications in release mode
     // Return:
     //   pointer to the interface ICVar
-    virtual ICVar* Register(const char* name, const char** src, const char* defaultvalue, int nFlags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = 0, bool allowModify = true) = 0;
-
-    // Registers an existing console variable
-    // Should only be used with static duration objects, object is never freed
-    // Arguments:
-    //   pVar - the existing console variable
-    // Return:
-    //   pointer to the interface ICVar (that was passed in)
-    virtual ICVar* Register(ICVar* pVar) = 0;
+    virtual ICVar* Register(const char* name, const char** src, const char* defaultvalue, int nFlags = 0, const char* help = "", ConsoleVarFunc pChangeFunc = nullptr, bool allowModify = true) = 0;
 
     // ! Remove a variable from the console
     // @param sVarName console variable name
@@ -371,7 +348,7 @@ struct IConsole
     //    sHelp    - Help string, will be displayed when typing in console "command ?".
     // Return
     //    True if successful, false otherwise.
-    virtual bool AddCommand(const char* sCommand, ConsoleCommandFunc func, int nFlags = 0, const char* sHelp = NULL) = 0;
+    virtual bool AddCommand(const char* sCommand, ConsoleCommandFunc func, int nFlags = 0, const char* sHelp = nullptr) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Description:
@@ -386,7 +363,7 @@ struct IConsole
     // Return
     //    True if successful, false otherwise.
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    virtual bool AddCommand(const char* sName, const char* sScriptFunc, int nFlags = 0, const char* sHelp = NULL) = 0;
+    virtual bool AddCommand(const char* sName, const char* sScriptFunc, int nFlags = 0, const char* sHelp = nullptr) = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Description:
@@ -425,7 +402,7 @@ struct IConsole
     //   szPrefix - 0 or prefix e.g. "sys_spec_"
     // Return
     //   used size
-    virtual size_t GetSortedVars(const char** pszArray, size_t numItems, const char* szPrefix = 0) = 0;
+    virtual size_t GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix = nullptr) = 0;
     virtual const char* AutoComplete(const char* substr) = 0;
     virtual const char* AutoCompletePrev(const char* substr) = 0;
     virtual const char* ProcessCompletion(const char* szInputBuffer) = 0;
@@ -434,9 +411,6 @@ struct IConsole
     //
     virtual void ResetAutoCompletion() = 0;
     //////////////////////////////////////////////////////////////////////////
-
-    // Calculation of the memory used by the whole console system
-    virtual void GetMemoryUsage (ICrySizer* pSizer) const = 0;
 
     // Function related to progress bar
     virtual void ResetProgressBar(int nProgressRange) = 0;
@@ -452,24 +426,6 @@ struct IConsole
     // @param Callback callback-interface which needs to be called for each element
     virtual void DumpKeyBinds(IKeyBindDumpSink* pCallback) = 0;
     virtual const char* FindKeyBind(const char* sCmd) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hashing of cvars (for anti-cheat). Separates setting of range, calculation,
-    // and retrieval of result so calculation can be done at a known safe point
-    // (e.g end of frame) when we know cvars won't be modified or in temporary state
-
-    // Get Number of cvars that can be hashed
-    virtual int GetNumCheatVars() = 0;
-    // Set the range of cvars
-    virtual void SetCheatVarHashRange(size_t firstVar, size_t lastVar) = 0;
-    // Calculate the hash from current cvars
-    virtual void CalcCheatVarHash() = 0;
-    // Since hash is calculated async, check if it's completed
-    virtual bool IsHashCalculated() = 0;
-    // Get the hash calculated
-    virtual uint64 GetCheatVarHash() = 0;
-    virtual void PrintCheatVars(bool bUseLastHashRange) = 0;
-    virtual char* GetCheatVarAt(uint32 nOffset) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Console variable sink.
@@ -510,7 +466,7 @@ struct IConsole
 //  This interface for the remote console
 struct IRemoteConsoleListener
 {
-    virtual ~IRemoteConsoleListener() {}
+    virtual ~IRemoteConsoleListener() = default;
 
     virtual void OnConsoleCommand([[maybe_unused]] const char* cmd) {};
     virtual void OnGameplayCommand([[maybe_unused]] const char* cmd) {};
@@ -518,7 +474,7 @@ struct IRemoteConsoleListener
 
 struct IRemoteConsole
 {
-    virtual ~IRemoteConsole() {};
+    virtual ~IRemoteConsole() = default;;
 
     virtual void RegisterConsoleVariables() = 0;
     virtual void UnregisterConsoleVariables() = 0;
@@ -557,7 +513,7 @@ struct ICVar
 
     // <interfuscator:shuffle>
     // TODO make protected;
-    virtual ~ICVar() {}
+    virtual ~ICVar() = default;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // delete the variable
     // NOTE: the variable will automatically unregister itself from the console
@@ -641,28 +597,11 @@ struct ICVar
     // Adds a new on change functor to the list.
     // It will add from index 1 on (0 is reserved).
     // Returns an ID to use when getting or removing the functor
-    virtual uint64 AddOnChangeFunctor(const SFunctor& pChangeFunctor) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Returns the number of registered on change functos.
-    virtual uint64 GetNumberOfOnChangeFunctors() const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Returns the functors with the specified id.
-    virtual const SFunctor& GetOnChangeFunctor(uint64 nFunctorId) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Removes an on change functor
-    // returns true if removal was successful.
-    virtual bool RemoveOnChangeFunctor(uint64 nFunctorId) = 0;
+    virtual uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Get the current callback function.
     virtual ConsoleVarFunc GetOnChangeCallback() const = 0;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    virtual void GetMemoryUsage(class ICrySizer* pSizer) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // only useful for CVarGroups, other types return GetIVal()
@@ -684,5 +623,3 @@ struct ICVar
     // Set the data probe string value of the variable
     virtual void SetDataProbeString(const char* pDataProbeString) = 0;
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_ICONSOLE_H

@@ -1,11 +1,11 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <precompiled.h>
 
 #include <functional>
 
@@ -669,6 +669,7 @@ namespace GraphCanvas
     {
         GeometryNotificationBus::Handler::BusDisconnect();
         SceneNotificationBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void GestureSceneHelper::TrackElement(const AZ::EntityId& elementId)
@@ -1069,8 +1070,6 @@ namespace GraphCanvas
     ///////////////////
     // SceneComponent
     ///////////////////
-
-    static const char* k_copyPasteKey = "GraphCanvasScene";
 
     void SceneComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -3262,8 +3261,6 @@ namespace GraphCanvas
         {
             for (const auto& sceneMember : sceneMemberList)
             {
-                QRectF boundingArea;
-
                 QGraphicsItem* sceneItem = nullptr;
                 VisualRequestBus::EventResult(sceneItem, sceneMember->GetId(), &VisualRequests::AsGraphicsItem);
 
@@ -3292,8 +3289,6 @@ namespace GraphCanvas
         {
             for (const auto& sceneMember : sceneMemberList)
             {
-                QRectF boundingArea;
-
                 QGraphicsItem* sceneItem = nullptr;
                 VisualRequestBus::EventResult(sceneItem, sceneMember->GetId(), &VisualRequests::AsGraphicsItem);
 

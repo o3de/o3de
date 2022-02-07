@@ -1,0 +1,571 @@
+{
+    "entries": [
+        {
+            "base": "MaterialData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Material Data"
+            },
+            "methods": [
+                {
+                    "base": "GetBaseColor",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Base Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Base Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Base Color"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUseRoughnessMap",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Use Roughness Map"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Use Roughness Map is invoked"
+                    },
+                    "details": {
+                        "name": "Get Use Roughness Map"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetShininess",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Shininess"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Shininess is invoked"
+                    },
+                    "details": {
+                        "name": "Get Shininess"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUseEmissiveMap",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Use Emissive Map"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Use Emissive Map is invoked"
+                    },
+                    "details": {
+                        "name": "Get Use Emissive Map"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEmissiveColor",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Emissive Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Emissive Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Emissive Color"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector 3&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSpecularColor",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Specular Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Specular Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Specular Color"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector 3&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUniqueId",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Unique Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Unique Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Unique Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDiffuseColor",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Diffuse Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Diffuse Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Diffuse Color"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector 3&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEmissiveIntensity",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Emissive Intensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Emissive Intensity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Emissive Intensity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaterialName",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Material Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Material Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Material Name"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "const AZ Std::basic_string<char, AZ Std::char_traits<char>, alloc"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUseMetallicMap",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Use Metallic Map"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Use Metallic Map is invoked"
+                    },
+                    "details": {
+                        "name": "Get Use Metallic Map"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMetallicFactor",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Metallic Factor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Metallic Factor is invoked"
+                    },
+                    "details": {
+                        "name": "Get Metallic Factor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRoughnessFactor",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Roughness Factor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Roughness Factor is invoked"
+                    },
+                    "details": {
+                        "name": "Get Roughness Factor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUseAOMap",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get UseAO Map"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get UseAO Map is invoked"
+                    },
+                    "details": {
+                        "name": "Get UseAO Map"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTexture",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Texture"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Texture is invoked"
+                    },
+                    "details": {
+                        "name": "Get Texture"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "const AZ Std::basic_string<char, AZ Std::char_traits<char>, alloc"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsNoDraw",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is No Draw"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is No Draw is invoked"
+                    },
+                    "details": {
+                        "name": "Is No Draw"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOpacity",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Opacity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Opacity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Opacity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetUseColorMap",
+                    "context": "MaterialData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Use Color Map"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Use Color Map is invoked"
+                    },
+                    "details": {
+                        "name": "Get Use Color Map"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNormal",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Normal"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Normal"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDiffuse",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Diffuse"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Diffuse"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSpecular",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Specular"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Specular"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBump",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Bump"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Bump"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEmissive",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Emissive"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Emissive"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRoughness",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Roughness"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Roughness"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBaseColor",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Base Color"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Base Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAmbientOcclusion",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Ambient Occlusion"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Ambient Occlusion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMetallic",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Metallic"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Metallic"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

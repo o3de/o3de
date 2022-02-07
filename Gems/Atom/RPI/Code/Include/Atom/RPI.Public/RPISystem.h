@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -69,11 +70,13 @@ namespace AZ
             void InitializeSystemAssets() override;
             void RegisterScene(ScenePtr scene) override;
             void UnregisterScene(ScenePtr scene) override;
-            ScenePtr GetScene(const SceneId& sceneId) const override;
+            Scene* GetScene(const SceneId& sceneId) const override;
+            Scene* GetSceneByName(const AZ::Name& name) const override;
             ScenePtr GetDefaultScene() const override;
             RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) override;
-            Data::Asset<ShaderResourceGroupAsset> GetSceneSrgAsset() const override;
-            Data::Asset<ShaderResourceGroupAsset> GetViewSrgAsset() const override;
+            Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const override;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSceneSrgLayout() const override;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> GetViewSrgLayout() const override;
             void SimulationTick() override;
             void RenderTick() override;
             void SetSimulationJobPolicy(RHI::JobPolicy jobPolicy) override;
@@ -94,8 +97,7 @@ namespace AZ
             // SystemTickBus::OnTick
             void OnSystemTick() override;
 
-            // Fill system time and game time information for simulation or rendering
-            void FillTickTimeInfo();
+            float GetCurrentTime();
 
             // The set of core asset handlers registered by the system.
             AZStd::vector<AZStd::unique_ptr<Data::AssetHandler>> m_assetHandlers;
@@ -121,12 +123,16 @@ namespace AZ
             // The job policy used for feature processor's rendering prepare
             RHI::JobPolicy m_prepareRenderJobPolicy = RHI::JobPolicy::Parallel;
 
-            TickTimeInfo m_tickTime;
+            ScriptTimePoint m_startTime;
+            float m_currentSimulationTime = 0.0f;
 
             RPISystemDescriptor m_descriptor;
 
-            Data::Asset<ShaderResourceGroupAsset> m_sceneSrgAsset;
-            Data::Asset<ShaderResourceGroupAsset> m_viewSrgAsset;
+            // Reference to the shader asset that is used
+            // to get the layout for SceneSrg (@m_sceneSrgLayout) and ViewSrg (@m_viewSrgLayout).
+            Data::Asset<ShaderAsset> m_commonShaderAssetForSrgs;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_sceneSrgLayout;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_viewSrgLayout;
 
             bool m_systemAssetsInitialized = false;
 

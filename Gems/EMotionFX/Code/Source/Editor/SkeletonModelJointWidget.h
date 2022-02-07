@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -32,13 +33,14 @@ namespace EMotionFX
 
         virtual void CreateGUI();
 
-        void Reinit(const QModelIndexList& selectedModelIndices);
+        void Reinit();
 
         void showEvent(QShowEvent* event) override;
 
     protected:
         Actor* GetActor() const;
         Node* GetNode() const;
+        QModelIndexList GetSelectedModelIndices() const;
         virtual QWidget* CreateContentWidget(QWidget* parent) = 0;
         virtual QWidget* CreateNoSelectionWidget(QWidget* parent) = 0;
         virtual void InternalReinit() = 0;
@@ -49,7 +51,6 @@ namespace EMotionFX
         void OnModelReset();
 
     protected:
-        QModelIndexList m_selectedModelIndices;
         QLabel*         m_jointNameLabel;
         static int      s_jointLabelSpacing;
         static int      s_jointNameSpacing;

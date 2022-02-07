@@ -1,36 +1,17 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-"""
-C13751579: Asset Picker UI/UX
-"""
 
-import os
-import sys
-from PySide2 import QtWidgets, QtTest, QtCore
-from PySide2.QtCore import Qt
+def AssetPicker_UI_UX():
 
-import azlmbr.asset as asset
-import azlmbr.bus as bus
-import azlmbr.legacy.general as general
-import azlmbr.paths
-import azlmbr.math as math
-
-sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import editor_python_test_tools.hydra_editor_utils as hydra
-import editor_python_test_tools.pyside_utils as pyside_utils
-from editor_python_test_tools.editor_test_helper import EditorTestHelper
-
-
-class AssetPickerUIUXTest(EditorTestHelper):
-    def __init__(self):
-        EditorTestHelper.__init__(self, log_prefix="AssetPicker_UI_UX", args=["level"])
+    import editor_python_test_tools.pyside_utils as pyside_utils
 
     @pyside_utils.wrap_async
-    async def run_test(self):
+    async def run_test():
         """
         Summary:
         Verify the functionality of Asset Picker and UI/UX properties
@@ -44,7 +25,7 @@ class AssetPickerUIUXTest(EditorTestHelper):
         The asset picker is closed and the selected asset is assigned to the mesh component.
 
         Test Steps:
-        1) Open a new level
+        1) Open a simple level
         2) Create entity and add Mesh component
         3) Access Entity Inspector
         4) Click Asset Picker (Mesh Asset)
@@ -60,17 +41,27 @@ class AssetPickerUIUXTest(EditorTestHelper):
         5) Verify if Mesh Asset is assigned via both OK/Enter options
 
         Note:
-        - This test file must be called from the Lumberyard Editor command terminal
+        - This test file must be called from the O3DE Editor command terminal
         - Any passed and failed tests are written to the Editor.log file.
                 Parsing the file or running a log_monitor are required to observe the test results.
 
         :return: None
         """
 
-        self.file_path = ["AutomatedTesting", "Assets", "Objects", "Foliage"]
-        self.incorrect_file_found = False
-        self.mesh_asset = "cedar.azmodel"
-        self.prefix = ""
+        import os
+        from PySide2 import QtWidgets, QtTest, QtCore
+        from PySide2.QtCore import Qt
+
+        import azlmbr.asset as asset
+        import azlmbr.bus as bus
+        import azlmbr.legacy.general as general
+        import azlmbr.math as math
+
+        import editor_python_test_tools.hydra_editor_utils as hydra
+        from editor_python_test_tools.utils import Report
+        from editor_python_test_tools.utils import TestHelper as helper
+
+        file_path = ["AutomatedTesting", "Assets", "Objects", "Foliage"]
 
         def is_asset_assigned(component, interaction_option):
             path = os.path.join("assets", "objects", "foliage", "cedar.azmodel")
@@ -79,7 +70,7 @@ class AssetPickerUIUXTest(EditorTestHelper):
             result = hydra.get_component_property_value(component, "Controller|Configuration|Mesh Asset")
             expected_asset_str = expected_asset_id.invoke("ToString")
             result_str = result.invoke("ToString")
-            print(f"Asset assigned for {interaction_option} option: {expected_asset_str == result_str}")
+            Report.info(f"Asset assigned for {interaction_option} option: {expected_asset_str == result_str}")
             return expected_asset_str == result_str
 
         def move_and_resize_widget(widget):
@@ -88,9 +79,11 @@ class AssetPickerUIUXTest(EditorTestHelper):
             x, y = initial_position.x() + 5, initial_position.y() + 5
             widget.move(x, y)
             curr_position = widget.pos()
-            move_success = curr_position.x() == x and curr_position.y() == y
-            self.test_success = move_success and self.test_success
-            self.log(f"Widget Move Test: {move_success}")
+            asset_picker_moved = (
+                "Asset Picker widget moved successfully",
+                "Failed to move Asset Picker widget"
+            )
+            Report.result(asset_picker_moved, curr_position.x() == x and curr_position.y() == y)
 
             # Resize the widget and verify size
             width, height = (
@@ -98,9 +91,36 @@ class AssetPickerUIUXTest(EditorTestHelper):
                 widget.geometry().height() + 10,
             )
             widget.resize(width, height)
-            resize_success = widget.geometry().width() == width and widget.geometry().height() == height
-            self.test_success = resize_success and self.test_success
-            self.log(f"Widget Resize Test: {resize_success}")
+            asset_picker_resized = (
+                "Resized Asset Picker widget successfully",
+                "Failed to resize Asset Picker widget"
+            )
+            Report.result(asset_picker_resized, widget.geometry().width() == width and widget.geometry().height() ==
+                          height)
+
+        def verify_expand(model_index, tree):
+            initially_collapsed = (
+                "Folder initially collapsed",
+                "Folder unexpectedly expanded"
+            )
+            expanded = (
+                "Folder expanded successfully",
+                "Failed to expand folder"
+            )
+            # Check initial collapse
+            Report.result(initially_collapsed, not tree.isExpanded(model_index))
+            # Expand at the specified index
+            tree.expand(model_index)
+            # Verify expansion
+            Report.result(expanded, tree.isExpanded(model_index))
+
+        def verify_collapse(model_index, tree):
+            collapsed = (
+                "Folder hierarchy collapsed successfully",
+                "Failed to collapse folder hierarchy"
+            )
+            tree.collapse(model_index)
+            Report.result(collapsed, not tree.isExpanded(model_index))
 
         def verify_files_appeared(model, allowed_asset_extensions, parent_index=QtCore.QModelIndex()):
             indices = [parent_index]
@@ -114,22 +134,20 @@ class AssetPickerUIUXTest(EditorTestHelper):
                         and (cur_data.lower().split(".")[-1] not in allowed_asset_extensions)
                         and not cur_data[-1] == ")"
                     ):
-                        print(f"Incorrect file found: {cur_data}")
-                        self.incorrect_file_found = True
-                        indices = list()
-                        break
+                        Report.info(f"Incorrect file found: {cur_data}")
+                        return False
                     indices.append(cur_index)
-            self.test_success = not self.incorrect_file_found and self.test_success
+            return True
 
-        def print_message_prefix(message):
-            print(f"{self.prefix}: {message}")
-
-        async def asset_picker(prefix, allowed_asset_extensions, asset, interaction_option):
+        async def asset_picker(allowed_asset_extensions, asset, interaction_option):
             active_modal_widget = await pyside_utils.wait_for_modal_widget()
-            if active_modal_widget and self.prefix == "":
-                self.prefix = prefix
+            if active_modal_widget:
                 dialog = active_modal_widget.findChildren(QtWidgets.QDialog, "AssetPickerDialogClass")[0]
-                print_message_prefix(f"Asset Picker title for Mesh: {dialog.windowTitle()}")
+                asset_picker_title = (
+                    "Asset Picker window is titled as expected",
+                    "Asset Picker window has an unexpected title"
+                )
+                Report.result(asset_picker_title, dialog.windowTitle() == "Pick ModelAsset")
                 tree = dialog.findChildren(QtWidgets.QTreeView, "m_assetBrowserTreeViewWidget")[0]
                 scroll_area = tree.findChild(QtWidgets.QWidget, "qt_scrollarea_vcontainer")
                 scroll_bar = scroll_area.findChild(QtWidgets.QScrollBar)
@@ -137,39 +155,42 @@ class AssetPickerUIUXTest(EditorTestHelper):
                 # a) Collapse all the files initially and verify if scroll bar is not visible
                 tree.collapseAll()
                 await pyside_utils.wait_for_condition(lambda: not scroll_bar.isVisible(), 0.5)
-                print_message_prefix(
-                    f"Scroll Bar is not visible before expanding the tree: {not scroll_bar.isVisible()}"
+                scroll_bar_hidden = (
+                    "Scroll Bar is not visible before tree expansion",
+                    "Scroll Bar is visible before tree expansion"
                 )
+                Report.result(scroll_bar_hidden, not scroll_bar.isVisible())
 
                 # Get Model Index of the file paths
-                model_index_1 = pyside_utils.find_child_by_pattern(tree, self.file_path[0])
-                print(model_index_1.model())
-                model_index_2 = pyside_utils.find_child_by_pattern(model_index_1, self.file_path[1])
+                model_index_1 = pyside_utils.find_child_by_pattern(tree, file_path[0])
+                model_index_2 = pyside_utils.find_child_by_pattern(model_index_1, file_path[1])
 
                 # b) Expand/Verify Top folder of file path
-                print_message_prefix(f"Top level folder initially collapsed: {not tree.isExpanded(model_index_1)}")
-                tree.expand(model_index_1)
-                print_message_prefix(f"Top level folder expanded: {tree.isExpanded(model_index_1)}")
+                verify_expand(model_index_1, tree)
 
                 # c) Expand/Verify Nested folder of file path
-                print_message_prefix(f"Nested folder initially collapsed: {not tree.isExpanded(model_index_2)}")
-                tree.expand(model_index_2)
-                print_message_prefix(f"Nested folder expanded: {tree.isExpanded(model_index_2)}")
+                verify_expand(model_index_2, tree)
 
                 # d) Verify if the ScrollBar appears after expanding folders
                 tree.expandAll()
                 await pyside_utils.wait_for_condition(lambda: scroll_bar.isVisible(), 0.5)
-                print_message_prefix(f"Scroll Bar appeared after expanding tree: {scroll_bar.isVisible()}")
+                scroll_bar_visible = (
+                    "Scroll Bar is visible after tree expansion",
+                    "Scroll Bar is not visible after tree expansion"
+                )
+                Report.result(scroll_bar_visible, scroll_bar.isVisible())
 
                 # e) Collapse Nested and Top Level folders and verify if collapsed
-                tree.collapse(model_index_2)
-                print_message_prefix(f"Nested folder collapsed: {not tree.isExpanded(model_index_2)}")
-                tree.collapse(model_index_1)
-                print_message_prefix(f"Top level folder collapsed: {not tree.isExpanded(model_index_1)}")
+                verify_collapse(model_index_2, tree)
+                verify_collapse(model_index_1, tree)
 
                 # f) Verify if the correct files are appearing in the Asset Picker
-                verify_files_appeared(tree.model(), allowed_asset_extensions)
-                print_message_prefix(f"Expected Assets populated in the file picker: {not self.incorrect_file_found}")
+                asset_picker_correct_files_appear = (
+                    "Expected assets populated in the file picker",
+                    "Found unexpected assets in the file picker"
+                )
+                Report.result(asset_picker_correct_files_appear, verify_files_appeared(tree.model(),
+                                                                                       allowed_asset_extensions))
 
                 # While we are here we can also check if we can resize and move the widget
                 move_and_resize_widget(active_modal_widget)
@@ -192,16 +213,10 @@ class AssetPickerUIUXTest(EditorTestHelper):
                     await pyside_utils.click_button_async(ok_button)
                 elif interaction_option == "enter":
                     QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
-                self.prefix = ""
 
-        # 1) Open a new level
-        self.test_success = self.create_level(
-            self.args["level"],
-            heightmap_resolution=1024,
-            heightmap_meters_per_pixel=1,
-            terrain_texture_resolution=4096,
-            use_terrain=False,
-        )
+        # 1) Open an existing simple level
+        helper.init_idle()
+        helper.open_level("Physics", "Base")
 
         # 2) Create entity and add Mesh component
         entity_position = math.Vector3(125.0, 136.0, 32.0)
@@ -221,7 +236,7 @@ class AssetPickerUIUXTest(EditorTestHelper):
 
         # Assign Mesh Asset via OK button
         pyside_utils.click_button_async(attached_button)
-        await asset_picker("Mesh Asset", ["azmodel", "fbx"], "cedar (ModelAsset)", "ok")
+        await asset_picker(["azmodel", "fbx"], "cedar (ModelAsset)", "ok")
 
         # 5) Verify if Mesh Asset is assigned
         try:
@@ -230,7 +245,11 @@ class AssetPickerUIUXTest(EditorTestHelper):
         except pyside_utils.EventLoopTimeoutException as err:
             print(err)
             mesh_success = False
-        self.test_success = mesh_success and self.test_success
+        mesh_asset_assigned_ok = (
+            "Successfully assigned Mesh asset via OK button",
+            "Failed to assign Mesh asset via OK button"
+        )
+        Report.result(mesh_asset_assigned_ok, mesh_success)
 
         # Clear Mesh Asset
         hydra.get_set_test(entity, 0, "Controller|Configuration|Mesh Asset", None)
@@ -241,7 +260,7 @@ class AssetPickerUIUXTest(EditorTestHelper):
 
         # Assign Mesh Asset via Enter
         pyside_utils.click_button_async(attached_button)
-        await asset_picker("Mesh Asset", ["azmodel", "fbx"], "cedar (ModelAsset)", "enter")
+        await asset_picker(["azmodel", "fbx"], "cedar (ModelAsset)", "enter")
 
         # 5) Verify if Mesh Asset is assigned
         try:
@@ -250,8 +269,16 @@ class AssetPickerUIUXTest(EditorTestHelper):
         except pyside_utils.EventLoopTimeoutException as err:
             print(err)
             mesh_success = False
-        self.test_success = mesh_success and self.test_success
+        mesh_asset_assigned_enter = (
+            "Successfully assigned Mesh asset via Enter button",
+            "Failed to assign Mesh asset via Enter button"
+        )
+        Report.result(mesh_asset_assigned_enter, mesh_success)
+
+    run_test()
 
 
-test = AssetPickerUIUXTest()
-test.run()
+if __name__ == "__main__":
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(AssetPicker_UI_UX)

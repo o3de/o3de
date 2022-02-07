@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AzToolsFramework_precompiled.h"
 #include "EntityStateCommand.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -54,7 +54,7 @@ namespace AzToolsFramework
 
     void EntityStateCommand::Capture(AZ::Entity* pSourceEntity, bool captureUndo)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         m_entityID = pSourceEntity->GetId();
         EBUS_EVENT_ID_RESULT(m_entityContextId, m_entityID, AzFramework::EntityIdContextQueryBus, GetOwningContextId);
@@ -114,7 +114,7 @@ namespace AzToolsFramework
 
     void EntityStateCommand::RestoreEntity(const AZ::u8* buffer, AZStd::size_t bufferSizeBytes, const AZ::SliceComponent::EntityRestoreInfo& sliceRestoreInfo) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZ_Assert(buffer, "No data to undo!");
         AZ_Assert(bufferSizeBytes, "Undo data is empty.");
@@ -259,7 +259,7 @@ namespace AzToolsFramework
 
     void EntityDeleteCommand::Redo()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         EBUS_EVENT(AZ::ComponentApplicationBus, DeleteEntity, m_entityID);
         PreemptiveUndoCache::Get()->PurgeCache(m_entityID);
     }
@@ -277,7 +277,7 @@ namespace AzToolsFramework
 
     void EntityCreateCommand::Undo()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         EBUS_EVENT(AZ::ComponentApplicationBus, DeleteEntity, m_entityID);
         PreemptiveUndoCache::Get()->PurgeCache(m_entityID);
     }

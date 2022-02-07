@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -235,7 +236,7 @@ namespace AZ
                 case TextureMapType::Bump:
                     return m_normalMap;
                 default:
-                    AZ_Assert(false, "Invalid Texture map requested.")
+                    AZ_Assert(false, "Invalid Texture map requested.");
                     return m_empty;
             }
         }
@@ -254,7 +255,7 @@ namespace AZ
                 m_normalMap = texture;
                 break;
             default:
-                AZ_Assert(false, "Invalid Texture map requested.")
+                AZ_Assert(false, "Invalid Texture map requested.");
                 break;
             }
         }
@@ -598,7 +599,7 @@ namespace AZ
 
             if (!materialNode)
             {
-                AZ_Assert(false, "Attempted to add material to invalid xml document.")
+                AZ_Assert(false, "Attempted to add material to invalid xml document.");
                 return false;
             }
 

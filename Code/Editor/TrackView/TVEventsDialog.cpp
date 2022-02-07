@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,12 +28,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 // CTVEventsDialog dialog
-
-namespace
-{
-    const int kCountSubItemIndex = 1;
-    const int kTimeSubItemIndex = 2;
-}
 
 class TVEventsModel
     : public QAbstractTableModel
@@ -210,7 +205,7 @@ public:
     int GetNumberOfUsageAndFirstTimeUsed(const char* eventName, float& timeFirstUsed) const;
 };
 
-CTVEventsDialog::CTVEventsDialog(QWidget* pParent /*=NULL*/)
+CTVEventsDialog::CTVEventsDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_ui(new Ui::TVEventsDialog)
 {
@@ -362,7 +357,7 @@ int TVEventsModel::GetNumberOfUsageAndFirstTimeUsed(const char* eventName, float
         {
             CTrackViewTrack* pTrack = tracks.GetTrack(currentTrack);
 
-            for (int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
+            for (unsigned int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
             {
                 CTrackViewKeyHandle keyHandle = pTrack->GetKey(currentKey);
 

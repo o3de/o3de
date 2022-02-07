@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -61,7 +62,7 @@ namespace ImageProcessingAtomEditor
         
         void SetIsOverrided();
         
-        void SetToPreset(const AZStd::string& presetName);
+        void SetToPreset(const ImageProcessingAtom::PresetName& presetName);
         
         //Get the texture setting on certain platform
         ImageProcessingAtom::TextureSettings& GetMultiplatformTextureSetting(const AZStd::string& platform = "");

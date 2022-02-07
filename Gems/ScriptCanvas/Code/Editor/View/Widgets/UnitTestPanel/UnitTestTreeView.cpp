@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <precompiled.h>
 
 #include <qaction.h>
 #include <qevent.h>
@@ -20,7 +19,6 @@
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/StyleBus.h>
 

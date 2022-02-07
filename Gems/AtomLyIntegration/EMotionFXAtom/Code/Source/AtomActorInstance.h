@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -87,7 +88,7 @@ namespace AZ
             void UpdateBounds() override;
             void DebugDraw(const DebugOptions& debugOptions) override;
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
-            void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod);
+            void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod) override;
             SkinningMethod GetAtomSkinningMethod() const;
             void SetIsVisible(bool isVisible) override;
 
@@ -119,6 +120,9 @@ namespace AZ
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MaterialReceiverRequestBus::Handler overrides...
+            MaterialAssignmentId FindMaterialAssignmentId(
+                const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
+            RPI::ModelMaterialSlotMap GetModelMaterialSlots() const override;
             MaterialAssignmentMap GetMaterialAssignments() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
@@ -137,8 +141,14 @@ namespace AZ
             AZ::Data::Instance<RPI::Model> GetModel() const override;
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
+            void SetLodType(RPI::Cullable::LodType lodType) override;
+            RPI::Cullable::LodType GetLodType() const override;
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
             RPI::Cullable::LodOverride GetLodOverride() const override;
+            void SetMinimumScreenCoverage(float minimumScreenCoverage) override;
+            float GetMinimumScreenCoverage() const override;
+            void SetQualityDecayRate(float qualityDecayRate) override;
+            float GetQualityDecayRate() const override;
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler

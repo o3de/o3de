@@ -1,11 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "StandaloneTools_precompiled.h"
+#include <AzCore/PlatformIncl.h>
 
 #include "LUAEditorMainWindow.hxx"
 
@@ -59,8 +60,8 @@ void initSharedResources()
 
 namespace
 {
-    const char* LUAEditorDebugName = "LUA Debug";
-    const char* LUAEditorInfoName = "LUA Editor";
+    [[maybe_unused]] const char* LUAEditorDebugName = "LUA Debug";
+    [[maybe_unused]] const char* LUAEditorInfoName = "LUA Editor";
 }
 
 
@@ -212,7 +213,7 @@ namespace LUAEditor
         auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
         m_gui->actionAutoReloadUnmodifiedFiles->setChecked(newState->m_bAutoReloadUnmodifiedFiles);
 
-        connect(m_gui->actionAutoReloadUnmodifiedFiles, &QAction::triggered, this, [this](bool newValue)
+        connect(m_gui->actionAutoReloadUnmodifiedFiles, &QAction::triggered, this, [](bool newValue)
         {
             auto newState = AZ::UserSettings::CreateFind<LUAEditorMainWindowSavedState>(AZ_CRC("LUA EDITOR MAIN WINDOW STATE", 0xa181bc4a), AZ::UserSettings::CT_LOCAL);
             newState->m_bAutoReloadUnmodifiedFiles = newValue;
@@ -394,7 +395,7 @@ namespace LUAEditor
 
     void LUAEditorMainWindow::OnLuaDocumentation()
     {
-        QDesktopServices::openUrl(QUrl("http://docs.aws.amazon.com/lumberyard/latest/developerguide/lua-scripting-intro.html"));
+        QDesktopServices::openUrl(QUrl("https://o3de.org/docs/user-guide/scripting/lua/"));
     }
 
     void LUAEditorMainWindow::OnMenuCloseCurrentWindow()
@@ -2393,7 +2394,6 @@ namespace LUAEditor
             // if we have any elements, the last element is top right aligned:
             QLayoutItem* pItem = children[children.size() - 1];
             QSize lastItemSize = pItem->minimumSize();
-            QPoint topRight = effectiveRect.topRight();
 
             const int magicalRightEdgeOffset = pItem->widget()->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
             QRect topRightCorner(effectiveRect.topRight() - QPoint(lastItemSize.width() + magicalRightEdgeOffset, 0) + QPoint(-2, 2), lastItemSize);

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -52,6 +53,7 @@ namespace AZ
             id<MTLDevice> m_mtlDevice = nil;
             NativeWindowType* m_nativeWindow = nullptr;
             AZStd::vector<id<CAMetalDrawable>> m_drawables;
+            uint32_t m_refreshRate = 0;
         };
     }
 }

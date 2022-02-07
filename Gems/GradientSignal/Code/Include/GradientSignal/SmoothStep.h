@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,7 +37,6 @@ namespace GradientSignal
         float output = 0.0f;
 
         const float value = AZ::GetClamp(inputValue, 0.0f, 1.0f);
-        const float valueFalloffRange = AZ::GetClamp(m_falloffRange, 0.0f, 1.0f);
         const float valueFalloffStrength = AZ::GetClamp(m_falloffStrength, 0.0f, 1.0f);
 
         float min = m_falloffMidpoint - m_falloffRange / 2.0f;

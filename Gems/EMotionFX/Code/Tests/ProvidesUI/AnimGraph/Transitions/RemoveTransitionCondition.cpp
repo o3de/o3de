@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -75,7 +76,6 @@ namespace EMotionFX
 
         // Select the transition in the anim graph model.
         const QModelIndex& modelIndex = animGraphModel.FindFirstModelIndex(transition);
-        const EMStudio::AnimGraphModel::ModelItemType itemType = modelIndex.data(EMStudio::AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<EMStudio::AnimGraphModel::ModelItemType>();
         ASSERT_TRUE(modelIndex.isValid()) << "Anim graph transition has an invalid model index.";
         animGraphModel.GetSelectionModel().select(QItemSelection(modelIndex, modelIndex), QItemSelectionModel::Current | QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 

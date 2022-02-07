@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,7 +68,7 @@ namespace CommandSystem
     CommandCreateMotionSet::CommandCreateMotionSet(MCore::Command* orgCommand)
         : MCore::Command("CreateMotionSet", orgCommand)
     {
-        mPreviouslyUsedID = MCORE_INVALIDINDEX32;
+        m_previouslyUsedId = MCORE_INVALIDINDEX32;
     }
 
 
@@ -129,9 +130,9 @@ namespace CommandSystem
         }
 
         // In case of redoing the command set the previously used id.
-        if (mPreviouslyUsedID != MCORE_INVALIDINDEX32)
+        if (m_previouslyUsedId != MCORE_INVALIDINDEX32)
         {
-            motionSet->SetID(mPreviouslyUsedID);
+            motionSet->SetID(m_previouslyUsedId);
         }
 
         // Set the filename.
@@ -144,22 +145,22 @@ namespace CommandSystem
         }
 
         // Store info for undo.
-        mPreviouslyUsedID   = motionSet->GetID();
-        AZStd::to_string(outResult, mPreviouslyUsedID);
+        m_previouslyUsedId   = motionSet->GetID();
+        AZStd::to_string(outResult, m_previouslyUsedId);
 
         // Set the motion set callback for custom motion loading.
         motionSet->SetCallback(aznew CommandSystemMotionSetCallback(motionSet), true);
 
         // Set the dirty flag.
-        const AZStd::string commandString = AZStd::string::format("AdjustMotionSet -motionSetID %i -dirtyFlag true", mPreviouslyUsedID);
+        const AZStd::string commandString = AZStd::string::format("AdjustMotionSet -motionSetID %i -dirtyFlag true", m_previouslyUsedId);
         GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult);
 
         // Seturn the id of the newly created motion set.
         AZStd::to_string(outResult, motionSet->GetID());
 
         // Recursively update attributes of all nodes.
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 
@@ -175,7 +176,7 @@ namespace CommandSystem
         EMotionFX::GetAnimGraphManager().InvalidateInstanceUniqueDataUsingMotionSet(motionSet);
 
         // Mark the workspace as dirty
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
         return true;
     }
@@ -185,11 +186,11 @@ namespace CommandSystem
     {
         MCORE_UNUSED(parameters);
 
-        const AZStd::string commandString = AZStd::string::format("RemoveMotionSet -motionSetID %i", mPreviouslyUsedID);
+        const AZStd::string commandString = AZStd::string::format("RemoveMotionSet -motionSetID %i", m_previouslyUsedId);
         bool result = GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult);
 
         // Restore the workspace dirty flag.
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         return result;
     }
@@ -217,7 +218,7 @@ namespace CommandSystem
     CommandRemoveMotionSet::CommandRemoveMotionSet(MCore::Command* orgCommand)
         : MCore::Command("RemoveMotionSet", orgCommand)
     {
-        mPreviouslyUsedID = MCORE_INVALIDINDEX32;
+        m_previouslyUsedId = MCORE_INVALIDINDEX32;
     }
 
 
@@ -239,20 +240,20 @@ namespace CommandSystem
         }
 
         // Store information used by undo.
-        mPreviouslyUsedID   = motionSet->GetID();
-        mOldName            = motionSet->GetName();
-        mOldFileName        = motionSet->GetFilename();
+        m_previouslyUsedId   = motionSet->GetID();
+        m_oldName            = motionSet->GetName();
+        m_oldFileName        = motionSet->GetFilename();
 
         if (!motionSet->GetParentSet())
         {
-            mOldParentSetID = MCORE_INVALIDINDEX32;
+            m_oldParentSetId = MCORE_INVALIDINDEX32;
         }
         else
         {
-            mOldParentSetID = motionSet->GetParentSet()->GetID();
+            m_oldParentSetId = motionSet->GetParentSet()->GetID();
 
             // Set the dirty flag on the parent.
-            const AZStd::string commandString = AZStd::string::format("AdjustMotionSet -motionSetID %i -dirtyFlag true", mOldParentSetID);
+            const AZStd::string commandString = AZStd::string::format("AdjustMotionSet -motionSetID %i -dirtyFlag true", m_oldParentSetId);
             GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult);
         }
 
@@ -265,8 +266,8 @@ namespace CommandSystem
         EMotionFX::GetMotionManager().RemoveMotionSet(motionSet, true);
 
         // Recursively update attributes of all nodes.
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 
@@ -279,7 +280,7 @@ namespace CommandSystem
         }
 
         // Mark the workspace as dirty.
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
 
         return true;
@@ -290,22 +291,22 @@ namespace CommandSystem
     {
         MCORE_UNUSED(parameters);
 
-        AZStd::string commandString = AZStd::string::format("CreateMotionSet -name \"%s\" -motionSetID %i", mOldName.c_str(), mPreviouslyUsedID);
+        AZStd::string commandString = AZStd::string::format("CreateMotionSet -name \"%s\" -motionSetID %i", m_oldName.c_str(), m_previouslyUsedId);
 
-        if (!mOldFileName.empty())
+        if (!m_oldFileName.empty())
         {
-            commandString += AZStd::string::format(" -fileName \"%s\"", mOldFileName.c_str());
+            commandString += AZStd::string::format(" -fileName \"%s\"", m_oldFileName.c_str());
         }
 
-        if (mOldParentSetID != MCORE_INVALIDINDEX32)
+        if (m_oldParentSetId != MCORE_INVALIDINDEX32)
         {
-            commandString += AZStd::string::format(" -parentSetID %i", mOldParentSetID);
+            commandString += AZStd::string::format(" -parentSetID %i", m_oldParentSetId);
         }
 
         const bool result = GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult);
 
         // Restore the workspace dirty flag.
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         return result;
     }
@@ -352,7 +353,7 @@ namespace CommandSystem
         // Adjust the dirty flag.
         if (parameters.CheckIfHasParameter("dirtyFlag"))
         {
-            mOldDirtyFlag           = motionSet->GetDirtyFlag();
+            m_oldDirtyFlag           = motionSet->GetDirtyFlag();
             const bool dirtyFlag    = parameters.GetValueAsBool("dirtyFlag", this);
             motionSet->SetDirtyFlag(dirtyFlag);
         }
@@ -360,12 +361,12 @@ namespace CommandSystem
         // Set the new name in case the name parameter is specified.
         if (parameters.CheckIfHasParameter("newName"))
         {
-            mOldSetName = motionSet->GetName();
+            m_oldSetName = motionSet->GetName();
             AZStd::string name;
             parameters.GetValue("newName", this, name);
             motionSet->SetName(name.c_str());
 
-            mOldDirtyFlag = motionSet->GetDirtyFlag();
+            m_oldDirtyFlag = motionSet->GetDirtyFlag();
             motionSet->SetDirtyFlag(true);
         }
 
@@ -388,13 +389,13 @@ namespace CommandSystem
         // Adjust the dirty flag
         if (parameters.CheckIfHasParameter("dirtyFlag"))
         {
-            motionSet->SetDirtyFlag(mOldDirtyFlag);
+            motionSet->SetDirtyFlag(m_oldDirtyFlag);
         }
 
         // Adjust the name.
         if (parameters.CheckIfHasParameter("newName"))
         {
-            motionSet->SetName(mOldSetName.c_str());
+            motionSet->SetName(m_oldSetName.c_str());
         }
 
         return true;
@@ -470,8 +471,8 @@ namespace CommandSystem
         motionSet->SetDirtyFlag(true);
 
         // Recursively update attributes of all nodes.
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 
@@ -553,18 +554,15 @@ namespace CommandSystem
         m_oldMotionFilenamesAndIds.clear();
 
         // Get the motion ids from the parameter.
-        const AZStd::string motionIdsString = parameters.GetValue("motionIds", this);
+        const AZStd::string& motionIdsString = parameters.GetValue("motionIds", this);
         AZStd::vector<AZStd::string> tokens;
         AzFramework::StringFunc::Tokenize(motionIdsString.c_str(), tokens, ";", false, true);
 
         // Iterate over all motion ids and remove the corresponding motion entries.
         AZStd::string failedToRemoveMotionIdsString;
-        const size_t tokenCount = tokens.size();
-        for (size_t i = 0; i < tokenCount; ++i)
+        for (const AZStd::string& motionId : tokens)
         {
-            const AZStd::string& motionId = tokens[i];
-
-            // Get the motion entry by id string.
+             // Get the motion entry by id string.
             EMotionFX::MotionSet::MotionEntry* motionEntry = motionSet->FindMotionEntryById(motionId);
             if (!motionEntry)
             {
@@ -593,8 +591,8 @@ namespace CommandSystem
         motionSet->SetDirtyFlag(true);
 
         // Recursively update attributes of all nodes.
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 
@@ -672,8 +670,8 @@ namespace CommandSystem
     void CommandMotionSetAdjustMotion::UpdateMotionNodes(const char* oldID, const char* newID)
     {
         // iterate through the anim graphs and update all motion nodes
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             // get the current anim graph
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
@@ -721,8 +719,8 @@ namespace CommandSystem
         }
 
         // Save the old infos for undo.
-        mOldIdString        = motionEntry->GetId();
-        mOldMotionFilename  = motionEntry->GetFilename();
+        m_oldIdString        = motionEntry->GetId();
+        m_oldMotionFilename  = motionEntry->GetFilename();
 
         if (parameters.CheckIfHasParameter("motionFileName"))
         {
@@ -784,13 +782,13 @@ namespace CommandSystem
             // Update all motion nodes and link them to the new motion id.
             if (parameters.GetValueAsBool("updateMotionNodeStringIDs", this))
             {
-                UpdateMotionNodes(mOldIdString.c_str(), newId.c_str());
+                UpdateMotionNodes(m_oldIdString.c_str(), newId.c_str());
             }
         }
 
         // Recursively update attributes of all nodes.
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 
@@ -835,12 +833,12 @@ namespace CommandSystem
 
         if (idStringChanged)
         {
-            command += AZStd::string::format(" -newIDString \"%s\"", mOldIdString.c_str());
+            command += AZStd::string::format(" -newIDString \"%s\"", m_oldIdString.c_str());
         }
 
         if (parameters.CheckIfHasParameter("motionFileName"))
         {
-            command += AZStd::string::format(" -motionFileName \"%s\"", mOldMotionFilename.c_str());
+            command += AZStd::string::format(" -motionFileName \"%s\"", m_oldMotionFilename.c_str());
         }
 
         return GetCommandManager()->ExecuteCommandInsideCommand(command, outResult);
@@ -871,7 +869,7 @@ namespace CommandSystem
     CommandLoadMotionSet::CommandLoadMotionSet(MCore::Command* orgCommand)
         : MCore::Command("LoadMotionSet", orgCommand)
     {
-        mOldMotionSetID = MCORE_INVALIDINDEX32;
+        m_oldMotionSetId = MCORE_INVALIDINDEX32;
     }
 
 
@@ -912,11 +910,11 @@ namespace CommandSystem
         }
 
         // In case we are in a redo call assign the previously used id.
-        if (mOldMotionSetID != MCORE_INVALIDINDEX32)
+        if (m_oldMotionSetId != MCORE_INVALIDINDEX32)
         {
-            motionSet->SetID(mOldMotionSetID);
+            motionSet->SetID(m_oldMotionSetId);
         }
-        mOldMotionSetID = motionSet->GetID();
+        m_oldMotionSetId = motionSet->GetID();
 
         // Set the custom loading callback and preload all motions.
         motionSet->SetCallback(aznew CommandSystemMotionSetCallback(motionSet), true);
@@ -926,7 +924,7 @@ namespace CommandSystem
         AZStd::to_string(outResult, motionSet->GetID());
 
         // Mark the workspace as dirty.
-        mOldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
+        m_oldWorkspaceDirtyFlag = GetCommandManager()->GetWorkspaceDirtyFlag();
         GetCommandManager()->SetWorkspaceDirtyFlag(true);
 
         // Restore original log levels.
@@ -940,10 +938,10 @@ namespace CommandSystem
         MCORE_UNUSED(parameters);
 
         // Get the motion set the command created earlier by id.
-        EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByID(mOldMotionSetID);
+        EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByID(m_oldMotionSetId);
         if (motionSet == nullptr)
         {
-            outResult = AZStd::string::format("Cannot undo load motion set command. Previously used motion set id '%i' is not valid.", mOldMotionSetID);
+            outResult = AZStd::string::format("Cannot undo load motion set command. Previously used motion set id '%i' is not valid.", m_oldMotionSetId);
             return false;
         }
 
@@ -954,7 +952,7 @@ namespace CommandSystem
         const bool result = GetCommandManager()->ExecuteCommandGroupInsideCommand(commandGroup, outResult);
 
         // Restore the workspace dirty flag.
-        GetCommandManager()->SetWorkspaceDirtyFlag(mOldWorkspaceDirtyFlag);
+        GetCommandManager()->SetWorkspaceDirtyFlag(m_oldWorkspaceDirtyFlag);
 
         return result;
     }
@@ -999,7 +997,7 @@ namespace CommandSystem
                 else
                 {
                     AZStd::string result;
-                    const bool success = GetCommandManager()->ExecuteCommand(AZStd::string::format("Unselect -motionName %s", selectedMotion->GetName()), result);
+                    [[maybe_unused]] const bool success = GetCommandManager()->ExecuteCommand(AZStd::string::format("Unselect -motionName %s", selectedMotion->GetName()), result);
                     AZ_Error("EMotionFX", success, result.c_str());
                 }
             }
@@ -1057,8 +1055,8 @@ namespace CommandSystem
         }
 
         // Iterate through the child motion sets and recursively remove them.
-        const uint32 numChildSets = motionSet->GetNumChildSets();
-        for (uint32 i = 0; i < numChildSets; ++i)
+        const size_t numChildSets = motionSet->GetNumChildSets();
+        for (size_t i = 0; i < numChildSets; ++i)
         {
             EMotionFX::MotionSet* childSet = motionSet->GetChildSet(i);
             RecursivelyRemoveMotionSets(childSet, commandGroup, toBeRemoved);
@@ -1076,9 +1074,9 @@ namespace CommandSystem
         MCore::CommandGroup internalCommandGroup("Clear motion sets");
 
         // Iterate through all root motion sets and remove them.
-        const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
         AZStd::set<AZ::u32> toBeRemoved;
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        for (size_t i = 0; i < numMotionSets; ++i)
         {
             // Is the given motion set a root one? Only process root motion sets in the loop and remove all others recursively.
             EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
@@ -1138,10 +1136,10 @@ namespace CommandSystem
         // Iterate over all filenames and load the motion sets.
         AZStd::string commandString;
         AZStd::set<AZ::u32> toBeRemoved;
-        for (size_t i = 0; i < numFilenames; ++i)
+        for (const AZStd::string& filename : filenames)
         {
             // In case we want to reload the same motion set remove the old version first.
-            EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByFileName(filenames[i].c_str());
+            EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByFileName(filename.c_str());
 
             if (reload && !clearUpfront && motionSet)
             {
@@ -1149,15 +1147,15 @@ namespace CommandSystem
             }
 
             // Construct the load motion set command and add it to the group.
-            commandString = AZStd::string::format("LoadMotionSet -filename \"%s\"", filenames[i].c_str());
+            commandString = AZStd::string::format("LoadMotionSet -filename \"%s\"", filename.c_str());
             commandGroup.AddCommandString(commandString);
 
             // iterate over each actor instance and re-active the motion set
             if (motionSet)
             {
-                int32 commandIndex = 1;
-                const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-                for (uint32 j = 0; j < numActorInstances; ++j)
+                size_t commandIndex = 1;
+                const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+                for (size_t j = 0; j < numActorInstances; ++j)
                 {
                     EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(j);
                     if (!actorInstance)
@@ -1173,7 +1171,7 @@ namespace CommandSystem
                     EMotionFX::MotionSet* currentActiveMotionSet = animGraphInstance->GetMotionSet();
                     if (currentActiveMotionSet == motionSet)
                     {
-                        commandString = AZStd::string::format("ActivateAnimGraph -actorInstanceID %d -animGraphID %d -motionSetID %%LASTRESULT%d%%",
+                        commandString = AZStd::string::format("ActivateAnimGraph -actorInstanceID %d -animGraphID %d -motionSetID %%LASTRESULT%zu%%",
                             actorInstance->GetID(),
                             animGraphInstance->GetAnimGraph()->GetID(),
                             commandIndex);

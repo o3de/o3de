@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,60 +25,60 @@ public:
     EMotionFX::AnimGraphNodeId GetNodeId(const MCore::CommandLine& parameters);
     void DeleteGraphNode(EMotionFX::AnimGraphNode* node);
 
-    uint32  mAnimGraphID;
-    bool    mOldDirtyFlag;
-    EMotionFX::AnimGraphNodeId mNodeId;
+    uint32  m_animGraphId;
+    bool    m_oldDirtyFlag;
+    EMotionFX::AnimGraphNodeId m_nodeId;
     MCORE_DEFINECOMMAND_END
 
 
     // adjust a node
     MCORE_DEFINECOMMAND_START(CommandAnimGraphAdjustNode, "Adjust a anim graph node", true)
-    EMotionFX::AnimGraphNodeId mNodeId;
-    int32               mOldPosX;
-    int32               mOldPosY;
-    AZStd::string       mOldName;
-    AZStd::string       mOldParameterMask;
-    bool                mOldDirtyFlag;
-    bool                mOldEnabled;
-    bool                mOldVisualized;
-    AZStd::string       mNodeGroupName;
+    EMotionFX::AnimGraphNodeId m_nodeId;
+    int32               m_oldPosX;
+    int32               m_oldPosY;
+    AZStd::string       m_oldName;
+    AZStd::string       m_oldParameterMask;
+    bool                m_oldDirtyFlag;
+    bool                m_oldEnabled;
+    bool                m_oldVisualized;
+    AZStd::string       m_nodeGroupName;
 
 public:
-    EMotionFX::AnimGraphNodeId GetNodeId() const    { return mNodeId; }
-    const AZStd::string& GetOldName() const         { return mOldName; }
-    uint32              mAnimGraphID;
+    EMotionFX::AnimGraphNodeId GetNodeId() const    { return m_nodeId; }
+    const AZStd::string& GetOldName() const         { return m_oldName; }
+    uint32              m_animGraphId;
     MCORE_DEFINECOMMAND_END
 
 
     // remove a node
     MCORE_DEFINECOMMAND_START(CommandAnimGraphRemoveNode, "Remove a anim graph node", true)
-    EMotionFX::AnimGraphNodeId mNodeId;
-    uint32          mAnimGraphID;
-    EMotionFX::AnimGraphNodeId mParentNodeId;
-    AZ::TypeId      mType;
-    AZStd::string   mParentName;
-    AZStd::string   mName;
-    AZStd::string   mNodeGroupName;
-    int32           mPosX;
-    int32           mPosY;
-    AZStd::string   mOldContents;
-    bool            mCollapsed;
-    bool            mOldDirtyFlag;
-    bool            mIsEntryNode;
+    EMotionFX::AnimGraphNodeId m_nodeId;
+    uint32          m_animGraphId;
+    EMotionFX::AnimGraphNodeId m_parentNodeId;
+    AZ::TypeId      m_type;
+    AZStd::string   m_parentName;
+    AZStd::string   m_name;
+    AZStd::string   m_nodeGroupName;
+    int32           m_posX;
+    int32           m_posY;
+    AZStd::string   m_oldContents;
+    bool            m_collapsed;
+    bool            m_oldDirtyFlag;
+    bool            m_isEntryNode;
 
 public:
-    EMotionFX::AnimGraphNodeId GetNodeId() const        { return mNodeId; }
-    EMotionFX::AnimGraphNodeId GetParentNodeId() const  { return mParentNodeId; }
+    EMotionFX::AnimGraphNodeId GetNodeId() const        { return m_nodeId; }
+    EMotionFX::AnimGraphNodeId GetParentNodeId() const  { return m_parentNodeId; }
     MCORE_DEFINECOMMAND_END
 
 
     // set the entry state of a state machine
     MCORE_DEFINECOMMAND_START(CommandAnimGraphSetEntryState, "Set entry state", true)
 public:
-    uint32                      mAnimGraphID;
-    EMotionFX::AnimGraphNodeId  mOldEntryStateNodeId;
-    EMotionFX::AnimGraphNodeId  mOldStateMachineNodeId;
-    bool                        mOldDirtyFlag;
+    uint32                      m_animGraphId;
+    EMotionFX::AnimGraphNodeId  m_oldEntryStateNodeId;
+    EMotionFX::AnimGraphNodeId  m_oldStateMachineNodeId;
+    bool                        m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 

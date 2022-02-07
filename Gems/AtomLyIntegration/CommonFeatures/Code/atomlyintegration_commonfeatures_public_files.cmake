@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -38,6 +39,8 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlComponentConstants.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/HDRColorGradingBus.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/HDRColorGradingComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Ssao/SsaoComponentConfiguration.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/LookModification/LookModificationBus.h

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -307,7 +308,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_StreamSocketDriverTestsTooManyConnections
+    class DISABLED_StreamSocketDriverTestsTooManyConnections
         : public GridMateMPTestFixture
     {
     public:
@@ -528,7 +529,7 @@ GM_TEST_SUITE(StreamSocketDriverTests)
     GM_TEST(StreamSocketDriverTestsSimpleLockStepConnection);
     GM_TEST(StreamSocketDriverTestsEstablishConnectAndSend);
     GM_TEST(StreamSocketDriverTestsManyRandomPackets);
-    GM_TEST(Integ_StreamSocketDriverTestsTooManyConnections);
+    GM_TEST(DISABLED_StreamSocketDriverTestsTooManyConnections);
     GM_TEST(StreamSocketDriverTestsClientToInvalidServer);
     GM_TEST(StreamSocketDriverTestsManySends);
 

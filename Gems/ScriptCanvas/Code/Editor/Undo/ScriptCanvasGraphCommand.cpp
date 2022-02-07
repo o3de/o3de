@@ -1,16 +1,17 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <precompiled.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/Utils.h>
 
 #include <ScriptCanvas/Core/Graph.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
@@ -19,7 +20,6 @@
 
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <Editor/Assets/ScriptCanvasAssetTrackerBus.h>
-#include <Editor/Assets/ScriptCanvasMemoryAsset.h>
 
 namespace ScriptCanvasEditor
 {
@@ -36,7 +36,7 @@ namespace ScriptCanvasEditor
     {
     }
 
-    void GraphItemCommand::Capture(ScriptCanvasMemoryAsset&, bool)
+    void GraphItemCommand::Capture(Graph*, bool)
     {
     }
 
@@ -105,10 +105,10 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemChangeCommand::Capture(ScriptCanvasMemoryAsset& memoryAsset, bool captureUndo)
+    void GraphItemChangeCommand::Capture(Graph* graph, bool captureUndo)
     {
-        m_scriptCanvasId = memoryAsset.GetScriptCanvasId();
-        m_graphCanvasGraphId = memoryAsset.GetGraphId();
+        m_scriptCanvasId = graph->GetScriptCanvasId();
+        m_graphCanvasGraphId = graph->GetGraphCanvasGraphId();
 
         UndoCache* undoCache = nullptr;
         UndoRequestBus::EventResult(undoCache, m_scriptCanvasId, &UndoRequests::GetSceneUndoCache);
@@ -204,9 +204,9 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemAddCommand::Capture(ScriptCanvasMemoryAsset& memoryAsset, bool)
+    void GraphItemAddCommand::Capture(Graph* graph, bool)
     {
-        GraphItemChangeCommand::Capture(memoryAsset, false);
+        GraphItemChangeCommand::Capture(graph, false);
     }
 
     //// Graph Item Removal Command
@@ -225,8 +225,8 @@ namespace ScriptCanvasEditor
         RestoreItem(m_redoState);
     }
 
-    void GraphItemRemovalCommand::Capture(ScriptCanvasMemoryAsset& memoryAsset, bool)
+    void GraphItemRemovalCommand::Capture(Graph* graph, bool)
     {
-        GraphItemChangeCommand::Capture(memoryAsset, true);
+        GraphItemChangeCommand::Capture(graph, true);
     }
 }

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -768,124 +769,6 @@ namespace Audio
             return (eStatus == eARS_SUCCESS || eStatus == eARS_FAILURE);
         }
 
-#if !defined(AUDIO_RELEASE)
-        // Debug Logging Helper
-        AZStd::string ToString()
-        {
-            static const AZStd::unordered_map<const EAudioManagerRequestType, const AZStd::string> managerRequests
-            {
-                { eAMRT_INIT_AUDIO_IMPL, "INIT IMPL" },
-                { eAMRT_RELEASE_AUDIO_IMPL, "RELEASE IMPL" },
-                { eAMRT_RESERVE_AUDIO_OBJECT_ID, "RESERVE OBJECT ID" },
-                { eAMRT_CREATE_SOURCE, "CREATE SOURCE" },
-                { eAMRT_DESTROY_SOURCE, "DESTROY SOURCE" },
-                { eAMRT_PARSE_CONTROLS_DATA, "PARSE CONTROLS" },
-                { eAMRT_PARSE_PRELOADS_DATA, "PARSE PRELOADS" },
-                { eAMRT_CLEAR_CONTROLS_DATA, "CLEAR CONTROLS" },
-                { eAMRT_CLEAR_PRELOADS_DATA, "CLEAR PRELOADS" },
-                { eAMRT_PRELOAD_SINGLE_REQUEST, "PRELOAD SINGLE" },
-                { eAMRT_UNLOAD_SINGLE_REQUEST, "UNLOAD SINGLE" },
-                { eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE, "UNLOAD SCOPE" },
-                { eAMRT_REFRESH_AUDIO_SYSTEM, "REFRESH AUDIO SYSTEM" },
-                { eAMRT_LOSE_FOCUS, "LOSE FOCUS" },
-                { eAMRT_GET_FOCUS, "GET FOCUS" },
-                { eAMRT_MUTE_ALL, "MUTE" },
-                { eAMRT_UNMUTE_ALL, "UNMUTE" },
-                { eAMRT_STOP_ALL_SOUNDS, "STOP ALL" },
-                { eAMRT_DRAW_DEBUG_INFO, "DRAW DEBUG" },
-                { eAMRT_CHANGE_LANGUAGE, "CHANGE LANGUAGE" },
-                { eAMRT_SET_AUDIO_PANNING_MODE, "SET PANNING MODE" },
-            };
-            static const AZStd::unordered_map<const EAudioCallbackManagerRequestType, const AZStd::string> callbackRequests
-            {
-                { eACMRT_REPORT_STARTED_EVENT, "STARTED EVENT" },
-                { eACMRT_REPORT_FINISHED_EVENT, "FINISHED EVENT" },
-                { eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE, "FINISHED TRIGGER INSTANCE" },
-            };
-            static const AZStd::unordered_map<const EAudioListenerRequestType, const AZStd::string> listenerRequests
-            {
-                { eALRT_SET_POSITION, "SET POSITION" },
-            };
-            static const AZStd::unordered_map<const EAudioObjectRequestType, const AZStd::string> objectRequests
-            {
-                { eAORT_PREPARE_TRIGGER, "PREPARE TRIGGER" },
-                { eAORT_UNPREPARE_TRIGGER, "UNPREPARE TRIGGER" },
-                { eAORT_EXECUTE_TRIGGER, "EXECUTE TRIGGER" },
-                { eAORT_STOP_TRIGGER, "STOP TRIGGER" },
-                { eAORT_STOP_ALL_TRIGGERS, "STOP ALL" },
-                { eAORT_SET_POSITION, "SET POSITION" },
-                { eAORT_SET_RTPC_VALUE, "SET RTPC" },
-                { eAORT_SET_SWITCH_STATE, "SET SWITCH" },
-                { eAORT_SET_ENVIRONMENT_AMOUNT, "SET ENV AMOUNT" },
-                { eAORT_RESET_ENVIRONMENTS, "RESET ENVS" },
-                { eAORT_RESET_RTPCS, "RESET RTPCS" },
-                { eAORT_RELEASE_OBJECT, "RELEASE OBJECT" },
-                { eAORT_EXECUTE_SOURCE_TRIGGER, "EXECUTE SOURCE TRIGGER" },
-                { eAORT_SET_MULTI_POSITIONS, "SET MULTI POSITIONS" },
-            };
-
-            std::stringstream ss;
-
-            ss << "AudioRequest(";
-
-            if (pData->eRequestType == eART_AUDIO_MANAGER_REQUEST)
-            {
-                ss << "AUDIO MANAGER : ";
-                auto requestStr = managerRequests.at(static_cast<const SAudioManagerRequestDataInternalBase*>(pData.get())->eType);
-                ss << requestStr.c_str();
-            }
-
-            if (pData->eRequestType == eART_AUDIO_CALLBACK_MANAGER_REQUEST)
-            {
-                ss << "AUDIO CALLBACK MGR : ";
-                auto requestStr = callbackRequests.at(static_cast<const SAudioCallbackManagerRequestDataInternalBase*>(pData.get())->eType);
-                ss << requestStr.c_str();
-            }
-
-            if (pData->eRequestType == eART_AUDIO_LISTENER_REQUEST)
-            {
-                ss << "AUDIO LISTENER : ";
-                auto requestStr = listenerRequests.at(static_cast<const SAudioListenerRequestDataInternalBase*>(pData.get())->eType);
-                ss << requestStr.c_str();
-            }
-            if (pData->eRequestType == eART_AUDIO_OBJECT_REQUEST)
-            {
-                ss << "AUDIO OBJECT : ";
-                auto requestStr = objectRequests.at(static_cast<const SAudioObjectRequestDataInternalBase*>(pData.get())->eType);
-                ss << requestStr.c_str();
-            }
-
-            ss << "): [";
-            if (nFlags & eARF_PRIORITY_NORMAL)
-            {
-                ss << "PRIORITY NORMAL, ";
-            }
-            if (nFlags & eARF_PRIORITY_HIGH)
-            {
-                ss << "PRIORITY HIGH, ";
-            }
-            if (nFlags & eARF_EXECUTE_BLOCKING)
-            {
-                ss << "EXECUTE BLOCKING, ";
-            }
-            if (nFlags & eARF_SYNC_CALLBACK)
-            {
-                ss << "SYNC CALLBACK, ";
-            }
-            if (nFlags & eARF_SYNC_FINISHED_CALLBACK)
-            {
-                ss << "SYNC FINISHED CALLBACK, ";
-            }
-            if (nFlags & eARF_THREAD_SAFE_PUSH)
-            {
-                ss << "THREAD SAFE PUSH, ";
-            }
-            ss << "]";
-
-            return AZStd::string(ss.str().c_str());
-        }
-#endif // !AUDIO_RELEASE
-
         TATLEnumFlagsType nFlags;
         TAudioObjectID nAudioObjectID;
         void* pOwner;
@@ -899,25 +782,38 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(AUDIO_RELEASE)
     // Filter for drawing debug info to the screen
-    enum EAudioDebugDrawFilter : TATLEnumFlagsType
+    namespace DebugDraw
     {
-        eADDF_NONE                          = 0,
-        eADDF_DRAW_SPHERES                  = AUDIO_BIT(6),// a
-        eADDF_SHOW_OBJECT_LABEL             = AUDIO_BIT(7),// b
-        eADDF_SHOW_OBJECT_TRIGGERS          = AUDIO_BIT(8),// c
-        eADDF_SHOW_OBJECT_STATES            = AUDIO_BIT(9),// d
-        eADDF_SHOW_OBJECT_RTPCS             = AUDIO_BIT(10),// e
-        eADDF_SHOW_OBJECT_ENVIRONMENTS      = AUDIO_BIT(11),// f
-        eADDF_DRAW_OBSTRUCTION_RAYS         = AUDIO_BIT(12),// g
-        eADDF_SHOW_OBSTRUCTION_RAY_LABELS   = AUDIO_BIT(13),// h
-        eADDF_DRAW_LISTENER_SPHERE          = AUDIO_BIT(14),// i
+        enum Options : AZ::u32
+        {
+            None = 0,
+            DrawObjects = (1 << 0),
+            ObjectLabels = (1 << 1),
+            ObjectTriggers = (1 << 2),
+            ObjectStates = (1 << 3),
+            ObjectRtpcs = (1 << 4),
+            ObjectEnvironments = (1 << 5),
+            DrawRays = (1 << 6),
+            RayLabels = (1 << 7),
+            DrawListener = (1 << 8),
+            ActiveEvents = (1 << 9),
+            ActiveObjects = (1 << 10),
+            FileCacheInfo = (1 << 11),
+            MemoryInfo = (1 << 12),
+        };
+    }
 
-        eADDF_SHOW_ACTIVE_EVENTS            = AUDIO_BIT(27),// v
-        eADDF_SHOW_ACTIVE_OBJECTS           = AUDIO_BIT(28),// w
-        eADDF_SHOW_FILECACHE_MANAGER_INFO   = AUDIO_BIT(29),// x
-
-        eADDF_SHOW_IMPL_MEMORY_POOL_USAGE   = AUDIO_BIT(30),// y
-    };
+    namespace FileCacheManagerDebugDraw
+    {
+        enum Options : AZ::u8
+        {
+            All = 0,
+            Global = (1 << 0),
+            LevelSpecific = (1 << 1),
+            UseCounted = (1 << 2),
+            Loaded = (1 << 3),
+        };
+    }
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -20,12 +21,14 @@ namespace GraphCanvas
         
         ManageUnusedSlotsMenuAction(QObject* parent, bool hideSlots);
         virtual ~ManageUnusedSlotsMenuAction() = default;
-        
+
+        using NodeContextMenuAction::RefreshAction;
         void RefreshAction(const GraphId& grpahId, const AZ::EntityId& targetId) override;
+
+        using NodeContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const GraphId& graphId, const AZ::Vector2&) override;
         
     private:
-    
         bool         m_hideSlots = true;
         AZ::EntityId m_targetId;
     };    

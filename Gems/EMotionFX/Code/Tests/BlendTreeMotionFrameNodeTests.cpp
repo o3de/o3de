@@ -1,7 +1,8 @@
 
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -72,7 +73,7 @@ namespace EMotionFX
 
         void SetAndTestTimeValue(BlendTreeMotionFrameNode::UniqueData* uniqueData, float newNormalizedTime, bool rewind = false)
         {
-            const float prevNewTime = uniqueData->mNewTime;
+            const float prevNewTime = uniqueData->m_newTime;
             m_motionFrameNode->SetNormalizedTimeValue(newNormalizedTime);
 
             if (rewind)
@@ -95,9 +96,9 @@ namespace EMotionFX
                     expectedOldTime = newNormalizedTime * m_motionDuration;
                 }
             }
-            EXPECT_EQ(uniqueData->mOldTime, expectedOldTime);
+            EXPECT_EQ(uniqueData->m_oldTime, expectedOldTime);
             
-            EXPECT_EQ(uniqueData->mNewTime, newNormalizedTime * m_motionDuration);
+            EXPECT_EQ(uniqueData->m_newTime, newNormalizedTime * m_motionDuration);
         }
 
     public:

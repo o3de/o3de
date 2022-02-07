@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -74,10 +75,10 @@ namespace MaterialEditor
 
         AZStd::string GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const;
 
-        AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupNameId) const;
-        bool ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const override;
-        void OnGroupExpanded(const AZStd::string& groupNameId) override;
-        void OnGroupCollapsed(const AZStd::string& groupNameId) override;
+        AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupName) const;
+        bool ShouldGroupAutoExpanded(const AZStd::string& groupName) const override;
+        void OnGroupExpanded(const AZStd::string& groupName) override;
+        void OnGroupCollapsed(const AZStd::string& groupName) override;
 
         AZ::Render::ModelPresetPtr m_modelPreset;
         AZ::Render::LightingPresetPtr m_lightingPreset;

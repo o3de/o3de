@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -160,7 +161,7 @@ namespace AWSCore
         }
 
         /// Write JSON format content directly to the writer's output stream.
-        /// This can be used to efficently output static content.
+        /// This can be used to efficiently output static content.
         bool WriteJson(const Ch* json)
         {
             if (json)
@@ -181,7 +182,7 @@ namespace AWSCore
         }
 
         /// Write an object. The object can implement a WriteJson function
-        /// or you can provide an GobalWriteJson template function 
+        /// or you can provide an GlobalWriteJson template function 
         /// specialization.
         template<class ObjectType>
         bool Object(const ObjectType& obj)

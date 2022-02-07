@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,16 +31,16 @@ namespace AZ
 
             Mesh::Reflect(context);
         }
-
+        
         void ModelLodAsset::Mesh::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ModelLodAsset::Mesh>()
-                    ->Version(0)
-                    ->Field("Material", &ModelLodAsset::Mesh::m_materialAsset)
+                    ->Version(1)
                     ->Field("Name", &ModelLodAsset::Mesh::m_name)
                     ->Field("AABB", &ModelLodAsset::Mesh::m_aabb)
+                    ->Field("MaterialSlotId", &ModelLodAsset::Mesh::m_materialSlotId)
                     ->Field("IndexBufferAssetView", &ModelLodAsset::Mesh::m_indexBufferAssetView)
                     ->Field("StreamBufferInfo", &ModelLodAsset::Mesh::m_streamBufferInfo)
                     ;
@@ -74,9 +75,9 @@ namespace AZ
             return m_indexBufferAssetView.GetBufferViewDescriptor().m_elementCount;
         }
 
-        const Data::Asset <MaterialAsset>& ModelLodAsset::Mesh::GetMaterialAsset() const
+        ModelMaterialSlot::StableId ModelLodAsset::Mesh::GetMaterialSlotId() const
         {
-            return m_materialAsset;
+            return m_materialSlotId;
         }
 
         const AZ::Name& ModelLodAsset::Mesh::GetName() const
@@ -117,7 +118,7 @@ namespace AZ
         {
             return m_aabb;
         }
-
+        
         const BufferAssetView* ModelLodAsset::Mesh::GetSemanticBufferAssetView(const AZ::Name& semantic) const
         {
             const AZStd::array_view<ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = GetStreamBufferInfoList();

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -101,22 +102,46 @@ namespace Multiplayer
         return GetEntity()->FindComponent<ComponentType>();
     }
 
+    inline void UpdateComponentMetrics
+    (
+        bool modifyRecord,
+        uint32_t prevSerializerSize,
+        uint32_t currSerializerSize,
+        NetComponentId componentId,
+        PropertyIndex propertyIndex,
+        MultiplayerStats& stats
+    )
+    {
+        const uint32_t updateSize = (currSerializerSize - prevSerializerSize);
+        if (updateSize > 0)
+        {
+            if (modifyRecord)
+            {
+                stats.RecordPropertyReceived(componentId, propertyIndex, updateSize);
+            }
+            else
+            {
+                stats.RecordPropertySent(componentId, propertyIndex, updateSize);
+            }
+        }
+    }
+
     template <typename TYPE>
     inline void SerializeNetworkPropertyHelper
     (
-        AzNetworking::ISerializer& serializer, 
-        bool modifyRecord, 
-        AzNetworking::FixedSizeBitsetView& bitset, 
-        int32_t bitIndex, 
-        TYPE& value, 
-        const char* name, 
-        NetComponentId componentId, 
-        PropertyIndex propertyIndex, 
+        AzNetworking::ISerializer& serializer,
+        AzNetworking::FixedSizeBitsetView& bitset,
+        int32_t bitIndex,
+        TYPE& value,
+        const char* name,
+        NetComponentId componentId,
+        PropertyIndex propertyIndex,
         MultiplayerStats& stats
     )
     {
         if (bitset.GetBit(bitIndex))
         {
+            const bool modifyRecord = serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject;
             const uint32_t prevUpdateSize = serializer.GetSize();
             serializer.ClearTrackedChangesFlag();
             serializer.Serialize(value, name);
@@ -126,19 +151,78 @@ namespace Multiplayer
                 bitset.SetBit(bitIndex, false);
             }
             const uint32_t postUpdateSize = serializer.GetSize();
-            // Network Property metrics
-            const uint32_t updateSize = (postUpdateSize - prevUpdateSize);
-            if (updateSize > 0)
+            UpdateComponentMetrics(modifyRecord, prevUpdateSize, postUpdateSize, componentId, propertyIndex, stats);
+        }
+    }
+
+    template <typename TYPE, AZStd::size_t SIZE>
+    inline void SerializeNetworkPropertyHelperArray
+    (
+        AzNetworking::ISerializer& serializer,
+        AzNetworking::FixedSizeBitsetView& bitset,
+        AZStd::array<TYPE, SIZE>& value,
+        NetComponentId componentId,
+        PropertyIndex propertyIndex,
+        MultiplayerStats& stats
+    )
+    {
+        const bool modifyRecord = serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject;
+        const uint32_t prevUpdateSize = serializer.GetSize();
+        for (uint32_t i = 0; i < SIZE; ++i)
+        {
+            if (bitset.GetBit(i))
             {
-                if (modifyRecord)
+                serializer.ClearTrackedChangesFlag();
+                serializer.Serialize(value[i], "Element");
+                if (modifyRecord && !serializer.GetTrackedChangesFlag())
                 {
-                    stats.RecordPropertyReceived(componentId, propertyIndex, updateSize);
-                }
-                else
-                {
-                    stats.RecordPropertySent(componentId, propertyIndex, updateSize);
+                    bitset.SetBit(i, false);
                 }
             }
         }
+        const uint32_t postUpdateSize = serializer.GetSize();
+        UpdateComponentMetrics(modifyRecord, prevUpdateSize, postUpdateSize, componentId, propertyIndex, stats);
+    }
+
+    template <typename TYPE, AZStd::size_t SIZE>
+    inline void SerializeNetworkPropertyHelperVector
+    (
+        AzNetworking::ISerializer& serializer,
+        AzNetworking::FixedSizeBitsetView& bitset,
+        AZStd::fixed_vector<TYPE, SIZE>& value,
+        NetComponentId componentId,
+        PropertyIndex propertyIndex,
+        MultiplayerStats& stats
+    )
+    {
+        const bool modifyRecord = serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject;
+        const uint32_t prevUpdateSize = serializer.GetSize();
+        if (bitset.GetBit(SIZE))
+        {
+            using SizeType = typename AZ::SizeType<AZ::RequiredBytesForValue<SIZE>(), false>::Type;
+            SizeType origSize = aznumeric_cast<SizeType>(value.size());
+            SizeType newSize = origSize;
+            serializer.Serialize(newSize, "Size");
+            value.resize(newSize);
+            if (modifyRecord && origSize == newSize)
+            {
+                bitset.SetBit(SIZE, false);
+            }
+        }
+
+        for (uint32_t i = 0; i < value.size(); ++i)
+        {
+            if (bitset.GetBit(i))
+            {
+                serializer.ClearTrackedChangesFlag();
+                serializer.Serialize(value[i], "Element");
+                if (modifyRecord && !serializer.GetTrackedChangesFlag())
+                {
+                    bitset.SetBit(i, false);
+                }
+            }
+        }
+        const uint32_t postUpdateSize = serializer.GetSize();
+        UpdateComponentMetrics(modifyRecord, prevUpdateSize, postUpdateSize, componentId, propertyIndex, stats);
     }
 }

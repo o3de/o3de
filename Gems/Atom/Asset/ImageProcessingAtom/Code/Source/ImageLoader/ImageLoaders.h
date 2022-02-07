@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -43,11 +44,6 @@ namespace ImageProcessingAtom
     {
         bool IsExtensionSupported(const char* extension);
         IImageObject* LoadImageFromFile(const AZStd::string& filename);
-
-        // These functions are for loading legacy O3DE dds files
-        IImageObject* LoadImageFromFileLegacy(const AZStd::string& filename);
-        IImageObject* LoadImageFromFileStreamLegacy(AZ::IO::SystemFileStream& fileLoadStream);
-        IImageObject* LoadAttachedImageFromDdsFileLegacy(const AZStd::string& filename, IImageObjectPtr originImage);
     };// namespace DdsLoader
 
     // Load .exr files to an image object

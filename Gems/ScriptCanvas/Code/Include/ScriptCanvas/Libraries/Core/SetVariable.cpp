@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -293,7 +294,7 @@ namespace ScriptCanvas
                     {
                         DataSlotConfiguration slotConfiguration;
 
-                        slotConfiguration.m_name = AZStd::string::format("%s: %s", propertyName.data(), Data::GetName(getterWrapper.m_propertyType).data());
+                        slotConfiguration.m_name = (getterWrapper.m_displayName.empty()) ? propertyName.data() : getterWrapper.m_displayName;
                         slotConfiguration.SetType(getterWrapper.m_propertyType);
                         slotConfiguration.SetConnectionType(ConnectionType::Output);
 

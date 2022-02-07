@@ -1,15 +1,16 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzTest/AzTest.h>
 #include <Common/RPITestFixture.h>
+#include <Common/ShaderAssetTestUtils.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h>
 
 namespace UnitTest
 {
@@ -20,7 +21,8 @@ namespace UnitTest
         : public RPITestFixture
     {
     protected:
-        Data::Asset<ShaderResourceGroupAsset> m_testSrgAsset;
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> m_testSrgLayout;
+        Data::Asset<ShaderAsset> m_testShaderAsset;
         Data::Instance<ShaderResourceGroup> m_testSrg;
         Data::Instance<Image> m_whiteImage;
         Data::Instance<Image> m_blackImage;
@@ -35,29 +37,27 @@ namespace UnitTest
         const RHI::ShaderInputImageIndex m_indexImageArray{ 2 };
         const RHI::ShaderInputImageIndex m_indexImageInvalid{ 3 };
 
-        Data::Asset<ShaderResourceGroupAsset> CreateTestSrgAsset(const char* nameId)
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> CreateTestSrgLayout(const char* nameId)
         {
-            Data::Asset<ShaderResourceGroupAsset> asset;
-            ShaderResourceGroupAssetCreator srgCreator;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = RHI::ShaderResourceGroupLayout::Create();
 
-            srgCreator.Begin(Uuid::CreateRandom(), Name(nameId));
-            srgCreator.BeginAPI(RHI::Factory::Get().GetType());
-            srgCreator.SetBindingSlot(0);
-            srgCreator.AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageA" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-            srgCreator.AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageB" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2 });
-            srgCreator.AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageArray" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 3, 3 });
-            srgCreator.EndAPI();
-            srgCreator.End(asset);
+            srgLayout->SetName(Name(nameId));
+            srgLayout->SetBindingSlot(0);
+            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageA" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
+            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageB" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2 });
+            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageArray" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 3, 3 });
+            srgLayout->Finalize();
 
-            return asset;
+            return srgLayout;
         }
 
         void SetUp() override
         {
             RPITestFixture::SetUp();
 
-            m_testSrgAsset = CreateTestSrgAsset("TestSrg");
-            m_testSrg = ShaderResourceGroup::Create(m_testSrgAsset);
+            m_testSrgLayout = CreateTestSrgLayout("TestSrg");
+            m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testSrgLayout);
+            m_testSrg = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
 
             m_whiteImage = RPI::ImageSystemInterface::Get()->GetSystemImage(RPI::SystemImage::White);
             m_blackImage = RPI::ImageSystemInterface::Get()->GetSystemImage(RPI::SystemImage::Black);
@@ -79,7 +79,8 @@ namespace UnitTest
 
         void TearDown() override
         {
-            m_testSrgAsset.Reset();
+            m_testShaderAsset.Reset();
+            m_testSrgLayout = nullptr;
             m_testSrg = nullptr;
 
             m_threeImages = AZStd::vector<Data::Instance<Image>>();
@@ -150,7 +151,7 @@ namespace UnitTest
 
         // Test changing back to null...
 
-        ProcessQueuedSrgCompilations(m_testSrgAsset);
+        ProcessQueuedSrgCompilations(m_testShaderAsset, m_testSrgLayout->GetName());
 
         EXPECT_TRUE(m_testSrg->SetImage(m_indexImageA, nullptr));
         m_testSrg->Compile();
@@ -176,7 +177,7 @@ namespace UnitTest
 
         // Test changing back to null...
 
-        ProcessQueuedSrgCompilations(m_testSrgAsset);
+        ProcessQueuedSrgCompilations(m_testShaderAsset, m_testSrgLayout->GetName());
 
         EXPECT_TRUE(m_testSrg->SetImage(m_indexImageArray, nullptr, 1));
         m_testSrg->Compile();
@@ -204,7 +205,7 @@ namespace UnitTest
 
         // Test replacing just two images including changing one image back to null...
 
-        ProcessQueuedSrgCompilations(m_testSrgAsset);
+        ProcessQueuedSrgCompilations(m_testShaderAsset, m_testSrgLayout->GetName());
 
         AZStd::vector<Data::Instance<Image>> alternateImages = { m_blackImage, nullptr };
 
@@ -350,7 +351,7 @@ namespace UnitTest
 
         // Test replacing just two image views including changing one back to null...
 
-        ProcessQueuedSrgCompilations(m_testSrgAsset);
+        ProcessQueuedSrgCompilations(m_testShaderAsset, m_testSrgLayout->GetName());
 
         AZStd::vector<const RHI::ImageView*> alternateImageViews = { m_imageViewB.get(), nullptr };
 

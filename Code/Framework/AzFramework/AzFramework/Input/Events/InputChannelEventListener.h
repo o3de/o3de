@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -34,6 +35,7 @@ namespace AzFramework
         //! Predefined input event listener priority, used to sort handlers from highest to lowest
         inline static AZ::s32 GetPriorityFirst()    { return std::numeric_limits<AZ::s32>::max(); }
         inline static AZ::s32 GetPriorityDebug()    { return (GetPriorityFirst() / 4) * 3;        }
+        inline static AZ::s32 GetPriorityDebugUI()  { return (GetPriorityFirst() / 8) * 5;        }
         inline static AZ::s32 GetPriorityUI()       { return GetPriorityFirst() / 2;              }
         inline static AZ::s32 GetPriorityDefault()  { return 0;                                   }
         inline static AZ::s32 GetPriorityLast()     { return std::numeric_limits<AZ::s32>::min(); }

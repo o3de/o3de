@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -64,13 +65,13 @@ namespace EMotionFX
             scrollArea->setWidget(m_jointWidget);
             scrollArea->setWidgetResizable(true);
 
-            mDock->setWidget(scrollArea);
+            m_dock->setWidget(scrollArea);
 
             EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
         }
         else
         {
-            mDock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the project configurator."));
+            m_dock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the Project Manager."));
         }
 
         return true;

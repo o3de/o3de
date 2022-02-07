@@ -1,18 +1,15 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_XML_XML_H
-#define CRYINCLUDE_CRYSYSTEM_XML_XML_H
 #pragma once
 
 
 #include <algorithm>
-#include <PoolAllocator.h>
 #include <stack>
 
 #include "IXml.h"
@@ -37,7 +34,6 @@ public:
         }
     };
     virtual const char* AddString(const char* str) = 0;
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
 private:
     int m_refCount;
 };
@@ -71,8 +67,6 @@ public:
 
     const char* getErrorString() const { return m_errorString; }
 
-    void GetMemoryUsage(ICrySizer* pSizer) const;
-
 private:
     int m_nRefCount;
     XmlString m_errorString;
@@ -90,8 +84,6 @@ struct XmlAttribute
 {
     const char* key;
     const char* value;
-
-    void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const{}
 
     bool operator<(const XmlAttribute& attr) const { return g_pXmlStrCmp(key, attr.key) < 0; }
     bool operator>(const XmlAttribute& attr) const { return g_pXmlStrCmp(key, attr.key) > 0; }
@@ -121,9 +113,6 @@ public:
     CXmlNode(const char* tag, bool bReuseStrings, bool bIsProcessingInstruction = false);
     //! Destructor.
     ~CXmlNode();
-
-    // collect allocated memory  informations
-    void GetMemoryUsage(ICrySizer* pSizer) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Custom new/delete with pool allocator.
@@ -214,6 +203,7 @@ public:
     bool saveToFile(const char* fileName, size_t chunkSizeBytes, AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle); // save in small memory chunks
 
     //! Set new XML Node attribute (or override attribute with same key).
+    using IXmlNode::setAttr;
     void setAttr(const char* key, const char* value);
     void setAttr(const char* key, int value);
     void setAttr(const char* key, unsigned int value);
@@ -222,11 +212,9 @@ public:
     void setAttr(const char* key, float value);
     void setAttr(const char* key, double value);
     void setAttr(const char* key, const Vec2& value);
-    void setAttr(const char* key, const Vec2d& value);
     void setAttr(const char* key, const Ang3& value);
     void setAttr(const char* key, const Vec3& value);
     void setAttr(const char* key, const Vec4& value);
-    void setAttr(const char* key, const Vec3d& value);
     void setAttr(const char* key, const Quat& value);
 
     //! Delete attrbute.
@@ -246,11 +234,9 @@ public:
     bool getAttr(const char* key, XmlString& value) const  {const char*    v(NULL); bool  boHasAttribute(getAttr(key, &v)); value = v; return boHasAttribute; }
 
     bool getAttr(const char* key, Vec2& value) const;
-    bool getAttr(const char* key, Vec2d& value) const;
     bool getAttr(const char* key, Ang3& value) const;
     bool getAttr(const char* key, Vec3& value) const;
     bool getAttr(const char* key, Vec4& value) const;
-    bool getAttr(const char* key, Vec3d& value) const;
     bool getAttr(const char* key, Quat& value) const;
     bool getAttr(const char* key, ColorB& value) const;
 
@@ -343,9 +329,6 @@ private:
     friend class XmlParserImp;
 };
 
-typedef stl::PoolAllocatorNoMT<sizeof(CXmlNode)> CXmlNode_PoolAlloc;
-extern CXmlNode_PoolAlloc* g_pCXmlNode_PoolAlloc;
-
 #ifdef CRY_COLLECT_XML_NODE_STATS
 typedef std::set<CXmlNode*> TXmlNodeSet; // yes, slow, but really only for one-shot debugging
 struct SXmlNodeStats
@@ -360,35 +343,6 @@ struct SXmlNodeStats
 extern SXmlNodeStats* g_pCXmlNode_Stats;
 #endif
 
-/*
-//////////////////////////////////////////////////////////////////////////
-inline void* CXmlNode::operator new( size_t nSize )
-{
-    void *ptr = g_pCXmlNode_PoolAlloc->Allocate();
-    if (ptr)
-    {
-        memset( ptr,0,nSize ); // Clear objects memory.
-#ifdef CRY_COLLECT_XML_NODE_STATS
-        g_pCXmlNode_Stats->nodeSet.insert(reinterpret_cast<CXmlNode*> (ptr));
-        ++g_pCXmlNode_Stats->nAllocs;
-#endif
-    }
-    return ptr;
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline void CXmlNode::operator delete( void *ptr )
-{
-    if (ptr)
-    {
-        g_pCXmlNode_PoolAlloc->Deallocate(ptr);
-#ifdef CRY_COLLECT_XML_NODE_STATS
-        g_pCXmlNode_Stats->nodeSet.erase(reinterpret_cast<CXmlNode*> (ptr));
-        ++g_pCXmlNode_Stats->nFrees;
-#endif
-    }
-}
-*/
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -433,6 +387,3 @@ private:
     unsigned int m_nAllocated;
     std::stack<CXmlNodeReuse*> m_pNodePool;
 };
-
-
-#endif // CRYINCLUDE_CRYSYSTEM_XML_XML_H

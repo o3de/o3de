@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,9 +68,9 @@ namespace MCore
         const char* GetHistoryName() const { return HISTORYNAME; }                                                     \
         const char* GetDescription() const;                                                                            \
         MCore::Command* Create() { return new CLASSNAME(this); }                                                       \
-        OLDVALUETYPE& GetData() { return mData; }                                                                      \
+        OLDVALUETYPE& GetData() { return m_data; }                                                                      \
     protected:                                                                                                         \
-        OLDVALUETYPE mData;                                                                                            \
+        OLDVALUETYPE m_data;                                                                                            \
 
 #define MCORE_DEFINECOMMAND_1_END };
 
@@ -166,17 +167,17 @@ namespace MCore
              * Get the flag which controls if the callback gets executed before the command or after it.
              * @return True in case the callback gets called before the command, false when it gets called afterwards.
              */
-            MCORE_INLINE bool GetExecutePreCommand() const                      { return mPreCommandExecute; }
+            MCORE_INLINE bool GetExecutePreCommand() const                      { return m_preCommandExecute; }
 
             /**
              * Get the flag which controls if the callback gets executed before undo or after it.
              * @return True in case the callback gets called before undo, false when it gets called afterwards.
              */
-            MCORE_INLINE bool GetExecutePreUndo() const                         { return mPreUndoExecute; }
+            MCORE_INLINE bool GetExecutePreUndo() const                         { return m_preUndoExecute; }
 
         private:
-            bool mPreCommandExecute;        /**< Flag which controls if the callback gets executed before the command (true) or after it (false). */
-            bool mPreUndoExecute;           /**< Flag which controls if the callback gets executed before the undo (true) or after it (false). */
+            bool m_preCommandExecute;        /**< Flag which controls if the callback gets executed before the command (true) or after it (false). */
+            bool m_preUndoExecute;           /**< Flag which controls if the callback gets executed before the undo (true) or after it (false). */
         };
 
         /**
@@ -184,7 +185,7 @@ namespace MCore
          * @param commandName The unique identifier for the command.
          * @param originalCommand The original command, or nullptr when this is the original command.
          */
-        Command(const char* commandName, Command* originalCommand);
+        Command(AZStd::string commandName, Command* originalCommand);
 
         /**
          * Destructor.
@@ -272,32 +273,32 @@ namespace MCore
          * Also it can verify and show info about these parameters.
          * @result The syntax object.
          */
-        MCORE_INLINE CommandSyntax& GetSyntax()                                 { return mSyntax; }
+        MCORE_INLINE CommandSyntax& GetSyntax()                                 { return m_syntax; }
 
         /**
          * Get the number of registered/added command callbacks.
          * @result The number of command callbacks that have been added.
          */
-        uint32 GetNumCallbacks() const;
+        size_t GetNumCallbacks() const;
 
         /**
          * Calculate the number of registered pre-execute callbacks.
          * @result The number of registered pre-execute callbacks.
          */
-        uint32 CalcNumPreCommandCallbacks() const;
+        size_t CalcNumPreCommandCallbacks() const;
 
         /**
          * Calculate the number of registered post-execute callbacks.
          * @result The number of registered post-execute callbacks.
          */
-        uint32 CalcNumPostCommandCallbacks() const;
+        size_t CalcNumPostCommandCallbacks() const;
 
         /**
          * Get a given command callback.
          * @param index The callback number, which must be in range of [0..GetNumCallbacks()-1].
          * @result A pointer to the command callback object.
          */
-        MCORE_INLINE Command::Callback* GetCallback(uint32 index)               { return mCallbacks[index]; }
+        MCORE_INLINE Command::Callback* GetCallback(size_t index)               { return m_callbacks[index]; }
 
         /**
          * Add (register) a command callback.
@@ -324,7 +325,7 @@ namespace MCore
          */
         void RemoveAllCallbacks();
 
-        void SetOriginalCommand(Command* orgCommand) { mOrgCommand = orgCommand; }
+        void SetOriginalCommand(Command* orgCommand) { m_orgCommand = orgCommand; }
 
         /**
          * Get the original command where this command has been cloned from.
@@ -334,9 +335,9 @@ namespace MCore
          */
         MCORE_INLINE Command* GetOriginalCommand()
         {
-            if (mOrgCommand)
+            if (m_orgCommand)
             {
-                return mOrgCommand;
+                return m_orgCommand;
             }
             else
             {
@@ -358,9 +359,9 @@ namespace MCore
         }
 
     private:
-        Command*                            mOrgCommand;    /**< The original command, or nullptr when this is the original. */
-        AZStd::string                       mCommandName;   /**< The unique command name used to identify the command. */
-        CommandSyntax                       mSyntax;        /**< The command syntax, which contains info about the possible parameters etc. */
-        AZStd::vector<Command::Callback*>   mCallbacks;     /**< The command callbacks. */
+        Command*                            m_orgCommand;    /**< The original command, or nullptr when this is the original. */
+        AZStd::string                       m_commandName;   /**< The unique command name used to identify the command. */
+        CommandSyntax                       m_syntax;        /**< The command syntax, which contains info about the possible parameters etc. */
+        AZStd::vector<Command::Callback*>   m_callbacks;     /**< The command callbacks. */
     };
 } // namespace MCore

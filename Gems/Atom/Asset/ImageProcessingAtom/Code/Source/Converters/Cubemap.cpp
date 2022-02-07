@@ -1,11 +1,11 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <ImageProcessing_precompiled.h>
 
 #include <Processing/ImageObjectImpl.h>
 #include <Processing/ImageToProcess.h>
@@ -191,7 +191,7 @@ namespace ImageProcessingAtom
         }
 
         //for each pixel in dst image, find it's location in src and copy the data from there
-        float halfSize = rectSize / 2;
+        float halfSize = static_cast<float>(rectSize / 2);
         for (AZ::u32 row = 0; row < rectSize; row++)
         {
             for (AZ::u32 col = 0; col < rectSize; col++)
@@ -201,8 +201,8 @@ namespace ImageProcessingAtom
                 float dstY = halfSize - row - 0.5f;
                 float srcX = dstX * mtx[0] + dstY * mtx[1];
                 float srcY = dstX * mtx[2] + dstY * mtx[3];
-                AZ::u32 srcCol = srcX + halfSize;
-                AZ::u32 srcRow = halfSize - srcY;
+                AZ::u32 srcCol = static_cast<AZ::u32>(srcX + halfSize);
+                AZ::u32 srcRow = static_cast<AZ::u32>(halfSize - srcY);
 
                 memcpy(&dstImageBuf[(row * rectSize + col) * bytePerPixel],
                     &srcImageBuf[(srcRow * rectSize + srcCol) * bytePerPixel], bytePerPixel);
@@ -464,7 +464,7 @@ namespace ImageProcessingAtom
             else
             {
                 //transform the image
-                TransformImage(srcDir, dstDir, buf, tempBuf, sizePerPixel, faceSize);
+                TransformImage(srcDir, dstDir, buf, tempBuf, static_cast<AZ::u8>(sizePerPixel), faceSize);
                 dstCubemap->SetFaceData(face, tempBuf, outSize);
             }
         }
@@ -547,7 +547,7 @@ namespace ImageProcessingAtom
         }
 
         //generate box filtered source image mip chain
-        IImageObjectPtr mippedSourceImage(IImageObject::CreateImage(outWidth, outHeight, maxMipCount, ePixelFormat_R32G32B32A32F));
+        IImageObjectPtr mippedSourceImage(IImageObject::CreateImage(outWidth, outHeight, maxMipCount, srcPixelFormat));
         mippedSourceImage->CopyPropertiesFrom(m_image->Get());
 
         for (int iSide = 0; iSide < 6; ++iSide)
@@ -649,7 +649,7 @@ namespace ImageProcessingAtom
             preset.m_cubemapSetting->m_mipSlope,           //MipAnglePerLevelScale,
             (int)preset.m_cubemapSetting->m_filter,        //FilterType, CP_FILTER_TYPE_COSINE for diffuse cube
             preset.m_cubemapSetting->m_edgeFixup > 0 ? CP_FIXUP_PULL_LINEAR : CP_FIXUP_NONE,             //FixupType, CP_FIXUP_PULL_LINEAR if FixupWidth> 0
-            preset.m_cubemapSetting->m_edgeFixup,          //FixupWidth,
+            static_cast<int32>(preset.m_cubemapSetting->m_edgeFixup),          //FixupWidth,
             true,               //bUseSolidAngle,
             16,                 //GlossScale,
             0,                  //GlossBias

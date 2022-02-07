@@ -1,14 +1,14 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "StdAfx.h"
-
 #include <Editor/EditorBlastFamilyComponent.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
@@ -39,7 +39,7 @@ namespace Blast
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL,
-                        "https://o3de.org/docs/user-guide/components/reference/blast-family/")
+                        "https://o3de.org/docs/user-guide/components/reference/destruction/blast-family/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_blastAsset, "Blast asset",
@@ -97,7 +97,7 @@ namespace Blast
 
     void EditorBlastFamilyComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
 
         if (m_blastAsset.GetId().IsValid())
         {
@@ -108,7 +108,7 @@ namespace Blast
 
     void EditorBlastFamilyComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
 
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
     }

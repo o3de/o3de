@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #include "RagdollTestData.h"
 #include <AzTest/Utils.h>
@@ -203,8 +202,8 @@ namespace PhysX
             }
             else
             {
-                EXPECT_EQ(joint->GetChildBody(), &node->GetRigidBody());
-                EXPECT_EQ(joint->GetParentBody(), &ragdoll->GetNode(parentIndex)->GetRigidBody());
+                EXPECT_EQ(joint->GetChildBodyHandle(), node->GetRigidBody().m_bodyHandle);
+                EXPECT_EQ(joint->GetParentBodyHandle(), ragdoll->GetNode(parentIndex)->GetRigidBody().m_bodyHandle);
             }
         }
     }
@@ -367,5 +366,20 @@ namespace PhysX
         // allow a little leeway because there might be a little ground penetration
         float minZ = ragdoll->GetAabb().GetMin().GetZ();
         EXPECT_NEAR(minZ, 0.0f, 0.05f);
+    }
+
+    TEST(ComputeHierarchyDepthsTest, DepthValuesCorrect)
+    {
+        AZStd::vector<size_t> parentIndices =
+            { 3, 5, AZStd::numeric_limits<size_t>::max(), 1, 2, 9, 7, 4, 0, 6, 11, 12, 5, 14, 15, 16, 5, 18, 19, 4, 21, 22, 4 };
+
+        const AZStd::vector<Utils::Characters::DepthData> nodeDepths = Utils::Characters::ComputeHierarchyDepths(parentIndices);
+
+        std::vector<int> expectedDepths = { 8, 6, 0, 7, 1, 5, 3, 2, 9, 4, 8, 7, 6, 9, 8, 7, 6, 4, 3, 2, 4, 3, 2 };
+
+        for (size_t i = 0; i < parentIndices.size(); i++)
+        {
+            EXPECT_EQ(nodeDepths[i].m_depth, expectedDepths[i]);
+        }
     }
 } // namespace PhysX

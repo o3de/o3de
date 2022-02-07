@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,16 +30,16 @@ namespace EMotionFX
 
     void BlendTreeMaskNode::UniqueData::Update()
     {
-        BlendTreeMaskNode* maskNode = azdynamic_cast<BlendTreeMaskNode*>(mObject);
+        BlendTreeMaskNode* maskNode = azdynamic_cast<BlendTreeMaskNode*>(m_object);
         AZ_Assert(maskNode, "Unique data linked to incorrect node type.");
 
-        const Actor* actor = mAnimGraphInstance->GetActorInstance()->GetActor();
+        const Actor* actor = m_animGraphInstance->GetActorInstance()->GetActor();
         const size_t numMaskInstances = maskNode->GetNumUsedMasks();
         m_maskInstances.resize(numMaskInstances);
-        AZ::u32 maskInstanceIndex = 0;
+        size_t maskInstanceIndex = 0;
 
         m_motionExtractionInputPortNr.reset();
-        const AZ::u32 motionExtractionJointIndex = mAnimGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex();
+        const size_t motionExtractionJointIndex = m_animGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex();
 
         const AZStd::vector<Mask>& masks = maskNode->GetMasks();
         const size_t numMasks = masks.size();
@@ -47,7 +48,7 @@ namespace EMotionFX
             const Mask& mask = masks[i];
             if (!mask.m_jointNames.empty())
             {
-                const AZ::u32 inputPortNr = INPUTPORT_START + static_cast<AZ::u32>(i);
+                const size_t inputPortNr = INPUTPORT_START + i;
 
                 // Get the joint indices by joint names and cache them in the unique data
                 // so that we don't have to look them up at runtime.
@@ -56,7 +57,7 @@ namespace EMotionFX
                 maskInstance.m_inputPortNr = inputPortNr;
 
                 // Check if the motion extraction node is part of this mask and cache the mask index in that case.
-                for (AZ::u32 jointIndex : maskInstance.m_jointIndices)
+                for (size_t jointIndex : maskInstance.m_jointIndices)
                 {
                     if (jointIndex == motionExtractionJointIndex)
                     {
@@ -76,16 +77,16 @@ namespace EMotionFX
         m_masks.resize(s_numMasks);
 
         // Setup the input ports.
-        InitInputPorts(1 + static_cast<AZ::u32>(s_numMasks)); // Base pose and the input poses for the masks.
+        InitInputPorts(1 + s_numMasks); // Base pose and the input poses for the masks.
         SetupInputPort("Base Pose", INPUTPORT_BASEPOSE, AttributePose::TYPE_ID, INPUTPORT_BASEPOSE);
         for (size_t i = 0; i < s_numMasks; ++i)
         {
-            const AZ::u32 portNr = static_cast<AZ::u32>(i + INPUTPORT_START);
+            const uint32 portId = static_cast<uint32>(i) + INPUTPORT_START;
             SetupInputPort(
                 AZStd::string::format("Pose %zu", i).c_str(),
-                portNr,
+                portId,
                 AttributePose::TYPE_ID,
-                portNr);
+                portId);
         }
 
         // Setup the output ports.
@@ -128,16 +129,16 @@ namespace EMotionFX
 
     void BlendTreeMaskNode::OnMotionExtractionNodeChanged(Actor* actor, [[maybe_unused]] Node* newMotionExtractionNode)
     {
-        if (!mAnimGraph)
+        if (!m_animGraph)
         {
             return;
         }
 
         bool needsReinit = false;
-        const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numAnimGraphInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numAnimGraphInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
             if (actor == animGraphInstance->GetActorInstance()->GetActor())
             {
                 needsReinit = true;
@@ -175,14 +176,14 @@ namespace EMotionFX
         // Iterate over the non-empty masks and copy over its transforms.
         for (const UniqueData::MaskInstance& maskInstance : uniqueData->m_maskInstances)
         {
-            const AZ::u32 inputPortNr = maskInstance.m_inputPortNr;
+            const size_t inputPortNr = maskInstance.m_inputPortNr;
             AnimGraphNode* inputNode = GetInputNode(inputPortNr);
             if (inputNode)
             {
                 OutputIncomingNode(animGraphInstance, inputNode);
                 const Pose& inputPose = GetInputPose(animGraphInstance, inputPortNr)->GetValue()->GetPose();
 
-                for (AZ::u32 jointIndex : maskInstance.m_jointIndices)
+                for (size_t jointIndex : maskInstance.m_jointIndices)
                 {
                     outputPose.SetLocalSpaceTransform(jointIndex, inputPose.GetLocalSpaceTransform(jointIndex));
                 }
@@ -191,7 +192,7 @@ namespace EMotionFX
 
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputAnimGraphPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputAnimGraphPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -237,11 +238,9 @@ namespace EMotionFX
             data->SetEventBuffer(basePoseNodeUniqueData->GetRefCountedData()->GetEventBuffer());
         }
 
-        const size_t numMaskInstances = uniqueData->m_maskInstances.size();
-        for (size_t i = 0; i < numMaskInstances; ++i)
+        for (const UniqueData::MaskInstance& maskInstance : uniqueData->m_maskInstances)
         {
-            const UniqueData::MaskInstance& maskInstance = uniqueData->m_maskInstances[i];
-            const AZ::u32 inputPortNr = maskInstance.m_inputPortNr;
+            const size_t inputPortNr = maskInstance.m_inputPortNr;
             AnimGraphNode* inputNode = GetInputNode(inputPortNr);
             if (!inputNode)
             {

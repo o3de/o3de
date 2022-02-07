@@ -1,10 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <PhysX_precompiled.h>
 #include <Source/SystemComponent.h>
 
 #include <AzCore/Serialization/EditContext.h>
@@ -15,7 +15,6 @@
 #include <Source/Utils.h>
 #include <Source/Collision.h>
 #include <Source/Shape.h>
-#include <Source/Joint.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
 #include <Source/Pipeline/HeightFieldAssetHandler.h>
 #include <Source/PhysXCharacters/API/CharacterUtils.h>
@@ -88,7 +87,6 @@ namespace PhysX
 
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        D6JointLimitConfiguration::Reflect(context);
         Pipeline::MeshAsset::Reflect(context);
 
         PhysX::ReflectionUtils::ReflectPhysXOnlyApi(context);
@@ -97,12 +95,13 @@ namespace PhysX
         {
             serialize->Class<SystemComponent, AZ::Component>()
                 ->Version(1)
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ->Field("Enabled", &SystemComponent::m_enabled)
             ;
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration")
+                editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
@@ -124,13 +123,14 @@ namespace PhysX
         incompatible.push_back(AZ_CRC("PhysXService", 0x75beae2d));
     }
 
-    void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
     }
 
-    void SystemComponent::GetDependentServices([[maybe_unused]]AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     SystemComponent::SystemComponent()
@@ -252,6 +252,22 @@ namespace PhysX
         return convex;
     }
 
+    physx::PxHeightField* SystemComponent::CreateHeightField(const physx::PxHeightFieldSample* samples, AZ::u32 numRows, AZ::u32 numColumns)
+    {
+        physx::PxHeightFieldDesc desc;
+        desc.format = physx::PxHeightFieldFormat::eS16_TM;
+        desc.nbColumns = numColumns;
+        desc.nbRows = numRows;
+        desc.samples.data = samples;
+        desc.samples.stride = sizeof(physx::PxHeightFieldSample);
+
+        physx::PxHeightField* heightfield =
+            m_physXSystem->GetPxCooking()->createHeightField(desc, m_physXSystem->GetPxPhysics()->getPhysicsInsertionCallback());
+        AZ_Error("PhysX", heightfield, "Error. Unable to create heightfield");
+
+        return heightfield;
+    }
+
     bool SystemComponent::CookConvexMeshToFile(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount)
     {
         AZStd::vector<AZ::u8> physxData;
@@ -342,47 +358,12 @@ namespace PhysX
         return AZStd::make_shared<PhysX::Material>(materialConfiguration);
     }
 
-    AZStd::vector<AZ::TypeId> SystemComponent::GetSupportedJointTypes()
+    void SystemComponent::ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject)
     {
-        return JointUtils::GetSupportedJointTypes();
-    }
-
-    AZStd::shared_ptr<Physics::JointLimitConfiguration> SystemComponent::CreateJointLimitConfiguration(AZ::TypeId jointType)
-    {
-        return JointUtils::CreateJointLimitConfiguration(jointType);
-    }
-
-    AZStd::shared_ptr<Physics::Joint> SystemComponent::CreateJoint(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration,
-        AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody)
-    {
-        return JointUtils::CreateJoint(configuration, parentBody, childBody);
-    }
-
-    void SystemComponent::GenerateJointLimitVisualizationData(
-        const Physics::JointLimitConfiguration& configuration,
-        const AZ::Quaternion& parentRotation,
-        const AZ::Quaternion& childRotation,
-        float scale,
-        AZ::u32 angularSubdivisions,
-        AZ::u32 radialSubdivisions,
-        AZStd::vector<AZ::Vector3>& vertexBufferOut,
-        AZStd::vector<AZ::u32>& indexBufferOut,
-        AZStd::vector<AZ::Vector3>& lineBufferOut,
-        AZStd::vector<bool>& lineValidityBufferOut)
-    {
-        JointUtils::GenerateJointLimitVisualizationData(configuration, parentRotation, childRotation, scale,
-            angularSubdivisions, radialSubdivisions, vertexBufferOut, indexBufferOut, lineBufferOut, lineValidityBufferOut);
-    }
-
-    AZStd::unique_ptr<Physics::JointLimitConfiguration> SystemComponent::ComputeInitialJointLimitConfiguration(
-        const AZ::TypeId& jointLimitTypeId,
-        const AZ::Quaternion& parentWorldRotation,
-        const AZ::Quaternion& childWorldRotation,
-        const AZ::Vector3& axis,
-        const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
-    {
-        return JointUtils::ComputeInitialJointLimitConfiguration(jointLimitTypeId, parentWorldRotation,
-            childWorldRotation, axis, exampleLocalRotations);
+        if (nativeHeightfieldObject)
+        {
+            static_cast<physx::PxBase*>(nativeHeightfieldObject)->release();
+        }
     }
 
     void SystemComponent::ReleaseNativeMeshObject(void* nativeMeshObject)
@@ -439,7 +420,7 @@ namespace PhysX
 
     void SystemComponent::SetCollisionLayerName(int index, const AZStd::string& layerName)
     {
-        m_physXSystem->SetCollisionLayerName(aznumeric_cast<AZ::u64>(index), layerName);
+        m_physXSystem->SetCollisionLayerName(aznumeric_cast<int>(index), layerName);
     }
 
     void SystemComponent::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)
@@ -501,7 +482,13 @@ namespace PhysX
             {
                 const PhysXSystemConfiguration defaultConfig = PhysXSystemConfiguration::CreateDefault();
                 m_physXSystem->Initialize(&defaultConfig);
-                registryManager.SaveSystemConfiguration(defaultConfig, {});
+
+                auto saveCallback = []([[maybe_unused]] const PhysXSystemConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                {
+                    AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                        "Unable to save the default PhysX configuration.");
+                };
+                registryManager.SaveSystemConfiguration(defaultConfig, saveCallback);
             }
 
             //Load the DefaultSceneConfig
@@ -514,7 +501,13 @@ namespace PhysX
             {
                 const AzPhysics::SceneConfiguration defaultConfig = AzPhysics::SceneConfiguration::CreateDefault();
                 m_physXSystem->UpdateDefaultSceneConfiguration(defaultConfig);
-                registryManager.SaveDefaultSceneConfiguration(defaultConfig, {});
+
+                auto saveCallback = []([[maybe_unused]] const AzPhysics::SceneConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                {
+                    AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                        "Unable to save the default Scene configuration.");
+                };
+                registryManager.SaveDefaultSceneConfiguration(defaultConfig, saveCallback);
             }
 
             //load the debug configuration and initialize the PhysX debug interface
@@ -529,7 +522,13 @@ namespace PhysX
                 {
                     const Debug::DebugConfiguration defaultConfig = Debug::DebugConfiguration::CreateDefault();
                     debug->Initialize(defaultConfig);
-                    registryManager.SaveDebugConfiguration(defaultConfig, {});
+
+                    auto saveCallback = []([[maybe_unused]] const Debug::DebugConfiguration& config, [[maybe_unused]] PhysXSettingsRegistryManager::Result result)
+                    {
+                        AZ_Warning("PhysX", result == PhysXSettingsRegistryManager::Result::Success,
+                            "Unable to save the default PhysX Debug configuration.");
+                    };
+                    registryManager.SaveDebugConfiguration(defaultConfig, saveCallback);
                 }
             }
         }

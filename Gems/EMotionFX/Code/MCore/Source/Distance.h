@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -37,21 +38,21 @@ namespace MCore
         };
 
         MCORE_INLINE Distance()
-            : mDistance(0.0)
-            , mDistanceMeters(0.0)
-            , mUnitType(UNITTYPE_METERS)      { }
+            : m_distance(0.0)
+            , m_distanceMeters(0.0)
+            , m_unitType(UNITTYPE_METERS)      { }
         MCORE_INLINE Distance(double units, EUnitType unitType)
-            : mDistance(units)
-            , mDistanceMeters(0.0)
-            , mUnitType(unitType)           { UpdateDistanceMeters(); }
+            : m_distance(units)
+            , m_distanceMeters(0.0)
+            , m_unitType(unitType)           { UpdateDistanceMeters(); }
         MCORE_INLINE Distance(float units, EUnitType unitType)
-            : mDistance(units)
-            , mDistanceMeters(0.0)
-            , mUnitType(unitType)           { UpdateDistanceMeters(); }
+            : m_distance(units)
+            , m_distanceMeters(0.0)
+            , m_unitType(unitType)           { UpdateDistanceMeters(); }
         MCORE_INLINE Distance(const Distance& other)
-            : mDistance(other.mDistance)
-            , mDistanceMeters(other.mDistanceMeters)
-            , mUnitType(other.mUnitType) {}
+            : m_distance(other.m_distance)
+            , m_distanceMeters(other.m_distanceMeters)
+            , m_unitType(other.m_unitType) {}
 
         const Distance& ConvertTo(EUnitType targetUnitType);
         MCORE_INLINE Distance ConvertedTo(EUnitType targetUnitType) const               { Distance result(*this); result.ConvertTo(targetUnitType); return result; }
@@ -64,46 +65,46 @@ namespace MCore
         static const char* UnitTypeToString(EUnitType unitType);
         static bool StringToUnitType(const AZStd::string& str, EUnitType* outUnitType);
 
-        MCORE_INLINE double GetDistance() const                                         { return mDistance; }
-        MCORE_INLINE EUnitType GetUnitType() const                                      { return mUnitType; }
+        MCORE_INLINE double GetDistance() const                                         { return m_distance; }
+        MCORE_INLINE EUnitType GetUnitType() const                                      { return m_unitType; }
 
-        MCORE_INLINE void Set(double dist, EUnitType unitType)                          { mDistance = dist; mUnitType = unitType; UpdateDistanceMeters(); }
-        MCORE_INLINE void SetDistance(double dist)                                      { mDistance = dist; UpdateDistanceMeters(); }
-        MCORE_INLINE void SetUnitType(EUnitType unitType)                               { mUnitType = unitType; UpdateDistanceMeters(); }
+        MCORE_INLINE void Set(double dist, EUnitType unitType)                          { m_distance = dist; m_unitType = unitType; UpdateDistanceMeters(); }
+        MCORE_INLINE void SetDistance(double dist)                                      { m_distance = dist; UpdateDistanceMeters(); }
+        MCORE_INLINE void SetUnitType(EUnitType unitType)                               { m_unitType = unitType; UpdateDistanceMeters(); }
 
-        MCORE_INLINE double CalcDistanceInUnitType(EUnitType targetUnitType) const      { return mDistanceMeters * GetConversionFactorFromMeters(targetUnitType); }
-        MCORE_INLINE double CalcNumMillimeters() const                                  { return mDistanceMeters * 1000.0; }
-        MCORE_INLINE double CalcNumCentimeters() const                                  { return mDistanceMeters * 100.0; }
-        MCORE_INLINE double CalcNumDecimeters() const                                   { return mDistanceMeters * 10.0; }
-        MCORE_INLINE double CalcNumMeters() const                                       { return mDistanceMeters; }
-        MCORE_INLINE double CalcNumKilometers() const                                   { return mDistanceMeters * 0.001; }
-        MCORE_INLINE double CalcNumInches() const                                       { return mDistanceMeters * 39.370078740157; }
-        MCORE_INLINE double CalcNumFeet() const                                         { return mDistanceMeters * 3.2808398950131; }
-        MCORE_INLINE double CalcNumYards() const                                        { return mDistanceMeters * 1.0936132983377; }
-        MCORE_INLINE double CalcNumMiles() const                                        { return mDistanceMeters * 0.00062137119223733; }
+        MCORE_INLINE double CalcDistanceInUnitType(EUnitType targetUnitType) const      { return m_distanceMeters * GetConversionFactorFromMeters(targetUnitType); }
+        MCORE_INLINE double CalcNumMillimeters() const                                  { return m_distanceMeters * 1000.0; }
+        MCORE_INLINE double CalcNumCentimeters() const                                  { return m_distanceMeters * 100.0; }
+        MCORE_INLINE double CalcNumDecimeters() const                                   { return m_distanceMeters * 10.0; }
+        MCORE_INLINE double CalcNumMeters() const                                       { return m_distanceMeters; }
+        MCORE_INLINE double CalcNumKilometers() const                                   { return m_distanceMeters * 0.001; }
+        MCORE_INLINE double CalcNumInches() const                                       { return m_distanceMeters * 39.370078740157; }
+        MCORE_INLINE double CalcNumFeet() const                                         { return m_distanceMeters * 3.2808398950131; }
+        MCORE_INLINE double CalcNumYards() const                                        { return m_distanceMeters * 1.0936132983377; }
+        MCORE_INLINE double CalcNumMiles() const                                        { return m_distanceMeters * 0.00062137119223733; }
 
-        MCORE_INLINE Distance operator - () const                                       { return Distance(-mDistance, mUnitType); }
-        MCORE_INLINE const Distance& operator = (const Distance& other)                 { mDistance = other.mDistance; mDistanceMeters = other.mDistanceMeters; mUnitType = other.mUnitType; return *this; }
+        MCORE_INLINE Distance operator - () const                                       { return Distance(-m_distance, m_unitType); }
+        MCORE_INLINE const Distance& operator = (const Distance& other)                 { m_distance = other.m_distance; m_distanceMeters = other.m_distanceMeters; m_unitType = other.m_unitType; return *this; }
 
-        MCORE_INLINE const Distance& operator *= (double f)                             { mDistance *= f; UpdateDistanceMeters(); return *this; }
-        MCORE_INLINE const Distance& operator /= (double f)                             { mDistance /= f; UpdateDistanceMeters(); return *this; }
-        MCORE_INLINE const Distance& operator += (double f)                             { mDistance += f; UpdateDistanceMeters(); return *this; }
-        MCORE_INLINE const Distance& operator -= (double f)                             { mDistance -= f; UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator *= (double f)                             { m_distance *= f; UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator /= (double f)                             { m_distance /= f; UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator += (double f)                             { m_distance += f; UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator -= (double f)                             { m_distance -= f; UpdateDistanceMeters(); return *this; }
 
-        MCORE_INLINE const Distance& operator *= (float f)                              { mDistance *= f; UpdateDistanceMeters(); return *this; }
-        MCORE_INLINE const Distance& operator /= (float f)                              { mDistance /= f; UpdateDistanceMeters(); return *this; }
-        MCORE_INLINE const Distance& operator += (float f)                              { mDistance += f; UpdateDistanceMeters(); return *this; }
-        MCORE_INLINE const Distance& operator -= (float f)                              { mDistance -= f; UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator *= (float f)                              { m_distance *= f; UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator /= (float f)                              { m_distance /= f; UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator += (float f)                              { m_distance += f; UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator -= (float f)                              { m_distance -= f; UpdateDistanceMeters(); return *this; }
 
-        MCORE_INLINE const Distance& operator *= (const Distance& other)                { mDistance *= other.ConvertedTo(mUnitType).GetDistance(); UpdateDistanceMeters(); return *this; }
-        MCORE_INLINE const Distance& operator /= (const Distance& other)                { mDistance /= other.ConvertedTo(mUnitType).GetDistance(); UpdateDistanceMeters(); return *this; }
-        MCORE_INLINE const Distance& operator += (const Distance& other)                { mDistance += other.ConvertedTo(mUnitType).GetDistance(); UpdateDistanceMeters(); return *this; }
-        MCORE_INLINE const Distance& operator -= (const Distance& other)                { mDistance -= other.ConvertedTo(mUnitType).GetDistance(); UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator *= (const Distance& other)                { m_distance *= other.ConvertedTo(m_unitType).GetDistance(); UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator /= (const Distance& other)                { m_distance /= other.ConvertedTo(m_unitType).GetDistance(); UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator += (const Distance& other)                { m_distance += other.ConvertedTo(m_unitType).GetDistance(); UpdateDistanceMeters(); return *this; }
+        MCORE_INLINE const Distance& operator -= (const Distance& other)                { m_distance -= other.ConvertedTo(m_unitType).GetDistance(); UpdateDistanceMeters(); return *this; }
 
     private:
-        double      mDistance;              /**< The actual distance in the current unit type. */
-        double      mDistanceMeters;        /**< The distance in meters. */
-        EUnitType   mUnitType;              /**< The actual unit type. */
+        double      m_distance;              /**< The actual distance in the current unit type. */
+        double      m_distanceMeters;        /**< The distance in meters. */
+        EUnitType   m_unitType;              /**< The actual unit type. */
 
         void UpdateDistanceMeters();
     };

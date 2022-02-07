@@ -1,35 +1,45 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 
 // Description : Classes to deal with commands
-
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_COMMAND_H
-#define CRYINCLUDE_EDITOR_INCLUDE_COMMAND_H
 #pragma once
 
 #include <QString>
-
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/conversions.h>
+#include <CryCommon/LegacyAllocator.h>
 #include "Util/EditorUtils.h"
 
-inline string ToString(const QString& s)
+inline AZStd::string ToString(const QString& s)
 {
     return s.toUtf8().data();
 }
 
+
 class CCommand
 {
+    static inline bool FromString(int32& val, const char* s)
+    {
+        if (!s)
+        {
+            return false;
+        }
+        val = static_cast<int>(strtol(s, nullptr, 10));
+        const bool parsing_error = val == 0 && errno != 0;
+        return !parsing_error;
+    }
 public:
     CCommand(
-        const string& module,
-        const string& name,
-        const string& description,
-        const string& example)
+        const AZStd::string& module,
+        const AZStd::string& name,
+        const AZStd::string& description,
+        const AZStd::string& example)
         : m_module(module)
         , m_name(name)
         , m_description(description)
@@ -76,22 +86,22 @@ public:
                 return false;
             }
         }
-        int GetArgCount() const
+        size_t GetArgCount() const
         { return m_args.size(); }
-        const string& GetArg(int i) const
+        const AZStd::string& GetArg(int i) const
         {
             assert(0 <= i && i < GetArgCount());
             return m_args[i];
         }
     private:
-        DynArray<string> m_args;
+        AZStd::vector<AZStd::string,AZ::StdLegacyAllocator> m_args;
         unsigned char m_stringFlags;    // This is needed to quote string parameters when logging a command.
     };
 
-    const string& GetName() const { return m_name; }
-    const string& GetModule() const { return m_module; }
-    const string& GetDescription() const { return m_description; }
-    const string& GetExample() const { return m_example; }
+    const AZStd::string& GetName() const { return m_name; }
+    const AZStd::string& GetModule() const { return m_module; }
+    const AZStd::string& GetDescription() const { return m_description; }
+    const AZStd::string& GetExample() const { return m_example; }
 
     void SetAvailableInScripting() { m_bAlsoAvailableInScripting = true; };
     bool IsAvailableInScripting() const { return m_bAlsoAvailableInScripting; }
@@ -103,18 +113,18 @@ public:
 
 protected:
     friend class CEditorCommandManager;
-    string m_module;
-    string m_name;
-    string m_description;
-    string m_example;
+    AZStd::string m_module;
+    AZStd::string m_name;
+    AZStd::string m_description;
+    AZStd::string m_example;
     bool m_bAlsoAvailableInScripting;
 
     template <typename T>
-    static string ToString_(T t) { return ::ToString(t); }
-    static inline string ToString_(const char* val)
+    static AZStd::string ToString_(T t) { return ::ToString(t); }
+    static inline AZStd::string ToString_(const char* val)
     { return val; }
     template <typename T>
-    static bool FromString_(T& t, const char* s) { return ::FromString(t, s); }
+    static bool FromString_(T& t, const char* s) { return FromString(t, s); }
     static inline bool FromString_(const char*& val, const char* s)
     { return (val = s) != 0; }
 
@@ -136,8 +146,8 @@ class CCommand0
     : public CCommand
 {
 public:
-    CCommand0(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand0(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<void()>& functor)
         : CCommand(module, name, description, example)
         , m_functor(functor) {}
@@ -145,10 +155,10 @@ public:
     // UI metadata for this command, if any
     struct SUIInfo
     {
-        string caption;
-        string tooltip;
-        string description;
-        string iconFilename;
+        AZStd::string caption;
+        AZStd::string tooltip;
+        AZStd::string description;
+        AZStd::string iconFilename;
         int iconIndex;
         int commandId; // Windows command id
 
@@ -178,8 +188,8 @@ class CCommand0wRet
     : public CCommand
 {
 public:
-    CCommand0wRet(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand0wRet(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<RT()>& functor);
 
     QString Execute(const CArgs& args);
@@ -194,8 +204,8 @@ class CCommand1
     : public CCommand
 {
 public:
-    CCommand1(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand1(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<void(LIST(1, P))>& functor);
 
     QString Execute(const CArgs& args);
@@ -210,8 +220,8 @@ class CCommand1wRet
     : public CCommand
 {
 public:
-    CCommand1wRet(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand1wRet(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<RT(LIST(1, P))>& functor);
 
     QString Execute(const CArgs& args);
@@ -226,8 +236,8 @@ class CCommand2
     : public CCommand
 {
 public:
-    CCommand2(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand2(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<void(LIST(2, P))>& functor);
 
     QString Execute(const CArgs& args);
@@ -242,8 +252,8 @@ class CCommand2wRet
     : public CCommand
 {
 public:
-    CCommand2wRet(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand2wRet(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<RT(LIST(2, P))>& functor);
 
     QString Execute(const CArgs& args);
@@ -258,8 +268,8 @@ class CCommand3
     : public CCommand
 {
 public:
-    CCommand3(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand3(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<void(LIST(3, P))>& functor);
 
     QString Execute(const CArgs& args);
@@ -274,8 +284,8 @@ class CCommand3wRet
     : public CCommand
 {
 public:
-    CCommand3wRet(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand3wRet(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<RT(LIST(3, P))>& functor);
 
     QString Execute(const CArgs& args);
@@ -290,8 +300,8 @@ class CCommand4
     : public CCommand
 {
 public:
-    CCommand4(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand4(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<void(LIST(4, P))>& functor);
 
     QString Execute(const CArgs& args);
@@ -306,8 +316,8 @@ class CCommand4wRet
     : public CCommand
 {
 public:
-    CCommand4wRet(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand4wRet(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<RT(LIST(4, P))>& functor);
 
     QString Execute(const CArgs& args);
@@ -322,8 +332,8 @@ class CCommand5
     : public CCommand
 {
 public:
-    CCommand5(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand5(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<void(LIST(5, P))>& functor);
 
     QString Execute(const CArgs& args);
@@ -338,8 +348,8 @@ class CCommand6
     : public CCommand
 {
 public:
-    CCommand6(const string& module, const string& name,
-        const string& description, const string& example,
+    CCommand6(const AZStd::string& module, const AZStd::string& name,
+        const AZStd::string& description, const AZStd::string& example,
         const AZStd::function<void(LIST(6, P))>& functor);
 
     QString Execute(const CArgs& args);
@@ -352,8 +362,8 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 template <typename RT>
-CCommand0wRet<RT>::CCommand0wRet(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand0wRet<RT>::CCommand0wRet(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<RT()>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -372,8 +382,8 @@ QString CCommand0wRet<RT>::Execute(const CCommand::CArgs& args)
 //////////////////////////////////////////////////////////////////////////
 
 template <LIST(1, typename P)>
-CCommand1<LIST(1, P)>::CCommand1(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand1<LIST(1, P)>::CCommand1(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<void(LIST(1, P))>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -409,8 +419,8 @@ QString CCommand1<LIST(1, P)>::Execute(const CCommand::CArgs& args)
 //////////////////////////////////////////////////////////////////////////
 
 template <LIST(1, typename P), typename RT>
-CCommand1wRet<LIST(1, P), RT>::CCommand1wRet(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand1wRet<LIST(1, P), RT>::CCommand1wRet(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<RT(LIST(1, P))>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -447,8 +457,8 @@ QString CCommand1wRet<LIST(1, P), RT>::Execute(const CCommand::CArgs& args)
 //////////////////////////////////////////////////////////////////////////
 
 template <LIST(2, typename P)>
-CCommand2<LIST(2, P)>::CCommand2(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand2<LIST(2, P)>::CCommand2(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<void(LIST(2, P))>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -486,8 +496,8 @@ QString CCommand2<LIST(2, P)>::Execute(const CCommand::CArgs& args)
 //////////////////////////////////////////////////////////////////////////
 
 template <LIST(2, typename P), typename RT>
-CCommand2wRet<LIST(2, P), RT>::CCommand2wRet(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand2wRet<LIST(2, P), RT>::CCommand2wRet(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<RT(LIST(2, P))>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -526,8 +536,8 @@ QString CCommand2wRet<LIST(2, P), RT>::Execute(const CCommand::CArgs& args)
 //////////////////////////////////////////////////////////////////////////
 
 template <LIST(3, typename P)>
-CCommand3<LIST(3, P)>::CCommand3(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand3<LIST(3, P)>::CCommand3(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<void(LIST(3, P))>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -567,8 +577,8 @@ QString CCommand3<LIST(3, P)>::Execute(const CCommand::CArgs& args)
 //////////////////////////////////////////////////////////////////////////
 
 template <LIST(3, typename P), typename RT>
-CCommand3wRet<LIST(3, P), RT>::CCommand3wRet(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand3wRet<LIST(3, P), RT>::CCommand3wRet(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<RT(LIST(3, P))>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -609,8 +619,8 @@ QString CCommand3wRet<LIST(3, P), RT>::Execute(const CCommand::CArgs& args)
 //////////////////////////////////////////////////////////////////////////
 
 template <LIST(4, typename P)>
-CCommand4<LIST(4, P)>::CCommand4(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand4<LIST(4, P)>::CCommand4(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<void(LIST(4, P))>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -653,8 +663,8 @@ QString CCommand4<LIST(4, P)>::Execute(const CCommand::CArgs& args)
 //////////////////////////////////////////////////////////////////////////
 
 template <LIST(4, typename P), typename RT>
-CCommand4wRet<LIST(4, P), RT>::CCommand4wRet(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand4wRet<LIST(4, P), RT>::CCommand4wRet(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<RT(LIST(4, P))>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -698,8 +708,8 @@ QString CCommand4wRet<LIST(4, P), RT>::Execute(const CCommand::CArgs& args)
 //////////////////////////////////////////////////////////////////////////
 
 template <LIST(5, typename P)>
-CCommand5<LIST(5, P)>::CCommand5(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand5<LIST(5, P)>::CCommand5(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<void(LIST(5, P))>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -744,8 +754,8 @@ QString CCommand5<LIST(5, P)>::Execute(const CCommand::CArgs& args)
 //////////////////////////////////////////////////////////////////////////
 
 template <LIST(6, typename P)>
-CCommand6<LIST(6, P)>::CCommand6(const string& module, const string& name,
-    const string& description, const string& example,
+CCommand6<LIST(6, P)>::CCommand6(const AZStd::string& module, const AZStd::string& name,
+    const AZStd::string& description, const AZStd::string& example,
     const AZStd::function<void(LIST(6, P))>& functor)
     : CCommand(module, name, description, example)
     , m_functor(functor)
@@ -788,4 +798,3 @@ QString CCommand6<LIST(6, P)>::Execute(const CCommand::CArgs& args)
     }
     return "";
 }
-#endif // CRYINCLUDE_EDITOR_INCLUDE_COMMAND_H

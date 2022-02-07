@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -137,8 +138,8 @@ namespace ProjectSettingsTool
         // returns true if the platform is enabled
         bool PlatformEnabled(PlatformId platformId);
 
-        // returns the resource folder
-        const char* PlatformResourcesFolder(PlatformId platformId);
+        // returns the main platform specific resource file e.g. for iOS it would be the Info.plist
+        AZStd::string GetPlatformResource(PlatformId platformId);
 
         // The ui for the window
         QScopedPointer<Ui::ProjectSettingsToolWidget> m_ui;
@@ -146,7 +147,6 @@ namespace ProjectSettingsTool
         // The process used to reconfigure settings
         QProcess m_reconfigureProcess;
 
-        AZStd::string m_devRoot;
         AZStd::string m_projectRoot;
         AZStd::string m_projectName;
 

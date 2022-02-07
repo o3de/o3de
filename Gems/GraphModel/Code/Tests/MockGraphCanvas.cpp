@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -306,11 +307,6 @@ namespace MockGraphCanvasServices
     void MockNodeComponent::SetTooltip(const AZStd::string& tooltip)
     {
         m_configuration.SetTooltip(tooltip);
-    }
-
-    void MockNodeComponent::SetTranslationKeyedTooltip(const GraphCanvas::TranslationKeyedString& tooltip)
-    {
-        m_configuration.SetTooltip(tooltip.GetDisplayString());
     }
 
     const AZStd::string MockNodeComponent::GetTooltip() const

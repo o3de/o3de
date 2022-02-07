@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -278,28 +279,3 @@ namespace AZ
         };
     }
 }
-
-
-// Emits an error when padding is introduced into a struct.
-#if defined (AZ_COMPILER_MSVC)
-
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN \
-    __pragma(warning(push)) \
-    __pragma(warning(error : 4820))
-
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_END \
-    __pragma(warning(pop))
-
-#elif defined (AZ_COMPILER_CLANG) || defined (AZ_COMPILER_GCC)
-
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN \
-    _Pragma("GCC diagnostic push") \
-    _Pragma("GCC diagnostic error \"-Wpadded\"")
-
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_END \
-    _Pragma("GCC diagnostic pop")
-
-#else
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_END
-#endif

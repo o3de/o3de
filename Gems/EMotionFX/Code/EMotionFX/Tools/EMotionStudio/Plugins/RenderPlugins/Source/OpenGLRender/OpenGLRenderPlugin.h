@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -42,21 +43,21 @@ namespace EMStudio
         bool GetIsVertical() const override                 { return false; }
 
         // overloaded main init function
-        bool Init();
-        EMStudioPlugin* Clone()                             { return new OpenGLRenderPlugin(); }
+        bool Init() override;
+        EMStudioPlugin* Clone() override                    { return new OpenGLRenderPlugin(); }
 
         // overloaded functions
         void CreateRenderWidget(RenderViewWidget* renderViewWidget, RenderWidget** outRenderWidget, QWidget** outWidget) override;
 
         // OpenGL engine helper functions
         bool InitializeGraphicsManager();
-        MCORE_INLINE RenderGL::GraphicsManager* GetGraphicsManager()                { return mGraphicsManager; }
+        MCORE_INLINE RenderGL::GraphicsManager* GetGraphicsManager()                { return m_graphicsManager; }
 
     private:
-        RenderGL::GraphicsManager*          mGraphicsManager;           // shared OpenGL engine object
+        RenderGL::GraphicsManager*          m_graphicsManager;           // shared OpenGL engine object
 
         // overloaded emstudio actor create function which creates an OpenGL render actor internally
-        bool CreateEMStudioActor(EMotionFX::Actor* actor);
+        bool CreateEMStudioActor(EMotionFX::Actor* actor) override;
 
         void RenderActorInstance(EMotionFX::ActorInstance* actorInstance, float timePassedInSeconds) override;
     };

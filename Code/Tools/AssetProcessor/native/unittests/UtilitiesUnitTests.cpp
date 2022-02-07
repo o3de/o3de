@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -29,15 +30,6 @@ using namespace AssetProcessor;
 
 namespace AssetProcessor
 {
-    const char* const TEST_BOOTSTRAP_DATA =
-        "project_path = TestProject                                                         \r\n\
-        assets = pc                                                                         \r\n\
-        -- ip and port of the asset processor.Only if you need to change defaults           \r\n\
-        -- remote_ip = 127.0.0.1                                                            \r\n\
-        windows_remote_ip = 127.0.0.7                                                       \r\n\
-        remote_port = 45645                                                                 \r\n\
-        assetProcessor_branch_token = 0xDD814240";
-
     // simple utility class to make sure threads join and don't cause asserts
     // if the unit test exits early.
     class AutoThreadJoiner final
@@ -318,13 +310,6 @@ void UtilitiesUnitTests::StartTest()
 
     // --------------- TEST FilePatternMatcher
     {
-        const char* wildcardMatch[] = {
-            "*.cfg",
-            "*.txt",
-            "abf*.llm"
-            "sdf.c*",
-            "a.bcd"
-        };
         {
             AssetBuilderSDK::FilePatternMatcher extensionWildcardTest(AssetBuilderSDK::AssetBuilderPattern("*.cfg", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
             UNIT_TEST_EXPECT_TRUE(extensionWildcardTest.MatchesPath(AZStd::string("foo.cfg")));
@@ -558,7 +543,7 @@ public:
         Q_EMIT UnitTestPassed();
     }
 
-    bool OnPreAssert(const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/)
+    bool OnPreAssert(const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override
     {
         m_assertTriggered = true;
         return true;

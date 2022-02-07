@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -42,8 +43,7 @@ namespace AWSCore
 
         if (urlSections.size() > ExpectedUrlSections)
         {
-            int i;
-            i = urlSections[ExpectedUrlSections - 1].find('.');
+            int i = static_cast<int>(urlSections[ExpectedUrlSections - 1].find('.'));
             if (i != -1)
             {
                 // Handle APIGateway URLs with custom domains:

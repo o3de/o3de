@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -58,7 +59,7 @@ public:
         ELEMTYPE_POV    = 2
     };
 
-    GameController()  { mDirectInput = nullptr; mJoystick = nullptr; mHWnd = nullptr; mDeadZone = 0.15f; mValid = false; }
+    GameController()  { m_directInput = nullptr; m_joystick = nullptr; m_hWnd = nullptr; m_deadZone = 0.15f; m_valid = false; }
     ~GameController() { Shutdown(); }
 
     bool Init(HWND hWnd);
@@ -66,61 +67,61 @@ public:
     void Calibrate();
     void Shutdown();
 
-    MCORE_INLINE IDirectInputDevice8* GetJoystick() const                       { return mJoystick; }       // returns nullptr when no joystick found during init
+    MCORE_INLINE IDirectInputDevice8* GetJoystick() const                       { return m_joystick; }       // returns nullptr when no joystick found during init
 
-    MCORE_INLINE const char* GetDeviceName() const                              { return mDeviceInfo.mName.c_str(); }
-    MCORE_INLINE const AZStd::string& GetDeviceNameString() const               { return mDeviceInfo.mName; }
-    MCORE_INLINE uint32 GetNumButtons() const                                   { return mDeviceInfo.mNumButtons; }
-    MCORE_INLINE uint32 GetNumSliders() const                                   { return mDeviceInfo.mNumSliders; }
-    MCORE_INLINE uint32 GetNumPOVs() const                                      { return mDeviceInfo.mNumPOVs; }
-    MCORE_INLINE uint32 GetNumAxes() const                                      { return mDeviceInfo.mNumAxes; }
-    void SetDeadZone(float deadZone)                                            { mDeadZone = deadZone; }
-    MCORE_INLINE float GetDeadZone() const                                      { return mDeadZone; }
+    MCORE_INLINE const char* GetDeviceName() const                              { return m_deviceInfo.m_name.c_str(); }
+    MCORE_INLINE const AZStd::string& GetDeviceNameString() const               { return m_deviceInfo.m_name; }
+    MCORE_INLINE uint32 GetNumButtons() const                                   { return m_deviceInfo.m_numButtons; }
+    MCORE_INLINE uint32 GetNumSliders() const                                   { return m_deviceInfo.m_numSliders; }
+    MCORE_INLINE uint32 GetNumPOVs() const                                      { return m_deviceInfo.m_numPoVs; }
+    MCORE_INLINE uint32 GetNumAxes() const                                      { return m_deviceInfo.m_numAxes; }
+    void SetDeadZone(float deadZone)                                            { m_deadZone = deadZone; }
+    MCORE_INLINE float GetDeadZone() const                                      { return m_deadZone; }
     const char* GetElementEnumName(uint32 index);
-    uint32 FindElemendIDByName(const AZStd::string& elementEnumName);
+    uint32 FindElementIDByName(const AZStd::string& elementEnumName);
 
-    MCORE_INLINE bool GetIsPresent(uint32 elementID) const                      { return mDeviceElements[elementID].mPresent; }
+    MCORE_INLINE bool GetIsPresent(uint32 elementID) const                      { return m_deviceElements[elementID].m_present; }
     MCORE_INLINE bool GetIsButtonPressed(uint8 buttonIndex) const
     {
         if (buttonIndex < 128)
         {
-            return (mJoystickState.rgbButtons[buttonIndex] & 0x80) != 0;
+            return (m_joystickState.rgbButtons[buttonIndex] & 0x80) != 0;
         }
         return false;
     }
-    MCORE_INLINE float GetValue(uint32 elementID) const                         { return mDeviceElements[elementID].mValue; }
-    MCORE_INLINE const char* GetElementName(uint32 elementID) const             { return mDeviceElements[elementID].mName.c_str(); }
-    MCORE_INLINE bool GetIsValid() const                                        { return mValid; }
+    MCORE_INLINE float GetValue(uint32 elementID) const                         { return m_deviceElements[elementID].m_value; }
+    MCORE_INLINE const char* GetElementName(uint32 elementID) const             { return m_deviceElements[elementID].m_name.c_str(); }
+    MCORE_INLINE bool GetIsValid() const                                        { return m_valid; }
 
 private:
     struct DeviceInfo
     {
         MCORE_MEMORYOBJECTCATEGORY(GameController::DeviceInfo, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
 
-        AZStd::string   mName;
-        uint32          mNumButtons;
-        uint32          mNumAxes;
-        uint32          mNumPOVs;
-        uint32          mNumSliders;
+        AZStd::string   m_name;
+        uint32          m_numButtons;
+        uint32          m_numAxes;
+        uint32          m_numPoVs;
+        uint32          m_numSliders;
     };
 
     struct DeviceElement
     {
         MCORE_MEMORYOBJECTCATEGORY(GameController::DeviceElement, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
 
-        AZStd::string   mName;
-        float           mValue;
-        float           mCalibrationValue;
-        ElementType     mType;
-        bool            mPresent;
+        AZStd::string   m_name;
+        float           m_value;
+        float           m_calibrationValue;
+        ElementType     m_type;
+        bool            m_present;
     };
 
     struct EnumContext
     {
         MCORE_MEMORYOBJECTCATEGORY(GameController::EnumContext, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
 
-        DIJOYCONFIG*    mPrefJoystickConfig;
-        bool            mPrefJoystickConfigValid;
+        DIJOYCONFIG*    m_prefJoystickConfig;
+        bool            m_prefJoystickConfigValid;
     };
 
     MCORE_INLINE void SetButtonPressed(uint8 buttonIndex, bool isPressed)
@@ -131,23 +132,23 @@ private:
         }
         if (isPressed)
         {
-            mJoystickState.rgbButtons[buttonIndex] |= 0x80;
+            m_joystickState.rgbButtons[buttonIndex] |= 0x80;
         }
         else
         {
-            mJoystickState.rgbButtons[buttonIndex] &= ~0x80;
+            m_joystickState.rgbButtons[buttonIndex] &= ~0x80;
         }
     }
 
-    IDirectInput8*              mDirectInput;
-    IDirectInputDevice8*        mJoystick;
-    DIJOYSTATE2                 mJoystickState;               // DInput Joystick state
-    EnumContext                 mEnumContext;
-    HWND                        mHWnd;
-    DeviceInfo                  mDeviceInfo;
-    DeviceElement               mDeviceElements[NUM_ELEMENTS];
-    float                       mDeadZone;
-    bool                        mValid;
+    IDirectInput8*              m_directInput;
+    IDirectInputDevice8*        m_joystick;
+    DIJOYSTATE2                 m_joystickState;               // DInput Joystick state
+    EnumContext                 m_enumContext;
+    HWND                        m_hWnd;
+    DeviceInfo                  m_deviceInfo;
+    DeviceElement               m_deviceElements[NUM_ELEMENTS];
+    float                       m_deadZone;
+    bool                        m_valid;
 
     static BOOL CALLBACK EnumJoysticksCallback(const DIDEVICEINSTANCE* pdidInstance, void* pContext);
     static BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi, void* pContext);

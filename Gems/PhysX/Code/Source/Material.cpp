@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #include "Material.h"
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -421,14 +420,14 @@ namespace PhysX
             if (physicsMaterialNameFromPhysicsAsset.empty() ||
                 physicsMaterialNameFromPhysicsAsset == Physics::DefaultPhysicsMaterialLabel)
             {
-                materialSelection.SetMaterialId(Physics::MaterialId(), slotIndex);
+                materialSelection.SetMaterialId(Physics::MaterialId(), static_cast<int>(slotIndex));
                 continue;
             }
 
             if (auto it = FindOrCreateMaterial(physicsMaterialNameFromPhysicsAsset);
                 it != m_materials.end())
             {
-                materialSelection.SetMaterialId(Physics::MaterialId::FromUUID(it->first), slotIndex);
+                materialSelection.SetMaterialId(Physics::MaterialId::FromUUID(it->first), static_cast<int>(slotIndex));
             }
             else
             {
@@ -436,7 +435,7 @@ namespace PhysX
                     "UpdateMaterialSelectionFromPhysicsAsset: Physics material '%s' not found in the material library. Mesh material '%s' will use the default physics material.",
                     physicsMaterialNameFromPhysicsAsset.c_str(),
                     meshAsset->m_assetData.m_materialNames[slotIndex].c_str());
-                materialSelection.SetMaterialId(Physics::MaterialId(), slotIndex);
+                materialSelection.SetMaterialId(Physics::MaterialId(), static_cast<int>(slotIndex));
             }
         }
     }

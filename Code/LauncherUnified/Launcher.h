@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -9,7 +10,9 @@
 #include <AzCore/PlatformDef.h> // for AZ_COMMAND_LINE_LEN
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Memory/Memory.h>
 #include <CryCommon/platform.h>
+#include <CryCommon/LegacyAllocator.h>
 
 struct IOutputPrintSink;
 
@@ -20,15 +23,12 @@ namespace O3DELauncher
         CryAllocatorsRAII()
         {
             AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-            AZ_Assert(!AZ::AllocatorInstance<CryStringAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
 
             AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-            AZ::AllocatorInstance<CryStringAllocator>::Create();
         }
 
         ~CryAllocatorsRAII()
         {
-            AZ::AllocatorInstance<CryStringAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
         }
     };
@@ -36,7 +36,7 @@ namespace O3DELauncher
 
 #define COMMAND_LINE_ARG_COUNT_LIMIT (AZ_COMMAND_LINE_LEN+1) / 2        // Assume that the limit to how many arguments we can maintain is the max buffer size divided by 2
                                                                         // to account for an argument and a spec in between each argument (with the worse case scenario being
-                                                                    
+
     struct PlatformMainInfo
     {
         typedef bool (*ResourceLimitUpdater)();
@@ -71,7 +71,7 @@ namespace O3DELauncher
 
         void* m_window = nullptr; //!< maps to \ref SSystemInitParams::hWnd
         void* m_instance = nullptr; //!< maps to \ref SSystemInitParams::hInstance
-        IOutputPrintSink* m_printSink = nullptr; //!< maps to \ref SSystemInitParams::pPrintSync 
+        IOutputPrintSink* m_printSink = nullptr; //!< maps to \ref SSystemInitParams::pPrintSync
     };
 
     enum class ReturnCode : unsigned char

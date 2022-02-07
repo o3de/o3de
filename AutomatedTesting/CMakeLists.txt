@@ -1,17 +1,19 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
 
 if(NOT PROJECT_NAME)
     cmake_minimum_required(VERSION 3.20)
+    include(cmake/CompilerSettings.cmake)
     project(AutomatedTesting
         LANGUAGES C CXX
         VERSION 1.0.0.0
     )
-    include(EngineFinder.cmake OPTIONAL)
+    include(cmake/EngineFinder.cmake OPTIONAL)
     find_package(o3de REQUIRED)
     o3de_initialize()
 else()

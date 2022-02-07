@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -13,7 +14,7 @@ namespace ScriptCanvas
 {
     namespace Matrix4x4Nodes
     {
-        static const char* k_categoryName = "Math/Matrix4x4";
+        static constexpr const char* k_categoryName = "Math/Matrix4x4";
 
         AZ_INLINE Data::Matrix4x4Type FromColumns(const Data::Vector4Type& col0, const Data::Vector4Type& col1, const Data::Vector4Type& col2, const Data::Vector4Type& col3)
         {

@@ -28,7 +28,7 @@
     <height>29</height>
    </size>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0,0,0,0,0,0">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0,0,0,0,0">
    <property name="leftMargin">
     <number>10</number>
    </property>
@@ -42,102 +42,112 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QLabel" name="m_titleBtn">
+    <widget class="QToolButton" name="m_prefabFocusBackButton">
+     <property name="toolTip">
+      <string>Up one level</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>:/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg</normaloff>:/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg</iconset>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="AzQtComponents::BreadCrumbs" name="m_prefabFocusPath" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="contextMenuPolicy">
-      <enum>Qt::NoContextMenu</enum>
+    </widget>
+   </item>
+   <item>
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="text">
-      <string>Static</string>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
      </property>
-     <property name="indent">
-      <number>11</number>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QToolButton" name="m_cameraMenu">
+     <property name="toolTip">
+      <string>Camera settings</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>:/Menu/camera.svg</normaloff>:/Menu/camera.svg</iconset>
      </property>
     </widget>
    </item>
    <item>
-     <widget class="QToolButton" name="m_cameraMenu">
-       <property name="icon">
-         <iconset>
-           <normaloff>:/Menu/camera.svg</normaloff>:/Menu/camera.svg
-         </iconset>
-       </property>
-       <property name="toolTip">
-         <string>Camera settings</string>
-       </property>
-     </widget>
-   </item>   
-   <item>
-     <widget class="QToolButton" name="m_debugInformationMenu">
-       <property name="toolTip">
-         <string>Debug information</string>
-       </property>
-       <property name="icon">
-         <iconset>
-           <normaloff>:/Menu/debug.svg</normaloff>:/Menu/debug.svg
-         </iconset>
-       </property>
-       <property name="checkable">
-         <bool>true</bool>
-       </property>
-     </widget>
-   </item>   
-   <item>
-     <widget class="QToolButton" name="m_helpers">
-       <property name="toolTip">
-         <string>Toggle viewport helpers</string>
-       </property>
-       <property name="icon">
-         <iconset>
-           <normaloff>:/Menu/helpers.svg</normaloff>:/Menu/helpers.svg
-         </iconset>
-       </property>
-       <property name="checkable">
-         <bool>true</bool>
-       </property>
-     </widget>
-   </item>   
-   <item>
-     <widget class="QToolButton" name="m_resolutionMenu">
-       <property name="toolTip">
-         <string>Viewport resolution</string>
-       </property>
-       <property name="icon">
-         <iconset>
-           <normaloff>:/Menu/resolution.svg</normaloff>:/Menu/resolution.svg
-         </iconset>
-       </property>
-     </widget>
+    <widget class="QToolButton" name="m_debugInformationMenu">
+     <property name="toolTip">
+      <string>Debug information</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>:/Menu/debug.svg</normaloff>:/Menu/debug.svg</iconset>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
-     <widget class="QToolButton" name="m_overflowBtn">
-       <property name="toolTip">
-         <string>Other settings</string>
-       </property>
-       <property name="icon">
-         <iconset>
-           <normaloff>:/Menu/menu.svg</normaloff>:/Menu/menu.svg
-         </iconset>
-       </property>
-     </widget>
+    <widget class="QToolButton" name="m_helpers">
+     <property name="toolTip">
+      <string>Toggle viewport helpers</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>:/Menu/helpers.svg</normaloff>:/Menu/helpers.svg</iconset>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="m_resolutionMenu">
+     <property name="toolTip">
+      <string>Viewport resolution</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>:/Menu/resolution.svg</normaloff>:/Menu/resolution.svg</iconset>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QToolButton" name="m_overflowBtn">
+     <property name="toolTip">
+      <string>Other settings</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>:/Menu/menu.svg</normaloff>:/Menu/menu.svg</iconset>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AzQtComponents::ButtonDivider</class>
+   <class>AzQtComponents::BreadCrumbs</class>
    <extends>QWidget</extends>
-   <header>AzQtComponents/Components/ButtonDivider.h</header>
+   <header>AzQtComponents/Components/Widgets/BreadCrumbs.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
-  <resources>
-    <include location="../../Framework/AzQtComponents/AzQtComponents/Images/resources.qrc"/>
-  </resources>
-  <connections/>
+ <resources>
+  <include location="../../Framework/AzQtComponents/AzQtComponents/Images/resources.qrc"/>
+ </resources>
+ <connections/>
 </ui>

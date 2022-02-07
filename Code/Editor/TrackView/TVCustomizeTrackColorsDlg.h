@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -55,7 +56,7 @@ private:
 
     inline void GetQColorFromXmlNode(QColor& colorOut, const XmlNodeRef& xmlNode) const
     {
-        QRgb rgb = -1;
+        QRgb rgb = std::numeric_limits<unsigned int>::max();
         xmlNode->getAttr("color", rgb);
         colorOut.setRgb(rgb);
     };

@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "precompiled.h"
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 
@@ -28,7 +27,7 @@
 
 namespace ScriptEventsBuilder
 {
-    static const char* s_scriptEventsBuilder = "ScriptEventsBuilder";
+    [[maybe_unused]] static const char* s_scriptEventsBuilder = "ScriptEventsBuilder";
 
     Worker::Worker()
     {
@@ -120,7 +119,7 @@ namespace ScriptEventsBuilder
             AssetBuilderSDK::JobDescriptor jobDescriptor;
             jobDescriptor.m_priority = 2;
             jobDescriptor.m_critical = true;
-            jobDescriptor.m_jobKey = "Script Events";
+            jobDescriptor.m_jobKey = ScriptEvents::k_builderJobKey;
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
             jobDescriptor.m_additionalFingerprintInfo = GetFingerprintString();
 

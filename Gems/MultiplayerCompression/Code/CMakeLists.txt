@@ -1,11 +1,10 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-set(LY_ENABLE_MULTIPLAYER_COMPRESSION OFF CACHE BOOL "Enables usage of Multiplayer Compressor.")
 
 ly_add_target(
     NAME MultiplayerCompression.Static STATIC

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -80,7 +81,7 @@ namespace AZ
             if (scene)
             {
                 PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-                AZ::RPI::ViewPtr view = GetView();
+                AZ::RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
                 if (fp)
                 {
                     PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -109,7 +110,7 @@ namespace AZ
                 PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
                 if (fp)
                 {
-                    AZ::RPI::ViewPtr view = GetView();
+                    AZ::RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
                     PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
                     if (postProcessSettings)
                     {

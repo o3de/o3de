@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -14,6 +15,7 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAssetCreator.h>
+#include <Atom/RPI.Reflect/Image/DefaultStreamingImageControllerAsset.h>
 #include <Atom/RPI.Reflect/Asset/BuiltInAssetHandler.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
@@ -38,10 +40,9 @@ namespace AZ
             : public UnitTest::AssetTester<StreamingImageAsset>
         {
         public:
-            StreamingImageAssetTester()
-            {
+            StreamingImageAssetTester() = default;
+            ~StreamingImageAssetTester() override = default;
 
-            }
             void SetAssetReady(Data::Asset<StreamingImageAsset>& asset) override
             {
                 asset->SetReady();
@@ -52,7 +53,8 @@ namespace AZ
             : public UnitTest::AssetTester<ImageMipChainAsset>
         {
         public:
-            ImageMipChainAssetTester() {}
+            ImageMipChainAssetTester() = default;
+            ~ImageMipChainAssetTester() override = default;
 
             void SetAssetReady(Data::Asset<ImageMipChainAsset>& asset) override
             {
@@ -143,32 +145,11 @@ namespace UnitTest
         size_t m_expectedTimestamp = 0;
     };
 
-    class TestStreamingImageControllerAsset
-        : public AZ::RPI::StreamingImageControllerAsset
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(TestStreamingImageControllerAsset, AZ::SystemAllocator, 0);
-        AZ_RTTI(TestStreamingImageControllerAsset, "{A90B4AC0-979A-4F01-AD41-B1D32DD9DAEC}", AZ::RPI::StreamingImageControllerAsset);
-
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<TestStreamingImageControllerAsset, AZ::RPI::StreamingImageControllerAsset>();
-            }
-        }
-
-        TestStreamingImageControllerAsset()
-        {
-            m_status = AssetStatus::Ready;
-        }
-    };
-
     class StreamingImageTests
         : public RPITestFixture
     {
     private:
-        AZ::Data::Asset<TestStreamingImageControllerAsset> m_testControllerAsset;
+        AZ::Data::Asset<AZ::RPI::DefaultStreamingImageControllerAsset> m_testControllerAsset;
 
     protected:
         AZ::RPI::BuiltInAssetHandler* m_testControllerAssetHandler;
@@ -179,7 +160,7 @@ namespace UnitTest
         AZ::Data::Instance<AZ::RPI::StreamingImagePool> m_defaultPool = nullptr;
 
         StreamingImageTests()
-            : m_testControllerAssetId("{9202CEC4-4E31-443C-ABE8-512B3E896448}")
+            : m_testControllerAssetId(AZ::RPI::DefaultStreamingImageControllerAsset::BuiltInAssetId)
         {}
 
         void SetUp() override
@@ -189,23 +170,12 @@ namespace UnitTest
             RPITestFixture::SetUp();
 
             auto* serializeContext = GetSerializeContext();
-            TestStreamingImageControllerAsset::Reflect(serializeContext);
             TestStreamingImagePoolDescriptor::Reflect(serializeContext);
 
-            m_testControllerAssetHandler = aznew RPI::BuiltInAssetHandler(
-                azrtti_typeid<TestStreamingImageControllerAsset>(), 
-                []() { return aznew TestStreamingImageControllerAsset(); });
-            m_testControllerAssetHandler->Register();
-            m_testControllerAsset = Data::AssetManager::Instance().CreateAsset<TestStreamingImageControllerAsset>(m_testControllerAssetId);
-
-            Data::InstanceDatabase<RPI::StreamingImageController>::Instance().AddHandler(
-                azrtti_typeid<TestStreamingImageControllerAsset>(),
-                [](Data::AssetData*) { return aznew TestStreamingImageController(); });
-            
             m_imageHandler = Data::AssetManager::Instance().GetHandler(RPI::StreamingImageAsset::RTTI_Type());
             m_mipChainHandler = Data::AssetManager::Instance().GetHandler(RPI::ImageMipChainAsset::RTTI_Type());
 
-            AZ::Data::Asset < AZ::RPI::StreamingImagePoolAsset > poolAsset = BuildImagePoolAsset(16 * 1024 * 1024);
+            AZ::Data::Asset<AZ::RPI::StreamingImagePoolAsset> poolAsset = BuildImagePoolAsset(16 * 1024 * 1024);
             m_defaultPool = AZ::RPI::StreamingImagePool::FindOrCreate(poolAsset);
         }
 
@@ -215,10 +185,6 @@ namespace UnitTest
             RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
 
             m_defaultPool = nullptr;
-
-            m_testControllerAsset.Release();
-            delete m_testControllerAssetHandler;
-            Data::InstanceDatabase<RPI::StreamingImageController>::Instance().RemoveHandler(azrtti_typeid<TestStreamingImageControllerAsset>());
 
             RPITestFixture::TearDown();
         }
@@ -336,7 +302,7 @@ namespace UnitTest
 
             {
                 Data::Asset<RPI::StreamingImageControllerAsset> asset = poolAsset->GetControllerAsset();
-                EXPECT_TRUE(azrtti_typeid<TestStreamingImageControllerAsset>() == asset.GetType());
+                EXPECT_TRUE(azrtti_typeid<RPI::DefaultStreamingImageControllerAsset>() == asset.GetType());
             }
         }
 
@@ -454,7 +420,7 @@ namespace UnitTest
             assetCreator.SetPoolDescriptor(AZStd::make_unique<TestStreamingImagePoolDescriptor>(budgetInBytes));
 
             assetCreator.SetControllerAsset(
-                Data::AssetManager::Instance().GetAsset<TestStreamingImageControllerAsset>(
+                Data::AssetManager::Instance().GetAsset<RPI::DefaultStreamingImageControllerAsset>(
                     m_testControllerAssetId,
                     Data::AssetLoadBehavior::PreLoad)
             );
@@ -524,7 +490,6 @@ namespace UnitTest
 
         const uint16_t mipLevels = 1;
         const uint16_t arraySize = 1;
-        const uint16_t pixelSize = 4;
 
         Data::Asset<RPI::ImageMipChainAsset> mipChain;
 

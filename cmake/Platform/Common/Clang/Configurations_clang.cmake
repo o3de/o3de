@@ -1,6 +1,7 @@
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -15,31 +16,23 @@ ly_append_configurations_options(
         -Wall
         -Werror
 
-        # Disabled warnings (please do not disable any others without first consulting ly-warnings)
+        ###################
+        # Disabled warnings (please do not disable any others without first consulting sig-build)
+        ###################
+        -Wno-inconsistent-missing-override # unfortunately there is no warning in MSVC to detect missing overrides, 
+            # MSVC's static analyzer can, but that is a different run that most developers are not aware of. A pass
+            # was done to fix all hits. Leaving this disabled until there is a matching warning in MSVC.
+
         -Wrange-loop-analysis
-        -Wno-unknown-warning-option       
-        "-Wno-#pragma-messages"
-        -Wno-absolute-value
-        -Wno-dynamic-class-memaccess
-        -Wno-format-security
-        -Wno-inconsistent-missing-override
-        -Wno-invalid-offsetof
-        -Wno-multichar
+        -Wno-unknown-warning-option # used as a way to mark warnings that are MSVC only
         -Wno-parentheses
         -Wno-reorder
-        -Wno-self-assign
         -Wno-switch
-        -Wno-tautological-compare
         -Wno-undefined-var-template
-        -Wno-unknown-pragmas
-        -Wno-unused-function
-        -Wno-unused-private-field
-        -Wno-unused-value
-        -Wno-unused-variable
-        -Wno-non-pod-varargs
-        -Wno-unused-lambda-capture
-        # Workaround for compiler seeing file case differently from what OS show in console.
-        -Wno-nonportable-include-path
+        
+        ###################
+        # Enabled warnings (that are disabled by default)
+        ###################
 
     COMPILATION_DEBUG
         -O0 # No optimization

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -16,18 +17,18 @@ namespace EMStudio
     // layout file header
     struct LayoutHeader
     {
-        char    mFileTypeCode[9];   // "EMSLAYOUT", otherwise no valid layout file
-        uint32  mEMFXVersionHigh;   // EMotion FX high version as used in EMStudio
-        uint32  mEMFXVersionLow;    // EMotion FX low version as used in EMStudio
-        char    mEMFXCompileDate[64];// EMotion FX compile date
-        uint32  mLayoutVersionHigh; // layout file type high version
-        uint32  mLayoutVersionLow;  // layout file type low version
-        char    mCompileDate[64];   // EMStudio compile date
-        char    mDescription[256];  // optional description of the layout
-        uint32  mNumPlugins;        // the number of plugins
+        char    m_fileTypeCode[9];   // "EMSLAYOUT", otherwise no valid layout file
+        uint32  m_emfxVersionHigh;   // EMotion FX high version as used in EMStudio
+        uint32  m_emfxVersionLow;    // EMotion FX low version as used in EMStudio
+        char    m_emfxCompileDate[64];// EMotion FX compile date
+        uint32  m_layoutVersionHigh; // layout file type high version
+        uint32  m_layoutVersionLow;  // layout file type low version
+        char    m_compileDate[64];   // EMStudio compile date
+        char    m_description[256];  // optional description of the layout
+        uint32  m_numPlugins;        // the number of plugins
 
         // followed by:
-        //      LayoutPluginHeader[mNumPlugins]
+        //      LayoutPluginHeader[m_numPlugins]
         //      uint32 mainWindowStateSize
         //      int8 mainWindowState[mainWindowStateSize]
     };
@@ -35,13 +36,13 @@ namespace EMStudio
     // the plugin data header
     struct LayoutPluginHeader
     {
-        uint32  mDataSize;          // data size of the data which the given plugin will store
-        char    mPluginName[128];   // the name of the plugin (its ID to create as passed to PluginManager::CreateWindowOfType)
-        char    mObjectName[128];
-        uint32  mDataVersion;       // the data version, to for backward compatibility of loading individual plugin settings from layout files
+        uint32  m_dataSize;          // data size of the data which the given plugin will store
+        char    m_pluginName[128];   // the name of the plugin (its ID to create as passed to PluginManager::CreateWindowOfType)
+        char    m_objectName[128];
+        uint32  m_dataVersion;       // the data version, to for backward compatibility of loading individual plugin settings from layout files
 
         // followed by:
-        //      int8    pluginData[mDataSize]
+        //      int8    pluginData[m_dataSize]
     };
 
     class EMSTUDIO_API LayoutManager
@@ -61,7 +62,7 @@ namespace EMStudio
 
         InputDialogValidatable* GetSaveLayoutNameDialog();
     private:
-        bool mIsSwitching;
+        bool m_isSwitching;
         InputDialogValidatable* m_inputDialog = nullptr;
     };
 }   // namespace EMStudio

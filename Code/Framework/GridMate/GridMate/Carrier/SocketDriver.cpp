@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -17,7 +18,6 @@
 //#define AZ_LOG_UNBOUND_SEND_RECEIVE
 
 #include <GridMate/Containers/unordered_set.h>
-#include <GridMate/String/string.h>
 #include <GridMate/Carrier/DriverEvents.h>
 
 #include <AzCore/std/chrono/types.h>
@@ -497,7 +497,7 @@ namespace GridMate
         }
     }
 
-    SocketDriverAddress::SocketDriverAddress(Driver* driver, const string& ip, unsigned int port)
+    SocketDriverAddress::SocketDriverAddress(Driver* driver, const AZStd::string& ip, unsigned int port)
         : DriverAddress(driver)
     {
         AZ_Assert(!ip.empty(), "Invalid address string!");
@@ -574,7 +574,7 @@ namespace GridMate
         return !(*this == rhs);
     }
 
-    string SocketDriverAddress::ToString() const
+    AZStd::string SocketDriverAddress::ToString() const
     {
         char ip[64];
         unsigned short port;
@@ -589,15 +589,15 @@ namespace GridMate
             port = ntohs(m_sockAddr.sin_port);
         }
 
-        return string::format("%s|%d", ip, port);
+        return AZStd::string::format("%s|%d", ip, port);
     }
 
-    string SocketDriverAddress::ToAddress() const
+    AZStd::string SocketDriverAddress::ToAddress() const
     {
         return ToString();
     }
 
-    string SocketDriverAddress::GetIP() const
+    AZStd::string SocketDriverAddress::GetIP() const
     {
         char ip[64];
         if (m_sockAddr.sin_family == AF_INET6)
@@ -608,7 +608,7 @@ namespace GridMate
         {
             inet_ntop(AF_INET, const_cast<void*>(reinterpret_cast<const void*>(&m_sockAddr.sin_addr)), ip, AZ_ARRAY_SIZE(ip));
         }
-        return string(ip);
+        return AZStd::string(ip);
     }
 
     unsigned int SocketDriverAddress::GetPort() const
@@ -1081,7 +1081,7 @@ namespace GridMate
         };
         sockaddr* sockAddr = reinterpret_cast<sockaddr*>(&sockAddrIn6);
         socklen_t sockAddrLen = sizeof(sockAddrIn6);
-        from = NULL;
+        from = nullptr;
 
         unsigned int recvd = m_platformDriver->Receive(data, maxDataSize, sockAddr, sockAddrLen, resultCode);
 
@@ -1143,11 +1143,11 @@ namespace GridMate
     // CreateSocketDriver
     // [3/4/2013]
     //=========================================================================
-    string
+    AZStd::string
     SocketDriverCommon::IPPortToAddressString(const char* ip, unsigned int port)
     {
         AZ_Assert(ip != nullptr, "Invalid address!");
-        return string::format("%s|%d", ip, port);
+        return AZStd::string::format("%s|%d", ip, port);
     }
 
     //=========================================================================
@@ -1155,17 +1155,17 @@ namespace GridMate
     // [3/4/2013]
     //=========================================================================
     bool
-    SocketDriverCommon::AddressStringToIPPort(const string& address, string& ip, unsigned int& port)
+    SocketDriverCommon::AddressStringToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port)
     {
         AZStd::size_t pos = address.find('|');
-        AZ_Assert(pos != string::npos, "Invalid driver address!");
-        if (pos == string::npos)
+        AZ_Assert(pos != AZStd::string::npos, "Invalid driver address!");
+        if (pos == AZStd::string::npos)
         {
             return false;
         }
 
-        ip = string(address.begin(), address.begin() + pos);
-        port = AZStd::stoi(string(address.begin() + pos + 1, address.end()));
+        ip = AZStd::string(address.begin(), address.begin() + pos);
+        port = AZStd::stoi(AZStd::string(address.begin() + pos + 1, address.end()));
 
         return true;
     }
@@ -1175,16 +1175,16 @@ namespace GridMate
     // [7/11/2013]
     //=========================================================================
     Driver::BSDSocketFamilyType
-    SocketDriverCommon::AddressFamilyType(const string& ip)
+    SocketDriverCommon::AddressFamilyType(const AZStd::string& ip)
     {
         // TODO: We can/should use inet_ntop() to detect the family type
         AZStd::size_t pos = ip.find(".");
-        if (pos != string::npos)
+        if (pos != AZStd::string::npos)
         {
             return BSD_AF_INET;
         }
         pos = ip.find("::");
-        if (pos != string::npos)
+        if (pos != AZStd::string::npos)
         {
             return BSD_AF_INET6;
         }
@@ -1197,17 +1197,17 @@ namespace GridMate
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
     //=========================================================================
-    // CreateDriverAddress(const string&)
+    // CreateDriverAddress(const AZStd::string&)
     // [1/12/2011]
     //=========================================================================
     AZStd::intrusive_ptr<DriverAddress>
-    SocketDriver::CreateDriverAddress(const string& address)
+    SocketDriver::CreateDriverAddress(const AZStd::string& address)
     {
-        string ip;
+        AZStd::string ip;
         unsigned int port;
         if (!AddressToIPPort(address, ip, port))
         {
-            return NULL;
+            return nullptr;
         }
 
         SocketDriverAddress drvAddr(this, ip, port);
@@ -1242,7 +1242,7 @@ namespace GridMate
     namespace Utils
     {
         // \note function moved here to use addinfo when IPV6 is not in use, consider moving those definitions to a header file
-        bool GetIpByHostName(int familyType, const char* hostName, string& ip)
+        bool GetIpByHostName(int familyType, const char* hostName, AZStd::string& ip)
         {
             static const size_t kMaxLen = 64; // max length of ipv6 ip is 45 chars, so all ips should be able to fit in this buf
             char ipBuf[kMaxLen];
@@ -1313,7 +1313,7 @@ namespace GridMate
                     fd_set fdwrite;
                     FD_ZERO(&fdwrite);
                     FD_SET(m_socket, &fdwrite);
-                    select(FD_SETSIZE, 0, &fdwrite, 0, 0);
+                    select(FD_SETSIZE, nullptr, &fdwrite, nullptr, nullptr);
                     continue;
                 }
 
@@ -1376,7 +1376,7 @@ namespace GridMate
         FD_SET(m_socket, &fdread);
         timeval t = Platform::GetTimeValue(timeOut);
 
-        int result = select(FD_SETSIZE, &fdread, 0, 0, &t);
+        int result = select(FD_SETSIZE, &fdread, nullptr, nullptr, &t);
         if (result > 0)
         {
             m_parent.m_isStoppedWaitForData = true;
@@ -1527,7 +1527,7 @@ namespace GridMate
         if (0 != WSAIoctl( m_socket, SIO_GET_MULTIPLE_EXTENSION_FUNCTION_POINTER, &functionTableId,
             sizeof(GUID), (void**)&m_RIO_FN_TABLE,  sizeof(m_RIO_FN_TABLE), &dwBytes, 0, 0))
         {
-            AZ_Error("GridMate", false, "Could not initialize RIO: %u\n", ::WSAGetLastError());
+            AZ_Error("GridMate", false, "Could not initialize RIO: %u\n", GridMate::Platform::GetSocketError());
             return EC_SOCKET_CREATE;
         }
         else
@@ -1542,13 +1542,13 @@ namespace GridMate
 
             if ((m_events[WakeupOnSend] = WSACreateEvent()) == WSA_INVALID_EVENT)
             {
-                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
             if ((m_events[ReceiveEvent] = WSACreateEvent()) == WSA_INVALID_EVENT)
             {
-                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
             RIO_NOTIFICATION_COMPLETION typeRecv;
@@ -1558,13 +1558,13 @@ namespace GridMate
             m_RIORecvQueue = m_RIO_FN_TABLE.RIOCreateCompletionQueue(maxOutstandingReceive, &typeRecv);
             if (m_RIORecvQueue == RIO_INVALID_CQ)
             {
-                AZ_Error("GridMate", false, "Could not RIOCreateCompletionQueue: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not RIOCreateCompletionQueue: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
             if ((m_events[SendEvent] = WSACreateEvent()) == WSA_INVALID_EVENT)
             {
-                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
             RIO_NOTIFICATION_COMPLETION typeSend;
@@ -1574,7 +1574,7 @@ namespace GridMate
             m_RIOSendQueue = m_RIO_FN_TABLE.RIOCreateCompletionQueue(maxOutstandingSend, &typeSend);
             if (m_RIOSendQueue == RIO_INVALID_CQ)
             {
-                AZ_Error("GridMate", false, "Could not RIOCreateCompletionQueue: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not RIOCreateCompletionQueue: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
@@ -1582,7 +1582,7 @@ namespace GridMate
                 maxReceiveDataBuffers, maxOutstandingSend, maxSendDataBuffers, m_RIORecvQueue,  m_RIOSendQueue, pContext);
             if (m_requestQueue == RIO_INVALID_RQ)
             {
-                AZ_Error("GridMate", m_requestQueue != NULL, "Could not RIOCreateRequestQueue: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", m_requestQueue != NULL, "Could not RIOCreateRequestQueue: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
@@ -1595,24 +1595,24 @@ namespace GridMate
             //Setup Recv raw buffer and RIO record
             if (nullptr == (m_rawRecvBuffer = AllocRIOBuffer(bufferSize, m_RIORecvBufferCount, &recvAllocated)))
             {
-                AZ_Error("GridMate", false, "Could not allocate buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not allocate buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
             if (RIO_INVALID_BUFFERID == (recvBufferId = m_RIO_FN_TABLE.RIORegisterBuffer(m_rawRecvBuffer, bufferSize * m_RIORecvBufferCount)))
             {
-                AZ_Error("GridMate", false, "Could not register buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not register buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
             //Setup Recv address raw buffer and RIO record
             if (nullptr == (m_rawRecvAddressBuffer = AllocRIOBuffer(sizeof(SOCKADDR_INET), m_RIORecvBufferCount, &recvAddrsAllocated)))
             {
-                AZ_Error("GridMate", false, "Could not allocate buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not allocate buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
             if (RIO_INVALID_BUFFERID == (recvAddressBufferId = m_RIO_FN_TABLE.RIORegisterBuffer(m_rawRecvAddressBuffer, sizeof(SOCKADDR_INET) * m_RIORecvBufferCount)))
             {
-                AZ_Error("GridMate", false, "Could not register buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not register buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
@@ -1639,7 +1639,7 @@ namespace GridMate
                 //Start Receive Handler
                 if (false == m_RIO_FN_TABLE.RIOReceiveEx(m_requestQueue, &m_RIORecvBuffer[i], 1, NULL, &m_RIORecvAddressBuffer[i], NULL, NULL, 0, pBuffer))
                 {
-                    AZ_Error("GridMate", false, "Could not RIOReceive: %u\n", ::WSAGetLastError());
+                    AZ_Error("GridMate", false, "Could not RIOReceive: %u\n", GridMate::Platform::GetSocketError());
                     return EC_SOCKET_CREATE;
                 }
             }
@@ -1649,25 +1649,25 @@ namespace GridMate
             //setup send raw buffer and RIO record
             if (nullptr == (m_rawSendBuffer = AllocRIOBuffer(bufferSize, m_RIOSendBufferCount, &sendAllocated)))
             {
-                AZ_Error("GridMate", false, "Could not allocate buffer: %u", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not allocate buffer: %u", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
             if (RIO_INVALID_BUFFERID == (sendBufferId = m_RIO_FN_TABLE.RIORegisterBuffer(m_rawSendBuffer, m_RIOSendBufferCount * bufferSize)))
             {
-                AZ_Error("GridMate", false, "Could not register buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not register buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
             //setup send address raw buffer and RIO record
             if (nullptr == (m_rawSendAddressBuffer = AllocRIOBuffer(sizeof(SOCKADDR_INET), m_RIOSendBufferCount, &sendAddrsAllocated)))
             {
-                AZ_Error("GridMate", false, "Could not allocate send address buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not allocate send address buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
             if (RIO_INVALID_BUFFERID == (sendAddressBufferId = m_RIO_FN_TABLE.RIORegisterBuffer(m_rawSendAddressBuffer, m_RIOSendBufferCount * sizeof(SOCKADDR_INET))))
             {
-                AZ_Error("GridMate", false, "Could not register buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not register buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
@@ -1694,7 +1694,7 @@ namespace GridMate
         //worker packet send thread
         AZStd::thread_desc workerSendThreadDesc;
         workerSendThreadDesc.m_name = "GridMate-Carrier Packet Send Thread";
-        m_workerSendThread = AZStd::thread(AZStd::bind(&SocketDriverCommon::RIOPlatformSocketDriver::WorkerSendThread, this), &workerSendThreadDesc);
+        m_workerSendThread = AZStd::thread(workerSendThreadDesc, AZStd::bind(&SocketDriverCommon::RIOPlatformSocketDriver::WorkerSendThread, this));
         if (m_workerSendThread.get_id() == AZStd::native_thread_invalid_id)
         {
             AZ_Error("GridMate", false, "Could not create worker thread.");
@@ -1725,7 +1725,7 @@ namespace GridMate
                     if (!m_RIO_FN_TABLE.RIOSendEx(m_requestQueue, &m_RIOSendBuffer[m_workerNextSendBuffer],
                         bufferCount, NULL, &m_RIOSendAddressBuffer[m_workerNextSendBuffer], NULL, NULL, 0, 0))
                     {
-                        const DWORD lastError = ::WSAGetLastError();
+                        const DWORD lastError = GridMate::Platform::GetSocketError();
                         if (lastError == WSAENOBUFS)
                         {
                             continue;   //spin until free
@@ -1835,7 +1835,7 @@ namespace GridMate
             if (false == m_RIO_FN_TABLE.RIOReceiveEx(m_requestQueue, &m_RIORecvBuffer[m_RIONextRecvBuffer],
                 bufferCount, NULL, &m_RIORecvAddressBuffer[m_RIONextRecvBuffer], NULL, NULL, 0, 0))
             {
-                AZ_Error("GridMate", false, "Could not RIOReceive: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not RIOReceive: %u\n", GridMate::Platform::GetSocketError());
             }
 
             if (recvd)
@@ -1866,7 +1866,7 @@ namespace GridMate
         {
             if (!WSAResetEvent(m_events[Index - WSA_WAIT_EVENT_0]))
             {
-                AZ_Assert(false, "WSAResetEvent failed with error = %d\n", ::WSAGetLastError());
+                AZ_Assert(false, "WSAResetEvent failed with error = %d\n", GridMate::Platform::GetSocketError());
             }
         };
 
@@ -1925,7 +1925,7 @@ namespace GridMate
         }
         else if (isFailed(Index))
         {
-            AZ_Assert(false, "WSAWaitForMultipleEvents failed with error = %d\n", ::WSAGetLastError());
+            AZ_Assert(false, "WSAWaitForMultipleEvents failed with error = %d\n", GridMate::Platform::GetSocketError());
             return false;
         }
         else
@@ -1944,7 +1944,7 @@ namespace GridMate
     {
         if (!SetEvent(m_events[WakeupOnSend])) //Wake thread
         {
-            AZ_Assert(false, "SetEvent failed with error = %d\n", ::WSAGetLastError());
+            AZ_Assert(false, "SetEvent failed with error = %d\n", GridMate::Platform::GetSocketError());
         }
     }
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -36,17 +37,17 @@ namespace ScriptCanvas
             SetDescription("The Script Event asset this node uses has changed. This node is no longer valid. You can fix this by deleting this node, re-adding it and reconnecting it.");
         }
         
-        bool CanAutoFix() const
+        bool CanAutoFix() const override
         {
             return false;
         }
         
-        AZStd::string GetIdentifier() const
+        AZStd::string GetIdentifier() const override
         {
             return DataValidationIds::ScriptEventVersionMismatchId;
         }
         
-        AZ::Crc32 GetIdCrc() const
+        AZ::Crc32 GetIdCrc() const override
         {
             return DataValidationIds::ScriptEventVersionMismatchCrc;
         }
@@ -56,7 +57,7 @@ namespace ScriptCanvas
             return m_definition;
         }
 
-        AZStd::string_view GetTooltip() const
+        AZStd::string_view GetTooltip() const override
         {
             return "The Script Event asset has changed, you can fix this problem by deleting the out of date node and re-adding it to your graph.";
         }

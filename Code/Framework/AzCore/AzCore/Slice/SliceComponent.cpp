@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -12,6 +13,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/algorithm.h>
@@ -197,7 +199,7 @@ namespace AZ
         const EntityIdToEntityIdMap* remapFromIdToId/*=nullptr*/,
         const DataFlagsTransformFunction& dataFlagsTransformFn/*=nullptr*/)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         for (const auto& entityIdFlagsMapPair : from.m_entityToDataFlags)
         {
@@ -239,7 +241,7 @@ namespace AZ
     //=========================================================================
     DataPatch::FlagsMap SliceComponent::DataFlagsPerEntity::GetDataFlagsForPatching(const EntityIdToEntityIdMap* remapFromIdToId /*=nullptr*/) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         // Collect together data flags from all entities
         DataPatch::FlagsMap dataFlagsForAllEntities;
@@ -422,7 +424,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::DataFlagsPerEntity::Cleanup(const EntityList& validEntities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         EntityIdSet validEntityIds;
         for (const Entity* entity : validEntities)
@@ -676,7 +678,7 @@ namespace AZ
     //=========================================================================
     SliceComponent::SliceInstance* SliceComponent::SliceReference::PrepareCreateInstance(const SliceInstanceId& sliceInstanceId, bool allowUninstantiated)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         // create an empty instance (just copy of the existing data)
         SliceInstance* instance = CreateEmptyInstance(sliceInstanceId);
@@ -736,7 +738,7 @@ namespace AZ
         AZ::SerializeContext* serializeContext,
         const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (!remapContainer)
         {
@@ -807,7 +809,7 @@ namespace AZ
     SliceComponent::SliceInstance* SliceComponent::SliceReference::CreateInstance(const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper, 
         SliceInstanceId sliceInstanceId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         // Validate that we are able to create an instance at this time
         // If we are instantiated then this includes verifying that we have a valid component and asset
@@ -841,7 +843,7 @@ namespace AZ
         const EntityIdToEntityIdMap assetToLiveIdMap,
         SliceInstanceId sliceInstanceId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         // Validate that we are able to create an instance at this time
         // This includes verifying that we are instantiated, and have a valid component and asset
@@ -882,7 +884,7 @@ namespace AZ
     SliceComponent::SliceInstance* SliceComponent::SliceReference::CloneInstance(SliceComponent::SliceInstance* instance, 
                                                                                  SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         // check if source instance belongs to this slice reference
         auto findIt = AZStd::find_if(m_instances.begin(), m_instances.end(), [instance](const SliceInstance& element) -> bool { return &element == instance; });
@@ -1052,7 +1054,7 @@ namespace AZ
     //=========================================================================
     bool SliceComponent::SliceReference::Instantiate(const AZ::ObjectStream::FilterDescriptor& filterDesc)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (m_isInstantiated)
         {
@@ -1144,7 +1146,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::SliceReference::InstantiateInstance(SliceInstance& instance, const AZ::ObjectStream::FilterDescriptor& filterDesc)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         // Could have set this during SliceInstance() constructor, but we wait until instantiation since it involves allocation.
         instance.m_dataFlags.SetIsValidEntityFunction([&instance](EntityId entityId) { return instance.IsValidEntity(entityId); });
@@ -1166,7 +1168,7 @@ namespace AZ
         // An empty map indicates its a fresh instance (i.e. has never be instantiated and then serialized).
         if (entityIdMap.empty())
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "SliceComponent::SliceReference::InstantiateInstance:FreshInstanceClone");
+            AZ_PROFILE_SCOPE(AzCore, "SliceComponent::SliceReference::InstantiateInstance:FreshInstanceClone");
 
             // Generate new Ids and populate the map.
             AZ_Assert(!dataPatch.IsValid(), "Data patch is valid for slice instance, but entity Id map is not!");
@@ -1174,7 +1176,7 @@ namespace AZ
         }
         else
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "SliceComponent::SliceReference::InstantiateInstance:CloneAndApplyDataPatches");
+            AZ_PROFILE_SCOPE(AzCore, "SliceComponent::SliceReference::InstantiateInstance:CloneAndApplyDataPatches");
 
             // Clone entities while applying any data patches.
             AZ_Assert(dataPatch.IsValid(), "Data patch is not valid for existing slice instance!");
@@ -1260,7 +1262,7 @@ namespace AZ
         // Broadcast OnSliceEntitiesLoaded for freshly instantiated entities.
         if (!instance.m_instantiated->m_entities.empty())
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "SliceComponent::SliceReference::InstantiateInstance:OnSliceEntitiesLoaded");
+            AZ_PROFILE_SCOPE(AzCore, "SliceComponent::SliceReference::InstantiateInstance:OnSliceEntitiesLoaded");
             SliceAssetSerializationNotificationBus::Broadcast(&SliceAssetSerializationNotificationBus::Events::OnSliceEntitiesLoaded, instance.m_instantiated->m_entities);
         }
     }
@@ -1362,7 +1364,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::SliceReference::ComputeDataPatch()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         // Get source entities from the base asset (instantiate if needed)
         InstantiatedContainer source(m_asset.Get()->GetComponent(), false);
@@ -1498,7 +1500,7 @@ namespace AZ
     //=========================================================================
     bool SliceComponent::GetEntities(EntityList& entities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         bool result = true;
 
@@ -1531,7 +1533,7 @@ namespace AZ
     //=========================================================================
     bool SliceComponent::GetEntityIds(EntityIdSet& entities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         bool result = true;
 
@@ -1581,7 +1583,7 @@ namespace AZ
     //=========================================================================
     bool SliceComponent::GetMetadataEntityIds(EntityIdSet& metadataEntities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         bool result = true;
 
@@ -1653,7 +1655,7 @@ namespace AZ
     //=========================================================================
     SliceComponent::InstantiateResult SliceComponent::Instantiate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         AZStd::unique_lock<AZStd::recursive_mutex> lock(m_instantiateMutex);
 
         if (m_slicesAreInstantiated)
@@ -1855,7 +1857,7 @@ namespace AZ
     SliceComponent::SliceInstanceAddress SliceComponent::AddSliceUsingExistingEntities(const Data::Asset<SliceAsset>& sliceAsset, const AZ::SliceComponent::EntityIdToEntityIdMap& liveToAssetMap,
         SliceInstanceId sliceInstanceId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (!sliceAsset.Get()->GetComponent())
         {
@@ -2336,7 +2338,7 @@ namespace AZ
     //=========================================================================
     bool SliceComponent::RemoveSliceInstance(SliceComponent::SliceInstanceAddress sliceAddress)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         if (!sliceAddress.IsValid())
         {
             AZ_Error("Slices", false, "Slice address is invalid.");
@@ -2473,7 +2475,7 @@ namespace AZ
 
     bool SliceComponent::RemoveMetaDataEntity(EntityId metaDataEntityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         GetEntityInfoMap(); // Ensure map is built
 
@@ -2566,7 +2568,7 @@ namespace AZ
 
     void SliceComponent::RemoveAllEntities(bool deleteEntities, bool removeEmptyInstances)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         // If we are deleting the entities, we need to do that one by one
         if (deleteEntities)
@@ -2929,7 +2931,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::OnAssetReloaded(Data::Asset<Data::AssetData> /*asset*/)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (!m_myAsset)
         {
@@ -3072,7 +3074,7 @@ namespace AZ
         /// Called right after we finish writing data to the instance pointed at by classPtr.
         void OnWriteEnd(void* classPtr) override
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             SliceComponent* sliceComponent = reinterpret_cast<SliceComponent*>(classPtr);
             EBUS_EVENT(SliceAssetSerializationNotificationBus, OnWriteDataToSliceAssetEnd, *sliceComponent);
@@ -3081,7 +3083,7 @@ namespace AZ
             // We can't broadcast this event for instanced entities yet, since they don't exist until instantiation.
             if (!sliceComponent->GetNewEntities().empty())
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "SliceComponentSerializationEvents::OnWriteEnd:OnSliceEntitiesLoaded");
+                AZ_PROFILE_SCOPE(AzCore, "SliceComponentSerializationEvents::OnWriteEnd:OnSliceEntitiesLoaded");
                 EBUS_EVENT(SliceAssetSerializationNotificationBus, OnSliceEntitiesLoaded, sliceComponent->GetNewEntities());
             }
         }
@@ -3092,7 +3094,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::PrepareSave()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (m_slicesAreInstantiated)
         {
@@ -3261,7 +3263,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::BuildEntityInfoMap()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         m_entityInfoMap.clear();
         m_metaDataEntityInfoMap.clear();
@@ -3424,7 +3426,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::BuildDataFlagsForInstances()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(IsInstantiated(), "Slice must be instantiated before the ancestry of its data flags can be calculated.");
 
         // Use lock since slice instantiation can occur from multiple threads
@@ -3463,7 +3465,7 @@ namespace AZ
     const SliceComponent::DataFlagsPerEntity* SliceComponent::GetCorrectBundleOfDataFlags(EntityId entityId) const
     {
         // It would be possible to search non-instantiated slices by crawling over lists, but we haven't needed the capability yet.
-        AZ_Assert(IsInstantiated(), "Data flag access is only permitted after slice is instantiated.")
+        AZ_Assert(IsInstantiated(), "Data flag access is only permitted after slice is instantiated.");
 
         if (IsInstantiated())
         {
@@ -3550,7 +3552,7 @@ namespace AZ
     {
         // if this function is a performance bottleneck, it could be optimized with caching
         // be wary not to create the cache in-game if the information is only needed by tools
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (!IsInstantiated())
         {
@@ -3729,7 +3731,7 @@ namespace AZ
     //=========================================================================
     SliceComponent* SliceComponent::Clone(AZ::SerializeContext& serializeContext, SliceInstanceToSliceInstanceMap* sourceToCloneSliceInstanceMap) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         SliceComponent* clonedComponent = serializeContext.CloneObject(this);
 
@@ -3838,6 +3840,7 @@ namespace AZ
                 {
                     if (instance->GetId() == existingInstance.GetId())
                     {
+                        AZ_UNUSED(sliceReference); // Prevent unused warning in release builds
                         AZ_Warning("Slice", false, "Multiple slice instances with the same ID from slice %s were found. The last instance found has been loaded.",
                             sliceReference.GetSliceAsset().GetHint().c_str());
                         return true;

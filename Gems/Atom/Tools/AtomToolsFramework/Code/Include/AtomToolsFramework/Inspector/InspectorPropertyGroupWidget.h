@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -40,7 +41,9 @@ namespace AtomToolsFramework
             AzToolsFramework::IPropertyEditorNotify* instanceNotificationHandler = {},
             QWidget* parent = {},
             const AZ::u32 saveStateKey = {},
-            const AzToolsFramework::InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction = {});
+            const AzToolsFramework::InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction = {},
+            const AzToolsFramework::IndicatorQueryFunction& indicatorQueryFunction = {},
+            int leafIndentSize = 16);
 
         void Refresh() override;
         void Rebuild() override;

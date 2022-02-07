@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -107,7 +108,7 @@ namespace AZ
                     BusDisconnect();
                 }
 
-                bool OnPreAssert(const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/)
+                bool OnPreAssert(const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override
                 {
                     m_assertTriggered = true;
                     return true;
@@ -331,7 +332,7 @@ namespace AZ
             {
                 SceneGraph testSceneGraph;
                 AZStd::shared_ptr<DataTypes::MockIGraphObject> testDataObject = AZStd::make_shared<DataTypes::MockIGraphObject>();
-                SceneGraph::NodeIndex firstChildNodeIndex = testSceneGraph.AddChild(testSceneGraph.GetRoot(), "FirstChild", AZStd::move(testDataObject));
+                testSceneGraph.AddChild(testSceneGraph.GetRoot(), "FirstChild", AZStd::move(testDataObject));
 
                 testDataObject = AZStd::make_shared<DataTypes::MockIGraphObject>();
                 SceneGraph::NodeIndex testNodeIndex = testSceneGraph.AddChild(testSceneGraph.GetRoot(), "SecondChild", AZStd::move(testDataObject));
@@ -349,7 +350,7 @@ namespace AZ
                 SceneGraph::NodeIndex testRootNodeIndex = testSceneGraph.AddChild(testSceneGraph.GetRoot(), "testRoot", AZStd::move(testDataObject));
 
                 testDataObject = AZStd::make_shared<DataTypes::MockIGraphObject>();
-                SceneGraph::NodeIndex firstChildNodeIndex = testSceneGraph.AddChild(testRootNodeIndex, "FirstChild", AZStd::move(testDataObject));
+                testSceneGraph.AddChild(testRootNodeIndex, "FirstChild", AZStd::move(testDataObject));
 
                 testDataObject = AZStd::make_shared<DataTypes::MockIGraphObject>();
                 SceneGraph::NodeIndex testNodeIndex = testSceneGraph.AddChild(testRootNodeIndex, "SecondChild", AZStd::move(testDataObject));
@@ -370,10 +371,10 @@ namespace AZ
                 SceneGraph::NodeIndex testRootNodeSiblingIndex = testSceneGraph.AddChild(testSceneGraph.GetRoot(), "testRootSibling", AZStd::move(testDataObject));
 
                 testDataObject = AZStd::make_shared<DataTypes::MockIGraphObject>();
-                SceneGraph::NodeIndex firstChildNodeIndex = testSceneGraph.AddChild(testRootNodeIndex, "FirstChild", AZStd::move(testDataObject));
+                testSceneGraph.AddChild(testRootNodeIndex, "FirstChild", AZStd::move(testDataObject));
 
                 testDataObject = AZStd::make_shared<DataTypes::MockIGraphObject>();
-                SceneGraph::NodeIndex testNodeIndex = testSceneGraph.AddChild(testRootNodeIndex, "SecondChild", AZStd::move(testDataObject));
+                testSceneGraph.AddChild(testRootNodeIndex, "SecondChild", AZStd::move(testDataObject));
 
                 SceneGraph::NodeIndex foundIndex = testSceneGraph.Find(testRootNodeSiblingIndex, "SecondChild");
                 EXPECT_FALSE(foundIndex.IsValid());
@@ -474,7 +475,7 @@ namespace AZ
 
                 AZStd::string expectedNodeName("TestNode");
 
-                SceneGraph::NodeIndex testNodeIndex = testSceneGraph.AddChild(testSceneGraph.GetRoot(), expectedNodeName.c_str());
+                testSceneGraph.AddChild(testSceneGraph.GetRoot(), expectedNodeName.c_str());
                 SceneGraph::NodeIndex foundIndex = testSceneGraph.Find(expectedNodeName);
                 ASSERT_TRUE(foundIndex.IsValid());
                 const SceneGraph::Name& nodeName = testSceneGraph.GetNodeName(foundIndex);

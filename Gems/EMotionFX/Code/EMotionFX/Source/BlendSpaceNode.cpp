@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -232,7 +233,7 @@ namespace EMotionFX
             MotionInstance* motionInstance = motionInfo.m_motionInstance;
             motionInstance->SetFreezeAtLastFrame(!motionInstance->GetIsPlayingForever());
             motionInstance->SetPlaySpeed(motionInfo.m_playSpeed);
-            motionInstance->SetRetargetingEnabled(m_retarget && mAnimGraph->GetRetargetingEnabled());
+            motionInstance->SetRetargetingEnabled(m_retarget && m_animGraph->GetRetargetingEnabled());
             motionInfo.m_preSyncTime = motionInstance->GetCurrentTime();
 
             // If syncing is enabled, we are going to update the current play time (m_currentTime) of all motions later based
@@ -360,8 +361,8 @@ namespace EMotionFX
                 trajectoryDeltaAMirrored.Add(instanceDelta, blendInfo.m_weight);
                 motionInstance->SetMirrorMotion(isMirrored); // restore current mirrored flag
             }
-            trajectoryDelta.mRotation.Normalize();
-            trajectoryDeltaAMirrored.mRotation.Normalize();
+            trajectoryDelta.m_rotation.Normalize();
+            trajectoryDeltaAMirrored.m_rotation.Normalize();
         }
 
         data->SetTrajectoryDelta(trajectoryDelta);

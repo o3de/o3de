@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -39,7 +40,7 @@ namespace AZ
         //=========================================================================
         void EnumerateEntityIds(const void* classPtr, const Uuid& classUuid, const EntityIdVisitor& visitor, SerializeContext* context)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             if (!context)
             {
@@ -164,7 +165,7 @@ namespace AZ
 
             AZStd::fixed_vector<TypeId, 64> knownBaseClasses = { typeToExamine };  // avoid allocating heap here if possible.  64 types are 64*sizeof(Uuid) which is only 1k.
             bool foundBaseClass = false;
-            auto enumerateBaseVisitor = [&foundBaseClass, &baseClassVisitor, &knownBaseClasses](const AZ::SerializeContext::ClassData* classData, const TypeId& examineTypeId)
+            auto enumerateBaseVisitor = [&baseClassVisitor, &knownBaseClasses](const AZ::SerializeContext::ClassData* classData, const TypeId& examineTypeId)
             {
                 if (!classData)
                 {

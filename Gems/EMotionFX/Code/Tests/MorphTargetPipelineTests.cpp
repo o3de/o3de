@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -150,8 +151,8 @@ namespace EMotionFX
             Skeleton* skeleton = actor->GetSkeleton();
             EMotionFX::Mesh* mesh = nullptr;
 
-            const uint32 numNodes = skeleton->GetNumNodes();
-            for (uint32 nodeNum = 0; nodeNum < numNodes; ++nodeNum)
+            const size_t numNodes = skeleton->GetNumNodes();
+            for (size_t nodeNum = 0; nodeNum < numNodes; ++nodeNum)
             {
                 if (mesh)
                 {
@@ -222,8 +223,8 @@ namespace EMotionFX
             return;
         }
 
-        const uint32 numMorphTargets = morphSetup->GetNumMorphTargets();
-        for (uint32 morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
+        const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+        for (size_t morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
         {
             const MorphTarget* morphTarget = morphSetup->GetMorphTarget(morphTargetIndex);
             EXPECT_STREQ(morphTarget->GetName(), selectedMorphTargets[morphTargetIndex].c_str()) << "Morph target's name is incorrect";

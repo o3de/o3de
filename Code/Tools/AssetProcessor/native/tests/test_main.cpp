@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -27,6 +28,9 @@ int RunUnitTests(int argc, char* argv[], bool& ranUnitTests)
 int main(int argc, char* argv[])
 {
     qputenv("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM", "1");
+
+    AZ::Debug::Trace::HandleExceptions(true);
+    AZ::Test::ApplyGlobalParameters(&argc, argv);
 
     // If "--unittest" is present on the command line, run unit testing
     // and return immediately. Otherwise, continue as normal.

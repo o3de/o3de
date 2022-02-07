@@ -1,12 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <ImageProcessing_precompiled.h>
-
+#include <AzCore/PlatformIncl.h>
 #include <Processing/ImagePreview.h>
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <ImageLoader/ImageLoaders.h>
@@ -43,7 +43,7 @@ namespace ImageProcessingAtom
             m_inputImage = IImageObjectPtr(LoadImageFromFile(m_imageFileName));
         }
         // Get preset if the setting in texture is changed
-        if (m_presetSetting == nullptr || m_presetSetting->m_uuid != m_textureSetting->m_preset)
+        if (m_presetSetting == nullptr || m_presetSetting->m_name != m_textureSetting->m_preset)
         {
             m_presetSetting = BuilderSettingManager::Instance()->GetPreset(m_textureSetting->m_preset);
         }
@@ -86,7 +86,7 @@ namespace ImageProcessingAtom
 
     IImageObjectPtr ImagePreview::GetOutputImage()
     {
-        return m_output.GetOutputImage(ImageConvertOutput::Preview);
+        return m_output.GetOutputImage();
     }
 
     ImagePreview::~ImagePreview()

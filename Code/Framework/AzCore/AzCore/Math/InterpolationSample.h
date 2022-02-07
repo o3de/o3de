@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -76,7 +77,7 @@ namespace AZ
         : public Sample<Vector3>
     {
     public:
-        Vector3 GetInterpolatedValue(TimeType time) override final
+        Vector3 GetInterpolatedValue(TimeType time) final
         {
             Vector3 interpolatedValue = m_previousValue;
             if (m_targetTimestamp != 0)
@@ -107,7 +108,7 @@ namespace AZ
         : public Sample<Quaternion>
     {
     public:
-        Quaternion GetInterpolatedValue(TimeType time) override final
+        Quaternion GetInterpolatedValue(TimeType time) final
         {
             Quaternion interpolatedValue = m_previousValue;
             if (m_targetTimestamp != 0)
@@ -143,7 +144,7 @@ namespace AZ
         : public Sample<Vector3>
     {
     public:
-        Vector3 GetInterpolatedValue(TimeType /*time*/) override final
+        Vector3 GetInterpolatedValue(TimeType /*time*/) final
         {
             return GetTargetValue();
         }
@@ -154,7 +155,7 @@ namespace AZ
         : public Sample<Quaternion>
     {
     public:
-        Quaternion GetInterpolatedValue(TimeType /*time*/) override final
+        Quaternion GetInterpolatedValue(TimeType /*time*/) final
         {
             return GetTargetValue();
         }

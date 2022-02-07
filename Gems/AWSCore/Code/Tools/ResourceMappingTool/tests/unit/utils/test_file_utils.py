@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
@@ -41,6 +42,23 @@ class TestFileUtils(TestCase):
         actual_result: bool = file_utils.check_path_exists(TestFileUtils._expected_path_name)
         self._mock_path.assert_called_once_with(TestFileUtils._expected_path_name)
         mocked_path.exists.assert_called_once()
+        assert not actual_result
+
+    def test_create_directory_return_true(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+
+        actual_result: bool = file_utils.create_directory("dummy")
+        self._mock_path.assert_called_once()
+        mocked_path.mkdir.assert_called_once()
+        assert actual_result
+
+    def test_create_directory_return_false_when_exception_raised(self) -> None:
+        mocked_path: MagicMock = self._mock_path.return_value
+        mocked_path.mkdir.side_effect = FileExistsError()
+
+        actual_result: bool = file_utils.create_directory("dummy")
+        self._mock_path.assert_called_once()
+        mocked_path.mkdir.assert_called_once()
         assert not actual_result
 
     def test_get_current_directory_path_return_expected_path_name(self) -> None:

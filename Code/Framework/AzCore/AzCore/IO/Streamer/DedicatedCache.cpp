@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,7 +36,7 @@ namespace AZ
                 break;
             }
 
-            u32 cacheSize = m_cacheSizeMib * 1_mib;
+            u32 cacheSize = static_cast<AZ::u32>(m_cacheSizeMib * 1_mib);
             if (blockSize > cacheSize)
             {
                 AZ_Warning("Streamer", false, "Size (%u) for DedicatedCache isn't big enough to hold at least one cache blocks of size (%zu). "
@@ -44,7 +45,7 @@ namespace AZ
             }
 
             auto stackEntry = AZStd::make_shared<DedicatedCache>(
-                cacheSize, blockSize, aznumeric_caster(hardware.m_maxPhysicalSectorSize), m_writeOnlyEpilog);
+                cacheSize, aznumeric_cast<AZ::u32>(blockSize), aznumeric_cast<AZ::u32>(hardware.m_maxPhysicalSectorSize), m_writeOnlyEpilog);
             stackEntry->SetNext(AZStd::move(parent));
             return stackEntry;
         }

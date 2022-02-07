@@ -1,10 +1,12 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
+#include <AzCore/std/sort.h>
 #include "LogWindowCallback.h"
 #include <QApplication>
 #include <QHeaderView>
@@ -25,7 +27,7 @@ namespace EMStudio
         qRegisterMetaType<MCore::LogCallback::ELogLevel>();
 
         // init the max second column width
-        mMaxSecondColumnWidth = 0;
+        m_maxSecondColumnWidth = 0;
 
         // init the table
         setColumnCount(2);
@@ -45,9 +47,9 @@ namespace EMStudio
 
         // set the filter
     #ifdef AZ_DEBUG_BUILD
-        mFilter = LOGLEVEL_FATAL | LOGLEVEL_ERROR | LOGLEVEL_WARNING | LOGLEVEL_INFO | LOGLEVEL_DETAILEDINFO | LOGLEVEL_DEBUG;
+        m_filter = LOGLEVEL_FATAL | LOGLEVEL_ERROR | LOGLEVEL_WARNING | LOGLEVEL_INFO | LOGLEVEL_DETAILEDINFO | LOGLEVEL_DEBUG;
     #else
-        mFilter = LOGLEVEL_FATAL | LOGLEVEL_ERROR | LOGLEVEL_WARNING | LOGLEVEL_INFO;
+        m_filter = LOGLEVEL_FATAL | LOGLEVEL_ERROR | LOGLEVEL_WARNING | LOGLEVEL_INFO;
     #endif
 
         connect(this, &LogWindowCallback::DoLog, this, &LogWindowCallback::LogImpl, Qt::QueuedConnection);
@@ -111,17 +113,17 @@ namespace EMStudio
         setItem(newRowIndex, 1, messageItem);
 
         // check the filter, if the filter is not enabled, it's not needed to test the find value
-        if ((mFilter & (int)logLevel) != 0)
+        if ((m_filter & (int)logLevel) != 0)
         {
             // check the find value, set the row not visible if the text is not found
-            if (messageItem->text().contains(mFind, Qt::CaseInsensitive))
+            if (messageItem->text().contains(m_find, Qt::CaseInsensitive))
             {
                 // set the row not hidden
                 setRowHidden(newRowIndex, false);
 
                 // custom resize of the column to be efficient
                 const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
-                mMaxSecondColumnWidth = qMax(mMaxSecondColumnWidth, itemWidth);
+                m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 SetColumnWidthToTakeWholeSpace();
             }
             else
@@ -143,10 +145,10 @@ namespace EMStudio
     void LogWindowCallback::SetFind(const QString& find)
     {
         // store the new find
-        mFind = find;
+        m_find = find;
 
         // init the max second column width
-        mMaxSecondColumnWidth = 0;
+        m_maxSecondColumnWidth = 0;
 
         // test each row with the new find
         const int numRows = rowCount();
@@ -157,17 +159,17 @@ namespace EMStudio
             const int logLevel = messageItem->data(Qt::UserRole).toInt();
 
             // check the filter, if the filter is not enabled, it's not needed to test the find value
-            if ((mFilter & logLevel) != 0)
+            if ((m_filter & logLevel) != 0)
             {
                 // check the find value, set the row not visible if the text is not found
-                if (messageItem->text().contains(mFind, Qt::CaseInsensitive))
+                if (messageItem->text().contains(m_find, Qt::CaseInsensitive))
                 {
                     // set the row not hidden
                     setRowHidden(i, false);
 
                     // update the new column width to keep the maximum
                     const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
-                    mMaxSecondColumnWidth = qMax(mMaxSecondColumnWidth, itemWidth);
+                    m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 }
                 else
                 {
@@ -189,10 +191,10 @@ namespace EMStudio
     void LogWindowCallback::SetFilter(uint32 filter)
     {
         // store the new filter
-        mFilter = filter;
+        m_filter = filter;
 
         // init the max second column width
-        mMaxSecondColumnWidth = 0;
+        m_maxSecondColumnWidth = 0;
 
         // test each row with the new find
         const int numRows = rowCount();
@@ -203,17 +205,17 @@ namespace EMStudio
             const int logLevel = messageItem->data(Qt::UserRole).toInt();
 
             // check the filter, if the filter is not enabled, it's not needed to test the find value
-            if ((mFilter & logLevel) != 0)
+            if ((m_filter & logLevel) != 0)
             {
                 // check the find value, set the row not visible if the text is not found
-                if (messageItem->text().contains(mFind, Qt::CaseInsensitive))
+                if (messageItem->text().contains(m_find, Qt::CaseInsensitive))
                 {
                     // set the row not hidden
                     setRowHidden(i, false);
 
                     // update the new column width to keep the maximum
                     const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
-                    mMaxSecondColumnWidth = qMax(mMaxSecondColumnWidth, itemWidth);
+                    m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 }
                 else
                 {
@@ -261,13 +263,13 @@ namespace EMStudio
     {
         const int firstColumnWidth = columnWidth(0);
         const int widthWihoutFirstColumnWidth = qMax(0, viewport()->width() - firstColumnWidth);
-        if (mMaxSecondColumnWidth < widthWihoutFirstColumnWidth)
+        if (m_maxSecondColumnWidth < widthWihoutFirstColumnWidth)
         {
             setColumnWidth(1, widthWihoutFirstColumnWidth);
         }
         else
         {
-            setColumnWidth(1, mMaxSecondColumnWidth);
+            setColumnWidth(1, m_maxSecondColumnWidth);
         }
     }
 
@@ -279,7 +281,7 @@ namespace EMStudio
         const QList<QTableWidgetItem*> items = selectedItems();
 
         // get the number of selected items
-        const uint32 numSelectedItems = items.count();
+        const int numSelectedItems = items.count();
 
         // check if nothing needed to be copied
         if (numSelectedItems == 0)
@@ -288,27 +290,27 @@ namespace EMStudio
         }
 
         // filter the items
-        MCore::Array<uint32> rowIndices;
-        rowIndices.Reserve(numSelectedItems);
-        for (uint32 i = 0; i < numSelectedItems; ++i)
+        AZStd::vector<int> rowIndices;
+        rowIndices.reserve(numSelectedItems);
+        for (int i = 0; i < numSelectedItems; ++i)
         {
-            const uint32 rowIndex = items[i]->row();
-            if (rowIndices.Find(rowIndex) == MCORE_INVALIDINDEX32)
+            const int rowIndex = items[i]->row();
+            if (AZStd::find(begin(rowIndices), end(rowIndices), rowIndex) == end(rowIndices))
             {
-                rowIndices.Add(rowIndex);
+                rowIndices.emplace_back(rowIndex);
             }
         }
 
         // sort the array to copy the item in order
-        rowIndices.Sort();
+        AZStd::sort(begin(rowIndices), end(rowIndices));
 
         // get the number of selected rows
-        const uint32 numSelectedRows = rowIndices.GetLength();
+        const size_t numSelectedRows = rowIndices.size();
 
         // genereate the clipboard text
         QString clipboardText;
-        const uint32 lastIndex = numSelectedRows - 1;
-        for (uint32 i = 0; i < numSelectedRows; ++i)
+        const size_t lastIndex = numSelectedRows - 1;
+        for (size_t i = 0; i < numSelectedRows; ++i)
         {
             const QString time = item(rowIndices[i], 0)->text();
             const QString message = item(rowIndices[i], 1)->text();
@@ -343,7 +345,7 @@ namespace EMStudio
     {
         setRowCount(0);
         setColumnWidth(1, 0);
-        mMaxSecondColumnWidth = 0;
+        m_maxSecondColumnWidth = 0;
     }
 
 
@@ -358,7 +360,7 @@ namespace EMStudio
         QMenu menu(this);
 
         // add actions
-        if (items.size() > 0)
+        if (!items.empty())
         {
             QAction* copyAction = menu.addAction("Copy");
             connect(copyAction, &QAction::triggered, this, &LogWindowCallback::Copy);
@@ -368,7 +370,7 @@ namespace EMStudio
             QAction* selectAllAction = menu.addAction("Select All");
             connect(selectAllAction, &QAction::triggered, this, &LogWindowCallback::SelectAll);
         }
-        if (items.size() > 0)
+        if (!items.empty())
         {
             QAction* UnselectAllAction = menu.addAction("Unselect All");
             connect(UnselectAllAction, &QAction::triggered, this, &LogWindowCallback::UnselectAll);

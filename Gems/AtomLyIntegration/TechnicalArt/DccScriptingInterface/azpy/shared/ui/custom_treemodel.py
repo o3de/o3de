@@ -1,8 +1,9 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -29,7 +30,7 @@ import PySide2.QtGui as QtGui
 # -------------------------------------------------------------------------
 #  global space
 # To Do: update to dynaconf dynamic env and settings?
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _MODULE_PATH = Path(__file__)
@@ -37,7 +38,7 @@ _MODULE_PATH = Path(__file__)
 _MODULENAME = 'azpy.shared.ui.custom_treemodel'
 
 _log_level = int(20)
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     _log_level = int(10)
 _LOGGER = azpy.initialize_logger(_MODULENAME,
                                  log_to_file=False,

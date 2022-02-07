@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -15,9 +16,7 @@
 #if !defined(USE_NULLFONT_ALWAYS)
 
 #include <vector>
-#include <CryCommon/Cry_Math.h>
-#include <CryCommon/Cry_Color.h>
-#include <CryCommon/CryString.h>
+#include <CryCommon/IRenderer.h>
 #include "AtomFont.h"
 
 #include <AzCore/std/parallel/mutex.h>
@@ -102,25 +101,15 @@ namespace AZ
 
         struct FontRenderingPass
         {
-            ColorB m_color;
-            Vec2 m_posOffset;
-            int m_blendSrc;
-            int m_blendDest;
-
-            FontRenderingPass()
-                : m_color(255, 255, 255, 255)
-                , m_posOffset(0, 0)
-                , m_blendSrc(GS_BLSRC_SRCALPHA)
-                , m_blendDest(GS_BLDST_ONEMINUSSRCALPHA)
-            {
-            }
-
-            void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
+            ColorB m_color = {255, 255, 255, 255};
+            Vec2 m_posOffset = {0,0};
+            int m_blendSrc = GS_BLSRC_SRCALPHA;
+            int m_blendDest = GS_BLDST_ONEMINUSSRCALPHA;
         };
 
         struct FontEffect
         {
-            string m_name;
+            AZStd::string m_name;
             std::vector<FontRenderingPass> m_passes;
 
             FontEffect(const char* name)
@@ -139,24 +128,10 @@ namespace AZ
             {
                 m_passes.resize(0);
             }
-
-            void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
         };
 
         typedef std::vector<FontEffect> FontEffects;
         typedef FontEffects::iterator FontEffectsIterator;
-
-        struct FontPipelineStateMapKey
-        {
-            AZ::RPI::SceneId m_sceneId;         // which scene pipeline state is attached to (via Render Pipeline)
-            AZ::RHI::DrawListTag m_drawListTag; // which render pass this pipeline draws in by default
-
-            bool operator<(const FontPipelineStateMapKey& other) const
-            {
-                return m_sceneId < other.m_sceneId
-                       ||      (m_sceneId == other.m_sceneId && m_drawListTag < other.m_drawListTag);
-            }
-        };
 
         struct FontShaderData
         {
@@ -176,8 +151,7 @@ namespace AZ
         void DrawString(float x, float y, float z, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx) override;
         Vec2 GetTextSize(const char* str, const bool asciiMultiLine, const TextDrawContext& ctx) override;
         size_t GetTextLength(const char* str, const bool asciiMultiLine) const override;
-        void WrapText(string& result, float maxWidth, const char* str, const TextDrawContext& ctx) override;
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const override {};
+        void WrapText(AZStd::string& result, float maxWidth, const char* str, const TextDrawContext& ctx) override;
         void GetGradientTextureCoord(float& minU, float& minV, float& maxU, float& maxV) const override;
         unsigned int GetEffectId(const char* effectName) const override;
         unsigned int GetNumEffects() const override;
@@ -213,7 +187,7 @@ namespace AZ
         FFont(AtomFont* atomFont, const char* fontName);
 
         FontTexture* GetFontTexture() const { return m_fontTexture; }
-        const string& GetName() const { return m_name; }
+        const AZStd::string& GetName() const { return m_name; }
 
         FontEffect* AddEffect(const char* effectName);
         FontEffect* GetDefaultEffect();
@@ -289,15 +263,15 @@ namespace AZ
         static constexpr uint32_t NumBuffers = 2;
         static constexpr float WindowScaleWidth = 800.0f;
         static constexpr float WindowScaleHeight = 600.0f;
-        string m_name;
-        string m_curPath;
+        AZStd::string m_name;
+        AZStd::string m_curPath;
 
         AZ::Name m_dynamicDrawContextName = AZ::Name(AZ::AtomFontDynamicDrawContextName);
 
         FontTexture* m_fontTexture = nullptr;
 
         size_t m_fontBufferSize = 0;
-        unsigned char* m_fontBuffer = nullptr;
+        AZStd::unique_ptr<uint8_t[]> m_fontBuffer;
 
         AZ::Data::Instance<AZ::RPI::StreamingImage> m_fontStreamingImage;
         AZ::RHI::Ptr<AZ::RHI::Image>     m_fontImage;
@@ -339,7 +313,7 @@ namespace AZ
         FFont* font = const_cast<FFont*>(static_cast<const FFont*>(ptr));
         if (font && font->m_atomFont)
         {
-            font->m_atomFont->UnregisterFont(font->m_name);
+            font->m_atomFont->UnregisterFont(font->m_name.c_str());
             font->m_atomFont = nullptr;
         }
 

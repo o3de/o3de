@@ -1,11 +1,10 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <PhysX_precompiled.h>
 
 #include <AzCore/std/sort.h>
 
@@ -280,7 +279,7 @@ namespace PhysX::Pipeline
         {
             if (volumeTermWeight >= 0.0 && volumeTermWeight < 1.0)
             {
-                const AZ::u32 numberOfVertices = vertices.size();
+                const AZ::u32 numberOfVertices = static_cast<AZ::u32>(vertices.size());
 
                 // Convert vertices and compute the mean of the vertex cloud.
                 AZStd::vector<Vector> verticesConverted(numberOfVertices, Vector{{ 0.0, 0.0, 0.0 }});

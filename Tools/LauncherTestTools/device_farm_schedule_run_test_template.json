@@ -1,5 +1,0 @@
-{
-    "type": "APPIUM_NODE",
-    "testPackageArn": "%TEST_PACKAGE_ARN%",
-    "testSpecArn": "%TEST_SPEC_ARN%"
-}

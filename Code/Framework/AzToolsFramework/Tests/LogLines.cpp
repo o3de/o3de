@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,7 +25,7 @@ namespace UnitTest
             R"X(Executing RC.EXE: '"E:\lyengine\dev\windows\bin\profile\rc.exe" "E:/Directory/File.tga")X",
             R"X(Executing RC.EXE with working directory : '')X",
             R"X(ResourceCompiler  64 - bit  DEBUG)X",
-            R"X(Platform support : PC, PowerVR, etc2Comp)X",
+            R"X(Platform support : PC, PowerVR)X",
             R"X(Version 1.1.8.6  Nov  5 2018 13 : 28 : 28)X"
         };
 

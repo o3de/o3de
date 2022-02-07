@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -547,7 +548,7 @@ namespace ScriptCanvasTests
         bool DestroyEntityById(AZ::EntityId entityId) override;
         AZ::Entity* CloneEntity(const AZ::Entity& sourceEntity) override;
         void ResetContext() override;
-        AZ::EntityId FindLoadedEntityIdMapping(const AZ::EntityId& staticId) const;
+        AZ::EntityId FindLoadedEntityIdMapping(const AZ::EntityId& staticId) const override;
         ////
 
         void AddEntity(AZ::EntityId entityId);

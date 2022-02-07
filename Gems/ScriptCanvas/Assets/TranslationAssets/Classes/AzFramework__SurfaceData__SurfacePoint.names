@@ -1,0 +1,141 @@
+{
+    "entries": [
+        {
+            "base": "AzFramework::SurfaceData::SurfacePoint",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Surface Point",
+                "category": "Surface Data"
+            },
+            "methods": [
+                {
+                    "base": "Getposition",
+                    "details": {
+                        "name": "Get Position"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
+                            "details": {
+                                "name": "Surface Point"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setposition",
+                    "details": {
+                        "name": "Set Position"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
+                            "details": {
+                                "name": "Surface Point"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getnormal",
+                    "details": {
+                        "name": "Get Normal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
+                            "details": {
+                                "name": "Surface Point"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Normal"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setnormal",
+                    "details": {
+                        "name": "Set Normal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
+                            "details": {
+                                "name": "Surface Point"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Normal"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetsurfaceTags",
+                    "details": {
+                        "name": "Get Surface Tags"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
+                            "details": {
+                                "name": "Surface Point"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8F60B4D4-06F0-577C-AFB9-ECBFA7B66D4E}",
+                            "details": {
+                                "name": "Surface Tags"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetsurfaceTags",
+                    "details": {
+                        "name": "Set Surface Tags"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
+                            "details": {
+                                "name": "Surface Point"
+                            }
+                        },
+                        {
+                            "typeid": "{8F60B4D4-06F0-577C-AFB9-ECBFA7B66D4E}",
+                            "details": {
+                                "name": "Surface Tags"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

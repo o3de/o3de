@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -59,7 +60,7 @@ namespace AZ
         FontRenderer();
         ~FontRenderer();
 
-        int         LoadFromFile(const string& fileName);
+        int         LoadFromFile(const AZStd::string& fileName);
         int         LoadFromMemory(unsigned char* buffer, int bufferSize);
         int         Release();
 
@@ -77,8 +78,6 @@ namespace AZ
         //! \param glyphBitmap The FreeType glyph buffer is essentially copied into this GlyphBitmap buffer
         int         GetGlyph(GlyphBitmap* glyphBitmap, int* horizontalAdvance, uint8_t* glyphWidth, uint8_t* glyphHeight, int32_t& m_characterOffsetX, int32_t& m_characterOffsetY, int iX, int iY, int characterCode, const FFont::FontHintParams& glyphFlags = FFont::FontHintParams());
         int         GetGlyphScaled(GlyphBitmap* glyphBitmap, int* glyphWidth, int* glyphHeight, int iX, int iY, float scaleX, float scaleY, int characterCode);
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
 
         bool GetMonospaced() const { return FT_IS_FIXED_WIDTH(m_face) != 0; }
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -24,12 +25,12 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(MotionEventTrack, MotionEventAllocator, 0)
 
     MotionEventTrack::MotionEventTrack(Motion* motion)
-        : mMotion(motion)
+        : m_motion(motion)
     {
     }
 
     MotionEventTrack::MotionEventTrack(const char* name, Motion* motion)
-        : mMotion(motion)
+        : m_motion(motion)
         , m_name(name)
     {
     }
@@ -46,7 +47,7 @@ namespace EMotionFX
             return *this;
         }
         m_events = other.m_events;
-        mMotion = other.mMotion;
+        m_motion = other.m_motion;
         m_name = other.m_name;
         return *this;
     }
@@ -62,8 +63,8 @@ namespace EMotionFX
         serializeContext->Class<MotionEventTrack>()
             ->Version(2, VersionConverter)
             ->Field("name", &MotionEventTrack::m_name)
-            ->Field("enabled", &MotionEventTrack::mEnabled)
-            ->Field("deletable", &MotionEventTrack::mDeletable)
+            ->Field("enabled", &MotionEventTrack::m_enabled)
+            ->Field("deletable", &MotionEventTrack::m_deletable)
             ->Field("events", &MotionEventTrack::m_events)
             ;
 
@@ -391,7 +392,7 @@ namespace EMotionFX
     {
         targetTrack->m_name = m_name;
         targetTrack->m_events = m_events;
-        targetTrack->mEnabled = mEnabled;
+        targetTrack->m_enabled = m_enabled;
     }
 
     // reserve memory for a given amount of events
@@ -402,35 +403,35 @@ namespace EMotionFX
 
     void MotionEventTrack::SetIsEnabled(bool enabled)
     {
-        mEnabled = enabled;
+        m_enabled = enabled;
     }
 
 
     bool MotionEventTrack::GetIsEnabled() const
     {
-        return mEnabled;
+        return m_enabled;
     }
 
 
     bool MotionEventTrack::GetIsDeletable() const
     {
-        return mDeletable;
+        return m_deletable;
     }
 
 
     void MotionEventTrack::SetIsDeletable(bool isDeletable)
     {
-        mDeletable = isDeletable;
+        m_deletable = isDeletable;
     }
 
 
     Motion* MotionEventTrack::GetMotion() const
     {
-        return mMotion;
+        return m_motion;
     }
 
     void MotionEventTrack::SetMotion(Motion* newMotion)
     {
-        mMotion = newMotion;
+        m_motion = newMotion;
     }
 } // namespace EMotionFX
