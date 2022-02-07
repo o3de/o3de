@@ -77,7 +77,7 @@ namespace Terrain
         
         struct DetailMaterialShaderData
         {
-            // Uv
+            // Uv (data is 3x3, padding each row for explicit alignment)
             AZStd::array<float, 12> m_uvTransform
             {
                 1.0, 0.0, 0.0, 0.0,

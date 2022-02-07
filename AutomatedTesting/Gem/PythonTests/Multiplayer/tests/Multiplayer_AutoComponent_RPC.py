@@ -73,7 +73,20 @@ def Multiplayer_AutoComponent_RPC():
         helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC_NetLevelEntity: Authority sending RPC to play some fx.", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
         helper.succeed_if_log_line_found('Script', "AutoComponent_RPC_NetLevelEntity: I'm a client playing some fx.", section_tracer.prints, PLAYFX_RPC_WAIT_TIME_SECONDS)
 
-    
+        # Autonomous->Authority RPC
+        # Sending 2 RPCs: 1 containing a parameter and 1 without
+        AUTONOMOUS_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS = 1.0  # This RPC is sent as soon as the autonomous player script is spawned. 1 second should be more than enough time to send/receive that RPC.
+        helper.succeed_if_log_line_found('Script', "AutoComponent_RPC: Sending AutonomousToAuthorityNoParam RPC.", section_tracer.prints, AUTONOMOUS_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('Script', "AutoComponent_RPC: Sending AutonomousToAuthority RPC (with float param).", section_tracer.prints, AUTONOMOUS_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC: Successfully received AutonomousToAuthorityNoParams RPC.", section_tracer.prints, AUTONOMOUS_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC: Successfully received AutonomousToAuthority RPC (with expected float param).", section_tracer.prints, AUTONOMOUS_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+
+        # Server->Authority RPC. Inter-Entity Communication.
+        SERVER_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS = 1.0  # This RPC is sent as soon as the networked level entity finds the player in the level, and previous tests are relying on the player's existence. 1 second should be more than enough time to send/receive that RPC.
+        helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC_NetLevelEntity: Send ServerToAuthority RPC.", section_tracer.prints, SERVER_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('EditorServer', "Script: AutoComponent_RPC: Received ServerToAuthority RPC. Damage=42.", section_tracer.prints, SERVER_TO_AUTHORITY_RPC_WAIT_TIME_SECONDS)
+
+
     # Exit game mode
     helper.exit_game_mode(TestSuccessFailTuples.exit_game_mode)
 

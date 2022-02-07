@@ -9,10 +9,10 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Session/SessionRequests.h>
-#include <AzFramework/Session/SessionConfig.h>
+#include <Multiplayer/Session/SessionRequests.h>
+#include <Multiplayer/Session/SessionConfig.h>
 
-namespace AzFramework
+namespace Multiplayer
 {
     void CreateSessionRequest::Reflect(AZ::ReflectContext* context)
     {
@@ -124,4 +124,4 @@ namespace AzFramework
             }
         }
     }
-} // namespace AzFramework
+} // namespace Multiplayer

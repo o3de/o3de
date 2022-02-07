@@ -815,7 +815,8 @@ namespace AzToolsFramework
 
             if (templateRef.has_value())
             {
-                return templateRef->get().IsDirty();
+                return !templateRef->get().IsProcedural() && // all procedural prefabs are read-only
+                        templateRef->get().IsDirty();
             }
 
             return false;

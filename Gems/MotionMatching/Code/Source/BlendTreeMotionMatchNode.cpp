@@ -297,8 +297,6 @@ namespace EMotionFX::MotionMatching
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Output", m_outputTimeInMs);
 #endif
         }
-
-        instance->DebugDraw();
     }
 
     AZ::Crc32 BlendTreeMotionMatchNode::GetTrajectoryPathSettingsVisibility() const

@@ -89,7 +89,7 @@ namespace SurfaceData
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
 
         // Update the cached shape data and bounds, then register the surface data provider / modifier
-        AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f, m_newPointWeights);
+        m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f);
         UpdateShapeData();
     }
 
@@ -155,12 +155,8 @@ namespace SurfaceData
             LmbrCentral::ShapeComponentRequestsBus::EventResult(hitShape, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::IntersectRay, rayOrigin, rayDirection, intersectionDistance);
             if (hitShape)
             {
-                SurfacePoint point;
-                point.m_entityId = GetEntityId();
-                point.m_position = rayOrigin + intersectionDistance * rayDirection;
-                point.m_normal = AZ::Vector3::CreateAxisZ();
-                point.m_masks = m_newPointWeights;
-                surfacePointList.push_back(AZStd::move(point));
+                AZ::Vector3 position = rayOrigin + intersectionDistance * rayDirection;
+                surfacePointList.AddSurfacePoint(GetEntityId(), position, AZ::Vector3::CreateAxisZ(), m_newPointWeights);
             }
         }
     }
@@ -173,20 +169,19 @@ namespace SurfaceData
         {
             const AZ::EntityId entityId = GetEntityId();
             LmbrCentral::ShapeComponentRequestsBus::Event(
-                GetEntityId(),
+                entityId,
                 [entityId, this, &surfacePointList](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
                 {
-                    for (auto& point : surfacePointList)
+                    surfacePointList.ModifySurfaceWeights(
+                        entityId,
+                        [this, shape](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
                     {
-                        if (point.m_entityId != entityId && m_shapeBounds.Contains(point.m_position))
+                        if (m_shapeBounds.Contains(position) && shape->IsPointInside(position))
                         {
-                            bool inside = shape->IsPointInside(point.m_position);
-                            if (inside)
-                            {
-                                AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
-                            }
+                            // If the point is inside our shape, add all our modifier tags with a weight of 1.0f.
+                            weights.AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
                         }
-                    }
+                    });
                 });
         }
     }

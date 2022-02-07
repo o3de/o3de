@@ -10,7 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 
-namespace AzFramework
+namespace Multiplayer
 {
     struct SessionConfig;
 
@@ -68,4 +68,4 @@ namespace AzFramework
         virtual void OnUpdateSessionEnd() = 0;
     };
     using SessionNotificationBus = AZ::EBus<SessionNotifications>;
-} // namespace AzFramework
+} // namespace Multiplayer
