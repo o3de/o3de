@@ -952,11 +952,19 @@ namespace O3DE::ProjectManager
 
     IO3deCli::ErrorPair O3deCli::GetErrorPair()
     {
-        AZStd::string detailedString = m_pythonErrorStrings.size() == 1
-            ? ""
-            : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
+        size_t errorSize = m_pythonErrorStrings.size();
+        if (errorSize > 0)
+        {
+            AZStd::string detailedString =
+                errorSize == 1 ? "" : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
 
-        return IO3deCli::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+            return IO3deCli::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+        }
+        // If no error was found
+        else
+        {
+            return IO3deCli::ErrorPair(AZStd::string("Unknown Error"), AZStd::string(""));
+        }
     }
 
     void O3deCli::AddErrorString(AZStd::string errorString)
