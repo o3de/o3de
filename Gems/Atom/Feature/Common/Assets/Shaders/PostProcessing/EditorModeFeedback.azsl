@@ -68,6 +68,24 @@ float selectedEntityOutliner(float2 unormalizedUv, float lineThickness)
     // Could just do an early exit above when S > 0.0...
     return min(1.0, (r / lineThickness) * (1.0 - S));
 }
+
+float3 Blur(float2 unormalizedUv, float boxRadius)
+{
+    float3 outColor = float3(0., 0., 0.);
+
+    // Box blur kernal
+    float weights = 0.;
+    for(float u = -boxRadius; u <= boxRadius; u+=1.)
+    {
+        for(float v = -boxRadius; v <= boxRadius; v+=1.)
+        {
+            weights += 1.;
+            outColor += PassSrg::m_framebuffer.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(u,v))).rgb;
+        }
+    }
+
+    return outColor / weights;
+}
  
 PSOutput MainPS(VSOutput IN)
 {
@@ -83,15 +101,21 @@ PSOutput MainPS(VSOutput IN)
  
     // Fetch the pixel color from the input texture
     float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+
+    // 
+    float3 blurredColor = Blur(unnormalizedUV, 3.);
+    //float3 blurredColor = color;
  
     // Get the mask value at this point
     float4 mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
     // Averge the colors to get a desaturated effect
-    float sat = (color.r + color.g + color.b) / 3.0;
+    float sat = (blurredColor.r + blurredColor.g + blurredColor.b) / 3.0;
 
     // Calculate the visual effect for non-mask entities
-    float3 unmasked = lerp(color, float3(sat, sat, sat), PassSrg::m_desaturationAmount);
+    float3 unmasked = lerp(blurredColor, float3(sat, sat, sat), PassSrg::m_desaturationAmount);
+
+    
     
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color.rgb = lerp(unmasked.rgb, color.rgb, mask.a);
@@ -109,6 +133,7 @@ PSOutput MainPS(VSOutput IN)
 
     //OUT.m_color.rgb = mask.rgb;
     //OUT.m_color.rgb = float3(depthT, depthT, depthT);
+    //OUT.m_color.rgb = blurredColor;
 
     return OUT;
 }
