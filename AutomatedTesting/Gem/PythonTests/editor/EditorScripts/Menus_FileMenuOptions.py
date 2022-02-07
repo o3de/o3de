@@ -33,7 +33,6 @@ def Menus_FileMenuOptions_Work():
     file_menu_options = [
         ("New Level",),
         ("Open Level",),
-        ("Import",),
         ("Save",),
         ("Save As",),
         ("Save Level Statistics",),
@@ -42,6 +41,7 @@ def Menus_FileMenuOptions_Work():
         ("New Project",),
         ("Open Project",),
         ("Show Log File",),
+        ("Import",),
         ("Exit",),
     ]
 
