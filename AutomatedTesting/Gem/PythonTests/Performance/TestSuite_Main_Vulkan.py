@@ -27,10 +27,10 @@ class TestAutomation(TestAutomationBase):
 
     def test_EditorLevelLoading_10KEntityCpuPerfTest(self, request, workspace, editor, launcher_platform):
         from .tests import EditorLevelLoading_10KEntityCpuPerfTest as test_module
-        # there is currently a huge discrepancy loading this level with vulkan compared to dx12 which requires the 9 min timeout
+        # there is currently a huge discrepancy loading this level with vulkan compared to dx12 which requires the 10 min timeout
         # this should be removed once that issue has been sorted out
         self._run_test(request, workspace, editor, test_module,
-            extra_cmdline_args=self.cmdline_args, use_null_renderer=self.use_null_renderer, timeout_override=540)
+            extra_cmdline_args=self.cmdline_args, use_null_renderer=self.use_null_renderer, timeout_override=600)
 
     def test_EditorLevelLoading_10kVegInstancesTest(self, request, workspace, editor, launcher_platform):
         from .tests import EditorLevelLoading_10kVegInstancesTest as test_module
