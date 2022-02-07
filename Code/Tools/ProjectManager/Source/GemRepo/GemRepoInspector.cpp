@@ -8,7 +8,7 @@
 
 #include <GemRepo/GemRepoInspector.h>
 #include <GemRepo/GemRepoItemDelegate.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 
 #include <QFrame>
 #include <QLabel>

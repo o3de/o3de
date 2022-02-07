@@ -12,7 +12,7 @@
 #include <GemRepo/GemRepoModel.h>
 #include <GemRepo/GemRepoAddDialog.h>
 #include <GemRepo/GemRepoInspector.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 #include <ProjectManagerDefs.h>
 #include <ProjectUtils.h>
 #include <AdjustableHeaderWidget.h>

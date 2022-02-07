@@ -7,7 +7,7 @@
  */
 
 #include <GemRepo/GemRepoModel.h>
-#include <O3deCli.h>
+#include <Cli/O3deCliInterface.h>
 
 #include <QItemSelectionModel>
 #include <QMessageBox>

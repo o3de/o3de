@@ -39,11 +39,6 @@ set(FILES
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
     Source/ProjectTemplateInfo.cpp
-    Source/PythonCliBindings.h
-    Source/PythonCliBindings.cpp
-    Source/O3deCli.h
-    Source/O3deCli.cpp
-    Source/O3deCliInterface.h
     Source/ProjectInfo.h
     Source/ProjectInfo.cpp
     Source/ProjectUtils.h
@@ -135,4 +130,11 @@ set(FILES
     Source/GemRepo/GemRepoListView.cpp
     Source/GemRepo/GemRepoModel.h
     Source/GemRepo/GemRepoModel.cpp
+    Source/Cli/O3deCli.h
+    Source/Cli/O3deCli.cpp
+    Source/Cli/O3deCliInterface.h
+    Source/Cli/O3deCliBindings.h
+    Source/Cli/PythonCliBindings.h
+    Source/Cli/PythonCliBindings.cpp
+    Source/Cli/PythonCliMethodNames.h
 )

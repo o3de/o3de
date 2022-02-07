@@ -8,7 +8,7 @@
 
 #include <NewProjectSettingsScreen.h>
 #include <ProjectManagerDefs.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 #include <FormBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
 #include <TemplateButtonWidget.h>

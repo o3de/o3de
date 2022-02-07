@@ -7,6 +7,7 @@
  */
 
 #include <Application.h>
+#include <Cli/PythonCliBindings.h>
 #include <ProjectUtils.h>
 
 #include <AzCore/IO/FileIO.h>
@@ -69,7 +70,7 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManager", false, "Failed to init logging");
         }
 
-        m_o3deCli = AZStd::make_unique<O3deCli>(GetEngineRoot());
+        m_o3deCli = AZStd::make_unique<O3deCli>(new PythonCliBindings(GetEngineRoot()));
 
         if (!m_o3deCli->PythonStarted())
         {

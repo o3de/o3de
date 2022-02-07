@@ -9,7 +9,7 @@
 #include <GemCatalog/GemCatalogScreen.h>
 #include <GemRepo/GemRepoScreen.h>
 #include <ProjectManagerDefs.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 #include <ScreenHeaderWidget.h>
 #include <ScreensCtrl.h>
 #include <UpdateProjectCtrl.h>

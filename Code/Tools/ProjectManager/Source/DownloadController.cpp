@@ -8,7 +8,7 @@
 
 #include <DownloadController.h>
 #include <DownloadWorker.h>
-#include <O3deCli.h>
+#include <Cli/O3deCliInterface.h>
 
 #include <AzCore/std/algorithm.h>
 

@@ -21,7 +21,7 @@
 
 namespace O3DE::ProjectManager
 {
-    //! Interface used to interact with the o3de cli python functions
+    //! Interface used to interact with the o3de cli functions
     class IO3deCli
     {
     public:
@@ -32,8 +32,8 @@ namespace O3DE::ProjectManager
         virtual ~IO3deCli() = default;
 
         //! First string in pair is general error, second is detailed
-        using ErrorPair = AZStd::pair<AZStd::string, AZStd::string>;
-        using DetailedOutcome = AZ::Outcome<void, ErrorPair>;
+        typedef AZStd::pair<AZStd::string, AZStd::string> ErrorPair;
+        typedef AZ::Outcome<void, ErrorPair> DetailedOutcome;
 
         /**
          * Get whether Python was started or not.  All Python functionality will fail if Python
@@ -41,14 +41,6 @@ namespace O3DE::ProjectManager
          * @return true if Python was started successfully, false on failure 
          */
         virtual bool PythonStarted() = 0;
-
-        /**
-         * Attempt to start Python. Normally, Python is started when the bindings are created,
-         * but this method allows you to attempt to retry starting Python in case the configuration
-         * has changed.
-         * @return true if Python was started successfully, false on failure 
-         */
-        virtual bool StartPython() = 0;
 
         // Engine
 

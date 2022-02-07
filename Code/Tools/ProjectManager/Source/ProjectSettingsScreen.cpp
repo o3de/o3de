@@ -10,7 +10,7 @@
 #include <FormFolderBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
 #include <PathValidator.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 
 #include <QFileDialog>
 #include <QFrame>

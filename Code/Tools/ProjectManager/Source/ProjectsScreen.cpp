@@ -10,7 +10,7 @@
 
 #include <ProjectManagerDefs.h>
 #include <ProjectButtonWidget.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 #include <ProjectUtils.h>
 #include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>

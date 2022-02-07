@@ -8,11 +8,13 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzFramework/Application/Application.h>
-#include <QCoreApplication>
-#include <O3deCli.h>
-#include <Settings.h>
+#include <Cli/O3deCli.h>
 #include <ProjectManagerWindow.h>
+#include <Settings.h>
+
+#include <AzFramework/Application/Application.h>
+
+#include <QCoreApplication>
 #endif
 
 namespace AZ

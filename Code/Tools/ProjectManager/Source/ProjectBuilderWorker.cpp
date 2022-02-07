@@ -8,7 +8,7 @@
 
 #include <ProjectBuilderWorker.h>
 #include <ProjectManagerDefs.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 #include <ProjectUtils.h>
 
 #include <QDir>

@@ -8,7 +8,7 @@
 
 #include <CreateProjectCtrl.h>
 #include <ScreensCtrl.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 #include <NewProjectSettingsScreen.h>
 #include <ScreenHeaderWidget.h>
 #include <GemCatalog/GemModel.h>

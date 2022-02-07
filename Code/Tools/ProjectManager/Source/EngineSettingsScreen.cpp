@@ -9,7 +9,7 @@
 #include <EngineSettingsScreen.h>
 #include <FormLineEditWidget.h>
 #include <FormFolderBrowseEditWidget.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 #include <PathValidator.h>
 #include <ProjectUtils.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>

@@ -7,7 +7,8 @@
  */
 #pragma once
 
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
+
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/parallel/semaphore.h>
 
@@ -21,17 +22,20 @@
 
 namespace O3DE::ProjectManager
 {
+    class O3deCliBindings;
+
     class O3deCli
         : public O3deCliInterface::Registrar
     {
     public:
         O3deCli() = default;
-        O3deCli(const AZ::IO::PathView& enginePath);
+        O3deCli(O3deCliBindings* cliBindings);
         ~O3deCli() override;
+
+        bool StartPython();
 
         // O3deCli overrides
         bool PythonStarted() override;
-        bool StartPython() override;
 
         // Engine
         AZ::Outcome<EngineInfo> GetEngineInfo() override;
@@ -90,23 +94,8 @@ namespace O3DE::ProjectManager
         bool StopPython();
         IO3deCli::ErrorPair GetErrorPair();
 
-
-        bool m_pythonStarted = false;
-
-        AZ::IO::FixedMaxPath m_enginePath;
+        AZStd::unique_ptr<O3deCliBindings> m_cliBindings;
         AZStd::recursive_mutex m_lock;
-
-        pybind11::handle m_engineTemplate;
-        pybind11::handle m_engineProperties;
-        pybind11::handle m_cmake;
-        pybind11::handle m_register;
-        pybind11::handle m_manifest;
-        pybind11::handle m_enableGemProject;
-        pybind11::handle m_disableGemProject;
-        pybind11::handle m_editProjectProperties;
-        pybind11::handle m_download;
-        pybind11::handle m_repo;
-        pybind11::handle m_pathlib;
 
         bool m_requestCancelDownload = false;
         AZStd::vector<AZStd::string> m_pythonErrorStrings;

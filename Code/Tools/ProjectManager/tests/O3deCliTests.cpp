@@ -10,7 +10,7 @@
 #include <AzTest/Utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <O3deCli.h>
+#include <Cli/O3deCli.h>
 #include <ProjectManager_Test_Traits_Platform.h>
 
 #include <QDir>

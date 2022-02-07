@@ -7,7 +7,7 @@
  */
 
 #include <GemCatalog/GemCatalogScreen.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 #include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <GemCatalog/GemFilterWidget.h>
 #include <GemCatalog/GemListView.h>
@@ -28,7 +28,7 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QTimer>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 #include <QMessageBox>
 #include <QDir>
 #include <QStandardPaths>

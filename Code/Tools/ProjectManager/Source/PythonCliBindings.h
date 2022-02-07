@@ -7,88 +7,93 @@
  */
 #pragma once
 
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
+
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/parallel/semaphore.h>
+#include <AzCore/std/parallel/mutex.h>
 
 // Qt defines slots, which interferes with the use here.
 #pragma push_macro("slots")
 #undef slots
 #include <Python.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/eval.h>
 #pragma pop_macro("slots")
 
 
 namespace O3DE::ProjectManager
 {
-    class O3deCli
-        : public O3deCliInterface::Registrar
+    class PythonCliBindings
     {
     public:
-        O3deCli() = default;
-        O3deCli(const AZ::IO::PathView& enginePath);
-        ~O3deCli() override;
+        PythonCliBindings() = default;
+        PythonCliBindings(const AZ::IO::PathView& enginePath);
+        ~PythonCliBindings();
 
-        // O3deCli overrides
-        bool PythonStarted() override;
-        bool StartPython() override;
+        bool StartPython();
+        bool PythonStarted();
 
-        // Engine
-        AZ::Outcome<EngineInfo> GetEngineInfo() override;
-        AZ::Outcome<EngineInfo> GetEngineInfo(const QString& engineName) override;
-        DetailedOutcome SetEngineInfo(const EngineInfo& engineInfo, bool force = false) override;
+        pybind11::handle PathLib();
 
-        // Gem
-        AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
-        AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) override;
-        AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}) override;
-        AZ::Outcome<void, AZStd::string> UnregisterGem(const QString& gemPath, const QString& projectPath = {}) override;
-
-        // Project
-        AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo) override;
-        AZ::Outcome<ProjectInfo> GetProject(const QString& path) override;
-        AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
-        bool AddProject(const QString& path) override;
-        bool RemoveProject(const QString& path) override;
-        AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) override;
-        AZ::Outcome<void, AZStd::string> AddGemToProject(const QString& gemPath, const QString& projectPath) override;
-        AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
-        bool RemoveInvalidProjects() override;
-
-        // ProjectTemplate
-        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) override;
-
-        // Gem Repos
-        AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) override;
-        bool RefreshAllGemRepos() override;
-        DetailedOutcome AddGemRepo(const QString& repoUri) override;
-        bool RemoveGemRepo(const QString& repoUri) override;
-        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForRepo(const QString& repoUri) override;
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos() override;
-        DetailedOutcome DownloadGem(
-            const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
-        void CancelDownload() override;
-        bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) override;
-
-        void AddErrorString(AZStd::string errorString) override;
-        void ClearErrorStrings() override;
+        pybind11::object GetEngineJson(pybind11::handle enginePath);
+        pybind11::object LoadO3deManifest();
+        pybind11::object GetGemsFolder();
+        pybind11::object GetProjectsFolder();
+        pybind11::object GetRestrictedFolder();
+        pybind11::object GetTemplatesFolder();
+        pybind11::object GetThirdPartyFolder();
+        pybind11::object GetManifestEngines();
+        pybind11::object GetThisEnginePath();
+        pybind11::object GetRegisterEnginePath(pybind11::str engineName);
+        int EditEngine(pybind11::handle enginePath, pybind11::str engineName, pybind11::str engineVersion);
+        int RegisterEngine(
+            pybind11::handle enginePath,
+            pybind11::handle projectsFolderPath,
+            pybind11::handle gemsFolderPath,
+            pybind11::handle templatesFolderPath,
+            pybind11::handle thirdPartyPath,
+            bool force);
+        pybind11::object GetEngineGems();
+        pybind11::object GetAllGems(pybind11::handle projectPath);
+        pybind11::object GetGemsCmakeFilePath(pybind11::handle projectPath);
+        pybind11::object GetEnabledGemNames(pybind11::handle cmakeFilePath);
+        int RegisterGem(pybind11::handle gemPath, pybind11::handle externalProjectPath, bool remove);
+        int RegisterProject(pybind11::handle projectPath, bool remove);
+        int CreateProject(pybind11::handle projectPath, pybind11::str projectName, pybind11::handle templatePath);
+        pybind11::object GetGemJson(pybind11::handle gemPath, pybind11::handle projectPath);
+        pybind11::object GetProjectJson(pybind11::handle projectPath);
+        pybind11::object GetManifestProjects();
+        pybind11::object GetEngineProjects();
+        int EnableProjectGem(pybind11::handle gemPath, pybind11::handle projectPath);
+        int DisableProjectGem(pybind11::handle gemPath, pybind11::handle projectPath);
+        int RemoveInvalidProjects();
+        int EditProject(
+            pybind11::handle projectPath,
+            pybind11::str projectName,
+            pybind11::str id,
+            pybind11::str origin,
+            pybind11::str displayName,
+            pybind11::str summary,
+            pybind11::str iconPath,
+            pybind11::list tags);
+        pybind11::object GetTemplateJson(pybind11::handle templatePath, pybind11::handle projectPath);
+        pybind11::object GetTemplates();
+        int RefreshRepo(pybind11::str repoUri);
+        int RefreshRepos();
+        int RegisterRepo(pybind11::str repoUri, bool remove);
+        pybind11::object GetRepoJson(pybind11::handle repoUri);
+        pybind11::object GetRepoPath(pybind11::handle repoUri);
+        pybind11::object GetReposUris();
+        pybind11::object GetCachedGemJsonPaths(pybind11::str repoUri);
+        pybind11::object GetAllCachedGemJsonPaths();
+        int DownloadGem(pybind11::str gemName, pybind11::cpp_function callback, bool force);
+        bool IsGemUpdateAvaliable(pybind11::str gemName, pybind11::str lastUpdated);
 
     private:
-        AZ_DISABLE_COPY_MOVE(O3deCli);
+        AZ_DISABLE_COPY_MOVE(PythonCliBindings);
 
-        AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
-        bool ExecuteWithLock(AZStd::function<void()> executionCallback);
-        EngineInfo EngineInfoFromPath(pybind11::handle enginePath);
-        GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
-        GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
-        ProjectInfo ProjectInfoFromPath(pybind11::handle path);
-        ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
-        AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool StopPython();
-        IO3deCli::ErrorPair GetErrorPair();
 
 
         bool m_pythonStarted = false;
@@ -96,19 +101,16 @@ namespace O3DE::ProjectManager
         AZ::IO::FixedMaxPath m_enginePath;
         AZStd::recursive_mutex m_lock;
 
-        pybind11::handle m_engineTemplate;
-        pybind11::handle m_engineProperties;
-        pybind11::handle m_cmake;
-        pybind11::handle m_register;
-        pybind11::handle m_manifest;
-        pybind11::handle m_enableGemProject;
-        pybind11::handle m_disableGemProject;
-        pybind11::handle m_editProjectProperties;
-        pybind11::handle m_download;
-        pybind11::handle m_repo;
-        pybind11::handle m_pathlib;
-
-        bool m_requestCancelDownload = false;
-        AZStd::vector<AZStd::string> m_pythonErrorStrings;
+        pybind11::module m_engineTemplate;
+        pybind11::module m_engineProperties;
+        pybind11::module m_cmake;
+        pybind11::module m_register;
+        pybind11::module m_manifest;
+        pybind11::module m_enableGemProject;
+        pybind11::module m_disableGemProject;
+        pybind11::module m_editProjectProperties;
+        pybind11::module m_download;
+        pybind11::module m_repo;
+        pybind11::module m_pathlib;
     };
 }

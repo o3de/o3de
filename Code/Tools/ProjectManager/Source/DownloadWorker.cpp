@@ -8,7 +8,7 @@
 
 #include <DownloadController.h>
 #include <DownloadWorker.h>
-#include <O3deCli.h>
+#include <Cli/O3deCli.h>
 
 
 namespace O3DE::ProjectManager

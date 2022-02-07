@@ -8,7 +8,7 @@
 
 #include <ProjectUtils.h>
 #include <ProjectManagerDefs.h>
-#include <O3deCliInterface.h>
+#include <Cli/O3deCliInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
 
