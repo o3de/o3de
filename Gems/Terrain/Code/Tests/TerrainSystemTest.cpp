@@ -193,9 +193,9 @@ namespace UnitTest
             tagWeight3.m_weight = 0.3f;
             expectedTags.push_back(tagWeight3);
 
-            m_terrainAreaSurfaceRequests = AZStd::make_unique<NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus>>(entity->GetId());
-            ON_CALL(*m_terrainAreaSurfaceRequests, GetSurfaceWeights).WillByDefault(
-                [tagWeight1, tagWeight2, tagWeight3](const AZ::Vector3& position, AzFramework::SurfaceData::SurfaceTagWeightList& surfaceWeights)
+            auto mockGetSurfaceWeights = [tagWeight1, tagWeight2, tagWeight3](
+                const AZ::Vector3& position,
+                AzFramework::SurfaceData::SurfaceTagWeightList& surfaceWeights)
                 {
                     surfaceWeights.clear();
                     float absYPos = fabsf(position.GetY());
@@ -210,6 +210,19 @@ namespace UnitTest
                     else
                     {
                         surfaceWeights.push_back(tagWeight3);
+                    }
+                };
+
+            m_terrainAreaSurfaceRequests = AZStd::make_unique<NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus>>(entity->GetId());
+            ON_CALL(*m_terrainAreaSurfaceRequests, GetSurfaceWeights).WillByDefault(mockGetSurfaceWeights);
+            ON_CALL(*m_terrainAreaSurfaceRequests, GetSurfaceWeightsFromList).WillByDefault(
+                [mockGetSurfaceWeights](
+                    AZStd::span<const AZ::Vector3> inPositionList,
+                    AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList)
+                {
+                    for (size_t i = 0; i < inPositionList.size(); i++)
+                    {
+                        mockGetSurfaceWeights(inPositionList[i], outSurfaceWeightsList[i]);
                     }
                 }
             );
