@@ -223,7 +223,7 @@ namespace O3DE::ProjectManager
             );
         });
 
-        if (pythonSuccess && registrationExitCode != 0)
+        if (pythonSuccess && registrationExitCode == 0)
         {
             return AZ::Success();
         }
