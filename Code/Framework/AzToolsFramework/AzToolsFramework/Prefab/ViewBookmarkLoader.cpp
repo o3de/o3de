@@ -18,6 +18,7 @@
 #include <AzCore/Serialization/EditContext.h>
 
 #include <Prefab/ViewBookmarkLoader.h>
+#include <API/ComponentEntitySelectionBus.h>
 
 
 #pragma optimize("", off)
@@ -32,8 +33,7 @@ void ViewBookmarkLoader::Reflect(AZ::ReflectContext* context)
         serializeContext->RegisterGenericType<ViewBookmark>();
 
         serializeContext->Class<ViewBookmarkLoader>()
-            ->Version(0)
-            ->Field("Bookmark01", &ViewBookmarkLoader::m_config);
+            ->Version(0);
     }
 }
 
@@ -47,12 +47,32 @@ void ViewBookmarkLoader::UnregisterViewBookmarkLoaderInterface()
     AZ::Interface<ViewBookmarkLoaderInterface>::Unregister(this);
 }
 
-bool ViewBookmarkLoader::SaveCustomBookmark(ViewBookmark config)
+bool ViewBookmarkLoader::SaveBookmark(ViewBookmark bookmark)
 {
-    m_config = config;
+    AZ::EntityId levelEntityId;
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+        levelEntityId, &AzToolsFramework::ToolsApplicationRequests::GetCurrentLevelEntityId);
+
+    AZ_Error("View Bookmark Loader ", levelEntityId.IsValid(), "Level Entity ID is invalid.");
+
+    //Create entry or if it already exists, add the bookmark
+    auto existingBookmarkEntry= m_viewBookmarkMap.find(levelEntityId);
+    if (existingBookmarkEntry != m_viewBookmarkMap.end())
+    {
+        existingBookmarkEntry->second.push_back(bookmark);
+    }
+    else
+    {
+        m_viewBookmarkMap.insert(AZStd::make_pair(levelEntityId, AZStd::vector<ViewBookmark>{ bookmark }));
+    }
+
+    // Write to the settings registry (We might want to do this step somewhere else)
     if (auto registry = AZ::SettingsRegistry::Get())
     {
-        return registry->SetObject("/O3DE/ViewBookmarks/ViewBookmark_4", m_config);
+        size_t currentBookmarkIndex = m_viewBookmarkMap.at(levelEntityId).size() - 1;
+        AZStd::string finalPath = s_viewBookmarksRegistryPath + levelEntityId.ToString() + "/" +
+            AZStd::to_string(currentBookmarkIndex); 
+        return registry->SetObject(finalPath, m_viewBookmarkMap.at(levelEntityId).back());
     }
     return false;
 }

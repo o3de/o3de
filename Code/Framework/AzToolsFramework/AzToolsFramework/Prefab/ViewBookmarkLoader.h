@@ -9,6 +9,7 @@
 #pragma once
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <Prefab/ViewBookmarkLoaderInterface.h>
+#include <AzCore/Component/EntityId.h>
 
 class ViewBookmarkLoader final
     : public ViewBookmarkLoaderInterface
@@ -25,7 +26,7 @@ public:
 
     void SaveBookmarkSettingsFile();
 
-    bool SaveCustomBookmark(ViewBookmark config);
+    bool SaveBookmark(ViewBookmark config);
 
-    ViewBookmark m_config;
+    AZStd::unordered_map<AZ::EntityId, AZStd::vector<ViewBookmark>> m_viewBookmarkMap;
 };
