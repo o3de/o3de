@@ -409,11 +409,6 @@ namespace ScriptCanvasEditor
 
     ScriptCanvas::Node* Graph::GetOrCreateNodeFromReplacementConfig(ScriptCanvas::NodeConfiguration& config)
     {
-        if (config.m_node)
-        {
-            return config.m_node.release();
-        }
-
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         if (!serializeContext)
@@ -449,6 +444,11 @@ namespace ScriptCanvasEditor
             {
                 azrtti_cast<ScriptCanvas::Nodes::Core::SetVariableNode*>(&newNode)->SetId(variableId);
             }
+        };
+
+        config.create = [variableId](const ScriptCanvas::Node& oldNode) ->ScriptCanvas::Node*
+        {
+            return Nodes::CreateGetVariableNodeResult(variableId, oldNode.GetOwningScriptCanvasId()).node;
         };
 
 
@@ -515,7 +515,7 @@ namespace ScriptCanvasEditor
 
     AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceLiveNode(ScriptCanvas::Node* node
         , ScriptCanvas::NodeConfiguration& nodeConfig
-        , ScriptCanvas::NodeUpdateSlotReport& nodeSlotUpdateReport)
+        , ScriptCanvas::NodeUpdateSlotReport& /*nodeSlotUpdateReport*/)
     {
         // start with remove node, like the user would
         AZ::EntityId graphCanvasGraphId = GetGraphCanvasGraphId();
@@ -524,12 +524,25 @@ namespace ScriptCanvasEditor
         SceneMemberMappingRequestBus::EventResult(nodeGraphCanvasId, node->GetEntityId(), &SceneMemberMappingRequests::GetGraphCanvasEntityId);
         nodeGraphCanvasIds.insert(nodeGraphCanvasId);
 
+        ScriptCanvas::Node* returnNode = nullptr;
+        if (nodeConfig.create)
+        {
+            returnNode = nodeConfig.create(*node);
+        }
+
         // AZ::Vector2 position;
         // GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
-                
-        GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Delete, nodeGraphCanvasIds);
 
-        return AZ::Failure();
+        if (returnNode)
+        {
+            // do this last
+            GraphCanvas::SceneRequestBus::Event(graphCanvasGraphId, &GraphCanvas::SceneRequests::Delete, nodeGraphCanvasIds);
+            return AZ::Success(returnNode);
+        }
+        else
+        {
+            return AZ::Failure();
+        }
     }
 
     AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceNodeByConfig

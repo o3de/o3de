@@ -393,12 +393,12 @@ namespace ScriptCanvas
         AZStd::string m_className;
         AZStd::string m_methodName;
         PropertyStatus m_propertyStatus = PropertyStatus::None;
-        AZStd::unique_ptr<Node> m_node;
         AZStd::function<void(const Node&, Node&)> modify;
+        AZStd::function<Node*(const Node&)> create;
 
         bool IsValid()
         {
-            return !m_type.IsNull() || m_node != nullptr;
+            return !m_type.IsNull() || create != nullptr;
         }
     };
 
