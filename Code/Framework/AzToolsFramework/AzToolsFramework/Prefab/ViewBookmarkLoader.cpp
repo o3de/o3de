@@ -26,14 +26,14 @@ static constexpr const char* s_viewBookmarksRegistryPath = "/O3DE/ViewBookmarks/
 
 void ViewBookmarkLoader::Reflect(AZ::ReflectContext* context)
 {
+    ViewBookmark::Reflect(context);
     if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serializeContext->Class<ViewBookmark>()
+        serializeContext->RegisterGenericType<ViewBookmark>();
+
+        serializeContext->Class<ViewBookmarkLoader>()
             ->Version(0)
-            ->Field("x", &ViewBookmark::m_xPos)
-            ->Field("y", &ViewBookmark::m_yPos)
-            ->Field("z", &ViewBookmark::m_zPos);
-            //->Field("Bookmark01", &ViewBookmarkLoader::m_config);
+            ->Field("Bookmark01", &ViewBookmarkLoader::m_config);
     }
 }
 
@@ -49,10 +49,10 @@ void ViewBookmarkLoader::UnregisterViewBookmarkLoaderInterface()
 
 bool ViewBookmarkLoader::SaveCustomBookmark(ViewBookmark config)
 {
-    //m_config = config;
+    m_config = config;
     if (auto registry = AZ::SettingsRegistry::Get())
     {
-        return registry->SetObject("/O3DE/ViewBookmarks/ViewBookmark_4", config);
+        return registry->SetObject("/O3DE/ViewBookmarks/ViewBookmark_4", m_config);
     }
     return false;
 }

@@ -27,5 +27,5 @@ public:
 
     bool SaveCustomBookmark(ViewBookmark config);
 
-    //ViewBookmark m_config;
+    ViewBookmark m_config;
 };
