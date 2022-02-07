@@ -16,11 +16,11 @@ namespace AWSGameLift
 {
     void AWSGameLiftStopMatchmakingRequest::Reflect(AZ::ReflectContext* context)
     {
-        AzFramework::StopMatchmakingRequest::Reflect(context);
+        Multiplayer::StopMatchmakingRequest::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AWSGameLiftStopMatchmakingRequest, AzFramework::StopMatchmakingRequest>()
+            serializeContext->Class<AWSGameLiftStopMatchmakingRequest, Multiplayer::StopMatchmakingRequest>()
                 ->Version(0);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -33,7 +33,7 @@ namespace AWSGameLift
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<AzFramework::StopMatchmakingRequest>("StopMatchmakingRequest")
+            behaviorContext->Class<Multiplayer::StopMatchmakingRequest>("StopMatchmakingRequest")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 // Expose base type to BehaviorContext, but hide it to be used directly
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);

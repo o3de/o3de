@@ -159,25 +159,13 @@ namespace Terrain
 
         const bool isHole = !isTerrainValidAtPoint;
 
-        SurfaceData::SurfacePoint point;
-        point.m_entityId = GetEntityId();
-        point.m_position = terrainSurfacePoint.m_position;
-        point.m_normal = terrainSurfacePoint.m_normal;
-
-        // Preallocate enough space for all of our terrain's surface tags, plus the default "terrain" / "terrainHole" tag.
-        point.m_masks.reserve(terrainSurfacePoint.m_surfaceTags.size() + 1);
-
-        // Add all of the surface tags that the terrain has at this point.
-        for (auto& tag : terrainSurfacePoint.m_surfaceTags)
-        {
-            point.m_masks[tag.m_surfaceType] = tag.m_weight;
-        }
+        SurfaceData::SurfaceTagWeights weights(terrainSurfacePoint.m_surfaceTags);
 
         // Always add a "terrain" or "terrainHole" tag.
         const AZ::Crc32 terrainTag = isHole ? Constants::s_terrainHoleTagCrc : Constants::s_terrainTagCrc;
-        point.m_masks[terrainTag] = 1.0f;
+        weights.AddSurfaceTagWeight(terrainTag, 1.0f);
 
-        surfacePointList.push_back(AZStd::move(point));
+        surfacePointList.AddSurfacePoint(GetEntityId(), terrainSurfacePoint.m_position, terrainSurfacePoint.m_normal, weights);
     }
 
     AZ::Aabb TerrainSurfaceDataSystemComponent::GetSurfaceAabb() const
