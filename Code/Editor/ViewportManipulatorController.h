@@ -50,6 +50,6 @@ namespace SandboxEditor
         AZ::ScriptTimePoint m_currentTime;
         
         bool m_captureStart;
-        AZ::Vector2 m_virtualPosition;
+        AZ::Vector2 m_virtualNormalizedPosition;
     };
 } // namespace SandboxEditor

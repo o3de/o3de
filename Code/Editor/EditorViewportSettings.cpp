@@ -182,7 +182,7 @@ namespace SandboxEditor
         return AzToolsFramework::GetRegistry(ManipulatorMouseWrapSetting, false);
     }
 
-    void SetManipulatorMouseWrap(const bool enabled)
+    void SetManipulatorMouseWrap(bool enabled)
     {
         AzToolsFramework::SetRegistry(ManipulatorMouseWrapSetting, enabled);
     }
