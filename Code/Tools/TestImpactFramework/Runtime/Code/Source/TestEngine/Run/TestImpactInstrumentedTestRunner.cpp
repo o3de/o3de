@@ -12,7 +12,6 @@
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/Run/TestImpactInstrumentedTestRunner.h>
-#include <TestEngine/Run/TestImpactTestRunSerializer.h>
 
 #include <AzCore/IO/SystemFile.h>
 

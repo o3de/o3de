@@ -12,7 +12,6 @@
 
 #include <GridMate/Carrier/Carrier.h>
 #include <GridMate/Carrier/Compressor.h>
-#include <GridMate/Carrier/Cripter.h>
 #include <GridMate/Carrier/DefaultHandshake.h>
 #include <GridMate/Carrier/DefaultTrafficControl.h>
 #include <GridMate/Carrier/Simulator.h>
@@ -1952,8 +1951,8 @@ CarrierThread::ProcessConnections()
 
         bool isHandshakeTimeOut = false;
         bool isConnectionTimeout = false;
-        bool isBadTrafficConditions = false;
-        bool isBadPackets = false;
+        [[maybe_unused]] bool isBadTrafficConditions = false;
+        [[maybe_unused]] bool isBadPackets = false;
         if (connection->m_isBadPackets)
         {
             isBadPackets = true;

@@ -29,18 +29,4 @@ namespace QtHelpers
         bool inWidget = (localPos.x() >= 0 && localPos.x() < size.width() && localPos.y() >= 0 && localPos.y() < size.height());
         return inWidget;
     }
-
-    float GetHighDpiScaleFactor(const QWidget& widget)
-    {
-        return static_cast<float>(QHighDpiScaling::factor(widget.windowHandle()->screen()));
-    }
-
-    QSize GetDpiScaledViewportSize(const QWidget& widget)
-    {
-        float dpiScale = GetHighDpiScaleFactor(widget);
-        float width = ceilf(widget.size().width() * dpiScale);
-        float height = ceilf(widget.size().height() * dpiScale);
-        return QSize(static_cast<int>(width), static_cast<int>(height));
-    }
-
 }   // namespace QtHelpers

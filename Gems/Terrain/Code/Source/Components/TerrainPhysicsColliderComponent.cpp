@@ -6,12 +6,14 @@
  *
  */
 
+
 #include <Components/TerrainPhysicsColliderComponent.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Casting/lossy_cast.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -70,8 +72,9 @@ namespace Terrain
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<TerrainPhysicsColliderConfig, AZ::ComponentConfig>()
-                ->Version(2)->Field(
-                "Mappings", &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings)
+                ->Version(3)
+                ->Field("DefaultMaterial", &TerrainPhysicsColliderConfig::m_defaultMaterialSelection)
+                ->Field("Mappings", &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings)
             ;
 
             if (auto edit = serialize->GetEditContext())
@@ -82,6 +85,8 @@ namespace Terrain
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainPhysicsColliderConfig::m_defaultMaterialSelection,
+                        "Default Surface Physics Material", "Select a material to be used by unmapped surfaces by default")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings,
                         "Surface to Material Mappings", "Maps surfaces to physics materials")
@@ -319,7 +324,7 @@ namespace Terrain
         }
 
         // If this surface isn't mapped, use the default material.
-        return Physics::MaterialId();
+        return m_configuration.m_defaultMaterialSelection.GetMaterialId();
     }
 
     void TerrainPhysicsColliderComponent::GenerateHeightsAndMaterialsInBounds(
@@ -378,11 +383,11 @@ namespace Terrain
 
     AZ::Vector2 TerrainPhysicsColliderComponent::GetHeightfieldGridSpacing() const
     {
-        AZ::Vector2 gridResolution = AZ::Vector2(1.0f);
+        float gridResolution = 1.0f;
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             gridResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
-        return gridResolution;
+        return AZ::Vector2(gridResolution);
     }
 
     void TerrainPhysicsColliderComponent::GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const
@@ -417,7 +422,7 @@ namespace Terrain
         AZStd::vector<Physics::MaterialId> materialList;
 
         // Ensure the list contains the default material as the first entry.
-        materialList.emplace_back(Physics::MaterialId());
+        materialList.emplace_back(m_configuration.m_defaultMaterialSelection.GetMaterialId());
 
         for (auto& mapping : m_configuration.m_surfaceMaterialMappings)
         {

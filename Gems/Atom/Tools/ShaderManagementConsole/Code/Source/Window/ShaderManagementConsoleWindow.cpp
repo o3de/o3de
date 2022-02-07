@@ -6,15 +6,17 @@
  *
  */
 
-#include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Name/Name.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <Window/ShaderManagementConsoleWindow.h>
+#include <AzCore/Utils/Utils.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QDesktopServices>
+#include <QFileDialog>
 #include <QHeaderView>
 #include <QStandardItemModel>
 #include <QTableView>
@@ -39,10 +41,6 @@ namespace ShaderManagementConsole
 
         setObjectName("ShaderManagementConsoleWindow");
 
-        m_toolBar = new ShaderManagementConsoleToolBar(this);
-        m_toolBar->setObjectName("ToolBar");
-        addToolBar(m_toolBar);
-
         m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
         m_assetBrowser->SetOpenHandler([](const AZStd::string& absolutePath) {
             if (AzFramework::StringFunc::Path::IsExtension(absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
@@ -65,6 +63,13 @@ namespace ShaderManagementConsole
         m_actionSaveAsChild->setEnabled(false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
+    }
+
+    bool ShaderManagementConsoleWindow::GetOpenDocumentParams(AZStd::string& openPath)
+    {
+        openPath = QFileDialog::getOpenFileName(
+            this, tr("Open Document"), AZ::Utils::GetProjectPath().c_str(), tr("Files (*.%1)").arg(AZ::RPI::ShaderVariantListSourceData::Extension)).toUtf8().constData();
+        return !openPath.empty();
     }
 
     QWidget* ShaderManagementConsoleWindow::CreateDocumentTabView(const AZ::Uuid& documentId)

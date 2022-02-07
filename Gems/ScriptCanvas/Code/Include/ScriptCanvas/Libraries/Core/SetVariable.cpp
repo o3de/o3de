@@ -8,8 +8,9 @@
 
 #include "SetVariable.h"
 
+#include <AzCore/std/sort.h>
+
 #include <Core/ExecutionNotificationsBus.h>
-#include <Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>

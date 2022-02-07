@@ -500,6 +500,9 @@ namespace EMStudio
         painter.drawPath(path);
     }
 
+    const AzToolsFramework::ManipulatorManagerId g_animManipulatorManagerId =
+        AzToolsFramework::ManipulatorManagerId(AZ::Crc32("AnimManipulatorManagerId"));
+
     // shortcuts
     QApplication* GetApp()
     {

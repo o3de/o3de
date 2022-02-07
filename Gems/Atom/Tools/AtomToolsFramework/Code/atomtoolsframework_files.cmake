@@ -9,6 +9,8 @@
 set(FILES
     Include/AtomToolsFramework/Application/AtomToolsApplication.h
     Include/AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h
+    Include/AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h
+    Include/AtomToolsFramework/AssetGridDialog/AssetGridDialog.h
     Include/AtomToolsFramework/Communication/LocalServer.h
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
@@ -27,6 +29,8 @@ set(FILES
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h
+    Include/AtomToolsFramework/PerformanceMonitor/PerformanceMetrics.h
+    Include/AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
@@ -41,6 +45,9 @@ set(FILES
     Source/AssetBrowser/AtomToolsAssetBrowser.cpp
     Source/AssetBrowser/AtomToolsAssetBrowser.qrc
     Source/AssetBrowser/AtomToolsAssetBrowser.ui
+    Source/AssetBrowser/AtomToolsAssetBrowserInteractions.cpp
+    Source/AssetGridDialog/AssetGridDialog.cpp
+    Source/AssetGridDialog/AssetGridDialog.ui
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
@@ -58,6 +65,8 @@ set(FILES
     Source/Inspector/InspectorGroupWidget.cpp
     Source/Inspector/InspectorGroupHeaderWidget.cpp
     Source/Inspector/InspectorPropertyGroupWidget.cpp
+    Source/PerformanceMonitor/PerformanceMonitorSystemComponent.cpp
+    Source/PerformanceMonitor/PerformanceMonitorSystemComponent.h
     Source/Util/MaterialPropertyUtil.cpp
     Source/Util/Util.cpp
     Source/Viewport/RenderViewportWidget.cpp

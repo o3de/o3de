@@ -51,6 +51,7 @@ bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, co
 }
 
 TerrainSystem::TerrainSystem()
+    : m_terrainRaycastContext(*this)
 {
     Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
     AZ::TickBus::Handler::BusConnect();
@@ -133,7 +134,7 @@ void TerrainSystem::SetTerrainAabb(const AZ::Aabb& worldBounds)
     m_terrainSettingsDirty = true;
 }
 
-void TerrainSystem::SetTerrainHeightQueryResolution(AZ::Vector2 queryResolution)
+void TerrainSystem::SetTerrainHeightQueryResolution(float queryResolution)
 {
     m_requestedSettings.m_heightQueryResolution = queryResolution;
     m_terrainSettingsDirty = true;
@@ -144,7 +145,7 @@ AZ::Aabb TerrainSystem::GetTerrainAabb() const
     return m_currentSettings.m_worldBounds;
 }
 
-AZ::Vector2 TerrainSystem::GetTerrainHeightQueryResolution() const
+float TerrainSystem::GetTerrainHeightQueryResolution() const
 {
     return m_currentSettings.m_heightQueryResolution;
 }
@@ -203,7 +204,7 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
             AZ::Vector2 normalizedDelta;
             AZ::Vector2 pos0;
             ClampPosition(x, y, pos0, normalizedDelta);
-            const AZ::Vector2 pos1 = pos0 + m_currentSettings.m_heightQueryResolution;
+            const AZ::Vector2 pos1 = pos0 + AZ::Vector2(m_currentSettings.m_heightQueryResolution);
 
             const float heightX0Y0 = GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), terrainExists);
             const float heightX1Y0 = GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), terrainExists);
@@ -330,11 +331,11 @@ AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y, Sampler sample
             return outNormal;
         }
     }
-    const AZ::Vector2 range = (m_currentSettings.m_heightQueryResolution / 2.0f);
-    const AZ::Vector2 left (x - range.GetX(), y);
-    const AZ::Vector2 right(x + range.GetX(), y);
-    const AZ::Vector2 up   (x, y - range.GetY());
-    const AZ::Vector2 down (x, y + range.GetY());
+    float range = m_currentSettings.m_heightQueryResolution / 2.0f;
+    const AZ::Vector2 left (x - range, y);
+    const AZ::Vector2 right(x + range, y);
+    const AZ::Vector2 up   (x, y - range);
+    const AZ::Vector2 down (x, y + range);
 
     AZ::Vector3 v1(up.GetX(), up.GetY(), GetHeightSynchronous(up.GetX(), up.GetY(), sampler, &terrainExists));
     AZ::Vector3 v2(left.GetX(), left.GetY(), GetHeightSynchronous(left.GetX(), left.GetY(), sampler, &terrainExists));
@@ -438,6 +439,16 @@ void TerrainSystem::GetSurfacePointFromFloats(
     GetSurfacePoint(AZ::Vector3(x, y, 0.0f), outSurfacePoint, sampleFilter, terrainExistsPtr);
 }
 
+AzFramework::EntityContextId TerrainSystem::GetTerrainRaycastEntityContextId() const
+{
+    return m_terrainRaycastContext.GetEntityContextId();
+}
+
+AzFramework::RenderGeometry::RayResult TerrainSystem::GetClosestIntersection(
+    const AzFramework::RenderGeometry::RayRequest& ray) const
+{
+    return m_terrainRaycastContext.RayIntersect(ray);
+}
 
 AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const
 {

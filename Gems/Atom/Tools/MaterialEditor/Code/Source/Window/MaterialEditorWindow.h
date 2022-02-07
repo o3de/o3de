@@ -33,7 +33,6 @@ namespace MaterialEditor
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
         MaterialEditorWindow(QWidget* parent = 0);
-        ~MaterialEditorWindow() = default;
 
     protected:
         void ResizeViewportRenderTarget(uint32_t width, uint32_t height) override;
@@ -44,6 +43,7 @@ namespace MaterialEditor
         bool GetOpenDocumentParams(AZStd::string& openPath) override;
         void OpenSettings() override;
         void OpenHelp() override;
+        void OpenAbout() override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
 

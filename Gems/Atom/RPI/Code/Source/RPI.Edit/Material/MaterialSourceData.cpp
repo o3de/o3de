@@ -217,14 +217,14 @@ namespace AZ
                 return Failure();
             }
 
-            MaterialTypeSourceData materialTypeSourceData;
-            if (!AZ::RPI::JsonUtils::LoadObjectFromFile(materialTypeSourcePath, materialTypeSourceData))
+            auto materialTypeLoadOutcome = MaterialUtils::LoadMaterialTypeSourceData(materialTypeSourcePath);
+            if (!materialTypeLoadOutcome)
             {
                 AZ_Error("MaterialSourceData", false, "Failed to load MaterialTypeSourceData: '%s'.", materialTypeSourcePath.c_str());
                 return Failure();
             }
 
-            materialTypeSourceData.ResolveUvEnums();
+            MaterialTypeSourceData materialTypeSourceData = materialTypeLoadOutcome.TakeValue();
 
             const auto materialTypeAsset =
                 materialTypeSourceData.CreateMaterialTypeAsset(materialTypeAssetId.GetValue(), materialTypeSourcePath, elevateWarnings);
@@ -340,16 +340,16 @@ namespace AZ
                         if (result == MaterialUtils::GetImageAssetResult::Missing)
                         {
                             materialAssetCreator.ReportWarning(
-                                "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
+                                "Material property '%s': Could not find the image '%s'", propertyId.GetCStr(),
                                 property.second.m_value.GetValue<AZStd::string>().data());
                         }
                                     
                         imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
-                        materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
+                        materialAssetCreator.SetPropertyValue(propertyId, imageAsset);
                     }
                     else
                     {
-                        materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), property.second.m_value);
+                        materialAssetCreator.SetPropertyValue(propertyId, property.second.m_value);
                     }
                 }
             }

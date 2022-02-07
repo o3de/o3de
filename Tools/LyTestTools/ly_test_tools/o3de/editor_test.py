@@ -315,7 +315,7 @@ class EditorTestSuite():
         return 8
 
     ## Internal ##
-    _TIMEOUT_CRASH_LOG = 20 # Maximum time (seconds) for waiting for a crash file, in secondss
+    _TIMEOUT_CRASH_LOG = 20 # Maximum time (seconds) for waiting for a crash file, in seconds
     _TEST_FAIL_RETCODE = 0xF # Return code for test failure
 
     @pytest.fixture(scope="class")
@@ -772,7 +772,8 @@ class EditorTestSuite():
             return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the editor log
-            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name))
+            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
+                                                     f'({run_id}){log_name}')
             if return_code == 0:
                 test_result = Result.Pass.create(test_spec, output, editor_log_content)
             else:
@@ -788,7 +789,7 @@ class EditorTestSuite():
                     test_result = Result.Fail.create(test_spec, output, editor_log_content)
         except WaitTimeoutError:
             output = editor.get_output()
-            editor.kill()
+            editor.stop()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout.create(test_spec, output, test_spec.timeout, editor_log_content)
     
@@ -847,7 +848,8 @@ class EditorTestSuite():
             return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the editor log
-            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name))
+            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
+                                                     f'({run_id}){log_name}')
             if return_code == 0:
                 # No need to scrap the output, as all the tests have passed
                 for test_spec in test_spec_list:
@@ -889,7 +891,7 @@ class EditorTestSuite():
                         results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code,
                                                                       crash_error, crashed_result.editor_log)
         except WaitTimeoutError:            
-            editor.kill()
+            editor.stop()
             output = editor.get_output()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
 

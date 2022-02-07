@@ -47,8 +47,7 @@ def MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     #  2) Create a new entity with components "Mesh Surface Tag Emitter", "Mesh"
     entity_position = math.Vector3(125.0, 136.0, 32.0)

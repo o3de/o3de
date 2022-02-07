@@ -413,6 +413,9 @@ namespace AZ
             // At this moment We have global build options that should be merged with the build options that are common
             // to all the supervariants of this shader.
             buildOptions.m_compilerArguments.Merge(shaderSourceData.m_compiler);
+            buildOptions.m_preprocessorSettings.m_predefinedMacros.insert(
+                buildOptions.m_preprocessorSettings.m_predefinedMacros.end(),
+                shaderSourceData.m_definitions.begin(), shaderSourceData.m_definitions.end());
 
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {

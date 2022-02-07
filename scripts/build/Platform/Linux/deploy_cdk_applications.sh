@@ -1,5 +1,5 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
+#
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
@@ -8,7 +8,7 @@
 
 # Deploy the CDK applications for AWS gems (Linux only)
 
-SOURCE_DIRECTORY=$(dirname "$0")
+SOURCE_DIRECTORY=$PWD
 PATH=$SOURCE_DIRECTORY/python:$PATH
 GEM_DIRECTORY=$SOURCE_DIRECTORY/Gems
 
@@ -80,11 +80,14 @@ fi
 
 # Set temporary AWS credentials from the assume role
 credentials=$(aws sts assume-role --query Credentials.[SecretAccessKey,SessionToken,AccessKeyId] --output text --role-arn $ASSUME_ROLE_ARN --role-session-name o3de-Automation-session)
-AWS_SECRET_ACCESS_KEY=$(echo "$credentials" | cut -d' ' -f1)
-AWS_SESSION_TOKEN=$(echo "$credentials" | cut -d' ' -f2)
-AWS_ACCESS_KEY_ID=$(echo "$credentials" | cut -d' ' -f3)
+export AWS_SECRET_ACCESS_KEY=$(echo $credentials | cut -d' ' -f1)
+export AWS_SESSION_TOKEN=$(echo $credentials | cut -d' ' -f2)
+export AWS_ACCESS_KEY_ID=$(echo $credentials | cut -d' ' -f3)
 
-O3DE_AWS_DEPLOY_ACCOUNT=$(echo "$ASSUME_ROLE_ARN" | cut -d':' -f5)
+export O3DE_AWS_DEPLOY_ACCOUNT=$(echo "$ASSUME_ROLE_ARN" | cut -d':' -f5)
+if [[ -z "$O3DE_AWS_PROJECT_NAME" ]]; then
+   export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+fi
 
 # Bootstrap and deploy the CDK applications
 echo [cdk_bootstrap] Bootstrap CDK

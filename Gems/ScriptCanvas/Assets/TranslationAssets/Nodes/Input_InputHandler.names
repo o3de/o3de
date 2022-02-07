@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "base": "{0B0AC61B-4BBA-42BF-BDCD-DAF2D3CA41A8}",
+            "base": "{0A2EB488-5A6A-E166-BB62-23FF81499E33}",
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
@@ -11,33 +11,47 @@
             },
             "slots": [
                 {
+                    "base": "Input_Connect Event_0",
+                    "details": {
+                        "name": "Connect Event",
+                        "tooltip": "Connect to input event name as defined in an input binding asset."
+                    }
+                },
+                {
                     "base": "DataInput_Event Name_0",
                     "details": {
                         "name": "Event Name"
                     }
                 },
                 {
-                    "base": "DataOutput_Value_0",
+                    "base": "Output_On Connect Event_0",
                     "details": {
-                        "name": "Value"
+                        "name": "On Connect Event",
+                        "tooltip": "Connect to input event name as defined in an input binding asset."
                     }
                 },
                 {
-                    "base": "Output_Pressed_0",
+                    "base": "Output_Pressed_1",
                     "details": {
                         "name": "Pressed",
                         "tooltip": "Signaled when the input event begins."
                     }
                 },
                 {
-                    "base": "Output_Held_1",
+                    "base": "DataOutput_value_0",
+                    "details": {
+                        "name": "value"
+                    }
+                },
+                {
+                    "base": "Output_Held_2",
                     "details": {
                         "name": "Held",
                         "tooltip": "Signaled while the input event is active."
                     }
                 },
                 {
-                    "base": "Output_Released_2",
+                    "base": "Output_Released_3",
                     "details": {
                         "name": "Released",
                         "tooltip": "Signaled when the input event ends."
