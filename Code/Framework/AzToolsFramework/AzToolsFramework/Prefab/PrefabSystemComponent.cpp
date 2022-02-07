@@ -166,10 +166,6 @@ namespace AzToolsFramework
             TemplateReference findTemplateResult = FindTemplate(templateId);
             if (findTemplateResult.has_value())
             {
-                // There shouldn't be a linkId in the top level template. LinkIds exist on the nested instances of a template.
-                PrefabDom& templateDom = findTemplateResult->get().GetPrefabDom();
-                templateDom.RemoveMember(PrefabDomUtils::LinkIdName);
-
                 auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
                 if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
                 {
