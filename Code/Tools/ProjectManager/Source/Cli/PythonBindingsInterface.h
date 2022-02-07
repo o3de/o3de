@@ -22,14 +22,14 @@
 namespace O3DE::ProjectManager
 {
     //! Interface used to interact with the o3de cli functions
-    class IO3deCli
+    class IPythonBindings
     {
     public:
-        AZ_RTTI(O3DE::ProjectManager::IO3deCli, "{C2B72CA4-56A9-4601-A584-3B40E83AA17C}");
-        AZ_DISABLE_COPY_MOVE(IO3deCli);
+        AZ_RTTI(O3DE::ProjectManager::IPythonBindings, "{C2B72CA4-56A9-4601-A584-3B40E83AA17C}");
+        AZ_DISABLE_COPY_MOVE(IPythonBindings);
 
-        IO3deCli() = default;
-        virtual ~IO3deCli() = default;
+        IPythonBindings() = default;
+        virtual ~IPythonBindings() = default;
 
         //! First string in pair is general error, second is detailed
         typedef AZStd::pair<AZStd::string, AZStd::string> ErrorPair;
@@ -269,5 +269,5 @@ namespace O3DE::ProjectManager
         virtual void ClearErrorStrings() = 0;
     };
 
-    using O3deCliInterface = AZ::Interface<IO3deCli>;
+    using PythonBindingsInterface = AZ::Interface<IPythonBindings>;
 } // namespace O3DE::ProjectManager

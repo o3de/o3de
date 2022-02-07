@@ -10,7 +10,7 @@
 #include <AzTest/Utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <Cli/O3deCli.h>
+#include <Cli/PythonBindings.h>
 #include <Cli/PythonCliBindings.h>
 #include <ProjectManager_Test_Traits_Platform.h>
 
@@ -18,31 +18,31 @@
 
 namespace O3DE::ProjectManager
 {
-    class O3deCliTests 
+    class PythonBindingsTests 
         : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
 
-        O3deCliTests()
+        PythonBindingsTests()
         {
             const AZStd::string engineRootPath{ AZ::Test::GetEngineRootPath() };
-            m_o3deCli = AZStd::make_unique<O3deCli>(new PythonCliBindings(AZ::IO::PathView(engineRootPath)));
+            m_o3deCli = AZStd::make_unique<PythonBindings>(new PythonCliBindings(AZ::IO::PathView(engineRootPath)));
         }
 
-        ~O3deCliTests()
+        ~PythonBindingsTests()
         {
             m_o3deCli.reset();
         }
 
-        AZStd::unique_ptr<ProjectManager::O3deCli> m_o3deCli;
+        AZStd::unique_ptr<ProjectManager::PythonBindings> m_o3deCli;
     };
 
-    TEST_F(O3deCliTests, O3deCli_Start_Python_Succeeds)
+    TEST_F(PythonBindingsTests, PythonBindings_Start_Python_Succeeds)
     {
         EXPECT_TRUE(m_o3deCli->PythonStarted());
     }
 
-    TEST_F(O3deCliTests, O3deCli_Create_Project_Succeeds)
+    TEST_F(PythonBindingsTests, PythonBindings_Create_Project_Succeeds)
     {
         ASSERT_TRUE(m_o3deCli->PythonStarted());
 

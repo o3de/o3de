@@ -8,7 +8,7 @@
 
 #include <ProjectUtils.h>
 #include <ProjectManagerDefs.h>
-#include <Cli/O3deCliInterface.h>
+#include <Cli/PythonBindingsInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
 
@@ -299,12 +299,12 @@ namespace O3DE::ProjectManager
 
         bool RegisterProject(const QString& path)
         {
-            return O3deCliInterface::Get()->AddProject(path);
+            return PythonBindingsInterface::Get()->AddProject(path);
         }
 
         bool UnregisterProject(const QString& path)
         {
-            return O3deCliInterface::Get()->RemoveProject(path);
+            return PythonBindingsInterface::Get()->RemoveProject(path);
         }
 
         bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent)
@@ -402,7 +402,7 @@ namespace O3DE::ProjectManager
             if (projectDirectory.exists())
             {
                 // Check if there is an actual project here or just force it
-                if (force || O3deCliInterface::Get()->GetProject(path).IsSuccess())
+                if (force || PythonBindingsInterface::Get()->GetProject(path).IsSuccess())
                 {
                     return projectDirectory.removeRecursively();
                 }

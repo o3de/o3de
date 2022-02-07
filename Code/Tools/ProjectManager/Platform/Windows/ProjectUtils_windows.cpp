@@ -6,6 +6,7 @@
  */
 
 #include <ProjectUtils.h>
+#include <Cli/PythonCliBindings.h>
 
 #include <QDir>
 #include <QFileInfo>
@@ -24,7 +25,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
             // Use the engine path to insert a path for cmake
-            auto engineInfoResult = O3deCliInterface::Get()->GetEngineInfo();
+            auto engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
             if (!engineInfoResult.IsSuccess())
             {
                 return AZ::Failure(QObject::tr("Failed to get engine info"));

@@ -8,7 +8,7 @@
 
 #include <DownloadController.h>
 #include <DownloadWorker.h>
-#include <Cli/O3deCli.h>
+#include <Cli/PythonBindings.h>
 
 
 namespace O3DE::ProjectManager
@@ -25,7 +25,7 @@ namespace O3DE::ProjectManager
             emit UpdateProgress(bytesDownloaded, totalBytes);
         };
         AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> gemInfoResult =
-            O3deCliInterface::Get()->DownloadGem(m_gemName, gemDownloadProgress, /*force*/true);
+            PythonBindingsInterface::Get()->DownloadGem(m_gemName, gemDownloadProgress, /*force*/true);
 
         if (gemInfoResult.IsSuccess())
         {

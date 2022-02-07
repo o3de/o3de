@@ -130,9 +130,9 @@ set(FILES
     Source/GemRepo/GemRepoListView.cpp
     Source/GemRepo/GemRepoModel.h
     Source/GemRepo/GemRepoModel.cpp
-    Source/Cli/O3deCli.h
-    Source/Cli/O3deCli.cpp
-    Source/Cli/O3deCliInterface.h
+    Source/Cli/PythonBindings.h
+    Source/Cli/PythonBindings.cpp
+    Source/Cli/PythonBindingsInterface.h
     Source/Cli/O3deCliBindings.h
     Source/Cli/PythonCliBindings.h
     Source/Cli/PythonCliBindings.cpp

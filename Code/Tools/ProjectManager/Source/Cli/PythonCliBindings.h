@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Cli/O3deCliBindings.h>
-#include <Cli/O3deCliInterface.h>
+#include <Cli/PythonBindingsInterface.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/parallel/mutex.h>

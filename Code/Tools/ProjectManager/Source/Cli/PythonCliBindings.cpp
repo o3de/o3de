@@ -213,7 +213,7 @@ namespace RedirectOutput
             {
                 lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
             }
-            O3DE::ProjectManager::O3deCliInterface::Get()->AddErrorString(lastPythonError);
+            O3DE::ProjectManager::PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
 
             AZ_TracePrintf("Python", msg);
         });

@@ -9,7 +9,7 @@
 #include <GemCatalog/GemCatalogScreen.h>
 #include <GemRepo/GemRepoScreen.h>
 #include <ProjectManagerDefs.h>
-#include <Cli/O3deCliInterface.h>
+#include <Cli/PythonBindingsInterface.h>
 #include <ScreenHeaderWidget.h>
 #include <ScreensCtrl.h>
 #include <UpdateProjectCtrl.h>
@@ -211,7 +211,7 @@ namespace O3DE::ProjectManager
 
     void UpdateProjectCtrl::UpdateCurrentProject(const QString& projectPath)
     {
-        auto projectResult = O3deCliInterface::Get()->GetProject(projectPath);
+        auto projectResult = PythonBindingsInterface::Get()->GetProject(projectPath);
         if (projectResult.IsSuccess())
         {
             m_projectInfo = projectResult.GetValue();
@@ -295,7 +295,7 @@ namespace O3DE::ProjectManager
 
             // Update project if settings changed
             {
-                auto result = O3deCliInterface::Get()->UpdateProject(newProjectSettings);
+                auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
                 if (!result.IsSuccess())
                 {
                     QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));

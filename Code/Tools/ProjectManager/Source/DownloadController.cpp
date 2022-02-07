@@ -8,7 +8,7 @@
 
 #include <DownloadController.h>
 #include <DownloadWorker.h>
-#include <Cli/O3deCliInterface.h>
+#include <Cli/PythonBindingsInterface.h>
 
 #include <AzCore/std/algorithm.h>
 
@@ -58,7 +58,7 @@ namespace O3DE::ProjectManager
             if (findResult == m_gemNames.begin())
             {
                 // HandleResults will remove the gem upon cancelling
-                O3deCliInterface::Get()->CancelDownload();
+                PythonBindingsInterface::Get()->CancelDownload();
             }
             else
             {

@@ -70,7 +70,7 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManager", false, "Failed to init logging");
         }
 
-        m_o3deCli = AZStd::make_unique<O3deCli>(new PythonCliBindings(GetEngineRoot()));
+        m_o3deCli = AZStd::make_unique<PythonBindings>(new PythonCliBindings(GetEngineRoot()));
 
         if (!m_o3deCli->PythonStarted())
         {

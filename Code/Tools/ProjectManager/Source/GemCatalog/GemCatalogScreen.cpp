@@ -7,7 +7,7 @@
  */
 
 #include <GemCatalog/GemCatalogScreen.h>
-#include <Cli/O3deCliInterface.h>
+#include <Cli/PythonBindingsInterface.h>
 #include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <GemCatalog/GemFilterWidget.h>
 #include <GemCatalog/GemListView.h>
@@ -28,7 +28,7 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QTimer>
-#include <Cli/O3deCliInterface.h>
+#include <Cli/PythonBindingsInterface.h>
 #include <QMessageBox>
 #include <QDir>
 #include <QStandardPaths>
@@ -186,7 +186,7 @@ namespace O3DE::ProjectManager
         EngineInfo engineInfo;
         QString defaultPath;
 
-        AZ::Outcome<EngineInfo> engineInfoResult = O3deCliInterface::Get()->GetEngineInfo();
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
         if (engineInfoResult.IsSuccess())
         {
             engineInfo = engineInfoResult.GetValue();
@@ -203,7 +203,7 @@ namespace O3DE::ProjectManager
         {
             // register the gem to the o3de_manifest.json and to the project after the user confirms
             // project creation/update
-            auto registerResult = O3deCliInterface::Get()->RegisterGem(directory);
+            auto registerResult = PythonBindingsInterface::Get()->RegisterGem(directory);
             if(!registerResult)
             {
                 QMessageBox::critical(this, tr("Failed to add gem"), registerResult.GetError().c_str());
@@ -211,7 +211,7 @@ namespace O3DE::ProjectManager
             else
             {
                 m_gemsToRegisterWithProject.insert(directory);
-                AZ::Outcome<GemInfo, void> gemInfoResult = O3deCliInterface::Get()->GetGemInfo(directory);
+                AZ::Outcome<GemInfo, void> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(directory);
                 if (gemInfoResult)
                 {
                     m_gemModel->AddGem(gemInfoResult.GetValue<GemInfo>());
@@ -227,7 +227,7 @@ namespace O3DE::ProjectManager
         QHash<QString, GemInfo> gemInfoHash;
 
         // create a hash with the gem name as key
-        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult = O3deCliInterface::Get()->GetAllGemInfos(m_projectPath);
+        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(m_projectPath);
         if (allGemInfosResult.IsSuccess())
         {
             const QVector<GemInfo>& gemInfos = allGemInfosResult.GetValue();
@@ -238,7 +238,7 @@ namespace O3DE::ProjectManager
         }
 
         // add all the gem repos into the hash
-        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = O3deCliInterface::Get()->GetGemInfosForAllRepos();
+        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos();
         if (allRepoGemInfosResult.IsSuccess())
         {
             const QVector<GemInfo>& allRepoGemInfos = allRepoGemInfosResult.GetValue();
@@ -380,7 +380,7 @@ namespace O3DE::ProjectManager
         // Refresh gem repo
         if (!selectedGemRepoUri.isEmpty())
         {
-            AZ::Outcome<void, AZStd::string> refreshResult = O3deCliInterface::Get()->RefreshGemRepo(selectedGemRepoUri);
+            AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(selectedGemRepoUri);
             if (refreshResult.IsSuccess())
             {
                 Refresh();
@@ -410,7 +410,7 @@ namespace O3DE::ProjectManager
         }
 
         // Check if there is an update avaliable now that repo is refreshed
-        bool updateAvaliable = O3deCliInterface::Get()->IsGemUpdateAvaliable(selectedGemName, selectedGemLastUpdate);
+        bool updateAvaliable = PythonBindingsInterface::Get()->IsGemUpdateAvaliable(selectedGemName, selectedGemLastUpdate);
 
         GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(selectedGemName, updateAvaliable, this);
         if (confirmUpdateDialog->exec() == QDialog::Accepted)
@@ -436,7 +436,7 @@ namespace O3DE::ProjectManager
             GemModel::DeactivateDependentGems(*m_gemModel, modelIndex);
 
             // Unregister the gem
-            auto unregisterResult = O3deCliInterface::Get()->UnregisterGem(selectedGemPath);
+            auto unregisterResult = PythonBindingsInterface::Get()->UnregisterGem(selectedGemPath);
             if (!unregisterResult)
             {
                 QMessageBox::critical(this, tr("Failed to unregister gem"), unregisterResult.GetError().c_str());
@@ -496,7 +496,7 @@ namespace O3DE::ProjectManager
     {
         m_projectPath = projectPath;
 
-        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult = O3deCliInterface::Get()->GetAllGemInfos(projectPath);
+        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(projectPath);
         if (allGemInfosResult.IsSuccess())
         {
             // Add all available gems to the model.
@@ -506,7 +506,7 @@ namespace O3DE::ProjectManager
                 m_gemModel->AddGem(gemInfo);
             }
 
-            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = O3deCliInterface::Get()->GetGemInfosForAllRepos();
+            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos();
             if (allRepoGemInfosResult.IsSuccess())
             {
                 const QVector<GemInfo>& allRepoGemInfos = allRepoGemInfosResult.GetValue();
@@ -528,7 +528,7 @@ namespace O3DE::ProjectManager
             m_notificationsEnabled = false;
 
             // Gather enabled gems for the given project.
-            const auto& enabledGemNamesResult = O3deCliInterface::Get()->GetEnabledGemNames(projectPath);
+            const auto& enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGemNames(projectPath);
             if (enabledGemNamesResult.IsSuccess())
             {
                 const QVector<AZStd::string>& enabledGemNames = enabledGemNamesResult.GetValue();
@@ -570,7 +570,7 @@ namespace O3DE::ProjectManager
 
     GemCatalogScreen::EnableDisableGemsResult GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
     {
-        IO3deCli* o3deCli = O3deCliInterface::Get();
+        IPythonBindings* o3deCli = PythonBindingsInterface::Get();
         QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
         QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
 
@@ -667,7 +667,7 @@ namespace O3DE::ProjectManager
         {
             // refresh the information for downloaded gems
             const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult =
-                O3deCliInterface::Get()->GetAllGemInfos(m_projectPath);
+                PythonBindingsInterface::Get()->GetAllGemInfos(m_projectPath);
             if (allGemInfosResult.IsSuccess())
             {
                 // we should find the gem name now in all gem infos
