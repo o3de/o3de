@@ -21,6 +21,7 @@
 #include <MCore/Source/LogManager.h>
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RPI.Reflect/Model/SkinJointIdPadding.h>
 
 namespace EMotionFX
 {
@@ -296,58 +297,37 @@ namespace EMotionFX
             // starts on a 16-byte aligned point in the buffer
             // Pre-calculate all the boundary points so we can accommodate for the padding when adding joint id's
             AZStd::queue<AZStd::tuple<AZ::u32, AZ::u32>> jointIdBoundaries;
-            AZ::u32 totalVertexCount = 0;
+            AZ::u32 currentVertex = 0;
+            uint32 totalJointIdPadding = 0;
             for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceModelLod->GetMeshes())
             {
                 uint32 meshVertexCount = sourceMesh.GetVertexCount();
-                totalVertexCount += meshVertexCount;
-                uint32 jointIdCount = meshVertexCount * maxSkinInfluences;
-                // For a two byte unit16_t, we need to round up to a multiple of 8 elements
-                uint32_t jointIdSizeInBytes = sizeof(AZ::u16);
-                uint32_t roundUpTo = 16 / jointIdSizeInBytes;
-                // Round up
-                uint32_t paddedJointIdCount = jointIdCount;
-                paddedJointIdCount += roundUpTo - 1;
-                paddedJointIdCount = paddedJointIdCount - paddedJointIdCount % roundUpTo;
-                // Determine how many padding id's we need to add, if any
-                uint32_t extraIdCount = paddedJointIdCount - jointIdCount;
 
-                if (extraIdCount > 0)
+                // Fill in skinning data from atom buffer
+                for (uint32 v = 0; v < meshVertexCount; ++v)
                 {
-                    jointIdBoundaries.push(AZStd::make_tuple(totalVertexCount, extraIdCount));
-                }
-            }
-
-            uint32 totalJointIdPadding = 0;
-            // Fill in skinning data from atom buffer
-            for (uint32 v = 0; v < modelVertexCount; ++v)
-            {
-                if (!jointIdBoundaries.empty())
-                {
-                    const auto& [boundary, extraPadding] = jointIdBoundaries.front();
-                    if (v == boundary)
+                    for (uint32 i = 0; i < maxSkinInfluences; ++i)
                     {
-                        totalJointIdPadding += extraPadding;
-                        jointIdBoundaries.pop();
-                    }
-                }
-                for (uint32 i = 0; i < maxSkinInfluences; ++i)
-                {
-                    
-                    const float weight = skinWeights[v * maxSkinInfluences + i];
-                    if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
-                    {
-                        const AZ::u16 skinJointIndex = skinJointIndices[v * maxSkinInfluences + i + totalJointIdPadding];
-                        if (skinToSkeletonIndexMap.find(skinJointIndex) == skinToSkeletonIndexMap.end())
+                        const float weight = skinWeights[currentVertex * maxSkinInfluences + i];
+                        if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
                         {
-                            AZ_WarningOnce("EMotionFX", false, "Missing skin influences for index %d", skinJointIndex);
-                            continue;
-                        }
+                            const AZ::u16 skinJointIndex = skinJointIndices[currentVertex * maxSkinInfluences + i + totalJointIdPadding];
+                            if (skinToSkeletonIndexMap.find(skinJointIndex) == skinToSkeletonIndexMap.end())
+                            {
+                                AZ_WarningOnce("EMotionFX", false, "Missing skin influences for index %d", skinJointIndex);
+                                continue;
+                            }
 
-                        const AZ::u16 skeltonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
-                        skinningLayer->AddInfluence(v, skeltonJointIndex, weight, 0);
+                            const AZ::u16 skeltonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
+                            skinningLayer->AddInfluence(currentVertex, skeltonJointIndex, weight, 0);
+                        }
                     }
+
+                    currentVertex++;
                 }
+
+                uint32 jointIdCount = meshVertexCount * maxSkinInfluences;
+                totalJointIdPadding += AZ::RPI::CalculateJointIdPaddingCount(jointIdCount);
             }
         }
 

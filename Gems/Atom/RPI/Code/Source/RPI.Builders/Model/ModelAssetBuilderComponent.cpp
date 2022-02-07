@@ -23,6 +23,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
+#include <Atom/RPI.Reflect/Model/SkinJointIdPadding.h>
 #include <Atom/RPI.Reflect/Model/SkinMetaAssetCreator.h>
 
 #include <SceneAPI/SceneCore/Containers/Scene.h>
@@ -1358,28 +1359,21 @@ namespace AZ
                     uint32_t prevJointIdCount = aznumeric_cast<uint32_t>(lodBufferInfo.m_jointIdsCount);
                     uint32_t newJointIdCount = aznumeric_cast<uint32_t>(mesh.m_skinJointIndices.size());
 
-                    // Joint Ids use raw views into the buffer, and raw views
-                    // must begin on 16-byte aligned boundaries.
                     // Pad the joint id buffer if it ends too soon, so the next view can start aligned
-
-                    // For a two byte unit16_t, we need to round up to a multiple of 8 elements
-                    uint32_t jointIdSizeInBytes = sizeof(mesh.m_skinJointIndices[0]);
-                    uint32_t roundUpTo = 16 / jointIdSizeInBytes;
-                    // Round up
-                    uint32_t paddedNewJointIdCount = newJointIdCount;
-                    paddedNewJointIdCount += roundUpTo - 1;
-                    paddedNewJointIdCount = paddedNewJointIdCount - paddedNewJointIdCount % roundUpTo;
-                    // Determine how many padding id's we need to add, if any
-                    uint32_t extraIdCount = paddedNewJointIdCount - newJointIdCount;
+                    uint32_t extraIdCount = CalculateJointIdPaddingCount(newJointIdCount);
 
                     // Pad the buffer
                     AZStd::vector<uint16_t> extraIds(extraIdCount, 0);
                     mesh.m_skinJointIndices.insert(
                         mesh.m_skinJointIndices.end(), extraIds.begin(), extraIds.end());
 
+                    AZ_Assert(prevJointIdCount * sizeof(uint16_t) % 16 == 0, "Failed to align the joint id offset along a 16-byte boundary");
+
                     // For the view itself, we only want a view that includes the real ids, not the padding, so use newJointIdCount
-                    AZ_Assert(prevJointIdCount * jointIdSizeInBytes % 16 == 0, "Failed to align the joint id offset along a 16-byte boundary");
-                    meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(/*byteOffset=*/prevJointIdCount * jointIdSizeInBytes, newJointIdCount * jointIdSizeInBytes);
+                    meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(
+                        /*byteOffset=*/prevJointIdCount * sizeof(uint16_t),
+                        /*byteCount*/ newJointIdCount * sizeof(uint16_t));
+
                     // For the purpose of tracking the size of the buffer, include the padding
                     lodBufferInfo.m_jointIdsCount += (newJointIdCount + extraIdCount);
 
