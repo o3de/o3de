@@ -46,14 +46,9 @@ AssetImporterManager::~AssetImporterManager()
 void AssetImporterManager::Exec()
 {
     // tell the AssetImporterDragAndDropHandler that the Asset Importer now is running
-//    Q_EMIT StartAssetImporter();
+    Q_EMIT StartAssetImporter();
     bool success = false;
     //OnBrowseFiles();
-
-    if (!success)
-    {
-        return;
-    }
 
     // prevent users from selecting crate files from the File Explorer and open the Asset Importer.
     if (!success)
