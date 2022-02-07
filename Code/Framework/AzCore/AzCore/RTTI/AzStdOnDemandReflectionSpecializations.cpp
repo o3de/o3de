@@ -136,7 +136,7 @@ namespace AZ::CommonOnDemandReflections
                 ->template Constructor<typename ContainerType::value_type*>()
                 ->Attribute(AZ::Script::Attributes::ConstructorOverride, &OnDemandLuaFunctions::ConstructStringView<ContainerType::value_type, ContainerType::traits_type>)
                 ->Attribute(AZ::Script::Attributes::ReaderWriterOverride, ScriptContext::CustomReaderWriter(&OnDemandLuaFunctions::StringTypeToLua<ContainerType>, &OnDemandLuaFunctions::StringTypeFromLua<ContainerType>))
-                ->Method("ToString", [](const ContainerType& stringView) { return static_cast<AZStd::string>(stringView).c_str(); }, { { { "Reference", "String view object being converted to string" } } })
+                ->Method("ToString", [](const ContainerType& stringView) { return stringView.data(); }, { { { "Reference", "String view object being converted to string" } } })
                 ->Attribute(AZ::Script::Attributes::ToolTip, "Converts string_view to string")
                 ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
                 ->template WrappingMember<const char*>(&ContainerType::data)
