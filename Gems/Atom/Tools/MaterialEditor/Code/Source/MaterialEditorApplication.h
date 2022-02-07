@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <Window/MaterialEditorBrowserInteractions.h>
 #include <Window/MaterialEditorWindow.h>
 
 namespace MaterialEditor
@@ -49,6 +49,6 @@ namespace MaterialEditor
         QWidget* GetAppMainWindow() override;
 
         AZStd::unique_ptr<MaterialEditorWindow> m_window;
-        AZStd::unique_ptr<MaterialEditorBrowserInteractions> m_materialEditorBrowserInteractions;
+        AZStd::unique_ptr<AtomToolsFramework::AtomToolsAssetBrowserInteractions> m_assetBrowserInteractions;
     };
 } // namespace MaterialEditor

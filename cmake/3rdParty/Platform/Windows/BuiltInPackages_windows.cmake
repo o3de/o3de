@@ -19,7 +19,7 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform            
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                       TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME assimp-5.0.1-rev12-windows                            TARGETS assimplib                   PACKAGE_HASH 5273b7661a7a247bb18e8bc928d25c9cd1bd8ce9dfcc56c50742bac8fa02f0f2)
+ly_associate_package(PACKAGE_NAME assimp-5.1.6-rev1-windows                             TARGETS assimplib                   PACKAGE_HASH 299d8a3c70657d74af8841650538e9d083fda9356f6782416edbec0ef5a0493e)
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH a0586b006e4def65cc25f388de17dc475e417dc1e6f9d96749777c88aa8271b0)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-windows   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 803e10b94006b834cbbdd30f562a8ddf04174c2cb6956c8399ec164ef8418d1f)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-windows                    TARGETS SPIRVCross                  PACKAGE_HASH 7d601ea9d625b1d509d38bd132a1f433d7e895b16adab76bac6103567a7a6817)
@@ -47,6 +47,6 @@ ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-windows               
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev2-windows                         TARGETS astc-encoder                PACKAGE_HASH 17249bfa438afb34e21449865d9c9297471174ae0cea9b2f9def2ee206038295)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows                      TARGETS ISPCTexComp                 PACKAGE_HASH b6fa6ea28a2808a9a5524c72c37789c525925e435770f2d94eb2d387360fa2d0)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-windows                          TARGETS lz4                         PACKAGE_HASH 4ea457b833cd8cfaf8e8e06ed6df601d3e6783b606bdbc44a677f77e19e0db16)
-ly_associate_package(PACKAGE_NAME azslc-1.7.34-rev1-windows                             TARGETS azslc                       PACKAGE_HASH 44eb2e0fc4b0f1c75d0fb6f24c93a5753655b84dbc3e6ad45389ed3b9cf7a4b0)
+ly_associate_package(PACKAGE_NAME azslc-1.7.35-rev1-windows                             TARGETS azslc                       PACKAGE_HASH 606aea611f2f20afcd8467ddabeecd3661e946eac3c843756c7df2871c1fb8a0)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-windows        	                TARGETS SQLite                      PACKAGE_HASH c1658c8ed5cf0e45d4a5da940c6a6d770b76e0f4f57313b70d0fd306885f015e)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-windows                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH b03475a9f0f7a7e7c90619fba35f1a74fb2b8f4cd33fa07af99f2ae9e0c079dd)

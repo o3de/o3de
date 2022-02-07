@@ -33,8 +33,7 @@ namespace EMotionFX::MotionMatching
         ~MotionMatchingSystemComponent();
 
     protected:
-        ////////////////////////////////////////////////////////////////////////
-        // MotionMatchingRequestBus interface implementation
+        void DebugDraw(AZ::s32 debugDisplayId);
 
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -45,6 +44,10 @@ namespace EMotionFX::MotionMatching
 
         ////////////////////////////////////////////////////////////////////////
         // AZTickBus interface implementation
+        int GetTickOrder() override
+        {
+            return AZ::TICK_PRE_RENDER;
+        }
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
     };

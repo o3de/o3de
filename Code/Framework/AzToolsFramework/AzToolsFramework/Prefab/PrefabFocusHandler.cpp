@@ -222,7 +222,7 @@ namespace AzToolsFramework::Prefab
         SetInstanceContainersOpenState(m_rootAliasFocusPath, false);
 
         const RootAliasPath previousContainerRootAliasPath = m_rootAliasFocusPath;
-        const InstanceOptionalConstReference previousFocusedInstance = GetInstanceReference(previousContainerRootAliasPath);
+        const InstanceOptionalReference previousFocusedInstance = GetInstanceReference(previousContainerRootAliasPath);
 
         m_rootAliasFocusPath = focusedInstance->get().GetAbsoluteInstanceAliasPath();
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
@@ -277,7 +277,7 @@ namespace AzToolsFramework::Prefab
 
     AZ::EntityId PrefabFocusHandler::GetFocusedPrefabContainerEntityId([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        if (const InstanceOptionalConstReference instance = GetInstanceReference(m_rootAliasFocusPath); instance.has_value())
+        if (const InstanceOptionalReference instance = GetInstanceReference(m_rootAliasFocusPath); instance.has_value())
         {
             return instance->get().GetContainerEntityId();
         }

@@ -19,6 +19,7 @@ set(FILES
     Include/SurfaceData/Utility/SurfaceDataUtility.h
     Source/SurfaceDataSystemComponent.cpp
     Source/SurfaceDataSystemComponent.h
+    Source/SurfaceDataTypes.cpp
     Source/SurfaceTag.cpp
     Source/Components/SurfaceDataColliderComponent.cpp
     Source/Components/SurfaceDataColliderComponent.h

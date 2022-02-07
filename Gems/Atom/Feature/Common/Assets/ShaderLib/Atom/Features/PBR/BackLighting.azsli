@@ -16,24 +16,28 @@
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
 // Analytical integation (approximation) of diffusion profile over radius, could be replaced by other pre integrated kernels
-// such as sum of Gaussian
+// such as sum of Gaussian (see T(s))
 float3 TransmissionKernel(float t, float3 s)
 {
     float3 exponent = s * t;
     return 0.25 * (1.0 / exp(exponent) + 3.0 / exp(exponent / 3.0));
 }
 
-float ThinObjectFalloff(const float3 surfaceNormal, const float3 dirToLight)
+// [specific profile for human skin]
+// Analytical integation (approximation) of diffusion profile over radius, could be precomputed in a LUT
+// From d'Eon and Luebke (https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-14-advanced-techniques-realistic-real-time-skin, section 14.4.7)
+float3 T(float s) 
 {
-    const float ndl = saturate(dot(-surfaceNormal, dirToLight));
-    
-    // ndl works decently well but it can produce a harsh discontinuity in the area just before 
-    // the shadow starts appearing on objects like cylinder and tubes.
-    // Smoothing out ndl does a decent enough job of removing this artifact.
-    return smoothstep(0, 1, ndl * ndl);
+    // dipoles and multipoles are approximated with sums of a small number of Gaussians with variable weights and variances
+    return float3(0.233, 0.455, 0.649) * exp(-s*s/0.0064) +
+    float3(0.1, 0.336, 0.344) * exp(-s*s/0.0484) +
+    float3(0.118, 0.198, 0.0) * exp(-s*s/0.187) +
+    float3(0.113, 0.007, 0.007) * exp(-s*s/0.567) +
+    float3(0.358, 0.004, 0.0) * exp(-s*s/1.99) +
+    float3(0.078, 0.0, 0.0) * exp(-s*s/7.41);
 }
 
-float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float shadowRatio)
+float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float transmissionDistance, float attenuationDistance)
 {
     float3 result = float3(0.0, 0.0, 0.0);
 
@@ -52,7 +56,7 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             // https://colinbarrebrisebois.com/2011/03/07/gdc-2011-approximating-translucency-for-a-fast-cheap-and-convincing-subsurface-scattering-look/
 
             {
-                thickness = max(shadowRatio, surface.transmission.thickness);
+                thickness = max(transmissionDistance, surface.transmission.thickness);
                 float transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.normal * transmissionParams.z ) ) ), transmissionParams.y ) * transmissionParams.w;
                 float lamberAttenuation = exp(-thickness * transmissionParams.x) * saturate(1.0 - thickness);
                 result = transmittance * lamberAttenuation * lightIntensity;
@@ -60,18 +64,39 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             break;
 
         case TransmissionMode::ThinObject:
-            // Thin object mode, using thin-film assumption proposed by Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
+            // Thin object mode, based on Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
             // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
-
-            float litRatio = 1.0 - shadowRatio;
-            if (litRatio)
+            
             {
-                const float thickness = surface.transmission.thickness * transmissionParams.w;
-                const float3 invScattering = rcp(transmissionParams.xyz);
-                const float falloff = ThinObjectFalloff(surface.normal, dirToLight);
-                result = TransmissionKernel(thickness, invScattering) * falloff * lightIntensity * litRatio;
-            }
+                // transmissionDistance < 0.0f means shadows are not enabled --> avoid unnecessary computation
+                if (transmissionDistance < 0.0f)
+                {
+                    break;
+                }
 
+                // Irradiance arround surface point. 
+                // Albedo at front (surface point) is used to approximate irradiance at the back of the object (observation 4 in [Jimenez J. et al, 2010])
+                // Increase angle of influence to smooth transition regions
+                float3 E = surface.albedo * saturate(lightingData.transmissionNdLBias + dot(-surface.normal, dirToLight));
+
+                // Transmission distance modulated by hardcoded constant C and the thickness exposed parameter (in this case modulating the distance traversed by the light inside the object)
+                const float C = 300.0f;
+                float s = transmissionDistance * C * surface.transmission.thickness;
+                
+                // Use scattering color to weight thin object transmission color
+                const float3 invScattering = rcp(max(surface.transmission.scatterDistance, float(0.00001)));
+                
+#ifndef USE_HUMAN_SKIN_PROFILE
+                // Generic profile based on scatter color
+                result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmissionParams.w;
+#else // USE_HUMAN_SKIN_PROFILE
+                // Profile specific to human skin
+                result = T(s) * lightIntensity * E * transmissionParams.w;
+#endif
+
+                // Distance attenuation applied to hide artifacts due to low-res projected areas onto shadowmaps (might need some work in the future)
+                result /= max(1.0, attenuationDistance * attenuationDistance * lightingData.distanceAttenuation);
+            }
             break;
     }
 
