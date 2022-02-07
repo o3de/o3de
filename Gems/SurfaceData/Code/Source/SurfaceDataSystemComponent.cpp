@@ -45,14 +45,10 @@ namespace SurfaceData
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<SurfacePoint>()
+            behaviorContext->Class<SurfacePointList>()
                 ->Constructor()
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
-                ->Property("entityId", BehaviorValueProperty(&SurfacePoint::m_entityId))
-                ->Property("position", BehaviorValueProperty(&SurfacePoint::m_position))
-                ->Property("normal", BehaviorValueProperty(&SurfacePoint::m_normal))
-                ->Property("masks", BehaviorValueProperty(&SurfacePoint::m_masks))
                 ;
 
             behaviorContext->Class<SurfaceDataSystemComponent>()
@@ -181,12 +177,13 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::GetSurfacePoints(const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointList) const
     {
-        const bool hasDesiredTags = HasValidTags(desiredTags);
-        const bool hasModifierTags = hasDesiredTags && HasMatchingTags(desiredTags, m_registeredModifierTags);
+        const bool useTagFilters = HasValidTags(desiredTags);
+        const bool hasModifierTags = useTagFilters && HasAnyMatchingTags(desiredTags, m_registeredModifierTags);
 
-        AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+        AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
 
-        surfacePointList.clear();
+        surfacePointList.Clear();
+        surfacePointList.ReserveSpace(m_registeredSurfaceDataProviders.size());
 
         //gather all intersecting points
         for (const auto& entryPair : m_registeredSurfaceDataProviders)
@@ -195,14 +192,14 @@ namespace SurfaceData
             const SurfaceDataRegistryEntry& entry = entryPair.second;
             if (!entry.m_bounds.IsValid() || AabbContains2D(entry.m_bounds, inPosition))
             {
-                if (!hasDesiredTags || hasModifierTags || HasMatchingTags(desiredTags, entry.m_tags))
+                if (!useTagFilters || hasModifierTags || HasAnyMatchingTags(desiredTags, entry.m_tags))
                 {
                     SurfaceDataProviderRequestBus::Event(entryAddress, &SurfaceDataProviderRequestBus::Events::GetSurfacePoints, inPosition, surfacePointList);
                 }
             }
         }
 
-        if (!surfacePointList.empty())
+        if (!surfacePointList.IsEmpty())
         {
             //modify or annotate reported points
             for (const auto& entryPair : m_registeredSurfaceDataModifiers)
@@ -219,7 +216,10 @@ namespace SurfaceData
             // same XY coordinates and extremely similar Z values.  This produces results that are sorted in decreasing Z order.
             // Also, this filters out any remaining points that don't match the desired tag list.  This can happen when a surface provider
             // doesn't add a desired tag, and a surface modifier has the *potential* to add it, but then doesn't.
-            CombineSortAndFilterNeighboringPoints(surfacePointList, hasDesiredTags, desiredTags);
+            if (useTagFilters)
+            {
+                surfacePointList.FilterPoints(desiredTags);
+            }
         }
     }
 
@@ -248,34 +248,38 @@ namespace SurfaceData
     void SurfaceDataSystemComponent::GetSurfacePointsFromList(
         AZStd::span<const AZ::Vector3> inPositions, const SurfaceTagVector& desiredTags, SurfacePointLists& surfacePointLists) const
     {
-        AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+        AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
 
         const size_t totalQueryPositions = inPositions.size();
 
         surfacePointLists.clear();
         surfacePointLists.resize(totalQueryPositions);
 
-        const bool hasDesiredTags = HasValidTags(desiredTags);
-        const bool hasModifierTags = hasDesiredTags && HasMatchingTags(desiredTags, m_registeredModifierTags);
+        for (auto& surfacePointList : surfacePointLists)
+        {
+            surfacePointList.ReserveSpace(m_registeredSurfaceDataProviders.size());
+        }
+
+        const bool useTagFilters = HasValidTags(desiredTags);
+        const bool hasModifierTags = useTagFilters && HasAnyMatchingTags(desiredTags, m_registeredModifierTags);
 
         // Loop through each data provider, and query all the points for each one.  This allows us to check the tags and the overall
         // AABB bounds just once per provider, instead of once per point.  It also allows for an eventual optimization in which we could
         // send the list of points directly into each SurfaceDataProvider.
-        for (const auto& entryPair : m_registeredSurfaceDataProviders)
+        for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
         {
-            const SurfaceDataRegistryEntry& entry = entryPair.second;
-            bool alwaysApplies = !entry.m_bounds.IsValid();
+            bool hasInfiniteBounds = !provider.m_bounds.IsValid();
 
-            if (!hasDesiredTags || hasModifierTags || HasMatchingTags(desiredTags, entry.m_tags))
+            if (!useTagFilters || hasModifierTags || HasAnyMatchingTags(desiredTags, provider.m_tags))
             {
                 for (size_t index = 0; index < totalQueryPositions; index++)
                 {
-                    const auto& inPosition = inPositions[index];
-                    SurfacePointList& surfacePointList = surfacePointLists[index];
-                    if (alwaysApplies || AabbContains2D(entry.m_bounds, inPosition))
+                    bool inBounds = hasInfiniteBounds || AabbContains2D(provider.m_bounds, inPositions[index]);
+                    if (inBounds)
                     {
                         SurfaceDataProviderRequestBus::Event(
-                            entryPair.first, &SurfaceDataProviderRequestBus::Events::GetSurfacePoints, inPosition, surfacePointList);
+                            providerHandle, &SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
+                            inPositions[index], surfacePointLists[index]);
                     }
                 }
             }
@@ -289,18 +293,19 @@ namespace SurfaceData
         for (const auto& entryPair : m_registeredSurfaceDataModifiers)
         {
             const SurfaceDataRegistryEntry& entry = entryPair.second;
-            bool alwaysApplies = !entry.m_bounds.IsValid();
+            bool hasInfiniteBounds = !entry.m_bounds.IsValid();
 
             for (size_t index = 0; index < totalQueryPositions; index++)
             {
                 const auto& inPosition = inPositions[index];
                 SurfacePointList& surfacePointList = surfacePointLists[index];
-                if (!surfacePointList.empty())
+                if (!surfacePointList.IsEmpty())
                 {
-                    if (alwaysApplies || AabbContains2D(entry.m_bounds, inPosition))
+                    if (hasInfiniteBounds || AabbContains2D(entry.m_bounds, inPosition))
                     {
                         SurfaceDataModifierRequestBus::Event(
-                            entryPair.first, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, surfacePointList);
+                            entryPair.first, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints,
+                            surfacePointList);
                     }
                 }
             }
@@ -310,90 +315,19 @@ namespace SurfaceData
         // same XY coordinates and extremely similar Z values.  This produces results that are sorted in decreasing Z order.
         // Also, this filters out any remaining points that don't match the desired tag list.  This can happen when a surface provider
         // doesn't add a desired tag, and a surface modifier has the *potential* to add it, but then doesn't.
-        for (auto& surfacePointList : surfacePointLists)
+        if (useTagFilters)
         {
-            if (!surfacePointList.empty())
+            for (auto& surfacePointList : surfacePointLists)
             {
-                CombineSortAndFilterNeighboringPoints(surfacePointList, hasDesiredTags, desiredTags);
-            }
-        }
-    }
-
-
-
-    void SurfaceDataSystemComponent::CombineSortAndFilterNeighboringPoints(SurfacePointList& sourcePointList, bool hasDesiredTags, const SurfaceTagVector& desiredTags) const
-    {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        if (sourcePointList.empty())
-        {
-            return;
-        }
-
-        // Sorting only makes sense if we have two or more points
-        if (sourcePointList.size() > 1)
-        {
-            //sort by depth/distance before combining points
-            AZStd::sort(sourcePointList.begin(), sourcePointList.end(), [](const SurfacePoint& a, const SurfacePoint& b)
-            {
-                return a.m_position.GetZ() > b.m_position.GetZ();
-            });
-        }
-
-
-        //efficient point consolidation requires the points to be pre-sorted so we are only comparing/combining neighbors
-        const size_t sourcePointCount = sourcePointList.size();
-        size_t targetPointIndex = 0;
-        size_t sourcePointIndex = 0;
-
-        m_targetPointList.clear();
-        m_targetPointList.reserve(sourcePointCount);
-
-        // Locate the first point that matches our desired tags, if one exists.
-        for (sourcePointIndex = 0; sourcePointIndex < sourcePointCount; sourcePointIndex++)
-        {
-            if (!hasDesiredTags || (HasMatchingTags(sourcePointList[sourcePointIndex].m_masks, desiredTags)))
-            {
-                break;
+                surfacePointList.FilterPoints(desiredTags);
             }
         }
 
-        if (sourcePointIndex < sourcePointCount)
-        {
-            // We found a point that matches our tags, so add it to our target list as the first point.
-            m_targetPointList.push_back(sourcePointList[sourcePointIndex++]);
-
-            //iterate over subsequent source points for comparison and consolidation with the last added target/unique point
-            for (; sourcePointIndex < sourcePointCount; ++sourcePointIndex)
-            {
-                const auto& sourcePoint = sourcePointList[sourcePointIndex];
-
-                if (!hasDesiredTags || (HasMatchingTags(sourcePoint.m_masks, desiredTags)))
-                {
-                    auto& targetPoint = m_targetPointList[targetPointIndex];
-
-                    // [LY-90907] need to add a configurable tolerance for comparison
-                    if (targetPoint.m_position.IsClose(sourcePoint.m_position) &&
-                        targetPoint.m_normal.IsClose(sourcePoint.m_normal))
-                    {
-                        //consolidate points with similar attributes by adding masks to the target point and ignoring the source
-                        AddMaxValueForMasks(targetPoint.m_masks, sourcePoint.m_masks);
-                        continue;
-                    }
-
-                    //if the points were too different, we have to add a new target point to compare against
-                    m_targetPointList.push_back(sourcePoint);
-                    ++targetPointIndex;
-                }
-            }
-
-            AZStd::swap(sourcePointList, m_targetPointList);
-        }
     }
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataProviderInternal(const SurfaceDataRegistryEntry& entry)
     {
-        AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+        AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         SurfaceDataRegistryHandle handle = ++m_registeredSurfaceDataProviderHandleCounter;
         m_registeredSurfaceDataProviders[handle] = entry;
         return handle;
@@ -401,7 +335,7 @@ namespace SurfaceData
 
     SurfaceDataRegistryEntry SurfaceDataSystemComponent::UnregisterSurfaceDataProviderInternal(const SurfaceDataRegistryHandle& handle)
     {
-        AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+        AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         SurfaceDataRegistryEntry entry;
         auto entryItr = m_registeredSurfaceDataProviders.find(handle);
         if (entryItr != m_registeredSurfaceDataProviders.end())
@@ -414,7 +348,7 @@ namespace SurfaceData
 
     bool SurfaceDataSystemComponent::UpdateSurfaceDataProviderInternal(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry, AZ::Aabb& oldBounds)
     {
-        AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+        AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         auto entryItr = m_registeredSurfaceDataProviders.find(handle);
         if (entryItr != m_registeredSurfaceDataProviders.end())
         {
@@ -427,7 +361,7 @@ namespace SurfaceData
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataModifierInternal(const SurfaceDataRegistryEntry& entry)
     {
-        AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+        AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         SurfaceDataRegistryHandle handle = ++m_registeredSurfaceDataModifierHandleCounter;
         m_registeredSurfaceDataModifiers[handle] = entry;
         m_registeredModifierTags.insert(entry.m_tags.begin(), entry.m_tags.end());
@@ -436,7 +370,7 @@ namespace SurfaceData
 
     SurfaceDataRegistryEntry SurfaceDataSystemComponent::UnregisterSurfaceDataModifierInternal(const SurfaceDataRegistryHandle& handle)
     {
-        AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+        AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         SurfaceDataRegistryEntry entry;
         auto entryItr = m_registeredSurfaceDataModifiers.find(handle);
         if (entryItr != m_registeredSurfaceDataModifiers.end())
@@ -449,7 +383,7 @@ namespace SurfaceData
 
     bool SurfaceDataSystemComponent::UpdateSurfaceDataModifierInternal(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry, AZ::Aabb& oldBounds)
     {
-        AZStd::lock_guard<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+        AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         auto entryItr = m_registeredSurfaceDataModifiers.find(handle);
         if (entryItr != m_registeredSurfaceDataModifiers.end())
         {

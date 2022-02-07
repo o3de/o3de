@@ -15,6 +15,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
+//! Enable in case you want to use the Eigen SDK Eigen::Matrix as base for the feature matrix (https://eigen.tuxfamily.org/)
+//! In case Eigen is disabled, a small simple NxM wrapper class is provided by default.
 //#define O3DE_USE_EIGEN
 #define O3DE_MM_FLOATTYPE float
 
@@ -37,9 +39,7 @@ namespace EMotionFX::MotionMatching
     // RowMajor: Store row components next to each other in memory for cache-optimized feature access for a given frame.
     using FeatureMatrixType = Eigen::Matrix<O3DE_MM_FLOATTYPE, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 #else
-    /**
-     * Small wrapper for a 2D matrix similar to the Eigen::Matrix.
-     */
+    //! Small wrapper for a 2D matrix similar to the Eigen::Matrix.
     class FeatureMatrixType
     {
     public:
@@ -87,6 +87,12 @@ namespace EMotionFX::MotionMatching
     };
 #endif
 
+    //! The feature matrix is a NxM matrix which stores the extracted feature values for all frames in our motion database based upon a given feature schema.
+    //! The feature schema defines the order of the columns and values and is used to identify values and find their location inside the matrix.
+    //! A 3D position feature storing XYZ values e.g. will use three columns in the feature matrix. Every component of a feature is linked to a column index,
+    //! so e.g. the left foot position Y value might be at column index 6. The group of values or columns that belong to a given feature is what we call a feature block.
+    //! The accumulated number of dimensions for all features in the schema, while the number of dimensions might vary per feature, form the number of columns of the feature matrix.
+    //! Each row represents the features of a single frame of the motion database. The number of rows of the feature matrix is defined by the number.
     class FeatureMatrix
         : public FeatureMatrixType
     {

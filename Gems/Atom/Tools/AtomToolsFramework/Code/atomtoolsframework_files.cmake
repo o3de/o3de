@@ -9,6 +9,7 @@
 set(FILES
     Include/AtomToolsFramework/Application/AtomToolsApplication.h
     Include/AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h
+    Include/AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h
     Include/AtomToolsFramework/AssetGridDialog/AssetGridDialog.h
     Include/AtomToolsFramework/Communication/LocalServer.h
     Include/AtomToolsFramework/Communication/LocalSocket.h
@@ -44,6 +45,7 @@ set(FILES
     Source/AssetBrowser/AtomToolsAssetBrowser.cpp
     Source/AssetBrowser/AtomToolsAssetBrowser.qrc
     Source/AssetBrowser/AtomToolsAssetBrowser.ui
+    Source/AssetBrowser/AtomToolsAssetBrowserInteractions.cpp
     Source/AssetGridDialog/AssetGridDialog.cpp
     Source/AssetGridDialog/AssetGridDialog.ui
     Source/Communication/LocalServer.cpp

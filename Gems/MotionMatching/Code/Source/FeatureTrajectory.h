@@ -29,12 +29,10 @@ namespace EMotionFX::MotionMatching
 {
     class FrameDatabase;
 
-    /**
-     * Matches the root joint past and future trajectory.
-     * For each frame in the motion database, the position and facing direction relative to the current frame of the joint will be evaluated for a past and future time window.
-     * The past and future samples together form the trajectory of the current frame within the time window. This basically describes where the character came from to reach the
-     * current frame and where it will go when continuing to play the animation.
-     **/
+    //! Matches the root joint past and future trajectory.
+    //! For each frame in the motion database, the position and facing direction relative to the current frame of the joint will be evaluated for a past and future time window.
+    //! The past and future samples together form the trajectory of the current frame within the time window. This basically describes where the character came from to reach the
+    //! current frame and where it will go when continuing to play the animation.
     class EMFX_API FeatureTrajectory
         : public Feature
     {

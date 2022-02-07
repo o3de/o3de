@@ -765,6 +765,7 @@ namespace AzFramework
 
     bool Application::IsPrefabSystemForLevelsEnabled() const
     {
+        AZ_Warning("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, please use 'IsPrefabSystemEnabled' instead.");
         return IsPrefabSystemEnabled();
     }
 

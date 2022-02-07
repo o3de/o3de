@@ -94,6 +94,10 @@
 #include <DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
@@ -278,6 +282,10 @@ namespace AZ
             passSystem->AddPassCreator(Name("DiffuseProbeGridClassificationPass"), &Render::DiffuseProbeGridClassificationPass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridDownsamplePass"), &Render::DiffuseProbeGridDownsamplePass::Create);
             passSystem->AddPassCreator(Name("DiffuseProbeGridRenderPass"), &Render::DiffuseProbeGridRenderPass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationPreparePass"), &Render::DiffuseProbeGridVisualizationPreparePass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationAccelerationStructurePass"), &Render::DiffuseProbeGridVisualizationAccelerationStructurePass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationRayTracingPass"), &Render::DiffuseProbeGridVisualizationRayTracingPass::Create);
+            passSystem->AddPassCreator(Name("DiffuseProbeGridVisualizationCompositePass"), &Render::DiffuseProbeGridVisualizationCompositePass::Create);
 
             passSystem->AddPassCreator(Name("LuminanceHistogramGeneratorPass"), &LuminanceHistogramGeneratorPass::Create);
 

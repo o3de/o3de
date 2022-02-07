@@ -20,12 +20,17 @@ endif()
 
 
 ly_append_configurations_options(
+    DEFINES
+        _FORTIFY_SOURCE=2
 
     COMPILATION_C
         -fno-exceptions
         -fvisibility=hidden
         -Wall
         -Werror
+
+        -fpie                   # Position-Independent Executables
+        -fstack-protector-all   # Enable stack protectors for all functions
 
         ${LY_GCC_GCOV_FLAGS}
         ${LY_GCC_GPROF_FLAGS}
@@ -34,9 +39,11 @@ ly_append_configurations_options(
         -fno-exceptions
         -fvisibility=hidden
         -fvisibility-inlines-hidden
-
         -Wall
         -Werror
+
+        -fpie                   # Position-Independent Executables
+        -fstack-protector-all   # Enable stack protectors for all functions
 
         ${LY_GCC_GCOV_FLAGS}
         ${LY_GCC_GPROF_FLAGS}
@@ -45,7 +52,6 @@ ly_append_configurations_options(
         -Wno-array-bounds
         -Wno-attributes
         -Wno-class-memaccess
-        -Wno-comment
         -Wno-delete-non-virtual-dtor
         -Wno-enum-compare
         -Wno-format-overflow
@@ -57,7 +63,6 @@ ly_append_configurations_options(
         -Wno-parentheses
         -Wno-reorder
         -Wno-restrict
-        -Wno-return-local-addr
         -Wno-sequence-point
         -Wno-sign-compare
         -Wno-strict-aliasing
@@ -66,19 +71,29 @@ ly_append_configurations_options(
         -Wno-switch
         -Wno-uninitialized
         -Wno-unused-result
-        -Wno-unused-value
         -Wno-unused-variable
 
     COMPILATION_DEBUG
         -O0 # No optimization
         -g # debug symbols
         -fno-inline # don't inline functions
-        -fstack-protector # Add additional checks to catch stack corruption issues
     COMPILATION_PROFILE
         -O2
         -g # debug symbols
     COMPILATION_RELEASE
         -O2
+
+    LINK_NON_STATIC
+        -Wl,-undefined,error
+        -fpie
+        -Wl,-z,relro,-z,now
+        -Wl,-z,noexecstack
+    LINK_EXE
+        -pie
+        -fpie
+        -Wl,-z,relro,-z,now
+        -Wl,-z,noexecstack
+
 )
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)

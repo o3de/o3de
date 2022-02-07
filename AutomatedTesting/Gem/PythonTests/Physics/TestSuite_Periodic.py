@@ -388,17 +388,17 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ShapeCollider_InactiveWhenNoShapeComponent(self, request, workspace, editor, launcher_platform):
         from .tests.shape_collider import ShapeCollider_InactiveWhenNoShapeComponent as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_CheckDefaultShapeSettingIsPxMesh(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_CheckDefaultShapeSettingIsPxMesh as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor(self, request, workspace, editor, launcher_platform):
         from .tests.shape_collider import ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_Collider_SphereShapeEditing(self, request, workspace, editor, launcher_platform):
@@ -418,7 +418,7 @@ class TestAutomation(TestAutomationBase):
     def test_ForceRegion_WithNonTriggerColliderWarning(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
         # Fixme: expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_ForceRegion_WorldSpaceForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
@@ -438,8 +438,12 @@ class TestAutomation(TestAutomationBase):
 
     def test_Material_LibraryClearingAssignsDefault(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_LibraryClearingAssignsDefault as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason=
+                       "Test failed due to an error message shown while in game mode: "
+                       "'(Prefab) - Invalid asset found referenced in scene while entering game mode. "
+                       "The asset was stored in an instance of Asset.'")
     def test_Collider_AddColliderComponent(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_AddColliderComponent as test_module
         self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
@@ -448,19 +452,19 @@ class TestAutomation(TestAutomationBase):
         reason="This will fail due to this issue ATOM-15487.")
     def test_Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Collider_MultipleSurfaceSlots(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_MultipleSurfaceSlots as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_RigidBody_EnablingGravityWorksPoC(self, request, workspace, editor, launcher_platform):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
@@ -486,7 +490,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_ShapeCollider_CanBeAddedWitNoWarnings(self, request, workspace, editor, launcher_platform):
         from .tests.shape_collider import ShapeCollider_CanBeAddedWitNoWarnings as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
         
     @revert_physics_config
     def test_Physics_UndoRedoWorksOnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
