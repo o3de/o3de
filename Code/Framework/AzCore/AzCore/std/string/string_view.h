@@ -663,16 +663,21 @@ namespace AZStd
             , m_size(AZStd::to_address(last) - AZStd::to_address(first))
         {}
 
-        template <typename R, typename = enable_if_t<conjunction_v<
+        // double SFINAE is used to defer evaluation of the contiguous range
+        // until after validating the input type isn't basic_string_view
+        template <typename R,
+            typename = enable_if_t<conjunction_v<
             bool_constant<!same_as<remove_cvref_t<R>, basic_string_view>>,
             bool_constant<!convertible_to<const_pointer, R>>
-            >>>
-        constexpr basic_string_view(R&& r, enable_if_t<conjunction_v<
+            >>,
+            typename = enable_if_t<conjunction_v<
             bool_constant<ranges::contiguous_range<R>>,
             bool_constant<ranges::sized_range<R>>,
             bool_constant<same_as<ranges::range_value_t<R>, value_type>>,
             bool_constant<!has_operator_basic_string_view<R>>,
-            bool_constant<range_trait_type_matches<R>>>>* = nullptr)
+            bool_constant<range_trait_type_matches<R>>
+            >>>
+        constexpr basic_string_view(R&& r)
             : m_begin(ranges::data(r))
             , m_size(ranges::size(r))
         {}
