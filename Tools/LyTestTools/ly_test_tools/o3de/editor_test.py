@@ -1060,6 +1060,7 @@ class EditorTestSuite():
         for t in threads:
             t.join()
 
+        print(f"DO NOT SUBMIT DEBUGGING:\n {results_per_thread}")
         for result in results_per_thread:
             editor_test_data.results.update(result)
 
