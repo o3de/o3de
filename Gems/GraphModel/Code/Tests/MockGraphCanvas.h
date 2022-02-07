@@ -72,8 +72,8 @@ namespace MockGraphCanvasServices
         void Deactivate() override;
 
         // GraphCanvas::DataSlotRequestBus overrides ...
-        bool ConvertToReference() override;
-        bool CanConvertToReference() const override;
+        bool ConvertToReference(bool isNewSlot = false) override;
+        bool CanConvertToReference(bool isNewSlot = false) const override;
         bool ConvertToValue() override;
         bool CanConvertToValue() const override;
         bool IsUserSlot() const override;

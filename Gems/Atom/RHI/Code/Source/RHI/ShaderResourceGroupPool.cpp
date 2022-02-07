@@ -202,8 +202,8 @@ namespace AZ
                 // Generate diffs for image views.
                 if (HasImageGroup())
                 {
-                    AZStd::array_view<ConstPtr<ImageView>> viewGroupOld = shaderResourceGroup.GetData().GetImageGroup();
-                    AZStd::array_view<ConstPtr<ImageView>> viewGroupNew = groupData.GetImageGroup();
+                    AZStd::span<const ConstPtr<ImageView>> viewGroupOld = shaderResourceGroup.GetData().GetImageGroup();
+                    AZStd::span<const ConstPtr<ImageView>> viewGroupNew = groupData.GetImageGroup();
                     AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "ShaderResourceGroupData layouts do not match.");
                     for (size_t i = 0; i < viewGroupOld.size(); ++i)
                     {
@@ -214,8 +214,8 @@ namespace AZ
                 // Generate diffs for buffer views.
                 if (HasBufferGroup())
                 {
-                    AZStd::array_view<ConstPtr<BufferView>> viewGroupOld = shaderResourceGroup.GetData().GetBufferGroup();
-                    AZStd::array_view<ConstPtr<BufferView>> viewGroupNew = groupData.GetBufferGroup();
+                    AZStd::span<const ConstPtr<BufferView>> viewGroupOld = shaderResourceGroup.GetData().GetBufferGroup();
+                    AZStd::span<const ConstPtr<BufferView>> viewGroupNew = groupData.GetBufferGroup();
                     AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "ShaderResourceGroupData layouts do not match.");
                     for (size_t i = 0; i < viewGroupOld.size(); ++i)
                     {

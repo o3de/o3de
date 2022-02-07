@@ -237,7 +237,7 @@ namespace AZ::Prefab
 
     bool PrefabBuilderComponent::ProcessPrefab(
         const AZ::PlatformTagSet& platformTags, const char* filePath, AZ::IO::PathView tempDirPath, const AZ::Uuid& sourceFileUuid,
-        AzToolsFramework::Prefab::PrefabDom& mutableRootDom, AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts)
+        AzToolsFramework::Prefab::PrefabDom&& rootDom, AZStd::vector<AssetBuilderSDK::JobProduct>& jobProducts)
     {
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext context(sourceFileUuid);
         AZStd::string rootPrefabName;
@@ -247,7 +247,9 @@ namespace AZ::Prefab
                        filePath);
             return false;
         }
-        context.AddPrefab(AZStd::move(rootPrefabName), AZStd::move(mutableRootDom));
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument rootDocument(AZStd::move(rootPrefabName));
+        rootDocument.SetPrefabDom(AZStd::move(rootDom));
+        context.AddPrefab(AZStd::move(rootDocument));
         
         context.SetPlatformTags(AZStd::move(platformTags));
 
@@ -319,8 +321,8 @@ namespace AZ::Prefab
         });
 
         if (ProcessPrefab(
-                platformTags, request.m_fullPath.c_str(), request.m_tempDirPath.c_str(), request.m_sourceFileUUID, mutableRootDom,
-                response.m_outputProducts))
+                platformTags, request.m_fullPath.c_str(), request.m_tempDirPath.c_str(), request.m_sourceFileUUID,
+                AZStd::move(mutableRootDom), response.m_outputProducts))
         {
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }

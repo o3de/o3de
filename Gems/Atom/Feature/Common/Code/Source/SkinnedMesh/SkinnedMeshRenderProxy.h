@@ -46,7 +46,7 @@ namespace AZ
             void SetMorphTargetWeights(uint32_t lodIndex, const AZStd::vector<float>& weights) override;
 
             size_t GetLodCount() const;
-            AZStd::array_view< AZStd::unique_ptr<SkinnedMeshDispatchItem>> GetDispatchItems(size_t lodIndex) const;
+            AZStd::span<const AZStd::unique_ptr<SkinnedMeshDispatchItem>> GetDispatchItems(size_t lodIndex) const;
         private:
 
             AZ_DISABLE_COPY_MOVE(SkinnedMeshRenderProxy);

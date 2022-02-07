@@ -19,13 +19,16 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <IEditor.h>
 
@@ -37,6 +40,7 @@
 
 // Qt
 #include <QApplication>
+#include <QMessageBox>
 #include <QStringList>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -448,6 +452,8 @@ namespace LandscapeCanvasEditor
         return config;
     }
 
+    AzFramework::EntityContextId MainWindow::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+    
     MainWindow::MainWindow(QWidget* parent)
         : GraphModelIntegration::EditorMainWindow(GetDefaultConfig(), parent)
     {
@@ -470,8 +476,14 @@ namespace LandscapeCanvasEditor
         AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(m_serializeContext, "Failed to acquire application serialize context.");
 
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            s_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+
         m_prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get();
         AZ_Assert(m_prefabFocusPublicInterface, "LandscapeCanvas - could not get PrefabFocusPublicInterface on construction.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(m_readOnlyEntityPublicInterface, "LandscapeCanvas - could not get ReadOnlyEntityPublicInterface on construction.");
 
         const GraphCanvas::EditorId& editorId = GetEditorId();
 
@@ -836,6 +848,26 @@ namespace LandscapeCanvasEditor
     void MainWindow::OnEditorOpened(GraphCanvas::EditorDockWidget* dockWidget)
     {
         using namespace AzFramework::Terrain;
+
+        // Detect if it's possible to create a new entity in the current context
+        AZ::EntityId focusRootEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId);
+        if (m_readOnlyEntityPublicInterface->IsReadOnly(focusRootEntityId))
+        {
+            // Abort
+            CloseEditor(dockWidget->GetDockWidgetId());
+
+            QWidget* activeWindow = AzToolsFramework::GetActiveWindow();
+
+            QMessageBox::warning(
+                activeWindow,
+                QString("Landscape Canvas Asset Creation Error"),
+                QString("Could not create new Landscape Canvas asset under read-only entity."),
+                QMessageBox::Ok,
+                QMessageBox::Ok
+            );
+
+            return;
+        }
 
         // Invoke the GraphCanvas base instead of the GraphModelIntegration::EditorMainWindow so that we
         // can do our own custom handling when opening an existing graph

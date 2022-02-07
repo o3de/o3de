@@ -27,14 +27,16 @@
 #include <SceneAPI/SceneData/GraphData/MeshVertexBitangentData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexTangentData.h>
 
-#include <AzToolsFramework/Debug/TraceContext.h>
-
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 
 namespace AZ::SceneGenerationComponents
 {
+    static constexpr AZStd::string_view DefaultTangentGenerationKey{ "/O3DE/SceneAPI/TangentGenerateComponent/DefaultGenerationMethod" };
+    static constexpr AZStd::string_view DebugBitangentFlipKey{ "/O3DE/SceneAPI/TangentGenerateComponent/DebugBitangentFlip" };
+
     TangentGenerateComponent::TangentGenerateComponent()
     {
         BindToCall(&TangentGenerateComponent::GenerateTangentData);
@@ -46,7 +48,7 @@ namespace AZ::SceneGenerationComponents
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<TangentGenerateComponent, AZ::SceneAPI::SceneCore::GenerationComponent>()->Version(1);
+            serializeContext->Class<TangentGenerateComponent, AZ::SceneAPI::SceneCore::GenerationComponent>()->Version(2);
         }
     }
 
@@ -68,8 +70,47 @@ namespace AZ::SceneGenerationComponents
         return nullptr;
     }
 
+    void TangentGenerateComponent::GetRegistrySettings(
+        AZ::SceneAPI::DataTypes::TangentGenerationMethod& defaultGenerationMethod, bool& debugBitangentFlip) const
+    {
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZStd::string defaultTangentGenerationMethodString;
+            if (settingsRegistry->Get(defaultTangentGenerationMethodString, DefaultTangentGenerationKey))
+            {
+                const bool isCaseSensitive = false;
+                if (AZ::StringFunc::Equal(defaultTangentGenerationMethodString, "MikkT", isCaseSensitive))
+                {
+                    defaultGenerationMethod = AZ::SceneAPI::DataTypes::TangentGenerationMethod::MikkT;
+                }
+                else
+                {
+                    AZ_Warning(
+                        AZ::SceneAPI::Utilities::WarningWindow,
+                        AZ::StringFunc::Equal(defaultTangentGenerationMethodString, "FromSourceScene", isCaseSensitive),
+                        "'" AZ_STRING_FORMAT "' is not a valid default tangent generation method. Check the value of %s in your settings registry, and change "
+                        "it to 'FromSourceScene' or 'MikkT'",
+                        defaultTangentGenerationMethodString.c_str(), AZ_STRING_ARG(DefaultTangentGenerationKey));
+                }
+            }
+
+            settingsRegistry->Get(debugBitangentFlip, DebugBitangentFlipKey);
+        }
+    }
+
     AZ::SceneAPI::Events::ProcessingResult TangentGenerateComponent::GenerateTangentData(TangentGenerateContext& context)
     {
+        // Get any tangent related settings from the settings registry
+        AZ::SceneAPI::DataTypes::TangentGenerationMethod defaultGenerationMethod =
+            AZ::SceneAPI::DataTypes::TangentGenerationMethod::FromSourceScene;
+        bool debugBitangentFlip = false;
+        GetRegistrySettings(defaultGenerationMethod, debugBitangentFlip);
+
+        // Get the generation setting for this scene
+        const AZ::SceneAPI::SceneData::TangentsRule* tangentsRule = GetTangentRule(context.GetScene());
+        const AZ::SceneAPI::DataTypes::TangentGenerationMethod generationMethod =
+            tangentsRule ? tangentsRule->GetGenerationMethod() : defaultGenerationMethod;
+
         // Iterate over all graph content and filter out all meshes.
         AZ::SceneAPI::Containers::SceneGraph& graph = context.GetScene().GetGraph();
         AZ::SceneAPI::Containers::SceneGraph::ContentStorageData graphContent = graph.GetContentStorage();
@@ -94,19 +135,31 @@ namespace AZ::SceneGenerationComponents
         for (auto& [mesh, nodeIndex] : meshes)
         {
             // Generate tangents for the mesh (if this is desired or needed).
-            if (!GenerateTangentsForMesh(context.GetScene(), nodeIndex, mesh))
+            if (!GenerateTangentsForMesh(context.GetScene(), nodeIndex, mesh, generationMethod))
             {
                 return AZ::SceneAPI::Events::ProcessingResult::Failure;
             }
 
             // Now that we have the tangents and bitangents, calculate the tangent w values for the ones that we imported from the scene file, as they only have xyz.
-            UpdateFbxTangentWValues(graph, nodeIndex, mesh);
+            // But only do this if we are getting tangents from the source scene, because MikkT will provide us with a correct tangent.w already
+            if (generationMethod == SceneAPI::DataTypes::TangentGenerationMethod::FromSourceScene)
+            {
+                if (!UpdateFbxTangentWValues(graph, nodeIndex, mesh, debugBitangentFlip))
+                {
+                    return AZ::SceneAPI::Events::ProcessingResult::Failure;
+                }
+            }
+            
         }
 
         return AZ::SceneAPI::Events::ProcessingResult::Success;
     }
 
-    void TangentGenerateComponent::UpdateFbxTangentWValues(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, const AZ::SceneAPI::DataTypes::IMeshData* meshData)
+    bool TangentGenerateComponent::UpdateFbxTangentWValues(
+        AZ::SceneAPI::Containers::SceneGraph& graph,
+        const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+        const AZ::SceneAPI::DataTypes::IMeshData* meshData,
+        bool debugBitangentFlip)
     {
         // Iterate over all UV sets.
         AZ::SceneAPI::DataTypes::IMeshVertexUVData* uvData = FindUvData(graph, nodeIndex, 0);
@@ -147,6 +200,26 @@ namespace AZ::SceneGenerationComponents
                         tangent = fbxTangentData->GetTangent(i);
                         tangent.SetW(1.0f);
                     }
+                        
+                    if (debugBitangentFlip)
+                    {
+                        AZ::Vector4 originalTangent = fbxTangentData->GetTangent(i);
+
+                        if (originalTangent.GetW() > 0.0f)
+                        {
+                            // If the tangent has a positive w value, the fix for GHI-7125 is going to flip the bitangent
+                            // compared to the original behavior. Report an error and fail to process as an indication
+                            // that this asset will be impacted by GHI-7125
+                            
+                            AZ_Error(
+                                AZ::SceneAPI::Utilities::ErrorWindow, false,
+                                "Tangent w is positive for at least one vertex in the mesh. This model will be impacted by GHI-7125. "
+                                "See https://github.com/o3de/o3de/issues/7125 for details.");
+                            return false;
+                        }
+                    }
+
+                    // Update the tangent.w in the scene
                     fbxTangentData->SetTangent(i, tangent);
                 }
             }
@@ -154,6 +227,8 @@ namespace AZ::SceneGenerationComponents
             // Find the next UV set.
             uvData = FindUvData(graph, nodeIndex, ++uvSetIndex);
         }
+                                
+        return true;
     }
 
     void TangentGenerateComponent::FindBlendShapes(
@@ -175,7 +250,11 @@ namespace AZ::SceneGenerationComponents
         }
     }
 
-    bool TangentGenerateComponent::GenerateTangentsForMesh(AZ::SceneAPI::Containers::Scene& scene, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::SceneAPI::DataTypes::IMeshData* meshData)
+    bool TangentGenerateComponent::GenerateTangentsForMesh(
+        AZ::SceneAPI::Containers::Scene& scene,
+        const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+        AZ::SceneAPI::DataTypes::IMeshData* meshData,
+        AZ::SceneAPI::DataTypes::TangentGenerationMethod ruleGenerationMethod)
     {
         AZ::SceneAPI::Containers::SceneGraph& graph = scene.GetGraph();
 
@@ -188,7 +267,6 @@ namespace AZ::SceneGenerationComponents
         }
 
         const AZ::SceneAPI::SceneData::TangentsRule* tangentsRule = GetTangentRule(scene);
-        const AZ::SceneAPI::DataTypes::TangentGenerationMethod ruleGenerationMethod = tangentsRule ? tangentsRule->GetGenerationMethod() : AZ::SceneAPI::DataTypes::TangentGenerationMethod::FromSourceScene;
 
         // Find all blend shape data under the mesh. We need to generate the tangent and bitangent for blend shape as well.
         AZStd::vector<AZ::SceneData::GraphData::BlendShapeData*> blendShapes;

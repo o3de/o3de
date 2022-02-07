@@ -12,11 +12,35 @@ import sys
 import os
 import pytest
 import logging
+import sqlite3
 pytest.importorskip('ly_test_tools')
 
 import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.waiter as waiter
+
+def detect_product(sql_connection, platform, target):
+    cur = sql_connection.cursor()
+    product_target = f'{platform}/{target}'
+    print(f'Detecting {product_target} in assetdb.sqlite')
+    hits = 0
+    for row in cur.execute(f'select ProductID from Products where ProductName is "{product_target}"'):
+        hits = hits + 1
+    assert hits == 1
+
+
+def find_products(cache_folder, platform):
+    con = sqlite3.connect(os.path.join(cache_folder, 'assetdb.sqlite'))
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/test_asset.mock_asset')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive_1.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative_1.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_positive_1.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_negative_1.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_positive_1.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative_1.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center_1.azmodel')
+    con.close()
+
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize('launcher_platform', ['windows_editor'])
@@ -25,16 +49,7 @@ import ly_test_tools.environment.waiter as waiter
 class TestPythonAssetProcessing(object):
     def test_DetectPythonCreatedAsset(self, request, editor, level, launcher_platform):
         unexpected_lines = []
-        expected_lines = [
-            'Mock asset exists',
-            'AssetId found for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive_1.azmodel) found',
-            'AssetId found for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative_1.azmodel) found',
-            'AssetId found for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_positive_1.azmodel) found',
-            'AssetId found for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_negative_1.azmodel) found',
-            'AssetId found for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_positive_1.azmodel) found',
-            'AssetId found for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative_1.azmodel) found',
-            'AssetId found for asset (gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center_1.azmodel) found'
-        ]
+        expected_lines = []
         timeout = 180
         halt_on_unexpected = False
         test_directory = os.path.join(os.path.dirname(__file__))
@@ -50,3 +65,9 @@ class TestPythonAssetProcessing(object):
                 exc=("Log file '{}' was never opened by another process.".format(editorlog_file)),
                 interval=1)
             log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected, timeout)
+
+        cache_folder = editor.workspace.paths.cache()
+        platform = editor.workspace.asset_processor_platform
+        if platform == 'windows':
+            platform = 'pc'
+        find_products(cache_folder, platform)

@@ -2,7 +2,7 @@
     "description": "",
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
     "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/005_UseDisplacement_With_BlendMaskTexture.material",
-    "propertyLayoutVersion": 3,
+    "materialTypeVersion": 3,
     "properties": {
         "blend": {
             "displacementBlendDistance": 0.0010000000474974514

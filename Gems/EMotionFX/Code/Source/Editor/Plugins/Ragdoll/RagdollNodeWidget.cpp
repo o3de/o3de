@@ -125,6 +125,10 @@ namespace EMotionFX
             Physics::RagdollNodeConfiguration* ragdollNodeConfig = GetRagdollNodeConfig();
             if (ragdollNodeConfig)
             {
+                AzPhysics::JointConfiguration* jointLimitConfig = ragdollNodeConfig->m_jointConfig.get();
+                jointLimitConfig->SetPropertyVisibility(AzPhysics::JointConfiguration::PropertyVisibility::ParentLocalRotation, jointLimitConfig != nullptr);
+                jointLimitConfig->SetPropertyVisibility(AzPhysics::JointConfiguration::PropertyVisibility::ChildLocalRotation, jointLimitConfig != nullptr);
+
                 m_addColliderButton->show();
                 m_addRemoveButton->setText("Remove from ragdoll");
 

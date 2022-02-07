@@ -14,9 +14,12 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/Components/TransformComponent.h>
 
-#include <Source/Components/ImageGradientComponent.h>
-#include <Source/Components/GradientTransformComponent.h>
+#include <GradientSignal/Components/ImageGradientComponent.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
+
+#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 
 namespace UnitTest
 {
@@ -89,23 +92,21 @@ namespace UnitTest
                 test.m_imageSize, test.m_imageSize, static_cast<AZ::u32>(test.m_pixel.GetX()), static_cast<AZ::u32>(test.m_pixel.GetY()));
             config.m_tilingX = test.m_tiling;
             config.m_tilingY = test.m_tiling;
-            CreateComponent<GradientSignal::ImageGradientComponent>(entity.get(), config);
+            entity->CreateComponent<GradientSignal::ImageGradientComponent>(config);
 
             // Create the Gradient Transform Component.
             GradientSignal::GradientTransformConfig gradientTransformConfig;
             gradientTransformConfig.m_wrappingType = test.m_wrappingType;
-            CreateComponent<GradientSignal::GradientTransformComponent>(entity.get(), gradientTransformConfig);
+            entity->CreateComponent<GradientSignal::GradientTransformComponent>(gradientTransformConfig);
 
-            // Create a mock Shape component that describes the bounds that we're using to map our ImageGradient into world space.
-            CreateComponent<MockShapeComponent>(entity.get());
-            MockShapeComponentHandler mockShapeHandler(entity->GetId());
-            mockShapeHandler.m_GetLocalBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3(shapeHalfBounds), shapeHalfBounds);
+            LmbrCentral::BoxShapeConfig boxConfig(AZ::Vector3(shapeHalfBounds * 2.0f));
+            auto boxComponent = entity->CreateComponent(LmbrCentral::AxisAlignedBoxShapeComponentTypeId);
+            boxComponent->SetConfiguration(boxConfig);
 
-            // Create a mock Transform component that locates our ImageGradient in the center of our desired mock Shape.
-            MockTransformHandler mockTransformHandler;
-            mockTransformHandler.m_GetLocalTMOutput = AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds));
-            mockTransformHandler.m_GetWorldTMOutput = AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds));
-            mockTransformHandler.BusConnect(entity->GetId());
+            // Create a transform that locates our gradient in the center of our desired mock Shape.
+            auto transform = entity->CreateComponent<AzFramework::TransformComponent>();
+            transform->SetLocalTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds)));
+            transform->SetWorldTM(AZ::Transform::CreateTranslation(AZ::Vector3(shapeHalfBounds)));
 
             // All components are created, so activate the entity
             ActivateEntity(entity.get());
@@ -365,7 +366,7 @@ namespace UnitTest
             mockShapeTransformHandler.BusConnect(mockShape->GetId());
 
             // Create the mock shape that maps our 3x3 image to a 3x3 sample space in the world.
-            CreateComponent<MockShapeComponent>(mockShape.get());
+            mockShape->CreateComponent<MockShapeComponent>();
             MockShapeComponentHandler mockShapeComponentHandler(mockShape->GetId());
             // Create a 2x2 box shape (shapes are inclusive, so that's 3x3 sampling space), so that each pixel in the image directly maps to 1 meter in the box.
             mockShapeComponentHandler.m_GetEncompassingAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(2.0f));
@@ -379,7 +380,7 @@ namespace UnitTest
             // Create an ImageGradient with a 3x3 asset with the center pixel set.
             GradientSignal::ImageGradientConfig gradientConfig;
             gradientConfig.m_imageAsset = ImageAssetMockAssetHandler::CreateSpecificPixelImageAsset(3, 3, 1, 1);
-            CreateComponent<GradientSignal::ImageGradientComponent>(entity.get(), gradientConfig);
+            entity->CreateComponent<GradientSignal::ImageGradientComponent>(gradientConfig);
 
             // Create the test GradientTransform
             GradientSignal::GradientTransformConfig config;
@@ -400,7 +401,7 @@ namespace UnitTest
             config.m_overrideRotate = false;
             config.m_overrideScale = false;
             config.m_is3d = false;
-            CreateComponent<GradientSignal::GradientTransformComponent>(entity.get(), config);
+            entity->CreateComponent<GradientSignal::GradientTransformComponent>(config);
 
             // Set up the transform on the gradient entity.
             MockTransformHandler mockTransformHandler;
@@ -409,7 +410,7 @@ namespace UnitTest
             mockTransformHandler.BusConnect(entity->GetId());
 
             // Put a default shape on our gradient entity.  This is only used for previews, so it doesn't matter what it gets set to.
-            CreateComponent<MockShapeComponent>(entity.get());
+            entity->CreateComponent<MockShapeComponent>();
             MockShapeComponentHandler mockShapeHandler(entity->GetId());
 
             ActivateEntity(entity.get());
@@ -417,7 +418,6 @@ namespace UnitTest
             TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
         }
     }
-
 }
 
 

@@ -209,6 +209,7 @@ namespace ScriptCanvasEditor
             void HandleTreeItemDoubleClicked(GraphCanvas::GraphCanvasTreeItem* treeItem);
             void OpenTranslationData();
             void GenerateTranslation();
+            void NavigateToTranslationFile(GraphCanvas::NodePaletteTreeItem*);
 
             void ConfigureHelper();
             void ParseCycleTargets(GraphCanvas::GraphCanvasTreeItem* treeItem);

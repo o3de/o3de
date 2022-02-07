@@ -11,13 +11,13 @@
 
 #include <GradientSignal/PerlinImprovedNoise.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
-#include <Source/Components/PerlinGradientComponent.h>
-#include <Source/Components/RandomGradientComponent.h>
-#include <Source/Components/LevelsGradientComponent.h>
-#include <Source/Components/PosterizeGradientComponent.h>
-#include <Source/Components/SmoothStepGradientComponent.h>
-#include <Source/Components/ThresholdGradientComponent.h>
-#include <Source/Components/GradientTransformComponent.h>
+#include <GradientSignal/Components/PerlinGradientComponent.h>
+#include <GradientSignal/Components/RandomGradientComponent.h>
+#include <GradientSignal/Components/LevelsGradientComponent.h>
+#include <GradientSignal/Components/PosterizeGradientComponent.h>
+#include <GradientSignal/Components/SmoothStepGradientComponent.h>
+#include <GradientSignal/Components/ThresholdGradientComponent.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
 
 namespace UnitTest
 {
@@ -27,14 +27,12 @@ namespace UnitTest
         void TestLevelsGradientComponent(int dataSize, const AZStd::vector<float>& inputData, const AZStd::vector<float>& expectedOutput,
                                          float inputMin, float inputMid, float inputMax, float outputMin, float outputMax)
         {
-            auto entityMock = CreateEntity();
+            auto entityMock = CreateTestEntity(1.0f);
             const AZ::EntityId id = entityMock->GetId();
             UnitTest::MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
             GradientSignal::GradientTransformConfig gradientTransformConfig;
-            CreateComponent<GradientSignal::GradientTransformComponent>(entityMock.get(), gradientTransformConfig);
-            CreateComponent<MockShapeComponent>(entityMock.get());
-            MockShapeComponentHandler mockShapeHandler(entityMock->GetId());
+            entityMock->CreateComponent<GradientSignal::GradientTransformComponent>(gradientTransformConfig);
 
             ActivateEntity(entityMock.get());
 
@@ -47,7 +45,7 @@ namespace UnitTest
             config.m_outputMax = outputMax;
 
             auto entity = CreateEntity();
-            CreateComponent<GradientSignal::LevelsGradientComponent>(entity.get(), config);
+            entity->CreateComponent<GradientSignal::LevelsGradientComponent>(config);
             ActivateEntity(entity.get());
 
             TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -56,14 +54,12 @@ namespace UnitTest
         void TestPosterizeGradientComponent(int dataSize, const AZStd::vector<float>& inputData, const AZStd::vector<float>& expectedOutput,
                                             GradientSignal::PosterizeGradientConfig::ModeType posterizeMode, int bands)
         {
-            auto entityMock = CreateEntity();
+            auto entityMock = CreateTestEntity(0.5f);
             const AZ::EntityId id = entityMock->GetId();
             UnitTest::MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
             GradientSignal::GradientTransformConfig gradientTransformConfig;
-            CreateComponent<GradientSignal::GradientTransformComponent>(entityMock.get(), gradientTransformConfig);
-            CreateComponent<MockShapeComponent>(entityMock.get());
-            MockShapeComponentHandler mockShapeHandler(entityMock->GetId());
+            entityMock->CreateComponent<GradientSignal::GradientTransformComponent>(gradientTransformConfig);
 
             ActivateEntity(entityMock.get());
 
@@ -73,7 +69,7 @@ namespace UnitTest
             config.m_bands = bands;
 
             auto entity = CreateEntity();
-            CreateComponent<GradientSignal::PosterizeGradientComponent>(entity.get(), config);
+            entity->CreateComponent<GradientSignal::PosterizeGradientComponent>(config);
             ActivateEntity(entity.get());
 
             TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -82,14 +78,12 @@ namespace UnitTest
         void TestSmoothStepGradientComponent(int dataSize, const AZStd::vector<float>& inputData, const AZStd::vector<float>& expectedOutput, 
                                             float midpoint, float range, float softness)
         {
-            auto entityMock = CreateEntity();
+            auto entityMock = CreateTestEntity(0.5f);
             const AZ::EntityId id = entityMock->GetId();
             UnitTest::MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
             GradientSignal::GradientTransformConfig gradientTransformConfig;
-            CreateComponent<GradientSignal::GradientTransformComponent>(entityMock.get(), gradientTransformConfig);
-            CreateComponent<MockShapeComponent>(entityMock.get());
-            MockShapeComponentHandler mockShapeHandler(entityMock->GetId());
+            entityMock->CreateComponent<GradientSignal::GradientTransformComponent>(gradientTransformConfig);
 
             ActivateEntity(entityMock.get());
 
@@ -100,7 +94,7 @@ namespace UnitTest
             config.m_smoothStep.m_falloffStrength = softness;
 
             auto entity = CreateEntity();
-            CreateComponent<GradientSignal::SmoothStepGradientComponent>(entity.get(), config);
+            entity->CreateComponent<GradientSignal::SmoothStepGradientComponent>(config);
             ActivateEntity(entity.get());
 
             TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -108,14 +102,12 @@ namespace UnitTest
 
         void TestThresholdGradientComponent(int dataSize, const AZStd::vector<float>& inputData, const AZStd::vector<float>& expectedOutput, float threshold)
         {
-            auto entityMock = CreateEntity();
+            auto entityMock = CreateTestEntity(0.5f);
             const AZ::EntityId id = entityMock->GetId();
             UnitTest::MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
             GradientSignal::GradientTransformConfig gradientTransformConfig;
-            CreateComponent<GradientSignal::GradientTransformComponent>(entityMock.get(), gradientTransformConfig);
-            CreateComponent<MockShapeComponent>(entityMock.get());
-            MockShapeComponentHandler mockShapeHandler(entityMock->GetId());
+            entityMock->CreateComponent<GradientSignal::GradientTransformComponent>(gradientTransformConfig);
 
             ActivateEntity(entityMock.get());
 
@@ -124,7 +116,7 @@ namespace UnitTest
             config.m_threshold = threshold;
 
             auto entity = CreateEntity();
-            CreateComponent<GradientSignal::ThresholdGradientComponent>(entity.get(), config);
+            entity->CreateComponent<GradientSignal::ThresholdGradientComponent>(config);
             ActivateEntity(entity.get());
 
             TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -167,11 +159,11 @@ namespace UnitTest
         AZStd::vector<float> expectedOutput = { AZ_TRAIT_UNIT_TEST_PERLINE_GRADIANT_GOLDEN_VALUES_7878 };
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::PerlinGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::PerlinGradientComponent>(config);
 
         GradientSignal::GradientTransformConfig gradientTransformConfig;
-        CreateComponent<GradientSignal::GradientTransformComponent>(entity.get(), gradientTransformConfig);
-        CreateComponent<MockShapeComponent>(entity.get());
+        entity->CreateComponent<GradientSignal::GradientTransformComponent>(gradientTransformConfig);
+        entity->CreateComponent<MockShapeComponent>();
         MockShapeComponentHandler mockShapeHandler(entity->GetId());
 
         ActivateEntity(entity.get());
@@ -197,11 +189,11 @@ namespace UnitTest
         config.m_randomSeed = 5656;
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::RandomGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::RandomGradientComponent>(config);
 
         GradientSignal::GradientTransformConfig gradientTransformConfig;
-        CreateComponent<GradientSignal::GradientTransformComponent>(entity.get(), gradientTransformConfig);
-        CreateComponent<MockShapeComponent>(entity.get());
+        entity->CreateComponent<GradientSignal::GradientTransformComponent>(gradientTransformConfig);
+        entity->CreateComponent<MockShapeComponent>();
         MockShapeComponentHandler mockShapeHandler(entity->GetId());
 
         ActivateEntity(entity.get());
@@ -546,4 +538,5 @@ namespace UnitTest
     }
 }
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+// This uses custom test / benchmark hooks so that we can load LmbrCentral and use Shape components in our unit tests and benchmarks.
+AZ_UNIT_TEST_HOOK(new UnitTest::GradientSignalTestEnvironment, UnitTest::GradientSignalBenchmarkEnvironment);

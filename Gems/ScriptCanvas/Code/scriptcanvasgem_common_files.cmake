@@ -39,7 +39,6 @@ set(FILES
     Include/ScriptCanvas/Core/SlotMetadata.cpp
     Include/ScriptCanvas/Core/SubgraphInterface.cpp
     Include/ScriptCanvas/Core/SubgraphInterfaceUtility.cpp
-    Include/ScriptCanvas/Translation/GraphToCPlusPlus.cpp
     Include/ScriptCanvas/Translation/GraphToLua.cpp
     Include/ScriptCanvas/Translation/GraphToLuaUtility.cpp
     Include/ScriptCanvas/Translation/GraphToX.cpp
@@ -68,8 +67,6 @@ set(FILES
     Include/ScriptCanvas/Execution/ExecutionObjectCloning.cpp
     Include/ScriptCanvas/Execution/ExecutionPerformanceTimer.cpp
     Include/ScriptCanvas/Execution/ExecutionState.cpp
-    Include/ScriptCanvas/Execution/NativeHostDeclarations.cpp
-    Include/ScriptCanvas/Execution/NativeHostDefinitions.cpp
     Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionInterpretedCloningAPI.cpp
@@ -89,15 +86,10 @@ set(FILES
     Include/ScriptCanvas/Grammar/Primitives.cpp
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.cpp
     Include/ScriptCanvas/Grammar/PrimitivesExecution.cpp
-    Include/ScriptCanvas/Execution/ExecutionContext.cpp
-    Include/ScriptCanvas/Execution/NativeHostDeclarations.cpp
-    Include/ScriptCanvas/Execution/NativeHostDefinitions.cpp
-    Include/ScriptCanvas/Execution/RuntimeComponent.cpp
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.cpp
     Include/ScriptCanvas/Internal/Nodes/BaseTimerNode.cpp
     Include/ScriptCanvas/Internal/Nodes/ExpressionNodeBase.cpp
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.cpp
-    Include/ScriptCanvas/Grammar/AbstractCodeModel.cpp
     Include/ScriptCanvas/Libraries/Libraries.cpp
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.cpp
@@ -112,7 +104,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/GetVariable.cpp
     Include/ScriptCanvas/Libraries/Core/Method.cpp
     Include/ScriptCanvas/Libraries/Core/MethodOverloaded.cpp
-    Include/ScriptCanvas/Libraries/Core/MethodUtility.cpp
     Include/ScriptCanvas/Libraries/Core/Nodeling.cpp
     Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.cpp
     Include/ScriptCanvas/Libraries/Core/Repeater.cpp
@@ -152,12 +143,10 @@ set(FILES
     Include/ScriptCanvas/Libraries/Spawning/Spawning.cpp
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.cpp
     Include/ScriptCanvas/Libraries/String/Contains.cpp
-    Include/ScriptCanvas/Libraries/String/Format.cpp
     Include/ScriptCanvas/Libraries/String/Replace.cpp
     Include/ScriptCanvas/Libraries/String/String.cpp
     Include/ScriptCanvas/Libraries/String/StringMethods.cpp
     Include/ScriptCanvas/Libraries/String/Utilities.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/AddFailure.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectEqual.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectFalse.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/ExpectGreaterThan.cpp
@@ -203,7 +192,6 @@ set(FILES
     Include/ScriptCanvas/Utils/DataUtils.cpp
     Include/ScriptCanvas/Utils/NodeUtils.cpp
     Include/ScriptCanvas/Utils/VersionConverters.cpp
-    Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/BehaviorContextUtils.cpp
 )

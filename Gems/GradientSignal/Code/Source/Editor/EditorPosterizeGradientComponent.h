@@ -9,7 +9,7 @@
 #pragma once
 
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
-#include <Components/PosterizeGradientComponent.h>
+#include <GradientSignal/Components/PosterizeGradientComponent.h>
 
 namespace GradientSignal
 {

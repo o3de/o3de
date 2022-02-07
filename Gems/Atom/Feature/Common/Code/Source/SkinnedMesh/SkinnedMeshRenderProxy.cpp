@@ -160,7 +160,7 @@ namespace AZ
             return m_dispatchItemsByLod.size();
         }
 
-        AZStd::array_view<AZStd::unique_ptr<SkinnedMeshDispatchItem>> SkinnedMeshRenderProxy::GetDispatchItems(size_t lodIndex) const
+        AZStd::span<const AZStd::unique_ptr<SkinnedMeshDispatchItem>> SkinnedMeshRenderProxy::GetDispatchItems(size_t lodIndex) const
         {
             return m_dispatchItemsByLod[lodIndex];
         }

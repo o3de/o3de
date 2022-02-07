@@ -81,7 +81,7 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshStatsCollector::AddReadOnlyBufferViewsToSceneStats(const AZStd::array_view<AZ::RHI::Ptr<RHI::BufferView>>& sourceUnskinnedBufferViews)
+        void SkinnedMeshStatsCollector::AddReadOnlyBufferViewsToSceneStats(const AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>>& sourceUnskinnedBufferViews)
         {
             for (const AZ::RHI::Ptr<RHI::BufferView>& bufferView : sourceUnskinnedBufferViews)
             {
@@ -97,7 +97,7 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshStatsCollector::AddWritableBufferViewsToSceneStats(const AZStd::array_view<AZ::RHI::Ptr<RHI::BufferView>>& targetSkinnedBufferViews)
+        void SkinnedMeshStatsCollector::AddWritableBufferViewsToSceneStats(const AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>>& targetSkinnedBufferViews)
         {
             for (const AZ::RHI::Ptr<RHI::BufferView>& bufferView : targetSkinnedBufferViews)
             {

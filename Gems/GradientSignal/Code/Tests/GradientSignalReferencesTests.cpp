@@ -12,16 +12,16 @@
 #include <AzCore/Math/MathUtils.h>
 #include <Tests/GradientSignalTestFixtures.h>
 
-#include <Source/Components/MixedGradientComponent.h>
-#include <Source/Components/ReferenceGradientComponent.h>
-#include <Source/Components/ShapeAreaFalloffGradientComponent.h>
-#include <Source/Components/SurfaceAltitudeGradientComponent.h>
-#include <Source/Components/SurfaceMaskGradientComponent.h>
-#include <Source/Components/SurfaceSlopeGradientComponent.h>
-#include <Source/Components/RandomGradientComponent.h>
-#include <Source/Components/ConstantGradientComponent.h>
-#include <Source/Components/DitherGradientComponent.h>
-#include <Components/ImageGradientComponent.h>
+#include <GradientSignal/Components/MixedGradientComponent.h>
+#include <GradientSignal/Components/ReferenceGradientComponent.h>
+#include <GradientSignal/Components/ShapeAreaFalloffGradientComponent.h>
+#include <GradientSignal/Components/SurfaceAltitudeGradientComponent.h>
+#include <GradientSignal/Components/SurfaceMaskGradientComponent.h>
+#include <GradientSignal/Components/SurfaceSlopeGradientComponent.h>
+#include <GradientSignal/Components/RandomGradientComponent.h>
+#include <GradientSignal/Components/ConstantGradientComponent.h>
+#include <GradientSignal/Components/DitherGradientComponent.h>
+#include <GradientSignal/Components/ImageGradientComponent.h>
 
 namespace UnitTest
 {
@@ -55,7 +55,7 @@ namespace UnitTest
             config.m_layers.push_back(layer);
 
             auto entity = CreateEntity();
-            CreateComponent<GradientSignal::MixedGradientComponent>(entity.get(), config);
+            entity->CreateComponent<GradientSignal::MixedGradientComponent>(config);
             ActivateEntity(entity.get());
 
             TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -66,7 +66,7 @@ namespace UnitTest
                                                 float falloffMidpoint, float falloffRange, float falloffStrength)
         {
             MockSurfaceDataSystem mockSurfaceDataSystem;
-            SurfaceData::SurfacePoint point;
+            AzFramework::SurfaceData::SurfacePoint point;
 
             // Fill our mock surface with the correct normal value for each point based on our test angle set.
             for (int y = 0; y < dataSize; y++)
@@ -88,7 +88,7 @@ namespace UnitTest
             config.m_smoothStep.m_falloffStrength = falloffStrength;
 
             auto entity = CreateEntity();
-            CreateComponent<GradientSignal::SurfaceSlopeGradientComponent>(entity.get(), config);
+            entity->CreateComponent<GradientSignal::SurfaceSlopeGradientComponent>(config);
             ActivateEntity(entity.get());
 
             TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -371,12 +371,9 @@ namespace UnitTest
         const AZ::EntityId id = mockReference->GetId();
         MockGradientArrayRequestsBus mockGradientRequestsBus(id, inputData, dataSize);
 
-        GradientSignal::ReferenceGradientConfig config;
-        config.m_gradientSampler.m_gradientId = mockReference->GetId();
-
-        auto entity = CreateEntity();
-        CreateComponent<GradientSignal::ReferenceGradientComponent>(entity.get(), config);
-        ActivateEntity(entity.get());
+        // Create a reference gradient with an arbitrary box shape on it.
+        const float HalfBounds = 64.0f;
+        auto entity = BuildTestReferenceGradient(HalfBounds, mockReference->GetId());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
     }
@@ -385,17 +382,16 @@ namespace UnitTest
     {
         // Verify that gradient references can validate and disconnect cyclic connections
 
-        auto constantGradientEntity = CreateEntity();
-        GradientSignal::ConstantGradientConfig constantGradientConfig;
-        CreateComponent<GradientSignal::ConstantGradientComponent>(constantGradientEntity.get(), constantGradientConfig);
-        ActivateEntity(constantGradientEntity.get());
+        // Create a constant gradient with an arbitrary box shape on it.
+        const float HalfBounds = 64.0f;
+        auto constantGradientEntity = BuildTestConstantGradient(HalfBounds);
 
         // Verify cyclic reference test passes when pointing to gradient generator entity
         auto referenceGradientEntity1 = CreateEntity();
         GradientSignal::ReferenceGradientConfig referenceGradientConfig1;
         referenceGradientConfig1.m_gradientSampler.m_ownerEntityId = referenceGradientEntity1->GetId();
         referenceGradientConfig1.m_gradientSampler.m_gradientId = constantGradientEntity->GetId();
-        CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientEntity1.get(), referenceGradientConfig1);
+        referenceGradientEntity1->CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientConfig1);
         ActivateEntity(referenceGradientEntity1.get());
         EXPECT_TRUE(referenceGradientConfig1.m_gradientSampler.ValidateGradientEntityId());
 
@@ -404,7 +400,7 @@ namespace UnitTest
         GradientSignal::ReferenceGradientConfig referenceGradientConfig2;
         referenceGradientConfig2.m_gradientSampler.m_ownerEntityId = referenceGradientEntity2->GetId();
         referenceGradientConfig2.m_gradientSampler.m_gradientId = referenceGradientEntity1->GetId();
-        CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientEntity2.get(), referenceGradientConfig2);
+        referenceGradientEntity2->CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientConfig2);
         ActivateEntity(referenceGradientEntity2.get());
         EXPECT_TRUE(referenceGradientConfig2.m_gradientSampler.ValidateGradientEntityId());
 
@@ -413,7 +409,7 @@ namespace UnitTest
         GradientSignal::ReferenceGradientConfig referenceGradientConfig3;
         referenceGradientConfig3.m_gradientSampler.m_ownerEntityId = referenceGradientEntity3->GetId();
         referenceGradientConfig3.m_gradientSampler.m_gradientId = referenceGradientEntity3->GetId();
-        CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientEntity3.get(), referenceGradientConfig3);
+        referenceGradientEntity3->CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientConfig3);
         ActivateEntity(referenceGradientEntity3.get());
         EXPECT_FALSE(referenceGradientConfig3.m_gradientSampler.ValidateGradientEntityId());
         EXPECT_EQ(referenceGradientConfig3.m_gradientSampler.m_gradientId, AZ::EntityId());
@@ -426,19 +422,19 @@ namespace UnitTest
         GradientSignal::ReferenceGradientConfig referenceGradientConfig4;
         referenceGradientConfig4.m_gradientSampler.m_ownerEntityId = referenceGradientEntity4->GetId();
         referenceGradientConfig4.m_gradientSampler.m_gradientId = referenceGradientEntity5->GetId();
-        CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientEntity4.get(), referenceGradientConfig4);
+        referenceGradientEntity4->CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientConfig4);
         ActivateEntity(referenceGradientEntity4.get());
 
         GradientSignal::ReferenceGradientConfig referenceGradientConfig5;
         referenceGradientConfig5.m_gradientSampler.m_ownerEntityId = referenceGradientEntity5->GetId();
         referenceGradientConfig5.m_gradientSampler.m_gradientId = referenceGradientEntity6->GetId();
-        CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientEntity5.get(), referenceGradientConfig5);
+        referenceGradientEntity5->CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientConfig5);
         ActivateEntity(referenceGradientEntity5.get());
 
         GradientSignal::ReferenceGradientConfig referenceGradientConfig6;
         referenceGradientConfig6.m_gradientSampler.m_ownerEntityId = referenceGradientEntity6->GetId();
         referenceGradientConfig6.m_gradientSampler.m_gradientId = referenceGradientEntity4->GetId();
-        CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientEntity6.get(), referenceGradientConfig6);
+        referenceGradientEntity6->CreateComponent<GradientSignal::ReferenceGradientComponent>(referenceGradientConfig6);
         ActivateEntity(referenceGradientEntity6.get());
 
         EXPECT_FALSE(referenceGradientConfig6.m_gradientSampler.ValidateGradientEntityId());
@@ -460,7 +456,7 @@ namespace UnitTest
 
         // Create an AABB from -1 to 1, so points at coorindates 0 and 1 fall on it, but any points at coordinate 2 won't.
         auto entityShape = CreateEntity();
-        CreateComponent<MockShapeComponent>(entityShape.get());
+        entityShape->CreateComponent<MockShapeComponent>();
         MockShapeComponentHandler mockShapeComponentHandler(entityShape->GetId());
         mockShapeComponentHandler.m_GetEncompassingAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-1.0f), AZ::Vector3(1.0f));
 
@@ -470,7 +466,7 @@ namespace UnitTest
         config.m_falloffType = GradientSignal::FalloffType::Outer;
         
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::ShapeAreaFalloffGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::ShapeAreaFalloffGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -485,7 +481,7 @@ namespace UnitTest
 
         // Create our test shape from -1 to 0, so we have a corner directly on (0, 0).
         auto entityShape = CreateEntity();
-        CreateComponent<MockShapeComponent>(entityShape.get());
+        entityShape->CreateComponent<MockShapeComponent>();
         MockShapeComponentHandler mockShapeComponentHandler(entityShape->GetId());
         mockShapeComponentHandler.m_GetEncompassingAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-1.0f), AZ::Vector3(0.0f));
 
@@ -516,7 +512,7 @@ namespace UnitTest
             }
 
             auto entity = CreateEntity();
-            CreateComponent<GradientSignal::ShapeAreaFalloffGradientComponent>(entity.get(), config);
+            entity->CreateComponent<GradientSignal::ShapeAreaFalloffGradientComponent>(config);
             ActivateEntity(entity.get());
 
             TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -537,16 +533,16 @@ namespace UnitTest
 
         // We're pinning a shape, so the bounding box of (0, 0, 0) - (10, 10, 10) will be the one that applies.
         auto entityShape = CreateEntity();
-        CreateComponent<MockShapeComponent>(entityShape.get());
+        entityShape->CreateComponent<MockShapeComponent>();
         MockShapeComponentHandler mockShapeComponentHandler(entityShape->GetId());
         mockShapeComponentHandler.m_GetEncompassingAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3(10.0f));
 
         // Set a different altitude for each point we're going to test.  We'll use 0, 2, 5, 10 to test various points along the range.
         MockSurfaceDataSystem mockSurfaceDataSystem;
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() } };
 
         // We set the min/max to values other than 0-10 to help validate that they aren't used in the case of the pinned shape.
         GradientSignal::SurfaceAltitudeGradientConfig config;
@@ -555,7 +551,7 @@ namespace UnitTest
         config.m_altitudeMax = 24.0f;
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -577,10 +573,10 @@ namespace UnitTest
 
         // Set a different altitude for each point we're going to test.  We'll use 0, 2, 5, 10 to test various points along the range.
         MockSurfaceDataSystem mockSurfaceDataSystem;
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() } };
 
         // We set the min/max to 0-10, but don't set a shape.
         GradientSignal::SurfaceAltitudeGradientConfig config;
@@ -588,7 +584,7 @@ namespace UnitTest
         config.m_altitudeMax = 10.0f;
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -616,7 +612,7 @@ namespace UnitTest
         config.m_altitudeMax = 15.0f;
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -638,13 +634,13 @@ namespace UnitTest
         MockSurfaceDataSystem mockSurfaceDataSystem;
 
         // Altitude value below min - should result in 0.0f.
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, -10.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, -10.0f), AZ::Vector3::CreateZero() } };
         // Altitude value at exactly min - should result in 0.0f.
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, -5.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, -5.0f), AZ::Vector3::CreateZero() } };
         // Altitude value at exactly max - should result in 1.0f.
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, 15.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 15.0f), AZ::Vector3::CreateZero() } };
         // Altitude value above max - should result in 1.0f.
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { entityShape->GetId(), AZ::Vector3(0.0f, 0.0f, 20.0f), AZ::Vector3::CreateZero() } };
+        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 20.0f), AZ::Vector3::CreateZero() } };
 
         // We set the min/max to -5 - 15.  By using a range without 0 at either end, and not having 0 as the midpoint, 
         // it should be easier to verify that we're successfully clamping to 0 and 1.
@@ -653,7 +649,7 @@ namespace UnitTest
         config.m_altitudeMax = 15.0f;
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -672,14 +668,15 @@ namespace UnitTest
         };
 
         MockSurfaceDataSystem mockSurfaceDataSystem;
-        SurfaceData::SurfacePoint point;
+        AzFramework::SurfaceData::SurfacePoint point;
 
         // Fill our mock surface with the test_mask set and the expected gradient value at each point.
         for (int y = 0; y < dataSize; y++)
         {
             for (int x = 0; x < dataSize; x++)
             {
-                point.m_masks[AZ_CRC("test_mask", 0x7a16e9ff)] = expectedOutput[(y * dataSize) + x];
+                point.m_surfaceTags.clear();
+                point.m_surfaceTags.emplace_back(AZ_CRC_CE("test_mask"), expectedOutput[(y * dataSize) + x]);
                 mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] = { { point } };
             }
         }
@@ -688,7 +685,7 @@ namespace UnitTest
         config.m_surfaceTagList.push_back(AZ_CRC("test_mask", 0x7a16e9ff));
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::SurfaceMaskGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::SurfaceMaskGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());
@@ -715,7 +712,7 @@ namespace UnitTest
         config.m_surfaceTagList.push_back(AZ_CRC("test_mask", 0x7a16e9ff));
 
         auto entity = CreateEntity();
-        CreateComponent<GradientSignal::SurfaceMaskGradientComponent>(entity.get(), config);
+        entity->CreateComponent<GradientSignal::SurfaceMaskGradientComponent>(config);
         ActivateEntity(entity.get());
 
         TestFixedDataSampler(expectedOutput, dataSize, entity->GetId());

@@ -36,9 +36,17 @@ namespace AZ
             //! Assigns the attachment image pool, which the runtime attachment image will allocate from. Required.
             void SetPoolAsset(const Data::Asset<ResourcePoolAsset>& poolAsset);
 
+            //! @deprecated. Deprecated, use SetName() instead
             //! Set a string to asset's hint. This info is only kept for runtime generated asset.
             //! For asset on disc, the asset system will assign asset path to asset hint
             void SetAssetHint(AZStd::string_view hint);
+                        
+            //! Set a name for this attachment image.
+            //! This name will be used for AttachmentImage's RHI Image's debug name.
+            //! @param isUniqueName If true the image will be registered to Image System and the unique need to be unique
+            //!     among other attachment image with unique names. And the image can be found by
+            //!     ImageSystemInterface::FindRegisteredAttachmentImage() function
+            void SetName(const AZ::Name& name, bool isUniqueName);
 
             //! Finalizes and assigns ownership of the asset to result, if successful. 
             //! Otherwise false is returned and result is left untouched.

@@ -20,7 +20,7 @@ namespace AZ
         struct CommandListRenderTargetsState
         {
             using StateList = AZStd::fixed_vector<T, RHI::Limits::Pipeline::AttachmentColorCountMax>;
-            void Set(AZStd::array_view<T> newElements)
+            void Set(AZStd::span<const T> newElements)
             {
                 m_states = StateList(newElements.begin(), newElements.end());
                 m_isDirty = true;

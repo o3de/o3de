@@ -40,7 +40,7 @@ namespace AZ::IO::ZipDir
         inline static constexpr int compressedBlockHeaderSizeInBytes = 4; //number of bytes we need in front of the compressed block to indicate which compressor was used
 
         Cache();
-        explicit Cache(AZ::IAllocatorAllocate* allocator);
+        explicit Cache(AZ::IAllocator* allocator);
 
         ~Cache()
         {
@@ -133,7 +133,7 @@ namespace AZ::IO::ZipDir
         friend class FileEntryTransactionAdd;
         FileEntryTree m_treeDir;
         AZ::IO::HandleType m_fileHandle;
-        AZ::IAllocatorAllocate* m_allocator;
+        AZ::IAllocator* m_allocator;
         AZ::IO::Path m_strFilePath;
 
         // String Pool for persistently storing paths as long as they reside in the cache

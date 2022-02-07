@@ -414,6 +414,8 @@ namespace AtomToolsFramework
         m_actionPreviousTab->setEnabled(m_tabWidget->count() > 1);
         m_actionNextTab->setEnabled(m_tabWidget->count() > 1);
 
+        m_assetBrowser->SelectEntries(absolutePath);
+
         activateWindow();
         raise();
 

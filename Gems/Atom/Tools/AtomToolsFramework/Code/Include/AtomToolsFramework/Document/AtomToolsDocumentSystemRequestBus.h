@@ -25,11 +25,11 @@ namespace AtomToolsFramework
         //! Register a document factory function used to create specific document types
         virtual void RegisterDocumentType(AZStd::function<AtomToolsDocument*()> documentCreator) = 0;
 
-        //! Create a document object
+        //! Create a document
         //! @return Uuid of new document, or null Uuid if failed
         virtual AZ::Uuid CreateDocument() = 0;
 
-        //! Destroy a document object with the specified id
+        //! Destroy a document with the specified id
         //! @return true if Uuid was found and removed, otherwise false
         virtual bool DestroyDocument(const AZ::Uuid& documentId) = 0;
 
@@ -71,6 +71,9 @@ namespace AtomToolsFramework
 
         //! Save all documents
         virtual bool SaveAllDocuments() = 0;
+
+        //! Get number of allocated documents
+        virtual AZ::u32 GetDocumentCount() const = 0;
     };
 
     using AtomToolsDocumentSystemRequestBus = AZ::EBus<AtomToolsDocumentSystemRequests>;

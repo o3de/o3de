@@ -12,6 +12,8 @@
 
 namespace AZ
 {
+    enum class ObjectStreamWriteOverrideResponse;
+
     namespace VariantSerializationInternal
     {
         template <class ValueType>
@@ -32,7 +34,7 @@ namespace AZ
              * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
              * created within then this will return this .dll/.exe module allocator
              */
-            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); }));
+            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
         }
 
         template<size_t Index, size_t... Digits>
@@ -429,7 +431,7 @@ namespace AZ
                 // the serialize context dll module allocator has to be used to manage the lifetime of the ClassData attributes within a module
                 // If a module which reflects a variant is unloaded, then the dll module allocator will properly unreflect the variant type from the serialize context
                 // for this particular module
-                AZStdFunctorAllocator dllAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); });
+                AZStdFunctorAllocator dllAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); });
                 m_classData.m_attributes.set_allocator(AZStd::move(dllAllocator));
 
                 // Create the ObjectStreamWriteOverrideCB in the current module
@@ -480,7 +482,7 @@ namespace AZ
                 }
             }
         private:
-            static void ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
+            static ObjectStreamWriteOverrideResponse ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
                 [[maybe_unused]] const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
             {
                 auto alternativeVisitor = [&callContext, variantClassElement](auto&& elementAlt)
@@ -503,6 +505,9 @@ namespace AZ
                 };
 
                 AZStd::visit(AZStd::move(alternativeVisitor), *reinterpret_cast<const VariantType*>(variantPtr));
+                // To avoid including ObjectStream.h into this file, we static cast the value of 0
+                // to an AZ::ObjectStreamWriteElemntResponse which corresponds to the CompletedWrite enum value
+                return static_cast<AZ::ObjectStreamWriteOverrideResponse>(0);
             }
 
             VariantSerializationInternal::AZStdVariantContainer<Types...> m_variantContainer;

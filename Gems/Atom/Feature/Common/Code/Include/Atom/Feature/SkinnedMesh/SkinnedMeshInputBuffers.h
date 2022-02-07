@@ -27,14 +27,14 @@ namespace AZ
         class BufferView;
         class IndexBufferView;
     }
-    
+
     namespace RPI
     {
         class Model;
         class ShaderResourceGroup;
 
     }
-    
+
     namespace Render
     {
         struct SkinnedSubMeshProperties
@@ -203,8 +203,8 @@ namespace AZ
             //! Get an individual lod
             const SkinnedMeshInputLod& GetLod(size_t lodIndex) const;
 
-            //! Get an array_view of the buffer views for all the input streams
-            AZStd::array_view<AZ::RHI::Ptr<RHI::BufferView>> GetInputBufferViews(size_t lodIndex) const;
+            //! Get a span of the buffer views for all the input streams
+            AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> GetInputBufferViews(size_t lodIndex) const;
 
             //! Get the buffer view for a specific input stream
             AZ::RHI::Ptr<const RHI::BufferView> GetInputBufferView(size_t lodIndex, uint8_t inputStream) const;

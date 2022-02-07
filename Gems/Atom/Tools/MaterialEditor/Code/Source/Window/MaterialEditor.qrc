@@ -21,6 +21,5 @@
         <file>Icons/shadow.svg</file>
         <file>Icons/skybox.svg</file>
         <file>Icons/toneMapping.svg</file>
-        <file>Icons/View.svg</file>
     </qresource>
 </RCC>

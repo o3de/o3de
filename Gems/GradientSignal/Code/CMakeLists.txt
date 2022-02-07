@@ -19,7 +19,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
-            AZ::AtomCore
             AZ::AzFramework
             Gem::SurfaceData
             Gem::ImageProcessingAtom.Headers
@@ -41,7 +40,6 @@ ly_add_target(
             Gem::LmbrCentral
         PUBLIC
             AZ::AzCore
-            AZ::AtomCore
             Gem::GradientSignal.Static
             Gem::ImageProcessingAtom.Headers # Atom/ImageProcessing/PixelFormats.h is part of a header in Includes
     RUNTIME_DEPENDENCIES
@@ -73,7 +71,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 3rdParty::Qt::Widgets
                 AZ::AzCore
-                AZ::AtomCore
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
@@ -97,8 +94,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::GradientSignal.Editor.Static
                 Gem::LmbrCentral.Editor
-            PUBLIC
-                AZ::AtomCore
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
@@ -125,6 +120,27 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     
     ly_add_target(
+        NAME GradientSignal.Tests.Static STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            gradientsignal_shared_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PUBLIC
+                Tests
+            PRIVATE
+                .
+                Source
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                AZ::AzTestShared
+                Gem::GradientSignal.Static
+                Gem::LmbrCentral
+                Gem::LmbrCentral.Mocks
+                Gem::GradientSignal.Mocks
+    )
+    
+    ly_add_target(
         NAME GradientSignal.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
@@ -137,8 +153,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzTestShared
+                Gem::GradientSignal.Tests.Static
                 Gem::GradientSignal.Static
                 Gem::LmbrCentral
+                Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
     )
     ly_add_googletest(
@@ -165,9 +183,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     AZ::AzTestShared
+                    Gem::GradientSignal.Tests.Static
                     Gem::GradientSignal.Static
                     Gem::GradientSignal.Editor.Static
                     Gem::LmbrCentral.Editor
+                    Gem::LmbrCentral.Mocks
         )
         ly_add_googletest(
             NAME Gem::GradientSignal.Editor.Tests

@@ -22,7 +22,6 @@ set(FILES
     IMaterial.h
     IMiniLog.h
     IMovieSystem.h
-    IProcess.h
     IRenderAuxGeom.h
     IRenderer.h
     ISerialize.h
@@ -85,11 +84,6 @@ set(FILES
     MathConversion.h
     AndroidSpecific.h
     AppleSpecific.h
-    CryAssert_Android.h
-    CryAssert_impl.h
-    CryAssert_iOS.h
-    CryAssert_Linux.h
-    CryAssert_Mac.h
     Linux32Specific.h
     Linux64Specific.h
     Linux_Win32Wrapper.h
@@ -98,10 +92,7 @@ set(FILES
     MacSpecific.h
     platform.h
     platform_impl.cpp
-    Win32specific.h
     Win64specific.h
-    LyShine/UiAssetTypes.h
-    LyShine/Bus/UiCursorBus.h
     Maestro/Bus/EditorSequenceAgentComponentBus.h
     Maestro/Bus/EditorSequenceBus.h
     Maestro/Bus/EditorSequenceComponentBus.h
@@ -109,7 +100,6 @@ set(FILES
     Maestro/Bus/SequenceAgentComponentBus.h
     Maestro/Types/AnimNodeType.h
     Maestro/Types/AnimParamType.h
-    Maestro/Types/AnimValue.h
     Maestro/Types/AnimValueType.h
     Maestro/Types/AssetBlendKey.h
     Maestro/Types/AssetBlends.h

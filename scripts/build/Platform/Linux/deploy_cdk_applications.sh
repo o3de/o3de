@@ -1,5 +1,5 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
+#
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
@@ -7,11 +7,8 @@
 #
 
 # Deploy the CDK applications for AWS gems (Linux only)
-# Prerequisites:
-# 1) Node.js is installed
-# 2) Node.js version >= 10.13.0, except for versions 13.0.0 - 13.6.0. A version in active long-term support is recommended.
 
-SOURCE_DIRECTORY=$(dirname "$0")
+SOURCE_DIRECTORY=$PWD
 PATH=$SOURCE_DIRECTORY/python:$PATH
 GEM_DIRECTORY=$SOURCE_DIRECTORY/Gems
 
@@ -70,12 +67,12 @@ echo [cdk_installation] Install the current version of nodejs
 nvm install node
 
 echo [cdk_installation] Install the latest version of CDK
-if ! sudo npm uninstall -g aws-cdk;
+if ! npm uninstall -g aws-cdk;
 then
     echo [cdk_bootstrap] Failed to uninstall the current version of CDK
     exit 1
 fi
-if ! sudo npm install -g aws-cdk@latest;
+if ! npm install -g aws-cdk@latest;
 then
     echo [cdk_bootstrap] Failed to install the latest version of CDK
     exit 1
@@ -83,11 +80,14 @@ fi
 
 # Set temporary AWS credentials from the assume role
 credentials=$(aws sts assume-role --query Credentials.[SecretAccessKey,SessionToken,AccessKeyId] --output text --role-arn $ASSUME_ROLE_ARN --role-session-name o3de-Automation-session)
-AWS_SECRET_ACCESS_KEY=$(echo "$credentials" | cut -d' ' -f1)
-AWS_SESSION_TOKEN=$(echo "$credentials" | cut -d' ' -f2)
-AWS_ACCESS_KEY_ID=$(echo "$credentials" | cut -d' ' -f3)
+export AWS_SECRET_ACCESS_KEY=$(echo $credentials | cut -d' ' -f1)
+export AWS_SESSION_TOKEN=$(echo $credentials | cut -d' ' -f2)
+export AWS_ACCESS_KEY_ID=$(echo $credentials | cut -d' ' -f3)
 
-O3DE_AWS_DEPLOY_ACCOUNT=$(echo "$ASSUME_ROLE_ARN" | cut -d':' -f5)
+export O3DE_AWS_DEPLOY_ACCOUNT=$(echo "$ASSUME_ROLE_ARN" | cut -d':' -f5)
+if [[ -z "$O3DE_AWS_PROJECT_NAME" ]]; then
+   export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+fi
 
 # Bootstrap and deploy the CDK applications
 echo [cdk_bootstrap] Bootstrap CDK

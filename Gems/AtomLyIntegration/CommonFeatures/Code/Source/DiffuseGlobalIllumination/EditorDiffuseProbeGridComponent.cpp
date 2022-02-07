@@ -40,8 +40,12 @@ namespace AZ
                     ->Field("ambientMultiplier", &EditorDiffuseProbeGridComponent::m_ambientMultiplier)
                     ->Field("viewBias", &EditorDiffuseProbeGridComponent::m_viewBias)
                     ->Field("normalBias", &EditorDiffuseProbeGridComponent::m_normalBias)
+                    ->Field("numRaysPerProbe", &EditorDiffuseProbeGridComponent::m_numRaysPerProbe)
                     ->Field("editorMode", &EditorDiffuseProbeGridComponent::m_editorMode)
                     ->Field("runtimeMode", &EditorDiffuseProbeGridComponent::m_runtimeMode)
+                    ->Field("showVisualization", &EditorDiffuseProbeGridComponent::m_showVisualization)
+                    ->Field("showInactiveProbes", &EditorDiffuseProbeGridComponent::m_showInactiveProbes)
+                    ->Field("visualizationSphereRadius", &EditorDiffuseProbeGridComponent::m_visualizationSphereRadius)
                     ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -93,7 +97,22 @@ namespace AZ
                                 ->Attribute(Edit::Attributes::Step, 0.1f)
                                 ->Attribute(Edit::Attributes::Min, 0.0f)
                                 ->Attribute(Edit::Attributes::Max, 1.0f)
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "Grid mode")
+                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_numRaysPerProbe, "Number of Rays Per Probe", "Number of rays cast by each probe to detect lighting in its surroundings")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnNumRaysPerProbeChanged)
+                                ->Attribute(AZ::Edit::Attributes::EnumValues, &EditorDiffuseProbeGridComponent::GetNumRaysPerProbeEnumList)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Visualization")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showVisualization, "Show Visualization", "Show the probe grid visualization")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnShowVisualizationChanged)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showInactiveProbes, "Show Inactive Probes", "Show inactive probes in the probe grid visualization")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnShowInactiveProbesChanged)
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_visualizationSphereRadius, "Visualization Sphere Radius", "Radius of the spheres in the probe grid visualization")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnVisualizationSphereRadiusChanged)
+                                ->Attribute(Edit::Attributes::Decimals, 2)
+                                ->Attribute(Edit::Attributes::Step, 0.25f)
+                                ->Attribute(Edit::Attributes::Min, 0.25f)
+                                ->Attribute(Edit::Attributes::Max, 2.0f)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Grid mode")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_editorMode, "Editor Mode", "Controls whether the editor uses RealTime or Baked diffuse GI. RealTime requires a ray-tracing capable GPU. Auto-Select will fallback to Baked if ray-tracing is not available")
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnModeChangeValidate)
@@ -216,6 +235,19 @@ namespace AZ
             }
         }
 
+        AZStd::vector<Edit::EnumConstant<DiffuseProbeGridNumRaysPerProbe>> EditorDiffuseProbeGridComponent::GetNumRaysPerProbeEnumList() const
+        {
+            AZStd::vector<Edit::EnumConstant<DiffuseProbeGridNumRaysPerProbe>> enumList;
+
+            for (uint32_t index = 0; index < DiffuseProbeGridNumRaysPerProbeArraySize; ++index)
+            {
+                const DiffuseProbeGridNumRaysPerProbeEntry& entry = DiffuseProbeGridNumRaysPerProbeArray[index];
+                enumList.push_back(Edit::EnumConstant<DiffuseProbeGridNumRaysPerProbe>(entry.m_enum, AZStd::to_string(entry.m_rayCount).c_str()));
+            }
+
+            return enumList;
+        }
+
         AZ::Aabb EditorDiffuseProbeGridComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
         {
             return m_controller.GetAabb();
@@ -313,6 +345,12 @@ namespace AZ
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 
+        AZ::u32 EditorDiffuseProbeGridComponent::OnNumRaysPerProbeChanged()
+        {
+            m_controller.SetNumRaysPerProbe(m_numRaysPerProbe);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
         AZ::u32 EditorDiffuseProbeGridComponent::OnEditorModeChanged()
         {
             // this will update the configuration and also change the DiffuseProbeGrid mode
@@ -324,6 +362,24 @@ namespace AZ
         {
             // this will only update the configuration
             m_controller.SetRuntimeMode(m_runtimeMode);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AZ::u32 EditorDiffuseProbeGridComponent::OnShowVisualizationChanged()
+        {
+            m_controller.SetVisualizationEnabled(m_showVisualization);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AZ::u32 EditorDiffuseProbeGridComponent::OnShowInactiveProbesChanged()
+        {
+            m_controller.SetVisualizationShowInactiveProbes(m_showInactiveProbes);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AZ::u32 EditorDiffuseProbeGridComponent::OnVisualizationSphereRadiusChanged()
+        {
+            m_controller.SetVisualizationSphereRadius(m_visualizationSphereRadius);
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 

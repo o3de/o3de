@@ -8,6 +8,7 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
@@ -59,15 +60,6 @@ namespace AzFramework
         // Handle only high priority spawning events such as those created from network. These need to happen even if the client
         // doesn't have focus to avoid time-out issues for instance.
         m_entitiesManager.ProcessQueue(SpawnableEntitiesManager::CommandQueuePriority::High);
-    }
-
-    void SpawnableSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
-    {
-        if (!m_catalogAvailable)
-        {
-            m_catalogAvailable = true;
-            LoadRootSpawnableFromSettingsRegistry();
-        }
     }
 
     uint64_t SpawnableSystemComponent::AssignRootSpawnable(AZ::Data::Asset<Spawnable> rootSpawnable)
@@ -157,20 +149,29 @@ namespace AzFramework
         // Register with AssetDatabase
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Spawnables can't be registered because the Asset Manager is not ready yet.");
         AZ::Data::AssetManager::Instance().RegisterHandler(&m_assetHandler, AZ::AzTypeInfo<Spawnable>::Uuid());
-        
+
         // Register with AssetCatalog
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequestBus::Events::EnableCatalogForAsset, AZ::AzTypeInfo<Spawnable>::Uuid());
         AZ::Data::AssetCatalogRequestBus::Broadcast(
             &AZ::Data::AssetCatalogRequestBus::Events::AddExtension, Spawnable::FileExtension);
 
-        AssetCatalogEventBus::Handler::BusConnect();
+        // Register for the CriticalAssetsCompiled lifecycle event to trigger the loading of the root spawnable
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        AZ_Assert(settingsRegistry, "Unable to change root spawnable callback because Settings Registry is not available.");
+
+        auto LifecycleCallback = [this](AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        {
+            LoadRootSpawnableFromSettingsRegistry();
+        };
+        AZ::ComponentApplicationLifecycle::RegisterHandler(*settingsRegistry, m_criticalAssetsHandler,
+            AZStd::move(LifecycleCallback), "CriticalAssetsCompiled");
+
+
         RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        auto registry = AZ::SettingsRegistry::Get();
-        AZ_Assert(registry, "Unable to change root spawnable callback because Settings Registry is not available.");
-        m_registryChangeHandler = registry->RegisterNotifier([this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type /*type*/)
+        m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type /*type*/)
             {
                 if (path.starts_with(RootSpawnableRegistryKey))
                 {
@@ -187,13 +188,14 @@ namespace AzFramework
 
         AZ::TickBus::Handler::BusDisconnect();
         RootSpawnableNotificationBus::Handler::BusDisconnect();
-        AssetCatalogEventBus::Handler::BusDisconnect();
+        // Unregister Lifecycle event handler
+        m_criticalAssetsHandler = {};
 
-        if (m_catalogAvailable)
+        if (m_rootSpawnableId.IsValid())
         {
             ReleaseRootSpawnable();
 
-            // The SpawnalbleSystemComponent needs to guarantee there's no more processing left to do by the
+            // The SpawnableSystemComponent needs to guarantee there's no more processing left to do by the
             // entity manager before it can safely destroy it on shutdown, but also to make sure that are no
             // more calls to the callback registered to the root spawnable as that accesses this component.
             m_rootSpawnableContainer.Clear();
@@ -210,8 +212,6 @@ namespace AzFramework
 
     void SpawnableSystemComponent::LoadRootSpawnableFromSettingsRegistry()
     {
-        AZ_Assert(m_catalogAvailable, "Attempting to load root spawnable while the catalog is not available yet.");
-
         auto registry = AZ::SettingsRegistry::Get();
         AZ_Assert(registry, "Unable to check for root spawnable because the Settings Registry is not available.");
 

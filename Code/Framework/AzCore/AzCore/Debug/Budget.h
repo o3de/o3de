@@ -62,12 +62,16 @@ namespace AZ::Debug
 //
 // Anywhere the budget is used, the budget must be declared (either in a header or in the source file itself)
 // AZ_DECLARE_BUDGET(AzCore);
-#define AZ_DEFINE_BUDGET(name)                                                                                                             \
-    ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()                                                                                          \
-    {                                                                                                                                      \
-        constexpr static uint32_t crc = AZ_CRC_CE(#name);                                                                                  \
-        static ::AZ::Debug::Budget* budget = ::AZ::Debug::BudgetTracker::GetBudgetFromEnvironment(#name, crc);                             \
-        return budget;                                                                                                                     \
+#define AZ_DEFINE_BUDGET(name)                                                          \
+    ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()                                       \
+    {                                                                                   \
+        static ::AZ::Debug::Budget* budget = nullptr;                                   \
+        if (budget == nullptr)                                                          \
+        {                                                                               \
+            constexpr static uint32_t crc = AZ_CRC_CE(#name);                           \
+            ::AZ::Debug::BudgetTracker::GetBudgetFromEnvironment(budget, #name, crc);   \
+        }                                                                               \
+        return budget;                                                                  \
     }
 #endif
 

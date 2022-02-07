@@ -433,7 +433,7 @@ namespace AZ
             return m_lods[lodIndex];
         }
 
-        AZStd::array_view<AZ::RHI::Ptr<RHI::BufferView>> SkinnedMeshInputBuffers::GetInputBufferViews(size_t lodIndex) const
+        AZStd::span<const AZ::RHI::Ptr<RHI::BufferView>> SkinnedMeshInputBuffers::GetInputBufferViews(size_t lodIndex) const
         {
             return m_lods[lodIndex].m_bufferViews;
         }

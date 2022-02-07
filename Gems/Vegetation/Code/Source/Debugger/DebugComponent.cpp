@@ -862,7 +862,7 @@ void DebugComponent::PrepareNextReport()
 
         SurfaceData::SurfacePointList points;
         SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, pos, SurfaceData::SurfaceTagVector(), points);
-        timing.m_worldPosition = points.empty() ? pos : points.front().m_position;
+        timing.m_worldPosition = points.IsEmpty() ? pos : points.GetHighestSurfacePoint().m_position;
         return timing;
     },
     [](const SectorTracker& sectorTracker, SectorTiming& sectorTiming)
