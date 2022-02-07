@@ -8,7 +8,6 @@
 
 #include "OpenGLRenderPlugin.h"
 #include "GLWidget.h"
-#include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
 #include "../../../../EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h"
 

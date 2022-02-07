@@ -120,7 +120,7 @@ namespace UnitTest
         // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
         // on a test-by-test basis.
         AZStd::unique_ptr<Terrain::TerrainSystem> CreateAndActivateTerrainSystem(
-            AZ::Vector2 queryResolution = AZ::Vector2(1.0f),
+            float queryResolution = 1.0f,
             AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-128.0f), AZ::Vector3(128.0f)))
         {
             // Create the terrain system and give it one tick to fully initialize itself.
@@ -372,8 +372,7 @@ namespace UnitTest
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution that exactly matches
         // the frequency of our sine wave.  If our height queries rely on the query resolution, we should always get a value of 0.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         // Test an arbitrary set of points that should all produce non-zero heights with the EXACT sampler.  They're not aligned with the
         // query resolution, or with the 0 points on the sine wave.
@@ -423,7 +422,7 @@ namespace UnitTest
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 0.25 meter
         // intervals.
-        const AZ::Vector2 queryResolution(0.25f);
+        const float queryResolution = 0.25f;
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
         // Test some points and verify that the results always go "downward", whether they're in positive or negative space.
@@ -485,8 +484,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         // Test some points and verify that the results are the expected bilinear filtered result,
         // whether they're in positive or negative space.
@@ -673,8 +671,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         // Test some points and verify that the results are the expected bilinear filtered result,
         // whether they're in positive or negative space.
@@ -771,8 +768,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const NormalTestPoint testPoints[] = {
 
@@ -861,8 +857,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
         const AZ::Vector2 stepSize(1.0f);
@@ -920,8 +915,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(frequencyMeters);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+        auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
         const AZ::Vector2 stepSize(1.0f);
@@ -969,7 +963,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(1.0f);
+        const float queryResolution = 1.0f;
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
@@ -1015,7 +1009,7 @@ namespace UnitTest
             });
 
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
-        const AZ::Vector2 queryResolution(1.0f);
+        const float queryResolution = 1.0f;
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
         const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);

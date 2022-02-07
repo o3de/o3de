@@ -21,8 +21,7 @@
 
 namespace MaterialEditor
 {
-    //! Provides controls for viewing and editing a material document settings.
-    //! The settings can be divided into cards, with each one showing a subset of properties.
+    //! Provides controls for viewing and editing lighting and model preset settings.
     class ViewportSettingsInspector
         : public AtomToolsFramework::InspectorWidget
         , private AzToolsFramework::IPropertyEditorNotify

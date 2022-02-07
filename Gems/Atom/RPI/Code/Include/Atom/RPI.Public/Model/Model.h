@@ -51,7 +51,7 @@ namespace AZ
             size_t GetLodCount() const;
 
             //! Returns the full list of Lods, where index 0 is the most detailed, and N-1 is the least.
-            AZStd::array_view<Data::Instance<ModelLod>> GetLods() const;
+            AZStd::span<const Data::Instance<ModelLod>> GetLods() const;
 
             //! Returns whether a buffer upload is pending.
             bool IsUploadPending() const;

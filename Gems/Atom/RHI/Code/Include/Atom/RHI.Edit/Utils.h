@@ -129,7 +129,7 @@ namespace AZ
             //! @returns A new string based on @commandLineString but with the matching arguments and their values
             //!          removed from it.
             AZStd::string RemoveArgumentsFromCommandLineString(
-                AZStd::array_view<AZStd::string> listOfArguments, AZStd::string_view commandLineString);
+                AZStd::span<const AZStd::string> listOfArguments, AZStd::string_view commandLineString);
 
             //! @param commandLineString: "  --arg1   -arg2     --arg3=foo --arg4=bar  "
             //! @returns "--arg1 -arg2 --arg3=foo --arg4=bar"

@@ -98,10 +98,9 @@ namespace GradientSignal
         return [this]([[maybe_unused]] float sampleValue, const GradientSampleParams& params)
         {
             // Create a fake surface point with the position we're sampling.
-            SurfaceData::SurfacePoint point;
+            AzFramework::SurfaceData::SurfacePoint point;
             point.m_position = params.m_position;
-            SurfaceData::SurfacePointList pointList;
-            pointList.emplace_back(point);
+            SurfaceData::SurfacePointList pointList = { { point } };
 
             // Send it into the component, see what emerges
             m_component.ModifySurfacePoints(pointList);
@@ -110,10 +109,18 @@ namespace GradientSignal
             // Technically, they should all have the same value, but we'll grab the max from all of them in case
             // the underlying logic ever changes to allow separate ranges per tag.
             float result = 0.0f;
-            for (auto& mask : pointList[0].m_masks)
+            pointList.EnumeratePoints([&result](
+                    [[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
+                    const SurfaceData::SurfaceTagWeights& masks) -> bool
             {
-                result = AZ::GetMax(result, mask.second);
-            }
+                masks.EnumerateWeights(
+                    [&result]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
+                    {
+                        result = AZ::GetMax(result, weight);
+                        return true;
+                    });
+                return true;
+            });
             return result;
         };
     }

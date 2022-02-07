@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -98,6 +99,15 @@ namespace AZ
             DiffuseProbeGridMode GetMode() const { return m_mode; }
             void SetMode(DiffuseProbeGridMode mode);
 
+            bool GetVisualizationEnabled() const { return m_visualizationEnabled; }
+            void SetVisualizationEnabled(bool visualizationEnabled);
+
+            bool GetVisualizationShowInactiveProbes() const { return m_visualizationShowInactiveProbes; }
+            void SetVisualizationShowInactiveProbes(bool visualizationShowInactiveProbes) { m_visualizationShowInactiveProbes = visualizationShowInactiveProbes; }
+
+            float GetVisualizationSphereRadius() const { return m_visualizationSphereRadius; }
+            void SetVisualizationSphereRadius(float visualizationSphereRadius);
+
             uint32_t GetRemainingRelocationIterations() const { return aznumeric_cast<uint32_t>(m_remainingRelocationIterations); }
             void DecrementRemainingRelocationIterations() { m_remainingRelocationIterations = AZStd::max(0, m_remainingRelocationIterations - 1); }
             void ResetRemainingRelocationIterations() { m_remainingRelocationIterations = DefaultNumRelocationIterations; }
@@ -125,6 +135,8 @@ namespace AZ
             const Data::Instance<RPI::ShaderResourceGroup>& GetRelocationSrg() const { return m_relocationSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetClassificationSrg() const { return m_classificationSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetRenderObjectSrg() const { return m_renderObjectSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetVisualizationPrepareSrg() const { return m_visualizationPrepareSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetVisualizationRayTraceSrg() const { return m_visualizationRayTraceSrg; }
 
             // Srg updates
             void UpdateRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
@@ -135,6 +147,8 @@ namespace AZ
             void UpdateRelocationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
             void UpdateClassificationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
             void UpdateRenderObjectSrg();
+            void UpdateVisualizationPrepareSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
+            void UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, const RHI::ImageView* outputImageView);
 
             // textures
             const RHI::Ptr<RHI::Image> GetRayTraceImage() { return m_rayTraceImage[m_currentImageIndex]; }
@@ -151,12 +165,14 @@ namespace AZ
             const RHI::AttachmentId GetIrradianceImageAttachmentId() const { return m_irradianceImageAttachmentId; }
             const RHI::AttachmentId GetDistanceImageAttachmentId() const { return m_distanceImageAttachmentId; }
             const RHI::AttachmentId GetProbeDataImageAttachmentId() const { return m_probeDataImageAttachmentId; }
+            const RHI::AttachmentId GetProbeVisualizationTlasAttachmentId() const { return m_visualizationTlasAttachmentId; }
+            const RHI::AttachmentId GetProbeVisualizationTlasInstancesAttachmentId() const { return m_visualizationTlasInstancesAttachmentId; }
 
             const DiffuseProbeGridRenderData* GetRenderData() const { return m_renderData; }
 
-            // the irradiance image needs to be manually cleared after it is resized in the editor
-            bool GetIrradianceClearRequired() const { return m_irradianceClearRequired; }
-            void ResetIrradianceClearRequired() { m_irradianceClearRequired = false; }
+            // the Irradiance, Distance, and ProbeData images need to be manually cleared after certain operations, e.g., changing the grid size
+            bool GetTextureClearRequired() const { return m_textureClearRequired; }
+            void ResetTextureClearRequired() { m_textureClearRequired = false; }
 
             // texture readback
             DiffuseProbeGridTextureReadback& GetTextureReadback() { return m_textureReadback; }
@@ -168,7 +184,16 @@ namespace AZ
             static constexpr uint32_t DefaultNumDistanceTexels = 14;
             static constexpr int32_t DefaultNumRelocationIterations = 100;
 
+            // visualization TLAS
+            const RHI::Ptr<RHI::RayTracingTlas>& GetVisualizationTlas() const { return m_visualizationTlas; }
+            RHI::Ptr<RHI::RayTracingTlas>& GetVisualizationTlas() { return m_visualizationTlas; }
+
+            bool GetVisualizationTlasUpdateRequired() const;
+            void ResetVisualizationTlasUpdateRequired() { m_visualizationTlasUpdateRequired = false; }
+
         private:
+
+            // helper functions
             void UpdateTextures();
             void ComputeProbeCount(const AZ::Vector3& extents, const AZ::Vector3& probeSpacing, uint32_t& probeCountX, uint32_t& probeCountY, uint32_t& probeCountZ);
             bool ValidateProbeCount(const AZ::Vector3& extents, const AZ::Vector3& probeSpacing);
@@ -248,7 +273,7 @@ namespace AZ
             RHI::Ptr<RHI::Image> m_probeDataImage[ImageFrameCount];
             uint32_t m_currentImageIndex = 0;
             bool m_updateTextures = false;
-            bool m_irradianceClearRequired = true;
+            bool m_textureClearRequired = true;
 
             // baked textures
             Data::Instance<RPI::Image> m_bakedIrradianceImage;
@@ -281,6 +306,17 @@ namespace AZ
             RHI::AttachmentId m_irradianceImageAttachmentId;
             RHI::AttachmentId m_distanceImageAttachmentId;
             RHI::AttachmentId m_probeDataImageAttachmentId;
+
+            // probe visualization
+            bool m_visualizationEnabled = false;
+            bool m_visualizationShowInactiveProbes = false;
+            float m_visualizationSphereRadius = 0.5f;
+            RHI::Ptr<RHI::RayTracingTlas> m_visualizationTlas;
+            bool m_visualizationTlasUpdateRequired = false;
+            RHI::AttachmentId m_visualizationTlasAttachmentId;
+            RHI::AttachmentId m_visualizationTlasInstancesAttachmentId;
+            Data::Instance<RPI::ShaderResourceGroup> m_visualizationPrepareSrg;
+            Data::Instance<RPI::ShaderResourceGroup> m_visualizationRayTraceSrg;
         };
     }   // namespace Render
 }   // namespace AZ

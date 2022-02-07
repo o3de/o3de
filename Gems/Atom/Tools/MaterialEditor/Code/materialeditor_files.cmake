@@ -12,10 +12,8 @@ set(FILES
     Source/MaterialEditorApplication.h
 
     Source/Document/MaterialDocumentRequestBus.h
-    Source/Document/MaterialDocumentSettings.h
     Source/Document/MaterialDocument.cpp
     Source/Document/MaterialDocument.h
-    Source/Document/MaterialDocumentSettings.cpp
 
     Source/Viewport/MaterialViewportModule.h
     Source/Viewport/MaterialViewportModule.cpp
@@ -23,8 +21,6 @@ set(FILES
     Source/Viewport/MaterialViewportSettings.h
     Source/Viewport/MaterialViewportRequestBus.h
     Source/Viewport/MaterialViewportNotificationBus.h
-    Source/Viewport/PerformanceMetrics.h
-    Source/Viewport/PerformanceMonitorRequestBus.h
     Source/Viewport/InputController/MaterialEditorViewportInputController.cpp
     Source/Viewport/InputController/MaterialEditorViewportInputController.h
     Source/Viewport/InputController/Behavior.cpp
@@ -49,12 +45,8 @@ set(FILES
     Source/Viewport/MaterialViewportWidget.cpp
     Source/Viewport/MaterialViewportWidget.h
     Source/Viewport/MaterialViewportWidget.ui
-    Source/Viewport/PerformanceMonitorComponent.cpp
-    Source/Viewport/PerformanceMonitorComponent.h
 
     Source/Window/MaterialEditorWindowSettings.h
-    Source/Window/MaterialEditorBrowserInteractions.h
-    Source/Window/MaterialEditorBrowserInteractions.cpp
     Source/Window/MaterialEditorWindow.h
     Source/Window/MaterialEditorWindow.cpp
     Source/Window/MaterialEditorWindowSettings.cpp
@@ -67,9 +59,6 @@ set(FILES
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.cpp
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.h
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.ui
-    Source/Window/PerformanceMonitor/PerformanceMonitorWidget.cpp
-    Source/Window/PerformanceMonitor/PerformanceMonitorWidget.h
-    Source/Window/PerformanceMonitor/PerformanceMonitorWidget.ui
     Source/Window/ToolBar/MaterialEditorToolBar.h
     Source/Window/ToolBar/MaterialEditorToolBar.cpp
     Source/Window/ToolBar/ModelPresetComboBox.h

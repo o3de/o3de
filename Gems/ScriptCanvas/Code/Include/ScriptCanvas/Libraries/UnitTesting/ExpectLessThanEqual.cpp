@@ -9,7 +9,6 @@
 #include "ExpectLessThanEqual.h"
 
 #include "UnitTestBus.h"
-#include "UnitTestBusSenderMacros.h"
 
 namespace ScriptCanvas
 {

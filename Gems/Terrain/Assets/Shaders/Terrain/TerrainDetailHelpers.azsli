@@ -204,16 +204,33 @@ void GetDetailSurfaceForMaterial(inout DetailSurface surface, uint materialId, f
 {
     TerrainSrg::DetailMaterialData detailMaterialData = TerrainSrg::m_detailMaterialData[materialId];
 
+    float3x3 uvTransform = (float3x3)detailMaterialData.m_uvTransform;
+    float2 transformedUv = mul(uvTransform, float3(uv, 1.0)).xy;
+
+    // With different materials in the quad, we can't rely on ddx/ddy of the transformed uv because
+    // the materials may have different uv transforms. This would create visible seams where the wrong
+    // mip was being used. Instead, manually calculate the transformed ddx/ddy using the ddx/ddy of the
+    // original uv.
+
     float2 uvDdx = ddx(uv);
     float2 uvDdy = ddy(uv);
 
-    surface.m_color = GetDetailColor(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_normal = GetDetailNormal(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_roughness = GetDetailRoughness(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_specularF0 = GetDetailSpecularF0(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_metalness = GetDetailMetalness(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_occlusion = GetDetailOcclusion(detailMaterialData, uv, uvDdx, uvDdy);
-    surface.m_height = GetDetailHeight(detailMaterialData, uv, uvDdx, uvDdy);
+    float2 uvX = uv + uvDdx;
+    float2 uvY = uv + uvDdy;
+
+    float2 transformedUvX = mul(uvTransform, float3(uvX, 1.0)).xy;
+    float2 transformedUvY = mul(uvTransform, float3(uvY, 1.0)).xy;
+
+    float2 transformedUvDdx = transformedUvX - transformedUv;
+    float2 transformedUvDdy = transformedUvY - transformedUv;
+
+    surface.m_color = GetDetailColor(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_normal = GetDetailNormal(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_roughness = GetDetailRoughness(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_specularF0 = GetDetailSpecularF0(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_metalness = GetDetailMetalness(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_occlusion = GetDetailOcclusion(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
+    surface.m_height = GetDetailHeight(detailMaterialData, transformedUv, transformedUvDdx, transformedUvDdy);
 }
 
 // Debugs the detail material by choosing a random color per material ID and rendering it without blending.
@@ -274,25 +291,20 @@ instance, if detailMaterialIdUv falls perfectly in-between all 4 samples, then e
 Each sample can have two different detail materials defined with a blend value to determine their relative contribution.
 The detailUv is used for sampling the textures of each detail material.
 */
-bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, float2 detailUv)
+bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord, float2 detailUv)
 {
     float2 textureSize;
     TerrainSrg::m_detailMaterialIdImage.GetDimensions(textureSize.x, textureSize.y);
 
-    float2 detailMaterialIdCoord = detailMaterialIdUv * textureSize; // uv -> pixel coordinate
-
-    // detailMaterialIdCoord could be negative, so add textureSize to ensure it is positive
-    detailMaterialIdCoord += textureSize; 
-
-    // The detail material id texture wraps since the "center" point can be anywhere in the texture, so mod by texturesize
-    int2 detailMaterailIdTopLeft = int2(detailMaterialIdCoord) % textureSize;
-    int2 detailMaterailIdBottomRight = (int2(detailMaterialIdCoord) + 1) % textureSize;
+    // The detail material id texture wraps since the "center" point can be anywhere in the texture, so mod by textureSize
+    int2 detailMaterialIdTopLeft = ((int2(detailMaterialIdCoord) % textureSize) + textureSize) % textureSize;
+    int2 detailMaterialIdBottomRight = (detailMaterialIdTopLeft + 1) % textureSize;
 
     // Using Load() to gather the nearest 4 samples (Gather4() isn't used because of precision issues with uvs).
-    uint4 s1 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdTopLeft.x, detailMaterailIdBottomRight.y, 0));
-    uint4 s2 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdBottomRight, 0));
-    uint4 s3 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdBottomRight.x, detailMaterailIdTopLeft.y, 0));
-    uint4 s4 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterailIdTopLeft, 0));
+    uint4 s1 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdTopLeft.x, detailMaterialIdBottomRight.y, 0));
+    uint4 s2 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdBottomRight, 0));
+    uint4 s3 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdBottomRight.x, detailMaterialIdTopLeft.y, 0));
+    uint4 s4 = TerrainSrg::m_detailMaterialIdImage.Load(int3(detailMaterialIdTopLeft, 0));
 
     uint4 material1 = uint4(s1.x, s2.x, s3.x, s4.x);
     uint4 material2 = uint4(s1.y, s2.y, s3.y, s4.y);
