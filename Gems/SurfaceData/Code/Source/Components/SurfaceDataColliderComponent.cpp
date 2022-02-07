@@ -259,7 +259,7 @@ namespace SurfaceData
                         if (DoRayTrace(position, queryPointOnly, hitPosition, hitNormal))
                         {
                             // If the query point collides with the volume, add all our modifier tags with a weight of 1.0f.
-                            weights.AddSurfaceWeightsIfGreater(m_configuration.m_modifierTags, 1.0f);
+                            weights.AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
                         }
                     }
                 });

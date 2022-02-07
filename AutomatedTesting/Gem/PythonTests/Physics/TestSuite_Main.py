@@ -52,11 +52,11 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_CharacterController_SwitchLevels(self, request, workspace, editor, launcher_platform):
         from .tests.character_controller import CharacterController_SwitchLevels as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Ragdoll_AddPhysxRagdollComponentWorks(self, request, workspace, editor, launcher_platform):
         from .tests.ragdoll import Ragdoll_AddPhysxRagdollComponentWorks as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
     def test_ScriptCanvas_MultipleRaycastNode(self, request, workspace, editor, launcher_platform):
@@ -81,7 +81,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Collider_PxMeshConvexMeshCollides(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_PxMeshConvexMeshCollides as test_module
-        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
+        self._run_test(request, workspace, editor, test_module)
     
     @revert_physics_config    
     def test_ShapeCollider_CylinderShapeCollides(self, request, workspace, editor, launcher_platform):
