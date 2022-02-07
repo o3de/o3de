@@ -132,7 +132,7 @@ namespace SurfaceData
         Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());
 
         // Update the cached collider data and bounds, then register the surface data provider / modifier
-        AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f, m_newPointWeights);
+        m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f);
         UpdateColliderData();
     }
 
@@ -237,12 +237,7 @@ namespace SurfaceData
 
         if (DoRayTrace(inPosition, queryPointOnly, hitPosition, hitNormal))
         {
-            SurfacePoint point;
-            point.m_entityId = GetEntityId();
-            point.m_position = hitPosition;
-            point.m_normal = hitNormal;
-            point.m_masks = m_newPointWeights;
-            surfacePointList.push_back(AZStd::move(point));
+            surfacePointList.AddSurfacePoint(GetEntityId(), hitPosition, hitNormal, m_newPointWeights);
         }
     }
 
@@ -252,20 +247,22 @@ namespace SurfaceData
 
         if (m_colliderBounds.IsValid() && !m_configuration.m_modifierTags.empty())
         {
-            const AZ::EntityId entityId = GetEntityId();
-            for (auto& point : surfacePointList)
-            {
-                if (point.m_entityId != entityId && m_colliderBounds.Contains(point.m_position))
+            surfacePointList.ModifySurfaceWeights(
+                GetEntityId(),
+                [this](const AZ::Vector3& position, SurfaceData::SurfaceTagWeights& weights)
                 {
-                    AZ::Vector3 hitPosition;
-                    AZ::Vector3 hitNormal;
-                    constexpr bool queryPointOnly = true;
-                    if (DoRayTrace(point.m_position, queryPointOnly, hitPosition, hitNormal))
+                    if (m_colliderBounds.Contains(position))
                     {
-                        AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, 1.0f);
+                        AZ::Vector3 hitPosition;
+                        AZ::Vector3 hitNormal;
+                        constexpr bool queryPointOnly = true;
+                        if (DoRayTrace(position, queryPointOnly, hitPosition, hitNormal))
+                        {
+                            // If the query point collides with the volume, add all our modifier tags with a weight of 1.0f.
+                            weights.AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
+                        }
                     }
-                }
-            }
+                });
         }
     }
 

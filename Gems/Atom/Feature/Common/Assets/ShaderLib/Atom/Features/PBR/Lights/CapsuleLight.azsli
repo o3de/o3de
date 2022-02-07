@@ -135,8 +135,15 @@ void ApplyCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Light
         float3 closestIntersectionPoint = startPoint + closestT * startToEnd;
         float3 posToLight = closestIntersectionPoint - surface.position;
 
-        // Tranmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), 0.0);
+        // Transmission contribution
+        // We cannot compute the actual transmission distance so we want to:
+        // - If transmission mode is thick object -> use transmission thickness parameter instead
+        // - If transmission mode is thin object -> ignore back lighting
+        // To detect and apply this behavior in the GetBackLighting function, we need to use a negative transmissionDistance 
+        const float transmissionDistance = -1.0f;
+        // If the transmissionDistance is ignored then the attenuation distance (only used on thin objects) does not have any influence
+        const float attenuationDistance = 0.0f;
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance, attenuationDistance);
 
         // Calculate the offset from the nearest point on the reflection vector to the nearest point on the capsule light
         float3 posToClosestPointAlongReflection = dot(posToLight, reflectionDir) * reflectionDir;

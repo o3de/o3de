@@ -36,32 +36,10 @@ namespace AtomToolsFramework
         return m_absolutePath;
     }
 
-    const AZStd::any& AtomToolsDocument::GetPropertyValue([[maybe_unused]] const AZ::Name& propertyId) const
+    AZStd::vector<DocumentObjectInfo> AtomToolsDocument::GetObjectInfo() const
     {
-        AZ_UNUSED(propertyId);
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return m_invalidValue;
-    }
-
-    const AtomToolsFramework::DynamicProperty& AtomToolsDocument::GetProperty([[maybe_unused]] const AZ::Name& propertyId) const
-    {
-        AZ_UNUSED(propertyId);
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return m_invalidProperty;
-    }
-    
-    bool AtomToolsDocument::IsPropertyGroupVisible([[maybe_unused]] const AZ::Name& propertyGroupFullName) const
-    {
-        AZ_UNUSED(propertyGroupFullName);
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
-        return false;
-    }
-
-    void AtomToolsDocument::SetPropertyValue([[maybe_unused]] const AZ::Name& propertyId, [[maybe_unused]] const AZStd::any& value)
-    {
-        AZ_UNUSED(propertyId);
-        AZ_UNUSED(value);
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        AZ_Warning("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return AZStd::vector<DocumentObjectInfo>();
     }
 
     bool AtomToolsDocument::Open(AZStd::string_view loadPath)
@@ -256,13 +234,13 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::BeginEdit()
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        AZ_Warning("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
 
     bool AtomToolsDocument::EndEdit()
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        AZ_Warning("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
 

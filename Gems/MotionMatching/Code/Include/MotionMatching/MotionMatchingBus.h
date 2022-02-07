@@ -11,8 +11,20 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+
 namespace EMotionFX::MotionMatching
 {
+    class DebugDrawRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        AZ_RTTI(DebugDrawRequests, "{7BBA4249-EC00-445C-8A0C-4472841049C3}");
+
+        virtual void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay) = 0;
+    };
+    using DebugDrawRequestBus = AZ::EBus<DebugDrawRequests>;
+
     class MotionMatchingRequests
     {
     public:

@@ -34,7 +34,7 @@ namespace Vegetation
         AZ::Quaternion m_rotation = AZ::Quaternion::CreateIdentity();
         AZ::Quaternion m_alignment = AZ::Quaternion::CreateIdentity();
         float m_scale = 1.0f;
-        SurfaceData::SurfaceTagWeightMap m_masks; //[LY-90908] remove when surface mask filtering is done in area
+        SurfaceData::SurfaceTagWeights m_masks; //[LY-90908] remove when surface mask filtering is done in area
         DescriptorPtr m_descriptorPtr;
 
         // Determine if two different sets of instance data are similar enough to be considered the same when placing
