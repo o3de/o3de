@@ -344,7 +344,7 @@ namespace UnitTest
         auto entity = CreateTestSphereEntity(shapeHalfBounds);
         GradientSignal::SurfaceAltitudeGradientConfig config;
         config.m_altitudeMin = -5.0f;
-        config.m_altitudeMax = 15.0f;
+        config.m_altitudeMax = 15.0f + (shapeHalfBounds * 2.0f);
         entity->CreateComponent<GradientSignal::SurfaceAltitudeGradientComponent>(config);
 
         // Create a SurfaceDataShape component to provide surface points from this component.
