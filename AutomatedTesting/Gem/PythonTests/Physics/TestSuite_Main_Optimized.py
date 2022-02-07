@@ -54,7 +54,7 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
             fm._restore_file(f, file_list[f])
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+# @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -75,13 +75,6 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
 
     class C14654881_CharacterController_SwitchLevels(EditorSharedTest):
         from .tests.character_controller import CharacterController_SwitchLevels as test_module
-
-    @pytest.mark.xfail(reason=
-                       "Test failed due to an error message shown while in game mode: "
-                       "'(Prefab) - Invalid asset found referenced in scene while entering game mode. "
-                       "The asset was stored in an instance of Asset.'")
-    class C4976236_AddPhysxColliderComponent(EditorSharedTest):
-        from .tests.collider import Collider_AddColliderComponent as test_module
 
     class C14861500_DefaultSetting_ColliderShape(EditorSharedTest):
         from .tests.collider import Collider_CheckDefaultShapeSettingIsPxMesh as test_module
@@ -352,6 +345,9 @@ class TestAutomation(EditorTestSuite):
         
     class C5959809_ForceRegion_RotationalOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_RotationalOffset as test_module
+
+    class C4976236_AddPhysxColliderComponent(EditorSharedTest):
+        from .tests.collider import Collider_AddColliderComponent as test_module
 
     class C100000_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
