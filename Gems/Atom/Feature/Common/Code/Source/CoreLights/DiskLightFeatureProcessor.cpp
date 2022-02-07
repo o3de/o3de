@@ -255,9 +255,9 @@ namespace AZ
             UpdateShadow(handle);
         }
 
-        const DiskLightData&  DiskLightFeatureProcessor::GetDiskData(LightHandle handle)
+        const DiskLightData&  DiskLightFeatureProcessor::GetDiskData(LightHandle handle) const
         {
-            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetDiskData().");
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::GetDiskData().");
 
             return m_diskLightData.GetData(handle.GetIndex());
         }
