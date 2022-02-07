@@ -43,10 +43,7 @@ namespace MaterialCanvas
         mainWindowWrapper->setGuest(this);
         mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "MaterialCanvas", "mainWindowGeometry");
 
-        // set the style sheet for RPE highlighting and other styling
-        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/MaterialCanvas.qss"));
-
-        QApplication::setWindowIcon(QIcon(":/Icons/materialcanvas.svg"));
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
         if (!apiName.IsEmpty())
