@@ -788,7 +788,10 @@ class EditorTestSuite():
                 else:
                     test_result = Result.Fail.create(test_spec, output, editor_log_content)
                 # Save assets with errors and warnings
-                editor_utils.save_failed_asset_joblogs(workspace)
+                try:
+                    editor_utils.save_failed_asset_joblogs(workspace)
+                except Exception as e:  # Purposefully broad
+                    logger.warning(e)
         except WaitTimeoutError:
             output = editor.get_output()
             editor.kill()
@@ -893,7 +896,10 @@ class EditorTestSuite():
                         results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code,
                                                                       crash_error, crashed_result.editor_log)
                 # Save assets with errors and warnings
-                editor_utils.save_failed_asset_joblogs(workspace)
+                try:
+                    editor_utils.save_failed_asset_joblogs(workspace)
+                except Exception as e:  # Purposefully broad
+                    logger.warning(e)
         except WaitTimeoutError:            
             editor.kill()
             output = editor.get_output()
