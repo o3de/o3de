@@ -46,8 +46,9 @@ AssetImporterManager::~AssetImporterManager()
 void AssetImporterManager::Exec()
 {
     // tell the AssetImporterDragAndDropHandler that the Asset Importer now is running
-    Q_EMIT StartAssetImporter();
-    bool success = OnBrowseFiles();
+//    Q_EMIT StartAssetImporter();
+    bool success = false;
+    //OnBrowseFiles();
 
     if (!success)
     {
