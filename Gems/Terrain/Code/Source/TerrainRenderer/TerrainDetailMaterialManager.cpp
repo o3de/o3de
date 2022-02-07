@@ -251,20 +251,73 @@ namespace Terrain
             m_dirtyDetailRegion.AddAabb(dirtyRegion);
         }
     }
+
+    bool TerrainDetailMaterialManager::ForSurfaceTag(DetailMaterialListRegion& materialRegion,
+        SurfaceData::SurfaceTag surfaceTag, DefaultMaterialSurfaceCallback callback)
+    {
+        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        {
+            if (surface.m_surfaceTag == surfaceTag)
+            {
+                callback(surface);
+                return true;
+            }
+        }
+        return false;
+    }
     
+    void TerrainDetailMaterialManager::OnTerrainDefaultSurfaceMaterialCreated(AZ::EntityId entityId, MaterialInstance material)
+    {
+        DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
+        AZ_Error("TerrainDetailMaterialManager", materialRegion.m_defaultDetailMaterialId == decltype(m_detailMaterialRegions)::NoFreeSlot,
+            "Default detail material created but was already set for this region.");
+
+        materialRegion.m_defaultDetailMaterialId = CreateOrUpdateDetailMaterial(material);
+        m_detailMaterials.GetData(materialRegion.m_defaultDetailMaterialId).refCount++;
+        m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+    }
+
+    void TerrainDetailMaterialManager::OnTerrainDefaultSurfaceMaterialDestroyed(AZ::EntityId entityId)
+    {
+        DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
+        if (materialRegion == nullptr)
+        {
+            AZ_Assert(false, "OnTerrainDefaultSurfaceMaterialDestroyed() called for region that doesn't exist.");
+            return;
+        }
+
+        CheckDetailMaterialForDeletion(materialRegion->m_defaultDetailMaterialId);
+        materialRegion->m_defaultDetailMaterialId = decltype(m_detailMaterialRegions)::NoFreeSlot;
+    }
+
+    void TerrainDetailMaterialManager::OnTerrainDefaultSurfaceMaterialChanged(AZ::EntityId entityId, MaterialInstance newMaterial)
+    {
+        DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
+        if (materialRegion == nullptr)
+        {
+            AZ_Assert(false, "OnTerrainDefaultSurfaceMaterialChanged() called for region that doesn't exist.");
+            return;
+        }
+
+        // Update existing entry or create a new material entry
+        uint16_t materialId = CreateOrUpdateDetailMaterial(newMaterial);
+        if (materialRegion->m_defaultDetailMaterialId != materialId)
+        {
+            ++m_detailMaterials.GetData(materialId).refCount;
+            CheckDetailMaterialForDeletion(materialRegion->m_defaultDetailMaterialId);
+            materialRegion->m_defaultDetailMaterialId = materialId;
+        }
+    }
+
     void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
     {
         DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
 
         // Validate that the surface tag is new
-        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        ForSurfaceTag(materialRegion, surfaceTag, [](DetailMaterialSurface&)
         {
-            if (surface.m_surfaceTag == surfaceTag)
-            {
-                AZ_Error(TerrainDetailMaterialManagerName, false, "Already have a surface material mapping for this surface tag.");
-                return;
-            }
-        }
+            AZ_Error(TerrainDetailMaterialManagerName, false, "Already have a surface material mapping for this surface tag.");
+        });
 
         uint16_t detailMaterialId = CreateOrUpdateDetailMaterial(material);
         materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, detailMaterialId });
@@ -275,52 +328,71 @@ namespace Terrain
     void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag)
     {
         DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
-
-        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        
+        [[maybe_unused]] bool found = ForSurfaceTag(materialRegion, surfaceTag,
+            [&](DetailMaterialSurface& surface)
         {
-            if (surface.m_surfaceTag == surfaceTag)
-            {
-                CheckDetailMaterialForDeletion(surface.m_detailMaterialId);
+            CheckDetailMaterialForDeletion(surface.m_detailMaterialId);
 
-                if (surface.m_surfaceTag != materialRegion.m_materialsForSurfaces.back().m_surfaceTag)
-                {
-                    AZStd::swap(surface, materialRegion.m_materialsForSurfaces.back());
-                }
-                materialRegion.m_materialsForSurfaces.pop_back();
-                m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
-                return;
+            if (surface.m_surfaceTag != materialRegion.m_materialsForSurfaces.back().m_surfaceTag)
+            {
+                AZStd::swap(surface, materialRegion.m_materialsForSurfaces.back());
             }
+            materialRegion.m_materialsForSurfaces.pop_back();
+            m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+            return;
+        });
+
+        AZ_Error(TerrainDetailMaterialManagerName, found, "Could not find surface tag to destroy for OnTerrainSurfaceMaterialMappingDestroyed().");
+    }
+    
+    void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingMaterialChanged(
+        AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
+    {
+        DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
+        if (materialRegion == nullptr)
+        {
+            AZ_Assert(false, "OnTerrainSurfaceMaterialMappingMaterialChanged() called for region that doesn't exist.");
+            return;
         }
-        AZ_Error(TerrainDetailMaterialManagerName, false, "Could not find surface tag to destroy for OnTerrainSurfaceMaterialMappingDestroyed().");
+
+        // Update existing entry or create a new material entry
+        uint16_t materialId = CreateOrUpdateDetailMaterial(material);
+        
+        [[maybe_unused]] bool found = ForSurfaceTag(*materialRegion, surfaceTag,
+            [&](DetailMaterialSurface& surface)
+        {
+            if (surface.m_detailMaterialId != materialId)
+            {
+                // Updated material was a different asset than the old material, decrement ref count and
+                // delete if no other surface tags are using it.
+                ++m_detailMaterials.GetData(materialId).refCount;
+                CheckDetailMaterialForDeletion(surface.m_detailMaterialId);
+                surface.m_detailMaterialId = materialId;
+            }
+            m_dirtyDetailRegion.AddAabb(materialRegion->m_region);
+        });
+
+        AZ_Assert(found, "OnTerrainSurfaceMaterialMappingMaterialChanged() called for tag that doesn't exist.");
     }
 
-    void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
+    void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingTagChanged(
+        AZ::EntityId entityId, SurfaceData::SurfaceTag oldTag,  SurfaceData::SurfaceTag newTag)
     {
-        DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
-
-        bool found = false;
-        uint16_t materialId = CreateOrUpdateDetailMaterial(material);
-        for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
+        DetailMaterialListRegion* materialRegion = FindByEntityId(entityId, m_detailMaterialRegions);
+        if (materialRegion == nullptr)
         {
-            if (surface.m_surfaceTag == surfaceTag)
-            {
-                found = true;
-                if (surface.m_detailMaterialId != materialId)
-                {
-                    ++m_detailMaterials.GetData(materialId).refCount;
-                    CheckDetailMaterialForDeletion(surface.m_detailMaterialId);
-                    surface.m_detailMaterialId = materialId;
-                }
-                break;
-            }
+            AZ_Assert(false, "OnTerrainSurfaceMaterialMappingTagChanged() called for region that doesn't exist.");
+            return;
         }
-
-        if (!found)
+        
+        [[maybe_unused]] bool found = ForSurfaceTag(*materialRegion, oldTag,
+            [&](DetailMaterialSurface& surface)
         {
-            ++m_detailMaterials.GetData(materialId).refCount;
-            materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, materialId });
-        }
-        m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+            surface.m_surfaceTag = newTag;
+            m_dirtyDetailRegion.AddAabb(materialRegion->m_region);
+        });
+        AZ_Assert(found, "OnTerrainSurfaceMaterialMappingTagChanged() called for tag that doesn't exist.");
     }
 
     void TerrainDetailMaterialManager::OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
@@ -745,5 +817,20 @@ namespace Terrain
         }
         AZ_Assert(false, "Entity Id not found in container.")
     }
-    
+
+    void TerrainDetailMaterialManager::ResetDefaultDetailMaterial()
+    {
+        m_defaultMaterialData.m_assetId = {};
+        m_defaultMaterialData.m_materialChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
+        m_defaultMaterialData.refCount = 1;
+        m_defaultMaterialData.m_detailMaterialBufferIndex = 0;
+
+        m_defaultMaterialData.m_colorImage = {};
+        m_defaultMaterialData.m_normalImage = {};
+        m_defaultMaterialData.m_roughnessImage = {};
+        m_defaultMaterialData.m_metalnessImage = {};
+        m_defaultMaterialData.m_specularF0Image = {};
+        m_defaultMaterialData.m_occlusionImage = {};
+        m_defaultMaterialData.m_heightImage = {};
+    }
 }

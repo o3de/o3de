@@ -25,19 +25,42 @@ namespace LmbrCentral
 
 namespace Terrain
 {
-    struct TerrainSurfaceMaterialMapping final
+    struct TerrainSurfaceMaterial
     {
-    public:
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
-        AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}");
-        static void Reflect(AZ::ReflectContext* context);
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterial, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainSurfaceMaterial, "{C96BCB4D-D3D6-4346-AF42-AD1B18D52070}");
 
-        SurfaceData::SurfaceTag m_surfaceTag;
-        AZ::Data::AssetId m_activeMaterialAssetId;
+        virtual ~TerrainSurfaceMaterial() = default;
+
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
 
+        SurfaceData::SurfaceTag m_surfaceTag;
+        SurfaceData::SurfaceTag m_previousTag;
+        AZ::Data::AssetId m_activeMaterialAssetId;
+        AZ::RPI::Material::ChangeId m_previousChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
+
         bool m_active = false;
+    };
+
+    struct TerrainSurfaceMaterialMapping final : public TerrainSurfaceMaterial
+    {
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}", TerrainSurfaceMaterial);
+        static void Reflect(AZ::ReflectContext* context);
+        
+        SurfaceData::SurfaceTag m_surfaceTag;
+        SurfaceData::SurfaceTag m_previousTag;
+    };
+    
+    struct DefaultTerrainSurfaceMaterial final : public TerrainSurfaceMaterial
+    {
+        AZ_CLASS_ALLOCATOR(DefaultTerrainSurfaceMaterial, AZ::SystemAllocator, 0);
+        AZ_RTTI(DefaultTerrainSurfaceMaterial, "{EAE129EF-1A69-4A30-8D79-D2D9500E3237}", TerrainSurfaceMaterial);
+        static void Reflect(AZ::ReflectContext* context);
+
+        // This struct exists solely so it can have a separate edit context layout
+        // from TerrainSurfaceMaterialMapping.
     };
 
     class TerrainSurfaceMaterialsListConfig : public AZ::ComponentConfig
@@ -47,6 +70,7 @@ namespace Terrain
         AZ_RTTI(TerrainSurfaceMaterialsListConfig, "{68A1CB1B-C835-4C3A-8D1C-08692E07711A}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
+        DefaultTerrainSurfaceMaterial m_defaultSurfaceMaterial; // Surface tag ignored for default
         AZStd::vector<TerrainSurfaceMaterialMapping> m_surfaceMaterials;
     };
 
@@ -78,7 +102,7 @@ namespace Terrain
 
     private:
         void HandleMaterialStateChanges();
-        int CountMaterialIDInstances(AZ::Data::AssetId id) const;
+        int CountMaterialIdInstances(AZ::Data::AssetId id) const;
 
         ////////////////////////////////////////////////////////////////////////
         // ShapeComponentNotificationsBus

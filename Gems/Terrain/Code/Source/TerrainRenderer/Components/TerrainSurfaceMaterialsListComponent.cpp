@@ -34,19 +34,40 @@ namespace Terrain
             serialize->Class<TerrainSurfaceMaterialMapping>()
                 ->Version(1)
                 ->Field("Surface", &TerrainSurfaceMaterialMapping::m_surfaceTag)
-                ->Field("MaterialAsset", &TerrainSurfaceMaterialMapping::m_materialAsset);
+                ->FieldFromBase<TerrainSurfaceMaterial>("MaterialAsset", &TerrainSurfaceMaterial::m_materialAsset);
 
             if (auto edit = serialize->GetEditContext())
             {
-                edit->Class<TerrainSurfaceMaterialMapping>("Terrain Surface Gradient Mapping", "Mapping between a surface and a material.")
+                edit->Class<TerrainSurfaceMaterialMapping>("Terrain surface gradient mapping", "Mapping between a surface and a material.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainSurfaceMaterialMapping::m_surfaceTag, "Surface tag", "Surface type to map to a material.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialMapping::m_materialAsset, "Material asset", "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
+                    ;
+            }
+        }
+    }
+    
+    void DefaultTerrainSurfaceMaterial::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serialize->Class<DefaultTerrainSurfaceMaterial>()
+                ->Version(1)
+                ->FieldFromBase<TerrainSurfaceMaterial>("MaterialAsset", &TerrainSurfaceMaterial::m_materialAsset);
 
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainSurfaceMaterialMapping::m_surfaceTag, "Surface Tag", "Surface type to map to a material.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialMapping::m_materialAsset, "Material Asset", "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
+            if (auto edit = serialize->GetEditContext())
+            {
+                edit->Class<DefaultTerrainSurfaceMaterial>("Terrain default material", "The default material used as a fallback in this area.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DefaultTerrainSurfaceMaterial::m_materialAsset, "Material asset", "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
                     ;
             }
         }
@@ -54,13 +75,15 @@ namespace Terrain
 
     void TerrainSurfaceMaterialsListConfig::Reflect(AZ::ReflectContext* context)
     {
+        DefaultTerrainSurfaceMaterial::Reflect(context);
         TerrainSurfaceMaterialMapping::Reflect(context);
 
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
             serialize->Class<TerrainSurfaceMaterialsListConfig, AZ::ComponentConfig>()
-                ->Version(1)
+                ->Version(2)
+                ->Field("DefaultMaterial", &TerrainSurfaceMaterialsListConfig::m_defaultSurfaceMaterial)
                 ->Field("Mappings", &TerrainSurfaceMaterialsListConfig::m_surfaceMaterials);
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -69,9 +92,11 @@ namespace Terrain
                 edit->Class<TerrainSurfaceMaterialsListConfig>(
                         "Terrain Surface Material List Component", "Provide mapping between surfaces and render materials.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialsListConfig::m_defaultSurfaceMaterial,
+                        "Default Material", "The default material to fall back to where no other material surface mappings exist.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialsListConfig::m_surfaceMaterials,
                         "Material Mappings", "Maps surfaces to materials.");
@@ -116,15 +141,21 @@ namespace Terrain
     {
         m_cachedAabb = AZ::Aabb::CreateNull();
 
+        auto checkLoadMaterial = [&](TerrainSurfaceMaterial& material)
+        {
+            if (material.m_materialAsset.GetId().IsValid())
+            {
+                material.m_active = false;
+                material.m_materialAsset.QueueLoad();
+                AZ::Data::AssetBus::MultiHandler::BusConnect(material.m_materialAsset.GetId());
+            }
+        };
+
         // Set all the materials as inactive and start loading.
+        checkLoadMaterial(m_configuration.m_defaultSurfaceMaterial);
         for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
         {
-            if (surfaceMaterialMapping.m_materialAsset.GetId().IsValid())
-            {
-                surfaceMaterialMapping.m_active = false;
-                surfaceMaterialMapping.m_materialAsset.QueueLoad();
-                AZ::Data::AssetBus::MultiHandler::BusConnect(surfaceMaterialMapping.m_materialAsset.GetId());
-            }
+            checkLoadMaterial(surfaceMaterialMapping);
         }
 
         // Announce initial shape using OnShapeChanged
@@ -135,23 +166,34 @@ namespace Terrain
     {
         TerrainAreaMaterialRequestBus::Handler::BusDisconnect();
 
+        auto checkResetMaterial = [&](TerrainSurfaceMaterial& material)
+        {
+            if (material.m_materialAsset.GetId().IsValid())
+            {
+                AZ::Data::AssetBus::MultiHandler::BusDisconnect(material.m_materialAsset.GetId());
+                material.m_materialAsset.Release();
+                material.m_materialInstance.reset();
+                material.m_activeMaterialAssetId = AZ::Data::AssetId();
+            }
+        };
+        
+        checkResetMaterial(m_configuration.m_defaultSurfaceMaterial);
         for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
         {
-            if (surfaceMaterialMapping.m_materialAsset.GetId().IsValid())
-            {
-                AZ::Data::AssetBus::MultiHandler::BusDisconnect(surfaceMaterialMapping.m_materialAsset.GetId());
-                surfaceMaterialMapping.m_materialAsset.Release();
-                surfaceMaterialMapping.m_materialInstance.reset();
-                surfaceMaterialMapping.m_activeMaterialAssetId = AZ::Data::AssetId();
-            }
+            checkResetMaterial(surfaceMaterialMapping);
         }
 
         HandleMaterialStateChanges();
     }
 
-    int TerrainSurfaceMaterialsListComponent::CountMaterialIDInstances(AZ::Data::AssetId id) const
+    int TerrainSurfaceMaterialsListComponent::CountMaterialIdInstances(AZ::Data::AssetId id) const
     {
         int count = 0;
+
+        if (m_configuration.m_defaultSurfaceMaterial.m_activeMaterialAssetId == id)
+        {
+            count++;
+        }
 
         for (const auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
         {
@@ -169,28 +211,63 @@ namespace Terrain
         bool anyMaterialIsActive = false;
         bool anyMaterialWasAlreadyActive = false;
 
-        for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
         {
-            const bool wasPreviouslyActive = surfaceMaterialMapping.m_active;
-            const bool isNowActive = (surfaceMaterialMapping.m_materialInstance != nullptr);
+            // Handle default material first
+            auto& defaultMaterial = m_configuration.m_defaultSurfaceMaterial;
 
-            if (wasPreviouslyActive)
-            {
-                anyMaterialWasAlreadyActive = true;
-            }
+            const bool wasPreviouslyActive = defaultMaterial.m_active;
+            defaultMaterial.m_active = (defaultMaterial.m_materialInstance != nullptr);
 
-            if (isNowActive)
-            {
-                anyMaterialIsActive = true;
-            }
-
-            surfaceMaterialMapping.m_active = isNowActive;
-
-            if (!wasPreviouslyActive && !isNowActive)
+            anyMaterialWasAlreadyActive = wasPreviouslyActive;
+            anyMaterialIsActive = defaultMaterial.m_active;
+            
+            if (!wasPreviouslyActive && !defaultMaterial.m_active)
             {
                 // A material has been assigned but has not yet completed loading.
             }
-            else if (!wasPreviouslyActive && isNowActive)
+            else if (!wasPreviouslyActive && defaultMaterial.m_active)
+            {
+                TerrainAreaMaterialNotificationBus::Broadcast(
+                    &TerrainAreaMaterialNotificationBus::Events::OnTerrainDefaultSurfaceMaterialCreated, GetEntityId(),
+                    defaultMaterial.m_materialInstance);
+                defaultMaterial.m_previousChangeId = defaultMaterial.m_materialInstance->GetCurrentChangeId();
+            }
+            else if (wasPreviouslyActive && !defaultMaterial.m_active)
+            {
+                // Don't disconnect from the AssetBus if this material is mapped more than once.
+                if (CountMaterialIdInstances(defaultMaterial.m_activeMaterialAssetId) == 1)
+                {
+                    AZ::Data::AssetBus::MultiHandler::BusDisconnect(defaultMaterial.m_activeMaterialAssetId);
+                }
+                defaultMaterial = {};
+
+                TerrainAreaMaterialNotificationBus::Broadcast(
+                    &TerrainAreaMaterialNotificationBus::Events::OnTerrainDefaultSurfaceMaterialDestroyed, GetEntityId());
+            }
+            else if (defaultMaterial.m_materialInstance->GetAssetId() != defaultMaterial.m_activeMaterialAssetId ||
+                defaultMaterial.m_materialInstance->GetCurrentChangeId() != defaultMaterial.m_previousChangeId)
+            {
+                defaultMaterial.m_previousChangeId = defaultMaterial.m_materialInstance->GetCurrentChangeId();
+                defaultMaterial.m_activeMaterialAssetId = defaultMaterial.m_materialInstance->GetAssetId();
+
+                TerrainAreaMaterialNotificationBus::Broadcast(
+                    &TerrainAreaMaterialNotificationBus::Events::OnTerrainDefaultSurfaceMaterialChanged, GetEntityId(), defaultMaterial.m_materialInstance);
+            }
+        }
+
+        for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
+        {
+            const bool wasPreviouslyActive = surfaceMaterialMapping.m_active;
+            surfaceMaterialMapping.m_active = surfaceMaterialMapping.m_materialInstance != nullptr;
+
+            anyMaterialWasAlreadyActive = anyMaterialWasAlreadyActive || wasPreviouslyActive;
+            anyMaterialIsActive = anyMaterialIsActive || surfaceMaterialMapping.m_active;
+
+            if (!wasPreviouslyActive && !surfaceMaterialMapping.m_active)
+            {
+                // A material has been assigned but has not yet completed loading.
+            }
+            else if (!wasPreviouslyActive && surfaceMaterialMapping.m_active)
             {
                 // Remember the asset id so we can disconnect from the AssetBus if the material asset is removed.
                 surfaceMaterialMapping.m_activeMaterialAssetId = surfaceMaterialMapping.m_materialAsset.GetId();
@@ -199,27 +276,47 @@ namespace Terrain
                     &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingCreated, GetEntityId(),
                     surfaceMaterialMapping.m_surfaceTag,
                     surfaceMaterialMapping.m_materialInstance);
+                
+                surfaceMaterialMapping.m_previousChangeId = surfaceMaterialMapping.m_materialInstance->GetCurrentChangeId();
+                surfaceMaterialMapping.m_previousTag = surfaceMaterialMapping.m_surfaceTag;
             }
-            else if (wasPreviouslyActive && !isNowActive)
+            else if (wasPreviouslyActive && !surfaceMaterialMapping.m_active)
             {
                 // Don't disconnect from the AssetBus if this material is mapped more than once.
-                if (CountMaterialIDInstances(surfaceMaterialMapping.m_activeMaterialAssetId) == 1)
+                if (CountMaterialIdInstances(surfaceMaterialMapping.m_activeMaterialAssetId) == 1)
                 {
                     AZ::Data::AssetBus::MultiHandler::BusDisconnect(surfaceMaterialMapping.m_activeMaterialAssetId);
                 }
 
-                surfaceMaterialMapping.m_activeMaterialAssetId = AZ::Data::AssetId();
+                surfaceMaterialMapping.m_activeMaterialAssetId = {};
+                surfaceMaterialMapping.m_previousChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
+                surfaceMaterialMapping.m_previousTag = {};
 
                 TerrainAreaMaterialNotificationBus::Broadcast(
                     &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingDestroyed, GetEntityId(),
                     surfaceMaterialMapping.m_surfaceTag);
             }
-            else
+            else 
             {
-                TerrainAreaMaterialNotificationBus::Broadcast(
-                    &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingChanged, GetEntityId(),
-                    surfaceMaterialMapping.m_surfaceTag,
-                    surfaceMaterialMapping.m_materialInstance);
+                if (surfaceMaterialMapping.m_previousTag != surfaceMaterialMapping.m_surfaceTag)
+                {
+                    TerrainAreaMaterialNotificationBus::Broadcast(
+                        &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingTagChanged, GetEntityId(),
+                        surfaceMaterialMapping.m_previousTag,
+                        surfaceMaterialMapping.m_surfaceTag);
+                    surfaceMaterialMapping.m_previousTag = surfaceMaterialMapping.m_surfaceTag;
+                }
+                if (surfaceMaterialMapping.m_materialInstance->GetAssetId() != surfaceMaterialMapping.m_activeMaterialAssetId ||
+                    surfaceMaterialMapping.m_materialInstance->GetCurrentChangeId() != surfaceMaterialMapping.m_previousChangeId)
+                {
+                    surfaceMaterialMapping.m_previousChangeId = surfaceMaterialMapping.m_materialInstance->GetCurrentChangeId();
+                    surfaceMaterialMapping.m_activeMaterialAssetId = surfaceMaterialMapping.m_materialInstance->GetAssetId();
+
+                    TerrainAreaMaterialNotificationBus::Broadcast(
+                        &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingMaterialChanged, GetEntityId(),
+                        surfaceMaterialMapping.m_surfaceTag,
+                        surfaceMaterialMapping.m_materialInstance);
+                }
             }
         }
 
@@ -290,14 +387,28 @@ namespace Terrain
     void TerrainSurfaceMaterialsListComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         // Find the missing material instance with the correct id.
-        for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
+        auto checkUpdateMaterialAsset = [](TerrainSurfaceMaterial& mapping, const AZ::Data::Asset<AZ::Data::AssetData>& asset) -> bool
         {
-            if (surfaceMaterialMapping.m_materialAsset.GetId() == asset.GetId() &&
-                (!surfaceMaterialMapping.m_materialInstance ||
-                    surfaceMaterialMapping.m_materialInstance->GetAssetId() != surfaceMaterialMapping.m_materialAsset.GetId()))
+            if (mapping.m_materialAsset.GetId() == asset.GetId() &&
+                (!mapping.m_materialInstance || mapping.m_materialInstance->GetAssetId() != mapping.m_materialAsset.GetId()))
             {
-                surfaceMaterialMapping.m_materialInstance = AZ::RPI::Material::FindOrCreate(surfaceMaterialMapping.m_materialAsset);
-                surfaceMaterialMapping.m_materialAsset.Release();
+                mapping.m_materialInstance = AZ::RPI::Material::FindOrCreate(mapping.m_materialAsset);
+                mapping.m_materialAsset.Release();
+                return true;
+            }
+            return false;
+        };
+
+        // First check the default material
+        if (!checkUpdateMaterialAsset(m_configuration.m_defaultSurfaceMaterial, asset))
+        {
+            // If the default materail wasn't updated, then check all the surface material mappings.
+            for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
+            {
+                if (checkUpdateMaterialAsset(surfaceMaterialMapping, asset))
+                {
+                    break;
+                }
             }
         }
         HandleMaterialStateChanges();

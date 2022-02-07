@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/function/function_template.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
@@ -151,6 +152,7 @@ namespace Terrain
             AZ::EntityId m_entityId;
             AZ::Aabb m_region{AZ::Aabb::CreateNull()};
             AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
+            uint16_t m_defaultDetailMaterialId;
         };
         
         // System-level parameters
@@ -162,9 +164,14 @@ namespace Terrain
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
         
         // TerrainAreaMaterialNotificationBus overrides...
+        void OnTerrainDefaultSurfaceMaterialCreated(AZ::EntityId entityId, AZ::Data::Instance<AZ::RPI::Material> material) override;
+        void OnTerrainDefaultSurfaceMaterialDestroyed(AZ::EntityId entityId) override;
+        void OnTerrainDefaultSurfaceMaterialChanged(AZ::EntityId entityId, AZ::Data::Instance<AZ::RPI::Material> newMaterial) override;
         void OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
         void OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag) override;
-        void OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
+        void OnTerrainSurfaceMaterialMappingMaterialChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
+        void OnTerrainSurfaceMaterialMappingTagChanged(
+            AZ::EntityId entityId, SurfaceData::SurfaceTag oldSurfaceTag, SurfaceData::SurfaceTag newSurfaceTag) override;
         void OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
 
         //! Removes all images from all detail materials from the bindless image array
@@ -189,14 +196,20 @@ namespace Terrain
         //! Finds the detail material Id for a surface type and position
         uint16_t GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position);
 
+        using DefaultMaterialSurfaceCallback = AZStd::function<void(DetailMaterialSurface&)>;
+        bool ForSurfaceTag(DetailMaterialListRegion& materialRegion,
+            SurfaceData::SurfaceTag surfaceTag, DefaultMaterialSurfaceCallback callback);
         DetailMaterialListRegion* FindByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
         DetailMaterialListRegion& FindOrCreateByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
         void RemoveByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
-        
+
+        void ResetDefaultDetailMaterial();
+
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
         
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
 
+        DetailMaterialData m_defaultMaterialData;
         AZ::Render::IndexedDataVector<DetailMaterialData> m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
         AZ::Render::SparseVector<DetailMaterialShaderData> m_detailMaterialShaderData;
