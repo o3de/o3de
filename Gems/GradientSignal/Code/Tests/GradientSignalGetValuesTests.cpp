@@ -111,27 +111,18 @@ namespace UnitTest
 
     TEST_F(GradientSignalGetValuesTestsFixture, SurfaceAltitudeGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto mockSurfaceDataSystem =
-            CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
-
         auto entity = BuildTestSurfaceAltitudeGradient(TestShapeHalfBounds);
         GradientSignalTestHelpers::CompareGetValueAndGetValues(entity->GetId(), TestShapeHalfBounds);
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, SurfaceMaskGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto mockSurfaceDataSystem =
-            CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
-
         auto entity = BuildTestSurfaceMaskGradient(TestShapeHalfBounds);
         GradientSignalTestHelpers::CompareGetValueAndGetValues(entity->GetId(), TestShapeHalfBounds);
     }
 
     TEST_F(GradientSignalGetValuesTestsFixture, SurfaceSlopeGradientComponent_VerifyGetValueAndGetValuesMatch)
     {
-        auto mockSurfaceDataSystem =
-            CreateMockSurfaceDataSystem(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-TestShapeHalfBounds), AZ::Vector3(TestShapeHalfBounds)));
-
         auto entity = BuildTestSurfaceSlopeGradient(TestShapeHalfBounds);
         GradientSignalTestHelpers::CompareGetValueAndGetValues(entity->GetId(), TestShapeHalfBounds);
     }

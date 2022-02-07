@@ -22,6 +22,7 @@
 #include <GradientSignal/GradientSampler.h>
 #include <GradientSignal/ImageAsset.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <SurfaceData/SurfaceDataProviderRequestBus.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Tests/SurfaceDataTestMocks.h>
 
@@ -160,6 +161,66 @@ namespace UnitTest
         AZ::EntityId m_id;
         AZ::Aabb m_previewBounds;
         bool m_constrainToShape;
+    };
+
+    // Mock out a SurfaceProvider component so that we can control exactly what surface weights get returned
+    // at which points for our unit tests.
+    struct MockSurfaceProviderComponent
+        : public AZ::Component
+        , public SurfaceData::SurfaceDataProviderRequestBus::Handler
+    {
+    public:
+        AZ_COMPONENT(MockSurfaceProviderComponent, "{18C71877-DB29-4CEC-B34C-B4B44E05203D}", AZ::Component);
+
+        void Activate() override
+        {
+            SurfaceData::SurfaceDataRegistryEntry providerRegistryEntry;
+            providerRegistryEntry.m_entityId = GetEntityId();
+            providerRegistryEntry.m_bounds = m_bounds;
+            providerRegistryEntry.m_tags = m_tags;
+
+            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
+                m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, providerRegistryEntry);
+            SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);
+        }
+
+        void Deactivate() override
+        {
+            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
+                &SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+            m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
+            SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
+        }
+
+        static void Reflect([[maybe_unused]] AZ::ReflectContext* reflect)
+        {
+        }
+
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        {
+            provided.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
+        }
+
+        void GetSurfacePoints(const AZ::Vector3& inPosition, SurfaceData::SurfacePointList& surfacePointList) const override
+        {
+            auto surfacePoints = m_surfacePoints.find(AZStd::make_pair(inPosition.GetX(), inPosition.GetY()));
+
+            if (surfacePoints != m_surfacePoints.end())
+            {
+                surfacePointList = surfacePoints->second;
+            }
+        }
+
+        // m_surfacePoints is a mapping of locations to surface tags / weights that should be returned.
+        AZStd::unordered_map<AZStd::pair<float, float>, SurfaceData::SurfacePointList> m_surfacePoints;
+
+        // m_bounds is the AABB to use for our mock surface provider.
+        AZ::Aabb m_bounds;
+
+        // m_tags are the possible set of tags that this provider will return.
+        SurfaceData::SurfaceTagVector m_tags;
+
+        SurfaceData::SurfaceDataRegistryHandle m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
     };
 
 }
