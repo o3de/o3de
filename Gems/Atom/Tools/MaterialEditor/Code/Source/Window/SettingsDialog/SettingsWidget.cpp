@@ -14,8 +14,6 @@ namespace MaterialEditor
     SettingsWidget::SettingsWidget(QWidget* parent)
         : AtomToolsFramework::InspectorWidget(parent)
     {
-        m_documentSettings =
-            AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ_CRC_CE("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);
         m_documentSystemSettings = AZ::UserSettings::CreateFind<AtomToolsFramework::AtomToolsDocumentSystemSettings>(
             AZ_CRC_CE("AtomToolsDocumentSystemSettings"), AZ::UserSettings::CT_GLOBAL);
     }
@@ -29,21 +27,7 @@ namespace MaterialEditor
     {
         AddGroupsBegin();
         AddDocumentSystemSettingsGroup();
-        AddDocumentSettingsGroup();
         AddGroupsEnd();
-    }
-
-    void SettingsWidget::AddDocumentSettingsGroup()
-    {
-        const AZStd::string groupName = "documentSettings";
-        const AZStd::string groupDisplayName = "Document Settings";
-        const AZStd::string groupDescription = "Document Settings";
-
-        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentSettingsGroup"));
-        AddGroup(
-            groupName, groupDisplayName, groupDescription,
-            new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_documentSettings.get(), nullptr, m_documentSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
     }
 
     void SettingsWidget::AddDocumentSystemSettingsGroup()
@@ -56,28 +40,13 @@ namespace MaterialEditor
         AddGroup(
             groupName, groupDisplayName, groupDescription,
             new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_documentSystemSettings.get(), nullptr, m_documentSystemSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
+                m_documentSystemSettings.get(), nullptr, m_documentSystemSettings->TYPEINFO_Uuid(), nullptr, this, saveStateKey));
     }
 
     void SettingsWidget::Reset()
     {
         AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::InspectorWidget::Reset();
-    }
-
-    void SettingsWidget::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)
-    {
-        AZ_UNUSED(pNode);
-    }
-
-    void SettingsWidget::AfterPropertyModified(AzToolsFramework::InstanceDataNode* pNode)
-    {
-        AZ_UNUSED(pNode);
-    }
-
-    void SettingsWidget::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode)
-    {
-        AZ_UNUSED(pNode);
     }
 } // namespace MaterialEditor
 

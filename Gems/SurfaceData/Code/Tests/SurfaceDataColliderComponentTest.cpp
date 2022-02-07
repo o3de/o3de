@@ -14,7 +14,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 
-#include <Source/Components/SurfaceDataColliderComponent.h>
+#include <SurfaceData/Components/SurfaceDataColliderComponent.h>
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Shape.h>

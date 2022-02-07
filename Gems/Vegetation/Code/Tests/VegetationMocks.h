@@ -384,6 +384,16 @@ namespace UnitTest
         {
             ++m_count;
         }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataProviderHandle([[maybe_unused]] const AZ::EntityId& providerEntityId) override
+        {
+            return {};
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataModifierHandle([[maybe_unused]] const AZ::EntityId& modifierEntityId) override
+        {
+            return {};
+        }
     };
 
     struct MockMeshAsset

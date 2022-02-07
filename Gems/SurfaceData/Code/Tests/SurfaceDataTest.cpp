@@ -15,7 +15,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/std/chrono/clocks.h>
-#include <SurfaceDataSystemComponent.h>
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
 #include <SurfaceDataModule.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 #include <SurfaceData/SurfaceDataModifierRequestBus.h>
