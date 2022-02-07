@@ -777,7 +777,6 @@ class EditorTestSuite():
             if return_code == 0:
                 test_result = Result.Pass.create(test_spec, output, editor_log_content)
             else:
-                # editor_utils.save_failed_asset_joblogs(workspace)
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
                     test_result = Result.Crash.create(test_spec, output, return_code, editor_utils.retrieve_crash_output
@@ -788,6 +787,8 @@ class EditorTestSuite():
                     editor_utils.cycle_crash_report(run_id, workspace)
                 else:
                     test_result = Result.Fail.create(test_spec, output, editor_log_content)
+                # Save assets with errors and warnings
+                editor_utils.save_failed_asset_joblogs(workspace)
         except WaitTimeoutError:
             output = editor.get_output()
             editor.kill()
@@ -856,8 +857,7 @@ class EditorTestSuite():
                 for test_spec in test_spec_list:
                     results[test_spec.__name__] = Result.Pass.create(test_spec, output, editor_log_content)
             else:
-                # editor_utils.save_failed_asset_joblogs(workspace)
-                # Scrap the output to attempt to find out which tests failed.
+                # Scrape the output to attempt to find out which tests failed.
                 # This function should always populate the result list, if it didn't find it, it will have "Unknown" type of result
                 results = self._get_results_using_output(test_spec_list, output, editor_log_content)
                 assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
@@ -892,6 +892,8 @@ class EditorTestSuite():
                         editor_utils.cycle_crash_report(run_id, workspace)
                         results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code,
                                                                       crash_error, crashed_result.editor_log)
+                # Save assets with errors and warnings
+                editor_utils.save_failed_asset_joblogs(workspace)
         except WaitTimeoutError:            
             editor.kill()
             output = editor.get_output()
