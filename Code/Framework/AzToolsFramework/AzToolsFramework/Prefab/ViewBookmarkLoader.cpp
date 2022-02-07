@@ -49,30 +49,67 @@ void ViewBookmarkLoader::UnregisterViewBookmarkLoaderInterface()
 
 bool ViewBookmarkLoader::SaveBookmark(ViewBookmark bookmark)
 {
+    return SaveBookmark_Internal(bookmark);
+}
+
+bool ViewBookmarkLoader::SaveLastKnownLocationInLevel(ViewBookmark bookmark)
+{
+    return SaveBookmark_Internal(bookmark, true);
+}
+
+bool ViewBookmarkLoader::SaveBookmark_Internal(ViewBookmark& bookmark, bool isLastKnownLocationInLevel)
+{
     AZ::EntityId levelEntityId;
     AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
         levelEntityId, &AzToolsFramework::ToolsApplicationRequests::GetCurrentLevelEntityId);
 
     AZ_Error("View Bookmark Loader ", levelEntityId.IsValid(), "Level Entity ID is invalid.");
 
-    //Create entry or if it already exists, add the bookmark
-    auto existingBookmarkEntry= m_viewBookmarkMap.find(levelEntityId);
+
+    // Create entry or if it already exists, add the bookmark
+    //TODO: Refactor this
+    auto existingBookmarkEntry = m_viewBookmarkMap.find(levelEntityId);
     if (existingBookmarkEntry != m_viewBookmarkMap.end())
     {
-        existingBookmarkEntry->second.push_back(bookmark);
+        if (isLastKnownLocationInLevel)
+        {
+            AZStd::vector<ViewBookmark>& bookmarks = existingBookmarkEntry->second;
+            bookmarks.at(0) = bookmark;
+        }
+        else
+        {
+            existingBookmarkEntry->second.push_back(bookmark);
+        }
     }
     else
     {
-        m_viewBookmarkMap.insert(AZStd::make_pair(levelEntityId, AZStd::vector<ViewBookmark>{ bookmark }));
+        // Create first an empty bookmark that will hold the last Known Location of a level
+        if (isLastKnownLocationInLevel)
+        {
+            m_viewBookmarkMap.insert(AZStd::make_pair(levelEntityId, AZStd::vector<ViewBookmark>{ bookmark }));
+        }
+        else
+        {
+            m_viewBookmarkMap.insert(AZStd::make_pair(levelEntityId, AZStd::vector<ViewBookmark>{ ViewBookmark(), bookmark }));
+        }
     }
 
     // Write to the settings registry (We might want to do this step somewhere else)
     if (auto registry = AZ::SettingsRegistry::Get())
     {
-        size_t currentBookmarkIndex = m_viewBookmarkMap.at(levelEntityId).size() - 1;
-        AZStd::string finalPath = s_viewBookmarksRegistryPath + levelEntityId.ToString() + "/" +
-            AZStd::to_string(currentBookmarkIndex); 
-        return registry->SetObject(finalPath, m_viewBookmarkMap.at(levelEntityId).back());
+        size_t currentBookmarkIndex = isLastKnownLocationInLevel ? 0 : m_viewBookmarkMap.at(levelEntityId).size() - 1;
+        AZStd::string finalPath = s_viewBookmarksRegistryPath + levelEntityId.ToString() + "/" + AZStd::to_string(currentBookmarkIndex);
+
+        //Don't store in memory if it is the last known location in the level.
+        if (isLastKnownLocationInLevel)
+        {
+            AZStd::vector<ViewBookmark>& bookmarks = m_viewBookmarkMap.at(levelEntityId);
+            return registry->SetObject(finalPath, bookmarks.at(0));
+        }
+        else
+        {
+            return registry->SetObject(finalPath, m_viewBookmarkMap.at(levelEntityId).back());
+        }
     }
     return false;
 }
@@ -94,7 +131,7 @@ void ViewBookmarkLoader::SaveBookmarkSettingsFile()
     dumperSettings.m_prettifyOutput = true;
     dumperSettings.m_includeFilter = [](AZStd::string_view path)
     {
-        AZStd::string_view o3dePrefixPath("/O3DE/ViewBookmarks");
+        AZStd::string_view o3dePrefixPath(s_viewBookmarksRegistryPath);
         return o3dePrefixPath.starts_with(path.substr(0, o3dePrefixPath.size()));
     };
 

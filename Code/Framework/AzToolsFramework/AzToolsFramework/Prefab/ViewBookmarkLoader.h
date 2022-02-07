@@ -24,9 +24,15 @@ public:
     void RegisterViewBookmarkLoaderInterface();
     void UnregisterViewBookmarkLoaderInterface();
 
-    void SaveBookmarkSettingsFile();
+    void SaveBookmarkSettingsFile() override;
+    bool SaveBookmark(ViewBookmark bookamark) override;
+    bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
 
-    bool SaveBookmark(ViewBookmark config);
+private:
+
+    bool SaveBookmark_Internal(ViewBookmark& bookmark, bool isLastKnownLocationinLevel = false);
+
+private:
 
     AZStd::unordered_map<AZ::EntityId, AZStd::vector<ViewBookmark>> m_viewBookmarkMap;
 };
