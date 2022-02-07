@@ -11,6 +11,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <Cli/O3deCli.h>
+#include <Cli/PythonCliBindings.h>
 #include <ProjectManager_Test_Traits_Platform.h>
 
 #include <QDir>
@@ -25,7 +26,7 @@ namespace O3DE::ProjectManager
         O3deCliTests()
         {
             const AZStd::string engineRootPath{ AZ::Test::GetEngineRootPath() };
-            m_o3deCli = AZStd::make_unique<O3deCli>(AZ::IO::PathView(engineRootPath));
+            m_o3deCli = AZStd::make_unique<O3deCli>(new PythonCliBindings(AZ::IO::PathView(engineRootPath)));
         }
 
         ~O3deCliTests()
