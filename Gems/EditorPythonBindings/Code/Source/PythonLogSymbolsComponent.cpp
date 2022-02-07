@@ -693,7 +693,7 @@ namespace EditorPythonBindings
     {
         if (m_basePath.empty())
         {
-            return {};
+            return AZStd::make_shared<Internal::FileHandle>(AZ::IO::InvalidHandle);
         }
 
         // creates the __init__.py file in this path
@@ -713,14 +713,14 @@ namespace EditorPythonBindings
             return AZStd::make_shared<Internal::FileHandle>(fileHandle);
         }
 
-        return {};
+        return AZStd::make_shared<Internal::FileHandle>(AZ::IO::InvalidHandle);
     }
 
     PythonLogSymbolsComponent::FileHandlePtr PythonLogSymbolsComponent::OpenModuleAt(AZStd::string_view moduleName)
     {
         if (m_basePath.empty())
         {
-            return {};
+            return AZStd::make_shared<Internal::FileHandle>(AZ::IO::InvalidHandle);
         }
 
         bool resetFile = false;
@@ -773,6 +773,6 @@ namespace EditorPythonBindings
             return AZStd::make_shared<Internal::FileHandle>(fileHandle);
         }
 
-        return {};
+        return AZStd::make_shared<Internal::FileHandle>(AZ::IO::InvalidHandle);
     }
 }
