@@ -7,11 +7,14 @@
  */
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <Document/MaterialCanvasDocument.h>
 #include <Document/MaterialCanvasDocumentRequestBus.h>
 #include <MaterialCanvasApplication.h>
@@ -19,6 +22,11 @@
 #include <Viewport/MaterialCanvasViewportModule.h>
 #include <Window/MaterialCanvasMainWindow.h>
 #include <Window/MaterialCanvasMainWindowSettings.h>
+
+#include <QDesktopServices>
+#include <QDialog>
+#include <QMenu>
+#include <QUrl>
 
 void InitMaterialCanvasResources()
 {
@@ -109,8 +117,21 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::CreateMainWindow()
     {
-        m_materialCanvasBrowserInteractions.reset(aznew MaterialCanvasBrowserInteractions);
         m_window.reset(aznew MaterialCanvasMainWindow);
+        m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
+        m_assetBrowserInteractions->RegisterContextMenuActions(
+            [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
+            },
+            []([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                menu->addAction(QObject::tr("Open"), [entries]()
+                    {
+                        QDesktopServices::openUrl(QUrl::fromLocalFile(entries.front()->GetFullPath().c_str()));
+                    });
+            });
+
     }
 
     void MaterialCanvasApplication::DestroyMainWindow()

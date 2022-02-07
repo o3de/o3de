@@ -46,8 +46,6 @@ set(FILES
     Source/Viewport/MaterialCanvasViewportWidget.h
     Source/Viewport/MaterialCanvasViewportWidget.ui
 
-    Source/Window/MaterialCanvasBrowserInteractions.h
-    Source/Window/MaterialCanvasBrowserInteractions.cpp
     Source/Window/MaterialCanvasMainWindow.h
     Source/Window/MaterialCanvasMainWindow.cpp
     Source/Window/MaterialCanvasMainWindowSettings.h
