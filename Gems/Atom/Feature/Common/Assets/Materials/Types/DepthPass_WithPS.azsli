@@ -117,7 +117,7 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
         SetPixelDepth(IN.m_worldPosition, IN.m_normal, tangents, bitangents, IN.m_uv, isFrontFace, OUT.m_depth);
 #endif
 
-#ifdef SHADOW
+#ifdef SHADOWS
         OUT.m_depth += PdoShadowMapBias;
 #endif
     }

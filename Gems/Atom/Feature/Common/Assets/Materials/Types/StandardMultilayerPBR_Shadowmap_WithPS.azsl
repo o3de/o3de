@@ -29,4 +29,5 @@ COMMON_OPTIONS_PARALLAX(o_layer3_)
 
 #define MULTILAYER
 #define DEACTIVATE_ALPHA_CLIP
+#define SHADOWS
 #include "DepthPass_WithPS.azsli"
