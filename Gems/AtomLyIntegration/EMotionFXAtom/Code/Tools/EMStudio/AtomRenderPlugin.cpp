@@ -177,10 +177,19 @@ namespace EMStudio
         m_rotateManipulators.ConfigureView(
             AzToolsFramework::RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
+        m_rotateManipulators.InstallLeftMouseDownCallback(
+            [this]([[maybe_unused]]const AzToolsFramework::AngularManipulator::Action& action)
+            {
+                const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+                AZ::TransformBus::EventResult(m_mouseDownStartTransform, entityId, &AZ::TransformBus::Events::GetLocalTM);
+            });
+
         m_rotateManipulators.InstallMouseMoveCallback(
             [this](const AzToolsFramework::AngularManipulator::Action& action)
             {
-                OnManipulatorRotated(action.LocalOrientation());
+                const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion,
+                    m_mouseDownStartTransform.GetRotation() * action.m_current.m_delta);
             });
 
         // Setup the scale manipulator
@@ -189,10 +198,21 @@ namespace EMStudio
         m_scaleManipulators.ConfigureView(
             AzToolsFramework::LinearManipulatorAxisLength(), AzFramework::ViewportColors::XAxisColor,
             AzFramework::ViewportColors::YAxisColor, AzFramework::ViewportColors::ZAxisColor);
+        m_scaleManipulators.InstallAxisLeftMouseDownCallback(
+            [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
+            {
+                const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+                AZ::TransformBus::EventResult(m_mouseDownStartTransform, entityId, &AZ::TransformBus::Events::GetLocalTM);
+            });
         m_scaleManipulators.InstallAxisMouseMoveCallback(
             [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
-                OnManipulatorScaled(action.LocalScale(), action.LocalScaleOffset());
+                // Since we are compulting a uniform scale, the delta scale should be the none-zero value from one of the three axis.
+                const float deltaScale = action.m_current.m_localPositionOffset.GetMaxElement()
+                    + action.m_current.m_localPositionOffset.GetMinElement();
+                const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalUniformScale,
+                    m_mouseDownStartTransform.GetUniformScale() + deltaScale);
             });
     }
 
@@ -257,33 +277,6 @@ namespace EMStudio
         m_translationManipulators.SetLocalPosition(position);
         const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
         AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalTranslation, position);
-    }
-
-    void AtomRenderPlugin::OnManipulatorRotated(const AZ::Quaternion& rotation)
-    {
-        const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
-        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, rotation);
-    }
-
-    void AtomRenderPlugin::OnManipulatorScaled(
-        const AZ::Vector3& scale, const AZ::Vector3& scaleOffset)
-    {
-        // Use the scaleOffset to determine which axis to use on the uniform scale.
-        float localScale = 1.0f;
-        if (scaleOffset.GetX() != 0.0f)
-        {
-            localScale = scale.GetX();
-        }
-        else if (scaleOffset.GetY() != 0.0f)
-        {
-            localScale = scale.GetY();
-        }
-        else if (scaleOffset.GetZ() != 0.0f)
-        {
-            localScale = scale.GetZ();
-        }
-        const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
-        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalUniformScale, localScale);
     }
 
     void AtomRenderPlugin::LoadRenderOptions()

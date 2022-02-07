@@ -19,7 +19,7 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform            
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                   TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME assimp-5.0.1-rev12-mac                            TARGETS assimplib                   PACKAGE_HASH 12db03817553f607bee0d65b690bcaae748014f3ed9266b70384f463bc98c9d1)
+ly_associate_package(PACKAGE_NAME assimp-5.1.6-rev1-mac                             TARGETS assimplib                   PACKAGE_HASH ad35c2e0efd0852021c84b9a454fdcba2fc8af8b7117e9a0dd7ea0a1915932e0)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 3f77367dbb0342136ec4ebbd44bc1fedf7198089a0f83c5631248530769b2be6)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-mac                    TARGETS SPIRVCross                  PACKAGE_HASH 78c6376ed2fd195b9b1f5fb2b56e5267a32c3aa21fb399e905308de470eb4515)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-mac                            TARGETS TIFF                        PACKAGE_HASH c2615ccdadcc0e1d6c5ed61e5965c4d3a82193d206591b79b805c3b3ff35a4bf)
