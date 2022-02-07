@@ -12,10 +12,8 @@ set(FILES
     Source/MaterialCanvasApplication.h
 
     Source/Document/MaterialCanvasDocumentRequestBus.h
-    Source/Document/MaterialCanvasDocumentSettings.h
     Source/Document/MaterialCanvasDocument.cpp
     Source/Document/MaterialCanvasDocument.h
-    Source/Document/MaterialCanvasDocumentSettings.cpp
 
     Source/Viewport/MaterialCanvasViewportModule.h
     Source/Viewport/MaterialCanvasViewportModule.cpp
@@ -55,7 +53,6 @@ set(FILES
     Source/Window/MaterialCanvasMainWindowSettings.h
     Source/Window/MaterialCanvasMainWindowSettings.cpp
     Source/Window/MaterialCanvas.qrc
-    Source/Window/MaterialCanvas.qss
     Source/Window/ToolBar/MaterialCanvasToolBar.h
     Source/Window/ToolBar/MaterialCanvasToolBar.cpp
     Source/Window/ToolBar/ModelPresetComboBox.h

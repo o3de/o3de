@@ -20,51 +20,11 @@ namespace MaterialCanvas
         , public MaterialCanvasDocumentRequestBus::Handler
     {
     public:
-        AZ_RTTI(MaterialCanvasDocument, "{DBA269AE-892B-415C-8FA1-166B94B0E045}");
+        AZ_RTTI(MaterialCanvasDocument, "{628858AB-4FE0-4284-BF40-BB38E7374F93}");
         AZ_CLASS_ALLOCATOR(MaterialCanvasDocument, AZ::SystemAllocator, 0);
         AZ_DISABLE_COPY(MaterialCanvasDocument);
 
         MaterialCanvasDocument();
         virtual ~MaterialCanvasDocument();
-
-        // AtomToolsFramework::AtomToolsDocument overrides...
-        const AZStd::any& GetPropertyValue(const AZ::Name& propertyId) const override;
-        const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyId) const override;
-        bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const override;
-        void SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value) override;
-        bool IsModified() const override;
-        bool IsSavable() const override;
-        bool BeginEdit() override;
-        bool EndEdit() override;
-
-    private:
-        // Predicate for evaluating properties
-        using PropertyFilterFunction = AZStd::function<bool(const AtomToolsFramework::DynamicProperty&)>;
-
-        // Map of document's properties
-        using PropertyMap = AZStd::unordered_map<AZ::Name, AtomToolsFramework::DynamicProperty>;
-
-        // Map of raw property values for undo/redo comparison and storage
-        using PropertyValueMap = AZStd::unordered_map<AZ::Name, AZStd::any>;
-
-        // Map of document's property group visibility flags
-        using PropertyGroupVisibilityMap = AZStd::unordered_map<AZ::Name, bool>;
-
-        // AtomToolsFramework::AtomToolsDocument overrides...
-        void Clear() override;
-
-        void RestorePropertyValues(const PropertyValueMap& propertyValues);
-
-        // If material instance value(s) were modified, do we need to recompile on next tick?
-        bool m_compilePending = false;
-
-        // Collection of all material's properties
-        PropertyMap m_properties;
-
-        // Collection of all material's property groups
-        PropertyGroupVisibilityMap m_propertyGroupVisibility;
-
-        // State of property values prior to an edit, used for restoration during undo
-        PropertyValueMap m_propertyValuesBeforeEdit;
     };
 } // namespace MaterialCanvas

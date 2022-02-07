@@ -14,7 +14,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Document/MaterialCanvasDocument.h>
 #include <Document/MaterialCanvasDocumentRequestBus.h>
-#include <Document/MaterialCanvasDocumentSettings.h>
 #include <MaterialCanvasApplication.h>
 #include <MaterialCanvas_Traits_Platform.h>
 #include <Viewport/MaterialCanvasViewportModule.h>
@@ -56,7 +55,6 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::Reflect(AZ::ReflectContext* context)
     {
         Base::Reflect(context);
-        MaterialCanvasDocumentSettings::Reflect(context);
         MaterialCanvasMainWindowSettings::Reflect(context);
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -106,7 +104,7 @@ namespace MaterialCanvas
 
     AZStd::vector<AZStd::string> MaterialCanvasApplication::GetCriticalAssetFilters() const
     {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialCanvas/" });
+        return AZStd::vector<AZStd::string>({ "passes/", "config/" });
     }
 
     void MaterialCanvasApplication::CreateMainWindow()
