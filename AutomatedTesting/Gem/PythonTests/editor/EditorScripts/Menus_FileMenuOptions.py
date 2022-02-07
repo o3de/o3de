@@ -33,6 +33,7 @@ def Menus_FileMenuOptions_Work():
     file_menu_options = [
         ("New Level",),
         ("Open Level",),
+        ("Import",),
         ("Save",),
         ("Save As",),
         ("Save Level Statistics",),
@@ -41,7 +42,6 @@ def Menus_FileMenuOptions_Work():
         ("New Project",),
         ("Open Project",),
         ("Show Log File",),
-        ("Import",),
         ("Exit",),
     ]
 
@@ -52,11 +52,9 @@ def Menus_FileMenuOptions_Work():
     editor_window = pyside_utils.get_editor_main_window()
     for option in file_menu_options:
         try:
-            Report.info(f"Going to get action - {option}")
             action = pyside_utils.get_action_for_menu_path(editor_window, "File", *option)
             Report.info(f"Triggering {action.iconText()}")
             action.trigger()
-            Report.info(f"Action returned from trigger")
             action_triggered = True
         except Exception as e:
             action_triggered = False

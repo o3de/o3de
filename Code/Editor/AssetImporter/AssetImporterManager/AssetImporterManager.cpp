@@ -49,6 +49,11 @@ void AssetImporterManager::Exec()
     Q_EMIT StartAssetImporter();
     bool success = OnBrowseFiles();
 
+    if (!success)
+    {
+        return;
+    }
+
     // prevent users from selecting crate files from the File Explorer and open the Asset Importer.
     if (!success)
     {
