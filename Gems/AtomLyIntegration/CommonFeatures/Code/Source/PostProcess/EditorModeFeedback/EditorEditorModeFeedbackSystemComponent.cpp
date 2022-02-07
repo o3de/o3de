@@ -29,27 +29,27 @@ namespace AZ
 {
     namespace Render
     {
-       //static AZStd::vector<RPI::MeshDrawPacket> BuildMeshDrawPackets(
-       //    const RPI::View* view,
-       //    const AZ::Transform& worldTM,
-       //    const Data::Asset<RPI::ModelAsset>& modelAsset,
-       //    const Data::Instance<RPI::Material>& material,
-       //    const Data::Instance<RPI::ShaderResourceGroup>& meshObjectSrg)
-       //{
-       //    AZStd::vector<RPI::MeshDrawPacket> meshDrawPackets;
-       //    RPI::Model& model = *RPI::Model::FindOrCreate(modelAsset);
-       //    auto modelLodIndex = RPI::ModelLodUtils::SelectLod(view, worldTM, model);
-       //    const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[0];
-       //    RPI::ModelLod& modelLod = *RPI::ModelLod::FindOrCreate(modelLodAsset, modelAsset).get();
-       //
-       //    for (auto i = 0; i < modelLod.GetMeshes().size(); i++)
-       //    {
-       //        RPI::MeshDrawPacket drawPacket(modelLod, i, material, meshObjectSrg);
-       //        meshDrawPackets.push_back(AZStd::move(drawPacket));
-       //    }
-       //
-       //    return meshDrawPackets;
-       //}
+       static AZStd::vector<RPI::MeshDrawPacket> BuildMeshDrawPackets(
+           const RPI::View* view,
+           const AZ::Transform& worldTM,
+           const Data::Asset<RPI::ModelAsset>& modelAsset,
+           const Data::Instance<RPI::Material>& material,
+           const Data::Instance<RPI::ShaderResourceGroup>& meshObjectSrg)
+       {
+           AZStd::vector<RPI::MeshDrawPacket> meshDrawPackets;
+           RPI::Model& model = *RPI::Model::FindOrCreate(modelAsset);
+           auto modelLodIndex = RPI::ModelLodUtils::SelectLod(view, worldTM, model);
+           const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[0];
+           RPI::ModelLod& modelLod = *RPI::ModelLod::FindOrCreate(modelLodAsset, modelAsset).get();
+       
+           for (auto i = 0; i < modelLod.GetMeshes().size(); i++)
+           {
+               RPI::MeshDrawPacket drawPacket(modelLod, i, material, meshObjectSrg);
+               meshDrawPackets.push_back(AZStd::move(drawPacket));
+           }
+       
+           return meshDrawPackets;
+       }
 
         static Data::Instance<RPI::Material> CreateMaskMaterial()
         {
@@ -63,10 +63,25 @@ namespace AZ
         {
             auto& shaderAsset = maskMaterial->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
             auto& objectSrgLayout = maskMaterial->GetAsset()->GetObjectSrgLayout();
-            Data::Instance<RPI::ShaderResourceGroup> maskMeshObjectSrg =
-                RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
+            auto maskMeshObjectSrg = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
 
             return maskMeshObjectSrg;
+        }
+
+        static void SetMeshObjectId(EntityId entityId, const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* meshHandle, Data::Instance<RPI::ShaderResourceGroup>& shaderResourceGroup)
+        {
+            auto featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(entityId);
+            auto objectId = featureProcessor->GetObjectId(*meshHandle).GetIndex();
+            RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
+            shaderResourceGroup->SetConstant(objectIdIndex, objectId);
+            shaderResourceGroup->Compile();
+        }
+
+        static const RPI::ViewPtr GetViewFromScene(const RPI::Scene* scene)
+        {
+            auto viewportContextRequests = RPI::ViewportContextRequests::Get();
+            auto viewportContext = viewportContextRequests->GetViewportContextByScene(scene);
+            const RPI::ViewPtr viewPtr = viewportContext->GetDefaultView();
         }
 
         void EditorEditorModeFeedbackSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -167,20 +182,16 @@ namespace AZ
                 return;
             }
 
-            // TODO: see if there is a more reliable method of creating the required resources once the depender systems are initialized
-            //if (!m_maskPassResources.has_value())
-            //{
-            //    m_maskPassResources.emplace(CreateMaskPassResources());
-            //}
-            if (!m_maskMaterial)
-            {
-                m_maskMaterial = CreateMaskMaterial();
-            }
-
             const auto focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
             if (!focusModeInterface)
             {
                 return;
+            }
+
+            // TODO: see if there is a more reliable method of creating the required resources once the depender systems are initialized
+            if (!m_maskMaterial)
+            {
+                m_maskMaterial = CreateMaskMaterial();
             }
 
             // Build the draw packets (where required) for each registered component and add them to the draw list
@@ -196,54 +207,21 @@ namespace AZ
 
                 auto& [entityId, componentModelAssetDrawPackets] = *it;
 
-                if (!AzToolsFramework::IsSelected(entityId))
-                {
-                    //continue;
-                }
-
                 for (auto& it2 : componentModelAssetDrawPackets)
                 {
                     auto& [componentId, modelAssetMeshDrawPackets] = it2;
                     auto& [modelAsset, meshHandle, meshDrawPackets] = modelAssetMeshDrawPackets;
 
-                    auto scene = RPI::Scene::GetSceneForEntityId(entityId);
+                    const auto scene = RPI::Scene::GetSceneForEntityId(entityId);
                     if (meshDrawPackets.empty())
                     {
                         auto maskMeshObjectSrg = CreateMaskShaderResourceGroup(m_maskMaterial);
-                        //AZ::Transform worldTM;
-                        //AZ::TransformBus::EventResult(worldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-                        //auto scene = RPI::Scene::GetSceneForEntityId(this->GetEntityId());
-                        //auto viewportContextRequests = RPI::ViewportContextRequests::Get();
-                        //auto viewportContext = viewportContextRequests->GetViewportContextByScene(scene);
-                        //const RPI::ViewPtr viewPtr = viewportContext->GetDefaultView();
-                        //const RPI::View* view = viewPtr.get();
-                        //meshDrawPackets.emplace(BuildMeshDrawPackets())
+                        SetMeshObjectId(entityId, meshHandle, maskMeshObjectSrg);
+                        const auto view = GetViewFromScene(scene);
 
                         AZ::Transform worldTM;
-                        AZ::TransformBus::EventResult(worldTM, entityId, &AZ::TransformBus::Events::GetWorldTM);
-
-                        auto featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(entityId);
-                        auto objectId = featureProcessor->GetObjectId(*meshHandle).GetIndex();
-                        RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
-                        maskMeshObjectSrg->SetConstant(objectIdIndex, objectId);
-                        maskMeshObjectSrg->Compile();
-
-                        // for mesh changes: mesh component notifications bus listen for OnModelReady
-                        auto viewportContextRequests = RPI::ViewportContextRequests::Get();
-                        auto viewportContext = viewportContextRequests->GetViewportContextByScene(scene);
-                        const RPI::ViewPtr viewPtr = viewportContext->GetDefaultView();
-                        const RPI::View* view = viewPtr.get();
-                                                
-                        RPI::Model& model = *RPI::Model::FindOrCreate(*modelAsset);
-                        auto modelLodIndex = RPI::ModelLodUtils::SelectLod(view, worldTM, model);
-                        const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = (*modelAsset)->GetLodAssets()[0];
-                        RPI::ModelLod& modelLod = *RPI::ModelLod::FindOrCreate(modelLodAsset, *modelAsset).get();
-
-                        for (auto i = 0; i < modelLod.GetMeshes().size(); i++)
-                        {
-                            RPI::MeshDrawPacket drawPacket(modelLod, i, m_maskMaterial, maskMeshObjectSrg);
-                            meshDrawPackets.push_back(AZStd::move(drawPacket));
-                        }
+                        AZ::TransformBus::EventResult(worldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+                        meshDrawPackets = BuildMeshDrawPackets(view.get(), worldTM, *modelAsset, m_maskMaterial, maskMeshObjectSrg);
                     }
 
                     AZ::RPI::DynamicDrawInterface* dynamicDraw = AZ::RPI::GetDynamicDraw();
