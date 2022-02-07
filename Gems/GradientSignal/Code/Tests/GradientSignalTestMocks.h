@@ -27,53 +27,6 @@
 
 namespace UnitTest
 {
-    // Mock asset handler for GradientSignal::ImageAsset that we can use in unit tests to pretend to load an image asset with.
-    // Also includes utility functions for creating image assets with specific testable patterns.
-    struct ImageAssetMockAssetHandler : public AZ::Data::AssetHandler
-    {
-        //! Creates a deterministically random set of pixel data as an ImageAsset.
-        //! \param width The width of the ImageAsset
-        //! \param height The height of the ImageAsset
-        //! \param seed The random seed to use for generating the random data
-        //! \return The ImageAsset in a loaded ready state
-        static AZ::Data::Asset<GradientSignal::ImageAsset> CreateImageAsset(AZ::u32 width, AZ::u32 height, AZ::s32 seed);
-
-        //! Creates an ImageAsset where all the pixels are 0 except for the one pixel at the given coordinates, which is set to 1.
-        //! \param width The width of the ImageAsset
-        //! \param height The height of the ImageAsset
-        //! \param pixelX The X coordinate of the pixel to set to 1
-        //! \param pixelY The Y coordinate of the pixel to set to 1
-        //! \return The ImageAsset in a loaded ready state
-        static AZ::Data::Asset<GradientSignal::ImageAsset> CreateSpecificPixelImageAsset(
-            AZ::u32 width, AZ::u32 height, AZ::u32 pixelX, AZ::u32 pixelY);
-
-        AZ::Data::AssetPtr CreateAsset(const AZ::Data::AssetId& id, [[maybe_unused]] const AZ::Data::AssetType& type) override
-        {
-            // For our mock handler, always mark our assets as immediately ready.
-            return aznew GradientSignal::ImageAsset(id, AZ::Data::AssetData::AssetStatus::Ready);
-        }
-
-        void DestroyAsset(AZ::Data::AssetPtr ptr) override
-        {
-            if (ptr)
-            {
-                delete ptr;
-            }
-        }
-
-        void GetHandledAssetTypes([[maybe_unused]] AZStd::vector<AZ::Data::AssetType>& assetTypes) override
-        {
-        }
-
-        AZ::Data::AssetHandler::LoadResult LoadAssetData(
-            [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-            [[maybe_unused]] AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
-        {
-            return AZ::Data::AssetHandler::LoadResult::LoadComplete;
-        }
-    };
-
     struct MockGradientRequestsBus
         : public GradientSignal::GradientRequestBus::Handler
     {

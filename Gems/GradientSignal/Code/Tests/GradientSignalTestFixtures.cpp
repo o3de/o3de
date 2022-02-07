@@ -8,7 +8,10 @@
 
 
 #include <Tests/GradientSignalTestFixtures.h>
+#include <Tests/GradientSignalTestHelpers.h>
 
+#include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 #include <GradientSignal/Components/GradientTransformComponent.h>
@@ -70,14 +73,16 @@ namespace UnitTest
 
     void GradientSignalBaseFixture::SetupCoreSystems()
     {
-        m_mockHandler = new UnitTest::ImageAssetMockAssetHandler();
-        AZ::Data::AssetManager::Instance().RegisterHandler(m_mockHandler, azrtti_typeid<GradientSignal::ImageAsset>());
+        // Using the AZ::RPI::MakeAssetHandler will both create the asset handlers,
+        // and register them with the AssetManager
+        m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::ImageMipChainAssetHandler>());
+        m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImageAssetHandler>());
     }
 
     void GradientSignalBaseFixture::TearDownCoreSystems()
     {
-        AZ::Data::AssetManager::Instance().UnregisterHandler(m_mockHandler);
-        delete m_mockHandler; // delete after removing from the asset manager
+        // This will delete the asset handlers, which will unregister themselves on deletion
+        m_assetHandlers.clear();
 
         AzFramework::LegacyAssetEventBus::ClearQueuedEvents();
     }
@@ -147,7 +152,7 @@ namespace UnitTest
         GradientSignal::ImageGradientConfig config;
         const uint32_t imageSize = 4096;
         const int32_t imageSeed = 12345;
-        config.m_imageAsset = ImageAssetMockAssetHandler::CreateImageAsset(imageSize, imageSize, imageSeed);
+        config.m_imageAsset = UnitTest::CreateImageAsset(imageSize, imageSize, imageSeed);
         config.m_tilingX = 1.0f;
         config.m_tilingY = 1.0f;
         entity->CreateComponent<GradientSignal::ImageGradientComponent>(config);
