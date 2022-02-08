@@ -8,7 +8,7 @@
 
 #include "GraphToLuaUtility.h"
 
-#include <locale>
+#include <clocale>
 
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
