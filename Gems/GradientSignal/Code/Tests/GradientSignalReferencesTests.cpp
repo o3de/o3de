@@ -65,7 +65,11 @@ namespace UnitTest
                                                 float slopeMin, float slopeMax, GradientSignal::SurfaceSlopeGradientConfig::RampType rampType,
                                                 float falloffMidpoint, float falloffRange, float falloffStrength)
         {
-            MockSurfaceDataSystem mockSurfaceDataSystem;
+            auto surfaceEntity = CreateEntity();
+            auto mockSurface = surfaceEntity->CreateComponent<MockSurfaceProviderComponent>();
+            mockSurface->m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(aznumeric_cast<float>(dataSize)));
+            mockSurface->m_tags.emplace_back("test_mask");
+
             AzFramework::SurfaceData::SurfacePoint point;
 
             // Fill our mock surface with the correct normal value for each point based on our test angle set.
@@ -75,9 +79,10 @@ namespace UnitTest
                 {
                     float angle = AZ::DegToRad(inputAngles[(y * dataSize) + x]);
                     point.m_normal = AZ::Vector3(sinf(angle), 0.0f, cosf(angle));
-                    mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] = { { point } };
+                    mockSurface->m_surfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] = { { point } };
                 }
             }
+            ActivateEntity(surfaceEntity.get());
 
             GradientSignal::SurfaceSlopeGradientConfig config;
             config.m_slopeMin = slopeMin;
@@ -538,11 +543,14 @@ namespace UnitTest
         mockShapeComponentHandler.m_GetEncompassingAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3(10.0f));
 
         // Set a different altitude for each point we're going to test.  We'll use 0, 2, 5, 10 to test various points along the range.
-        MockSurfaceDataSystem mockSurfaceDataSystem;
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() } };
+        auto surfaceEntity = CreateEntity();
+        auto mockSurface = surfaceEntity->CreateComponent<MockSurfaceProviderComponent>();
+        mockSurface->m_bounds = mockShapeComponentHandler.m_GetEncompassingAabb;
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() } };
+        ActivateEntity(surfaceEntity.get());
 
         // We set the min/max to values other than 0-10 to help validate that they aren't used in the case of the pinned shape.
         GradientSignal::SurfaceAltitudeGradientConfig config;
@@ -572,11 +580,14 @@ namespace UnitTest
         auto entityShape = CreateEntity();
 
         // Set a different altitude for each point we're going to test.  We'll use 0, 2, 5, 10 to test various points along the range.
-        MockSurfaceDataSystem mockSurfaceDataSystem;
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() } };
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() } };
+        auto surfaceEntity = CreateEntity();
+        auto mockSurface = surfaceEntity->CreateComponent<MockSurfaceProviderComponent>();
+        mockSurface->m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(1.0f));
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, 2.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 5.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 10.0f), AZ::Vector3::CreateZero() } };
+        ActivateEntity(surfaceEntity.get());
 
         // We set the min/max to 0-10, but don't set a shape.
         GradientSignal::SurfaceAltitudeGradientConfig config;
@@ -603,9 +614,6 @@ namespace UnitTest
 
         auto entityShape = CreateEntity();
 
-        // Don't set any points.
-        MockSurfaceDataSystem mockSurfaceDataSystem;
-
         // We set the min/max to -5 - 15 so that a height of 0 would produce a non-zero value.
         GradientSignal::SurfaceAltitudeGradientConfig config;
         config.m_altitudeMin = -5.0f;
@@ -631,16 +639,18 @@ namespace UnitTest
 
         auto entityShape = CreateEntity();
 
-        MockSurfaceDataSystem mockSurfaceDataSystem;
-
+        auto surfaceEntity = CreateEntity();
+        auto mockSurface = surfaceEntity->CreateComponent<MockSurfaceProviderComponent>();
+        mockSurface->m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(1.0f));
         // Altitude value below min - should result in 0.0f.
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, -10.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, -10.0f), AZ::Vector3::CreateZero() } };
         // Altitude value at exactly min - should result in 0.0f.
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, -5.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 0.0f)] = { { AZ::Vector3(0.0f, 0.0f, -5.0f), AZ::Vector3::CreateZero() } };
         // Altitude value at exactly max - should result in 1.0f.
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 15.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(0.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 15.0f), AZ::Vector3::CreateZero() } };
         // Altitude value above max - should result in 1.0f.
-        mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 20.0f), AZ::Vector3::CreateZero() } };
+        mockSurface->m_surfacePoints[AZStd::make_pair(1.0f, 1.0f)] = { { AZ::Vector3(0.0f, 0.0f, 20.0f), AZ::Vector3::CreateZero() } };
+        ActivateEntity(surfaceEntity.get());
 
         // We set the min/max to -5 - 15.  By using a range without 0 at either end, and not having 0 as the midpoint, 
         // it should be easier to verify that we're successfully clamping to 0 and 1.
@@ -667,7 +677,11 @@ namespace UnitTest
             0.5f, 1.0f,
         };
 
-        MockSurfaceDataSystem mockSurfaceDataSystem;
+        auto surfaceEntity = CreateEntity();
+        auto mockSurface = surfaceEntity->CreateComponent<MockSurfaceProviderComponent>();
+        mockSurface->m_bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(aznumeric_cast<float>(dataSize)));
+        mockSurface->m_tags.emplace_back("test_mask");
+
         AzFramework::SurfaceData::SurfacePoint point;
 
         // Fill our mock surface with the test_mask set and the expected gradient value at each point.
@@ -677,9 +691,10 @@ namespace UnitTest
             {
                 point.m_surfaceTags.clear();
                 point.m_surfaceTags.emplace_back(AZ_CRC_CE("test_mask"), expectedOutput[(y * dataSize) + x]);
-                mockSurfaceDataSystem.m_GetSurfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] = { { point } };
+                mockSurface->m_surfacePoints[AZStd::make_pair(static_cast<float>(x), static_cast<float>(y))] = { { point } };
             }
         }
+        ActivateEntity(surfaceEntity.get());
 
         GradientSignal::SurfaceMaskGradientConfig config;
         config.m_surfaceTagList.push_back(AZ_CRC("test_mask", 0x7a16e9ff));
@@ -705,8 +720,6 @@ namespace UnitTest
             0.0f, 0.0f,
             0.0f, 0.0f,
         };
-
-        MockSurfaceDataSystem mockSurfaceDataSystem;
 
         GradientSignal::SurfaceMaskGradientConfig config;
         config.m_surfaceTagList.push_back(AZ_CRC("test_mask", 0x7a16e9ff));

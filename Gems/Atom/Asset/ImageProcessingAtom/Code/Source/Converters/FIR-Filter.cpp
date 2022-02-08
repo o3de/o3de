@@ -21,6 +21,8 @@
 #define mallocAligned(sze)  _aligned_malloc(sze, 16)
 #define freeAligned(ptr)      _aligned_free(ptr)
 
+AZ_PUSH_DISABLE_WARNING_GCC("-Wunused-value")
+
 /* ####################################################################################################################
  */
 
@@ -1279,3 +1281,5 @@ namespace ImageProcessingAtom
         FilterImage(filterIndex, filterOp, blurH, blurV, srcImg, srcMip, dstImg, dstMip, srcRect, dstRect);
     }
 }
+
+AZ_POP_DISABLE_WARNING_GCC

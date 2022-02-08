@@ -58,6 +58,10 @@ namespace SurfaceData
 
         // Notify any dependent systems that they need to refresh their surface data for the provided area.
         virtual void RefreshSurfaceData(const AZ::Aabb& dirtyArea) = 0;
+
+        // Get the SurfaceDataRegistryHandle for a given entityId.
+        virtual SurfaceDataRegistryHandle GetSurfaceDataProviderHandle(const AZ::EntityId& providerEntityId) = 0;
+        virtual SurfaceDataRegistryHandle GetSurfaceDataModifierHandle(const AZ::EntityId& modifierEntityId) = 0;
     };
 
     typedef AZ::EBus<SurfaceDataSystemRequests> SurfaceDataSystemRequestBus;
