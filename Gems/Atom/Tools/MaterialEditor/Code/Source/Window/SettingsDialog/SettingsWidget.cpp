@@ -14,8 +14,6 @@ namespace MaterialEditor
     SettingsWidget::SettingsWidget(QWidget* parent)
         : AtomToolsFramework::InspectorWidget(parent)
     {
-        m_documentSystemSettings = AZ::UserSettings::CreateFind<AtomToolsFramework::AtomToolsDocumentSystemSettings>(
-            AZ_CRC_CE("AtomToolsDocumentSystemSettings"), AZ::UserSettings::CT_GLOBAL);
     }
 
     SettingsWidget::~SettingsWidget()
@@ -26,21 +24,7 @@ namespace MaterialEditor
     void SettingsWidget::Populate()
     {
         AddGroupsBegin();
-        AddDocumentSystemSettingsGroup();
         AddGroupsEnd();
-    }
-
-    void SettingsWidget::AddDocumentSystemSettingsGroup()
-    {
-        const AZStd::string groupName = "documentSystemSettings";
-        const AZStd::string groupDisplayName = "Document System Settings";
-        const AZStd::string groupDescription = "Document System Settings";
-
-        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentSystemSettingsGroup"));
-        AddGroup(
-            groupName, groupDisplayName, groupDescription,
-            new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_documentSystemSettings.get(), nullptr, m_documentSystemSettings->TYPEINFO_Uuid(), nullptr, this, saveStateKey));
     }
 
     void SettingsWidget::Reset()

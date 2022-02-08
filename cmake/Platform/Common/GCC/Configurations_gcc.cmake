@@ -72,7 +72,6 @@ ly_append_configurations_options(
         -Wno-uninitialized
         -Wno-unused-but-set-variable
         -Wno-unused-result
-        -Wno-unused-value
         -Wno-unused-variable
 
     COMPILATION_DEBUG
