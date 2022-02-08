@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <TerrainSrg.azsli>
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {

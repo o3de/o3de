@@ -42,7 +42,7 @@ namespace Terrain
 
         static AZ::RPI::Ptr<TerrainMacroTextureComputePass> Create(const AZ::RPI::PassDescriptor& descriptor);
 
-        void SetFeatureProcessor();
+        void SetFeatureProcessor(TerrainFeatureProcessor* terrainFeatureProcessor);
 
         void CompileResources(const AZ::RHI::FrameGraphCompileContext& context) override;
     private:

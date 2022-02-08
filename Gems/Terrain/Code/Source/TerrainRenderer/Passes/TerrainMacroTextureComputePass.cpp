@@ -45,9 +45,9 @@ namespace Terrain
         ComputePass::BuildCommandListInternal(context);
     }
 
-    void TerrainMacroTextureComputePass::SetFeatureProcessor()
+    void TerrainMacroTextureComputePass::SetFeatureProcessor(TerrainFeatureProcessor* terrainFeatureProcessor)
     {
-        m_terrainFeatureProcessor = GetRenderPipeline()->GetScene()->GetFeatureProcessor<TerrainFeatureProcessor>();
+        m_terrainFeatureProcessor = terrainFeatureProcessor;
     }
 
     void TerrainMacroTextureComputePass::CompileResources(const AZ::RHI::FrameGraphCompileContext& context)

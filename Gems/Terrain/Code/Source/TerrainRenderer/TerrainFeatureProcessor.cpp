@@ -61,7 +61,6 @@ namespace Terrain
     void TerrainFeatureProcessor::Activate()
     {
         EnableSceneNotification();
-        CacheForwardPass();
 
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
@@ -170,9 +169,16 @@ namespace Terrain
         m_heightmapNeedsUpdate = true;
     }
 
+    void TerrainFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] AZ::RPI::RenderPipelinePtr pipeline)
+    {
+        CachePasses(pipeline.get());
+        EnablePasses();
+    }
+
     void TerrainFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
     {
-        CacheForwardPass();
+        CachePasses(renderPipeline);
+        EnablePasses();
     }
 
     void TerrainFeatureProcessor::UpdateHeightmapImage()
@@ -409,10 +415,19 @@ namespace Terrain
             m_materialInstance->Compile();
         }
 
-        if (m_terrainSrg && m_forwardPass)
+        if (m_terrainSrg)
         {
             m_terrainSrg->Compile();
+        }
+
+        if (m_terrainSrg && m_forwardPass)
+        {
             m_forwardPass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
+        }
+
+        if (m_terrainSrg && m_macroClipmapPass)
+        {
+            m_macroClipmapPass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
         }
     }
 
@@ -429,8 +444,11 @@ namespace Terrain
         // larger but this will limit how much is rendered.
     }
     
-    void TerrainFeatureProcessor::CacheForwardPass()
+    void TerrainFeatureProcessor::CachePasses(AZ::RPI::RenderPipeline* pipeline)
     {
+        // Forward pass
+        m_forwardPass = nullptr;
+
         auto rasterPassFilter = AZ::RPI::PassFilter::CreateWithPassClass<AZ::RPI::RasterPass>();
         rasterPassFilter.SetOwnerScene(GetParentScene());
         AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
@@ -439,7 +457,7 @@ namespace Terrain
             [&](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
             {
                 auto* rasterPass = azrtti_cast<AZ::RPI::RasterPass*>(pass);
-                    
+
                 if (rasterPass && rasterPass->GetDrawListTag() == forwardTag)
                 {
                     m_forwardPass = rasterPass;
@@ -448,7 +466,35 @@ namespace Terrain
                 return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
             }
         );
-    }
-    
 
+        // Clipmap compute pass
+        {
+            m_macroClipmapPass = nullptr;
+
+            AZ::Name passName = AZ::Name("TerrainMacroTextureComputePass");
+            AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(passName, pipeline);
+            AZ::RPI::Pass* pass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+            if (pass)
+            {
+                auto* clipmapPass = azrtti_cast<Terrain::TerrainMacroTextureComputePass*>(pass);
+                m_macroClipmapPass = clipmapPass;
+                m_macroClipmapPass->SetFeatureProcessor(this);
+            }
+            else
+            {
+                AZ_Error(
+                    "TerrainFeatureProcessor", false,
+                    "%s does not exist in this pipeline. Check your game project's .pass assets.", passName.GetCStr());
+            }
+        }
+    }
+
+    void TerrainFeatureProcessor::EnablePasses()
+    {
+        if (m_macroClipmapPass)
+        {
+            // We will not enable it until clipmap replaces the current implementation.
+            m_macroClipmapPass->SetEnabled(false);
+        }
+    }
 }

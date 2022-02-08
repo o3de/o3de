@@ -14,6 +14,7 @@
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
 #include <TerrainRenderer/TerrainMeshManager.h>
+#include <Terrain/Passes/TerrainMacroTextureComputePass.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
@@ -75,6 +76,7 @@ namespace Terrain
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         // AZ::RPI::SceneNotificationBus overrides...
+        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override;
         void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
 
         void Initialize();
@@ -86,7 +88,9 @@ namespace Terrain
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
-        void CacheForwardPass();
+        void CachePasses(AZ::RPI::RenderPipeline* pipeline);
+        // Enable passes owned by TerrainFeatureProcessor
+        void EnablePasses();
 
         TerrainMeshManager m_meshManager;
         TerrainMacroMaterialManager m_macroMaterialManager;
@@ -115,5 +119,6 @@ namespace Terrain
         AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
 
         AZ::RPI::RenderPass* m_forwardPass;
+        TerrainMacroTextureComputePass* m_macroClipmapPass;
     };
 }
