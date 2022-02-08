@@ -132,7 +132,7 @@ bool AssetImporterManager::OnBrowseFiles()
 
     fileDialog.setDirectory(currentAbsolutePath);
 
-//    if (!fileDialog.exec())
+    if (!fileDialog.exec())
     {
         return false;
     }
