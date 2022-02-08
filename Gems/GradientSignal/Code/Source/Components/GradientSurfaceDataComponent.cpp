@@ -251,7 +251,7 @@ namespace GradientSignal
                         const float value = m_gradientSampler.GetValue(sampleParams);
                         if (value >= m_configuration.m_thresholdMin && value <= m_configuration.m_thresholdMax)
                         {
-                            weights.AddSurfaceWeightsIfGreater(m_configuration.m_modifierTags, value);
+                            weights.AddSurfaceTagWeights(m_configuration.m_modifierTags, value);
                         }
                     }
                 });

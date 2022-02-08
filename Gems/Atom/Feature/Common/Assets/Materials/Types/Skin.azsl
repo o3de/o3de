@@ -325,6 +325,7 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
+    surface.transmission.scatterDistance = MaterialSrg::m_scatterDistance;
 
     // ------- Lighting Data -------
 
@@ -340,6 +341,17 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     // Diffuse and Specular response (used in IBL calculations)
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
+
+    // ------- Thin Object Light Transmission -------
+
+    // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
+    lightingData.shrinkFactor = surface.transmission.transmissionParams.x;
+
+    // Angle offset for subsurface scattering through thin objects
+    lightingData.transmissionNdLBias = surface.transmission.transmissionParams.y;
+
+    // Attenuation applied to hide artifacts due to low-res shadow maps 
+    lightingData.distanceAttenuation = surface.transmission.transmissionParams.z;
 
     // ------- Occlusion -------
     

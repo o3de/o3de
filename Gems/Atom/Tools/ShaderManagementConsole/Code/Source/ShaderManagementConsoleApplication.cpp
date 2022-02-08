@@ -12,12 +12,16 @@
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 #include <Document/ShaderManagementConsoleDocument.h>
 #include <Document/ShaderManagementConsoleDocumentRequestBus.h>
@@ -25,11 +29,13 @@
 #include <ShaderManagementConsoleRequestBus.h>
 #include <ShaderManagementConsole_Traits_Platform.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
+#include <QDesktopServices>
+#include <QDialog>
 #include <QFile>
 #include <QFileDialog>
+#include <QMenu>
 #include <QMessageBox>
-AZ_POP_DISABLE_WARNING
+#include <QUrl>
 
 void InitShaderManagementConsoleResources()
 {
@@ -135,9 +141,46 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleApplication::CreateMainWindow()
     {
-        m_assetBrowserInteractions.reset(aznew ShaderManagementConsoleBrowserInteractions);
         m_window.reset(aznew ShaderManagementConsoleWindow);
-        m_window->show();
+        m_assetBrowserInteractions.reset(aznew AtomToolsFramework::AtomToolsAssetBrowserInteractions);
+        m_assetBrowserInteractions->RegisterContextMenuActions(
+            [](const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                return entries.front()->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
+            },
+            []([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsFramework::AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                if (AzFramework::StringFunc::Path::IsExtension(
+                        entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderSourceData::Extension))
+                {
+                    menu->addAction("Generate Shader Variant List", [entries]()
+                        {
+                            const QString script =
+                                "@engroot@/Gems/Atom/Tools/ShaderManagementConsole/Scripts/GenerateShaderVariantListForMaterials.py";
+                            AZStd::vector<AZStd::string_view> pythonArgs{ entries.front()->GetFullPath() };
+                            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
+                                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, script.toUtf8().constData(),
+                                pythonArgs);
+                        });
+                }
+                else if (AzFramework::StringFunc::Path::IsExtension(
+                             entries.front()->GetFullPath().c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
+                {
+                    menu->addAction(QObject::tr("Open"), [entries]()
+                        {
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
+                                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument,
+                                entries.front()->GetFullPath());
+                        });
+                }
+                else
+                {
+                    menu->addAction(QObject::tr("Open"), [entries]()
+                        {
+                            QDesktopServices::openUrl(QUrl::fromLocalFile(entries.front()->GetFullPath().c_str()));
+                        });
+                }
+            });
     }
 
     void ShaderManagementConsoleApplication::DestroyMainWindow()
