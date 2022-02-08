@@ -16,6 +16,8 @@
 
 #include <Integration/EMotionFXBus.h>
 
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
+
 #include <BlendTreeMotionMatchNode.h>
 #include <Feature.h>
 #include <FeaturePosition.h>
@@ -39,7 +41,7 @@ namespace EMotionFX::MotionMatching
             {
                 ec->Class<MotionMatchingSystemComponent>("MotionMatching", "[Description of functionality provided by this System Component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -69,9 +71,9 @@ namespace EMotionFX::MotionMatching
         incompatible.push_back(AZ_CRC_CE("MotionMatchingService"));
     }
 
-    void MotionMatchingSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    void MotionMatchingSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("EMotionFXAnimationService", 0x3f8a6369));
+        required.push_back(AZ_CRC_CE("EMotionFXAnimationService"));
     }
 
     void MotionMatchingSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -122,7 +124,33 @@ namespace EMotionFX::MotionMatching
         MotionMatchingRequestBus::Handler::BusDisconnect();
     }
 
+    void MotionMatchingSystemComponent::DebugDraw(AZ::s32 debugDisplayId)
+    {
+        AZ_PROFILE_SCOPE(Animation, "MotionMatchingSystemComponent::DebugDraw");
+
+        if (debugDisplayId == -1)
+        {
+            return;
+        }
+
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, debugDisplayId);
+
+        AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+        if (debugDisplay)
+        {
+            const AZ::u32 prevState = debugDisplay->GetState();
+            EMotionFX::MotionMatching::DebugDrawRequestBus::Broadcast(&EMotionFX::MotionMatching::DebugDrawRequests::DebugDraw, *debugDisplay);
+            debugDisplay->SetState(prevState);
+        }
+    }
+
     void MotionMatchingSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        // Draw the debug visualizations to the Animation Editor as well as the LY Editor viewport.
+        AZ::s32 animationEditorViewportId = -1;
+        EMStudio::ViewportPluginRequestBus::BroadcastResult(animationEditorViewportId, &EMStudio::ViewportPluginRequestBus::Events::GetViewportId);
+        DebugDraw(animationEditorViewportId);
+        DebugDraw(AzFramework::g_defaultSceneEntityDebugDisplayId);
     }
 } // namespace EMotionFX::MotionMatching

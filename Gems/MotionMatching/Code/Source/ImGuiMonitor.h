@@ -20,7 +20,7 @@
 #include <imgui/imgui.h>
 #include <ImGuiBus.h>
 #include <ImGuiMonitorBus.h>
-#include <LYImGuiUtils/HistogramContainer.h>
+#include <LYImGuiUtils/HistogramGroup.h>
 
 namespace EMotionFX::MotionMatching
 {
@@ -43,41 +43,17 @@ namespace EMotionFX::MotionMatching
         void PushPerformanceHistogramValue(const char* performanceMetricName, float value) override;
         void PushCostHistogramValue(const char* costName, float value, const AZ::Color& color) override;
 
-        void SetFeatureMatrixMemoryUsage(size_t sizeInBytes) override { m_featureMatrixMemoryUsageInBytes = sizeInBytes; }
-        void SetFeatureMatrixNumFrames(size_t numFrames) override { m_featureMatrixNumFrames = numFrames; }
-        void SetFeatureMatrixNumComponents(size_t numFeatureComponents) override { m_featureMatrixNumComponents = numFeatureComponents; }
-
-        void SetKdTreeMemoryUsage(size_t sizeInBytes) override { m_kdTreeMemoryUsageInBytes = sizeInBytes; }
-        void SetKdTreeNumNodes(size_t numNodes) override { m_kdTreeNumNodes = numNodes; }
-        void SetKdTreeNumDimensions(size_t numDimensions) override { m_kdTreeNumDimensions = numDimensions; }
+        void SetFrameDatabaseInfo(const ImGuiMonitorRequests::FrameDatabaseInfo& info) override { m_frameDatabaseInfo = info; }
+        void SetFeatureMatrixInfo(const ImGuiMonitorRequests::FeatureMatrixInfo& info) override { m_featurMatrixInfo = info; }
+        void SetKdTreeInfo(const ImGuiMonitorRequests::KdTreeInfo& info) override { m_kdTreeInfo = info; }
 
     private:
-        //! Named and sub-divided group containing several histograms.
-        struct HistogramGroup
-        {
-            void OnImGuiUpdate();
-            void PushHistogramValue(const char* valueName, float value, const AZ::Color& color);
+        ImGui::LYImGuiUtils::HistogramGroup m_performanceStats;
+        ImGui::LYImGuiUtils::HistogramGroup m_featureCosts;
 
-            bool m_show = true;
-            AZStd::string m_name;
-            using HistogramIndexByNames = AZStd::unordered_map<const char*, size_t>;
-            HistogramIndexByNames m_histogramIndexByName;
-            AZStd::vector<ImGui::LYImGuiUtils::HistogramContainer> m_histograms;
-            int m_histogramContainerCount = 500;
-
-            static constexpr float s_histogramHeight = 95.0f;
-        };
-
-        HistogramGroup m_performanceStats;
-        HistogramGroup m_featureCosts;
-
-        size_t m_featureMatrixMemoryUsageInBytes = 0;
-        size_t m_featureMatrixNumFrames = 0;
-        size_t m_featureMatrixNumComponents = 0;
-
-        size_t m_kdTreeMemoryUsageInBytes = 0;
-        size_t m_kdTreeNumNodes = 0;
-        size_t m_kdTreeNumDimensions = 0;
+        ImGuiMonitorRequests::FrameDatabaseInfo m_frameDatabaseInfo;
+        ImGuiMonitorRequests::FeatureMatrixInfo m_featurMatrixInfo;
+        ImGuiMonitorRequests::KdTreeInfo m_kdTreeInfo;
     };
 } // namespace EMotionFX::MotionMatching
 
