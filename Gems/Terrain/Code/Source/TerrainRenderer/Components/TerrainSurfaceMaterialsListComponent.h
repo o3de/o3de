@@ -25,12 +25,13 @@ namespace LmbrCentral
 
 namespace Terrain
 {
-    struct TerrainSurfaceMaterial
+    struct TerrainSurfaceMaterialMapping
     {
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterial, AZ::SystemAllocator, 0);
-        AZ_RTTI(TerrainSurfaceMaterial, "{C96BCB4D-D3D6-4346-AF42-AD1B18D52070}");
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}");
+        static void Reflect(AZ::ReflectContext* context);
 
-        virtual ~TerrainSurfaceMaterial() = default;
+        virtual ~TerrainSurfaceMaterialMapping() = default;
 
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
@@ -38,27 +39,28 @@ namespace Terrain
         AZ::Data::AssetId m_activeMaterialAssetId;
         AZ::RPI::Material::ChangeId m_previousChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
 
-        bool m_active = false;
-    };
-
-    struct TerrainSurfaceMaterialMapping final : public TerrainSurfaceMaterial
-    {
-        AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
-        AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}", TerrainSurfaceMaterial);
-        static void Reflect(AZ::ReflectContext* context);
-        
+        // Surface tags not used by default material
         SurfaceData::SurfaceTag m_surfaceTag;
         SurfaceData::SurfaceTag m_previousTag;
+
+        bool m_active = false;
+
+        virtual AZ::Crc32 ShouldShowSurfaceTag()
+        {
+            return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
+        }
     };
-    
-    struct DefaultTerrainSurfaceMaterial final : public TerrainSurfaceMaterial
+
+    struct DefaultTerrainSurfaceMaterial final : public TerrainSurfaceMaterialMapping
     {
         AZ_CLASS_ALLOCATOR(DefaultTerrainSurfaceMaterial, AZ::SystemAllocator, 0);
-        AZ_RTTI(DefaultTerrainSurfaceMaterial, "{EAE129EF-1A69-4A30-8D79-D2D9500E3237}", TerrainSurfaceMaterial);
+        AZ_RTTI(DefaultTerrainSurfaceMaterial, "{C46F00BE-820E-47FE-8A57-D0AF148106AB}", TerrainSurfaceMaterialMapping);
         static void Reflect(AZ::ReflectContext* context);
 
-        // This struct exists solely so it can have a separate edit context layout
-        // from TerrainSurfaceMaterialMapping.
+        AZ::Crc32 ShouldShowSurfaceTag() override
+        {
+            return AZ::Edit::PropertyVisibility::Hide;
+        }
     };
 
     class TerrainSurfaceMaterialsListConfig : public AZ::ComponentConfig

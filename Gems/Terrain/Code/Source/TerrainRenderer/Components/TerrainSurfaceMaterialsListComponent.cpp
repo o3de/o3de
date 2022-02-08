@@ -34,7 +34,7 @@ namespace Terrain
             serialize->Class<TerrainSurfaceMaterialMapping>()
                 ->Version(1)
                 ->Field("Surface", &TerrainSurfaceMaterialMapping::m_surfaceTag)
-                ->FieldFromBase<TerrainSurfaceMaterial>("MaterialAsset", &TerrainSurfaceMaterial::m_materialAsset);
+                ->Field("MaterialAsset", &TerrainSurfaceMaterialMapping::m_materialAsset);
 
             if (auto edit = serialize->GetEditContext())
             {
@@ -43,6 +43,7 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainSurfaceMaterialMapping::m_surfaceTag, "Surface tag", "Surface type to map to a material.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &TerrainSurfaceMaterialMapping::ShouldShowSurfaceTag)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialMapping::m_materialAsset, "Material asset", "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
@@ -50,33 +51,20 @@ namespace Terrain
             }
         }
     }
-    
+
     void DefaultTerrainSurfaceMaterial::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<DefaultTerrainSurfaceMaterial>()
-                ->Version(1)
-                ->FieldFromBase<TerrainSurfaceMaterial>("MaterialAsset", &TerrainSurfaceMaterial::m_materialAsset);
-
-            if (auto edit = serialize->GetEditContext())
-            {
-                edit->Class<DefaultTerrainSurfaceMaterial>("Terrain default material", "The default material used as a fallback in this area.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DefaultTerrainSurfaceMaterial::m_materialAsset, "Material asset", "")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
-                    ;
-            }
+            serialize->Class<DefaultTerrainSurfaceMaterial, TerrainSurfaceMaterialMapping>()
+                ->Version(1);
         }
     }
 
     void TerrainSurfaceMaterialsListConfig::Reflect(AZ::ReflectContext* context)
     {
-        DefaultTerrainSurfaceMaterial::Reflect(context);
         TerrainSurfaceMaterialMapping::Reflect(context);
+        DefaultTerrainSurfaceMaterial::Reflect(context);
 
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
@@ -141,7 +129,7 @@ namespace Terrain
     {
         m_cachedAabb = AZ::Aabb::CreateNull();
 
-        auto checkLoadMaterial = [&](TerrainSurfaceMaterial& material)
+        auto checkLoadMaterial = [&](TerrainSurfaceMaterialMapping& material)
         {
             if (material.m_materialAsset.GetId().IsValid())
             {
@@ -166,7 +154,7 @@ namespace Terrain
     {
         TerrainAreaMaterialRequestBus::Handler::BusDisconnect();
 
-        auto checkResetMaterial = [&](TerrainSurfaceMaterial& material)
+        auto checkResetMaterial = [&](TerrainSurfaceMaterialMapping& material)
         {
             if (material.m_materialAsset.GetId().IsValid())
             {
@@ -387,7 +375,7 @@ namespace Terrain
     void TerrainSurfaceMaterialsListComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         // Find the missing material instance with the correct id.
-        auto checkUpdateMaterialAsset = [](TerrainSurfaceMaterial& mapping, const AZ::Data::Asset<AZ::Data::AssetData>& asset) -> bool
+        auto checkUpdateMaterialAsset = [](TerrainSurfaceMaterialMapping& mapping, const AZ::Data::Asset<AZ::Data::AssetData>& asset) -> bool
         {
             if (mapping.m_materialAsset.GetId() == asset.GetId() &&
                 (!mapping.m_materialInstance || mapping.m_materialInstance->GetAssetId() != mapping.m_materialAsset.GetId()))
