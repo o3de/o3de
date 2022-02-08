@@ -52,7 +52,7 @@ namespace Profiler
 
         AZStd::atomic_bool m_cpuCaptureInProgress{ false };
 
-        CpuProfilerImpl m_cpuProfiler;
+        CpuProfiler m_cpuProfiler;
         AZStd::string m_captureFile;
     };
 

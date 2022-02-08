@@ -47,34 +47,7 @@ namespace Profiler
         AZStd::sys_time_t m_endTick = 0;
     };
 
-    //! Interface class of the CpuProfiler
-    class CpuProfiler
-    {
-    public:
-        using ThreadTimeRegionMap = AZStd::unordered_map<AZStd::string, AZStd::vector<CachedTimeRegion>>;
-        using TimeRegionMap = AZStd::unordered_map<AZStd::thread_id, ThreadTimeRegionMap>;
+    using ThreadTimeRegionMap = AZStd::unordered_map<AZStd::string, AZStd::vector<CachedTimeRegion>>;
+    using TimeRegionMap = AZStd::unordered_map<AZStd::thread_id, ThreadTimeRegionMap>;
 
-        AZ_RTTI(CpuProfiler, "{127C1D0B-BE05-4E18-A8F6-24F3EED2ECA6}");
-
-        CpuProfiler() = default;
-        virtual ~CpuProfiler() = default;
-
-        AZ_DISABLE_COPY_MOVE(CpuProfiler);
-
-        //! Get the last frame's TimeRegionMap
-        virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
-
-        //! Begin a continuous capture. Blocks the profiler from being toggled off until EndContinuousCapture is called.
-        [[nodiscard]] virtual bool BeginContinuousCapture() = 0;
-
-        //! Flush the CPU Profiler's saved data into the passed ring buffer .
-        [[nodiscard]] virtual bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) = 0;
-
-        virtual bool IsContinuousCaptureInProgress() const = 0;
-
-        //! Enable/Disable the CpuProfiler
-        virtual void SetProfilerEnabled(bool enabled) = 0;
-
-        virtual bool IsProfilerEnabled() const = 0 ;
-    };
 } // namespace Profiler

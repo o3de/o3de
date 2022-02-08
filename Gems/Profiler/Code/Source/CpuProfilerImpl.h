@@ -21,12 +21,12 @@
 namespace Profiler
 {
     //! Thread local class to keep track of the thread's cached time regions.
-    //! Each thread keeps track of its own time regions, which is communicated from the CpuProfilerImpl.
-    //! The CpuProfilerImpl is able to request the cached time regions from the CpuTimingLocalStorage.
+    //! Each thread keeps track of its own time regions, which is communicated from the CpuProfiler.
+    //! The CpuProfiler is able to request the cached time regions from the CpuTimingLocalStorage.
     class CpuTimingLocalStorage
         : public AZStd::intrusive_refcount<AZStd::atomic_uint>
     {
-        friend class CpuProfilerImpl;
+        friend class CpuProfiler;
 
     public:
         AZ_CLASS_ALLOCATOR(CpuTimingLocalStorage, AZ::OSAllocator, 0);
@@ -48,7 +48,7 @@ namespace Profiler
         void AddCachedRegion(const CachedTimeRegion& timeRegionCached);
 
         // Tries to flush the map to the passed parameter, only if the thread's mutex is unlocked
-        void TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedRegionMap);
+        void TryFlushCachedMap(ThreadTimeRegionMap& cachedRegionMap);
 
         // Clears m_cachedTimeRegions and resets m_cachedDataLimitReached flag.
         void ResetCachedData();
@@ -58,7 +58,7 @@ namespace Profiler
         uint32_t m_stackLevel = 0u;
 
         // Cached region map, will be flushed to the system's map when the system requests it
-        CpuProfiler::ThreadTimeRegionMap m_cachedTimeRegionMap;
+        ThreadTimeRegionMap m_cachedTimeRegionMap;
 
         // Use fixed vectors to avoid re-allocating new elements
         // Keeps track of the regions that added and removed using the macro
@@ -86,41 +86,46 @@ namespace Profiler
     //! CpuProfiler will keep track of the registered threads, and
     //! forwards the request to profile a region to the appropriate thread. The user is able to request all
     //! cached regions, which are stored on a per thread frequency.
-    class CpuProfilerImpl final
+    class CpuProfiler final
         : public AZ::Debug::Profiler
-        , public CpuProfiler
         , public AZ::SystemTickBus::Handler
     {
         friend class CpuTimingLocalStorage;
 
     public:
-        AZ_RTTI(CpuProfilerImpl, "{10E9D394-FC83-4B45-B2B8-807C6BF07BF0}", AZ::Debug::Profiler, CpuProfiler);
-        AZ_CLASS_ALLOCATOR(CpuProfilerImpl, AZ::OSAllocator, 0);
+        AZ_RTTI(CpuProfiler, "{10E9D394-FC83-4B45-B2B8-807C6BF07BF0}", AZ::Debug::Profiler);
+        AZ_CLASS_ALLOCATOR(CpuProfiler, AZ::OSAllocator, 0);
 
-        CpuProfilerImpl() = default;
-        ~CpuProfilerImpl() = default;
+        CpuProfiler() = default;
+        ~CpuProfiler() = default;
 
-        //! Registers the CpuProfilerImpl instance to the interface
+        //! Registers/un-registers the AZ::Debug::Profiler instance to the interface
         void Init();
-        //! Unregisters the CpuProfilerImpl instance from the interface
         void Shutdown();
-
-        // AZ::SystemTickBus::Handler overrides
-        // When fired, the profiler collects all profiling data from registered threads and updates
-        // m_timeRegionMap so that the next frame has up-to-date profiling data.
-        void OnSystemTick() final override;
 
         //! AZ::Debug::Profiler overrides...
         void BeginRegion(const AZ::Debug::Budget* budget, const char* eventName, size_t eventNameArgCount, ...) final override;
         void EndRegion(const AZ::Debug::Budget* budget) final override;
 
-        //! CpuProfiler overrides...
-        const TimeRegionMap& GetTimeRegionMap() const final override;
-        bool BeginContinuousCapture() final override;
-        bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) final override;
-        bool IsContinuousCaptureInProgress() const final override;
-        void SetProfilerEnabled(bool enabled) final override;
-        bool IsProfilerEnabled() const final override;
+        //! Get the last frame's TimeRegionMap
+        const TimeRegionMap& GetTimeRegionMap() const;
+
+        //! Starting/ending a multi-frame capture of profiling data
+        bool BeginContinuousCapture();
+        bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget);
+
+        //! Check to see if a programmatic capture is currently in progress, implies
+        //! that the profiler is active if returns True.
+        bool IsContinuousCaptureInProgress() const;
+
+        //! Getter/setter for the profiler active state
+        void SetProfilerEnabled(bool enabled);
+        bool IsProfilerEnabled() const;
+
+        //! AZ::SystemTickBus::Handler overrides
+        //! When fired, the profiler collects all profiling data from registered threads and updates
+        //! m_timeRegionMap so that the next frame has up-to-date profiling data.
+        void OnSystemTick() final override;
 
     private:
         static constexpr AZStd::size_t MaxFramesToSave = 2 * 60 * 120; // 2 minutes of 120fps
@@ -182,7 +187,7 @@ namespace Profiler
         static void Reflect(AZ::ReflectContext* context);
 
         CpuProfilingStatisticsSerializer() = default;
-        CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<CpuProfiler::TimeRegionMap>& continuousData);
+        CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<TimeRegionMap>& continuousData);
 
         AZStd::vector<CpuProfilingStatisticsSerializerEntry> m_cpuProfilingStatisticsSerializerEntries;
     };

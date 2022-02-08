@@ -677,9 +677,9 @@ namespace Profiler
 
         // Get the latest TimeRegionMap
         auto profilerInterface = AZ::Interface<AZ::Debug::Profiler>::Get();
-        auto cpuProfiler = azrtti_cast<CpuProfilerImpl*>(profilerInterface);
+        auto cpuProfiler = azrtti_cast<CpuProfiler*>(profilerInterface);
 
-        const CpuProfiler::TimeRegionMap& timeRegionMap = cpuProfiler->GetTimeRegionMap();
+        const TimeRegionMap& timeRegionMap = cpuProfiler->GetTimeRegionMap();
 
         m_viewportStartTick = AZStd::numeric_limits<AZ::s64>::max();
         m_viewportEndTick = AZStd::numeric_limits<AZ::s64>::lowest();
