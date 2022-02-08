@@ -25,7 +25,7 @@ namespace LmbrCentral
 
 namespace Terrain
 {
-    class EditorSelectableTagListProvider;
+    class EditorSurfaceTagListProvider;
 
     class TerrainSurfaceGradientMapping final
     {
@@ -42,13 +42,13 @@ namespace Terrain
         }
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> BuildSelectableTagList() const;
-        void SetTagListProvider(const EditorSelectableTagListProvider* tagListProvider);
+        void SetTagListProvider(const EditorSurfaceTagListProvider* tagListProvider);
 
         AZ::EntityId m_gradientEntityId;
         SurfaceData::SurfaceTag m_surfaceTag;
 
     private:
-        const EditorSelectableTagListProvider* m_tagListProvider = nullptr;
+        const EditorSurfaceTagListProvider* m_tagListProvider = nullptr;
     };
 
     class TerrainSurfaceGradientListConfig : public AZ::ComponentConfig

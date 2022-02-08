@@ -11,13 +11,13 @@
 #include <Components/TerrainPhysicsColliderComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
-#include <EditorSelectableTagListProvider.h>
+#include <EditorSurfaceTagListProvider.h>
 
 namespace Terrain
 {
     class EditorTerrainPhysicsColliderComponent
         : public LmbrCentral::EditorWrappedComponentBase<TerrainPhysicsColliderComponent, TerrainPhysicsColliderConfig>
-        , public EditorSelectableTagListProvider
+        , public EditorSurfaceTagListProvider
     {
     public:
         using BaseClassType = LmbrCentral::EditorWrappedComponentBase<TerrainPhysicsColliderComponent, TerrainPhysicsColliderConfig>;
@@ -35,8 +35,8 @@ namespace Terrain
         static constexpr auto s_helpUrl = "";
 
     private:
-        // EditorSelectableTagListProvider interface implementation
-        AZStd::unordered_set<AZ::u32> GetSurfaceTagsInUse() const override;
+        // EditorSurfaceTagListProvider interface implementation
+        AZStd::unordered_set<SurfaceData::SurfaceTag> GetSurfaceTagsInUse() const override;
 
         AZ::u32 ConfigurationChanged() override;
         void UpdateConfigurationTagProvider();

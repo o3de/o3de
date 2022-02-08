@@ -25,7 +25,7 @@ namespace LmbrCentral
 
 namespace Terrain
 {
-    class EditorSelectableTagListProvider;
+    class EditorSurfaceTagListProvider;
 
     static const uint8_t InvalidSurfaceTagIndex = 0xFF;
 
@@ -35,15 +35,16 @@ namespace Terrain
         AZ_CLASS_ALLOCATOR(TerrainPhysicsSurfaceMaterialMapping, AZ::SystemAllocator, 0);
         AZ_RTTI(TerrainPhysicsSurfaceMaterialMapping, "{A88B5289-DFCD-4564-8395-E2177DFE5B18}");
         static void Reflect(AZ::ReflectContext* context);
+        static AZ::Data::AssetId GetMaterialLibraryId();
+
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> BuildSelectableTagList() const;
-        void SetTagListProvider(const EditorSelectableTagListProvider* tagListProvider);
+        void SetTagListProvider(const EditorSurfaceTagListProvider* tagListProvider);
 
         SurfaceData::SurfaceTag m_surfaceTag;
         Physics::MaterialId m_materialId;
 
     private:
-        static AZ::Data::AssetId GetMaterialLibraryId();
-        const EditorSelectableTagListProvider* m_tagListProvider = nullptr;
+        const EditorSurfaceTagListProvider* m_tagListProvider = nullptr;
     };
 
     class TerrainPhysicsColliderConfig
@@ -53,6 +54,7 @@ namespace Terrain
         AZ_CLASS_ALLOCATOR(TerrainPhysicsColliderConfig, AZ::SystemAllocator, 0);
         AZ_RTTI(TerrainPhysicsColliderConfig, "{E9EADB8F-C3A5-4B9C-A62D-2DBC86B4CE59}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
+
         Physics::MaterialSelection m_defaultMaterialSelection;
         AZStd::vector<TerrainPhysicsSurfaceMaterialMapping> m_surfaceMaterialMappings;
     };

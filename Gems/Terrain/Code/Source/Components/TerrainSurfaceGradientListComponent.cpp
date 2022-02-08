@@ -11,11 +11,9 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/sort.h>
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
-#include <EditorSelectableTagListProvider.h>
 
 namespace Terrain
 {
@@ -28,27 +26,6 @@ namespace Terrain
                 ->Field("Gradient Entity", &TerrainSurfaceGradientMapping::m_gradientEntityId)
                 ->Field("Surface Tag", &TerrainSurfaceGradientMapping::m_surfaceTag)
             ;
-
-            if (auto edit = serialize->GetEditContext())
-            {
-                edit->Class<TerrainSurfaceGradientMapping>("Terrain Surface Gradient Mapping", "Mapping between a gradient and a surface.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientMapping::m_gradientEntityId,
-                        "Gradient Entity", "ID of Entity providing a gradient.")
-                       ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->UIElement("GradientPreviewer", "Previewer")
-                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC_CE("GradientEntity"), &TerrainSurfaceGradientMapping::m_gradientEntityId)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientMapping::m_surfaceTag, "Surface Tag",
-                        "Surface type to map to this gradient.")
-                    ->Attribute(AZ::Edit::Attributes::EnumValues, &TerrainSurfaceGradientMapping::BuildSelectableTagList)
-                ;
-            }
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -63,30 +40,6 @@ namespace Terrain
         }
     }
 
-    AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> TerrainSurfaceGradientMapping::BuildSelectableTagList() const
-    {
-        AZ_PROFILE_FUNCTION(Entity);
-
-        if (m_tagListProvider)
-        {
-            AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> selectableTags = AZStd::move(m_tagListProvider->BuildSelectableTagList());
-
-            // Insert the tag currently in use by this mapping
-            selectableTags.push_back({ m_surfaceTag, m_surfaceTag.GetDisplayName() });
-
-            // Sorting for consistency
-            AZStd::sort(selectableTags.begin(), selectableTags.end(), [](const auto& lhs, const auto& rhs) {return lhs.second < rhs.second; });
-            return selectableTags;
-        }
-
-        return SurfaceData::SurfaceTag::GetRegisteredTags();
-    }
-
-    void TerrainSurfaceGradientMapping::SetTagListProvider(const EditorSelectableTagListProvider* tagListProvider)
-    {
-        m_tagListProvider = tagListProvider;
-    }
-
     void TerrainSurfaceGradientListConfig::Reflect(AZ::ReflectContext* context)
     {
         TerrainSurfaceGradientMapping::Reflect(context);
@@ -98,21 +51,6 @@ namespace Terrain
                 ->Version(1)
                 ->Field("Mappings", &TerrainSurfaceGradientListConfig::m_gradientSurfaceMappings)
             ;
-
-            AZ::EditContext* edit = serialize->GetEditContext();
-            if (edit)
-            {
-                edit->Class<TerrainSurfaceGradientListConfig>(
-                    "Terrain Surface Gradient List Component", "Provide mapping between gradients and surfaces.")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainSurfaceGradientListConfig::m_gradientSurfaceMappings,
-                        "Gradient to Surface Mappings", "Maps Gradient Entities to Surfaces.")
-                    ;
-            }
         }
     }
 

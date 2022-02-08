@@ -11,13 +11,13 @@
 #include <Components/TerrainSurfaceGradientListComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
-#include <EditorSelectableTagListProvider.h>
+#include <EditorSurfaceTagListProvider.h>
 
 namespace Terrain
 {
     class EditorTerrainSurfaceGradientListComponent
         : public LmbrCentral::EditorWrappedComponentBase<TerrainSurfaceGradientListComponent, TerrainSurfaceGradientListConfig>
-        , public EditorSelectableTagListProvider
+        , public EditorSurfaceTagListProvider
     {
     public:
         using BaseClassType = LmbrCentral::EditorWrappedComponentBase<TerrainSurfaceGradientListComponent, TerrainSurfaceGradientListConfig>;
@@ -35,8 +35,8 @@ namespace Terrain
         static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/terrain/surface-gradient-list/";
 
     private:
-        // EditorSelectableTagListProvider interface implementation
-        AZStd::unordered_set<AZ::u32> GetSurfaceTagsInUse() const override;
+        // EditorSurfaceTagListProvider interface implementation
+        AZStd::unordered_set<SurfaceData::SurfaceTag> GetSurfaceTagsInUse() const override;
 
         AZ::u32 ConfigurationChanged() override;
         void UpdateConfigurationTagProvider();
