@@ -45,7 +45,7 @@ namespace SurfaceData
         weights.reserve(m_weights.size());
         for (auto& weight : m_weights)
         {
-            weights.emplace_back(weight.first, weight.second);
+            weights.emplace_back(weight);
         }
         return weights;
     }
@@ -76,7 +76,7 @@ namespace SurfaceData
                 compareWeights.begin(), compareWeights.end(),
                 [weight](const AzFramework::SurfaceData::SurfaceTagWeight& compareWeight) -> bool
                 {
-                    return ((weight.first == compareWeight.m_surfaceType) && (weight.second == compareWeight.m_weight));
+                    return (weight == compareWeight);
                 });
 
             // If we didn't find a match, they're not equal.
@@ -105,7 +105,7 @@ namespace SurfaceData
     {
         for (const auto& weight : m_weights)
         {
-            if (weight.first != Constants::s_unassignedTagCrc)
+            if (weight.m_surfaceType != Constants::s_unassignedTagCrc)
             {
                 return true;
             }
@@ -134,7 +134,7 @@ namespace SurfaceData
     bool SurfaceTagWeights::HasMatchingTag(AZ::Crc32 sampleTag, float weightMin, float weightMax) const
     {
         auto weightEntry = FindTag(sampleTag);
-        return weightEntry != m_weights.end() && weightMin <= weightEntry->second && weightMax >= weightEntry->second;
+        return weightEntry != m_weights.end() && weightMin <= weightEntry->m_weight && weightMax >= weightEntry->m_weight;
     }
 
     bool SurfaceTagWeights::HasAnyMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const
@@ -150,16 +150,16 @@ namespace SurfaceData
         return false;
     }
 
-    const AZStd::pair<AZ::Crc32, float>* SurfaceTagWeights::FindTag(AZ::Crc32 tag) const
+    const AzFramework::SurfaceData::SurfaceTagWeight* SurfaceTagWeights::FindTag(AZ::Crc32 tag) const
     {
         for (auto weightItr = m_weights.begin(); weightItr != m_weights.end(); ++weightItr)
         {
-            if (weightItr->first == tag)
+            if (weightItr->m_surfaceType == tag)
             {
                 // Found the tag, return a pointer to the entry.
                 return weightItr;
             }
-            else if (weightItr->first > tag)
+            else if (weightItr->m_surfaceType > tag)
             {
                 // Our list is stored in sorted order by surfaceType, so early-out if our values get too high.
                 break;

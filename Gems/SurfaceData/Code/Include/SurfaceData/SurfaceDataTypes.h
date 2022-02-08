@@ -64,7 +64,7 @@ namespace SurfaceData
             {
                 // Since we need to scan for duplicate surface types, store the entries sorted by surface type so that we can
                 // early-out once we pass the location for the entry instead of always searching every entry.
-                if (weightItr->first > tag)
+                if (weightItr->m_surfaceType > tag)
                 {
                     if (m_weights.size() != MaxSurfaceWeights)
                     {
@@ -77,10 +77,10 @@ namespace SurfaceData
                     }
                     return;
                 }
-                else if (weightItr->first == tag)
+                else if (weightItr->m_surfaceType == tag)
                 {
                     // We found the surface type, so just keep the higher of the two weights.
-                    weightItr->second = AZ::GetMax(weight, weightItr->second);
+                    weightItr->m_weight = AZ::GetMax(weight, weightItr->m_weight);
                     return;
                 }
             }
@@ -187,9 +187,9 @@ namespace SurfaceData
         //! Search for the given tag entry.
         //! @param tag - The tag to search for.
         //! @return The pointer to the tag that's found, or end() if it wasn't found.
-        const AZStd::pair<AZ::Crc32, float>* FindTag(AZ::Crc32 tag) const;
+        const AzFramework::SurfaceData::SurfaceTagWeight* FindTag(AZ::Crc32 tag) const;
 
-        AZStd::fixed_vector<AZStd::pair<AZ::Crc32, float>, MaxSurfaceWeights> m_weights;
+        AZStd::fixed_vector<AzFramework::SurfaceData::SurfaceTagWeight, MaxSurfaceWeights> m_weights;
     };
 
     //! SurfacePointList stores a collection of surface point data, which consists of positions, normals, and surface tag weights.
