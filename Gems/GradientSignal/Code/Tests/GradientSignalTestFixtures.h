@@ -61,13 +61,13 @@ namespace UnitTest
             entity->Activate();
         }
 
-        // Create a mock SurfaceDataSystem that will respond to requests for surface points with mock responses for points inside
-        // the given input box.
-        AZStd::unique_ptr<MockSurfaceDataSystem> CreateMockSurfaceDataSystem(const AZ::Aabb& spawnerBox);
-
-        // Create an entity with a mock shape and a transform. It won't be activated yet though, because we expect a gradient component
+        // Create an entity with a box shape and a transform. It won't be activated yet though, because we expect a gradient component
         // to also get added to it first before activation.
         AZStd::unique_ptr<AZ::Entity> CreateTestEntity(float shapeHalfBounds);
+
+        // Create an entity with a sphere shape and a transform. It won't be activated yet though, because we expect a gradient component
+        // to also get added to it first before activation.
+        AZStd::unique_ptr<AZ::Entity> CreateTestSphereEntity(float shapeRadius);
 
         // Create and activate an entity with a gradient component of the requested type, initialized with test data.
         AZStd::unique_ptr<AZ::Entity> BuildTestConstantGradient(float shapeHalfBounds);

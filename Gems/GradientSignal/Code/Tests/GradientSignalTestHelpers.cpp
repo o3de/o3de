@@ -191,11 +191,11 @@ namespace UnitTest
         return imageAsset;
     }
 
-    void GradientSignalTestHelpers::CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, float shapeHalfBounds)
+    void GradientSignalTestHelpers::CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, float queryMin, float queryMax)
     {
         // Create a gradient sampler and run through a series of points to see if they match expectations.
 
-        const AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-shapeHalfBounds), AZ::Vector3(shapeHalfBounds));
+        const AZ::Aabb queryRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(queryMin), AZ::Vector3(queryMax));
         const AZ::Vector2 stepSize(1.0f, 1.0f);
 
         GradientSignal::GradientSampler gradientSampler;
@@ -296,6 +296,7 @@ namespace UnitTest
             AZStd::vector<float> results(totalQueryPoints);
             GradientSignal::GradientRequestBus::Event(
                 gradientId, &GradientSignal::GradientRequestBus::Events::GetValues, positions, results);
+            benchmark::DoNotOptimize(results);
         }
     }
 
@@ -352,6 +353,7 @@ namespace UnitTest
             // Query and get the results.
             AZStd::vector<float> results(totalQueryPoints);
             gradientSampler.GetValues(positions, results);
+            benchmark::DoNotOptimize(results);
         }
     }
 

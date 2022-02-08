@@ -67,9 +67,6 @@ namespace UnitTest
             const AzFramework::SurfaceData::SurfacePoint& input,
             const AzFramework::SurfaceData::SurfacePoint& expectedOutput)
         {
-            // This lets our component register with surfaceData successfully.
-            MockSurfaceDataSystem mockSurfaceDataSystem;
-
             // Create a mock shape entity in case our gradient test uses shape constraints.
             // The mock shape is a cube that goes from -0.5 to 0.5 in space.
             auto mockShapeEntity = CreateTestEntity(0.5f);
@@ -105,7 +102,9 @@ namespace UnitTest
             ActivateEntity(entity.get());
 
             // Get our registered modifier handle (and verify that it's valid)
-            auto modifierHandle = mockSurfaceDataSystem.GetSurfaceModifierHandle(entity->GetId());
+            SurfaceData::SurfaceDataRegistryHandle modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
+            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
+                modifierHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfaceDataModifierHandle, entity->GetId());
             EXPECT_TRUE(modifierHandle != SurfaceData::InvalidSurfaceDataRegistryHandle);
 
             // Call ModifySurfacePoints and verify the results
