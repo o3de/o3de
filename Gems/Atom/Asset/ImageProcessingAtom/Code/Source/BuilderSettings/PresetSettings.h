@@ -25,6 +25,13 @@ namespace ImageProcessingAtom
         AZ_TYPE_INFO(PresetSettings, "{4F4DEC5C-48DD-40FD-97B4-5FB6FC7242E9}");
         AZ_CLASS_ALLOCATOR(PresetSettings, AZ::SystemAllocator, 0);
 
+        //! Custom overrides for how to handle the output format
+        enum OutputTypeHandling
+        {
+            UseSpecifiedOutputType = 0,
+            UseInputFormat
+        };
+
         PresetSettings();
         PresetSettings(const PresetSettings& other);
         PresetSettings& operator= (const PresetSettings& other);
@@ -103,6 +110,9 @@ namespace ImageProcessingAtom
         //"swizzle". need to be 4 character and each character need to be one of "rgba01"
         AZStd::string m_swizzle;
 
+        //! Controls how the output type format is derived
+        OutputTypeHandling m_outputTypeHandling = UseSpecifiedOutputType;
+
     protected:
         void DeepCopyMembers(const PresetSettings& other);
     };
@@ -136,3 +146,10 @@ namespace ImageProcessingAtom
     };
     
 } // namespace ImageProcessingAtom
+
+namespace AZ
+{
+    // Bind enums with uuids. Required for named enum support.
+    // Note: AZ_TYPE_INFO_SPECIALIZE has to be declared in AZ namespace
+    AZ_TYPE_INFO_SPECIALIZE(ImageProcessingAtom::PresetSettings::OutputTypeHandling, "{F919ECB6-BF80-4BEF-9E72-EA76504EBE9D}");
+}

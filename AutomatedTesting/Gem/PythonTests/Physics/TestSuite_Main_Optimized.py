@@ -53,7 +53,8 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
         for f in original_file_list:
             fm._restore_file(f, file_list[f])
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+
+# @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -71,6 +72,48 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
 
     class C4982802_PhysXColliderShape_CanBeSelected(EditorSharedTest):
         from .tests.collider import Collider_CapsuleShapeEditing as test_module
+
+    class C14654881_CharacterController_SwitchLevels(EditorSharedTest):
+        from .tests.character_controller import CharacterController_SwitchLevels as test_module
+
+    class C14861500_DefaultSetting_ColliderShape(EditorSharedTest):
+        from .tests.collider import Collider_CheckDefaultShapeSettingIsPxMesh as test_module
+
+    class C4044695_PhysXCollider_AddMultipleSurfaceFbx(EditorSharedTest):
+        from .tests.collider import Collider_MultipleSurfaceSlots as test_module
+        
+    class C14861501_PhysXCollider_RenderMeshAutoAssigned(EditorSharedTest):
+        from .tests.collider import Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent as test_module
+
+    @pytest.mark.xfail(reason="This will fail due to this issue ATOM-15487.")
+    class C14861502_PhysXCollider_AssetAutoAssigned(EditorSharedTest):
+        from .tests.collider import Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent as test_module
+
+    class C4982803_Enable_PxMesh_Option(EditorSharedTest):
+        from .tests.collider import Collider_PxMeshConvexMeshCollides as test_module
+    
+    class C15096740_Material_LibraryUpdatedCorrectly(EditorSharedTest):
+        from .tests.material import Material_LibraryClearingAssignsDefault as test_module
+        
+    class C17411467_AddPhysxRagdollComponent(EditorSharedTest):
+        from .tests.ragdoll import Ragdoll_AddPhysxRagdollComponentWorks as test_module
+ 
+    class C19578021_ShapeCollider_CanBeAdded(EditorSharedTest):
+        from .tests.shape_collider import ShapeCollider_CanBeAddedWitNoWarnings as test_module
+
+    class C19578018_ShapeColliderWithNoShapeComponent(EditorSharedTest):
+        from .tests.shape_collider import ShapeCollider_InactiveWhenNoShapeComponent as test_module
+
+    class C19723164_ShapeCollider_WontCrashEditor(EditorSharedTest):
+        from .tests.shape_collider import ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor as test_module
+
+    class C12905528_ForceRegion_WithNonTriggerCollider(EditorSharedTest):
+        from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
+        # Fixme: expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]
+    
+    class C14861504_RenderMeshAsset_WithNoPxAsset(EditorSharedTest):
+        from .tests.collider import Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx as test_module
+    
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -115,19 +158,13 @@ class TestAutomation(EditorTestSuite):
 
     class C14654881_CharacterController_SwitchLevels(EditorSharedTest):
         from .tests.character_controller import CharacterController_SwitchLevels as test_module
- 
-    class C17411467_AddPhysxRagdollComponent(EditorSharedTest):
-        from .tests.ragdoll import Ragdoll_AddPhysxRagdollComponentWorks as test_module
- 
+
     class C12712453_ScriptCanvas_MultipleRaycastNode(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_MultipleRaycastNode as test_module
 
     class C18243586_Joints_HingeLeadFollowerCollide(EditorSharedTest):
         from .tests.joints import Joints_HingeLeadFollowerCollide as test_module
 
-    class C4982803_Enable_PxMesh_Option(EditorSharedTest):
-        from .tests.collider import Collider_PxMeshConvexMeshCollides as test_module
-    
     class C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain(EditorSharedTest):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
 
@@ -297,19 +334,6 @@ class TestAutomation(EditorTestSuite):
     class C18243591_Joints_BallLeadFollowerCollide(EditorSharedTest):
         from .tests.joints import Joints_BallLeadFollowerCollide as test_module
 
-    class C19578018_ShapeColliderWithNoShapeComponent(EditorSharedTest):
-        from .tests.shape_collider import ShapeCollider_InactiveWhenNoShapeComponent as test_module
-
-    class C14861500_DefaultSetting_ColliderShape(EditorSharedTest):
-        from .tests.collider import Collider_CheckDefaultShapeSettingIsPxMesh as test_module
-
-    class C19723164_ShapeCollider_WontCrashEditor(EditorSharedTest):
-        from .tests.shape_collider import ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor as test_module
-
-    class C12905528_ForceRegion_WithNonTriggerCollider(EditorSharedTest):
-        from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
-        # Fixme: expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]
-        
     class C5932040_ForceRegion_CubeExertsWorldForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_WorldSpaceForceOnRigidBodies as test_module
         
@@ -321,26 +345,10 @@ class TestAutomation(EditorTestSuite):
         
     class C5959809_ForceRegion_RotationalOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_RotationalOffset as test_module
-       
-    class C15096740_Material_LibraryUpdatedCorrectly(EditorSharedTest):
-        from .tests.material import Material_LibraryClearingAssignsDefault as test_module
-        
+
     class C4976236_AddPhysxColliderComponent(EditorSharedTest):
         from .tests.collider import Collider_AddColliderComponent as test_module
 
-    @pytest.mark.xfail(reason="This will fail due to this issue ATOM-15487.")
-    class C14861502_PhysXCollider_AssetAutoAssigned(EditorSharedTest):
-        from .tests.collider import Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent as test_module
-        
-    class C14861501_PhysXCollider_RenderMeshAutoAssigned(EditorSharedTest):
-        from .tests.collider import Collider_PxMeshAutoAssignedWhenAddingRenderMeshComponent as test_module
-        
-    class C4044695_PhysXCollider_AddMultipleSurfaceFbx(EditorSharedTest):
-        from .tests.collider import Collider_MultipleSurfaceSlots as test_module
-        
-    class C14861504_RenderMeshAsset_WithNoPxAsset(EditorSharedTest):
-        from .tests.collider import Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx as test_module
-        
     class C100000_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
 
@@ -349,9 +357,6 @@ class TestAutomation(EditorTestSuite):
 
     class C6090547_ForceRegion_ParentChildForceRegions(EditorSharedTest):
         from .tests.force_region import ForceRegion_ParentChildForcesCombineForces as test_module
-
-    class C19578021_ShapeCollider_CanBeAdded(EditorSharedTest):
-        from .tests.shape_collider import ShapeCollider_CanBeAddedWitNoWarnings as test_module
 
     class C15425929_Undo_Redo(EditorSharedTest):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module

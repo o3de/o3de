@@ -97,6 +97,6 @@ namespace SurfaceData
         AZ::Aabb m_shapeBounds = AZ::Aabb::CreateNull();
         bool m_shapeBoundsIsValid = false;
         static const float s_rayAABBHeightPadding;
-        SurfaceTagWeightMap m_newPointWeights;
+        SurfaceTagWeights m_newPointWeights;
     };
 }

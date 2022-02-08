@@ -1,0 +1,36 @@
+{
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
+    "properties": {
+        "baseColor": {
+            "textureMap": "Materials/decal/airship_symbol_decal.tif"
+        },
+        "general": {
+            "doubleSided": true
+        },
+        "metallic": {
+            "useTexture": false
+        },
+        "normal": {
+            "useTexture": false
+        },
+        "opacity": {
+            "alphaSource": "Split",
+            "factor": 0.6899999976158142,
+            "mode": "Cutout",
+            "textureMap": "Materials/decal/airship_symbol_decal.tif"
+        },
+        "roughness": {
+            "useTexture": false
+        },
+        "specularF0": {
+            "useTexture": false
+        },
+        "uv": {
+            "center": [
+                0.0,
+                1.0
+            ]
+        }
+    }
+}
