@@ -762,7 +762,8 @@ namespace Terrain
                             pixels.at(index).m_material1 = aznumeric_cast<uint8_t>(materialId);
                             firstWeight = surfaceTagWeight.m_weight;
                             isFirstMaterial = false;
-                            if (firstWeight >= 1.0f)
+                            static constexpr float MaxValueBeforeRounding = 254.5f / 255.0f;
+                            if (firstWeight >= MaxValueBeforeRounding)
                             {
                                 break;
                             }

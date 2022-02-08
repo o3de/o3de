@@ -35,8 +35,6 @@ namespace Terrain
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
 
-        SurfaceData::SurfaceTag m_surfaceTag;
-        SurfaceData::SurfaceTag m_previousTag;
         AZ::Data::AssetId m_activeMaterialAssetId;
         AZ::RPI::Material::ChangeId m_previousChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
 
@@ -70,7 +68,7 @@ namespace Terrain
         AZ_RTTI(TerrainSurfaceMaterialsListConfig, "{68A1CB1B-C835-4C3A-8D1C-08692E07711A}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        DefaultTerrainSurfaceMaterial m_defaultSurfaceMaterial; // Surface tag ignored for default
+        DefaultTerrainSurfaceMaterial m_defaultSurfaceMaterial;
         AZStd::vector<TerrainSurfaceMaterialMapping> m_surfaceMaterials;
     };
 
