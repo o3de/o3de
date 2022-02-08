@@ -450,6 +450,9 @@ namespace AZ
 
                         // Whether the pass should gather pipeline statics
                         uint64_t m_pipelineStatisticsQueryEnabled : 1;
+
+                        // Whether the pass is the root pass for a pipeline. Used to control pipeline render tick rate
+                        uint64_t m_isPipelineRoot : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };

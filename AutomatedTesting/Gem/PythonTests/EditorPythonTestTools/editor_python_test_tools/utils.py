@@ -67,7 +67,7 @@ class TestHelper:
         return result == 0
 
     @staticmethod
-    def open_level(directory : str, level : str):
+    def open_level(directory : str, level : str, no_prompt: bool = True):
         # type: (str, str) -> None
         """
         :param level: the name of the level folder in AutomatedTesting\\Physics\\
@@ -75,7 +75,11 @@ class TestHelper:
         :return: None
         """
         Report.info("Open level {}/{}".format(directory, level))
-        success = general.open_level_no_prompt(os.path.join(directory, level))
+        if no_prompt:
+            success = general.open_level_no_prompt(os.path.join(directory, level))
+        else:
+            success = general.open_level(os.path.join(directory, level))
+
         if not success:
             open_level_name = general.get_current_level_name()
             if open_level_name == level:

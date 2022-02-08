@@ -98,6 +98,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
             float3 iblSpecular = GetIblSpecular(surface.position, surface.normal, surface.specularF0, surface.roughnessLinear, lightingData.dirToCamera, lightingData.brdf);
             iblSpecular *= lightingData.multiScatterCompensation;
 
+#if ENABLE_CLEAR_COAT
             if (o_clearCoat_feature_enabled && surface.clearCoat.factor > 0.0f)
             {
                 float clearCoatNdotV = saturate(dot(surface.clearCoat.normal, lightingData.dirToCamera));
@@ -115,6 +116,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
                 float3 clearCoatResponse = FresnelSchlickWithRoughness(clearCoatNdotV, clearCoatSpecularF0, surface.clearCoat.roughness) * surface.clearCoat.factor;
                 iblSpecular = iblSpecular * (1.0 - clearCoatResponse) * (1.0 - clearCoatResponse) + clearCoatIblSpecular;
             }
+#endif
 
             float exposure = ObjectSrg::m_reflectionProbeData.m_useReflectionProbe ? pow(2.0, ObjectSrg::m_reflectionProbeData.m_exposure) : globalIblExposure;
             lightingData.specularLighting += (iblSpecular * exposure);

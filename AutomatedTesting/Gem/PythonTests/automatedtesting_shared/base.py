@@ -78,7 +78,7 @@ class TestAutomationBase:
                 file_system.restore_backup(workspace.paths.editor_log(), workspace.paths.project_log())
             except FileNotFoundError as e:
                 self.logger.debug(f"File restoration failed, editor log could not be found.\nError: {e}")
-            editor.kill()
+            editor.stop()
 
         request.addfinalizer(teardown)
 
@@ -113,7 +113,7 @@ class TestAutomationBase:
             editor.wait(TestAutomationBase.MAX_TIMEOUT)
         except WaitTimeoutError:
             errors.append(TestRunError("TIMEOUT", f"Editor did not close after {TestAutomationBase.MAX_TIMEOUT} seconds, verify the test is ending and the application didn't freeze"))
-            editor.kill()
+            editor.stop()
             
         output = editor.get_output()
         self.logger.debug("Test output:\n" + output)

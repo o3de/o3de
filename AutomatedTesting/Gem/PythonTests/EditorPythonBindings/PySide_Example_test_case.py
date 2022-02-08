@@ -21,8 +21,7 @@ import azlmbr.bus as bus
 import azlmbr.entity as entity
 import azlmbr.editor as editor
 import azlmbr.legacy.general as general
-import editor_python_test_tools.pyside_component_utils as pysde_component_utils
-
+import editor_python_test_tools.pyside_component_utils as pyside_component_utils
 
 def PySide_Example_test_case():
     # Open level, any level should work

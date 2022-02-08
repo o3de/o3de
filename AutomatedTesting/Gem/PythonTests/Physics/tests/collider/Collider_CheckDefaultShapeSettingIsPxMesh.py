@@ -45,14 +45,15 @@ def Collider_CheckDefaultShapeSettingIsPxMesh():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
+
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
 
     PHYSICS_ASSET_INDEX = 7  # Hardcoded enum index value for Shape property
 
-    helper.init_idle()
     # 1) Load empty level
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Create an entity to hold the PhysX Shape Collider component
     collider_entity = Entity.create_editor_entity("Collider")

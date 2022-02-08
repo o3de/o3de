@@ -52,7 +52,7 @@ class TestBaseLauncher:
     def test_Kill_Unimplemented_NotImplementedError(self):
         launcher = self.test_Construct_TestDoubles_BaseLauncherCreated()
         with pytest.raises(NotImplementedError):
-            launcher.kill()
+            launcher.stop()
 
     def test_Launch_Unimplemented_NotImplementedError(self):
         launcher = self.test_Construct_TestDoubles_BaseLauncherCreated()
@@ -111,7 +111,7 @@ class TestBaseLauncher:
         with pytest.raises(NotImplementedError):
             launcher.stop()
 
-    @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.kill')
+    @mock.patch('ly_test_tools.launchers.platforms.base.Launcher._kill')
     @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.ensure_stopped')
     @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.teardown')
     def test_Stop_MockImplementedLauncher_KillTeardown(self, mock_teardown, mock_ensure, mock_kill):

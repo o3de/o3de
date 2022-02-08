@@ -499,14 +499,12 @@ void CEntityObject::AdjustLightProperties(CVarBlockPtr& properties, const char* 
         pAreaLight->SetHumanName("PlanarLight");
     }
 
-    bool bCastShadowLegacy = false;  // Backward compatibility for existing shadow casting lights
     if (IVariable* pCastShadowVarLegacy = FindVariableInSubBlock(properties, pSubBlockVar, "bCastShadow"))
     {
         pCastShadowVarLegacy->SetFlags(pCastShadowVarLegacy->GetFlags() | IVariable::UI_INVISIBLE);
         const QString zeroPrefix("0");
         if (!pCastShadowVarLegacy->GetDisplayValue().startsWith(zeroPrefix))
         {
-            bCastShadowLegacy = true;
             pCastShadowVarLegacy->SetDisplayValue(zeroPrefix);
         }
     }

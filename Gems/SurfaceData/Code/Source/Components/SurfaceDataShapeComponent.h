@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/SurfaceDataModifierRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
@@ -92,9 +93,10 @@ namespace SurfaceData
 
         // cached data
         AZStd::atomic_bool m_refresh{ false };
-        mutable AZStd::recursive_mutex m_cacheMutex;
+        mutable AZStd::shared_mutex m_cacheMutex;
         AZ::Aabb m_shapeBounds = AZ::Aabb::CreateNull();
         bool m_shapeBoundsIsValid = false;
         static const float s_rayAABBHeightPadding;
+        SurfaceTagWeights m_newPointWeights;
     };
 }

@@ -32,7 +32,7 @@ namespace AZ
             m_destAttachmentId = destAttachmentId;
 
             // Use the unique destination attachment id as scope id
-            SetScopeId(m_destAttachmentId);
+            InitScope(m_destAttachmentId);
 
             // Clear the previous attachment and copy item
             m_copyItem = {};
@@ -54,13 +54,14 @@ namespace AZ
 
         void ImageAttachmentCopy::FrameBegin(Pass::FramePrepareParams params)
         {
+            RHI::FrameGraphAttachmentInterface attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
+
             if (m_srcAttachmentId.IsEmpty())
             {
                 return;
             }
 
             // Return if the source attachment is not imported
-            RHI::FrameGraphAttachmentInterface attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
             if (!attachmentDatabase.IsAttachmentValid(m_srcAttachmentId))
             {
                 Reset();
@@ -123,7 +124,7 @@ namespace AZ
         ImageAttachmentPreviewPass::ImageAttachmentPreviewPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
-            SetScopeId(RHI::ScopeId(GetPathName()));
+            InitScope(RHI::ScopeId(GetPathName()));
         }
 
         ImageAttachmentPreviewPass::~ImageAttachmentPreviewPass()
@@ -310,13 +311,31 @@ namespace AZ
             Data::AssetBus::Handler::BusConnect(shaderAsset.GetId());
         }
 
+        void ImageAttachmentPreviewPass::BuildInternal()
+        {
+            m_updateDrawData = true;
+        }
+
         void ImageAttachmentPreviewPass::FrameBeginInternal(FramePrepareParams params)
         {
             bool scopeImported = false;
             if (!m_imageAttachmentId.IsEmpty() && m_outputColorAttachment)
             {
                 // Only import the scope if the attachment is valid
-                if (params.m_frameGraphBuilder->GetAttachmentDatabase().IsAttachmentValid(m_imageAttachmentId))
+                auto attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
+                bool isAttachmentValid = attachmentDatabase.IsAttachmentValid(m_imageAttachmentId);
+                if (!isAttachmentValid)
+                {
+                    // Import the cached copy dest image if it exists (copied)
+                    // So the attachment can be still previewed when the pass is disabled.
+                    if (m_attachmentCopy && m_attachmentCopy->m_destImage)
+                    {
+                        attachmentDatabase.ImportImage(m_attachmentCopy->m_destAttachmentId, m_attachmentCopy->m_destImage->GetRHIImage());
+                        isAttachmentValid = true;
+                    }
+                }
+
+                if (isAttachmentValid)
                 {
                     if (m_needsShaderLoad)
                     {
