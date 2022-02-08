@@ -19,14 +19,14 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform            
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                       TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME assimp-5.0.1-rev12-windows                            TARGETS assimplib                   PACKAGE_HASH 5273b7661a7a247bb18e8bc928d25c9cd1bd8ce9dfcc56c50742bac8fa02f0f2)
+ly_associate_package(PACKAGE_NAME assimp-5.1.6-rev1-windows                             TARGETS assimplib                   PACKAGE_HASH 299d8a3c70657d74af8841650538e9d083fda9356f6782416edbec0ef5a0493e)
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH a0586b006e4def65cc25f388de17dc475e417dc1e6f9d96749777c88aa8271b0)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-windows   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 803e10b94006b834cbbdd30f562a8ddf04174c2cb6956c8399ec164ef8418d1f)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-windows                    TARGETS SPIRVCross                  PACKAGE_HASH 7d601ea9d625b1d509d38bd132a1f433d7e895b16adab76bac6103567a7a6817)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-windows                            TARGETS TIFF                        PACKAGE_HASH c6000a906e6d2a0816b652e93dfbeab41c9ed73cdd5a613acd53e553d0510b60)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.16-windows                            TARGETS freetype                    PACKAGE_HASH 9809255f1c59b07875097aa8d8c6c21c97c47a31fb35e30f2bb93188e99a85ff)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev2-windows                      TARGETS AWSNativeSDK                PACKAGE_HASH 047de23fa57d33196666c22f45afc9c628bae354a6c39d774cbeee8054b2eb53)
-ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev5-windows                                TARGETS Lua                         PACKAGE_HASH 136faccf1f73891e3fa3b95f908523187792e56f5b92c63c6a6d7e72d1158d40)
+ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-windows                                TARGETS Lua                         PACKAGE_HASH 8ac853288712267ec9763be152a9274ce87b54728b8add97e2ba73c0fd5a0345)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-windows                     TARGETS PhysX                       PACKAGE_HASH 4e31a3e1f5bf3952d8af8e28d1a29f04167995a6362fc3a7c20c25f74bf01e23)
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-windows                          TARGETS mcpp                        PACKAGE_HASH 794789aba639bfe2f4e8fcb4424d679933dd6290e523084aa0a4e287ac44acb2)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows                             TARGETS mikkelsen                   PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)

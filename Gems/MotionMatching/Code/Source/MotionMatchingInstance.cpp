@@ -28,14 +28,14 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <PoseDataJointVelocities.h>
 
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
-
 namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingInstance, MotionMatchAllocator, 0)
 
     MotionMatchingInstance::~MotionMatchingInstance()
     {
+        DebugDrawRequestBus::Handler::BusDisconnect();
+
         if (m_motionInstance)
         {
             GetMotionInstancePool().Free(m_motionInstance);
@@ -58,6 +58,8 @@ namespace EMotionFX::MotionMatching
         AZ_Assert(settings.m_actorInstance, "The actor instance cannot be a nullptr.");
         AZ_Assert(settings.m_data, "The motion match data cannot be nullptr.");
 
+        DebugDrawRequestBus::Handler::BusConnect();
+
         // Update the cached pointer to the trajectory feature.
         const FeatureSchema& featureSchema = settings.m_data->GetFeatureSchema();
         for (Feature* feature : featureSchema.GetFeatures())
@@ -68,29 +70,6 @@ namespace EMotionFX::MotionMatching
                 break;
             }
         }
-
-        // Debug display initialization.
-        const auto AddDebugDisplay = [=](AZ::s32 debugDisplayId)
-        {
-            if (debugDisplayId == -1)
-            {
-                return;
-            }
-
-            AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
-            AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, debugDisplayId);
-
-            AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-            if (debugDisplay)
-            {
-                m_debugDisplays.emplace_back(debugDisplay);
-            }
-        };
-        // Draw the debug visualizations to the Animation Editor as well as the LY Editor viewport.
-        AZ::s32 animationEditorViewportId = -1;
-        EMStudio::ViewportPluginRequestBus::BroadcastResult(animationEditorViewportId, &EMStudio::ViewportPluginRequestBus::Events::GetViewportId);
-        AddDebugDisplay(animationEditorViewportId);
-        AddDebugDisplay(AzFramework::g_defaultSceneEntityDebugDisplayId);
 
         m_actorInstance = settings.m_actorInstance;
         m_data = settings.m_data;
@@ -123,30 +102,17 @@ namespace EMotionFX::MotionMatching
         m_queryFeatureValues.resize(numValuesInKdTree);
 
         // Initialize the trajectory history.
-        size_t rootJointIndex = m_actorInstance->GetActor()->GetMotionExtractionNodeIndex();
-        if (rootJointIndex == InvalidIndex32)
+        if (m_cachedTrajectoryFeature)
         {
-            rootJointIndex = 0;
-        }
-        m_trajectoryHistory.Init(*m_actorInstance->GetTransformData()->GetCurrentPose(),
-            rootJointIndex,
-            m_cachedTrajectoryFeature->GetFacingAxisDir(),
-            m_trajectorySecsToTrack);
-    }
-
-    void MotionMatchingInstance::DebugDraw()
-    {
-        if (m_data && !m_debugDisplays.empty())
-        {
-            for (AzFramework::DebugDisplayRequests* debugDisplay : m_debugDisplays)
+            size_t rootJointIndex = m_actorInstance->GetActor()->GetMotionExtractionNodeIndex();
+            if (rootJointIndex == InvalidIndex32)
             {
-                if (debugDisplay)
-                {
-                    const AZ::u32 prevState = debugDisplay->GetState();
-                    DebugDraw(*debugDisplay);
-                    debugDisplay->SetState(prevState);
-                }
+                rootJointIndex = 0;
             }
+            m_trajectoryHistory.Init(*m_actorInstance->GetTransformData()->GetCurrentPose(),
+                rootJointIndex,
+                m_cachedTrajectoryFeature->GetFacingAxisDir(),
+                m_trajectorySecsToTrack);
         }
     }
 
@@ -306,7 +272,7 @@ namespace EMotionFX::MotionMatching
     {
         AZ_PROFILE_SCOPE(Animation, "MotionMatchingInstance::Update");
 
-        if (!m_data)
+        if (!m_data || !m_motionInstance)
         {
             return;
         }
@@ -322,7 +288,7 @@ namespace EMotionFX::MotionMatching
         // Update the time. After this there is no sample for the updated time in the history as we're about to prepare this with the current update.
         m_trajectoryHistory.Update(timePassedInSeconds);
 
-        // Register the current actor instance position to the history data of the spline.
+        // Update the trajectory query control points.
         m_trajectoryQuery.Update(m_actorInstance,
             m_cachedTrajectoryFeature,
             m_trajectoryHistory,
@@ -371,8 +337,7 @@ namespace EMotionFX::MotionMatching
                 SamplePose(m_motionInstance->GetMotion(), m_queryPose, newMotionTime);
 
                 // Copy over the motion extraction joint transform from the current pose to the newly sampled pose.
-                // When sampling a motion, the motion extraction joint is in animation space, while we need the query pose to be in
-                // world space.
+                // When sampling a motion, the motion extraction joint is in animation space, while we need the query pose to be in world space.
                 // Note: This does not yet take the extraction delta from the current tick into account.
                 if (m_actorInstance->GetActor()->GetMotionExtractionNode())
                 {
@@ -433,16 +398,17 @@ namespace EMotionFX::MotionMatching
         // ImGui monitor
         {
 #ifdef IMGUI_ENABLED
-            const KdTree& kdTree = m_data->GetKdTree();
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeMemoryUsage, kdTree.CalcMemoryUsageInBytes());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumNodes, kdTree.GetNumNodes());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumDimensions, kdTree.GetNumDimensions());
-            // TODO: add memory usage for frame database
+            const FrameDatabase& frameDatabase = m_data->GetFrameDatabase();
+            ImGuiMonitorRequests::FrameDatabaseInfo frameDatabaseInfo{frameDatabase.CalcMemoryUsageInBytes(), frameDatabase.GetNumFrames(), frameDatabase.GetNumUsedMotions(), frameDatabase.GetNumFrames() / (float)frameDatabase.GetSampleRate()};
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFrameDatabaseInfo, frameDatabaseInfo);
 
+            const KdTree& kdTree = m_data->GetKdTree();
+            ImGuiMonitorRequests::KdTreeInfo kdTreeInfo{kdTree.CalcMemoryUsageInBytes(), kdTree.GetNumNodes(), kdTree.GetNumDimensions()};
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeInfo, kdTreeInfo);
+            
             const FeatureMatrix& featureMatrix = m_data->GetFeatureMatrix();
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixMemoryUsage, featureMatrix.CalcMemoryUsageInBytes());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumFrames, featureMatrix.rows());
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixNumComponents, featureMatrix.cols());
+            ImGuiMonitorRequests::FeatureMatrixInfo featureMatrixInfo{featureMatrix.CalcMemoryUsageInBytes(), static_cast<size_t>(featureMatrix.rows()), static_cast<size_t>(featureMatrix.cols())};
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetFeatureMatrixInfo, featureMatrixInfo);
 #endif
         }
     }

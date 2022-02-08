@@ -29,6 +29,19 @@ namespace AzFramework::SurfaceData
         {
         }
 
+        //! Equality comparison operator for SurfaceTagWeight.
+        bool operator==(const SurfaceTagWeight& rhs) const
+        {
+            return (m_surfaceType == rhs.m_surfaceType) && (m_weight == rhs.m_weight);
+        }
+
+        //! Inequality comparison operator for SurfaceTagWeight.
+        bool operator!=(const SurfaceTagWeight& rhs) const
+        {
+            return !(*this == rhs);
+        }
+
+
         AZ::Crc32 m_surfaceType = AZ::Crc32(Constants::s_unassignedTagName);
         float m_weight = 0.0f; //! A Value in the range [0.0f .. 1.0f]
 

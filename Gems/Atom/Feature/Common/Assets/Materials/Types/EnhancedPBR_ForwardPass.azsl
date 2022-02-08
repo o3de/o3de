@@ -243,6 +243,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
+    surface.transmission.scatterDistance = MaterialSrg::m_scatterDistance;
 
     // ------- Anisotropy -------
 
@@ -274,6 +275,17 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     lightingData.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
     lightingData.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, IN.m_uv[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
+
+    // ------- Thin Object Light Transmission -------
+
+    // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
+    lightingData.shrinkFactor = surface.transmission.transmissionParams.x;
+
+    // Angle offset for subsurface scattering through thin objects
+    lightingData.transmissionNdLBias = surface.transmission.transmissionParams.y;
+
+    // Attenuation applied to hide artifacts due to low-res shadow maps 
+    lightingData.distanceAttenuation = surface.transmission.transmissionParams.z;
 
     // ------- Clearcoat -------
     
