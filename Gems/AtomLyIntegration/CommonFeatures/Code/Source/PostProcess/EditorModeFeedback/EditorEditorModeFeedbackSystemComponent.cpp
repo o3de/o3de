@@ -74,6 +74,8 @@ namespace AZ
             auto objectId = featureProcessor->GetObjectId(*meshHandle).GetIndex();
             RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
             shaderResourceGroup->SetConstant(objectIdIndex, objectId);
+            RHI::ShaderInputNameIndex maskIdIndex = "m_maskId";
+            shaderResourceGroup->SetConstant(maskIdIndex, 1);
             shaderResourceGroup->Compile();
         }
 

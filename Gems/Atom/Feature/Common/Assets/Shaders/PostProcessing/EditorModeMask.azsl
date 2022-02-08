@@ -12,6 +12,7 @@
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
     uint m_objectId;
+    uint m_maskId;
 
     //! Returns the matrix for transforming points from Object Space to World Space.
     float4x4 GetWorldMatrix()
@@ -63,6 +64,20 @@ PixelOutput MainPS(VSOutput IN)
 {
     PixelOutput OUT;
     OUT.m_color = float4(1.,1.,1.,1.);
+
+    //const uint maskId = ObjectSrg::m_maskId;
+    //if(maskId == 0)
+    //{
+    //    OUT.m_color = float4(1.,0.,0.,1.);
+    //}
+    //else if (maskId == 1)
+    //{
+    //    OUT.m_color = float4(0.,1.,0.,1.);
+    //}
+    //else if (maskId == 2)
+    //{
+    //    OUT.m_color = float4(0.,0.,1.,1.);
+    //}
 
     return OUT;
 } 
