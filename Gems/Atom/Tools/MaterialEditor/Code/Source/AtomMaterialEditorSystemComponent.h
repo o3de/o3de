@@ -4,9 +4,9 @@
 #include <AzCore/Component/Component.h>
 #include <O3DEMaterialEditor/O3DEMaterialEditorBus.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    class MaterialEditorBrowserInteractions;
+    class AtomToolsAssetBrowserInteractions;
 }
 
 namespace AtomMaterialEditor
@@ -33,9 +33,10 @@ namespace AtomMaterialEditor
         void Deactivate() override;
 
         void RegisterAtomWindow();
+        void SetupAssetBrowserInteractions();
 
         O3DEMaterialEditor::O3DEMaterialEditorRequests::NotifyRegisterViewsEvent::Handler m_notifyRegisterViewsEventHandler;
 
-        AZStd::unique_ptr<MaterialEditor::MaterialEditorBrowserInteractions> m_materialEditorBrowserInteractions;
+        AZStd::unique_ptr<AtomToolsFramework::AtomToolsAssetBrowserInteractions> m_assetBrowserInteractions;
     };
 } // namespace MaterialEditor
