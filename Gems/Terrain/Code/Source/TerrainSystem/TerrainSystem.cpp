@@ -462,8 +462,7 @@ AZStd::shared_ptr<TerrainSystem::TerrainJobContext> TerrainSystem::CreateNewTerr
 {
     // Create a new cancel group as a child of the default one so that cancelling
     // the default one will result in the cancellation of all terrain related jobs.
-    AZ::JobCancelGroup terrainJobCancelGroup(&m_defaultTerrainJobCancelGroup);
-    return AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager, terrainJobCancelGroup);
+    return AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager, m_defaultTerrainJobCancelGroup);
 }
 
 void TerrainSystem::ProcessHeightsFromListAsync(const AZStd::span<AZ::Vector3>& inPositions,
@@ -471,8 +470,16 @@ void TerrainSystem::ProcessHeightsFromListAsync(const AZStd::span<AZ::Vector3>& 
     Sampler sampleFilter,
     AZStd::shared_ptr<ProcessAsyncParams> params) const
 {
-    ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampleFilter, params);
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const AZ::Vector3& position,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position = position;
+        surfacePoint.m_position.SetZ(GetHeight(position, sampleFilter, &terrainExists));
+    };
+
+    ProcessFromListAsync(perSurfacePointFunction, inPositions, perPositionCallback, sampleFilter, params);
 }
 
 void TerrainSystem::ProcessNormalsFromListAsync(const AZStd::span<AZ::Vector3>& inPositions,
@@ -480,8 +487,16 @@ void TerrainSystem::ProcessNormalsFromListAsync(const AZStd::span<AZ::Vector3>& 
     Sampler sampleFilter,
     AZStd::shared_ptr<ProcessAsyncParams> params) const
 {
-    ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampleFilter, params);
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const AZ::Vector3& position,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position = position;
+        surfacePoint.m_normal = GetNormal(position, sampleFilter, &terrainExists);
+    };
+
+    ProcessFromListAsync(perSurfacePointFunction, inPositions, perPositionCallback, sampleFilter, params);
 }
 
 void TerrainSystem::ProcessSurfaceWeightsFromListAsync(const AZStd::span<AZ::Vector3>& inPositions,
@@ -489,8 +504,16 @@ void TerrainSystem::ProcessSurfaceWeightsFromListAsync(const AZStd::span<AZ::Vec
     Sampler sampleFilter,
     AZStd::shared_ptr<ProcessAsyncParams> params) const
 {
-    ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampleFilter, params);
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const AZ::Vector3& position,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position = position;
+        GetSurfaceWeights(position, surfacePoint.m_surfaceTags, sampleFilter, &terrainExists);
+    };
+
+    ProcessFromListAsync(perSurfacePointFunction, inPositions, perPositionCallback, sampleFilter, params);
 }
 
 void TerrainSystem::ProcessSurfacePointsFromListAsync(const AZStd::span<AZ::Vector3>& inPositions,
@@ -498,8 +521,16 @@ void TerrainSystem::ProcessSurfacePointsFromListAsync(const AZStd::span<AZ::Vect
     Sampler sampleFilter,
     AZStd::shared_ptr<ProcessAsyncParams> params) const
 {
-    ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromList, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampleFilter, params);
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const AZ::Vector3& position,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position = position;
+        GetSurfacePoint(position, surfacePoint, sampleFilter, &terrainExists);
+    };
+
+    ProcessFromListAsync(perSurfacePointFunction, inPositions, perPositionCallback, sampleFilter, params);
 }
 
 void TerrainSystem::ProcessHeightsFromListOfVector2Async(const AZStd::span<AZ::Vector2>& inPositions,
@@ -507,8 +538,16 @@ void TerrainSystem::ProcessHeightsFromListOfVector2Async(const AZStd::span<AZ::V
     Sampler sampleFilter,
     AZStd::shared_ptr<ProcessAsyncParams> params) const
 {
-    ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessHeightsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampleFilter, params);
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const AZ::Vector2& position,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
+        surfacePoint.m_position.SetZ(GetHeightFromVector2(position, sampleFilter, &terrainExists));
+    };
+
+    ProcessFromListAsync(perSurfacePointFunction, inPositions, perPositionCallback, sampleFilter, params);
 }
 
 void TerrainSystem::ProcessNormalsFromListOfVector2Async(const AZStd::span<AZ::Vector2>& inPositions,
@@ -516,8 +555,16 @@ void TerrainSystem::ProcessNormalsFromListOfVector2Async(const AZStd::span<AZ::V
     Sampler sampleFilter,
     AZStd::shared_ptr<ProcessAsyncParams> params) const
 {
-    ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessNormalsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampleFilter, params);
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const AZ::Vector2& position,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
+        surfacePoint.m_normal = GetNormalFromVector2(position, sampleFilter, &terrainExists);
+    };
+
+    ProcessFromListAsync(perSurfacePointFunction, inPositions, perPositionCallback, sampleFilter, params);
 }
 
 void TerrainSystem::ProcessSurfaceWeightsFromListOfVector2Async(const AZStd::span<AZ::Vector2>& inPositions,
@@ -525,8 +572,16 @@ void TerrainSystem::ProcessSurfaceWeightsFromListOfVector2Async(const AZStd::spa
     Sampler sampleFilter,
     AZStd::shared_ptr<ProcessAsyncParams> params) const
 {
-    ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfaceWeightsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampleFilter, params);
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const AZ::Vector2& position,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
+        GetSurfaceWeightsFromVector2(position, surfacePoint.m_surfaceTags, sampleFilter, &terrainExists);
+    };
+
+    ProcessFromListAsync(perSurfacePointFunction, inPositions, perPositionCallback, sampleFilter, params);
 }
 
 void TerrainSystem::ProcessSurfacePointsFromListOfVector2Async(const AZStd::span<AZ::Vector2>& inPositions,
@@ -534,8 +589,16 @@ void TerrainSystem::ProcessSurfacePointsFromListOfVector2Async(const AZStd::span
     Sampler sampleFilter,
     AZStd::shared_ptr<ProcessAsyncParams> params) const
 {
-    ProcessFromListAsync(AZStd::bind(&TerrainSystem::ProcessSurfacePointsFromListOfVector2, this, AZStd::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        inPositions, perPositionCallback, sampleFilter, params);
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const AZ::Vector2& position,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position.Set(position.GetX(), position.GetY(), 0.0f);
+        GetSurfacePointFromVector2(position, surfacePoint, sampleFilter, &terrainExists);
+    };
+
+    ProcessFromListAsync(perSurfacePointFunction, inPositions, perPositionCallback, sampleFilter, params);
 }
 
 AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const

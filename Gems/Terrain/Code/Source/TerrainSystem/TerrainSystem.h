@@ -228,9 +228,9 @@ namespace Terrain
             AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
 
     private:
-        template<typename SynchronousFunctionType, typename VectorType>
+        template<typename PerSurfacePointFunctionType, typename VectorType>
         void ProcessFromListAsync(
-            SynchronousFunctionType synchronousFunction,
+            PerSurfacePointFunctionType perSurfacePointFunction,
             const AZStd::span<VectorType>& inPositions,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampleFilter = Sampler::DEFAULT,
@@ -285,13 +285,18 @@ namespace Terrain
         AZStd::unique_ptr<TerrainJobContext> m_defaultTerrainJobContext = nullptr;
     };
 
-    template<typename SynchronousFunctionType, typename VectorType>
-    inline void TerrainSystem::ProcessFromListAsync(SynchronousFunctionType synchronousFunction,
+    template<typename PerSurfacePointFunctionType, typename VectorType>
+    inline void TerrainSystem::ProcessFromListAsync(PerSurfacePointFunctionType perSurfacePointFunction,
         const AZStd::span<VectorType>& inPositions,
         AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
         Sampler sampleFilter,
         AZStd::shared_ptr<ProcessAsyncParams> params) const
     {
+        if (!perPositionCallback)
+        {
+            return;
+        }
+
         // Determine the number of jobs to split the work into based on:
         // 1. The number of available worker threads.
         // 2. The desired number of jobs as passed in.
@@ -317,6 +322,11 @@ namespace Terrain
             return;
         }
 
+        // Determine the desired terrain job context so the jobs can be cancelled.
+        TerrainJobContext* jobContext = (params && params->m_terrainJobContext) ?
+                                        params->m_terrainJobContext.get() :
+                                        m_defaultTerrainJobContext.get();
+
         // Split the work across multiple jobs.
         const int32_t numPositionsPerJob = numPositionsToProcess / numJobs;
         AZStd::shared_ptr<AZStd::atomic_int> numJobCompletionsRemaining = AZStd::make_shared<AZStd::atomic_int>(numJobs);
@@ -329,21 +339,30 @@ namespace Terrain
 
             // Define the job function using the sub span of positions to process.
             const AZStd::span<VectorType>& positionsToProcess = inPositions.subspan(subSpanOffset, subSpanCount);
-            auto jobFunction = [synchronousFunction, positionsToProcess, perPositionCallback, sampleFilter, params, numJobCompletionsRemaining]()
+            auto jobFunction = [=]()
             {
                 // Process the sub span of positions, decrement the number of completions remaining,
                 // and invoke the completion callback if this happens to be the final job completed.
-                synchronousFunction(positionsToProcess, perPositionCallback, sampleFilter);
+                AzFramework::SurfaceData::SurfacePoint surfacePoint;
+                for (const auto& position : positionsToProcess)
+                {
+                    if (jobContext && jobContext->IsCancelled())
+                    {
+                        // Break out of the loop if the associated job context has been cancelled.
+                        break;
+                    }
+
+                    bool terrainExists = false;
+                    perSurfacePointFunction(surfacePoint, position, sampleFilter, terrainExists);
+                    perPositionCallback(surfacePoint, terrainExists);
+                }
                 if (--(*numJobCompletionsRemaining) == 0 && params && params->m_completionCallback)
                 {
                     params->m_completionCallback(params->m_terrainJobContext);
                 }
             };
 
-            // Create the job using the desired terrain job context and start it immediately.
-            TerrainJobContext* jobContext = (params && params->m_terrainJobContext) ?
-                                            params->m_terrainJobContext.get() :
-                                            m_defaultTerrainJobContext.get();
+            // Create the job and start it immediately.
             AZ::Job* processJob = AZ::CreateJobFunction(jobFunction, true, jobContext);
             processJob->Start();
         }

@@ -197,15 +197,24 @@ namespace AzFramework
 
             //! A JobContext used to run jobs spawned by calls to the various Process*Async functions.
             //! Instances of this class should only be created by calling CreateNewTerrainJobContext,
+            //! or by using the same JobManager as a previously created TerrainJobContext along with
+            //! a parent JobCancelGroup that is owned by another previously created TerrainJobContext,
             //! and the only practical use for it is to cancel all Process*Async calls made using it.
             class TerrainJobContext : public AZ::JobContext
             {
             public:
-                TerrainJobContext(AZ::JobManager& jobManager, AZ::JobCancelGroup& cancelGroup)
-                    : JobContext(jobManager, cancelGroup) {}
+                TerrainJobContext(AZ::JobManager& jobManager, AZ::JobCancelGroup& parentCancelGroup)
+                    : JobContext(jobManager)
+                    , m_terrainJobCancelGroup(&parentCancelGroup)
+                {
+                    SetCancelGroup(&m_terrainJobCancelGroup);
+                }
 
-                void Cancel() { GetCancelGroup()->Cancel(); }
-                bool IsCancelled() const { return GetCancelGroup()->IsCancelled(); }
+                void Cancel() { m_terrainJobCancelGroup.Cancel(); }
+                bool IsCancelled() const { return m_terrainJobCancelGroup.IsCancelled(); }
+
+            private:
+                AZ::JobCancelGroup m_terrainJobCancelGroup;
             };
 
             //! Alias for an optional callback function to invoke when the various Process*Async functions complete.
