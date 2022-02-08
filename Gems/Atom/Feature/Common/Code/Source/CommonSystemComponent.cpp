@@ -48,6 +48,7 @@
 #include <PostProcessing/EditorModeMaskPass.h>
 #include <PostProcessing/EditorModeDesaturationPass.h>
 #include <PostProcessing/EditorModeBlurPass.h>
+#include <PostProcessing/EditorModeOutlinePass.h>
 #include <PostProcessing/DepthUpsamplePass.h>
 #include <PostProcessing/DepthOfFieldCompositePass.h>
 #include <PostProcessing/DepthOfFieldBokehBlurPass.h>
@@ -234,6 +235,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("EditorModeMaskPass"), &EditorModeMaskPass::Create);
             passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
             passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
+            passSystem->AddPassCreator(Name("EditorModeOutlinePass"), &EditorModeOutlinePass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
             passSystem->AddPassCreator(Name("LutGenerationPass"), &LutGenerationPass::Create);

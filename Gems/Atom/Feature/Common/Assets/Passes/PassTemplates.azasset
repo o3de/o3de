@@ -569,6 +569,10 @@
                 "Path": "Passes/EditorModeFeedbackParent.pass"
             },
             {
+                "Name": "EditorModeMaskTemplate",
+                "Path": "Passes/EditorModeMask.pass"
+            },
+            {
                 "Name": "EditorModeDesaturationTemplate",
                 "Path": "Passes/EditorModeDesaturation.pass"
             },
@@ -577,8 +581,8 @@
                 "Path": "Passes/EditorModeBlur.pass"
             },
             {
-                "Name": "EditorModeMaskTemplate",
-                "Path": "Passes/EditorModeMask.pass"
+                "Name": "EditorModeOutlineTemplate",
+                "Path": "Passes/EditorModeOutline.pass"
             },
             {
                 "Name": "LutGenerationTemplate",

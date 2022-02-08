@@ -96,6 +96,7 @@ set(FILES
     Passes/EditorModeMask.pass
     Passes/EditorModeDesaturation.pass
     Passes/EditorModeBlur.pass
+    Passes/EditorModeOutline.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -452,6 +453,8 @@ set(FILES
     Shaders/PostProcessing/EditorModeDesaturation.shader
     Shaders/PostProcessing/EditorModeBlur.azsl
     Shaders/PostProcessing/EditorModeBlur.shader
+    Shaders/PostProcessing/EditorModeOutline.azsl
+    Shaders/PostProcessing/EditorModeOutline.shader
     Shaders/PostProcessing/LookModificationTransform.azsl
     Shaders/PostProcessing/LookModificationTransform.shader
     Shaders/PostProcessing/LuminanceHeatmap.azsl
