@@ -9,6 +9,7 @@
 #include <AzCore/DOM/DomPatch.h>
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/DOM/DomValue.h>
+#include <AzCore/DOM/DomComparison.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <Tests/DOM/DomFixtures.h>
