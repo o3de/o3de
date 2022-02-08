@@ -617,7 +617,6 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     def test_ExecEditorTest_TestFails_ReturnsFail(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                      mock_retrieve_log, mock_retrieve_editor_log,
@@ -647,7 +646,6 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     def test_ExecEditorTest_TestCrashes_ReturnsCrash(self, mock_cycle_crash, mock_get_testcase_filepath,
@@ -737,7 +735,6 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     def test_ExecEditorMultitest_OneFailure_CallsCorrectFunc(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                            mock_retrieve_log, mock_retrieve_editor_log, mock_get_results):
@@ -764,7 +761,6 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     def test_ExecEditorMultitest_OneCrash_ReportsOnUnknownResult(self, mock_cycle_crash, mock_get_testcase_filepath,
@@ -802,7 +798,6 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     def test_ExecEditorMultitest_ManyUnknown_ReportsUnknownResults(self, mock_cycle_crash, mock_get_testcase_filepath,
@@ -876,6 +871,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._report_result')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._exec_editor_test')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunSingleTest_ValidTest_ReportsResults(self, mock_setup_test, mock_exec_editor_test, mock_report_result):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_test_data = mock.MagicMock()
@@ -908,6 +904,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelTests_TwoTestsAndEditors_TwoThreads(self, mock_setup_test, mock_get_num_editors, mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_get_num_editors.return_value = 2
@@ -924,6 +921,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelTests_TenTestsAndTwoEditors_TenThreads(self, mock_setup_test, mock_get_num_editors, mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_get_num_editors.return_value = 2
@@ -942,6 +940,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelTests_TenTestsAndThreeEditors_TenThreads(self, mock_setup_test, mock_get_num_editors,
                                                                  mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -961,6 +960,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelBatchedTests_TwoTestsAndEditors_TwoThreads(self, mock_setup_test, mock_get_num_editors,
                                                                    mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -978,6 +978,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelBatchedTests_TenTestsAndTwoEditors_2Threads(self, mock_setup_test, mock_get_num_editors,
                                                                       mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -997,6 +998,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelBatchedTests_TenTestsAndThreeEditors_ThreeThreads(self, mock_setup_test, mock_get_num_editors,
                                                                         mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()

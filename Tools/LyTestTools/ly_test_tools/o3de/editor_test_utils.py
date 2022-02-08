@@ -167,7 +167,10 @@ def save_failed_asset_joblogs(workspace: AbstractWorkspace) -> None:
             full_log_path = os.path.join(walk_tuple[0], log_file)
             # Only save asset logs that contain errors or warnings
             if _check_log_errors_warnings(full_log_path):
-                workspace.artifact_manager.save_artifact(full_log_path)
+                try:
+                    workspace.artifact_manager.save_artifact(full_log_path)
+                except Exception as e:  # Purposefully broad
+                    logger.warning(e)
 
 def _check_log_errors_warnings(log_path: str) -> bool:
     """
