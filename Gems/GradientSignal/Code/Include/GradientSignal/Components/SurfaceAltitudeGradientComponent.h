@@ -107,9 +107,8 @@ namespace GradientSignal
         void AddTag(AZStd::string tag) override;
 
     private:
-        static float CalculateAltitudeRatio(const SurfaceData::SurfacePointList& points, float altitudeMin, float altitudeMax)
+        static float CalculateAltitudeRatio(const SurfaceData::SurfacePointList& points, size_t inPositionIndex, float altitudeMin, float altitudeMax)
         {
-            constexpr size_t inPositionIndex = 0;
             if (points.IsEmpty(inPositionIndex))
             {
                 return 0.0f;
@@ -127,5 +126,10 @@ namespace GradientSignal
         SurfaceAltitudeGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         AZStd::atomic_bool m_dirty{ false };
+
+        // m_surfacePointList exists here because it will more efficiently reuse memory across GetValue() calls if it stays constructed.
+        // The mutex exists to ensure that we don't try to use it from GetValue() in multiple threads at once.
+        mutable AZStd::recursive_mutex m_surfacePointListMutex;
+        mutable SurfaceData::SurfacePointList m_surfacePointList;
     };
 }

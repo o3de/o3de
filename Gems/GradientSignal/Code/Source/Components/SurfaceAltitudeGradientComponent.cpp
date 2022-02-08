@@ -202,13 +202,18 @@ namespace GradientSignal
 
     float SurfaceAltitudeGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        // For GetValue(), we reuse our SurfacePointList for the GetSurfacePoints query to avoid the repeated cost of memory allocation
+        // and deallocation across GetValue() calls. However, this also means we can only use it from one thread at a time, so lock a
+        // mutex to ensure no other threads call GetValue() at the same time.
+        AZStd::unique_lock<decltype(m_surfacePointListMutex)> surfacePointLock(m_surfacePointListMutex);
+
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
-        SurfaceData::SurfacePointList points;
         SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints,
-            sampleParams.m_position, m_configuration.m_surfaceTagsToSample, points);
+            sampleParams.m_position, m_configuration.m_surfaceTagsToSample, m_surfacePointList);
 
-        return CalculateAltitudeRatio(points, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
+        constexpr size_t inPositionIndex = 0;
+        return CalculateAltitudeRatio(m_surfacePointList, inPositionIndex, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
     }
 
     void SurfaceAltitudeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
@@ -231,12 +236,11 @@ namespace GradientSignal
                 valuesFound = true;
                 SurfaceData::SurfacePointList points;
 
+                surfaceDataRequests->GetSurfacePointsFromList(positions, m_configuration.m_surfaceTagsToSample, points);
                 // For each position, call GetSurfacePoints() and turn the height into a 0-1 value based on our min/max altitudes.
                 for (size_t index = 0; index < positions.size(); index++)
                 {
-                    points.Clear();
-                    surfaceDataRequests->GetSurfacePoints(positions[index], m_configuration.m_surfaceTagsToSample, points);
-                    outValues[index] = CalculateAltitudeRatio(points, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
+                    outValues[index] = CalculateAltitudeRatio(points, index, m_configuration.m_altitudeMin, m_configuration.m_altitudeMax);
                 }
             });
 
