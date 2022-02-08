@@ -269,14 +269,13 @@ namespace SurfaceData
 
         AZStd::span<const AZ::Vector3> m_inputPositions;
         mutable size_t m_lastInputPositionIndex = 0;
-        mutable size_t m_lastSurfacePointStartIndex = 0;
+
+        AZStd::vector<size_t> m_numSurfacePointsPerInput;
 
         // These are kept in separate parallel vectors instead of a single struct so that it's possible to pass just specific data
         // "channels" into other methods as span<> without having to pass the full struct into the span<>. Specifically, we want to be
         // able to pass spans of the positions down through nesting gradient/surface calls.
         // A side benefit is that profiling showed the data access to be faster than packing all the fields into a single struct.
-        AZStd::vector<size_t> m_sortedOutputIndexList;
-
         AZStd::vector<size_t> m_inputPositionIndex;
         AZStd::vector<AZ::EntityId> m_surfaceCreatorIdList;
         AZStd::vector<AZ::Vector3> m_surfacePositionList;
@@ -285,6 +284,7 @@ namespace SurfaceData
 
         AZ::Aabb m_surfacePointBounds = AZ::Aabb::CreateNull();
         size_t m_inputPositionSize = 0;
+        size_t m_maxSurfacePointsPerInput = 0;
     };
 
     struct SurfaceDataRegistryEntry
