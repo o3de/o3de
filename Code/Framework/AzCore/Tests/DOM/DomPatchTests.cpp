@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/DOM/DomPatch.h>
+#include <AzCore/DOM/DomComparison.h>
 #include <Tests/DOM/DomFixtures.h>
 
 namespace AZ::Dom::Tests
@@ -45,9 +46,9 @@ namespace AZ::Dom::Tests
             DomTestFixture::TearDown();
         }
 
-        PatchInfo GenerateAndVerifyDelta()
+        PatchUndoRedoInfo GenerateAndVerifyDelta()
         {
-            PatchInfo info = GenerateHierarchicalDeltaPatch(m_dataset, m_deltaDataset);
+            PatchUndoRedoInfo info = GenerateHierarchicalDeltaPatch(m_dataset, m_deltaDataset);
 
             auto result = info.m_forwardPatches.Apply(m_dataset);
             EXPECT_TRUE(result.IsSuccess());

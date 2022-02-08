@@ -71,7 +71,8 @@ namespace AZ::Dom
         Value GetDomRepresentation() const;
         static AZ::Outcome<PatchOperation, AZStd::string> CreateFromDomRepresentation(Value domValue);
 
-        AZ::Outcome<PatchOperation, AZStd::string> GetInverse(Value stateBeforeApplication) const;
+        using InversePatches = AZStd::fixed_vector<PatchOperation, 2>;
+        AZ::Outcome<AZStd::fixed_vector<PatchOperation, 2>, AZStd::string> GetInverse(Value stateBeforeApplication) const;
 
         enum class ExistenceCheckFlags : AZ::u8
         {
@@ -182,27 +183,4 @@ namespace AZ::Dom
     private:
         OperationsContainer m_operations;
     };
-
-    //! A set of patches for applying a change and doing the inverse operation (i.e. undoing it).
-    struct PatchInfo
-    {
-        Patch m_forwardPatches;
-        Patch m_inversePatches;
-    };
-
-    //! Parameters for GenerateHierarchicalDeltaPatch.
-    struct DeltaPatchGenerationParameters
-    {
-        static constexpr size_t NoReplace = AZStd::numeric_limits<size_t>::max();
-        static constexpr size_t AlwaysFullReplace = 0;
-
-        //! The threshold of changed values in a node or array which, if exceeded, will cause the generation to create an
-        //! entire "replace" oepration instead. If set to NoReplace, no replacement will occur.
-        size_t m_replaceThreshold = 3;
-    };
-
-    //! Generates a set of patches such that m_forwardPatches.Apply(beforeState) shall produce a document equivalent to afterState, and
-    //! a subsequent m_inversePatches.Apply(beforeState) shall produce the original document. This patch generation strategy does a
-    //! hierarchical comparison and is not guaranteed to create the minimal set of patches required to transform between the two states.
-    PatchInfo GenerateHierarchicalDeltaPatch(const Value& beforeState, const Value& afterState, const DeltaPatchGenerationParameters& params = {});
 } // namespace AZ::Dom

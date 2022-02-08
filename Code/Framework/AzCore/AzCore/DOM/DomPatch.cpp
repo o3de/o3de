@@ -8,8 +8,6 @@
 
 #include <AzCore/DOM/DomPatch.h>
 #include <AzCore/DOM/DomUtils.h>
-#include <AzCore/std/containers/queue.h>
-#include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ::Dom
 {
@@ -297,7 +295,7 @@ namespace AZ::Dom
         }
     }
 
-    AZ::Outcome<PatchOperation, AZStd::string> PatchOperation::GetInverse(Value stateBeforeApplication) const
+    AZ::Outcome<AZStd::fixed_vector<PatchOperation, 2>, AZStd::string> PatchOperation::GetInverse(Value stateBeforeApplication) const
     {
         switch (m_type)
         {
@@ -310,10 +308,10 @@ namespace AZ::Dom
                     const Value* existingValue = stateBeforeApplication.FindChild(m_domPath);
                     if (existingValue != nullptr)
                     {
-                        return AZ::Success(PatchOperation::ReplaceOperation(m_domPath, *existingValue));
+                        return AZ::Success<InversePatches>({PatchOperation::ReplaceOperation(m_domPath, *existingValue)});
                     }
                 }
-                return AZ::Success(PatchOperation::RemoveOperation(m_domPath));
+                return AZ::Success<InversePatches>({PatchOperation::RemoveOperation(m_domPath)});
             }
         case Type::Remove:
             {
@@ -325,7 +323,7 @@ namespace AZ::Dom
                     m_domPath.AppendToString(errorMessage);
                     return AZ::Failure(AZStd::move(errorMessage));
                 }
-                return AZ::Success(PatchOperation::AddOperation(m_domPath, *existingValue));
+                return AZ::Success<InversePatches>({PatchOperation::AddOperation(m_domPath, *existingValue)});
             }
         case Type::Replace:
             {
@@ -337,7 +335,7 @@ namespace AZ::Dom
                     m_domPath.AppendToString(errorMessage);
                     return AZ::Failure(AZStd::move(errorMessage));
                 }
-                return AZ::Success(PatchOperation::ReplaceOperation(m_domPath, *existingValue));
+                return AZ::Success<InversePatches>({PatchOperation::ReplaceOperation(m_domPath, *existingValue)});
             }
         case Type::Copy:
             {
@@ -349,40 +347,37 @@ namespace AZ::Dom
                     m_domPath.AppendToString(errorMessage);
                     return AZ::Failure(AZStd::move(errorMessage));
                 }
-                return AZ::Success(PatchOperation::ReplaceOperation(m_domPath, *existingValue));
+                return AZ::Success<InversePatches>({PatchOperation::ReplaceOperation(m_domPath, *existingValue)});
             }
         case Type::Move:
             {
-                // Move -> Replace, using the common ancestor of the two paths as the replacement
-                // This is not a minimal inverse, which would be two replace operations at each path
-                const Path& destPath = m_domPath;
-                const Path& sourcePath = GetSourcePath();
-
-                Path commonAncestor;
-                for (size_t i = 0; i < destPath.Size() && i < sourcePath.Size(); ++i)
+                const Value* sourceValue = stateBeforeApplication.FindChild(GetSourcePath());
+                if (sourceValue == nullptr)
                 {
-                    if (destPath[i] != sourcePath[i])
-                    {
-                        break;
-                    }
-
-                    commonAncestor.Push(destPath[i]);
-                }
-
-                const Value* existingValue = stateBeforeApplication.FindChild(commonAncestor);
-                if (existingValue == nullptr)
-                {
-                    AZStd::string errorMessage = "Unable to invert DOM copy patch, common ancestor path not found: ";
-                    commonAncestor.AppendToString(errorMessage);
+                    AZStd::string errorMessage = "Unable to invert DOM copy patch, source path not found: ";
+                    m_domPath.AppendToString(errorMessage);
                     return AZ::Failure(AZStd::move(errorMessage));
                 }
-                return AZ::Success(PatchOperation::ReplaceOperation(commonAncestor, *existingValue));
+
+                // If there was a value at the destination path, invert with an add / replace
+                const Value* destinationValue = stateBeforeApplication.FindChild(GetDestinationPath());
+                if (destinationValue != nullptr)
+                {
+                    InversePatches result({PatchOperation::AddOperation(GetSourcePath(), *sourceValue)});
+                    result.push_back(PatchOperation::ReplaceOperation(GetDestinationPath(), *destinationValue));
+                    return AZ::Success<InversePatches>({
+                        PatchOperation::AddOperation(GetSourcePath(), *sourceValue),
+                        PatchOperation::ReplaceOperation(GetDestinationPath(), *destinationValue),
+                    });
+                }
+                // Otherwise, just do a move
+                return AZ::Success<InversePatches>({PatchOperation::MoveOperation(GetDestinationPath(), GetSourcePath())});
             }
         case Type::Test:
             {
                 // Test -> Test (no change)
                 // When inverting a sequence of patches, applying them in reverse order should allow the test to continue to succeed
-                return AZ::Success(*this);
+                return AZ::Success<InversePatches>({*this});
             }
         }
         return AZ::Failure<AZStd::string>("Unable to invert DOM patch, unknown type specified");
@@ -800,169 +795,5 @@ namespace AZ::Dom
     PatchOperation PatchOperation::TestOperation(Path testPath, Value value)
     {
         return PatchOperation(AZStd::move(testPath), PatchOperation::Type::Test, AZStd::move(value));
-    }
-
-    PatchInfo GenerateHierarchicalDeltaPatch(
-        const Value& beforeState, const Value& afterState, const DeltaPatchGenerationParameters& params)
-    {
-        PatchInfo patches;
-
-        auto AddPatch = [&patches](PatchOperation op, PatchOperation inverse)
-        {
-            patches.m_forwardPatches.PushBack(AZStd::move(op));
-            patches.m_inversePatches.PushFront(AZStd::move(inverse));
-        };
-
-        AZStd::function<void(const Path&, const Value&, const Value&)> compareValues;
-
-        struct PendingComparison
-        {
-            Path m_path;
-            const Value& m_before;
-            const Value& m_after;
-
-            PendingComparison(Path path, const Value& before, const Value& after)
-                : m_path(AZStd::move(path))
-                , m_before(before)
-                , m_after(after)
-            {
-            }
-        };
-        AZStd::queue<PendingComparison> entriesToCompare;
-
-        AZStd::unordered_set<AZ::Name::Hash> desiredKeys;
-        auto compareObjects = [&](const Path& path, const Value& before, const Value& after)
-        {
-            desiredKeys.clear();
-            Path subPath = path;
-            for (auto it = after.MemberBegin(); it != after.MemberEnd(); ++it)
-            {
-                desiredKeys.insert(it->first.GetHash());
-                subPath.Push(it->first);
-                auto beforeIt = before.FindMember(it->first);
-                if (beforeIt == before.MemberEnd())
-                {
-                    AddPatch(PatchOperation::AddOperation(subPath, it->second), PatchOperation::RemoveOperation(subPath));
-                }
-                else
-                {
-                    entriesToCompare.emplace(subPath, beforeIt->second, it->second);
-                }
-                subPath.Pop();
-            }
-
-            for (auto it = before.MemberBegin(); it != before.MemberEnd(); ++it)
-            {
-                if (!desiredKeys.contains(it->first.GetHash()))
-                {
-                    subPath.Push(it->first);
-                    AddPatch(PatchOperation::RemoveOperation(subPath), PatchOperation::AddOperation(subPath, it->second));
-                    subPath.Pop();
-                }
-            }
-        };
-
-        auto compareArrays = [&](const Path& path, const Value& before, const Value& after)
-        {
-            const size_t beforeSize = before.ArraySize();
-            const size_t afterSize = after.ArraySize();
-
-            // If more than replaceThreshold values differ, do a replace operation instead
-            if (params.m_replaceThreshold != DeltaPatchGenerationParameters::NoReplace)
-            {
-                size_t changedValueCount = 0;
-                const size_t entriesToEnumerate = AZStd::min(beforeSize, afterSize);
-                for (size_t i = 0; i < entriesToEnumerate; ++i)
-                {
-                    if (before[i] != after[i])
-                    {
-                        ++changedValueCount;
-                        if (changedValueCount >= params.m_replaceThreshold)
-                        {
-                            AddPatch(PatchOperation::ReplaceOperation(path, after), PatchOperation::ReplaceOperation(path, before));
-                            return;
-                        }
-                    }
-                }
-            }
-
-            Path subPath = path;
-            for (size_t i = 0; i < afterSize; ++i)
-            {
-                if (i >= beforeSize)
-                {
-                    subPath.Push(PathEntry(PathEntry::EndOfArrayIndex));
-                    AddPatch(PatchOperation::AddOperation(subPath, after[i]), PatchOperation::RemoveOperation(subPath));
-                    subPath.Pop();
-                }
-                else
-                {
-                    subPath.Push(PathEntry(i));
-                    entriesToCompare.emplace(subPath, before[i], after[i]);
-                    subPath.Pop();
-                }
-            }
-
-            if (beforeSize > afterSize)
-            {
-                subPath.Push(PathEntry(PathEntry::EndOfArrayIndex));
-                for (size_t i = beforeSize; i > afterSize; --i)
-                {
-                    AddPatch(PatchOperation::RemoveOperation(subPath), PatchOperation::AddOperation(subPath, before[i - 1]));
-                }
-            }
-        };
-
-        auto compareNodes = [&](const Path& path, const Value& before, const Value& after)
-        {
-            if (before.GetNodeName() != after.GetNodeName())
-            {
-                AddPatch(PatchOperation::ReplaceOperation(path, after), PatchOperation::ReplaceOperation(path, before));
-            }
-            else
-            {
-                compareObjects(path, before, after);
-                compareArrays(path, before, after);
-            }
-        };
-
-        compareValues = [&](const Path& path, const Value& before, const Value& after)
-        {
-            if (before.GetType() != after.GetType())
-            {
-                AddPatch(PatchOperation::ReplaceOperation(path, after), PatchOperation::ReplaceOperation(path, before));
-            }
-            else if (before == after)
-            {
-                // If a shallow comparison succeeds we're pointing to an identical value or container
-                // and don't need to drill down.
-                return;
-            }
-            else if (before.IsObject())
-            {
-                compareObjects(path, before, after);
-            }
-            else if (before.IsArray())
-            {
-                compareArrays(path, before, after);
-            }
-            else if (before.IsNode())
-            {
-                compareNodes(path, before, after);
-            }
-            else
-            {
-                AddPatch(PatchOperation::ReplaceOperation(path, after), PatchOperation::ReplaceOperation(path, before));
-            }
-        };
-
-        entriesToCompare.emplace(Path(), beforeState, afterState);
-        while (!entriesToCompare.empty())
-        {
-            PendingComparison& comparison = entriesToCompare.front();
-            compareValues(comparison.m_path, comparison.m_before, comparison.m_after);
-            entriesToCompare.pop();
-        }
-        return patches;
     }
 } // namespace AZ::Dom
