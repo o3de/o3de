@@ -51,7 +51,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 122; // nested property layers
+            materialBuilderDescriptor.m_version = 123; // nested property layers
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -125,33 +125,6 @@ namespace AZ
                         jobDependencies.push_back(jobDependency);
                     }
                 }
-            }
-        }
-
-        template<typename MaterialSourceDataT>
-        AZ::Outcome<MaterialSourceDataT> LoadSourceData(const rapidjson::Value& value, const AZStd::string& filePath)
-        {
-            MaterialSourceDataT material;
-
-            JsonDeserializerSettings settings;
-
-            JsonReportingHelper reportingHelper;
-            reportingHelper.Attach(settings);
-
-            JsonSerialization::Load(material, value, settings);
-
-            if (reportingHelper.ErrorsReported())
-            {
-                return AZ::Failure();
-            }
-            else if (reportingHelper.WarningsReported())
-            {
-                AZ_Error(MaterialBuilderName, false, "Warnings reported while loading '%s'", filePath.c_str());
-                return AZ::Failure();
-            }
-            else
-            {
-                return AZ::Success(AZStd::move(material));
             }
         }
 
@@ -297,7 +270,7 @@ namespace AZ
         
         AZ::Data::Asset<MaterialAsset> MaterialBuilder::CreateMaterialAsset(AZStd::string_view materialSourceFilePath, const rapidjson::Value& json) const
         {
-            auto material = LoadSourceData<MaterialSourceData>(json, materialSourceFilePath);
+            auto material = MaterialUtils::LoadMaterialSourceData(materialSourceFilePath, &json, true);
 
             if (!material.IsSuccess())
             {
