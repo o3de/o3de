@@ -35,6 +35,15 @@ namespace EMotionFX::MotionMatching
     class MotionMatchingInstance;
     class TrajectoryQuery;
 
+    //! A feature is a property extracted from the animation data and is used by the motion matching algorithm to find the next best matching frame.
+    //! Examples of features are the position of the feet joints, the linear or angular velocity of the knee joints or the trajectory history and future
+    //! trajectory of the root joint. We can also encode environment sensations like obstacle positions and height, the location of the sword of an enemy
+    //! character or a football's position and velocity. Their purpose is to describe a frame of the animation by their key characteristics and sometimes
+    //! enhance the actual keyframe data (pos/rot/scale per joint) by e.g. taking the time domain into account and calculate the velocity or acceleration,
+    //! or a whole trajectory to describe where the given joint came from to reach the frame and the path it moves along in the near future.
+    //! @Note: Features are extracted and stored relative to a given joint, in most cases the motion extraction or root joint, and thus are in model-space.
+    //! This makes the search algorithm invariant to the character location and orientation and the extracted features, like e.g. a joint position or velocity,
+    //! translate and rotate along with the character.
     class EMFX_API Feature
     {
     public:
@@ -138,16 +147,14 @@ namespace EMotionFX::MotionMatching
         static void CalculateVelocity(const ActorInstance* actorInstance, size_t jointIndex, size_t relativeToJointIndex, const Frame& frame, AZ::Vector3& outVelocity);
 
     protected:
-        /**
-         * Calculate a normalized direction vector difference between the two given vectors.
-         * A dot product of the two vectors is taken and the result in range [-1, 1] is scaled to [0, 1].
-         * @result Normalized, absolute difference between the vectors. 
-         * Angle difference     dot result      cost
-         * 0.0 degrees          1.0             0.0
-         * 90.0 degrees         0.0             0.5
-         * 180.0 degrees        -1.0            1.0
-         * 270.0 degrees        0.0             0.5
-         **/
+        //! Calculate a normalized direction vector difference between the two given vectors.
+        //! A dot product of the two vectors is taken and the result in range [-1, 1] is scaled to [0, 1].
+        //! @result Normalized, absolute difference between the vectors. 
+        //! Angle difference     dot result      cost
+        //! 0.0 degrees          1.0             0.0
+        //! 90.0 degrees         0.0             0.5
+        //! 180.0 degrees        -1.0            1.0
+        //! 270.0 degrees        0.0             0.5
         float GetNormalizedDirectionDifference(const AZ::Vector2& directionA, const AZ::Vector2& directionB) const;
         float GetNormalizedDirectionDifference(const AZ::Vector3& directionA, const AZ::Vector3& directionB) const;
 
@@ -164,7 +171,7 @@ namespace EMotionFX::MotionMatching
         AZ::Color m_debugColor = AZ::Colors::Green; //< Color used for debug visualizations to identify the feature.
         bool m_debugDrawEnabled = false; //< Are debug visualizations enabled for this feature?
         float m_costFactor = 1.0f; //< The cost factor for the feature is multiplied with the actual and can be used to change a feature's influence in the motion matching search.
-        ResidualType m_residualType = ResidualType::Squared; //< How do we calculate the differences (residuals) between the input query values and the frames in the motion database that sum up the feature cost.
+        ResidualType m_residualType = ResidualType::Absolute; //< How do we calculate the differences (residuals) between the input query values and the frames in the motion database that sum up the feature cost.
 
         // Instance data (depends on the feature schema or actor instance).
         FeatureMatrix::Index m_featureColumnOffset; //< Float/Value offset, starting column for where the feature should be places at.

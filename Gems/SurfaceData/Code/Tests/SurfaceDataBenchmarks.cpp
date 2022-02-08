@@ -190,7 +190,7 @@ namespace UnitTest
                 for (float x = 0.0f; x < worldSize; x += 1.0f)
                 {
                     AZ::Vector3 queryPosition(x, y, 0.0f);
-                    points.clear();
+                    points.Clear();
 
                     SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                         &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, filterTags, points);

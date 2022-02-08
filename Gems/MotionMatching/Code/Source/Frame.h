@@ -20,10 +20,8 @@ namespace EMotionFX
 
     namespace MotionMatching
     {
-        /**
-         * A motion matching frame.
-         * This holds information required in order to extract a given pose in a given motion.
-         */
+        //! A motion matching frame.
+        //! This holds information required in order to extract a given pose in a given motion.
         class EMFX_API Frame
         {
         public:
@@ -53,10 +51,10 @@ namespace EMotionFX
             void SetMirrored(bool enabled);
 
         private:
-            size_t m_frameIndex = 0; /**< The motion frame index inside the data object. */
-            float m_sampleTime = 0.0f; /**< The time offset in the original motion. */
-            Motion* m_sourceMotion = nullptr; /**< The original motion that we sample from to restore the pose. */
-            bool m_mirrored = false; /**< Is this frame mirrored? */
+            size_t m_frameIndex = 0; //< The motion frame index inside the data object.
+            float m_sampleTime = 0.0f; //< The time offset in the original motion.
+            Motion* m_sourceMotion = nullptr; //< The original motion that we sample from to restore the pose.
+            bool m_mirrored = false; //< Is this frame mirrored?
         };
     } // namespace MotionMatching
 } // namespace EMotionFX

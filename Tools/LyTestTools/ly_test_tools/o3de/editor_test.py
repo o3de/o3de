@@ -789,7 +789,7 @@ class EditorTestSuite():
                     test_result = Result.Fail.create(test_spec, output, editor_log_content)
         except WaitTimeoutError:
             output = editor.get_output()
-            editor.kill()
+            editor.stop()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout.create(test_spec, output, test_spec.timeout, editor_log_content)
     
@@ -891,7 +891,7 @@ class EditorTestSuite():
                         results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code,
                                                                       crash_error, crashed_result.editor_log)
         except WaitTimeoutError:            
-            editor.kill()
+            editor.stop()
             output = editor.get_output()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
 

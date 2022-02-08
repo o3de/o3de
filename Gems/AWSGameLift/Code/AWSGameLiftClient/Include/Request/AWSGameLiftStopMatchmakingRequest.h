@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Matchmaking/MatchmakingRequests.h>
+#include <Multiplayer/Session/MatchmakingRequests.h>
 
 namespace AWSGameLift
 {
@@ -17,10 +17,10 @@ namespace AWSGameLift
     //! Cancels a matchmaking ticket or match backfill ticket that is currently being processed. 
     //! StopMatchmakingRequest
     struct AWSGameLiftStopMatchmakingRequest
-        : public AzFramework::StopMatchmakingRequest
+        : public Multiplayer::StopMatchmakingRequest
     {
     public:
-        AZ_RTTI(AWSGameLiftStopMatchmakingRequest, "{2766BC03-9F84-4346-A52B-49129BBAF38B}", AzFramework::StopMatchmakingRequest);
+        AZ_RTTI(AWSGameLiftStopMatchmakingRequest, "{2766BC03-9F84-4346-A52B-49129BBAF38B}", Multiplayer::StopMatchmakingRequest);
         static void Reflect(AZ::ReflectContext* context);
 
         AWSGameLiftStopMatchmakingRequest() = default;
