@@ -1286,6 +1286,10 @@ namespace GraphCanvas
     {
         GRAPH_CANVAS_PROFILE_FUNCTION();
         const SceneComponentSaveData* saveData = saveDataContainer.FindSaveDataAs<SceneComponentSaveData>();
+        if (!saveData)
+        {
+            return;
+        }
 
         for (const GraphCanvasConstructSaveData* currentConstruct : saveData->m_constructs)
         {
