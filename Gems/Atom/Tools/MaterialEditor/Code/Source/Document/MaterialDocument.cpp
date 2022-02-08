@@ -336,9 +336,9 @@ namespace MaterialEditor
         bool addPropertiesResult = true;
 
         // populate sourceData with properties that meet the filter
-        m_materialTypeSourceData.EnumerateProperties([&](const auto& propertyDefinition, const MaterialNameContext& nameContext) {
+        m_materialTypeSourceData.EnumerateProperties([&](const auto& propertyDefinition, const AZ::RPI::MaterialNameContext& nameContext) {
 
-            Name propertyId{propertyDefinition->GetName()};
+            AZ::Name propertyId{propertyDefinition->GetName()};
             nameContext.ContextualizeProperty(propertyId);
 
             const auto property = FindProperty(propertyId);
@@ -551,16 +551,19 @@ namespace MaterialEditor
         // in the hierarchy are applied
         bool enumerateResult = m_materialTypeSourceData.EnumeratePropertyGroups(
             [this, &parentPropertyValues](
-                const AZStd::string& propertyIdContext, const AZ::RPI::MaterialTypeSourceData::PropertyGroup* propertyGroup)
+                const AZ::RPI::MaterialTypeSourceData::PropertyGroup* propertyGroup,
+                const AZ::RPI::MaterialNameContext& groupNameContext,
+                const AZ::RPI::MaterialNameContext& parentNameContext)
             {
                 // Add any material functors that are located inside each property group.
-                if (!AddEditorMaterialFunctors(propertyGroup->GetFunctors()))
+                if (!AddEditorMaterialFunctors(propertyGroup->GetFunctors(), groupNameContext))
                 {
                     return false;
                 }
-
+                
                 m_groups.emplace_back(aznew AtomToolsFramework::DynamicPropertyGroup);
-                m_groups.back()->m_name = propertyIdContext + propertyGroup->GetName();
+                m_groups.back()->m_name = propertyGroup->GetName();
+                parentNameContext.ContextualizeProperty(m_groups.back()->m_name);
                 m_groups.back()->m_displayName = propertyGroup->GetDisplayName();
                 m_groups.back()->m_description = propertyGroup->GetDescription();
 
@@ -568,7 +571,8 @@ namespace MaterialEditor
                 {
                     // Assign id before conversion so it can be used in dynamic description
                     AtomToolsFramework::DynamicPropertyConfig propertyConfig;
-                    propertyConfig.m_id = m_groups.back()->m_name + "." + propertyDefinition->GetName();
+                    propertyConfig.m_id = propertyDefinition->GetName();
+                    groupNameContext.ContextualizeProperty(m_groups.back()->m_name);
 
                     const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                     const bool propertyIndexInBounds =
@@ -610,7 +614,8 @@ namespace MaterialEditor
         }
 
         // Add material functors that are in the top-level functors list.
-        if (!AddEditorMaterialFunctors(m_materialTypeSourceData.m_materialFunctorSourceData))
+        AZ::RPI::MaterialNameContext materialNameContext; // There is no name context for top-level functors, only functors inside PropertyGroups
+        if (!AddEditorMaterialFunctors(m_materialTypeSourceData.m_materialFunctorSourceData, materialNameContext))
         {
             return OpenFailed();
         }
@@ -736,10 +741,11 @@ namespace MaterialEditor
     }
 
     bool MaterialDocument::AddEditorMaterialFunctors(
-        const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders)
+        const AZStd::vector<AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder>>& functorSourceDataHolders,
+        const AZ::RPI::MaterialNameContext& nameContext)
     {
         const AZ::RPI::MaterialFunctorSourceData::EditorContext editorContext = AZ::RPI::MaterialFunctorSourceData::EditorContext(
-            m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout());
+            m_materialSourceData.m_materialType, m_materialAsset->GetMaterialPropertiesLayout(), &nameContext);
 
         for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctorSourceDataHolder> functorData : functorSourceDataHolders)
         {

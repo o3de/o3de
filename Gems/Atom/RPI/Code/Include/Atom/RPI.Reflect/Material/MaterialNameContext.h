@@ -40,6 +40,9 @@ namespace AZ
             bool ContextualizeProperty(Name& propertyName) const;
             bool ContextualizeSrgInput(Name& srgInputName) const;
             bool ContextualizeShaderOption(Name& shaderOptionName) const;
+            bool ContextualizeProperty(AZStd::string& propertyName) const;
+            bool ContextualizeSrgInput(AZStd::string& srgInputName) const;
+            bool ContextualizeShaderOption(AZStd::string& shaderOptionName) const;
             
             //! Returns true if there is some non-default name context.
             bool HasContextForProperties() const { return !m_propertyIdContext.empty(); }

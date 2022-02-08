@@ -84,6 +84,39 @@ namespace AZ
             shaderOptionName = m_shaderOptionNameContext + shaderOptionName.GetCStr();
             return true;
         }
+        
+        bool MaterialNameContext::ContextualizeProperty(AZStd::string& propertyName) const
+        {
+            if (m_propertyIdContext.empty())
+            {
+                return false;
+            }
+
+            propertyName = m_propertyIdContext + propertyName;
+            return true;
+        }
+
+        bool MaterialNameContext::ContextualizeSrgInput(AZStd::string& srgInputName) const
+        {
+            if (m_srgInputNameContext.empty())
+            {
+                return false;
+            }
+
+            srgInputName = m_srgInputNameContext + srgInputName;
+            return true;
+        }
+
+        bool MaterialNameContext::ContextualizeShaderOption(AZStd::string& shaderOptionName) const
+        {
+            if (m_shaderOptionNameContext.empty())
+            {
+                return false;
+            }
+
+            shaderOptionName = m_shaderOptionNameContext + shaderOptionName;
+            return true;
+        }
 
     } // namespace RPI
 } // namespace AZ
