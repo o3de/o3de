@@ -138,7 +138,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::LmbrCentral
                 Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
-                Gem::SurfaceData
+        RUNTIME_DEPENDENCIES
+            Gem::SurfaceData
     )
     
     ly_add_target(
@@ -159,7 +160,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::LmbrCentral
                 Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
-                Gem::SurfaceData
+        RUNTIME_DEPENDENCIES
+            Gem::SurfaceData
     )
     ly_add_googletest(
         NAME Gem::GradientSignal.Tests
