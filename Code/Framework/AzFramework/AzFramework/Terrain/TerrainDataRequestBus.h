@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/span.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
