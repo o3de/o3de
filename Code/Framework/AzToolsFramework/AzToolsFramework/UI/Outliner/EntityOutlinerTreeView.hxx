@@ -71,6 +71,8 @@ namespace AzToolsFramework
         // FocusModeNotificationBus overrides ...
         void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
 
+        void paintEvent(QPaintEvent* event) override;
+
         //! Renders the left side of the item: appropriate background, branch lines, icons.
         void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
 
@@ -101,6 +103,17 @@ namespace AzToolsFramework
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+
+        void SelectAllEntitiesInSelectionRect();
+
+        enum class DragState
+        {
+            NO_DRAG = 0,
+            SELECT,
+            ENTITY
+        };
+
+        DragState m_currentDragState = DragState::NO_DRAG;
     };
 
 }

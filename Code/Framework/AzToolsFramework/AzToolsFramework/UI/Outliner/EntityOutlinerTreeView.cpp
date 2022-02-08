@@ -65,22 +65,6 @@ namespace AzToolsFramework
         m_expandOnlyDelay = delay;
     }
 
-    void EntityOutlinerTreeView::ClearQueuedMouseEvent()
-    {
-        if (m_queuedMouseEvent)
-        {
-            delete m_queuedMouseEvent;
-            m_queuedMouseEvent = nullptr;
-        }
-    }
-
-    void EntityOutlinerTreeView::leaveEvent([[maybe_unused]] QEvent* event)
-    {
-        m_mousePosition = QPoint(-1, -1);
-        m_currentHoveredIndex = QModelIndex();
-        update();
-    }
-
     void EntityOutlinerTreeView::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
     {
         AzQtComponents::StyledTreeView::dataChanged(topLeft, bottomRight, roles);
@@ -145,26 +129,138 @@ namespace AzToolsFramework
         m_queuedMouseEvent = new QMouseEvent(*event);
     }
 
-    void EntityOutlinerTreeView::mouseReleaseEvent(QMouseEvent* event)
+    void EntityOutlinerTreeView::mouseMoveEvent(QMouseEvent* event)
     {
-        if (m_queuedMouseEvent && !m_draggingUnselectedItem)
-        {
-            // mouseMoveEvent will set the state to be DraggingState, which will make Qt ignore 
-            // mousePressEvent in QTreeViewPrivate::expandOrCollapseItemAtPos. So we manually 
-            // and temporarily set it to EditingState.
-            QAbstractItemView::State stateBefore = QAbstractItemView::state();
-            QAbstractItemView::setState(QAbstractItemView::State::EditingState);
+        QModelIndex previousHoveredIndex = m_currentHoveredIndex;
+        m_mousePosition = event->pos();
 
-            //treat this as a mouse pressed event to process selection etc
+        if (QModelIndex hoveredIndex = indexAt(m_mousePosition); hoveredIndex.column() != EntityOutlinerListModel::ColumnSpacing &&  m_currentHoveredIndex != hoveredIndex)
+        {
+            m_currentHoveredIndex = hoveredIndex;
+        }
+
+        if (m_queuedMouseEvent)
+        {
+            switch (m_currentDragState)
+            {
+            case DragState::NO_DRAG:
+                {
+                    if (m_currentHoveredIndex.isValid() && m_currentHoveredIndex.column() != EntityOutlinerListModel::ColumnSpacing)
+                    {
+                        m_currentDragState = DragState::ENTITY;
+                    }
+                    else
+                    {
+                        m_currentDragState = DragState::SELECT;
+                        update();
+                    }
+
+                    break;
+                }
+            case DragState::ENTITY:
+                {
+                    break;
+                }
+            case DragState::SELECT:
+                {
+                    SelectAllEntitiesInSelectionRect();
+                    update();
+                    break;
+                }
+            default:
+                {
+                    break;
+                }
+            }
+
+            // disable selection for the pending click if the mouse moved so selection is maintained for dragging
+            QAbstractItemView::SelectionMode selectionModeBefore = selectionMode();
+            setSelectionMode(QAbstractItemView::NoSelection);
+
+            // treat this as a mouse pressed event to process everything but selection, but use the position data from the mousePress
+            // message
             processQueuedMousePressedEvent(m_queuedMouseEvent);
 
-            QAbstractItemView::setState(stateBefore);
+            // restore selection state
+            setSelectionMode(selectionModeBefore);
+        }
+
+        if (previousHoveredIndex != m_currentHoveredIndex)
+        {
+            update();
+        }
+
+        // process mouse movement as normal, potentially triggering drag and drop
+        // QTreeView::mouseMoveEvent(event);
+    }
+
+    void EntityOutlinerTreeView::mouseReleaseEvent(QMouseEvent* event)
+    {
+        if (m_currentDragState == DragState::SELECT)
+        {
+            SelectAllEntitiesInSelectionRect();
+            update();
+        }
+        else
+        {
+            if (m_queuedMouseEvent && !m_draggingUnselectedItem)
+            {
+                // mouseMoveEvent will set the state to be DraggingState, which will make Qt ignore
+                // mousePressEvent in QTreeViewPrivate::expandOrCollapseItemAtPos. So we manually
+                // and temporarily set it to EditingState.
+                QAbstractItemView::State stateBefore = QAbstractItemView::state();
+                QAbstractItemView::setState(QAbstractItemView::State::EditingState);
+
+                // treat this as a mouse pressed event to process selection etc
+                processQueuedMousePressedEvent(m_queuedMouseEvent);
+
+                QAbstractItemView::setState(stateBefore);
+            }
         }
 
         ClearQueuedMouseEvent();
         m_draggingUnselectedItem = false;
+        m_currentDragState = DragState::NO_DRAG;
 
         QTreeView::mouseReleaseEvent(event);
+    }
+
+    void EntityOutlinerTreeView::SelectAllEntitiesInSelectionRect()
+    {
+        QPoint point1 = (m_queuedMouseEvent->pos());
+        QPoint point2 = (m_mousePosition);
+
+        float top(AZStd::min(point1.y(), point2.y()));
+        float bottom(AZStd::max(point1.y(), point2.y()));
+        float middle(viewport()->rect().center().x());
+
+        QModelIndex topIndex = indexAt(QPoint(middle, top));
+        QModelIndex bottomIndex = indexAt(QPoint(middle, bottom));
+
+        QModelIndex firstIndex = indexAt(QPoint(middle, 10));
+
+        if (!topIndex.isValid() && top < 10)
+        {
+            topIndex = firstIndex;
+        }
+
+        if (!topIndex.isValid())
+        {
+            return;
+        }
+
+        QItemSelection selection;
+
+        QModelIndex iter = topIndex;
+        selection.select(iter, iter);
+
+        while (iter.isValid() && iter != bottomIndex)
+        {
+            iter = indexBelow(iter);
+            selection.select(iter, iter);
+        }
+
+        selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
     }
 
     void EntityOutlinerTreeView::mouseDoubleClickEvent(QMouseEvent* event)
@@ -172,32 +268,6 @@ namespace AzToolsFramework
         //cancel pending mouse press
         ClearQueuedMouseEvent();
         QTreeView::mouseDoubleClickEvent(event);
-    }
-
-    void EntityOutlinerTreeView::mouseMoveEvent(QMouseEvent* event)
-    {
-        if (m_queuedMouseEvent)
-        {
-            //disable selection for the pending click if the mouse moved so selection is maintained for dragging
-            QAbstractItemView::SelectionMode selectionModeBefore = selectionMode();
-            setSelectionMode(QAbstractItemView::NoSelection);
-
-            //treat this as a mouse pressed event to process everything but selection, but use the position data from the mousePress message
-            processQueuedMousePressedEvent(m_queuedMouseEvent);
-
-            //restore selection state
-            setSelectionMode(selectionModeBefore);
-        }
-
-        m_mousePosition = event->pos();
-        if (QModelIndex hoveredIndex = indexAt(m_mousePosition); m_currentHoveredIndex != indexAt(m_mousePosition))
-        {
-            m_currentHoveredIndex = hoveredIndex;
-            update();
-        }
-
-        //process mouse movement as normal, potentially triggering drag and drop
-        QTreeView::mouseMoveEvent(event);
     }
 
     void EntityOutlinerTreeView::focusInEvent(QFocusEvent* event)
@@ -214,8 +284,9 @@ namespace AzToolsFramework
         QTreeView::focusOutEvent(event);
     }
 
-    void EntityOutlinerTreeView::startDrag(Qt::DropActions supportedActions)
+    void EntityOutlinerTreeView::startDrag([[maybe_unused]] Qt::DropActions supportedActions)
     {
+        /*
         QModelIndex index = indexAt(m_queuedMouseEvent->pos());
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
 
@@ -245,24 +316,70 @@ namespace AzToolsFramework
         }
 
         StyledTreeView::startDrag(supportedActions);
+        */
     }
 
-    void EntityOutlinerTreeView::dragMoveEvent(QDragMoveEvent* event)
+    void EntityOutlinerTreeView::dragMoveEvent([[maybe_unused]] QDragMoveEvent* event)
     {
+        /*
         if (m_expandOnlyDelay >= 0)
         {
             m_expandTimer.start(m_expandOnlyDelay, this);
         }
 
         QTreeView::dragMoveEvent(event);
+        */
     }
 
-    void EntityOutlinerTreeView::dropEvent(QDropEvent* event)
+    void EntityOutlinerTreeView::dropEvent([[maybe_unused]] QDropEvent* event)
     {
+        /*
         emit ItemDropped();
         QTreeView::dropEvent(event);
 
         m_draggingUnselectedItem = false;
+        */
+    }
+
+    void EntityOutlinerTreeView::ClearQueuedMouseEvent()
+    {
+        if (m_queuedMouseEvent)
+        {
+            delete m_queuedMouseEvent;
+            m_queuedMouseEvent = nullptr;
+        }
+    }
+
+    void EntityOutlinerTreeView::leaveEvent([[maybe_unused]] QEvent* event)
+    {
+        // Only clear the mouse position if the last mouse position registered is inside.
+        // This allows drag to select to work correctly in all situations.
+        if(this->viewport()->rect().contains(m_mousePosition))
+        {
+            m_mousePosition = QPoint(-1, -1);
+        }
+        m_currentHoveredIndex = QModelIndex();
+        update();
+    }
+
+    void EntityOutlinerTreeView::paintEvent(QPaintEvent* event)
+    {
+        AzQtComponents::StyledTreeView::paintEvent(event);
+
+        if (m_currentDragState == DragState::SELECT)
+        {
+            QPainter painter(viewport());
+
+            QPoint point1 = (m_queuedMouseEvent->pos());
+            QPoint point2 = (m_mousePosition);
+
+            QPoint topLeft(AZStd::min(point1.x(), point2.x()), AZStd::min(point1.y(), point2.y()));
+            QPoint bottomRight(AZStd::max(point1.x(), point2.x()), AZStd::max(point1.y(), point2.y()));
+
+            painter.setBrush(Qt::cyan);
+            painter.setPen(Qt::darkCyan);
+            painter.drawRect(QRect(topLeft, bottomRight));
+        }
     }
 
     void EntityOutlinerTreeView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
@@ -270,7 +387,7 @@ namespace AzToolsFramework
         const bool isEnabled = (this->model()->flags(index) & Qt::ItemIsEnabled);
 
         const bool isSelected = selectionModel()->isSelected(index);
-        const bool isHovered = (index == indexAt(m_mousePosition).siblingAtColumn(0)) && isEnabled;
+        const bool isHovered = (index == m_currentHoveredIndex.siblingAtColumn(0)) && isEnabled;
 
         // Paint the branch Selection/Hover Rect
         PaintBranchSelectionHoverRect(painter, rect, isSelected, isHovered);

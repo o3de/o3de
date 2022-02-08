@@ -2091,6 +2091,12 @@ namespace AzToolsFramework
             customOption.state ^= QStyle::State_HasFocus;
         }
 
+        // Don't allow to paint on the spacing column
+        if (index.column() == EntityOutlinerListModel::ColumnSpacing)
+        {
+            return;
+        }
+
         // Retrieve the Entity UI Handler
         auto firstColumnIndex = index.siblingAtColumn(0);
         AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
