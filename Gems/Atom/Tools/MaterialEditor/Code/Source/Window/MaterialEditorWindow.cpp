@@ -146,7 +146,7 @@ namespace MaterialEditor
 
     bool MaterialEditorWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
     {
-        CreateMaterialDialog createDialog(this);
+        CreateMaterialDialog createDialog(openPath.c_str(), this);
         createDialog.adjustSize();
 
         if (createDialog.exec() == QDialog::Accepted &&

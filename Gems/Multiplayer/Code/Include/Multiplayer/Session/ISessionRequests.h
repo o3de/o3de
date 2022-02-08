@@ -11,9 +11,9 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/string.h>
-#include <AzFramework/Session/SessionRequests.h>
+#include <Multiplayer/Session/SessionRequests.h>
 
-namespace AzFramework
+namespace Multiplayer
 {
     //! ISessionRequests
     //! Pure virtual session interface class to abstract the details of session handling from application code.
@@ -101,4 +101,4 @@ namespace AzFramework
         virtual void OnLeaveSessionAsyncComplete() = 0;
     };
     using SessionAsyncRequestNotificationBus = AZ::EBus<SessionAsyncRequestNotifications>;
-} // namespace AzFramework
+} // namespace Multiplayer

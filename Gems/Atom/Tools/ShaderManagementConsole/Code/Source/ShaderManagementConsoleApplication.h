@@ -9,11 +9,11 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <ShaderManagementConsoleRequestBus.h>
-#include <Window/ShaderManagementConsoleBrowserInteractions.h>
 #include <Window/ShaderManagementConsoleWindow.h>
 
 namespace ShaderManagementConsole
@@ -55,6 +55,6 @@ namespace ShaderManagementConsole
 
     private:
         AZStd::unique_ptr<ShaderManagementConsoleWindow> m_window;
-        AZStd::unique_ptr<ShaderManagementConsoleBrowserInteractions> m_assetBrowserInteractions;
+        AZStd::unique_ptr<AtomToolsFramework::AtomToolsAssetBrowserInteractions> m_assetBrowserInteractions;
     };
 } // namespace ShaderManagementConsole

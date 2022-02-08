@@ -114,9 +114,7 @@ namespace UnitTest
         inline static const char* Passenger2EntityName = "Passenger2";
     };
 
-    // Test was disabled because the implementation of GetFocusedPrefabInstance now relies on the Prefab EOS,
-    // which is not used by our test environment. This can be restored once Instance handles are implemented.
-    TEST_F(PrefabFocusTests, DISABLED_PrefabFocus_FocusOnOwningPrefab_RootContainer)
+    TEST_F(PrefabFocusTests, FocusOnOwningPrefabRootContainer)
     {
         // Verify FocusOnOwningPrefab works when passing the container entity of the root prefab.
         {
@@ -131,9 +129,7 @@ namespace UnitTest
         }
     }
 
-    // Test was disabled because the implementation of GetFocusedPrefabInstance now relies on the Prefab EOS,
-    // which is not used by our test environment. This can be restored once Instance handles are implemented.
-    TEST_F(PrefabFocusTests, DISABLED_PrefabFocus_FocusOnOwningPrefab_RootEntity)
+    TEST_F(PrefabFocusTests, FocusOnOwningPrefabRootEntity)
     {
         // Verify FocusOnOwningPrefab works when passing a nested entity of the root prefab.
         {
@@ -148,7 +144,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab_NestedContainer)
+    TEST_F(PrefabFocusTests, FocusOnOwningPrefabNestedContainer)
     {
         // Verify FocusOnOwningPrefab works when passing the container entity of a nested prefab.
         {
@@ -162,7 +158,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab_NestedEntity)
+    TEST_F(PrefabFocusTests, FocusOnOwningPrefabNestedEntity)
     {
         // Verify FocusOnOwningPrefab works when passing a nested entity of the a nested prefab.
         {
@@ -176,7 +172,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab_Clear)
+    TEST_F(PrefabFocusTests, FocusOnOwningPrefabClear)
     {
         // Verify FocusOnOwningPrefab points to the root prefab when the focus is cleared.
         {
@@ -196,7 +192,32 @@ namespace UnitTest
         }
     }
 
-    TEST_F(PrefabFocusTests, PrefabFocus_IsOwningPrefabBeingFocused_Content)
+    TEST_F(PrefabFocusTests, FocusOnParentOfFocusedPrefabLeaf)
+    {
+        // Call FocusOnParentOfFocusedPrefab on a leaf instance and verify the parent is focused correctly.
+        {
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_instanceMap[CarEntityName]->GetContainerEntityId());
+            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(m_editorEntityContextId);
+
+            EXPECT_EQ(
+                &m_prefabFocusInterface->GetFocusedPrefabInstance(m_editorEntityContextId)->get(),
+                m_instanceMap[StreetEntityName]
+            );
+        }
+    }
+
+    TEST_F(PrefabFocusTests, FocusOnParentOfFocusedPrefabRoot)
+    {
+        // Call FocusOnParentOfFocusedPrefab on the root instance and verify the operation fails.
+        {
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(m_instanceMap[CityEntityName]->GetContainerEntityId());
+            auto outcome = m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(m_editorEntityContextId);
+
+            EXPECT_FALSE(outcome.IsSuccess());
+        }
+    }
+
+    TEST_F(PrefabFocusTests, IsOwningPrefabBeingFocusedContent)
     {
         // Verify IsOwningPrefabBeingFocused returns true for all entities in a focused prefab (container/nested)
         {
@@ -207,7 +228,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(PrefabFocusTests, PrefabFocus_IsOwningPrefabBeingFocused_AncestorsDescendants)
+    TEST_F(PrefabFocusTests, IsOwningPrefabBeingFocusedAncestorsDescendants)
     {
         // Verify IsOwningPrefabBeingFocused returns false for all entities not in a focused prefab (ancestors/descendants)
         {
@@ -221,7 +242,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(PrefabFocusTests, PrefabFocus_IsOwningPrefabBeingFocused_Siblings)
+    TEST_F(PrefabFocusTests, IsOwningPrefabBeingFocusedSiblings)
     {
         // Verify IsOwningPrefabBeingFocused returns false for all entities not in a focused prefab (siblings)
         {

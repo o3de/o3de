@@ -12,10 +12,8 @@ set(FILES
     Source/MaterialEditorApplication.h
 
     Source/Document/MaterialDocumentRequestBus.h
-    Source/Document/MaterialDocumentSettings.h
     Source/Document/MaterialDocument.cpp
     Source/Document/MaterialDocument.h
-    Source/Document/MaterialDocumentSettings.cpp
 
     Source/Viewport/MaterialViewportModule.h
     Source/Viewport/MaterialViewportModule.cpp
@@ -49,8 +47,6 @@ set(FILES
     Source/Viewport/MaterialViewportWidget.ui
 
     Source/Window/MaterialEditorWindowSettings.h
-    Source/Window/MaterialEditorBrowserInteractions.h
-    Source/Window/MaterialEditorBrowserInteractions.cpp
     Source/Window/MaterialEditorWindow.h
     Source/Window/MaterialEditorWindow.cpp
     Source/Window/MaterialEditorWindowSettings.cpp

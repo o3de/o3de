@@ -12,7 +12,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 
-namespace AzFramework
+namespace Multiplayer
 {
     //! SessionConfig
     //! Properties describing a session.
@@ -66,4 +66,4 @@ namespace AzFramework
         //! Provides additional information about session status.
         AZStd::string m_statusReason;
     };
-} // namespace AzFramework
+} // namespace Multiplayer

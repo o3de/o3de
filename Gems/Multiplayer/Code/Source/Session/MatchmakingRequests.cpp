@@ -9,9 +9,9 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Matchmaking/MatchmakingRequests.h>
+#include <Multiplayer/Session/MatchmakingRequests.h>
 
-namespace AzFramework
+namespace Multiplayer
 {
     void AcceptMatchRequest::Reflect(AZ::ReflectContext* context)
     {
@@ -75,4 +75,4 @@ namespace AzFramework
             }
         }
     }
-} // namespace AzFramework
+} // namespace Multiplayer
