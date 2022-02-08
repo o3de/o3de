@@ -33,7 +33,7 @@ namespace Terrain
         }
 
         // Insert the current tag back if it was removed via tagsInUse
-        availableTags.emplace_back({ AZ::u32(currentTag), currentTag.GetDisplayName() });
+        availableTags.emplace_back(AZ::u32(currentTag), currentTag.GetDisplayName());
 
         // Sorting for consistency
         AZStd::sort(availableTags.begin(), availableTags.end(), [](const auto& lhs, const auto& rhs) {return lhs.second < rhs.second; });
