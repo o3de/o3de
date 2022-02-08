@@ -64,7 +64,7 @@ namespace SurfaceData
             {
                 // Since we need to scan for duplicate surface types, store the entries sorted by surface type so that we can
                 // early-out once we pass the location for the entry instead of always searching every entry.
-                if (weightItr->m_surfaceType > tag)
+                if (weightItr->first > tag)
                 {
                     if (m_weights.size() != MaxSurfaceWeights)
                     {
@@ -77,10 +77,10 @@ namespace SurfaceData
                     }
                     return;
                 }
-                else if (weightItr->m_surfaceType == tag)
+                else if (weightItr->first == tag)
                 {
                     // We found the surface type, so just keep the higher of the two weights.
-                    weightItr->m_weight = AZ::GetMax(weight, weightItr->m_weight);
+                    weightItr->second = AZ::GetMax(weight, weightItr->second);
                     return;
                 }
             }
@@ -187,9 +187,9 @@ namespace SurfaceData
         //! Search for the given tag entry.
         //! @param tag - The tag to search for.
         //! @return The pointer to the tag that's found, or end() if it wasn't found.
-        const AzFramework::SurfaceData::SurfaceTagWeight* FindTag(AZ::Crc32 tag) const;
+        const AZStd::pair<AZ::Crc32, float>* FindTag(AZ::Crc32 tag) const;
 
-        AZStd::fixed_vector<AzFramework::SurfaceData::SurfaceTagWeight, MaxSurfaceWeights> m_weights;
+        AZStd::fixed_vector<AZStd::pair<AZ::Crc32, float>, MaxSurfaceWeights> m_weights;
     };
 
     //! SurfacePointList stores a collection of surface point data, which consists of positions, normals, and surface tag weights.
@@ -219,9 +219,8 @@ namespace SurfaceData
         //! Clear the surface point list.
         void Clear();
 
-        //! Preallocate space in the list based on the maximum number of output points per input point we can generate.
-        //! @param maxPointsPerInput - The maximum number of output points per input point.
-        void ReserveSpace(size_t maxPointsPerInput);
+        void StartListQuery(AZStd::span<const AZ::Vector3> inPositions, size_t maxPointsPerInput);
+        void EndListQuery();
 
         //! Check if the surface point list is empty.
         //! @return - true if empty, false if it contains points.
@@ -231,11 +230,22 @@ namespace SurfaceData
         //! @return - The number of valid points in the list.
         size_t GetSize(size_t inputPositionIndex) const;
 
+        size_t GetInputPositionSize() const
+        {
+            return m_inputPositionSize;
+        }
+
         //! Enumerate every surface point and call a callback for each point found.
         void EnumeratePoints(
             size_t inputPositionIndex,
             AZStd::function<bool(
                 const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& surfaceWeights)> pointCallback) const;
+
+        //! Enumerate every surface point and call a callback for each point found.
+        void EnumeratePoints(
+            AZStd::function<bool(
+                size_t inputPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& surfaceWeights)>
+                pointCallback) const;
 
         //! Modify the surface weights for each surface point in the list.
         void ModifySurfaceWeights(
@@ -248,20 +258,34 @@ namespace SurfaceData
         //! Remove any points that don't contain any of the provided surface tags.
         void FilterPoints(const SurfaceTagVector& desiredTags);
 
+        AZ::Aabb GetSurfacePointAabb() const
+        {
+            return m_surfacePointBounds;
+        }
+
     protected:
+        size_t GetInPositionIndexFromPosition(const AZ::Vector3& inPosition) const;
+        size_t GetSurfacePointStartIndexFromInPositionIndex(size_t inPositionIndex) const;
+
+        AZStd::span<const AZ::Vector3> m_inputPositions;
+        mutable size_t m_lastInputPositionIndex = 0;
+        mutable size_t m_lastSurfacePointStartIndex = 0;
+
         // These are kept in separate parallel vectors instead of a single struct so that it's possible to pass just specific data
         // "channels" into other methods as span<> without having to pass the full struct into the span<>. Specifically, we want to be
         // able to pass spans of the positions down through nesting gradient/surface calls.
         // A side benefit is that profiling showed the data access to be faster than packing all the fields into a single struct.
+        AZStd::vector<size_t> m_sortedOutputIndexList;
+
+        AZStd::vector<size_t> m_inputPositionIndex;
         AZStd::vector<AZ::EntityId> m_surfaceCreatorIdList;
         AZStd::vector<AZ::Vector3> m_surfacePositionList;
         AZStd::vector<AZ::Vector3> m_surfaceNormalList;
         AZStd::vector<SurfaceTagWeights> m_surfaceWeightsList;
 
-        AZ::Aabb m_pointBounds = AZ::Aabb::CreateNull();
+        AZ::Aabb m_surfacePointBounds = AZ::Aabb::CreateNull();
+        size_t m_inputPositionSize = 0;
     };
-
-    using SurfacePointLists = AZStd::vector<SurfacePointList>;
 
     struct SurfaceDataRegistryEntry
     {

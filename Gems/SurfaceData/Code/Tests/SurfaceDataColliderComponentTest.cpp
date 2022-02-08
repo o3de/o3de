@@ -135,8 +135,13 @@ namespace UnitTest
 
             // Call GetSurfacePoints and verify the results
             SurfaceData::SurfacePointList pointList;
+            AZStd::vector<AZ::Vector3> queryPoints;
+            queryPoints.emplace_back(queryPoint);
+            pointList.StartListQuery(queryPoints, 1);
             SurfaceData::SurfaceDataProviderRequestBus::Event(providerHandle, &SurfaceData::SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
                                                               queryPoint, pointList);
+            pointList.EndListQuery();
+
             if (pointOnProvider)
             {
                 constexpr size_t inPositionIndex = 0;

@@ -213,7 +213,7 @@ namespace UnitTest
         // Query every point in our world at 1 meter intervals.
         for (auto _ : state)
         {
-            SurfaceData::SurfacePointLists points;
+            SurfaceData::SurfacePointList points;
 
             AZ::Aabb inRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(worldSize));
             AZ::Vector2 stepSize(1.0f);
@@ -248,7 +248,7 @@ namespace UnitTest
                 }
             }
 
-            SurfaceData::SurfacePointLists points;
+            SurfaceData::SurfacePointList points;
 
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                 &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, queryPositions, filterTags, points);

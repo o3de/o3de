@@ -211,7 +211,7 @@ namespace SurfaceData
         AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
 
         surfacePointList.Clear();
-        surfacePointList.ReserveSpace(m_registeredSurfaceDataProviders.size());
+        surfacePointList.StartListQuery({ { inPosition } }, m_registeredSurfaceDataProviders.size());
 
         //gather all intersecting points
         for (const auto& entryPair : m_registeredSurfaceDataProviders)
@@ -250,10 +250,12 @@ namespace SurfaceData
                 surfacePointList.FilterPoints(desiredTags);
             }
         }
+
+        surfacePointList.EndListQuery();
     }
 
     void SurfaceDataSystemComponent::GetSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize,
-        const SurfaceTagVector& desiredTags, SurfacePointLists& surfacePointLists) const
+        const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointLists) const
     {
         const size_t totalQueryPositions = aznumeric_cast<size_t>(ceil(inRegion.GetXExtent() / stepSize.GetX())) *
             aznumeric_cast<size_t>(ceil(inRegion.GetYExtent() / stepSize.GetY()));
@@ -275,19 +277,14 @@ namespace SurfaceData
     }
 
     void SurfaceDataSystemComponent::GetSurfacePointsFromList(
-        AZStd::span<const AZ::Vector3> inPositions, const SurfaceTagVector& desiredTags, SurfacePointLists& surfacePointLists) const
+        AZStd::span<const AZ::Vector3> inPositions, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointLists) const
     {
         AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
 
         const size_t totalQueryPositions = inPositions.size();
 
-        surfacePointLists.clear();
-        surfacePointLists.resize(totalQueryPositions);
-
-        for (auto& surfacePointList : surfacePointLists)
-        {
-            surfacePointList.ReserveSpace(m_registeredSurfaceDataProviders.size());
-        }
+        surfacePointLists.Clear();
+        surfacePointLists.StartListQuery(inPositions, m_registeredSurfaceDataProviders.size());
 
         const bool useTagFilters = HasValidTags(desiredTags);
         const bool hasModifierTags = useTagFilters && HasAnyMatchingTags(desiredTags, m_registeredModifierTags);
@@ -308,7 +305,7 @@ namespace SurfaceData
                     {
                         SurfaceDataProviderRequestBus::Event(
                             providerHandle, &SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
-                            inPositions[index], surfacePointLists[index]);
+                            inPositions[index], surfacePointLists);
                     }
                 }
             }
@@ -324,20 +321,11 @@ namespace SurfaceData
             const SurfaceDataRegistryEntry& entry = entryPair.second;
             bool hasInfiniteBounds = !entry.m_bounds.IsValid();
 
-            for (size_t index = 0; index < totalQueryPositions; index++)
+            if (hasInfiniteBounds || AabbOverlaps2D(entry.m_bounds, surfacePointLists.GetSurfacePointAabb()))
             {
-                const auto& inPosition = inPositions[index];
-                SurfacePointList& surfacePointList = surfacePointLists[index];
-                constexpr size_t inPositionIndex = 0;
-                if (!surfacePointList.IsEmpty(inPositionIndex))
-                {
-                    if (hasInfiniteBounds || AabbContains2D(entry.m_bounds, inPosition))
-                    {
-                        SurfaceDataModifierRequestBus::Event(
-                            entryPair.first, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints,
-                            surfacePointList);
-                    }
-                }
+                SurfaceDataModifierRequestBus::Event(
+                    entryPair.first, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints,
+                    surfacePointLists);
             }
         }
 
@@ -347,12 +335,10 @@ namespace SurfaceData
         // doesn't add a desired tag, and a surface modifier has the *potential* to add it, but then doesn't.
         if (useTagFilters)
         {
-            for (auto& surfacePointList : surfacePointLists)
-            {
-                surfacePointList.FilterPoints(desiredTags);
-            }
+            surfacePointLists.FilterPoints(desiredTags);
         }
 
+        surfacePointLists.EndListQuery();
     }
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataProviderInternal(const SurfaceDataRegistryEntry& entry)

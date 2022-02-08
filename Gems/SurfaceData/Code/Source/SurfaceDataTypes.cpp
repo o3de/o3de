@@ -45,7 +45,7 @@ namespace SurfaceData
         weights.reserve(m_weights.size());
         for (auto& weight : m_weights)
         {
-            weights.emplace_back(weight);
+            weights.emplace_back(weight.first, weight.second);
         }
         return weights;
     }
@@ -76,7 +76,7 @@ namespace SurfaceData
                 compareWeights.begin(), compareWeights.end(),
                 [weight](const AzFramework::SurfaceData::SurfaceTagWeight& compareWeight) -> bool
                 {
-                    return (weight == compareWeight);
+                    return ((weight.first == compareWeight.m_surfaceType) && (weight.second == compareWeight.m_weight));
                 });
 
             // If we didn't find a match, they're not equal.
@@ -105,7 +105,7 @@ namespace SurfaceData
     {
         for (const auto& weight : m_weights)
         {
-            if (weight.m_surfaceType != Constants::s_unassignedTagCrc)
+            if (weight.first != Constants::s_unassignedTagCrc)
             {
                 return true;
             }
@@ -134,7 +134,7 @@ namespace SurfaceData
     bool SurfaceTagWeights::HasMatchingTag(AZ::Crc32 sampleTag, float weightMin, float weightMax) const
     {
         auto weightEntry = FindTag(sampleTag);
-        return weightEntry != m_weights.end() && weightMin <= weightEntry->m_weight && weightMax >= weightEntry->m_weight;
+        return weightEntry != m_weights.end() && weightMin <= weightEntry->second && weightMax >= weightEntry->second;
     }
 
     bool SurfaceTagWeights::HasAnyMatchingTags(const SurfaceTagVector& sampleTags, float weightMin, float weightMax) const
@@ -150,16 +150,16 @@ namespace SurfaceData
         return false;
     }
 
-    const AzFramework::SurfaceData::SurfaceTagWeight* SurfaceTagWeights::FindTag(AZ::Crc32 tag) const
+    const AZStd::pair<AZ::Crc32, float>* SurfaceTagWeights::FindTag(AZ::Crc32 tag) const
     {
         for (auto weightItr = m_weights.begin(); weightItr != m_weights.end(); ++weightItr)
         {
-            if (weightItr->m_surfaceType == tag)
+            if (weightItr->first == tag)
             {
                 // Found the tag, return a pointer to the entry.
                 return weightItr;
             }
-            else if (weightItr->m_surfaceType > tag)
+            else if (weightItr->first > tag)
             {
                 // Our list is stored in sorted order by surfaceType, so early-out if our values get too high.
                 break;
@@ -173,44 +173,98 @@ namespace SurfaceData
 
     SurfacePointList::SurfacePointList(AZStd::initializer_list<const AzFramework::SurfaceData::SurfacePoint> surfacePoints)
     {
-        ReserveSpace(surfacePoints.size());
+        StartListQuery({ { surfacePoints.begin()->m_position } }, surfacePoints.size());
 
         for (auto& point : surfacePoints)
         {
             SurfaceTagWeights weights(point.m_surfaceTags);
             AddSurfacePoint(AZ::EntityId(), point.m_position, point.m_position, point.m_normal, weights);
         }
+
+        EndListQuery();
     }
 
-    void SurfacePointList::AddSurfacePoint(
-        const AZ::EntityId& entityId, [[maybe_unused]] const AZ::Vector3& inPosition,
-        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& masks)
+    size_t SurfacePointList::GetInPositionIndexFromPosition(const AZ::Vector3& inPosition) const
     {
-        // When adding a surface point, we'll either merge it with a similar existing point, or else add it in order of
-        // decreasing Z, so that our final results are sorted.
-
-        for (size_t index = 0; index < m_surfacePositionList.size(); ++index)
+        size_t inPositionIndex = m_lastInputPositionIndex;
+        bool foundMatch = false;
+        for (size_t indexCounter = 0; indexCounter < m_inputPositions.size(); indexCounter++)
         {
-            // (Someday we should add a configurable tolerance for comparison)
-            if (m_surfacePositionList[index].IsClose(position) && m_surfaceNormalList[index].IsClose(normal))
+            if (m_inputPositions[inPositionIndex] == inPosition)
             {
-                // consolidate points with similar attributes by adding masks/weights to the similar point instead of adding a new one.
-                m_surfaceWeightsList[index].AddSurfaceTagWeights(masks);
-                return;
+                foundMatch = true;
+                break;
             }
-            else if (m_surfacePositionList[index].GetZ() < position.GetZ())
+
+            inPositionIndex = (inPositionIndex + 1) % m_inputPositions.size();
+        }
+
+        AZ_Assert(foundMatch, "Couldn't find input position!");
+        m_lastInputPositionIndex = inPositionIndex;
+        return inPositionIndex;
+    }
+
+    size_t SurfacePointList::GetSurfacePointStartIndexFromInPositionIndex(size_t inPositionIndex) const
+    {
+        // Find the first SurfacePoint that either matches the inPosition, or that starts the range for the next inPosition after this one.
+        if (m_inputPositionIndex.empty() || 
+            (m_inputPositionIndex[m_sortedOutputIndexList[m_lastSurfacePointStartIndex]] > inPositionIndex))
+        {
+            m_lastSurfacePointStartIndex = 0;
+        }
+
+        for (; m_lastSurfacePointStartIndex < m_inputPositionIndex.size(); m_lastSurfacePointStartIndex++)
+        {
+            if (m_inputPositionIndex[m_sortedOutputIndexList[m_lastSurfacePointStartIndex]] >= inPositionIndex)
             {
-                m_pointBounds.AddPoint(position);
-                m_surfacePositionList.insert(m_surfacePositionList.begin() + index, position);
-                m_surfaceNormalList.insert(m_surfaceNormalList.begin() + index, normal);
-                m_surfaceWeightsList.insert(m_surfaceWeightsList.begin() + index, masks);
-                m_surfaceCreatorIdList.insert(m_surfaceCreatorIdList.begin() + index, entityId);
-                return;
+                break;
             }
         }
 
-        // The point wasn't merged and the sort puts it at the end, so just add the point to the end of the list.
-        m_pointBounds.AddPoint(position);
+        return m_lastSurfacePointStartIndex;
+    }
+
+
+    void SurfacePointList::AddSurfacePoint(
+        const AZ::EntityId& entityId, const AZ::Vector3& inPosition,
+        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceTagWeights& masks)
+    {
+
+        // Find the inPositionIndex that matches the inPosition.
+        size_t inPositionIndex = GetInPositionIndexFromPosition(inPosition);
+
+        // Find the first SurfacePoint that either matches the inPosition, or that starts the range for the next inPosition after this one.
+        size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inPositionIndex);
+
+        // When adding a surface point, we'll either merge it with a similar existing point, or else add it in order of
+        // decreasing Z, so that our final results are sorted.
+        size_t surfacePointInsertIndex = surfacePointStartIndex;
+
+        if ((surfacePointInsertIndex < m_inputPositionIndex.size()) &&
+            m_inputPositionIndex[m_sortedOutputIndexList[surfacePointStartIndex]] == inPositionIndex)
+        {
+            for (; (surfacePointInsertIndex < m_inputPositionIndex.size()) &&
+                 (m_inputPositionIndex[m_sortedOutputIndexList[surfacePointInsertIndex]] == inPositionIndex);
+                 ++surfacePointInsertIndex)
+            {
+                // (Someday we should add a configurable tolerance for comparison)
+                if (m_surfacePositionList[m_sortedOutputIndexList[surfacePointInsertIndex]].IsClose(position) &&
+                    m_surfaceNormalList[m_sortedOutputIndexList[surfacePointInsertIndex]].IsClose(normal))
+                {
+                    // consolidate points with similar attributes by adding masks/weights to the similar point instead of adding a new one.
+                    m_surfaceWeightsList[m_sortedOutputIndexList[surfacePointInsertIndex]].AddSurfaceTagWeights(masks);
+                    return;
+                }
+                else if (m_surfacePositionList[m_sortedOutputIndexList[surfacePointInsertIndex]].GetZ() < position.GetZ())
+                {
+                    break;
+                }
+            }
+        }
+
+        m_surfacePointBounds.AddPoint(position);
+        m_sortedOutputIndexList.insert(m_sortedOutputIndexList.begin() + surfacePointInsertIndex, m_inputPositionIndex.size());
+        m_inputPositionIndex.emplace_back(inPositionIndex);
         m_surfacePositionList.emplace_back(position);
         m_surfaceNormalList.emplace_back(normal);
         m_surfaceWeightsList.emplace_back(masks);
@@ -219,40 +273,105 @@ namespace SurfaceData
 
     void SurfacePointList::Clear()
     {
+        m_lastInputPositionIndex = 0;
+        m_lastSurfacePointStartIndex = 0;
+        m_inputPositionSize = 0;
+
+        m_inputPositions = {};
+        m_inputPositionIndex.clear();
+
+        m_sortedOutputIndexList.clear();
         m_surfacePositionList.clear();
         m_surfaceNormalList.clear();
         m_surfaceWeightsList.clear();
         m_surfaceCreatorIdList.clear();
+
+        m_surfacePointBounds = AZ::Aabb::CreateNull();
     }
 
-    void SurfacePointList::ReserveSpace(size_t maxPointsPerInput)
+    void SurfacePointList::StartListQuery(AZStd::span<const AZ::Vector3> inPositions, size_t maxPointsPerInput)
     {
         AZ_Assert(m_surfacePositionList.empty(), "Trying to reserve space on a list that is already being used.");
 
-        m_surfaceCreatorIdList.reserve(maxPointsPerInput);
-        m_surfacePositionList.reserve(maxPointsPerInput);
-        m_surfaceNormalList.reserve(maxPointsPerInput);
-        m_surfaceWeightsList.reserve(maxPointsPerInput);
+        Clear();
+
+        m_inputPositions = inPositions;
+        m_inputPositionSize = inPositions.size();
+
+        size_t outputReserveSize = inPositions.size() * maxPointsPerInput;
+
+        m_sortedOutputIndexList.reserve(outputReserveSize);
+        m_inputPositionIndex.reserve(outputReserveSize);
+        m_surfaceCreatorIdList.reserve(outputReserveSize);
+        m_surfacePositionList.reserve(outputReserveSize);
+        m_surfaceNormalList.reserve(outputReserveSize);
+        m_surfaceWeightsList.reserve(outputReserveSize);
     }
 
-    bool SurfacePointList::IsEmpty([[maybe_unused]] size_t inputPositionIndex) const
+    void SurfacePointList::EndListQuery()
     {
-        return m_surfacePositionList.empty();
+        m_inputPositions = {};
     }
 
-    size_t SurfacePointList::GetSize([[maybe_unused]] size_t inputPositionIndex) const
+    bool SurfacePointList::IsEmpty(size_t inputPositionIndex) const
     {
-        return m_surfacePositionList.size();
+        size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inputPositionIndex);
+        return ((m_surfacePositionList.size() <= surfacePointStartIndex) ||
+            (m_inputPositionIndex[m_sortedOutputIndexList[surfacePointStartIndex]] != inputPositionIndex));
+    }
+
+    size_t SurfacePointList::GetSize(size_t inputPositionIndex) const
+    {
+        size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inputPositionIndex);
+        if ((m_surfacePositionList.size() <= surfacePointStartIndex) ||
+            (m_inputPositionIndex[m_sortedOutputIndexList[surfacePointStartIndex]] != inputPositionIndex))
+        {
+            return 0;
+        }
+
+        size_t outputListSize = 0;
+        for (size_t index = surfacePointStartIndex;
+             (index < m_inputPositionIndex.size()) && (m_inputPositionIndex[m_sortedOutputIndexList[index]] == inputPositionIndex); index++)
+        {
+            outputListSize++;
+        }
+
+        return outputListSize;
     }
 
     void SurfacePointList::EnumeratePoints(
-        [[maybe_unused]] size_t inputPositionIndex, 
+        size_t inputPositionIndex, 
         AZStd::function<bool(const AZ::Vector3&, const AZ::Vector3&, const SurfaceData::SurfaceTagWeights&)>
             pointCallback) const
     {
-        for (size_t index = 0; index < m_surfacePositionList.size(); index++)
+        size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inputPositionIndex);
+        if ((m_surfacePositionList.size() <= surfacePointStartIndex) ||
+            (m_inputPositionIndex[m_sortedOutputIndexList[surfacePointStartIndex]] != inputPositionIndex))
         {
-            if (!pointCallback(m_surfacePositionList[index], m_surfaceNormalList[index], m_surfaceWeightsList[index]))
+            return;
+        }
+
+        for (size_t index = surfacePointStartIndex;
+             (index < m_inputPositionIndex.size()) && (m_inputPositionIndex[m_sortedOutputIndexList[index]] == inputPositionIndex); index++)
+        {
+            if (!pointCallback(
+                    m_surfacePositionList[m_sortedOutputIndexList[index]], m_surfaceNormalList[m_sortedOutputIndexList[index]],
+                    m_surfaceWeightsList[m_sortedOutputIndexList[index]]))
+            {
+                break;
+            }
+        }
+    }
+
+    void SurfacePointList::EnumeratePoints(
+        AZStd::function<bool(size_t inputPositionIndex, const AZ::Vector3&, const AZ::Vector3&, const SurfaceData::SurfaceTagWeights&)>
+            pointCallback) const
+    {
+        for (size_t index = 0; (index < m_inputPositionIndex.size()); index++)
+        {
+            if (!pointCallback(
+                    m_inputPositionIndex[m_sortedOutputIndexList[index]], m_surfacePositionList[m_sortedOutputIndexList[index]],
+                    m_surfaceNormalList[m_sortedOutputIndexList[index]], m_surfaceWeightsList[m_sortedOutputIndexList[index]]))
             {
                 break;
             }
@@ -265,19 +384,27 @@ namespace SurfaceData
     {
         for (size_t index = 0; index < m_surfacePositionList.size(); index++)
         {
-            if (m_surfaceCreatorIdList[index] != currentEntityId)
+            if (m_surfaceCreatorIdList[m_sortedOutputIndexList[index]] != currentEntityId)
             {
-                modificationWeightCallback(m_surfacePositionList[index], m_surfaceWeightsList[index]);
+                modificationWeightCallback(
+                    m_surfacePositionList[m_sortedOutputIndexList[index]], m_surfaceWeightsList[m_sortedOutputIndexList[index]]);
             }
         }
     }
 
     AzFramework::SurfaceData::SurfacePoint SurfacePointList::GetHighestSurfacePoint([[maybe_unused]] size_t inputPositionIndex) const
     {
+        size_t surfacePointStartIndex = GetSurfacePointStartIndexFromInPositionIndex(inputPositionIndex);
+        if ((m_surfacePositionList.size() <= surfacePointStartIndex) ||
+            (m_inputPositionIndex[m_sortedOutputIndexList[surfacePointStartIndex]] != inputPositionIndex))
+        {
+            return {};
+        }
+
         AzFramework::SurfaceData::SurfacePoint point;
-        point.m_position = m_surfacePositionList.front();
-        point.m_normal = m_surfaceNormalList.front();
-        point.m_surfaceTags = m_surfaceWeightsList.front().GetSurfaceTagWeightList();
+        point.m_position = m_surfacePositionList[m_sortedOutputIndexList[surfacePointStartIndex]];
+        point.m_normal = m_surfaceNormalList[m_sortedOutputIndexList[surfacePointStartIndex]];
+        point.m_surfaceTags = m_surfaceWeightsList[m_sortedOutputIndexList[surfacePointStartIndex]].GetSurfaceTagWeightList();
 
         return point;
     }
@@ -304,6 +431,8 @@ namespace SurfaceData
             {
                 if (m_surfaceWeightsList[index].HasAnyMatchingTags(desiredTags))
                 {
+                    m_sortedOutputIndexList[index] = m_sortedOutputIndexList[next];
+                    m_inputPositionIndex[index] = m_inputPositionIndex[next];
                     m_surfaceCreatorIdList[index] = m_surfaceCreatorIdList[next];
                     m_surfacePositionList[index] = m_surfacePositionList[next];
                     m_surfaceNormalList[index] = m_surfaceNormalList[next];
@@ -312,6 +441,8 @@ namespace SurfaceData
                 }
             }
 
+            m_sortedOutputIndexList.resize(index);
+            m_inputPositionIndex.resize(index);
             m_surfaceCreatorIdList.resize(index);
             m_surfacePositionList.resize(index);
             m_surfaceNormalList.resize(index);
