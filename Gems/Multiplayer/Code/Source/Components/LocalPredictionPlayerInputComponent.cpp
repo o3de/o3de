@@ -378,23 +378,27 @@ namespace Multiplayer
 
         if (cl_EnableDesyncDebugging)
         {
-            NetworkInput& startReplayInput = m_inputHistory[startReplayIndex];
-            AZLOG_WARN("** Autonomous Desync - Correcting clientInputId=%d from index=%d",
-                aznumeric_cast<int32_t>(inputId), startReplayIndex);
+            const NetworkInput& startReplayInput = m_inputHistory[startReplayIndex];
+            AZLOG_WARN("** Autonomous Desync - Correcting clientInputId=%d from host frame=%d", aznumeric_cast<int32_t>(inputId),
+                aznumeric_cast<int32_t>(startReplayInput.GetHostFrameId()));
 
 #ifndef AZ_RELEASE_BUILD
             auto iter = m_predictiveStateHistory.find(inputId);
             if (iter != m_predictiveStateHistory.end())
             {
+                // Correction starts a frame after the desync, grab the correct host frame input for book keeping
+                const uint32_t correctedIndex = startReplayIndex > 0 ? startReplayIndex - 1 : 0;
+                const NetworkInput& correctedInput = m_inputHistory[correctedIndex];
+
                 // Read out state values
                 AzNetworking::StringifySerializer serverValues;
                 SerializeEntityCorrection(serverValues);
                 MultiplayerAuditingElement detail;
                 PrintCorrectionDifferences(*iter->second, serverValues, &detail);
-                detail.m_name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from index=%d",
-                    aznumeric_cast<int32_t>(inputId), startReplayIndex);
-                AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(AuditCategory::Desync,
-                    inputId, startReplayInput.GetHostFrameId(), GetEntity()->GetName(), { AZStd::move(detail) });
+                detail.m_name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from host frame=%d",
+                    aznumeric_cast<int32_t>(inputId), aznumeric_cast<int32_t>(startReplayInput.GetHostFrameId()));
+                AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(AuditCategory::Desync, inputId,
+                    correctedInput.GetHostFrameId(), GetEntity()->GetName(), { AZStd::move(detail) });
             }
             else
             {
