@@ -276,11 +276,12 @@ namespace SurfaceData
         // "channels" into other methods as span<> without having to pass the full struct into the span<>. Specifically, we want to be
         // able to pass spans of the positions down through nesting gradient/surface calls.
         // A side benefit is that profiling showed the data access to be faster than packing all the fields into a single struct.
-        AZStd::vector<size_t> m_inputPositionIndex;
-        AZStd::vector<AZ::EntityId> m_surfaceCreatorIdList;
+        AZStd::vector<size_t> m_indirectIndex;
+
         AZStd::vector<AZ::Vector3> m_surfacePositionList;
-        AZStd::vector<AZ::Vector3> m_surfaceNormalList;
         AZStd::vector<SurfaceTagWeights> m_surfaceWeightsList;
+        AZStd::vector<AZ::EntityId> m_surfaceCreatorIdList;
+        AZStd::vector<AZ::Vector3> m_surfaceNormalList;
 
         AZ::Aabb m_surfacePointBounds = AZ::Aabb::CreateNull();
         size_t m_inputPositionSize = 0;
