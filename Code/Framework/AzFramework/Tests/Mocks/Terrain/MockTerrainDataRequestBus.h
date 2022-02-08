@@ -106,5 +106,23 @@ namespace UnitTest
             GetTerrainRaycastEntityContextId, AzFramework::EntityContextId());
         MOCK_CONST_METHOD1(
             GetClosestIntersection, AzFramework::RenderGeometry::RayResult(const AzFramework::RenderGeometry::RayRequest&));
+        MOCK_METHOD0(
+            CreateNewTerrainJobContext, AZStd::shared_ptr<TerrainJobContext>());
+        MOCK_CONST_METHOD4(
+            ProcessHeightsFromListAsync, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD4(
+            ProcessNormalsFromListAsync, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD4(
+            ProcessSurfaceWeightsFromListAsync, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD4(
+            ProcessSurfacePointsFromListAsync, void(const AZStd::span<AZ::Vector3>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD4(
+            ProcessHeightsFromListOfVector2Async, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD4(
+            ProcessNormalsFromListOfVector2Async, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD4(
+            ProcessSurfaceWeightsFromListOfVector2Async, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD4(
+            ProcessSurfacePointsFromListOfVector2Async, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
     };
 } // namespace UnitTest

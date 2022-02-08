@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
@@ -192,6 +193,87 @@ namespace AzFramework
 
             //! Given a ray, return the closest intersection with terrain.
             virtual RenderGeometry::RayResult GetClosestIntersection(const RenderGeometry::RayRequest& ray) const = 0;
+
+            //! A JobContext used to run jobs spawned by calls to the various Process*Async functions.
+            //! Instances of this class should only be created by calling CreateNewTerrainJobContext,
+            //! and the only practical use for it is to cancel all Process*Async calls made using it.
+            class TerrainJobContext : public AZ::JobContext
+            {
+            public:
+                TerrainJobContext(AZ::JobManager& jobManager, AZ::JobCancelGroup& cancelGroup)
+                    : JobContext(jobManager, cancelGroup) {}
+
+                void Cancel() { GetCancelGroup()->Cancel(); }
+                bool IsCancelled() const { return GetCancelGroup()->IsCancelled(); }
+            };
+
+            //! Alias for an optional callback function to invoke when the various Process*Async functions complete.
+            //! The TerrainJobContext (if any) originally passed to the Process*Async function is passed as a param
+            //! to the callback function so it can be queried to see if the job was cancelled or completed normally.
+            typedef AZStd::function<void(AZStd::shared_ptr<TerrainJobContext>)> ProcessAsyncCompleteCallback;
+
+            //! A parameter group struct that can optionally be passed to the various Process*Async API functions.
+            struct ProcessAsyncParams
+            {
+                //! The TerrainJobContext which will run all jobs spawned by a call to a Process*Async function.
+                //! This must be set to a TerrainJobContext that was created by calling CreateNewTerrainJobContext,
+                //! but the same TerrainJobContext can be used for multiple calls to different Process*Async functions.
+                //! The only practical purpose of using this parameter is to be able to cancel all Process*Async calls
+                //! made using this TerrainJobContext object (which can be done by calling TerrainJobContext::Cancel()).
+                AZStd::shared_ptr<TerrainJobContext> m_terrainJobContext = nullptr;
+
+                //! The callback function that will be invoked when a call to a Process*Async function completes.
+                ProcessAsyncCompleteCallback m_completionCallback = nullptr;
+
+                //! The desired number of jobs to split the work into.
+                //! Defaults to the number of available job manager threads.
+                //! Will be clamped to the number of available job manager threads.
+                //! If the calling code wants to decide how to divide up the work,
+                //! they can call any of the Process*Async functions multiple times
+                //! with this set to 1, but in doing so they will have to deal with
+                //! figuring out when all the individual requests have completed, so
+                //! it is recommended to let the terrain system figure out internally
+                //! how many jobs to split the work into by leaving this as the default.
+                int32_t m_desiredNumberOfJobs = -1;
+            };
+
+            //! Create a new TerrainJobContext that is used to group related terrain jobs and allow them to be cancelled.
+            virtual AZStd::shared_ptr<TerrainJobContext> CreateNewTerrainJobContext() = 0;
+
+            //! Asyncronous versions of the various 'Process*' API functions declared above.
+            //! It's the responsibility of the caller to ensure all callbacks are threadsafe.
+            virtual void ProcessHeightsFromListAsync(const AZStd::span<AZ::Vector3>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessNormalsFromListAsync(const AZStd::span<AZ::Vector3>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessSurfaceWeightsFromListAsync(const AZStd::span<AZ::Vector3>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessSurfacePointsFromListAsync(const AZStd::span<AZ::Vector3>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessHeightsFromListOfVector2Async(const AZStd::span<AZ::Vector2>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessNormalsFromListOfVector2Async(const AZStd::span<AZ::Vector2>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessSurfaceWeightsFromListOfVector2Async(const AZStd::span<AZ::Vector2>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessSurfacePointsFromListOfVector2Async(const AZStd::span<AZ::Vector2>& inPositions,
+                SurfacePointListFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
 
         private:
             // Private variations of the GetSurfacePoint API exposed to BehaviorContext that returns a value instead of

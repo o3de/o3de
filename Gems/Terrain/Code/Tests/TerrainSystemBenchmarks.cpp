@@ -13,6 +13,8 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Jobs/JobManagerComponent.h>
+#include <AzCore/std/parallel/condition_variable.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -263,7 +265,17 @@ namespace UnitTest
             auto spawnerShapeRequests = CreateMockShape(worldBounds, testLayerSpawnerEntity->GetId());
             ActivateEntity(testLayerSpawnerEntity.get());
 
+            // Create the global job manager.
+            auto serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+            auto jobManagerComponentDescriptor = AZ::JobManagerComponent::CreateDescriptor();
+            jobManagerComponentDescriptor->Reflect(serializeContext.get());
+            auto jobManagerEntity = AZStd::make_unique<AZ::Entity>();
+            jobManagerEntity->CreateComponent<AZ::JobManagerComponent>();
+            jobManagerEntity->Init();
+            jobManagerEntity->Activate();
+
             // Create the terrain system (do this after creating the terrain layer entity to ensure that we don't need any data refreshes)
+            // Also ensure to do this after creating the global JobManager.
             auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
 
             // Call the terrain API we're testing for every height and width in our ranges.
@@ -406,6 +418,56 @@ namespace UnitTest
         ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
+    BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsListAsync)(benchmark::State& state)
+    {
+        // Run the benchmark
+        RunTerrainApiBenchmark(
+            state,
+            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
+                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                AZStd::vector<AZ::Vector3> inPositions;
+                GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
+
+                auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
+                    benchmark::DoNotOptimize(surfacePoint.m_position.GetZ());
+                };
+
+                AZStd::mutex completionMutex;
+                AZStd::condition_variable completionVariable;
+                AZStd::atomic_bool completionFlag = false;
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                {
+                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
+                    completionFlag = true;
+                    completionVariable.notify_one();
+                };
+
+                AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
+                    = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_completionCallback = completionCallback;
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
+
+                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
+                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+            }
+        );
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessHeightsListAsync)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 4096, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Unit(::benchmark::kMillisecond);
+
     BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_GetNormal)(benchmark::State& state)
     {
         // Run the benchmark
@@ -490,6 +552,53 @@ namespace UnitTest
     }
 
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessNormalsList)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessNormalsListAsync)(benchmark::State& state)
+    {
+        // Run the benchmark
+        RunTerrainApiBenchmark(
+            state,
+            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
+                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                AZStd::vector<AZ::Vector3> inPositions;
+                GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
+
+                auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
+                    benchmark::DoNotOptimize(surfacePoint.m_normal);
+                };
+
+                AZStd::mutex completionMutex;
+                AZStd::condition_variable completionVariable;
+                AZStd::atomic_bool completionFlag = false;
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                {
+                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
+                    completionFlag = true;
+                    completionVariable.notify_one();
+                };
+
+                AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
+                    = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_completionCallback = completionCallback;
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
+
+                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
+                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+            }
+        );
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessNormalsListAsync)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
@@ -591,6 +700,53 @@ namespace UnitTest
         ->Args({ 2048, 4, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
         ->Unit(::benchmark::kMillisecond);
 
+    BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessSurfaceWeightsListAsync)(benchmark::State& state)
+    {
+        // Run the benchmark
+        RunTerrainApiBenchmark(
+            state,
+            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
+                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                AZStd::vector<AZ::Vector3> inPositions;
+                GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
+
+                auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
+                    benchmark::DoNotOptimize(surfacePoint.m_surfaceTags);
+                };
+
+                AZStd::mutex completionMutex;
+                AZStd::condition_variable completionVariable;
+                AZStd::atomic_bool completionFlag = false;
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                {
+                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
+                    completionFlag = true;
+                    completionVariable.notify_one();
+                };
+
+                AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
+                    = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_completionCallback = completionCallback;
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
+
+                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
+                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+            }
+        );
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessSurfaceWeightsListAsync)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 1024, 2, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 2, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 1024, 4, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 4, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Unit(::benchmark::kMillisecond);
+
     BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_GetSurfacePoints)(benchmark::State& state)
     {
         // Run the benchmark
@@ -676,6 +832,53 @@ namespace UnitTest
     }
 
     BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessSurfacePointsList)
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
+        ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT) })
+        ->Unit(::benchmark::kMillisecond);
+
+    BENCHMARK_DEFINE_F(TerrainSystemBenchmarkFixture, BM_ProcessSurfacePointsListAsync)(benchmark::State& state)
+    {
+        // Run the benchmark
+        RunTerrainApiBenchmark(
+            state,
+            [this]([[maybe_unused]] float queryResolution, const AZ::Aabb& worldBounds,
+                AzFramework::Terrain::TerrainDataRequests::Sampler sampler)
+            {
+                AZStd::vector<AZ::Vector3> inPositions;
+                GenerateInputPositionsList(queryResolution, worldBounds, inPositions);
+
+                auto perPositionCallback = [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+                {
+                    benchmark::DoNotOptimize(surfacePoint);
+                };
+
+                AZStd::mutex completionMutex;
+                AZStd::condition_variable completionVariable;
+                AZStd::atomic_bool completionFlag = false;
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                {
+                    AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
+                    completionFlag = true;
+                    completionVariable.notify_one();
+                };
+
+                AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
+                    = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+                asyncParams->m_completionCallback = completionCallback;
+                AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromListAsync, inPositions, perPositionCallback, sampler, asyncParams);
+
+                AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
+                completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
+            }
+        );
+    }
+
+    BENCHMARK_REGISTER_F(TerrainSystemBenchmarkFixture, BM_ProcessSurfacePointsListAsync)
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 2048, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) })
         ->Args({ 1024, 1, static_cast<int>(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP) })
