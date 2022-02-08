@@ -47,8 +47,7 @@ void AssetImporterManager::Exec()
 {
     // tell the AssetImporterDragAndDropHandler that the Asset Importer now is running
     Q_EMIT StartAssetImporter();
-    bool success = false;
-    //OnBrowseFiles();
+    bool success = OnBrowseFiles();
 
     // prevent users from selecting crate files from the File Explorer and open the Asset Importer.
     if (!success)
@@ -133,7 +132,7 @@ bool AssetImporterManager::OnBrowseFiles()
 
     fileDialog.setDirectory(currentAbsolutePath);
 
-    if (!fileDialog.exec())
+//    if (!fileDialog.exec())
     {
         return false;
     }
