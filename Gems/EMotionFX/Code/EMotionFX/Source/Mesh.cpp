@@ -188,7 +188,7 @@ namespace EMotionFX
         const AZ::RPI::ModelLodAsset::Mesh& sourceMesh0 = sourceModelLod->GetMeshes()[0];
 
         // Copy the index buffer for the entire lod
-        AZStd::span<const uint8_t> indexBuffer = sourceMesh.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
+        AZStd::span<const uint8_t> indexBuffer = sourceMesh0.GetIndexBufferAssetView().GetBufferAsset()->GetBuffer();
         const AZ::RHI::BufferViewDescriptor& indexBufferViewDescriptor =
             sourceMesh0.GetIndexBufferAssetView().GetBufferAsset()->GetBufferViewDescriptor();
         AZ_ErrorOnce("EMotionFX", indexBufferViewDescriptor.m_elementSize == 4, "Index buffer must stored as 4 bytes.");
