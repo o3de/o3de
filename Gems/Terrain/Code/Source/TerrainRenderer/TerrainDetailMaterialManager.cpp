@@ -106,6 +106,8 @@ namespace Terrain
             return;
         }
 
+        InitializePassthroughDetailMaterial();
+
         ClipmapBoundsDescriptor desc;
         desc.m_clipmapUpdateMultiple = 1;
         desc.m_clipToWorldScale = DetailTextureScale;
@@ -278,7 +280,7 @@ namespace Terrain
     void TerrainDetailMaterialManager::OnTerrainDefaultSurfaceMaterialCreated(AZ::EntityId entityId, MaterialInstance material)
     {
         DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
-        AZ_Error("TerrainDetailMaterialManager", materialRegion.m_defaultDetailMaterialId == decltype(m_detailMaterialRegions)::NoFreeSlot,
+        AZ_Error("TerrainDetailMaterialManager", materialRegion.m_defaultDetailMaterialId == InvalidDetailMaterailId,
             "Default detail material created but was already set for this region.");
 
         materialRegion.m_defaultDetailMaterialId = CreateOrUpdateDetailMaterial(material);
@@ -296,7 +298,7 @@ namespace Terrain
         }
 
         CheckDetailMaterialForDeletion(materialRegion->m_defaultDetailMaterialId);
-        materialRegion->m_defaultDetailMaterialId = decltype(m_detailMaterialRegions)::NoFreeSlot;
+        materialRegion->m_defaultDetailMaterialId = InvalidDetailMaterailId;
     }
 
     void TerrainDetailMaterialManager::OnTerrainDefaultSurfaceMaterialChanged(AZ::EntityId entityId, MaterialInstance newMaterial)
@@ -739,23 +741,35 @@ namespace Terrain
             bool isFirstMaterial = true;
             float firstWeight = 0.0f;
             AZ::Vector2 position(surfacePoint.m_position.GetX(), surfacePoint.m_position.GetY());
+            const DetailMaterialListRegion* region = FindRegionForPosition(position);
+
+            if (region == nullptr)
+            {
+                pixels.at(index).m_material1 = m_passthroughMaterialId;
+            }
+
             for (const auto& surfaceTagWeight : surfacePoint.m_surfaceTags)
             {
                 if (surfaceTagWeight.m_weight > 0.0f)
                 {
                     AZ::Crc32 surfaceType = surfaceTagWeight.m_surfaceType;
-                    uint16_t materialId = GetDetailMaterialForSurfaceTypeAndPosition(surfaceType, position);
-                    if (materialId != m_detailMaterials.NoFreeSlot && materialId < 255)
+                    uint16_t materialId = GetDetailMaterialForSurfaceType(*region, surfaceType);
+                    if (materialId < 255)
                     {
                         if (isFirstMaterial)
                         {
+                            // First material is valid. Save its weight to calculate blend later
                             pixels.at(index).m_material1 = aznumeric_cast<uint8_t>(materialId);
                             firstWeight = surfaceTagWeight.m_weight;
-                            // m_blend only needs to be calculated is material 2 is found, otherwise the initial value of 0 is correct.
                             isFirstMaterial = false;
+                            if (firstWeight >= 1.0f)
+                            {
+                                break;
+                            }
                         }
                         else
                         {
+                            // Second material is valid, weight is relative based on first material's weight.
                             pixels.at(index).m_material2 = aznumeric_cast<uint8_t>(materialId);
                             float totalWeight = firstWeight + surfaceTagWeight.m_weight;
                             float blendWeight = 1.0f - (firstWeight / totalWeight);
@@ -763,11 +777,37 @@ namespace Terrain
                             break;
                         }
                     }
+                    continue; // search for second material
                 }
                 else
                 {
-                    break; // since the list is ordered, no other materials are in the list with positive weights.
+                    // No more valid materials in list since surfaceTagWeight is ordered.
+
+                    uint8_t defaultMaterial = region->m_defaultDetailMaterialId == InvalidDetailMaterailId ? m_passthroughMaterialId :
+                        aznumeric_cast<uint8_t>(m_detailMaterials.GetData(region->m_defaultDetailMaterialId).m_detailMaterialBufferIndex);
+
+                    if (isFirstMaterial)
+                    {
+                        // Only one material and it's the default material.
+                        pixels.at(index).m_material1 = defaultMaterial;
+                    }
+                    else
+                    {
+                        // Second material is default, weight is exactly what the first material requested
+                        pixels.at(index).m_material2 = defaultMaterial;
+                        float blendWeight = 1.0f - AZStd::clamp<float>(firstWeight, 0.0f, 1.0f);
+                        pixels.at(index).m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
+                    }
                 }
+
+                if (pixels.at(index).m_material1 == pixels.at(index).m_material2)
+                {
+                    // If the materials are the same, then make the blend 100% on the first id so the shader
+                    // doesn't blend identical materials
+                    pixels.at(index).m_blend = 0;
+                }
+
+                break;
             }
             ++index;
         };
@@ -795,23 +835,37 @@ namespace Terrain
 
         m_detailTextureImage->UpdateImageContents(imageUpdateRequest);
     }
-
-    uint16_t TerrainDetailMaterialManager::GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position)
+    
+    uint16_t TerrainDetailMaterialManager::GetDetailMaterialForSurfaceType(const DetailMaterialListRegion& materialRegion, AZ::Crc32 surfaceType) const
+    {
+        for (const auto& materialSurface : materialRegion.m_materialsForSurfaces)
+        {
+            if (materialSurface.m_surfaceTag == surfaceType)
+            {
+                return m_detailMaterials.GetData(materialSurface.m_detailMaterialId).m_detailMaterialBufferIndex;
+            }
+        }
+        return InvalidDetailMaterailId;
+    }
+    
+    auto TerrainDetailMaterialManager::FindRegionForPosition(const AZ::Vector2& position) const -> const DetailMaterialListRegion*
     {
         for (const auto& materialRegion : m_detailMaterialRegions.GetDataVector())
         {
             if (materialRegion.m_region.Contains(AZ::Vector3(position.GetX(), position.GetY(), 0.0f)))
             {
-                for (const auto& materialSurface : materialRegion.m_materialsForSurfaces)
-                {
-                    if (materialSurface.m_surfaceTag == surfaceType)
-                    {
-                        return m_detailMaterials.GetData(materialSurface.m_detailMaterialId).m_detailMaterialBufferIndex;
-                    }
-                }
+                return &materialRegion;
             }
         }
-        return m_detailMaterials.NoFreeSlot;
+        return nullptr;
+    }
+
+    void TerrainDetailMaterialManager::InitializePassthroughDetailMaterial()
+    {
+        m_passthroughMaterialId = aznumeric_cast<uint8_t>(m_detailMaterialShaderData.Reserve());
+        DetailMaterialShaderData& materialShaderData = m_detailMaterialShaderData.GetElement(m_passthroughMaterialId);
+        // Material defaults to white (1.0, 1.0, 1.0), set the blend mode to multiply so it passes through to the macro material.
+        materialShaderData.m_flags = DetailTextureFlags::BlendModeMultiply;
     }
 
     auto TerrainDetailMaterialManager::FindByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container)
@@ -857,19 +911,4 @@ namespace Terrain
         AZ_Assert(false, "Entity Id not found in container.")
     }
 
-    void TerrainDetailMaterialManager::ResetDefaultDetailMaterial()
-    {
-        m_defaultMaterialData.m_assetId = {};
-        m_defaultMaterialData.m_materialChangeId = AZ::RPI::Material::DEFAULT_CHANGE_ID;
-        m_defaultMaterialData.refCount = 1;
-        m_defaultMaterialData.m_detailMaterialBufferIndex = 0;
-
-        m_defaultMaterialData.m_colorImage = {};
-        m_defaultMaterialData.m_normalImage = {};
-        m_defaultMaterialData.m_roughnessImage = {};
-        m_defaultMaterialData.m_metalnessImage = {};
-        m_defaultMaterialData.m_specularF0Image = {};
-        m_defaultMaterialData.m_occlusionImage = {};
-        m_defaultMaterialData.m_heightImage = {};
-    }
 }

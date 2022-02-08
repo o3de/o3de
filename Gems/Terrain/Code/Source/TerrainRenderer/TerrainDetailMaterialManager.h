@@ -154,6 +154,9 @@ namespace Terrain
             AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
             uint16_t m_defaultDetailMaterialId;
         };
+
+        using DetailMaterialContainer = AZ::Render::IndexedDataVector<DetailMaterialData>;
+        static constexpr auto InvalidDetailMaterailId = DetailMaterialContainer::NoFreeSlot;
         
         // System-level parameters
         static constexpr int32_t DetailTextureSize{ 1024 };
@@ -193,8 +196,14 @@ namespace Terrain
         //! Updates the detail texture in a given area
         void UpdateDetailTexture(const AZ::Aabb& worldUpdateAabb, const Aabb2i& textureUpdateAabb);
 
-        //! Finds the detail material Id for a surface type and position
-        uint16_t GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position);
+        //! Finds the detail material Id for a region and surface type
+        uint16_t GetDetailMaterialForSurfaceType(const DetailMaterialListRegion& materialRegion, AZ::Crc32 surfaceType) const;
+
+        //! Finds a region for a position. Returns nullptr if none found.
+        const DetailMaterialListRegion* FindRegionForPosition(const AZ::Vector2& position) const;
+    
+        //! Initializes shader data for the default passthrough material which is used when no other detail material is found.
+        void InitializePassthroughDetailMaterial();
 
         using DefaultMaterialSurfaceCallback = AZStd::function<void(DetailMaterialSurface&)>;
         bool ForSurfaceTag(DetailMaterialListRegion& materialRegion,
@@ -203,18 +212,16 @@ namespace Terrain
         DetailMaterialListRegion& FindOrCreateByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
         void RemoveByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
 
-        void ResetDefaultDetailMaterial();
-
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
         
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
 
-        DetailMaterialData m_defaultMaterialData;
-        AZ::Render::IndexedDataVector<DetailMaterialData> m_detailMaterials;
+        DetailMaterialContainer m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
         AZ::Render::SparseVector<DetailMaterialShaderData> m_detailMaterialShaderData;
         AZ::Render::GpuBufferHandler m_detailMaterialDataBuffer;
-        
+        uint8_t m_passthroughMaterialId = 0;
+
         AZ::Aabb m_dirtyDetailRegion{ AZ::Aabb::CreateNull() };
         ClipmapBounds m_detailMaterialIdBounds;
 
@@ -225,6 +232,6 @@ namespace Terrain
         bool m_isInitialized{ false };
         bool m_detailMaterialBufferNeedsUpdate{ false };
         bool m_detailImageNeedsUpdate{ false };
-
+        
     };
 }
