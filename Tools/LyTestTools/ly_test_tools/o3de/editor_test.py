@@ -787,11 +787,6 @@ class EditorTestSuite():
                     editor_utils.cycle_crash_report(run_id, workspace)
                 else:
                     test_result = Result.Fail.create(test_spec, output, editor_log_content)
-                # Save assets with errors and warnings
-                try:
-                    editor_utils.save_failed_asset_joblogs(workspace)
-                except Exception as e:  # Purposefully broad
-                    logger.warning(e)
         except WaitTimeoutError:
             output = editor.get_output()
             editor.kill()
@@ -856,7 +851,7 @@ class EditorTestSuite():
             workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
                                                      f'({run_id}){log_name}')
             if return_code == 0:
-                # No need to scrap the output, as all the tests have passed
+                # No need to scrape the output, as all the tests have passed
                 for test_spec in test_spec_list:
                     results[test_spec.__name__] = Result.Pass.create(test_spec, output, editor_log_content)
             else:
@@ -895,11 +890,6 @@ class EditorTestSuite():
                         editor_utils.cycle_crash_report(run_id, workspace)
                         results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code,
                                                                       crash_error, crashed_result.editor_log)
-                # Save assets with errors and warnings
-                try:
-                    editor_utils.save_failed_asset_joblogs(workspace)
-                except Exception as e:  # Purposefully broad
-                    logger.warning(e)
         except WaitTimeoutError:            
             editor.kill()
             output = editor.get_output()
@@ -950,6 +940,9 @@ class EditorTestSuite():
         editor_test_data.results.update(results)
         test_name, test_result = next(iter(results.items()))
         self._report_result(test_name, test_result)
+        # If test did not pass, save assets with errors and warnings
+        if not isinstance(test_result, Result.Pass):
+            editor_utils.save_failed_asset_joblogs(workspace)
 
     def _run_batched_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
                            test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
@@ -971,6 +964,11 @@ class EditorTestSuite():
                                               extra_cmdline_args)
         assert results is not None
         editor_test_data.results.update(results)
+        # If a single test did not pass, save assets with errors and warnings
+        for result in results:
+            if not isinstance(result, Result.Pass):
+                editor_utils.save_failed_asset_joblogs(workspace)
+                return
 
     def _run_parallel_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
                             test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
@@ -1017,8 +1015,14 @@ class EditorTestSuite():
             for t in threads:
                 t.join()
 
+            save_asset_logs = False
             for result in results_per_thread:
                 editor_test_data.results.update(result)
+                if not isinstance(result, Result.Pass):
+                    save_asset_logs = True
+            # If a single test did not pass, save assets with errors and warnings
+            if save_asset_logs:
+                editor_utils.save_failed_asset_joblogs(workspace)
 
     def _run_parallel_batched_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
                                     test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
@@ -1066,9 +1070,14 @@ class EditorTestSuite():
         for t in threads:
             t.join()
 
-        print(f"DO NOT SUBMIT DEBUGGING:\n {results_per_thread}")
+        save_asset_logs = False
         for result in results_per_thread:
             editor_test_data.results.update(result)
+            if not isinstance(result, Result.Pass):
+                save_asset_logs = True
+        # If a single test did not pass, save assets with errors and warnings
+        if save_asset_logs:
+            editor_utils.save_failed_asset_joblogs(workspace)
 
     def _get_number_parallel_editors(self, request: Request) -> int:
         """
