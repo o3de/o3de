@@ -27,14 +27,15 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "EditorModeFeedbackPass",
+                        "Pass": "DesaturationPass",
                         "Attachment": "Output"
                     }
                 }
             ],
             "PassRequests": [
+                // Generates the mask for entities of interest
                 {
-                    "Name": "EditorModeMaskPass",
+                    "Name": "EntityMaskPass",
                     "TemplateName": "EditorModeMaskTemplate",
                     "Enabled": true,
                     "Connections": [
@@ -48,8 +49,8 @@
                     ]
                 },
                 {
-                    "Name": "EditorModeFeedbackPass",
-                    "TemplateName": "EditorModeFeedbackTemplate",
+                    "Name": "DesaturationPass",
+                    "TemplateName": "EditorModeDesaturationTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
@@ -62,7 +63,7 @@
                         {
                             "LocalSlot": "InputEntityMask",
                             "AttachmentRef": {
-                                "Pass": "EditorModeMaskPass",
+                                "Pass": "EntityMaskPass",
                                 "Attachment": "OutputEntityMask"
                             }
                         },

@@ -226,8 +226,8 @@ set(FILES
     Source/PostProcessing/BloomParentPass.cpp
     Source/PostProcessing/EditorModeFeedbackParentPass.cpp
     Source/PostProcessing/EditorModeFeedbackParentPass.h
-    Source/PostProcessing/EditorModeFeedbackPass.cpp
-    Source/PostProcessing/EditorModeFeedbackPass.h
+    Source/PostProcessing/EditorModeDesaturationPass.cpp
+    Source/PostProcessing/EditorModeDesaturationPass.h
     Source/PostProcessing/EditorModeMaskPass.cpp
     Source/PostProcessing/EditorModeMaskPass.h
     Source/PostProcessing/DepthOfFieldCompositePass.h

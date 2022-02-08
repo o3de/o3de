@@ -20,21 +20,21 @@ namespace AZ
         /**
          *  The color grading pass.
          */
-        class EditorModeFeedbackPass
+        class EditorModeDesaturationPass
             : public AZ::RPI::FullscreenTrianglePass
             //TODO: , public PostProcessingShaderOptionBase
         {
         public:
-            AZ_RTTI(EditorModeFeedbackPass, "{3587B748-7EA8-497F-B2D1-F60E369EACF4}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(EditorModeFeedbackPass, SystemAllocator, 0);
+            AZ_RTTI(EditorModeDesaturationPass, "{3587B748-7EA8-497F-B2D1-F60E369EACF4}", AZ::RPI::FullscreenTrianglePass);
+            AZ_CLASS_ALLOCATOR(EditorModeDesaturationPass, SystemAllocator, 0);
 
-            virtual ~EditorModeFeedbackPass() = default;
+            virtual ~EditorModeDesaturationPass() = default;
 
-            //! Creates a EditorModeFeedbackPass
-            static RPI::Ptr<EditorModeFeedbackPass> Create(const RPI::PassDescriptor& descriptor);
+            //! Creates a EditorModeDesaturationPass
+            static RPI::Ptr<EditorModeDesaturationPass> Create(const RPI::PassDescriptor& descriptor);
 
         protected:
-            EditorModeFeedbackPass(const RPI::PassDescriptor& descriptor);
+            EditorModeDesaturationPass(const RPI::PassDescriptor& descriptor);
             
             //! Pass behavior overrides
             void InitializeInternal() override;

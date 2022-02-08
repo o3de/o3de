@@ -6,7 +6,7 @@
  *
  */
  
-#include <PostProcessing/EditorModeFeedbackPass.h>
+#include <PostProcessing/EditorModeDesaturationPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -18,32 +18,32 @@
 {
     namespace Render
     {
-        RPI::Ptr<EditorModeFeedbackPass> EditorModeFeedbackPass::Create(const RPI::PassDescriptor& descriptor)
+        RPI::Ptr<EditorModeDesaturationPass> EditorModeDesaturationPass::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<EditorModeFeedbackPass> pass = aznew EditorModeFeedbackPass(descriptor);
+            RPI::Ptr<EditorModeDesaturationPass> pass = aznew EditorModeDesaturationPass(descriptor);
             return AZStd::move(pass);
         }
         
-        EditorModeFeedbackPass::EditorModeFeedbackPass(const RPI::PassDescriptor& descriptor)
+        EditorModeDesaturationPass::EditorModeDesaturationPass(const RPI::PassDescriptor& descriptor)
             : AZ::RPI::FullscreenTrianglePass(descriptor)
         {
         }
         
-        void EditorModeFeedbackPass::InitializeInternal()
+        void EditorModeDesaturationPass::InitializeInternal()
         {
             FullscreenTrianglePass::InitializeInternal();
 
             m_desaturationAmountIndex.Reset();
         }
         
-        void EditorModeFeedbackPass::FrameBeginInternal(FramePrepareParams params)
+        void EditorModeDesaturationPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
 
             FullscreenTrianglePass::FrameBeginInternal(params);
         }
 
-        bool EditorModeFeedbackPass::IsEnabled() const
+        bool EditorModeDesaturationPass::IsEnabled() const
         {
             // move this to parent
             if (const auto editorModeFeedback = AZ::Interface<EditorModeFeedbackInterface>::Get())
@@ -54,7 +54,7 @@
             return false;
         }
 
-        void EditorModeFeedbackPass::SetSrgConstants()
+        void EditorModeDesaturationPass::SetSrgConstants()
         {
            m_shaderResourceGroup->SetConstant(m_desaturationAmountIndex, 1.0f);
         }

@@ -4,8 +4,8 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeFeedbackTemplate",
-            "PassClass": "EditorModeFeedbackPass",
+            "Name": "EditorModeDesaturationTemplate",
+            "PassClass": "EditorModeDesaturationPass",
             "Slots": [
                 {
                     "Name": "InputDepth",
