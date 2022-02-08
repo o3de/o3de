@@ -23,5 +23,6 @@
 #include "MaterialFunctions/ParallaxDepth.azsli"
 #include "MaterialFunctions/StandardGetAlphaAndClip.azsli"
 
-#define SHADOWS
+#define SHADOWS 1
+#define ENABLE_ALPHA_CLIP 1
 #include "DepthPass_WithPS.azsli"

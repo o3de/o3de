@@ -10,6 +10,18 @@
 #include <Atom/Features/Shadow/Shadow.azsli>
 #endif
 
+#ifndef MULTILAYER
+#define MULTILAYER 0
+#endif
+
+#ifndef ENABLE_ALPHA_CLIP
+#define ENABLE_ALPHA_CLIP 0
+#endif
+
+#ifndef SHADOWS
+#define SHADOWS 0
+#endif
+
 struct VSInput
 {
     float3 m_position : POSITION;
@@ -21,7 +33,7 @@ struct VSInput
     float4 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
 
-#ifdef MULTILAYER
+#if MULTILAYER
     // This gets set automatically by the system at runtime only if it's available.
     // There is a soft naming convention that associates this with o_blendMask_isBound, which will be set to true whenever m_optional_blendMask is available.
     // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
@@ -42,7 +54,7 @@ struct VSDepthOutput
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
 
-#ifdef MULTILAYER
+#if MULTILAYER
     float3 m_blendMask : UV3;
 #endif
 };
@@ -67,7 +79,7 @@ VSDepthOutput MainVS(VSInput IN)
         ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
     }
 
-#ifdef MULTILAYER
+#if MULTILAYER
     if(o_blendMask_isBound)
     {
         OUT.m_blendMask = IN.m_optional_blendMask.rgb;
@@ -111,18 +123,18 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
                 bitangents[i]);
         }
 
-#ifdef MULTILAYER
+#if MULTILAYER
         MultilayerSetPixelDepth(IN.m_blendMask, IN.m_worldPosition, IN.m_normal, tangents, bitangents, IN.m_uv, isFrontFace, OUT.m_depth);
 #else
         SetPixelDepth(IN.m_worldPosition, IN.m_normal, tangents, bitangents, IN.m_uv, isFrontFace, OUT.m_depth);
 #endif
 
-#ifdef SHADOWS
+#if SHADOWS
         OUT.m_depth += PdoShadowMapBias;
 #endif
     }
     
-#ifndef DEACTIVATE_ALPHA_CLIP
+#if ENABLE_ALPHA_CLIP
     GetAlphaAndClip(IN.m_uv);
 #endif
 

@@ -16,4 +16,5 @@
 #include "MaterialFunctions/StandardTransformUvs.azsli"
 #include "MaterialFunctions/ParallaxDepth.azsli"
 
+#define ENABLE_ALPHA_CLIP 1
 #include "DepthPass_WithPS.azsli"

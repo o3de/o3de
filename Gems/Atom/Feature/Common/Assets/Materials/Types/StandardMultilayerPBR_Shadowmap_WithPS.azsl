@@ -27,7 +27,7 @@ COMMON_OPTIONS_PARALLAX(o_layer3_)
 #include "MaterialFunctions/EvaluateTangentFrame.azsli"
 #include "MaterialFunctions/MultilayerParallaxDepth.azsli"
 
-#define MULTILAYER
-#define DEACTIVATE_ALPHA_CLIP
-#define SHADOWS
+#define MULTILAYER 1
+#define ENABLE_ALPHA_CLIP 0
+#define SHADOWS 1
 #include "DepthPass_WithPS.azsli"
