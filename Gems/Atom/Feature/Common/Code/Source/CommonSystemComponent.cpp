@@ -45,8 +45,9 @@
 #include <PostProcessing/BloomParentPass.h>
 #include <PostProcessing/HDRColorGradingPass.h>
 #include <PostProcessing/EditorModeFeedbackParentPass.h>
-#include <PostProcessing/EditorModeDesaturationPass.h>
 #include <PostProcessing/EditorModeMaskPass.h>
+#include <PostProcessing/EditorModeDesaturationPass.h>
+#include <PostProcessing/EditorModeBlurPass.h>
 #include <PostProcessing/DepthUpsamplePass.h>
 #include <PostProcessing/DepthOfFieldCompositePass.h>
 #include <PostProcessing/DepthOfFieldBokehBlurPass.h>
@@ -230,8 +231,9 @@ namespace AZ
             passSystem->AddPassCreator(Name("BlendColorGradingLutsPass"), &BlendColorGradingLutsPass::Create);
             passSystem->AddPassCreator(Name("HDRColorGradingPass"), &HDRColorGradingPass::Create);
             passSystem->AddPassCreator(Name("EditorModeFeedbackParentPass"), &EditorModeFeedbackParentPass::Create);
-            passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
             passSystem->AddPassCreator(Name("EditorModeMaskPass"), &EditorModeMaskPass::Create);
+            passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
+            passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
             passSystem->AddPassCreator(Name("LutGenerationPass"), &LutGenerationPass::Create);

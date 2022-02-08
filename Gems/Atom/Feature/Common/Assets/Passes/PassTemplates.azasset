@@ -573,6 +573,10 @@
                 "Path": "Passes/EditorModeDesaturation.pass"
             },
             {
+                "Name": "EditorModeBlurTemplate",
+                "Path": "Passes/EditorModeBlur.pass"
+            },
+            {
                 "Name": "EditorModeMaskTemplate",
                 "Path": "Passes/EditorModeMask.pass"
             },

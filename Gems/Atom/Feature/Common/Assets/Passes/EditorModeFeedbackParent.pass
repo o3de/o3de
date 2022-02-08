@@ -27,7 +27,7 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "DesaturationPass",
+                        "Pass": "BlurPass",
                         "Attachment": "Output"
                     }
                 }
@@ -72,6 +72,34 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "InputColor"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "BlurPass",
+                    "TemplateName": "EditorModeBlurTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputEntityMask",
+                            "AttachmentRef": {
+                                "Pass": "EntityMaskPass",
+                                "Attachment": "OutputEntityMask"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "DesaturationPass",
+                                "Attachment": "Output"
                             }
                         }
                     ]

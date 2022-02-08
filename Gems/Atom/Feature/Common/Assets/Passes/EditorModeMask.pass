@@ -9,7 +9,7 @@
             "Slots": [
                 {
                     "Name": "InputDepth",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Input",
                     "ScopeAttachmentUsage": "DepthStencil"
                 },
                 {

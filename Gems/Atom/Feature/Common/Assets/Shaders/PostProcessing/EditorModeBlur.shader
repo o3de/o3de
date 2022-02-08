@@ -1,5 +1,5 @@
 {
-    "Source" : "EditorModeFeedback.azsl",
+    "Source" : "EditorModeBlur.azsl",
  
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

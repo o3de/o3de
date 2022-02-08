@@ -228,6 +228,8 @@ set(FILES
     Source/PostProcessing/EditorModeFeedbackParentPass.h
     Source/PostProcessing/EditorModeDesaturationPass.cpp
     Source/PostProcessing/EditorModeDesaturationPass.h
+    Source/PostProcessing/EditorModeBlurPass.cpp
+    Source/PostProcessing/EditorModeBlurPass.h
     Source/PostProcessing/EditorModeMaskPass.cpp
     Source/PostProcessing/EditorModeMaskPass.h
     Source/PostProcessing/DepthOfFieldCompositePass.h

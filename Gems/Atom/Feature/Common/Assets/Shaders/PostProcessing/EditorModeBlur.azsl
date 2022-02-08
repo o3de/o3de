@@ -47,28 +47,6 @@ float2 normalizedUV(float2 uv)
     return uv/maskSize;
 }
  
-// Entity outliner effect
-float selectedEntityOutliner(float2 unormalizedUv, float lineThickness)
-{
-    float r = 0.;
-
-    // Selected entity mask value
-    float S = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv)).a;
-     
-    // Outliner kernal
-    for(float u = -lineThickness; u <= lineThickness; u+=1.)
-    {
-        for(float v = -lineThickness; v <= lineThickness; v+=1.)
-        {
-            r += PassSrg::m_entityMask.Sample(PassSrg::PointSampler, normalizedUV(unormalizedUv + float2(u,v))).r;
-        }
-    }
-     
-    // Only apply the outliner effect to fragments not part of S
-    // Could just do an early exit above when S > 0.0...
-    return min(1.0, (r / lineThickness) * (1.0 - S));
-}
-
 float3 Blur(float2 unormalizedUv, const float boxRadius)
 {
     float3 outColor = float3(0., 0., 0.);
@@ -102,38 +80,15 @@ PSOutput MainPS(VSOutput IN)
     // Fetch the pixel color from the input texture
     float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
 
-    // 
-    float3 blurredColor = Blur(unnormalizedUV, 3.);
-    //float3 blurredColor = color;
- 
     // Get the mask value at this point
     float4 mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
-    // Averge the colors to get a desaturated effect
-    float sat = (blurredColor.r + blurredColor.g + blurredColor.b) / 3.0;
-
-    // Calculate the visual effect for non-mask entities
-    float3 unmasked = lerp(blurredColor, float3(sat, sat, sat), PassSrg::m_desaturationAmount);
-
-    
+    // 
+    float3 unmasked = Blur(unnormalizedUV, 3.);
     
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
     OUT.m_color.rgb = lerp(unmasked.rgb, color.rgb, mask.a);
     OUT.m_color.a = 1.0;
-
-    float depth = PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r * 10.;
-    float depthT = clamp(depth, 0., 1.);
-
-    float minLineThickness = 3.;
-    float maxLineThickness = 10.;
-    float lineThickness = lerp(minLineThickness, maxLineThickness, depthT);
-    float outline = selectedEntityOutliner(unnormalizedUV, lineThickness);
-    float3 outlineColor = float3(.96, 0.65, 0.13);
-    OUT.m_color.rgb = lerp(OUT.m_color.rgb, outlineColor, outline);
-
-    //OUT.m_color.rgb = mask.rgb;
-    //OUT.m_color.rgb = float3(depthT, depthT, depthT);
-    //OUT.m_color.rgb = blurredColor;
 
     return OUT;
 }

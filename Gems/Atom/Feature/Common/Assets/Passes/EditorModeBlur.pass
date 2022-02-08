@@ -4,8 +4,8 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "EditorModeDesaturationTemplate",
-            "PassClass": "EditorModeDesaturationPass",
+            "Name": "EditorModeBlurTemplate",
+            "PassClass": "EditorModeBlurPass",
             "Slots": [
                 {
                     "Name": "InputDepth",
@@ -67,7 +67,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/EditorModeDesaturation.shader"
+                    "FilePath": "Shaders/PostProcessing/EditorModeBlur.shader"
                 }
             }
         }
