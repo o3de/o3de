@@ -52,7 +52,7 @@ namespace AzToolsFramework
 
                 //! We do not save linkIds to file. However when loading a level we want to temporarily save
                 //! linkIds to instance dom so any nested prefabs will have linkIds correctly set.
-                StoreLinkIds = 1 << 1
+                StripLinkIds = 1 << 1
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreFlags);
 
