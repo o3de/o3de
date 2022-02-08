@@ -601,6 +601,82 @@ void TerrainSystem::ProcessSurfacePointsFromListOfVector2Async(const AZStd::span
     ProcessFromListAsync(perSurfacePointFunction, inPositions, perPositionCallback, sampleFilter, params);
 }
 
+void TerrainSystem::ProcessHeightsFromRegionAsync(const AZ::Aabb& inRegion,
+    const AZ::Vector2& stepSize,
+    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const float fx,
+                                          const float fy,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position.Set(fx, fy, 0.0f);
+        surfacePoint.m_position.SetZ(GetHeight(surfacePoint.m_position, sampleFilter, &terrainExists));
+    };
+
+    ProcessFromRegionAsync(perSurfacePointFunction, inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
+void TerrainSystem::ProcessNormalsFromRegionAsync(const AZ::Aabb& inRegion,
+    const AZ::Vector2& stepSize,
+    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const float fx,
+                                          const float fy,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position.Set(fx, fy, 0.0f);
+        surfacePoint.m_normal = GetNormal(surfacePoint.m_position, sampleFilter, &terrainExists);
+    };
+
+    ProcessFromRegionAsync(perSurfacePointFunction, inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
+void TerrainSystem::ProcessSurfaceWeightsFromRegionAsync(const AZ::Aabb& inRegion,
+    const AZ::Vector2& stepSize,
+    AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+    Sampler sampleFilter,
+    AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const float fx,
+                                          const float fy,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position.Set(fx, fy, 0.0f);
+        GetSurfaceWeights(surfacePoint.m_position, surfacePoint.m_surfaceTags, sampleFilter, &terrainExists);
+    };
+
+    ProcessFromRegionAsync(perSurfacePointFunction, inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
+void TerrainSystem::ProcessSurfacePointsFromRegionAsync(const AZ::Aabb& inRegion,
+            const AZ::Vector2& stepSize,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            Sampler sampleFilter,
+            AZStd::shared_ptr<ProcessAsyncParams> params) const
+{
+    auto perSurfacePointFunction = [this](AzFramework::SurfaceData::SurfacePoint& surfacePoint,
+                                          const float fx,
+                                          const float fy,
+                                          const Sampler& sampleFilter,
+                                          bool& terrainExists)
+    {
+        surfacePoint.m_position.Set(fx, fy, 0.0f);
+        GetSurfacePoint(surfacePoint.m_position, surfacePoint, sampleFilter, &terrainExists);
+    };
+
+    ProcessFromRegionAsync(perSurfacePointFunction, inRegion, stepSize, perPositionCallback, sampleFilter, params);
+}
+
 AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const
 {
     AZ::Vector3 inPosition = AZ::Vector3(x, y, 0);

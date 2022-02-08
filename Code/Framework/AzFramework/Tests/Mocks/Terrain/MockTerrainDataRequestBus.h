@@ -124,5 +124,14 @@ namespace UnitTest
             ProcessSurfaceWeightsFromListOfVector2Async, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
         MOCK_CONST_METHOD4(
             ProcessSurfacePointsFromListOfVector2Async, void(const AZStd::span<AZ::Vector2>&, AzFramework::Terrain::SurfacePointListFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD5(
+            ProcessHeightsFromRegionAsync, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD5(
+            ProcessNormalsFromRegionAsync, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD5(
+            ProcessSurfaceWeightsFromRegionAsync, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        MOCK_CONST_METHOD5(
+            ProcessSurfacePointsFromRegionAsync, void(const AZ::Aabb&, const AZ::Vector2&, AzFramework::Terrain::SurfacePointRegionFillCallback, Sampler, AZStd::shared_ptr<ProcessAsyncParams>));
+        
     };
 } // namespace UnitTest

@@ -284,6 +284,26 @@ namespace AzFramework
                 SurfacePointListFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessHeightsFromRegionAsync(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize,
+                SurfacePointRegionFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessNormalsFromRegionAsync(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize,
+                SurfacePointRegionFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessSurfaceWeightsFromRegionAsync(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize,
+                SurfacePointRegionFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
+            virtual void ProcessSurfacePointsFromRegionAsync(const AZ::Aabb& inRegion,
+                const AZ::Vector2& stepSize,
+                SurfacePointRegionFillCallback perPositionCallback,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const = 0;
 
         private:
             // Private variations of the GetSurfacePoint API exposed to BehaviorContext that returns a value instead of
