@@ -5,15 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma once
-
-#include <CpuProfiler.h>
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/map.h>
-#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/ring_buffer.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>

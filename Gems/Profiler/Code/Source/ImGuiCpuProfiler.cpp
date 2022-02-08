@@ -10,7 +10,7 @@
 
 #include <ImGuiCpuProfiler.h>
 
-#include <CpuProfilerImpl.h>
+#include <CpuProfiler.h>
 
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/IO/FileIO.h>

@@ -8,9 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Debug/Profiler.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/containers/ring_buffer.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 
@@ -51,3 +48,5 @@ namespace Profiler
     using TimeRegionMap = AZStd::unordered_map<AZStd::thread_id, ThreadTimeRegionMap>;
 
 } // namespace Profiler
+
+#include <CpuProfilerImpl.h>

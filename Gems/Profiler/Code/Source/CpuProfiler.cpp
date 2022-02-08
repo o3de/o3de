@@ -6,7 +6,7 @@
  *
  */
 
-#include <CpuProfilerImpl.h>
+#include <CpuProfiler.h>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>

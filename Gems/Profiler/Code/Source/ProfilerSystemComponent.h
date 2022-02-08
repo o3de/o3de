@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <CpuProfilerImpl.h>
+#include <CpuProfiler.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Debug/ProfilerBus.h>
