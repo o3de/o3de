@@ -82,6 +82,7 @@ namespace AZ
             auto viewportContextRequests = RPI::ViewportContextRequests::Get();
             auto viewportContext = viewportContextRequests->GetViewportContextByScene(scene);
             const RPI::ViewPtr viewPtr = viewportContext->GetDefaultView();
+            return viewPtr;
         }
 
         void EditorEditorModeFeedbackSystemComponent::Reflect(AZ::ReflectContext* context)
