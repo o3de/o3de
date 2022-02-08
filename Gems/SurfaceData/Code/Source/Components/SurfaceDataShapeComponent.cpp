@@ -179,7 +179,7 @@ namespace SurfaceData
                         if (m_shapeBounds.Contains(position) && shape->IsPointInside(position))
                         {
                             // If the point is inside our shape, add all our modifier tags with a weight of 1.0f.
-                            weights.AddSurfaceWeightsIfGreater(m_configuration.m_modifierTags, 1.0f);
+                            weights.AddSurfaceTagWeights(m_configuration.m_modifierTags, 1.0f);
                         }
                     });
                 });
