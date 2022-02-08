@@ -49,4 +49,4 @@ namespace Profiler
 
 } // namespace Profiler
 
-#include <CpuProfilerImpl.h>
+#include <CpuProfiler.inl>
