@@ -241,7 +241,14 @@ namespace AZ
 
         void EditorMaterialSystemComponent::OnPopulateToolMenuItems()
         {
-            if (!m_openMaterialEditorAction)
+            // Removing standalone "Material Editor" option in editor's Tools menu now that O3DEMaterialEditor gem
+            // provides an integrated version.
+            // 
+            // TODO: It's probably a good idea to move AtomMaterialEditor (the integrated version of atom material editor)
+            //       from MaterialEditor Gem to this AtomLyIntegration_CommonFeatures gem, as it's the gem that integrates
+            //       atom features into o3de.
+            //
+            /*if (!m_openMaterialEditorAction)
             {
                 m_openMaterialEditorAction = new QAction("Material Editor");
                 m_openMaterialEditorAction->setShortcut(QKeySequence(Qt::Key_M));
@@ -257,7 +264,7 @@ namespace AZ
 
                 AzToolsFramework::EditorMenuRequestBus::Broadcast(
                     &AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialEditorAction, true);
-            }
+            }*/
         }
 
         void EditorMaterialSystemComponent::OnResetToolMenuItems()
