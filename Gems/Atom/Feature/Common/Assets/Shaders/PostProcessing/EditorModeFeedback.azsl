@@ -69,7 +69,7 @@ float selectedEntityOutliner(float2 unormalizedUv, float lineThickness)
     return min(1.0, (r / lineThickness) * (1.0 - S));
 }
 
-float3 Blur(float2 unormalizedUv, float boxRadius)
+float3 Blur(float2 unormalizedUv, const float boxRadius)
 {
     float3 outColor = float3(0., 0., 0.);
 
@@ -86,7 +86,7 @@ float3 Blur(float2 unormalizedUv, float boxRadius)
 
     return outColor / weights;
 }
- 
+
 PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;

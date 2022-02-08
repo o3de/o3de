@@ -7,9 +7,18 @@
  */
 
 #include <viewsrg.srgi>
+#include <scenesrg.srgi>
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultObjectSrg.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+ShaderResourceGroup ObjectSrg : SRG_PerObject
+{
+    uint m_objectId;
+
+    //! Returns the matrix for transforming points from Object Space to World Space.
+    float4x4 GetWorldMatrix()
+    {
+        return SceneSrg::GetObjectToWorldMatrix(m_objectId);
+    }
+}
 
 struct VSInput
 {
