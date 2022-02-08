@@ -964,7 +964,7 @@ class EditorTestSuite():
                                               extra_cmdline_args)
         assert results is not None
         editor_test_data.results.update(results)
-        # If a single test did not pass, save assets with errors and warnings
+        # If at least one test did not pass, save assets with errors and warnings
         for result in results:
             if not isinstance(result, Result.Pass):
                 editor_utils.save_failed_asset_joblogs(workspace)
@@ -1020,7 +1020,7 @@ class EditorTestSuite():
                 editor_test_data.results.update(result)
                 if not isinstance(result, Result.Pass):
                     save_asset_logs = True
-            # If a single test did not pass, save assets with errors and warnings
+            # If at least one test did not pass, save assets with errors and warnings
             if save_asset_logs:
                 editor_utils.save_failed_asset_joblogs(workspace)
 
@@ -1075,7 +1075,7 @@ class EditorTestSuite():
             editor_test_data.results.update(result)
             if not isinstance(result, Result.Pass):
                 save_asset_logs = True
-        # If a single test did not pass, save assets with errors and warnings
+        # If at least one test did not pass, save assets with errors and warnings
         if save_asset_logs:
             editor_utils.save_failed_asset_joblogs(workspace)
 

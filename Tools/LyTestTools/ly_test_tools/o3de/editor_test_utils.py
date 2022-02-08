@@ -161,7 +161,6 @@ def save_failed_asset_joblogs(workspace: AbstractWorkspace) -> None:
     :param workspace: The AbstractWorkspace to access the JobLogs path
     :return: None
     """
-    # Tuples are in the form [this directory, [child directories], [files in this directory]]
     for walk_tuple in os.walk(workspace.paths.ap_job_logs()):
         for log_file in walk_tuple[2]:
             full_log_path = os.path.join(walk_tuple[0], log_file)
@@ -170,7 +169,7 @@ def save_failed_asset_joblogs(workspace: AbstractWorkspace) -> None:
                 try:
                     workspace.artifact_manager.save_artifact(full_log_path)
                 except Exception as e:  # Purposefully broad
-                    logger.warning(e)
+                    logger.warning(f"Error when saving log at path:{full_log_path}\n{e}")
 
 def _check_log_errors_warnings(log_path: str) -> bool:
     """
