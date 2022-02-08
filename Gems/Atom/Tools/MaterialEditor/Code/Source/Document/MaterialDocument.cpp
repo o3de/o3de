@@ -572,7 +572,7 @@ namespace MaterialEditor
                     // Assign id before conversion so it can be used in dynamic description
                     AtomToolsFramework::DynamicPropertyConfig propertyConfig;
                     propertyConfig.m_id = propertyDefinition->GetName();
-                    groupNameContext.ContextualizeProperty(m_groups.back()->m_name);
+                    groupNameContext.ContextualizeProperty(propertyConfig.m_id);
 
                     const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                     const bool propertyIndexInBounds =
