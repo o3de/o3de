@@ -526,7 +526,7 @@ void TerrainSystem::GetNormalsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
     AZStd::vector<bool> exists(directionVectors.size());
     GetHeightsSynchronous(directionVectors, sampler, heights, exists);
 
-    for (int i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
+    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
     {
         directionVectors[iteratorIndex].SetZ(heights[iteratorIndex]);
         directionVectors[iteratorIndex + 1].SetZ(heights[iteratorIndex + 1]);
