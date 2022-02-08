@@ -47,6 +47,10 @@ namespace AZ
         {
             class ProcessingOverlayWidget;
         }
+        namespace DataTypes
+        {
+            class IScriptProcessorRule;
+        }
     }
 }
 
@@ -80,6 +84,7 @@ public:
 
 public slots:
     void OnSceneResetRequested();
+    void OnAssignScript();
     void OnOpenDocumentation();
     void OnInspect();
 
@@ -122,4 +127,6 @@ private:
 
     int m_processingOverlayIndex;
     QSharedPointer<AZ::SceneAPI::SceneUI::ProcessingOverlayWidget> m_processingOverlay;
+
+    const AZ::SceneAPI::DataTypes::IScriptProcessorRule* m_scriptProcessorRule = {};
 };
