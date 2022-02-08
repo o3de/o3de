@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 
 namespace AZ
 {
@@ -32,10 +31,10 @@ namespace AZ
             virtual bool IsEnabled() const = 0;
 
             //!
-            virtual void RegisterDrawableEntity(
-                const Component& component,
-                const Data::Asset<RPI::ModelAsset>& modelAsset,
-                const AZ::Render::MeshFeatureProcessorInterface::MeshHandle& meshHandle) = 0;
+            virtual void RegisterDrawableComponent(
+                EntityComponentIdPair entityComponentId,
+                uint32_t objectId,
+                const Data::Asset<RPI::ModelAsset>& modelAsset) = 0;
         };
     } // namespace Render
 } // namespace AZ

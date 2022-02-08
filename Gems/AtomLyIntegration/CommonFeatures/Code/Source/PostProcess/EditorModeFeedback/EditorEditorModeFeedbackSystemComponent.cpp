@@ -68,10 +68,10 @@ namespace AZ
             return maskMeshObjectSrg;
         }
 
-        static void SetMeshObjectId(EntityId entityId, const AZ::Render::MeshFeatureProcessorInterface::MeshHandle* meshHandle, Data::Instance<RPI::ShaderResourceGroup>& shaderResourceGroup)
+        static void SetMeshObjectId(
+            uint32_t objectId,
+            Data::Instance<RPI::ShaderResourceGroup>& shaderResourceGroup)
         {
-            auto featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(entityId);
-            auto objectId = featureProcessor->GetObjectId(*meshHandle).GetIndex();
             RHI::ShaderInputNameIndex objectIdIndex = "m_objectId";
             shaderResourceGroup->SetConstant(objectIdIndex, objectId);
             RHI::ShaderInputNameIndex maskIdIndex = "m_maskId";
@@ -135,14 +135,15 @@ namespace AZ
             return m_enabled;
         }
 
-        void EditorEditorModeFeedbackSystemComponent::RegisterDrawableEntity(
-            const Component& component,
-            const Data::Asset<RPI::ModelAsset>& modelAsset,
-            const AZ::Render::MeshFeatureProcessorInterface::MeshHandle& meshHandle)
+        void EditorEditorModeFeedbackSystemComponent::RegisterDrawableComponent(
+            EntityComponentIdPair entityComponentId,
+            uint32_t objectId,
+            const Data::Asset<RPI::ModelAsset>& modelAsset)
         {
-            auto& [componentModelAsset, componentMeshHandle, componentDrawPackets] = m_entityComponentDrawPackets[component.GetEntityId()][component.GetId()];
+            auto& [componentModelAsset, componentObjectId, componentDrawPackets] =
+                m_entityComponentDrawPackets[entityComponentId.GetEntityId()][entityComponentId.GetComponentId()];
+            componentObjectId = objectId;
             componentModelAsset = &modelAsset;
-            componentMeshHandle = &meshHandle;
  
             // The same component can call RegisterDrawableEntity multiple times in order to update its model asset so always
             // clear any existing draw packets for the component upon registration
@@ -213,13 +214,13 @@ namespace AZ
                 for (auto& it2 : componentModelAssetDrawPackets)
                 {
                     auto& [componentId, modelAssetMeshDrawPackets] = it2;
-                    auto& [modelAsset, meshHandle, meshDrawPackets] = modelAssetMeshDrawPackets;
+                    auto& [modelAsset, objectId, meshDrawPackets] = modelAssetMeshDrawPackets;
 
                     const auto scene = RPI::Scene::GetSceneForEntityId(entityId);
                     if (meshDrawPackets.empty())
                     {
                         auto maskMeshObjectSrg = CreateMaskShaderResourceGroup(m_maskMaterial);
-                        SetMeshObjectId(entityId, meshHandle, maskMeshObjectSrg);
+                        SetMeshObjectId(objectId, maskMeshObjectSrg);
                         const auto view = GetViewFromScene(scene);
 
                         AZ::Transform worldTM;
