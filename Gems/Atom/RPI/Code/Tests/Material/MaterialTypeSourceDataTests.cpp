@@ -2093,6 +2093,8 @@ namespace UnitTest
         materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused1" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
         materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_unused2" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
         materialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_groupA_m_groupB_m_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_unused3" }, 0, 4, 0 });
+        materialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_groupA_m_groupB_m_number" }, 4, 4, 0 });
         EXPECT_TRUE(materialSrgLayout->Finalize());
 
         Ptr<ShaderOptionGroupLayout> shaderOptions = ShaderOptionGroupLayout::Create();
@@ -2120,6 +2122,16 @@ namespace UnitTest
                                     "name": "groupB",
                                     "shaderInputsPrefix": "m_groupB_",
                                     "shaderOptionsPrefix": "o_groupB_",
+                                    "properties": [
+                                        {
+                                            "name": "number",
+                                            "type": "Float",
+                                            "connection": {
+                                                "type": "ShaderInput",
+                                                "name": "m_number"
+                                            }
+                                        }
+                                    ],
                                     "propertyGroups": [
                                         {
                                             "name": "groupC",
@@ -2177,25 +2189,32 @@ namespace UnitTest
         Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeAssetOutcome.TakeValue();
         const MaterialPropertiesLayout* propertiesLayout = materialTypeAsset->GetMaterialPropertiesLayout();
 
-        EXPECT_EQ(2, propertiesLayout->GetPropertyCount());
-
-        EXPECT_EQ(0, propertiesLayout->FindPropertyIndex(Name("groupA.groupB.groupC.textureMap")).GetIndex());
-        EXPECT_EQ(1, propertiesLayout->FindPropertyIndex(Name("groupA.groupB.groupC.useTextureMap")).GetIndex());
+        EXPECT_EQ(3, propertiesLayout->GetPropertyCount());
+        
+        EXPECT_EQ(0, propertiesLayout->FindPropertyIndex(Name("groupA.groupB.number")).GetIndex());
+        EXPECT_EQ(1, propertiesLayout->FindPropertyIndex(Name("groupA.groupB.groupC.textureMap")).GetIndex());
+        EXPECT_EQ(2, propertiesLayout->FindPropertyIndex(Name("groupA.groupB.groupC.useTextureMap")).GetIndex());
+        
+        // groupA.groupB.number has a connection to m_groupA_m_groupB_m_number
+        MaterialPropertyIndex numberPropertyIndex{0};
+        EXPECT_EQ(1, propertiesLayout->GetPropertyDescriptor(numberPropertyIndex)->GetOutputConnections().size());
+        EXPECT_EQ(materialSrgLayout->FindShaderInputConstantIndex(Name("m_groupA_m_groupB_m_number")).GetIndex(),
+            propertiesLayout->GetPropertyDescriptor(numberPropertyIndex)->GetOutputConnections()[0].m_itemIndex.GetIndex());
 
         // groupA.gropuB.groupC.textureMap has a connection to m_groupA_m_groupB_m_texture
-        MaterialPropertyIndex texturePropertyIndex{0};
+        MaterialPropertyIndex texturePropertyIndex{1};
         EXPECT_EQ(1, propertiesLayout->GetPropertyDescriptor(texturePropertyIndex)->GetOutputConnections().size());
         EXPECT_EQ(materialSrgLayout->FindShaderInputImageIndex(Name("m_groupA_m_groupB_m_texture")).GetIndex(),
             propertiesLayout->GetPropertyDescriptor(texturePropertyIndex)->GetOutputConnections()[0].m_itemIndex.GetIndex());
-
+        
         // groupA.gropuB.groupC.useTextureMap has a connection to o_groupA_o_groupB_o_useTexture and o_groupA_o_groupB_o_useTextureAlt
-        MaterialPropertyIndex useTexturePropertyIndex{1};
+        MaterialPropertyIndex useTexturePropertyIndex{2};
         EXPECT_EQ(2, propertiesLayout->GetPropertyDescriptor(useTexturePropertyIndex)->GetOutputConnections().size());
         EXPECT_EQ(shaderOptions->FindShaderOptionIndex(Name("o_groupA_o_groupB_o_useTexture")).GetIndex(),
             propertiesLayout->GetPropertyDescriptor(useTexturePropertyIndex)->GetOutputConnections()[0].m_itemIndex.GetIndex());
         EXPECT_EQ(shaderOptions->FindShaderOptionIndex(Name("o_groupA_o_groupB_o_useTextureAlt")).GetIndex(),
             propertiesLayout->GetPropertyDescriptor(useTexturePropertyIndex)->GetOutputConnections()[1].m_itemIndex.GetIndex());
-
+        
         // There should be one functor, which processes useTextureMap, and it should have the appropriate name context for constructing the correct full names.
         EXPECT_EQ(1, materialTypeAsset->GetMaterialFunctors().size());
 
