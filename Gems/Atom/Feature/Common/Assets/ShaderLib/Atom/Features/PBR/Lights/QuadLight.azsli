@@ -148,13 +148,21 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
                 GetDiffuseLighting(surface, lightingData, intensity, dirToLightCenter)
             );
             
+            // Transmission contribution
+            // We cannot compute the actual transmission distance so we want to:
+            // - If transmission mode is thick object -> use transmission thickness parameter instead
+            // - If transmission mode is thin object -> ignore back lighting
+            // To detect and apply this behavior in the GetBackLighting function, we need to use a negative transmissionDistance 
+            const float transmissionDistance = -1.0f;
+            // If the transmissionDistance is ignored then the attenuation distance (only used on thin objects) does not have any influence
+            const float attenuationDistance = 0.0f;
             lightingData.translucentBackLighting +=
             (
-                GetBackLighting(surface, lightingData, intensity, p0, 0.0) +
-                GetBackLighting(surface, lightingData, intensity, p1, 0.0) +
-                GetBackLighting(surface, lightingData, intensity, p2, 0.0) +
-                GetBackLighting(surface, lightingData, intensity, p3, 0.0) +
-                GetBackLighting(surface, lightingData, intensity, dirToLightCenter, 0.0)
+                GetBackLighting(surface, lightingData, intensity, p0, transmissionDistance, attenuationDistance) +
+                GetBackLighting(surface, lightingData, intensity, p1, transmissionDistance, attenuationDistance) +
+                GetBackLighting(surface, lightingData, intensity, p2, transmissionDistance, attenuationDistance) +
+                GetBackLighting(surface, lightingData, intensity, p3, transmissionDistance, attenuationDistance) +
+                GetBackLighting(surface, lightingData, intensity, dirToLightCenter, transmissionDistance, attenuationDistance)
             );
             
             // Calculate specular by choosing a single representative point on the light's surface based on the reflection ray
