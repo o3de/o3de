@@ -28,6 +28,15 @@ class LightingData
     // Direction light shadow coordinates
     float3 shadowCoords[ViewSrg::MaxCascadeCount];
 
+    // (N . L) to accept below (N . L = 0) in scattering through thin objects
+    float transmissionNdLBias; 
+    
+    // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
+    float shrinkFactor;
+
+    // Attenuation applied to hide artifacts due to low-res shadow maps 
+    float distanceAttenuation;
+
     // Normalized direction from surface to camera
     float3 dirToCamera;
     
