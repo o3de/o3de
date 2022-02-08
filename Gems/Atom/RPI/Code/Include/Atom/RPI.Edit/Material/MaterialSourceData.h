@@ -75,7 +75,7 @@ namespace AZ
 
             void SetPropertyValue(const Name& propertyId, const MaterialPropertyValue& value);
             const MaterialPropertyValue& GetPropertyValue(const Name& propertyId) const;
-            PropertyValueMap GetPropertyValues() const;
+            const PropertyValueMap& GetPropertyValues() const;
             bool HasPropertyValue(const Name& propertyId) const;
             void RemovePropertyValue(const Name& propertyId);
 

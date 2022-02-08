@@ -677,7 +677,7 @@ namespace MaterialEditor
         if (!loadResult)
         {
             AZ_Error("MaterialDocument", false, "Material source data could not be loaded: '%s'.", m_absolutePath.c_str());
-            return OpenFailed();
+            return false;
         }
 
         m_materialSourceData = loadResult.TakeValue();

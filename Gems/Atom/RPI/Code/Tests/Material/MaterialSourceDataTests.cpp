@@ -357,7 +357,7 @@ namespace UnitTest
         return fixupType(a.GetTypeId()) == fixupType(targetTypeId) && fixupType(b.GetTypeId()) == fixupType(targetTypeId);
     }
 
-    void CheckEqual(MaterialSourceData& a, MaterialSourceData& b)
+    void CheckEqual(const MaterialSourceData& a, const MaterialSourceData& b)
     {
         EXPECT_STREQ(a.m_materialType.c_str(), b.m_materialType.c_str());
         EXPECT_STREQ(a.m_description.c_str(), b.m_description.c_str());
@@ -1091,15 +1091,15 @@ namespace UnitTest
         MaterialSourceData sourceDataLevel3 = MaterialUtils::LoadMaterialSourceData("@exefolder@/Temp/m3.material").TakeValue();
         
         auto materialAssetLevel1 = sourceDataLevel1.CreateMaterialAssetFromSourceData(Uuid::CreateRandom());
-        EXPECT_TRUE(materialAssetLevel1.IsSuccess());
+        ASSERT_TRUE(materialAssetLevel1.IsSuccess());
         EXPECT_TRUE(materialAssetLevel1.GetValue()->WasPreFinalized());
 
         auto materialAssetLevel2 = sourceDataLevel2.CreateMaterialAssetFromSourceData(Uuid::CreateRandom());
-        EXPECT_TRUE(materialAssetLevel2.IsSuccess());
+        ASSERT_TRUE(materialAssetLevel2.IsSuccess());
         EXPECT_TRUE(materialAssetLevel2.GetValue()->WasPreFinalized());
 
         auto materialAssetLevel3 = sourceDataLevel3.CreateMaterialAssetFromSourceData(Uuid::CreateRandom());
-        EXPECT_TRUE(materialAssetLevel3.IsSuccess());
+        ASSERT_TRUE(materialAssetLevel3.IsSuccess());
         EXPECT_TRUE(materialAssetLevel3.GetValue()->WasPreFinalized());
 
         auto layout = materialAssetLevel1.GetValue()->GetMaterialPropertiesLayout();

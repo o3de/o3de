@@ -100,7 +100,7 @@ namespace AZ
             m_propertyValues.erase(propertyId);
         }
         
-        MaterialSourceData::PropertyValueMap MaterialSourceData::GetPropertyValues() const
+        const MaterialSourceData::PropertyValueMap& MaterialSourceData::GetPropertyValues() const
         {
             return m_propertyValues;
         }
@@ -112,9 +112,9 @@ namespace AZ
         
         void MaterialSourceData::ConvertToNewDataFormat()
         {
-            for (auto& [groupName, propertyList] : m_propertiesOld)
+            for (const auto& [groupName, propertyList] : m_propertiesOld)
             {
-                for (auto& [propertyName, propertyValue] : propertyList)
+                for (const auto& [propertyName, propertyValue] : propertyList)
                 {
                     SetPropertyValue(MaterialPropertyId{groupName, propertyName}, propertyValue);
                 }
