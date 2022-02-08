@@ -14,21 +14,21 @@
 namespace AZ::Dom
 {
     PatchOperation::PatchOperation(Path destinationPath, Type type, Value value)
-        : m_domPath(destinationPath)
+        : m_domPath(AZStd::move(destinationPath))
         , m_type(type)
-        , m_value(value)
+        , m_value(AZStd::move(value))
     {
     }
 
     PatchOperation::PatchOperation(Path destinationPath, Type type, Path sourcePath)
-        : m_domPath(destinationPath)
+        : m_domPath(AZStd::move(destinationPath))
         , m_type(type)
-        , m_value(sourcePath)
+        , m_value(AZStd::move(sourcePath))
     {
     }
 
     PatchOperation::PatchOperation(Path destinationPath, Type type)
-        : m_domPath(destinationPath)
+        : m_domPath(AZStd::move(destinationPath))
         , m_type(type)
     {
     }
@@ -690,22 +690,22 @@ namespace AZ::Dom
 
     auto Patch::begin() const -> OperationsContainer::const_iterator
     {
-        return m_operations.cbegin();
+        return m_operations.begin();
     }
 
     auto Patch::end() const -> OperationsContainer::const_iterator
     {
-        return m_operations.cend();
+        return m_operations.end();
     }
 
     auto Patch::cbegin() const -> OperationsContainer::const_iterator
     {
-        return m_operations.cbegin();
+        return m_operations.begin();
     }
 
     auto Patch::cend() const -> OperationsContainer::const_iterator
     {
-        return m_operations.cend();
+        return m_operations.end();
     }
 
     size_t Patch::size() const

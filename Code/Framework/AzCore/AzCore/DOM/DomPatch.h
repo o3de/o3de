@@ -10,6 +10,7 @@
 
 #include <AzCore/DOM/DomPath.h>
 #include <AzCore/DOM/DomValue.h>
+#include <AzCore/std/containers/deque.h>
 
 namespace AZ::Dom
 {
@@ -108,12 +109,12 @@ namespace AZ::Dom
     //! The current state of a Patch application operation.
     struct PatchApplicationState
     {
+        //! The outcome of the last operation, may be overridden to produce a different failure outcome.
+        PatchOperation::PatchOutcome m_outcome;
         //! The patch being applied.
         const Patch* m_patch = nullptr;
         //! The last operation attempted.
         const PatchOperation* m_lastOperation = nullptr;
-        //! The outcome of the last operation, may be overridden to produce a different failure outcome.
-        PatchOperation::PatchOutcome m_outcome;
         //! The current state of the value being patched, will be returned if the patch operation succeeds.
         Value* m_currentState = nullptr;
         //! If set to false, the patch operation should halt.
@@ -134,7 +135,7 @@ namespace AZ::Dom
     {
     public:
         using StrategyFunctor = AZStd::function<void(PatchApplicationState&)>;
-        using OperationsContainer = AZStd::vector<PatchOperation>;
+        using OperationsContainer = AZStd::deque<PatchOperation>;
 
         Patch() = default;
         Patch(const Patch&) = default;
@@ -193,6 +194,7 @@ namespace AZ::Dom
     struct DeltaPatchGenerationParameters
     {
         static constexpr size_t NoReplace = AZStd::numeric_limits<size_t>::max();
+        static constexpr size_t AlwaysFullReplace = 0;
 
         //! The threshold of changed values in a node or array which, if exceeded, will cause the generation to create an
         //! entire "replace" oepration instead. If set to NoReplace, no replacement will occur.

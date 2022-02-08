@@ -106,12 +106,12 @@ namespace AZ::Dom::Benchmark
 
         for (auto _ : state)
         {
-            name == name;
-            name == index;
-            name == endOfArray;
-            index == index;
-            index == endOfArray;
-            endOfArray == endOfArray;
+            benchmark::DoNotOptimize(name == name);
+            benchmark::DoNotOptimize(name == index);
+            benchmark::DoNotOptimize(name == endOfArray);
+            benchmark::DoNotOptimize(index == index);
+            benchmark::DoNotOptimize(index == endOfArray);
+            benchmark::DoNotOptimize(endOfArray == endOfArray);
         }
 
         state.SetItemsProcessed(6 * state.iterations());
