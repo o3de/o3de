@@ -39,7 +39,7 @@ def C28798205_WhiteBox_SetInvisible():
 
     # open level
     helper.init_idle()
-    general.open_level("EmptyLevel")
+    helper.open_level("WhiteBox", "EmptyLevel", no_prompt=False)
 
     white_box_entity_name = 'WhiteBox-Visibility'
     white_box_visibility_path = 'White Box Material|Visible'

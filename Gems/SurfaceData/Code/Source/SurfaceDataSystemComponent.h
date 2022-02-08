@@ -58,9 +58,6 @@ namespace SurfaceData
 
         void RefreshSurfaceData(const AZ::Aabb& dirtyArea) override;
     private:
-        void FilterPoints(SurfacePointList& sourcePointList, const SurfaceTagVector& desiredTags) const;
-        void CombineAndSortNeighboringPoints(SurfacePointList& sourcePointList) const;
-
         SurfaceDataRegistryHandle RegisterSurfaceDataProviderInternal(const SurfaceDataRegistryEntry& entry);
         SurfaceDataRegistryEntry UnregisterSurfaceDataProviderInternal(const SurfaceDataRegistryHandle& handle);
         bool UpdateSurfaceDataProviderInternal(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry, AZ::Aabb& oldBounds);

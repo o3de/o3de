@@ -210,26 +210,38 @@ namespace Vegetation
         float lowerZDistanceRange = useOverrides ? instanceData.m_descriptorPtr->m_surfaceTagDistance.m_lowerDistanceInMeters : m_configuration.m_lowerDistance;
         float upperZDistanceRange = useOverrides ? instanceData.m_descriptorPtr->m_surfaceTagDistance.m_upperDistanceInMeters : m_configuration.m_upperDistance;
 
+        bool passesFilter = false;
+
         if (!surfaceTagsToCompare.empty())
         {
-            m_points.clear();
+            m_points.Clear();
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, instanceData.m_position, surfaceTagsToCompare, m_points);
 
             float instanceZ = instanceData.m_position.GetZ();
-            for (auto& point : m_points)
-            {
-                float pointZ = point.m_position.GetZ();
-                float zDistance = instanceZ - pointZ;
-                if (lowerZDistanceRange <= zDistance && zDistance <= upperZDistanceRange)
+            m_points.EnumeratePoints(
+                [instanceZ, lowerZDistanceRange, upperZDistanceRange, &passesFilter](
+                    const AZ::Vector3& position,
+                    [[maybe_unused]] const AZ::Vector3& normal, [[maybe_unused]] const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
+                    float pointZ = position.GetZ();
+                    float zDistance = instanceZ - pointZ;
+                    if (lowerZDistanceRange <= zDistance && zDistance <= upperZDistanceRange)
+                    {
+                        passesFilter = true;
+                        return false;
+                    }
                     return true;
-                }
-            }
+                });
         }
 
-        // if we get here instance is marked filtered
-        VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::FilterInstance, instanceData.m_id, AZStd::string_view("SurfaceDepthMaskFilter")));
-        return false;
+        if (!passesFilter)
+        {
+            // if we get here instance is marked filtered
+            VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(
+                &DebugNotificationBus::Events::FilterInstance, instanceData.m_id, AZStd::string_view("SurfaceDepthMaskFilter")));
+        }
+
+        return passesFilter;
     }
 
     FilterStage SurfaceMaskDepthFilterComponent::GetFilterStage() const
