@@ -73,7 +73,7 @@ namespace AzToolsFramework
                         settings.m_keepDefaults = true;
                     }
 
-                    if ((flags & StoreFlags::StoreLinkIds) != StoreFlags::None)
+                    if ((flags & StoreFlags::StripLinkIds) != StoreFlags::StripLinkIds)
                     {
                         settings.m_metadata.Create<LinkIdMetadata>();
                     }

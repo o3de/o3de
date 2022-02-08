@@ -17,7 +17,7 @@ namespace UnitTest
     class GradientSignalTestHelpers
     {
     public:
-        static void CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, float shapeHalfBounds);
+        static void CompareGetValueAndGetValues(AZ::EntityId gradientEntityId, float queryMin, float queryMax);
 
 #ifdef HAVE_BENCHMARK
         // We use an enum to list out the different types of GetValue() benchmarks to run so that way we can condense our test cases

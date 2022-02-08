@@ -6,7 +6,7 @@
  *
  */
 
-#include "SurfaceDataShapeComponent.h"
+#include <SurfaceData/Components/SurfaceDataShapeComponent.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Debug/Profiler.h>
