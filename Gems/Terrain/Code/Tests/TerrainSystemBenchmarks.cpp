@@ -609,7 +609,7 @@ namespace UnitTest
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessNormalsFromRegionAsync, worldBounds, stepSize, perPositionCallback, sampler, asyncParams);
 
                 AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
                 completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
@@ -796,7 +796,7 @@ namespace UnitTest
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegionAsync, worldBounds, stepSize, perPositionCallback, sampler, asyncParams);
 
                 AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
                 completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
@@ -983,7 +983,7 @@ namespace UnitTest
 
                 AZ::Vector2 stepSize = AZ::Vector2(queryResolution);
                 AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegion, worldBounds, stepSize, perPositionCallback, sampler);
+                    &AzFramework::Terrain::TerrainDataRequests::ProcessSurfacePointsFromRegionAsync, worldBounds, stepSize, perPositionCallback, sampler, asyncParams);
 
                 AZStd::unique_lock<AZStd::mutex> completionLock(completionMutex);
                 completionVariable.wait(completionLock, [&completionFlag]{ return completionFlag == true; });
