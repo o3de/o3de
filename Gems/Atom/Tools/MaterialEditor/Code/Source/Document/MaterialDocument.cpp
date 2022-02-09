@@ -354,9 +354,7 @@ namespace MaterialEditor
                         return false;
                     }
                     
-                    // TODO: Support populating the Material Editor with nested property groups, not just the top level.
-                    AZStd::string_view groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->GetName().size() - 1);
-                    sourceData.SetPropertyValue(AZ::RPI::MaterialPropertyId{groupName, propertyDefinition->GetName()}, propertyValue);
+                    sourceData.SetPropertyValue(propertyId, propertyValue);
                 }
             }
             return true;
@@ -553,27 +551,38 @@ namespace MaterialEditor
         // Assets must still be used for now because they contain the final accumulated value after all other materials
         // in the hierarchy are applied
         bool enumerateResult = m_materialTypeSourceData.EnumeratePropertyGroups(
-            [this, &parentPropertyValues](
-                const AZ::RPI::MaterialTypeSourceData::PropertyGroup* propertyGroup,
-                const AZ::RPI::MaterialNameContext& groupNameContext,
-                const AZ::RPI::MaterialNameContext& parentNameContext)
+            [this, &parentPropertyValues](const AZ::RPI::MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack)
             {
-                // Add any material functors that are located inside each property group.
+                using namespace AZ::RPI;
+
+                const MaterialTypeSourceData::PropertyGroup* propertyGroup = propertyGroupStack.back();
+                
+                MaterialNameContext groupNameContext = MaterialTypeSourceData::MakeMaterialNameContext(propertyGroupStack);
+
                 if (!AddEditorMaterialFunctors(propertyGroup->GetFunctors(), groupNameContext))
                 {
                     return false;
                 }
-                
+
+                AZStd::vector<AZStd::string> groupNameVector;
+                AZStd::vector<AZStd::string> groupDisplayNameVector;
+
+                for (auto& group : propertyGroupStack)
+                {
+                    groupNameVector.push_back(group->GetName());
+                    groupDisplayNameVector.push_back(group->GetDisplayName());
+                }
+
                 m_groups.emplace_back(aznew AtomToolsFramework::DynamicPropertyGroup);
-                m_groups.back()->m_name = propertyGroup->GetName();
-                parentNameContext.ContextualizeProperty(m_groups.back()->m_name);
-                m_groups.back()->m_displayName = propertyGroup->GetDisplayName();
                 m_groups.back()->m_description = propertyGroup->GetDescription();
+                AzFramework::StringFunc::Join(m_groups.back()->m_name, groupNameVector.begin(), groupNameVector.end(), ".");
+                AzFramework::StringFunc::Join(m_groups.back()->m_displayName, groupDisplayNameVector.begin(), groupDisplayNameVector.end(), " | ");
 
                 for (const auto& propertyDefinition : propertyGroup->GetProperties())
                 {
-                    // Assign id before conversion so it can be used in dynamic description
                     AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+
+                    // Assign id before conversion so it can be used in dynamic description
                     propertyConfig.m_id = propertyDefinition->GetName();
                     groupNameContext.ContextualizeProperty(propertyConfig.m_id);
 
@@ -587,9 +596,8 @@ namespace MaterialEditor
                     if (propertyIndexInBounds)
                     {
                         AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition);
-
-                        // TODO: Support populating the Material Editor with nested property groups, not just the top level.
-                        // (Does DynamicPropertyConfig really even need m_groupDisplayName?)
+                        
+                        // (Does DynamicPropertyConfig really even need m_groupName? It doesn't seem to be used anywhere)
                         propertyConfig.m_groupName = m_groups.back()->m_name;
                         propertyConfig.m_groupDisplayName = m_groups.back()->m_displayName;
                         propertyConfig.m_showThumbnail = true;

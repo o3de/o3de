@@ -157,6 +157,56 @@ namespace AZ
             toPropertyGroupList.back()->m_name = name;
             return toPropertyGroupList.back().get();
         }
+        
+        const AZStd::string& MaterialTypeSourceData::PropertyGroup::GetName() const
+        {
+            return m_name;
+        }
+
+        const AZStd::string& MaterialTypeSourceData::PropertyGroup::GetDisplayName() const
+        {
+            return m_displayName;
+        }
+
+        const AZStd::string& MaterialTypeSourceData::PropertyGroup::GetDescription() const
+        {
+            return m_description;
+        }
+
+        const MaterialTypeSourceData::PropertyList& MaterialTypeSourceData::PropertyGroup::GetProperties() const
+        {
+            return m_properties;
+        }
+
+        const AZStd::string& MaterialTypeSourceData::PropertyGroup::GetShaderInputsPrefix() const
+        {
+            return m_shaderInputsPrefix;
+        }
+
+        const AZStd::string& MaterialTypeSourceData::PropertyGroup::GetShaderOptionsPrefix() const
+        {
+            return m_shaderOptionsPrefix;
+        }
+
+        const AZStd::vector<AZStd::unique_ptr<MaterialTypeSourceData::PropertyGroup>>& MaterialTypeSourceData::PropertyGroup::GetPropertyGroups() const
+        {
+            return m_propertyGroups;
+        }
+
+        const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& MaterialTypeSourceData::PropertyGroup::GetFunctors() const
+        {
+            return m_materialFunctorSourceData;
+        }
+
+        void MaterialTypeSourceData::PropertyGroup::SetDisplayName(AZStd::string_view displayName)
+        {
+            m_displayName = displayName;
+        }
+
+        void MaterialTypeSourceData::PropertyGroup::SetDescription(AZStd::string_view description)
+        {
+            m_description = description;
+        }
 
         MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::PropertyGroup::AddProperty(AZStd::string_view name)
         {
@@ -377,21 +427,23 @@ namespace AZ
             return parts;
         }
 
-        bool MaterialTypeSourceData::EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, MaterialNameContext nameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
+        bool MaterialTypeSourceData::EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, PropertyGroupStack* propertyGroupStack, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
         {
             for (auto& propertyGroup : inPropertyGroupList)
             {
-                MaterialNameContext groupNameContext = ExtendNameContext(nameContext, *propertyGroup);
+                propertyGroupStack->push_back(propertyGroup.get());
 
-                if (!callback(propertyGroup.get(), groupNameContext, nameContext))
+                if (!callback(*propertyGroupStack))
                 {
                     return false;  // Stop processing
                 }
                 
-                if (!EnumeratePropertyGroups(callback, groupNameContext, propertyGroup->m_propertyGroups))
+                if (!EnumeratePropertyGroups(callback, propertyGroupStack, propertyGroup->m_propertyGroups))
                 {
                     return false; // Stop processing
                 }
+
+                propertyGroupStack->pop_back();
             }
 
             return true;
@@ -404,14 +456,16 @@ namespace AZ
                 return false;
             }
 
-            return EnumeratePropertyGroups(callback, {}, m_propertyLayout.m_propertyGroups);
+            PropertyGroupStack propertyGroupStack;
+            return EnumeratePropertyGroups(callback, &propertyGroupStack, m_propertyLayout.m_propertyGroups);
         }
 
         bool MaterialTypeSourceData::EnumerateProperties(const EnumeratePropertiesCallback& callback, MaterialNameContext nameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const
         {
             for (auto& propertyGroup : inPropertyGroupList)
             {
-                MaterialNameContext groupNameContext = ExtendNameContext(nameContext, *propertyGroup);
+                MaterialNameContext groupNameContext = nameContext;
+                ExtendNameContext(groupNameContext, *propertyGroup);
 
                 for (auto& property : propertyGroup->m_properties)
                 {
@@ -529,13 +583,21 @@ namespace AZ
             return groupDefinitions;
         }
 
-        MaterialNameContext MaterialTypeSourceData::ExtendNameContext(MaterialNameContext nameContext, const MaterialTypeSourceData::PropertyGroup& propertyGroup)
+        void MaterialTypeSourceData::ExtendNameContext(MaterialNameContext& nameContext, const MaterialTypeSourceData::PropertyGroup& propertyGroup)
         {
-            MaterialNameContext materialNameContext2 = nameContext;
-            materialNameContext2.ExtendPropertyIdContext(propertyGroup.m_name);
-            materialNameContext2.ExtendShaderOptionContext(propertyGroup.m_shaderOptionsPrefix);
-            materialNameContext2.ExtendSrgInputContext(propertyGroup.m_shaderInputsPrefix);
-            return materialNameContext2;
+            nameContext.ExtendPropertyIdContext(propertyGroup.m_name);
+            nameContext.ExtendShaderOptionContext(propertyGroup.m_shaderOptionsPrefix);
+            nameContext.ExtendSrgInputContext(propertyGroup.m_shaderInputsPrefix);
+        }
+        
+        /*static*/ MaterialNameContext MaterialTypeSourceData::MakeMaterialNameContext(const MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack)
+        {
+            MaterialNameContext nameContext;
+            for (auto& group : propertyGroupStack)
+            {
+                ExtendNameContext(nameContext, *group);
+            }
+            return nameContext;
         }
 
         bool MaterialTypeSourceData::BuildPropertyList(
@@ -549,7 +611,7 @@ namespace AZ
                 return false;
             }
 
-            materialNameContext = ExtendNameContext(materialNameContext, *propertyGroup);
+            ExtendNameContext(materialNameContext, *propertyGroup);
 
             for (const AZStd::unique_ptr<PropertyDefinition>& property : propertyGroup->m_properties)
             {
@@ -886,6 +948,6 @@ namespace AZ
                 return Failure();
             }
         }
-
+        
     } // namespace RPI
 } // namespace AZ

@@ -117,6 +117,20 @@ namespace AZ
             shaderOptionName = m_shaderOptionNameContext + shaderOptionName;
             return true;
         }
+        
+        bool MaterialNameContext::HasContextForProperties() const
+        {
+            return !m_propertyIdContext.empty();
+        }
 
+        bool MaterialNameContext::HasContextForSrgInputs() const
+        {
+            return !m_srgInputNameContext.empty();
+        }
+
+        bool MaterialNameContext::HasContextForShaderOptions() const
+        {
+            return !m_shaderOptionNameContext.empty();
+        }
     } // namespace RPI
 } // namespace AZ

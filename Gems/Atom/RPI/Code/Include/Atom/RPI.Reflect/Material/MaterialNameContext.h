@@ -45,9 +45,9 @@ namespace AZ
             bool ContextualizeShaderOption(AZStd::string& shaderOptionName) const;
             
             //! Returns true if there is some non-default name context.
-            bool HasContextForProperties() const { return !m_propertyIdContext.empty(); }
-            bool HasContextForSrgInputs() const { return !m_srgInputNameContext.empty(); }
-            bool HasContextForShaderOptions() const { return !m_shaderOptionNameContext.empty(); }
+            bool HasContextForProperties() const;
+            bool HasContextForSrgInputs() const;
+            bool HasContextForShaderOptions() const;
 
             //! Returns true if the name context is empty.
             bool IsDefault() const;

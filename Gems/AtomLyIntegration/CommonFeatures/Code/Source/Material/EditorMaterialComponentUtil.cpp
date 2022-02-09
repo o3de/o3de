@@ -151,9 +151,7 @@ namespace AZ
                             return true;
                         }
 
-                        // TODO: Support populating the Material Editor with nested property groups, not just the top level.
-                        AZStd::string_view groupName = propertyId.GetStringView().substr(0, propertyId.GetStringView().size() - propertyDefinition->GetName().size() - 1);
-                        exportData.SetPropertyValue(RPI::MaterialPropertyId{groupName, propertyDefinition->GetName()}, propertyValue);
+                        exportData.SetPropertyValue(propertyId, propertyValue);
                         return true;
                     });
 

@@ -262,7 +262,7 @@ namespace AZ
                 return Failure();
             }
 
-            auto materialTypeLoadOutcome = MaterialUtils::LoadMaterialTypeSourceData(materialTypeSourcePath);
+            auto materialTypeLoadOutcome = MaterialUtils::LoadMaterialTypeSourceData(materialTypeSourcePath, nullptr, sourceDependencies);
             if (!materialTypeLoadOutcome)
             {
                 AZ_Error("MaterialSourceData", false, "Failed to load MaterialTypeSourceData: '%s'.", materialTypeSourcePath.c_str());

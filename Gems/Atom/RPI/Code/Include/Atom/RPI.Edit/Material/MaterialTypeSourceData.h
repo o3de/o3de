@@ -131,15 +131,17 @@ namespace AZ
                 PropertyGroup() = default;
                 AZ_DISABLE_COPY(PropertyGroup)
 
-                const AZStd::string& GetName() const { return m_name; }
-                const AZStd::string& GetDisplayName() const { return m_displayName; }
-                const AZStd::string& GetDescription() const { return m_description; }
-                const PropertyList& GetProperties() const { return m_properties; }
-                const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& GetPropertyGroups() const { return m_propertyGroups; }
-                const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& GetFunctors() const { return m_materialFunctorSourceData; }
+                const AZStd::string& GetName() const;
+                const AZStd::string& GetDisplayName() const;
+                const AZStd::string& GetDescription() const;
+                const PropertyList& GetProperties() const;
+                const AZStd::string& GetShaderInputsPrefix() const;
+                const AZStd::string& GetShaderOptionsPrefix() const;
+                const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& GetPropertyGroups() const;
+                const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& GetFunctors() const;
                 
-                void SetDisplayName(AZStd::string_view displayName) { m_displayName = displayName; }
-                void SetDescription(AZStd::string_view description) { m_description = description; }
+                void SetDisplayName(AZStd::string_view displayName);
+                void SetDescription(AZStd::string_view description);
 
                 //! Add a new property to this PropertyGroup.
                 //! @param name a unique for the property. Must be a C-style identifier.
@@ -281,13 +283,13 @@ namespace AZ
             //! Splits an ID string like "itemA.itemB.itemC" into a vector like ["itemA.itemB", "itemC"].
             static AZStd::vector<AZStd::string_view> SplitId(AZStd::string_view id);
 
+            //! Describes a path in the hierarchy of property groups, with the top level group at the beginning and a leaf-most group at the end.
+            using PropertyGroupStack = AZStd::vector<const PropertyGroup*>;
+
             //! Call back function type used with the enumeration functions.
+            //! The PropertyGroupStack contains the stack of property groups at the current point in the traversal.
             //! Return false to terminate the traversal.
-            using EnumeratePropertyGroupsCallback = AZStd::function<bool(
-                const PropertyGroup*, // the next property group in the tree
-                const MaterialNameContext&, // The name context defined by the PropertyGroup, used to scope the contents of the property group
-                const MaterialNameContext&  // The name context that the PropertyGroup is in, used to scope the property group name
-                )>;
+            using EnumeratePropertyGroupsCallback = AZStd::function<bool(const PropertyGroupStack&)>;
 
             //! Recursively traverses all of the property groups contained in the material type, executing a callback function for each.
             //! @return false if the enumeration was terminated early by the callback returning false.
@@ -304,6 +306,9 @@ namespace AZ
             //! @return false if the enumeration was terminated early by the callback returning false.
             bool EnumerateProperties(const EnumeratePropertiesCallback& callback) const;
 
+            //! Returns a MaterialNameContext for a specific path through the property group hierarchy.
+            static MaterialNameContext MakeMaterialNameContext(const MaterialTypeSourceData::PropertyGroupStack& propertyGroupStack);
+
             Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
 
             //! If the data was loaded from an old format file (i.e. where "groups" and "properties" were separate sections),
@@ -319,10 +324,10 @@ namespace AZ
             PropertyDefinition* FindProperty(AZStd::span<AZStd::string_view> parsedPropertyId, AZStd::span<AZStd::unique_ptr<PropertyGroup>> inPropertyGroupList);
             
             // Function overloads for recursion, returns false to indicate that recursion should end.
-            bool EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, MaterialNameContext nameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
+            bool EnumeratePropertyGroups(const EnumeratePropertyGroupsCallback& callback, PropertyGroupStack* propertyGroupStack, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
             bool EnumerateProperties(const EnumeratePropertiesCallback& callback, MaterialNameContext nameContext, const AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& inPropertyGroupList) const;
             
-            static MaterialNameContext ExtendNameContext(MaterialNameContext nameContext, const MaterialTypeSourceData::PropertyGroup& propertyGroup);
+            static void ExtendNameContext(MaterialNameContext& nameContext, const MaterialTypeSourceData::PropertyGroup& propertyGroup);
 
             //! Recursively populates a material type asset with properties from the tree of material property groups.
             //! @param materialTypeSourceFilePath path to the material type file that is being processed, used to look up relative paths
@@ -342,7 +347,7 @@ namespace AZ
             
             PropertyLayout m_propertyLayout;
         };
-
+        
         //! The wrapper class for derived material functors.
         //! It is used in deserialization so that derived material functors can be deserialized by name.
         class MaterialFunctorSourceDataHolder final
