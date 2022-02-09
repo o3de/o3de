@@ -1,0 +1,47 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#include <viewsrg.srgi>
+
+partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    float m_minDepthTransitionValue;
+    float m_depthTransitionStart;
+    float m_depthTransitionDuration;
+
+    float GetLinearDepth(float zDepth)
+    {
+        return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 
+    }
+
+    //float GetLinearDepthTransitionValueWithParams(const float linearDepth, const float linearTransitionStart, const float linearTransitionDuration)
+    //{
+    //    return clamp((linearDepth - linearTransitionStart) / (linearTransitionDuration), 0.0f, 1.0);
+    //}
+    //
+    //float GetDepthTransitionValueWithParams(const float zDepth, const float linearTransitionStart, const float transitionDuration)
+    //{
+    //    return PassSrg_GetLinearDepthTransitionValueWithParams(PassSrg_GetLinearDepth(zDepth), linearTransitionStart, transitionDuration);
+    //}
+    //
+    //float GetLinearDepthTransitionValue(const float linearDepth)
+    //{
+    //    return PassSrg_GetLinearDepthTransitionValueWithParams(linearDepth, m_depthTransitionStart, m_depthTransitionDuration);
+    //}
+    //
+    //float GetDepthTransitionValue(const float zDepth)
+    //{
+    //    return PassSrg_GetLinearDepthTransitionValue(PassSrg_GetLinearDepth(zDepth));
+    //}
+
+    float GetDepthTransitionBlendAmount(const float linearDepth, const float maskValue)
+    {
+        const float depthTransition = clamp((linearDepth - m_depthTransitionStart) / (m_depthTransitionDuration), m_minDepthTransitionValue, 1.0);
+        return 1.0 - clamp((1.0 - maskValue) * depthTransition, 0.0, 1.0);
+    }
+}

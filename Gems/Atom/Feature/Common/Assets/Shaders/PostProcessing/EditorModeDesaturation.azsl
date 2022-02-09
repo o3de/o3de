@@ -6,12 +6,13 @@
  *
  */
  
-#include <Atom/Features/SrgSemantics.azsli>
- 
+#include <EditorModeCommon.azsli>
+
+#include <Atom/Features/SrgSemantics.azsli> 
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
  
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_framebuffer;
     Texture2D<float4> m_depth;
@@ -38,26 +39,35 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     };
  
     float m_desaturationAmount;
+    float m_grayscaleAmount;
 }
 
 PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
 
-    // Fetch the pixel color from the input texture
-    float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    const float mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
 
-    // Averge the colors to get a desaturated effect
-    float sat = (color.r + color.g + color.b) / 3.0;
+    // Desaturation effect
+    const float3 luminanceWeights = float3(0.299,0.587,0.114);
+    const float luminance = dot(inColor, luminanceWeights);
+    const float3 desaturationEffect = lerp(inColor, luminance, PassSrg::m_desaturationAmount);
 
-    // Calculate the visual effect for non-mask entities
-    float3 unmasked = lerp(color, float3(sat, sat, sat), PassSrg::m_desaturationAmount);
+    // Grayscale effect
+    const float3 finalEffect = lerp(desaturationEffect, float3(0.0, 0.0, 0.0), PassSrg::m_grayscaleAmount);
 
-    // Get the mask value at this point
-    float4 mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
-
+    // Transitioned t value
+    float t = mask;
+    if(PassSrg::m_depthTransitionDuration > 0.0)
+    {
+        const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+        const float linearDepth = PassSrg::GetLinearDepth(zDepth);
+        t = PassSrg::GetDepthTransitionBlendAmount(linearDepth, mask);
+    }
+    
     // Apply the visual effect to non-mask entities, leaving mask entities untouched
-    OUT.m_color.rgb = lerp(unmasked.rgb, color.rgb, mask.a);
+    OUT.m_color.rgb = lerp(finalEffect.rgb, inColor.rgb, t);
     OUT.m_color.a = 1.0;
 
     return OUT;

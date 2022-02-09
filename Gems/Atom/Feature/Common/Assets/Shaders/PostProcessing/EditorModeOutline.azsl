@@ -6,12 +6,13 @@
  *
  */
  
-#include <Atom/Features/SrgSemantics.azsli>
+#include <EditorModeCommon.azsli>
  
+#include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
  
-ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_framebuffer;
     Texture2D<float4> m_depth;
@@ -100,6 +101,5 @@ PSOutput MainPS(VSOutput IN)
     float outline = selectedEntityOutliner(unnormalizedUV, lineThickness);
     float3 outlineColor = float3(.96, 0.65, 0.13);
     OUT.m_color.rgb = lerp(OUT.m_color.rgb, outlineColor, outline);
-
     return OUT;
 }

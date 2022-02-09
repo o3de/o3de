@@ -68,7 +68,8 @@
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/EditorModeDesaturation.shader"
-                }
+                },
+                "PipelineViewTag": "MainCamera"
             }
         }
     }
