@@ -143,15 +143,13 @@ namespace EMotionFX
                     ->Version(4)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
                     ->Field("MaterialPerLOD", &Configuration::m_materialPerLOD)
-                    ->Field("RenderSkeleton", &Configuration::m_renderSkeleton)
-                    ->Field("RenderCharacter", &Configuration::m_renderCharacter)
-                    ->Field("RenderBounds", &Configuration::m_renderBounds)
                     ->Field("AttachmentType", &Configuration::m_attachmentType)
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
                     ->Field("SkinningMethod", &Configuration::m_skinningMethod)
                     ->Field("LODLevel", &Configuration::m_lodLevel)
                     ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
+                    ->Field("RenderFlag", &Configuration::m_renderFlags)
                 ;
             }
         }
@@ -250,8 +248,6 @@ namespace EMotionFX
             {
                 m_configuration = *configuration;
             }
-
-            m_debugRenderFlags[RENDER_SOLID] = true;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -344,19 +340,19 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         bool ActorComponent::GetRenderCharacter() const
         {
-            return m_configuration.m_renderCharacter;
+            return m_configuration.m_renderFlags[RENDER_SOLID];
         }
 
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::SetRenderCharacter(bool enable)
         {
-            if (m_configuration.m_renderCharacter != enable)
+            if (m_configuration.m_renderFlags[RENDER_SOLID] != enable)
             {
-                m_configuration.m_renderCharacter = enable;
+                m_configuration.m_renderFlags[RENDER_SOLID] = enable;
 
                 if (m_renderActorInstance)
                 {
-                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderCharacter);
+                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderFlags[RENDER_SOLID]);
                 }
             }
         }
@@ -396,7 +392,7 @@ namespace EMotionFX
 
         void ActorComponent::SetRenderFlag(ActorRenderFlagBitset renderFlags)
         {
-            m_debugRenderFlags = renderFlags;
+            m_configuration.m_renderFlags = renderFlags;
         }
 
         void ActorComponent::CheckActorCreation()
@@ -456,7 +452,7 @@ namespace EMotionFX
 
                 if (m_renderActorInstance)
                 {
-                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderCharacter);
+                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderFlags[RENDER_SOLID]);
                 }
             }
 
@@ -569,16 +565,11 @@ namespace EMotionFX
                 if (!m_configuration.m_forceUpdateJointsOOV)
                 {
                     const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
-                    m_actorInstance->SetIsVisible(isInCameraFrustum && m_configuration.m_renderCharacter);
+                    m_actorInstance->SetIsVisible(isInCameraFrustum && m_configuration.m_renderFlags[RENDER_SOLID]);
                 }
 
-                m_renderActorInstance->SetIsVisible(m_debugRenderFlags[RENDER_SOLID]);
-
-                // The configuration stores some debug option. When that is enabled, we override it on top of the render flags.
-                m_debugRenderFlags[RENDER_AABB] = m_debugRenderFlags[RENDER_AABB] || m_configuration.m_renderBounds;
-                m_debugRenderFlags[RENDER_LINESKELETON] = m_debugRenderFlags[RENDER_LINESKELETON] || m_configuration.m_renderSkeleton;
-                m_debugRenderFlags[RENDER_EMFX_DEBUG] = true;
-                m_renderActorInstance->DebugDraw(m_debugRenderFlags);
+                m_renderActorInstance->SetIsVisible(m_configuration.m_renderFlags[RENDER_SOLID]);
+                m_renderActorInstance->DebugDraw(m_configuration.m_renderFlags);
             }
         }
 
