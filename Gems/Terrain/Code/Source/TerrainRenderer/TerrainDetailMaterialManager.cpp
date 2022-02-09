@@ -746,6 +746,8 @@ namespace Terrain
             if (region == nullptr)
             {
                 pixels.at(index).m_material1 = m_passthroughMaterialId;
+                ++index;
+                return;
             }
 
             for (const auto& surfaceTagWeight : surfacePoint.m_surfaceTags)
