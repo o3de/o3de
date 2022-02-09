@@ -48,6 +48,12 @@ namespace SurfaceData
             const SurfaceTagVector& desiredTags,
             SurfacePointList& surfacePointLists) const override;
 
+        void GetSurfacePointsFromListInternal(
+            AZStd::span<const AZ::Vector3> inPositions,
+            const AZ::Aabb& inBounds,
+            const SurfaceTagVector& desiredTags,
+            SurfacePointList& surfacePointLists) const;
+
         SurfaceDataRegistryHandle RegisterSurfaceDataProvider(const SurfaceDataRegistryEntry& entry) override;
         void UnregisterSurfaceDataProvider(const SurfaceDataRegistryHandle& handle) override;
         void UpdateSurfaceDataProvider(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry) override;

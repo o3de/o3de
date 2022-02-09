@@ -252,7 +252,8 @@ namespace SurfaceData
             size_t startIndex = surfacePointInsertIndex;
             size_t endIndex = surfacePointStartIndex + m_numSurfacePointsPerInput[inPositionIndex];
 
-            AZStd::move_backward(&m_indirectIndex[startIndex], &m_indirectIndex[endIndex], &m_indirectIndex[endIndex + 1]);
+            AZStd::move_backward(
+                m_indirectIndex.begin() + startIndex, m_indirectIndex.begin() + endIndex, m_indirectIndex.begin() + endIndex + 1);
         }
 
         m_indirectIndex[surfacePointInsertIndex] = m_surfacePositionList.size();
@@ -289,7 +290,7 @@ namespace SurfaceData
 
         m_inputPositions = inPositions;
         m_inputPositionSize = inPositions.size();
-        m_maxSurfacePointsPerInput = maxPointsPerInput * 4;
+        m_maxSurfacePointsPerInput = maxPointsPerInput;
 
         size_t outputReserveSize = inPositions.size() * m_maxSurfacePointsPerInput;
 

@@ -205,53 +205,7 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::GetSurfacePoints(const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointList) const
     {
-        const bool useTagFilters = HasValidTags(desiredTags);
-        const bool hasModifierTags = useTagFilters && HasAnyMatchingTags(desiredTags, m_registeredModifierTags);
-
-        AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
-
-        surfacePointList.Clear();
-        surfacePointList.StartListQuery({ { inPosition } }, m_registeredSurfaceDataProviders.size());
-
-        //gather all intersecting points
-        for (const auto& entryPair : m_registeredSurfaceDataProviders)
-        {
-            const AZ::u32 entryAddress = entryPair.first;
-            const SurfaceDataRegistryEntry& entry = entryPair.second;
-            if (!entry.m_bounds.IsValid() || AabbContains2D(entry.m_bounds, inPosition))
-            {
-                if (!useTagFilters || hasModifierTags || HasAnyMatchingTags(desiredTags, entry.m_tags))
-                {
-                    SurfaceDataProviderRequestBus::Event(entryAddress, &SurfaceDataProviderRequestBus::Events::GetSurfacePoints, inPosition, surfacePointList);
-                }
-            }
-        }
-
-        constexpr size_t inPositionIndex = 0;
-        if (!surfacePointList.IsEmpty(inPositionIndex))
-        {
-            //modify or annotate reported points
-            for (const auto& entryPair : m_registeredSurfaceDataModifiers)
-            {
-                const AZ::u32 entryAddress = entryPair.first;
-                const SurfaceDataRegistryEntry& entry = entryPair.second;
-                if (!entry.m_bounds.IsValid() || AabbContains2D(entry.m_bounds, inPosition))
-                {
-                    SurfaceDataModifierRequestBus::Event(entryAddress, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, surfacePointList);
-                }
-            }
-            
-            // After we've finished creating and annotating all the surface points, combine any points together that have effectively the
-            // same XY coordinates and extremely similar Z values.  This produces results that are sorted in decreasing Z order.
-            // Also, this filters out any remaining points that don't match the desired tag list.  This can happen when a surface provider
-            // doesn't add a desired tag, and a surface modifier has the *potential* to add it, but then doesn't.
-            if (useTagFilters)
-            {
-                surfacePointList.FilterPoints(desiredTags);
-            }
-        }
-
-        surfacePointList.EndListQuery();
+        GetSurfacePointsFromListInternal({ { inPosition } }, AZ::Aabb::CreateFromPoint(inPosition), desiredTags, surfacePointList);
     }
 
     void SurfaceDataSystemComponent::GetSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize,
@@ -273,42 +227,73 @@ namespace SurfaceData
             }
         }
 
-        GetSurfacePointsFromList(inPositions, desiredTags, surfacePointLists);
+        GetSurfacePointsFromListInternal(inPositions, inRegion, desiredTags, surfacePointLists);
     }
 
     void SurfaceDataSystemComponent::GetSurfacePointsFromList(
-        AZStd::span<const AZ::Vector3> inPositions, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointLists) const
+        AZStd::span<const AZ::Vector3> inPositions,
+        const SurfaceTagVector& desiredTags,
+        SurfacePointList& surfacePointLists) const
+    {
+        AZ::Aabb inBounds = AZ::Aabb::CreateNull();
+        for (auto& position : inPositions)
+        {
+            inBounds.AddPoint(position);
+        }
+
+        GetSurfacePointsFromListInternal(inPositions, inBounds, desiredTags, surfacePointLists);
+    }
+
+    void SurfaceDataSystemComponent::GetSurfacePointsFromListInternal(
+        AZStd::span<const AZ::Vector3> inPositions, const AZ::Aabb& inPositionBounds,
+        const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointLists) const
     {
         AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
-
-        const size_t totalQueryPositions = inPositions.size();
-
-        surfacePointLists.Clear();
-        surfacePointLists.StartListQuery(inPositions, m_registeredSurfaceDataProviders.size());
 
         const bool useTagFilters = HasValidTags(desiredTags);
         const bool hasModifierTags = useTagFilters && HasAnyMatchingTags(desiredTags, m_registeredModifierTags);
 
-        // Loop through each data provider, and query all the points for each one.  This allows us to check the tags and the overall
-        // AABB bounds just once per provider, instead of once per point.  It also allows for an eventual optimization in which we could
-        // send the list of points directly into each SurfaceDataProvider.
+        // Clear our output structure.
+        surfacePointLists.Clear();
+
+        // Gather up the subset of surface providers that overlap the input positions.
+        AZStd::vector<AZStd::pair<SurfaceDataRegistryHandle, SurfaceDataRegistryEntry>> relevantProviders;
+        size_t maxPointsCreatedPerInput = 0;
+        relevantProviders.reserve(m_registeredSurfaceDataProviders.size());
         for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
         {
             bool hasInfiniteBounds = !provider.m_bounds.IsValid();
 
+            // Only allow surface providers that match our tag filters. However, if we aren't using tag filters,
+            // or if there's at least one surface modifier that can *add* a filtered tag to a created point, then
+            // allow all the surface providers.
             if (!useTagFilters || hasModifierTags || HasAnyMatchingTags(desiredTags, provider.m_tags))
             {
-                for (size_t index = 0; index < totalQueryPositions; index++)
+                // Only allow surface providers that overlap the input position area.
+                if (hasInfiniteBounds || AabbOverlaps2D(provider.m_bounds, inPositionBounds))
                 {
-                    bool inBounds = hasInfiniteBounds || AabbContains2D(provider.m_bounds, inPositions[index]);
-                    if (inBounds)
-                    {
-                        SurfaceDataProviderRequestBus::Event(
-                            providerHandle, &SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
-                            inPositions[index], surfacePointLists);
-                    }
+                    maxPointsCreatedPerInput += provider.m_maxPointsCreatedPerInput;
+                    relevantProviders.emplace_back(providerHandle, provider);
                 }
             }
+        }
+
+        // If we don't have any surface providers that will create any new surface points, then there's nothing more to do.
+        if (maxPointsCreatedPerInput == 0)
+        {
+            return;
+        }
+
+        // Notify our output structure that we're starting to build up the list of output points.
+        // This will reserve memory and allocate temporary structures to help build up the list efficiently.
+        surfacePointLists.StartListQuery(inPositions, maxPointsCreatedPerInput);
+
+        // Loop through each data provider and generate surface points from the set of input positions.
+        // Any generated points that have the same XY coordinates and extremely similar Z values will get combined together.
+        for (const auto& [providerHandle, provider] : relevantProviders)
+        {
+            SurfaceDataProviderRequestBus::Event(
+                providerHandle, &SurfaceDataProviderRequestBus::Events::GetSurfacePointsFromList, inPositions, surfacePointLists);
         }
 
         // Once we have our list of surface points created, run through the list of surface data modifiers to potentially add
@@ -329,15 +314,15 @@ namespace SurfaceData
             }
         }
 
-        // After we've finished creating and annotating all the surface points, combine any points together that have effectively the
-        // same XY coordinates and extremely similar Z values.  This produces results that are sorted in decreasing Z order.
-        // Also, this filters out any remaining points that don't match the desired tag list.  This can happen when a surface provider
+        // Finally, filter out any remaining points that don't match the desired tag list. This can happen when a surface provider
         // doesn't add a desired tag, and a surface modifier has the *potential* to add it, but then doesn't.
         if (useTagFilters)
         {
             surfacePointLists.FilterPoints(desiredTags);
         }
 
+        // Notify the output structure that we're done building up the list.
+        // This will compact the memory and free any temporary structures.
         surfacePointLists.EndListQuery();
     }
 
