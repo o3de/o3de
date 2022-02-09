@@ -721,7 +721,7 @@ namespace AZ::Render
                 const uint64_t inputByteOffset = aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementOffset) * aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementSize);
 
                 const uint32_t outputElementSize = outputStreamInfo.m_elementSize;
-                const uint32_t outputElementCount = inputSkinnedMeshLod.GetVertexCountForStream(outputStream);
+                const uint32_t outputElementCount = inputSkinnedMeshLod.GetVertexCount();
                 [[maybe_unused]] const uint64_t outputByteCount = aznumeric_cast<uint64_t>(outputElementCount) * aznumeric_cast<uint64_t>(outputElementSize);
                 const uint64_t outputByteOffset = aznumeric_cast<uint64_t>(outputBufferOffsetsInBytes[static_cast<uint8_t>(outputStream)]);
 

@@ -215,8 +215,8 @@ namespace AZ
                 // Clear out the vector for re-mapped joint data that will be populated by values from EMotionFX
                 blendIndexBufferData.clear();
                 blendWeightBufferData.clear();
-                blendIndexBufferData.reserve(skinnedMeshLod.GetVertexCountForStream(SkinnedMeshOutputVertexStreams::Position) * MaxSupportedSkinInfluences / 2);
-                blendWeightBufferData.reserve(skinnedMeshLod.GetVertexCountForStream(SkinnedMeshOutputVertexStreams::Position) * MaxSupportedSkinInfluences);
+                blendIndexBufferData.reserve(skinnedMeshLod.GetVertexCount() * MaxSupportedSkinInfluences / 2);
+                blendWeightBufferData.reserve(skinnedMeshLod.GetVertexCount() * MaxSupportedSkinInfluences);
 
                 // Now iterate over the actual data and populate the data for the per-actor buffers
                 size_t vertexBufferOffset = 0;

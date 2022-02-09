@@ -295,20 +295,16 @@ namespace EMotionFX
             skin2dArray.SetNumPreCachedElements(maxSkinInfluences);
             skin2dArray.Resize(modelVertexCount);
 
-            // JointId's must be padded on sub-mesh boundaries to ensure each sub-mesh view
-            // starts on a 16-byte aligned point in the buffer
-            // Pre-calculate all the boundary points so we can accommodate for the padding when adding joint id's
-            AZStd::queue<AZStd::tuple<AZ::u32, AZ::u32>> jointIdBoundaries;
-            AZ::u32 currentVertex = 0;
-            uint32 totalJointIdPadding = 0;
+            AZ::u32 currentVertex = 0;            
+            AZ::u32 totalJointIdPadding = 0;
             for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceModelLod->GetMeshes())
             {
-                uint32 meshVertexCount = sourceMesh.GetVertexCount();
+                AZ::u32 meshVertexCount = sourceMesh.GetVertexCount();
 
                 // Fill in skinning data from atom buffer
-                for (uint32 v = 0; v < meshVertexCount; ++v)
+                for (AZ::u32 v = 0; v < meshVertexCount; ++v)
                 {
-                    for (uint32 i = 0; i < maxSkinInfluences; ++i)
+                    for (AZ::u32 i = 0; i < maxSkinInfluences; ++i)
                     {
                         const float weight = skinWeights[currentVertex * maxSkinInfluences + i];
                         if (!AZ::IsClose(weight, 0.0f, FLT_EPSILON))
@@ -328,8 +324,9 @@ namespace EMotionFX
                     currentVertex++;
                 }
 
-                uint32 jointIdCount = meshVertexCount * maxSkinInfluences;
-                totalJointIdPadding += AZ::RPI::CalculateJointIdPaddingCount(jointIdCount);
+                // JointId's are padded on sub-mesh boundaries to ensure each sub-mesh view is 16 byte aligned
+                AZ::u32 jointIdCount = meshVertexCount * maxSkinInfluences;
+                totalJointIdPadding += AZ::RPI::CalculateExtraJointIdCount(jointIdCount);
             }
         }
 

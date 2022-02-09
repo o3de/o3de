@@ -13,7 +13,7 @@ namespace AZ
 {
     namespace RPI
     {
-        uint32_t CalculateJointIdPaddingCount(uint32_t realJointIdCount)
+        uint32_t CalculateExtraJointIdCount(uint32_t realJointIdCount)
         {
             // Raw buffer views must begin on 16-byte aligned boundaries.
             // For a two byte unit16_t joint id, we need to round up to a multiple of 8 elements

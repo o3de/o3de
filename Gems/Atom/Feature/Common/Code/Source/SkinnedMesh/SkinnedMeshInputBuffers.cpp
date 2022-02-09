@@ -77,9 +77,9 @@ namespace AZ
             m_vertexCount = vertexCount;
         }
 
-        uint32_t SkinnedMeshInputLod::GetVertexCountForStream(SkinnedMeshOutputVertexStreams outputStream) const
+        uint32_t SkinnedMeshInputLod::GetVertexCount() const
         {
-            return m_outputVertexCountsByStream[static_cast<uint8_t>(outputStream)];
+            return m_outputVertexCountsByStream[aznumeric_caster(SkinnedMeshOutputVertexStreams::Position)];
         }
 
         void SkinnedMeshInputLod::SetIndexBufferAsset(const Data::Asset<RPI::BufferAsset> bufferAsset)
@@ -752,7 +752,7 @@ namespace AZ
                     // Track the offset for the position history buffer
                     uint32_t meshPositionHistoryBufferOffsetInBytes =
                         currentMeshOffsetsFromBufferStartInBytes[static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::Position)] +
-                        lod.GetVertexCountForStream(SkinnedMeshOutputVertexStreams::Position) *
+                        lod.GetVertexCount() *
                             SkinnedMeshVertexStreamPropertyInterface::Get()
                                 ->GetOutputStreamInfo(SkinnedMeshOutputVertexStreams::Position)
                                 .m_elementSize;

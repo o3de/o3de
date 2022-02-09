@@ -74,8 +74,8 @@ namespace AZ
             //! Set the number of vertices for the lod. Must be called before calling CreateSkinningInputBuffer or CreateStaticBuffer.
             void SetVertexCount(uint32_t vertexCount);
 
-            //! Get the number of vertices for the mesh
-            uint32_t GetVertexCountForStream(SkinnedMeshOutputVertexStreams outputStream) const;
+            //! Get the number of vertices for the lod
+            uint32_t GetVertexCount() const;
 
             //! Set the index buffer asset
             void SetIndexBufferAsset(const Data::Asset<RPI::BufferAsset> bufferAsset);

@@ -16,6 +16,6 @@ namespace AZ
         //! Calculate the count of dummy joint ids that must be used to keep the buffer aligned.
         //! Joint Ids use raw views into the buffer, and raw views
         //! must begin on 16-byte aligned boundaries.
-        uint32_t CalculateJointIdPaddingCount(uint32_t realJointIdCount);
+        uint32_t CalculateExtraJointIdCount(uint32_t realJointIdCount);
     } // namespace RPI
 } // namespace AZ
