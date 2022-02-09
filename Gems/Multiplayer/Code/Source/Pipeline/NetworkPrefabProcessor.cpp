@@ -98,6 +98,8 @@ namespace Multiplayer
         AZStd::string uniqueName = prefab.GetName();
         uniqueName += NetworkSpawnableFileExtension;
 
+        PrefabConversionUtils::PrefabDocument networkPrefab(uniqueName);
+
         auto serializer = [serializationFormat](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool {
             AZ::IO::ByteContainerStream stream(&output);
             auto& asset = object.GetAsset();
@@ -125,13 +127,9 @@ namespace Multiplayer
         uint32_t prefabEntityOffset = 0;
         for (auto* prefabEntity : prefabNetEntities)
         {
-            AZ::Entity* netEntity = nullptr;
-
-            // TODO: Create a new PrefabDocument for the network spawnable and use it for creating the aliases
-            // 
-            //AZ::Entity* netEntity = SpawnableUtils::CreateEntityAlias(
-            //    prefab.GetName(), sourceInstance, *networkSpawnable, prefabEntity->GetId(), PrefabConversionUtils::EntityAliasType::Replace,
-            //    PrefabConversionUtils::EntityAliasSpawnableLoadBehavior::DependentLoad, NetworkEntityManager::NetworkEntityTag, context);
+            AZ::Entity* netEntity = SpawnableUtils::CreateEntityAlias(prefab.GetName(), sourceInstance, uniqueName, networkPrefab.GetInstance(),
+                prefabEntity->GetId(), PrefabConversionUtils::EntityAliasType::Replace, PrefabConversionUtils::EntityAliasSpawnableLoadBehavior::DependentLoad,
+                NetworkEntityManager::NetworkEntityTag, context);
 
             AZ_Assert(
                 netEntity, "Unable to create alias for entity %s [%zu] from the source prefab instance", prefabEntity->GetName().c_str(),
@@ -147,7 +145,7 @@ namespace Multiplayer
             ++prefabEntityOffset;
         }
 
-        context.GetProcessedObjects().push_back(AZStd::move(object));
+        context.AddPrefab(AZStd::move(networkPrefab));
         return true;
     }
 
