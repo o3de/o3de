@@ -174,4 +174,23 @@ namespace AZ::Dom::Tests
         p.AppendToString(s);
         EXPECT_EQ(s, "/foo/0/foo/0");
     }
+
+    TEST_F(DomPathTests, MixedPath_AppendToFixedString)
+    {
+        Path p("/foo/0");
+
+        {
+            AZStd::fixed_string<7> s;
+            p.AppendToString(s);
+            EXPECT_EQ(s, "/foo/0");
+        }
+
+        {
+            AZStd::fixed_string<9> s;
+            p.AppendToString(s);
+            EXPECT_EQ(s, "/foo/0");
+            p.AppendToString(s);
+            EXPECT_EQ(s, "/foo/0/fo");
+        }
+    }
 } // namespace AZ::Dom::Tests

@@ -17,7 +17,6 @@ set(FILES
     Include/AtomToolsFramework/Document/AtomToolsDocument.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentApplication.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h
-    Include/AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h
@@ -54,7 +53,6 @@ set(FILES
     Source/Document/AtomToolsDocument.cpp
     Source/Document/AtomToolsDocumentApplication.cpp
     Source/Document/AtomToolsDocumentMainWindow.cpp
-    Source/Document/AtomToolsDocumentSystemSettings.cpp
     Source/Document/AtomToolsDocumentSystemComponent.cpp
     Source/Document/AtomToolsDocumentSystemComponent.h
     Source/DynamicProperty/DynamicProperty.cpp
