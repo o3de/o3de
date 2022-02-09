@@ -10,7 +10,7 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/map.h>
@@ -66,7 +66,7 @@ namespace Profiler
         friend class CpuProfiler;
 
     public:
-        AZ_CLASS_ALLOCATOR(CpuTimingLocalStorage, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CpuTimingLocalStorage, AZ::SystemAllocator, 0);
 
         CpuTimingLocalStorage();
         ~CpuTimingLocalStorage();
@@ -131,7 +131,7 @@ namespace Profiler
 
     public:
         AZ_RTTI(CpuProfiler, "{10E9D394-FC83-4B45-B2B8-807C6BF07BF0}", AZ::Debug::Profiler);
-        AZ_CLASS_ALLOCATOR(CpuProfiler, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CpuProfiler, AZ::SystemAllocator, 0);
 
         CpuProfiler() = default;
         ~CpuProfiler() = default;
