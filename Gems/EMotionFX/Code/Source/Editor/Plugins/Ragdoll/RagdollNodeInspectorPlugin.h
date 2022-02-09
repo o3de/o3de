@@ -74,7 +74,7 @@ namespace EMotionFX
             const MCore::RGBAColor& color);
 
         //! Those function replaces legacyRender function and calls atom auxGeom render internally.
-        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
+        void Render(EMotionFX::ActorRenderFlags renderFlags) override;
         void RenderRagdoll(
             ActorInstance* actorInstance,
             bool renderColliders,

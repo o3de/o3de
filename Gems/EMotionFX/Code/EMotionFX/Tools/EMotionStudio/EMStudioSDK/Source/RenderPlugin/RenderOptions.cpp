@@ -18,6 +18,7 @@
 #include <QColor>
 #include <QSettings>
 
+#pragma optimize("", off)
 namespace EMStudio
 {
     const char* RenderOptions::s_gridUnitSizeOptionName = "gridUnitSize";
@@ -256,9 +257,9 @@ namespace EMStudio
 
         // Save render flags
         settings->beginGroup("renderFlags");
-        for (uint32 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
+        for (uint8 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
         {
-            settings->setValue(QString(i), (bool)m_renderFlags[i]);
+            settings->setValue(QString(i), AZ::RHI::CheckBit((uint32_t)m_renderFlags, i));
         }
         settings->endGroup();
     }
@@ -334,11 +335,14 @@ namespace EMStudio
 
         // Read render flags
         settings->beginGroup("renderFlags");
-        for (uint32 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
+        options.m_renderFlags = EMotionFX::ActorRenderFlags::Default;
+        for (uint8 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
         {
-            const bool defaultValue = (i == EMotionFX::ActorRenderFlag::RENDER_SOLID);
-            const bool isEnabled = settings->value(QString(i), defaultValue).toBool();
-            options.m_renderFlags[i] = isEnabled;
+            const bool isEnabled = settings->value(QString(i), false).toBool();
+            if (isEnabled)
+            {
+                options.m_renderFlags |= EMotionFX::ActorRenderFlags(i);
+            }
         }
         settings->endGroup();
 
@@ -1104,17 +1108,17 @@ namespace EMStudio
         return m_cameraFollowUp;
     }
 
-    void RenderOptions::ToggerRenderFlag(int index)
+    void RenderOptions::ToggerRenderFlag(uint8 index)
     {
-        m_renderFlags[index] = !m_renderFlags[index];
+        m_renderFlags ^= EMotionFX::ActorRenderFlags(index);
     }
 
-    void RenderOptions::SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags)
+    void RenderOptions::SetRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
     {
         m_renderFlags = renderFlags;
     }
 
-    EMotionFX::ActorRenderFlagBitset RenderOptions::GetRenderFlags() const
+    EMotionFX::ActorRenderFlags RenderOptions::GetRenderFlags() const
     {
         return m_renderFlags;
     }

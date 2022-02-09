@@ -139,8 +139,35 @@ namespace EMotionFX
             auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
+                serializeContext->Enum<ActorRenderFlags>()
+                    ->Value("Solid", ActorRenderFlags::Solid)
+                    ->Value("Wireframe", ActorRenderFlags::Wireframe)
+                    ->Value("Lighting", ActorRenderFlags::Lighting)
+                    ->Value("Shadows", ActorRenderFlags::Shadows)
+                    ->Value("FaceNormals", ActorRenderFlags::FaceNormals)
+                    ->Value("VertexNormals", ActorRenderFlags::VertexNormals)
+                    ->Value("Tangents", ActorRenderFlags::Tangents)
+                    ->Value("AABB", ActorRenderFlags::AABB)
+                    ->Value("Skeleton", ActorRenderFlags::Skeleton)
+                    ->Value("LineSkeleton", ActorRenderFlags::LineSkeleton)
+                    ->Value("NodeOrientation", ActorRenderFlags::NodeOrientation)
+                    ->Value("NodeNames", ActorRenderFlags::NodeNames)
+                    ->Value("Grid", ActorRenderFlags::Grid)
+                    ->Value("BackfaceCulling", ActorRenderFlags::BackfaceCulling)
+                    ->Value("ActorBindPose", ActorRenderFlags::ActorBindPose)
+                    ->Value("RagdollColliders", ActorRenderFlags::RagdollColliders)
+                    ->Value("RagdollJointLimits", ActorRenderFlags::RagdollJointLimits)
+                    ->Value("HitDetectionColliders", ActorRenderFlags::HitDetectionColliders)
+                    ->Value("UseGradientBackground", ActorRenderFlags::UseGradientBackground)
+                    ->Value("MotionExtraction", ActorRenderFlags::MotionExtraction)
+                    ->Value("ClothColliders", ActorRenderFlags::ClothColliders)
+                    ->Value("SimulatedObjectColliders", ActorRenderFlags::SimulatedObjectColliders)
+                    ->Value("SimulatedJoints", ActorRenderFlags::SimulatedJoints)
+                    ->Value("EmfxDebug", ActorRenderFlags::EmfxDebug)
+                    ;
+
                 serializeContext->Class<Configuration>()
-                    ->Version(4)
+                    ->Version(5)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
                     ->Field("MaterialPerLOD", &Configuration::m_materialPerLOD)
                     ->Field("AttachmentType", &Configuration::m_attachmentType)
@@ -149,7 +176,7 @@ namespace EMotionFX
                     ->Field("LODLevel", &Configuration::m_lodLevel)
                     ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
-                    ->Field("RenderFlag", &Configuration::m_renderFlags)
+                    ->Field("RenderFlags", &Configuration::m_renderFlags)
                 ;
             }
         }
@@ -340,20 +367,24 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         bool ActorComponent::GetRenderCharacter() const
         {
-            return m_configuration.m_renderFlags[RENDER_SOLID];
+            return AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
         }
 
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::SetRenderCharacter(bool enable)
         {
-            if (m_configuration.m_renderFlags[RENDER_SOLID] != enable)
+            if (enable)
             {
-                m_configuration.m_renderFlags[RENDER_SOLID] = enable;
+                AZ::RHI::SetBits(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
+            }
+            else
+            {
+                AZ::RHI::ResetBits(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
+            }
 
-                if (m_renderActorInstance)
-                {
-                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderFlags[RENDER_SOLID]);
-                }
+            if (m_renderActorInstance)
+            {
+                m_renderActorInstance->SetIsVisible(enable);
             }
         }
 
@@ -390,7 +421,7 @@ namespace EMotionFX
             return m_sceneFinishSimHandler.IsConnected();
         }
 
-        void ActorComponent::SetRenderFlag(ActorRenderFlagBitset renderFlags)
+        void ActorComponent::SetRenderFlag(ActorRenderFlags renderFlags)
         {
             m_configuration.m_renderFlags = renderFlags;
         }
@@ -452,7 +483,7 @@ namespace EMotionFX
 
                 if (m_renderActorInstance)
                 {
-                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderFlags[RENDER_SOLID]);
+                    m_renderActorInstance->SetIsVisible(AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
                 }
             }
 
@@ -565,10 +596,10 @@ namespace EMotionFX
                 if (!m_configuration.m_forceUpdateJointsOOV)
                 {
                     const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
-                    m_actorInstance->SetIsVisible(isInCameraFrustum && m_configuration.m_renderFlags[RENDER_SOLID]);
+                    m_actorInstance->SetIsVisible(isInCameraFrustum && AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
                 }
 
-                m_renderActorInstance->SetIsVisible(m_configuration.m_renderFlags[RENDER_SOLID]);
+                m_renderActorInstance->SetIsVisible(AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
                 m_renderActorInstance->DebugDraw(m_configuration.m_renderFlags);
             }
         }

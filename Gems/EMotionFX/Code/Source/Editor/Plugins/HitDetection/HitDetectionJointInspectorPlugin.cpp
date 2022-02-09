@@ -181,10 +181,9 @@ namespace EMotionFX
             renderInfo);
     }
 
-    void HitDetectionJointInspectorPlugin::Render(EMotionFX::ActorRenderFlagBitset renderFlags)
+    void HitDetectionJointInspectorPlugin::Render(EMotionFX::ActorRenderFlags renderFlags)
     {
-        const bool renderColliders = renderFlags[EMotionFX::ActorRenderFlag::RENDER_HITDETECTION_COLLIDERS];
-        if (!renderColliders)
+        if (!AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::HitDetectionColliders))
         {
             return;
         }

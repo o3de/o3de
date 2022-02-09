@@ -61,35 +61,35 @@ namespace EMStudio
             renderOptionsButton->setIcon(QIcon(":/EMotionFXAtom/Visualization.svg"));
             addWidget(renderOptionsButton);
 
-            CreateViewOptionEntry(contextMenu, "Solid", EMotionFX::ActorRenderFlag::RENDER_SOLID);
-            CreateViewOptionEntry(contextMenu, "Wireframe", EMotionFX::ActorRenderFlag::RENDER_WIREFRAME);
+            CreateViewOptionEntry(contextMenu, "Solid", EMotionFX::ActorRenderFlag::SOLID);
+            CreateViewOptionEntry(contextMenu, "Wireframe", EMotionFX::ActorRenderFlag::WIREFRAME);
             // [EMFX-TODO] Add those option once implemented.
             // CreateViewOptionEntry(contextMenu, "Lighting", EMotionFX::ActorRenderFlag::RENDER_LIGHTING);
             // CreateViewOptionEntry(contextMenu, "Backface Culling", EMotionFX::ActorRenderFlag::RENDER_BACKFACECULLING);
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Vertex Normals", EMotionFX::ActorRenderFlag::RENDER_VERTEXNORMALS);
-            CreateViewOptionEntry(contextMenu, "Face Normals", EMotionFX::ActorRenderFlag::RENDER_FACENORMALS);
-            CreateViewOptionEntry(contextMenu, "Tangents", EMotionFX::ActorRenderFlag::RENDER_TANGENTS);
-            CreateViewOptionEntry(contextMenu, "Actor Bounding Boxes", EMotionFX::ActorRenderFlag::RENDER_AABB);
+            CreateViewOptionEntry(contextMenu, "Vertex Normals", EMotionFX::ActorRenderFlag::VERTEXNORMALS);
+            CreateViewOptionEntry(contextMenu, "Face Normals", EMotionFX::ActorRenderFlag::FACENORMALS);
+            CreateViewOptionEntry(contextMenu, "Tangents", EMotionFX::ActorRenderFlag::TANGENTS);
+            CreateViewOptionEntry(contextMenu, "Actor Bounding Boxes", EMotionFX::ActorRenderFlag::AABB);
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Line Skeleton", EMotionFX::ActorRenderFlag::RENDER_LINESKELETON);
-            CreateViewOptionEntry(contextMenu, "Solid Skeleton", EMotionFX::ActorRenderFlag::RENDER_SKELETON);
-            CreateViewOptionEntry(contextMenu, "Joint Names", EMotionFX::ActorRenderFlag::RENDER_NODENAMES);
-            CreateViewOptionEntry(contextMenu, "Joint Orientations", EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION);
+            CreateViewOptionEntry(contextMenu, "Line Skeleton", EMotionFX::ActorRenderFlag::LINESKELETON);
+            CreateViewOptionEntry(contextMenu, "Solid Skeleton", EMotionFX::ActorRenderFlag::SKELETON);
+            CreateViewOptionEntry(contextMenu, "Joint Names", EMotionFX::ActorRenderFlag::NODENAMES);
+            CreateViewOptionEntry(contextMenu, "Joint Orientations", EMotionFX::ActorRenderFlag::NODEORIENTATION);
             // [EMFX-TODO] Add those option once implemented.
             // CreateViewOptionEntry(contextMenu, "Actor Bind Pose", EMotionFX::ActorRenderFlag::RENDER_ACTORBINDPOSE);
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlag::RENDER_HITDETECTION_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlag::HITDETECTION_COLLIDERS, true,
                 ":/EMotionFXAtom/HitDetection.svg");
-            CreateViewOptionEntry(contextMenu, "Ragdoll Colliders", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, "Ragdoll Colliders", EMotionFX::ActorRenderFlag::RAGDOLL_COLLIDERS, true,
                 ":/EMotionFXAtom/RagdollCollider.svg");
-            CreateViewOptionEntry(contextMenu, "Ragdoll Joint Limits", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_JOINTLIMITS, true,
+            CreateViewOptionEntry(contextMenu, "Ragdoll Joint Limits", EMotionFX::ActorRenderFlag::RAGDOLL_JOINTLIMITS, true,
                 ":/EMotionFXAtom/RagdollJointLimit.svg");
-            CreateViewOptionEntry(contextMenu, "Cloth Colliders", EMotionFX::ActorRenderFlag::RENDER_CLOTH_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, "Cloth Colliders", EMotionFX::ActorRenderFlag::CLOTH_COLLIDERS, true,
                 ":/EMotionFXAtom/Cloth.svg");
-            CreateViewOptionEntry(contextMenu, "Simulated Object Colliders", EMotionFX::ActorRenderFlag::RENDER_SIMULATEDOBJECT_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, "Simulated Object Colliders", EMotionFX::ActorRenderFlag::SIMULATEDOBJECT_COLLIDERS, true,
                 ":/EMotionFXAtom/SimulatedObjectCollider.svg");
-            CreateViewOptionEntry(contextMenu, "Simulated Joints", EMotionFX::ActorRenderFlag::RENDER_SIMULATEJOINTS);
+            CreateViewOptionEntry(contextMenu, "Simulated Joints", EMotionFX::ActorRenderFlag::SIMULATEJOINTS);
         }
 
         // Add the camera button
@@ -194,13 +194,13 @@ namespace EMStudio
             m_manipulatorActions[mode]->setChecked(true);
         }
 
-        const EMotionFX::ActorRenderFlagBitset renderFlags = renderOptions->GetRenderFlags();
-        for (size_t i = 0; i < renderFlags.size(); ++i)
+        const EMotionFX::ActorRenderFlags renderFlags = renderOptions->GetRenderFlags();
+        for (uint8 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
         {
             QAction* action = m_renderActions[i];
             if (action)
             {
-                action->setChecked(renderFlags[i]);
+                action->setChecked((renderFlags & EMotionFX::ActorRenderFlags(i)) != EMotionFX::ActorRenderFlags(0));
             }
         }
     }

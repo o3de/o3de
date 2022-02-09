@@ -84,7 +84,7 @@ namespace EMotionFX
                 AttachmentType m_attachmentType = AttachmentType::None; ///< Type of attachment.
                 SkinningMethod m_skinningMethod = SkinningMethod::DualQuat; ///< The skinning method for this actor
                 size_t m_lodLevel = 0;
-                ActorRenderFlagBitset m_renderFlags; ///< Actor render flag
+                ActorRenderFlags m_renderFlags = ActorRenderFlags::Default; ///< Actor render flag
 
                 // Force updating the joints when it is out of camera view. By
                 // default, joints level update (beside the root joint) on
@@ -178,7 +178,7 @@ namespace EMotionFX
             bool IsPhysicsSceneSimulationFinishEventConnected() const;
             AZ::Data::Asset<ActorAsset> GetActorAsset() const { return m_configuration.m_actorAsset; }
 
-            void SetRenderFlag(ActorRenderFlagBitset renderFlags);
+            void SetRenderFlag(ActorRenderFlags renderFlags);
 
         private:
             // AZ::TransformNotificationBus::MultiHandler

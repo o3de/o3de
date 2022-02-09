@@ -576,10 +576,19 @@ namespace EMotionFX
 
         void EditorActorComponent::UpdateRenderFlags()
         {
-            m_renderFlags[RENDER_SOLID] = m_renderCharacter;
-            m_renderFlags[RENDER_AABB] = m_renderBounds;
-            m_renderFlags[RENDER_LINESKELETON] = m_renderSkeleton;
-            m_renderFlags[RENDER_EMFX_DEBUG] = true;
+            m_renderFlags = ActorRenderFlags::None;
+            if (m_renderCharacter)
+            {
+                m_renderFlags |= ActorRenderFlags::Solid;
+            }
+            if (m_renderBounds)
+            {
+                m_renderFlags |= ActorRenderFlags::AABB;
+            }
+            if (m_renderSkeleton)
+            {
+                m_renderFlags |= ActorRenderFlags::Skeleton;
+            }
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -968,7 +977,7 @@ namespace EMotionFX
             }
         }
 
-        void EditorActorComponent::SetRenderFlag(ActorRenderFlagBitset renderFlags)
+        void EditorActorComponent::SetRenderFlag(ActorRenderFlags renderFlags)
         {
             m_renderFlags = renderFlags;
         }
