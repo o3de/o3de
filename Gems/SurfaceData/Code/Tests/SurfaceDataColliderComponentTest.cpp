@@ -142,13 +142,13 @@ namespace UnitTest
                                                               queryPoint, pointList);
             pointList.EndListQuery();
 
+            constexpr size_t inPositionIndex = 0;
             if (pointOnProvider)
             {
-                constexpr size_t inPositionIndex = 0;
                 ASSERT_EQ(pointList.GetSize(inPositionIndex), 1);
-                pointList.EnumeratePoints(inPositionIndex,
-                    [this, expectedOutput](
-                        const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+                pointList.EnumeratePoints([this, expectedOutput](
+                        [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                        const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                     {
                         EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
                         return true;
@@ -156,7 +156,6 @@ namespace UnitTest
             }
             else
             {
-                constexpr size_t inPositionIndex = 0;
                 EXPECT_TRUE(pointList.IsEmpty(inPositionIndex));
             }
         }
@@ -196,9 +195,9 @@ namespace UnitTest
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
             constexpr size_t inPositionIndex = 0;
             ASSERT_EQ(pointList.GetSize(inPositionIndex), 1);
-            pointList.EnumeratePoints(inPositionIndex,
-                [this, expectedOutput](
-                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+            pointList.EnumeratePoints([this, expectedOutput](
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                    const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
                     return true;

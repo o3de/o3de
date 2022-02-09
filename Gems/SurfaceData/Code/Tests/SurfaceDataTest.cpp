@@ -222,9 +222,9 @@ public:
             SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
                 &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPositions[inputIndex], testTags, tempSingleQueryPointList);
             constexpr size_t inPositionIndex = 0;
-            tempSingleQueryPointList.EnumeratePoints(inPositionIndex,
-                [&singleQueryResults](
-                    const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+            tempSingleQueryPointList.EnumeratePoints([&singleQueryResults](
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                    const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
                 {
                     AzFramework::SurfaceData::SurfacePoint point;
                     point.m_position = position;
@@ -495,22 +495,17 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion)
     // We expect every entry in the output list to have two surface points, at heights 0 and 4, sorted in
     // decreasing height order.  The masks list should be the same size as the set of masks the provider owns.
     // We *could* check every mask as well for completeness, but that seems like overkill.
-    for (size_t inPositionIndex = 0; inPositionIndex < availablePointsPerPosition.GetInputPositionSize(); inPositionIndex++)
-    {
-        EXPECT_EQ(availablePointsPerPosition.GetSize(inPositionIndex), 2);
-        float expectedZ = 4.0f;
-        availablePointsPerPosition.EnumeratePoints(
-            inPositionIndex,
-            [providerTags,
-             &expectedZ](const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
-                 const SurfaceData::SurfaceTagWeights& masks) -> bool
-            {
-                EXPECT_EQ(position.GetZ(), expectedZ);
-                EXPECT_EQ(masks.GetSize(), providerTags.size());
-                expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
-                return true;
-            });
-    }
+    float expectedZ = 4.0f;
+    availablePointsPerPosition.EnumeratePoints(
+        [availablePointsPerPosition, providerTags, &expectedZ](size_t inPositionIndex, const AZ::Vector3& position,
+            [[maybe_unused]] const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+        {
+            EXPECT_EQ(availablePointsPerPosition.GetSize(inPositionIndex), 2);
+            EXPECT_EQ(position.GetZ(), expectedZ);
+            EXPECT_EQ(masks.GetSize(), providerTags.size());
+            expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
+            return true;
+        });
 }
 
 TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_NoMatchingMasks)
@@ -614,21 +609,17 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_ProviderModif
 
         // We expect every entry in the output list to have two surface points (with heights 0 and 4),
         // and each point should have both the "test_surface1" and "test_surface2" tag.
-        for (size_t inPositionIndex = 0; inPositionIndex < availablePointsPerPosition.GetInputPositionSize(); inPositionIndex++)
-        {
-            EXPECT_EQ(availablePointsPerPosition.GetSize(inPositionIndex), 2);
-            float expectedZ = 4.0f;
-            availablePointsPerPosition.EnumeratePoints(
-                inPositionIndex,
-                [&expectedZ](const AZ::Vector3& position,
-                    [[maybe_unused]] const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
-                {
-                    EXPECT_EQ(position.GetZ(), expectedZ);
-                    EXPECT_EQ(masks.GetSize(), 2);
-                    expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
-                    return true;
-                });
-        }
+        float expectedZ = 4.0f;
+        availablePointsPerPosition.EnumeratePoints(
+            [availablePointsPerPosition, &expectedZ](size_t inPositionIndex, const AZ::Vector3& position,
+                [[maybe_unused]] const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+            {
+                EXPECT_EQ(availablePointsPerPosition.GetSize(inPositionIndex), 2);
+                EXPECT_EQ(position.GetZ(), expectedZ);
+                EXPECT_EQ(masks.GetSize(), 2);
+                expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
+                return true;
+            });
     }
 }
 
@@ -665,24 +656,21 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_SimilarPoints
 
     // We expect every entry in the output list to have two surface points, not four.  The two points
     // should have both surface tags on them.
-    for (size_t inPositionIndex = 0; inPositionIndex < availablePointsPerPosition.GetInputPositionSize(); inPositionIndex++)
-    {
-        EXPECT_EQ(availablePointsPerPosition.GetSize(inPositionIndex), 2);
-        float expectedZ = 4.0f;
-        availablePointsPerPosition.EnumeratePoints(
-            inPositionIndex,
-            [&expectedZ](
-                const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
-                const SurfaceData::SurfaceTagWeights& masks) -> bool
-            {
-                // Similar points get merged, but there's no guarantee which value will be kept, so we set our comparison tolerance
-                // high enough to allow both x.0 and x.0005 to pass.
-                EXPECT_NEAR(position.GetZ(), expectedZ, 0.001f);
-                EXPECT_EQ(masks.GetSize(), 2);
-                expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
-                return true;
-            });
-    }
+    float expectedZ = 4.0f;
+    availablePointsPerPosition.EnumeratePoints(
+        [availablePointsPerPosition, &expectedZ](
+            size_t inPositionIndex, const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
+            const SurfaceData::SurfaceTagWeights& masks) -> bool
+        {
+            EXPECT_EQ(availablePointsPerPosition.GetSize(inPositionIndex), 2);
+
+            // Similar points get merged, but there's no guarantee which value will be kept, so we set our comparison tolerance
+            // high enough to allow both x.0 and x.0005 to pass.
+            EXPECT_NEAR(position.GetZ(), expectedZ, 0.001f);
+            EXPECT_EQ(masks.GetSize(), 2);
+            expectedZ = (expectedZ == 4.0f) ? 0.0f : 4.0f;
+            return true;
+        });
 }
 
 TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_DissimilarPointsDoNotMergeTogether)
@@ -717,18 +705,14 @@ TEST_F(SurfaceDataTestApp, SurfaceData_TestSurfacePointsFromRegion_DissimilarPoi
 
     // We expect every entry in the output list to have four surface points with one tag each,
     // because the points are far enough apart that they won't merge.
-    for (size_t inPositionIndex = 0; inPositionIndex < availablePointsPerPosition.GetInputPositionSize(); inPositionIndex++)
-    {
-        EXPECT_EQ(availablePointsPerPosition.GetSize(inPositionIndex), 4);
-        availablePointsPerPosition.EnumeratePoints(
-            inPositionIndex,
-            []([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& normal,
-               const SurfaceData::SurfaceTagWeights& masks) -> bool
-            {
-                EXPECT_EQ(masks.GetSize(), 1);
-                return true;
-            });
-    }
+    availablePointsPerPosition.EnumeratePoints(
+        [availablePointsPerPosition](size_t inPositionIndex, [[maybe_unused]] const AZ::Vector3& position,
+            [[maybe_unused]] const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+        {
+            EXPECT_EQ(availablePointsPerPosition.GetSize(inPositionIndex), 4);
+            EXPECT_EQ(masks.GetSize(), 1);
+            return true;
+        });
 }
 
 TEST_F(SurfaceDataTestApp, SurfaceData_VerifyGetSurfacePointsFromRegionAndGetSurfacePointsMatch)

@@ -112,9 +112,8 @@ namespace UnitTest
             SurfaceData::SurfaceDataModifierRequestBus::Event(modifierHandle, &SurfaceData::SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, pointList);
             constexpr size_t inPositionIndex = 0;
             ASSERT_EQ(pointList.GetSize(inPositionIndex), 1);
-            pointList.EnumeratePoints(inPositionIndex,
-                [this, expectedOutput](
-                    const AZ::Vector3& position, const AZ::Vector3& normal,
+            pointList.EnumeratePoints([this, expectedOutput](
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal,
                     const SurfaceData::SurfaceTagWeights& masks)
                 {
                     EXPECT_TRUE(SurfacePointsAreEqual(position, normal, masks, expectedOutput));
