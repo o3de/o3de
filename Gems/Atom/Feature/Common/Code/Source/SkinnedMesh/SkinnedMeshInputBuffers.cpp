@@ -344,7 +344,8 @@ namespace AZ
                                 }
 
                                 // Add the buffer view along with the shader resource group name, which will be used to bind it to the srg later
-                                skinnedSubMesh.m_inputBufferViews.push_back(AZStd::make_tuple(streamInfo->m_shaderResourceGroupName, bufferView));
+                                skinnedSubMesh.m_inputBufferViews.push_back(
+                                    SkinnedSubMeshProperties::SrgNameViewPair{ streamInfo->m_shaderResourceGroupName, bufferView });
 
                                 if (streamInfo->m_enum == SkinnedMeshInputVertexStreams::BlendWeights)
                                 {
@@ -459,14 +460,18 @@ namespace AZ
             AZ_Assert(lodIndex < m_lods.size() && meshIndex < m_lods[lodIndex].m_modelLodAsset->GetMeshes().size(), "Lod %zu Mesh %zu out of range for model '%s'", lodIndex, meshIndex, m_modelAsset->GetName().GetCStr());
 
             // Loop over each input buffer view and set it on the srg
-            for(const auto&[srgName, bufferView] : m_lods[lodIndex].m_meshes[meshIndex].m_inputBufferViews)
+            for (const SkinnedSubMeshProperties::SrgNameViewPair& nameViewPair :
+                 m_lods[lodIndex].m_meshes[meshIndex].m_inputBufferViews)
             {
-                RHI::ShaderInputBufferIndex srgIndex = perInstanceSRG->FindShaderInputBufferIndex(srgName);
-                AZ_Error("SkinnedMeshInputBuffers", srgIndex.IsValid(), "Failed to find shader input index for '%s' in the skinning compute shader per-instance SRG.", srgName.GetCStr());
+                RHI::ShaderInputBufferIndex srgIndex = perInstanceSRG->FindShaderInputBufferIndex(nameViewPair.m_srgName);
+                AZ_Error(
+                    "SkinnedMeshInputBuffers", srgIndex.IsValid(),
+                    "Failed to find shader input index for '%s' in the skinning compute shader per-instance SRG.",
+                    nameViewPair.m_srgName.GetCStr());
 
-                [[maybe_unused]] bool success = perInstanceSRG->SetBufferView(srgIndex, bufferView.get());
+                [[maybe_unused]] bool success = perInstanceSRG->SetBufferView(srgIndex, nameViewPair.m_bufferView.get());
 
-                AZ_Error("SkinnedMeshInputBuffers", success, "Failed to bind buffer view for %s", srgName.GetCStr());
+                AZ_Error("SkinnedMeshInputBuffers", success, "Failed to bind buffer view for %s", nameViewPair.m_srgName.GetCStr());
             }
 
             // Set the vertex count

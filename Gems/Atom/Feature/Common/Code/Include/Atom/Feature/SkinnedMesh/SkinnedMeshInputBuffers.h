@@ -39,13 +39,25 @@ namespace AZ
     {
         struct SkinnedSubMeshProperties
         {
-            AZStd::vector< AZStd::tuple<Name, RHI::Ptr<RHI::BufferView>>> m_inputBufferViews;
+            struct SrgNameViewPair
+            {
+                Name m_srgName;
+                RHI::Ptr<RHI::BufferView> m_bufferView;
+            };
 
+            //! Inputs to the skinning compute shader and their corresponding srg names
+            AZStd::vector<SrgNameViewPair> m_inputBufferViews;
+
+            //! Inputs that are not used or modified during skinning, but are used for rendering during the static mesh pipeline
             AZStd::vector<RPI::ModelLodAsset::Mesh::StreamBufferInfo> m_staticBufferInfo;
 
             //! Offset from the start of the stream in bytes for each output stream
             SkinnedMeshOutputVertexOffsets m_vertexOffsetsFromStreamStartInBytes;
+
+            //! Number of vertices in this sub-mesh
             uint32_t m_vertexCount;
+
+            //! Number of influences per vertex across the sub-mesh
             uint32_t m_skinInfluenceCountPerVertex;
         };
         //! Container for all the buffers and views needed for a single lod of a skinned mesh

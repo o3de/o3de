@@ -151,7 +151,7 @@ namespace AZ
             AZ_Assert(morphTargetDispatchItems.size() == weights.size(), "Skinned Mesh Feature Processor - Morph target weights passed into SetMorphTargetWeight don't align with morph target dispatch items.");
             for (size_t morphIndex = 0; morphIndex < weights.size(); ++morphIndex)
             {
-                morphTargetDispatchItems[morphIndex]->SetWeight(weights[morphIndex]);
+                //morphTargetDispatchItems[morphIndex]->SetWeight(weights[morphIndex]);
             }
         }
 

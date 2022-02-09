@@ -1360,7 +1360,7 @@ namespace AZ
                     uint32_t newJointIdCount = aznumeric_cast<uint32_t>(mesh.m_skinJointIndices.size());
 
                     // Pad the joint id buffer if it ends too soon, so the next view can start aligned
-                    uint32_t extraIdCount = CalculateJointIdPaddingCount(newJointIdCount);
+                    uint32_t extraIdCount = CalculateExtraJointIdCount(newJointIdCount);
 
                     // Pad the buffer
                     AZStd::vector<uint16_t> extraIds(extraIdCount, 0);
