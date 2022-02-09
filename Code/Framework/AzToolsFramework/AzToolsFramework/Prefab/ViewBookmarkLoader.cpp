@@ -114,6 +114,149 @@ bool ViewBookmarkLoader::SaveBookmark_Internal(ViewBookmark& bookmark, bool isLa
     return false;
 }
 
+bool ViewBookmarkLoader::LoadViewBookmarks()
+{
+    struct ViewBookmarkData
+    {
+        AZStd::string m_levelId;
+        AZStd::vector<ViewBookmark> m_bookmarks;
+    };
+    struct ViewBookmarkVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        ViewBookmarkVisitor()
+            : m_viewBookmarksKey{ "/O3DE/ViewBookmarks" }
+        {};
+
+        AZ::SettingsRegistryInterface::VisitResponse Traverse(
+            AZStd::string_view path,
+            AZStd::string_view,
+            AZ::SettingsRegistryInterface::VisitAction action,
+            AZ::SettingsRegistryInterface::Type) override
+        {
+            if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
+            {
+                // Strip off the last JSON pointer key from the path and if it matches the gem module key then add an entry
+                // to the ViewBookmarkData array
+                AZStd::optional<AZStd::string_view> levelId = AZ::StringFunc::TokenizeLast(path, "/");
+                if (path == m_viewBookmarksKey && levelId && !levelId->empty())
+                {
+                    AZStd::string_view bookmarkKey = levelId.value();
+                    auto FindViewBookmarkLoadEntry = [bookmarkKey](const ViewBookmarkData& bookmarkLoadData)
+                    {
+                        return bookmarkKey == bookmarkLoadData.m_levelId;
+                    };
+
+                    if (auto foundIt = AZStd::find_if(m_viewBookmarkData.begin(), m_viewBookmarkData.end(), FindViewBookmarkLoadEntry);
+                        foundIt == m_viewBookmarkData.end())
+                    {
+                        m_viewBookmarkData.emplace_back(ViewBookmarkData{ bookmarkKey });
+                        m_bookmarkMap.insert(AZStd::make_pair(bookmarkKey, AZStd::vector<ViewBookmark>{}));
+                    }
+                }
+            }
+            else if (action == AZ::SettingsRegistryInterface::VisitAction::Value)
+            {
+                
+
+            }
+
+            return AZ::SettingsRegistryInterface::VisitResponse::Continue;
+        }
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        void Visit(
+            AZStd::string_view path, AZStd::string_view valueIndex, AZ::SettingsRegistryInterface::Type, [[maybe_unused]]double value) override
+        {
+            AZ::StringFunc::TokenizeLast(path, "/");
+            AZStd::optional<AZStd::string_view> dataType = AZ::StringFunc::TokenizeLast(path, "/");
+            AZStd::optional<AZStd::string_view> bookmarkIndexStr = AZ::StringFunc::TokenizeLast(path, "/");
+            AZStd::optional<AZStd::string_view> levelId = AZ::StringFunc::TokenizeLast(path, "/");
+
+            int bookmarkIndex = stoi(AZStd::string(bookmarkIndexStr->data()));
+            bool isCurrentBookmarkIndex = true;
+            if (bookmarkIndex != m_currentBookmarkIndex)
+            {
+                m_currentBookmarkIndex = bookmarkIndex;
+                isCurrentBookmarkIndex = false;
+            }
+
+            if (path == m_viewBookmarksKey && levelId && !levelId->empty())
+            {
+                auto existingBookmarkEntry = m_bookmarkMap.find(levelId.value());
+                if (existingBookmarkEntry != m_bookmarkMap.end())
+                {
+                    AZStd::vector<ViewBookmark>& bookmarks = existingBookmarkEntry->second;
+                    //if it is the first bookmark and it is the Position data it means it is the first one
+                    // and we have to create the Bookmark.
+                    if (valueIndex == "0" && dataType == "Position")
+                    {
+                        ViewBookmark bookmark;
+                        bookmark.m_position.SetX(value);
+                        bookmarks.push_back(bookmark);
+                    }
+                    else
+                    {
+                        ViewBookmark& bookmark = bookmarks.at(bookmarkIndex);
+                        int currentIndex = stoi(AZStd::string(valueIndex));
+                        if (dataType == "Position")
+                        {
+                            switch (currentIndex)
+                            {
+                            case 0:
+                                bookmark.m_position.SetX(value);
+                                break;
+                            case 1:
+                                bookmark.m_position.SetY(value);
+                                break;
+                            case 2:
+                                bookmark.m_position.SetZ(value);
+                                break;
+                            }
+                        }
+                        else if (dataType == "Rotation")
+                        {
+                            switch (currentIndex)
+                            {
+                            case 0:
+                                bookmark.m_rotation.SetX(value);
+                                break;
+                            case 1:
+                                bookmark.m_rotation.SetY(value);
+                                break;
+                            case 2:
+                                bookmark.m_rotation.SetZ(value);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+        };
+
+        [[maybe_unused]] const AZ::SettingsRegistryInterface::FixedValueString m_viewBookmarksKey;
+        [[maybe_unused]] AZStd::vector<ViewBookmarkData> m_viewBookmarkData;
+        int m_currentBookmarkIndex = 0;
+        AZStd::unordered_map<AZStd::string, AZStd::vector<ViewBookmark>> m_bookmarkMap;
+    };
+
+    using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+    auto viewBookmarkSettingsKey =
+        FixedValueString::format("/O3DE/ViewBookmarks");
+    ViewBookmarkVisitor viewBookmarkVisitor;
+
+    auto registry = AZ::SettingsRegistry::Get();
+    if (registry == nullptr)
+    {
+        AZ_Warning("SEditorSettings", false, "Unable to access global settings registry. Editor Preferences cannot be saved");
+        return false;
+    }
+    [[maybe_unused]] const bool visitedGemModules = registry->Visit(viewBookmarkVisitor, viewBookmarkSettingsKey);
+
+    return false;
+}
+
 void ViewBookmarkLoader::SaveBookmarkSettingsFile()
 {
     auto registry = AZ::SettingsRegistry::Get();

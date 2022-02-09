@@ -27,10 +27,12 @@ public:
     void SaveBookmarkSettingsFile() override;
     bool SaveBookmark(ViewBookmark bookamark) override;
     bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) override;
+    bool LoadViewBookmarks() override;
 
 private:
 
     bool SaveBookmark_Internal(ViewBookmark& bookmark, bool isLastKnownLocationinLevel = false);
+
 
 private:
 

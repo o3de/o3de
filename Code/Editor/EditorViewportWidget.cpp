@@ -581,6 +581,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
 
     case eNotify_OnCloseScene:
+        SaveLastLevelLocation();
         m_renderViewport->SetScene(nullptr);
         break;
 
@@ -2096,6 +2097,22 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
     }
 
     return false;
+}
+
+void EditorViewportWidget::SaveLastLevelLocation()
+{
+    ViewBookmarkLoaderInterface* viewBookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
+    if (!viewBookmarkLoader)
+    {
+        return;
+    }
+
+    ViewBookmark lastLevelLocation;
+    lastLevelLocation.m_position = m_renderViewport->GetViewportContext()->GetCameraTransform().GetTranslation();
+    lastLevelLocation.m_rotation = m_renderViewport->GetViewportContext()->GetCameraTransform().GetRotation().ConvertToScaledAxisAngle();
+
+    viewBookmarkLoader->SaveLastKnownLocationInLevel(lastLevelLocation);
+    viewBookmarkLoader->SaveBookmarkSettingsFile();
 }
 
 bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& cameraState)

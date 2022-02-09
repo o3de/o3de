@@ -52,4 +52,5 @@ public:
     virtual void SaveBookmarkSettingsFile() = 0;
     virtual bool SaveBookmark(ViewBookmark bookamark) = 0;
     virtual bool SaveLastKnownLocationInLevel(ViewBookmark bookamark) = 0;
+    virtual bool LoadViewBookmarks() = 0;
 };

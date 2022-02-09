@@ -222,6 +222,7 @@ private:
 
     ////////////////////////////////////////////////////////////////////////
     // Private helpers...
+    void SaveLastLevelLocation();
     void SetViewTM(const Matrix34& tm, bool bMoveOnly);
     void RenderSnapMarker();
     void RenderAll();

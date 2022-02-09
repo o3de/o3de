@@ -3486,11 +3486,23 @@ void CCryEditApp::TagLocation(int index)
     {
         return;
     }
+    ViewBookmarkLoaderInterface* viewBookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
+    if (!viewBookmarkLoader)
+    {
+        return;
+    }
 
     Vec3 vPosVec = pRenderViewport->GetViewTM().GetTranslation();
+    Ang3 vRotVec = Ang3::GetAnglesXYZ(Matrix33(pRenderViewport->GetViewTM()));
+
+    ViewBookmark tagLocationBookmark;
+    tagLocationBookmark.m_position = AZ::Vector3(vPosVec.x, vPosVec.y, vPosVec.z);
+    tagLocationBookmark.m_rotation = AZ::Vector3(vRotVec.x, vRotVec.y, vRotVec.z);
+
+    viewBookmarkLoader->SaveBookmark(tagLocationBookmark);
 
     m_tagLocations[index - 1] = vPosVec;
-    m_tagAngles[index - 1] = Ang3::GetAnglesXYZ(Matrix33(pRenderViewport->GetViewTM()));
+    m_tagAngles[index - 1] = vRotVec;
 
     QString sTagConsoleText("");
     sTagConsoleText = tr("Camera Tag Point %1 set to the position: x=%2, y=%3, z=%4 ").arg(index).arg(vPosVec.x, 0, 'f', 2).arg(vPosVec.y, 0, 'f', 2).arg(vPosVec.z, 0, 'f', 2);
