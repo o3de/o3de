@@ -62,6 +62,6 @@ namespace GradientSignal
         }
     };
 
-    float GetValueFromImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue);
+    float GetValueFromImageAsset(AZStd::span<const uint8_t> imageData, const AZ::RHI::ImageDescriptor& imageDescriptor, const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue);
 
 } // namespace GradientSignal

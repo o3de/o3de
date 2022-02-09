@@ -78,11 +78,10 @@ namespace GradientSignal
         return true;
     }
 
-    float GetValueFromImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& imageAsset, const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue)
+    float GetValueFromImageAsset(AZStd::span<const uint8_t> imageData, const AZ::RHI::ImageDescriptor& imageDescriptor, const AZ::Vector3& uvw, float tilingX, float tilingY, float defaultValue)
     {
-        if (imageAsset.IsReady())
+        if (!imageData.empty())
         {
-            auto imageDescriptor = imageAsset->GetImageDescriptor();
             auto width = imageDescriptor.m_size.m_width;
             auto height = imageDescriptor.m_size.m_height;
 
@@ -125,7 +124,7 @@ namespace GradientSignal
                 // Flip the y because images are stored in reverse of our world axes
                 y = (height - 1) - y;
 
-                return AZ::RPI::GetSubImagePixelValue<float>(imageAsset, x, y);
+                return AZ::RPI::GetImageDataPixelValue<float>(imageData, imageDescriptor, x, y);
             }
         }
 
