@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/containers/span.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 
 namespace SurfaceData
@@ -35,6 +36,14 @@ namespace SurfaceData
         //! @param surfacePointList - The output list of surface points generated, if any. Each provider is expected to
         //! append to this list, not overwrite it.
         virtual void GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const = 0;
+
+        virtual void GetSurfacePointsFromList(AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const
+        {
+            for (auto& inPosition : inPositions)
+            {
+                GetSurfacePoints(inPosition, surfacePointList);
+            }
+        }
     };
 
     typedef AZ::EBus<SurfaceDataProviderRequests> SurfaceDataProviderRequestBus;
