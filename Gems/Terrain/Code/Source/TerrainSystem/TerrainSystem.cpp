@@ -877,13 +877,26 @@ void TerrainSystem::ProcessSurfacePointsFromList(
         return;
     }
 
+    AZStd::vector<float> heights(inPositions.size());
+    AZStd::vector<AZ::Vector3> normals(inPositions.size());
+    AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList(inPositions.size());
+    AZStd::vector<bool> terrainExists(inPositions.size());
+
+    GetHeightsSynchronous(inPositions, sampleFilter, heights, terrainExists);
+    GetNormalsSynchronous(inPositions, sampleFilter, normals, terrainExists);
+
+    // We can skip the unnecessary call to GetHeights since we already
+    // got the terrain exists flags in the earlier call to GetHeights
+    AZStd::vector<bool> terrainExistsEmpty;
+    GetOrderedSurfaceWeightsFromList(inPositions, sampleFilter, outSurfaceWeightsList, terrainExistsEmpty);
+
     AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (const auto& position : inPositions)
+    for (size_t i = 0; i < inPositions.size(); i++)
     {
-        bool terrainExists = false;
-        surfacePoint.m_position = position;
-        GetSurfacePoint(position, surfacePoint, sampleFilter, &terrainExists);
-        perPositionCallback(surfacePoint, terrainExists);
+        surfacePoint.m_position.Set(inPositions[i].GetX(), inPositions[i].GetY(), heights[i]);
+        surfacePoint.m_normal = AZStd::move(normals[i]);
+        surfacePoint.m_surfaceTags = AZStd::move(outSurfaceWeightsList[i]);
+        perPositionCallback(surfacePoint, terrainExists[i]);
     }
 }
 
@@ -1093,20 +1106,34 @@ void TerrainSystem::ProcessSurfacePointsFromRegion(
         return;
     }
 
-    const size_t numSamplesX = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetX() / stepSize.GetX()));
-    const size_t numSamplesY = aznumeric_cast<size_t>(ceil(inRegion.GetExtents().GetY() / stepSize.GetY()));
+    const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize);
+
+    AZStd::vector<AZ::Vector3> inPositions(numSamplesX * numSamplesY);
+    GenerateInputPositionsFromRegion(inRegion, stepSize, inPositions);
+
+    AZStd::vector<float> heights(inPositions.size());
+    AZStd::vector<AZ::Vector3> normals(inPositions.size());
+    AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList(inPositions.size());
+    AZStd::vector<bool> terrainExists(inPositions.size());
+
+    GetHeightsSynchronous(inPositions, sampleFilter, heights, terrainExists);
+    GetNormalsSynchronous(inPositions, sampleFilter, normals, terrainExists);
+
+    // We can skip the unnecessary call to GetHeights since we already
+    // got the terrain exists flags in the earlier call to GetHeights
+    AZStd::vector<bool> terrainExistsEmpty;
+    GetOrderedSurfaceWeightsFromList(inPositions, sampleFilter, outSurfaceWeightsList, terrainExistsEmpty);
 
     AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (size_t y = 0; y < numSamplesY; y++)
+    for (size_t y = 0, i = 0; y < numSamplesY; y++)
     {
-        float fy = aznumeric_cast<float>(inRegion.GetMin().GetY() + (y * stepSize.GetY()));
         for (size_t x = 0; x < numSamplesX; x++)
         {
-            bool terrainExists = false;
-            float fx = aznumeric_cast<float>(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
-            surfacePoint.m_position.Set(fx, fy, 0.0f);
-            GetSurfacePoint(surfacePoint.m_position, surfacePoint, sampleFilter, &terrainExists);
-            perPositionCallback(x, y, surfacePoint, terrainExists);
+            surfacePoint.m_position.Set(inPositions[i].GetX(), inPositions[i].GetY(), heights[i]);
+            surfacePoint.m_normal = AZStd::move(normals[i]);
+            surfacePoint.m_surfaceTags = AZStd::move(outSurfaceWeightsList[i]);
+            perPositionCallback(x, y, surfacePoint, terrainExists[i]);
+            i++;
         }
     }
 }
