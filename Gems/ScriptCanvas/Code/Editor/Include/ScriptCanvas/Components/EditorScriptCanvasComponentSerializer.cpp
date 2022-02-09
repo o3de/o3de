@@ -32,9 +32,7 @@ namespace AZ
         JsonSerializationResult::ResultCode result = BaseJsonSerializer::Load(outputValue
             , azrtti_typeid<AzToolsFramework::Components::EditorComponentBase>(), inputValue, context);
 
-        // load child data one by one...
-        result.Combine(BaseJsonSerializer::Load(outputValue, outputValueTypeId, inputValue, context));
-
+        // load child data one by one
         if (result.GetProcessing() != JSR::Processing::Halted)
         {
             result.Combine(ContinueLoadingFromJsonObjectField
