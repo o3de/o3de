@@ -1,20 +1,14 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "",
     "materialTypeVersion": 3,
-    "properties": {
-        "normal": {
-            "factor": 0.15000000596046449,
-            "flipY": true,
-            "textureMap": "TestData/Textures/test_dome_normal.tiff"
-        },
-        "uv": {
-            "center": [
-                0.5,
-                0.5
-            ],
-            "tileV": 2.0
-        }
+    "propertyValues": {
+        "normal.factor": 0.15000000596046448,
+        "normal.flipY": true,
+        "normal.textureMap": "TestData/Textures/test_dome_normal.tiff",
+        "uv.center": [
+            0.5,
+            0.5
+        ],
+        "uv.tileV": 2.0
     }
 }

@@ -1,21 +1,16 @@
 {
-    "description": "",
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
     "materialTypeVersion": 3,
-    "properties": {
-        "baseColor": {
-            "textureMap": "Textures/Default/default_basecolor.tif"
-        },
-        "emissive": {
-            "color": [
-                0.003936827648431063,
-                1.0,
-                0.0,
-                1.0
-            ],
-            "enable": true,
-            "intensity": 3.0,
-            "textureMap": "TestData/Textures/checker8x8_gray_512.png"
-        }
+    "propertyValues": {
+        "baseColor.textureMap": "Textures/Default/default_basecolor.tif",
+        "emissive.color": [
+            0.003936827648431063,
+            1.0,
+            0.0,
+            1.0
+        ],
+        "emissive.enable": true,
+        "emissive.intensity": 3.0,
+        "emissive.textureMap": "TestData/Textures/checker8x8_gray_512.png"
     }
 }

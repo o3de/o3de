@@ -49,8 +49,7 @@ namespace ImageProcessingAtom
     static const unsigned int s_MinReduceLevel = 0;
     static const unsigned int s_MaxReduceLevel = 5;
 
-    static const int s_TotalSupportedImageExtensions = 10;
-    static const char* s_SupportedImageExtensions[s_TotalSupportedImageExtensions] = {
+    static const char* s_SupportedImageExtensions[] = {
         "*.tif",
         "*.tiff",
         "*.png",
@@ -62,6 +61,7 @@ namespace ImageProcessingAtom
         "*.dds",
         "*.exr"
     };
+    static constexpr int s_TotalSupportedImageExtensions = AZ_ARRAY_SIZE(s_SupportedImageExtensions);
 
     enum class RGBWeight : AZ::u32
     {
