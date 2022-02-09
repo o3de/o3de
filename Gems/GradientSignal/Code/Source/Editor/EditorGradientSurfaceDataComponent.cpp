@@ -11,6 +11,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
+#include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 
 namespace GradientSignal
 {
@@ -61,6 +62,12 @@ namespace GradientSignal
 
     void EditorGradientSurfaceDataComponent::Deactivate()
     {
+        // Make sure any previews for this entity aren't currently trying to refresh. Otherwise, the preview job could call
+        // back into our FilterFunc lambda below after the entity has already been destroyed.
+        AZ::EntityId canceledEntity;
+        GradientSignal::GradientPreviewRequestBus::EventResult(
+            canceledEntity, GetEntityId(), &GradientSignal::GradientPreviewRequestBus::Events::CancelRefresh);
+
         // If the preview shouldn't be active, use an invalid entityId
         m_gradientEntityId = AZ::EntityId();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
