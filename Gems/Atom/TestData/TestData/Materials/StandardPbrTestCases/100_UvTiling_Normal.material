@@ -1,11 +1,8 @@
 {
-    "description": "",
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
     "materialTypeVersion": 3,
-    "properties": {
-        "normal": {
-            "textureMap": "TestData/Objects/cube/cube_diff.tif"
-        }
+    "parentMaterial": "TestData\\Materials\\StandardPbrTestCases\\UvTilingBase.material",
+    "propertyValues": {
+        "normal.textureMap": "TestData/Objects/cube/cube_diff.tif"
     }
 }

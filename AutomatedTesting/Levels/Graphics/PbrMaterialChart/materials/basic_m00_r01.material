@@ -1,13 +1,9 @@
 {
-    "parentMaterial": "./basic.material",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 1,
-    "properties": {
-        "metallic": {
-            "factor": 0.0
-        },
-        "roughness": {
-            "factor": 0.1
-        }
+    "parentMaterial": "./basic.material",
+    "propertyValues": {
+        "metallic.factor": 0.0,
+        "roughness.factor": 0.10000000149011612
     }
 }
