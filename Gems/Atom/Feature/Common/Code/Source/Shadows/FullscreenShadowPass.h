@@ -49,6 +49,11 @@ namespace AZ
                 m_receiverShadowPlaneBiasEnable = enable;
             }
 
+            void SetLightIndex(int lightIndex)
+            {
+                m_lightIndex = lightIndex;
+            }
+
         private:
 
             bool m_blendBetweenCascadesEnable = false;
@@ -86,6 +91,7 @@ namespace AZ
          //   AZ::RHI::ConstPtr<AZ::RHI::PipelineState> m_msaaPipelineState;
 
          //   AZ::Name m_constantDataName;
+            int m_lightIndex = 0;
         };
     }   // namespace Render
 }   // namespace AZ

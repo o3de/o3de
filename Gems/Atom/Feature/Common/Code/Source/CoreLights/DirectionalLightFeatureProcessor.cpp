@@ -1666,7 +1666,7 @@ namespace AZ
                 //        m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled });
 
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
-
+                m_fullscreenShadowPass->SetLightIndex(m_shadowingLightHandle.GetIndex());
                 m_fullscreenShadowPass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_blendBetwenCascades);
                 m_fullscreenShadowPass->SetFilterMethod(static_cast<ShadowFilterMethod>(shadowFilterMethod));
                 m_fullscreenShadowPass->SetReceiverShadowPlaneBiasEnable(m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled);

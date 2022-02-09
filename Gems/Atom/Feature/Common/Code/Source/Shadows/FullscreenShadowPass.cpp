@@ -110,14 +110,16 @@ namespace AZ
             struct ConstantData
             {
                 AZStd::array<float, 2> m_screenSize;
+                int m_lightIndex;
                 int m_filterMode;
                 int m_blendBetweenCascadesEnable;
                 int m_receiverShadowPlaneBiasEnable;
-                int m_padding[3];
+                int m_padding[2];
 
             } constantData;
 
             const RHI::Size resolution = GetDepthBufferDimensions();
+            constantData.m_lightIndex = m_lightIndex;
             constantData.m_screenSize = { static_cast<float>(resolution.m_width), static_cast<float>(resolution.m_height) };
             constantData.m_filterMode = static_cast<int>(m_filterMethod);
             constantData.m_blendBetweenCascadesEnable = m_blendBetweenCascadesEnable ? 1 : 0;

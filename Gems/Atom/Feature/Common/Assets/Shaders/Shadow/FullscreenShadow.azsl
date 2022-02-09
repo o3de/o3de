@@ -59,10 +59,11 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     struct Constants
     {
         float2 m_screenSize;
+        int m_lightIndex;
         int m_filterMode;
         int m_blendBetweenCascadesEnable;        
         int m_receiverShadowPlaneBiasEnable;
-        int3 m_padding;
+        int2 m_padding;
     };    
     
     Constants m_constantData;
@@ -123,9 +124,9 @@ class DirectionalLightShadow
         static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
 
         // size is the shadowap's width and height.
-        const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+        const uint size = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_shadowmapSize;
 
-        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_cascadeCount;
         Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
 
         [branch]
@@ -169,7 +170,7 @@ class DirectionalLightShadow
     
     float GetVisibilityFromLightNoFilter()
     {       
-        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_cascadeCount;
         for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
         {
             const bool2 checkedShadowed = IsShadowed(
@@ -187,10 +188,10 @@ class DirectionalLightShadow
 
     float SamplePcfBicubic(float3 shadowCoord, uint indexOfCascade)
     {
-        const uint filteringSampleCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount;
-        const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
+        const uint filteringSampleCount = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_filteringSampleCount;
+        const uint size = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_shadowmapSize;
         
-        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_cascadeCount;
         Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
 
         SampleShadowMapBicubicParameters param;
@@ -225,8 +226,8 @@ class DirectionalLightShadow
         bool cascadeFound = false;
         int currentCascadeIndex = 0;
 
-        const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
-        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        const uint size = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_shadowmapSize;
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_cascadeCount;
         for (uint indexOfCascade = 0; indexOfCascade < cascadeCount; ++indexOfCascade)
         {
             const float3 shadowCoord = m_shadowCoords[indexOfCascade];
@@ -268,8 +269,8 @@ class DirectionalLightShadow
             
     float GetVisibilityFromLightEsm()
     {
-        const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
-        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        const uint size = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_shadowmapSize;
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_cascadeCount;
         Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
         Texture2DArray<float> expShadowmap = PassSrg::m_directionalLightExponentialShadowmap;
 
@@ -300,8 +301,8 @@ class DirectionalLightShadow
     
     float GetVisibilityFromLightEsmPcf()
     {
-        const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
-        const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;
+        const uint size = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_shadowmapSize;
+        const uint cascadeCount = ViewSrg::m_directionalLightShadows[PassSrg::m_constantData.m_lightIndex].m_cascadeCount;
         Texture2DArray<float> shadowmap = PassSrg::m_directionalLightShadowmap;
         Texture2DArray<float> expShadowmap = PassSrg::m_directionalLightExponentialShadowmap;
 
@@ -352,7 +353,6 @@ class DirectionalLightShadow
     float m_slopeBias[ViewSrg::MaxCascadeCount];
     float3 m_shadowPosDX[ViewSrg::MaxCascadeCount];
     float3 m_shadowPosDY[ViewSrg::MaxCascadeCount];
-    uint m_lightIndex;
     DebugInfo m_debugInfo;    
 };
 
@@ -365,7 +365,6 @@ PSOutput MainPS(VSOutput IN)
     DirectionalLightShadow directionalLightShadow;
 
     const uint lightIndex = 0;
-    float3 coord = 0;
     const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
     const float zDepth = PassSrg::m_depth.Sample(PassSrg::LinearSampler, IN.m_texCoord);
 
