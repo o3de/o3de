@@ -25,6 +25,7 @@ namespace AZ
     {
         class CascadedShadowmapsPass;
         class EsmShadowmapsPass;
+        class FullscreenShadowPass;
 
         //! Cascaded shadow specific camera configuration.
         struct CascadeShadowCameraConfiguration
@@ -237,6 +238,7 @@ namespace AZ
             void CacheCascadedShadowmapsPass();
             //! This caches valid EsmShadowmapsPass.
             void CacheEsmShadowmapsPass();
+            void CacheFullscreenPass();
             //! This add/remove camera views in shadow properties.
             void PrepareCameraViews();
             //! This create/destruct shadow buffer for each render pipeline.
@@ -288,6 +290,7 @@ namespace AZ
             void UpdateShadowmapViews(LightHandle handle);
 
             void UpdateViewsOfCascadeSegments();
+            void SetFullscreenPassSettings();
 
             //! This calculate shadow view AABB.
             Aabb CalculateShadowViewAabb(
@@ -361,6 +364,7 @@ namespace AZ
 
             RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
             AZStd::vector<const RPI::View*> m_viewsRetainingAuxGeomDraw;
+            FullscreenShadowPass* m_fullscreenShadowPass = nullptr;
 
             bool m_lightBufferNeedsUpdate = false;
             bool m_shadowBufferNeedsUpdate = false;

@@ -18,6 +18,7 @@
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/Feature/CoreLights/ShadowConstants.h>
 
 namespace AZ
 {
@@ -33,9 +34,26 @@ namespace AZ
             virtual ~FullscreenShadowPass() = default;
 
             static RPI::Ptr<FullscreenShadowPass> Create(const RPI::PassDescriptor& descriptor);
+            void SetBlendBetweenCascadesEnable(bool enable)
+            {
+                m_blendBetweenCascadesEnable = enable;
+            }
 
+            void SetFilterMethod(AZ::Render::ShadowFilterMethod method)
+            {
+                m_filterMethod = method;
+            }
+
+            void SetReceiverShadowPlaneBiasEnable(bool enable)
+            {
+                m_receiverShadowPlaneBiasEnable = enable;
+            }
 
         private:
+
+            bool m_blendBetweenCascadesEnable = false;
+            bool m_receiverShadowPlaneBiasEnable = false;
+            ShadowFilterMethod m_filterMethod = ShadowFilterMethod::None;
 
             FullscreenShadowPass(const RPI::PassDescriptor& descriptor);
             AZ::RPI::PassAttachmentBinding GetPassAttachmentBinding(AZ::Name name);

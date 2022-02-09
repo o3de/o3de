@@ -20,11 +20,13 @@
 #include <Atom/RPI/Math.azsli>
 #include <viewsrg.srgi>
 
-// This matchs ShadowFilterMethod in ShadowConstants.h
-enum class ShadowFilterMethod {None, Pcf, Esm, EsmPcf};
-option ShadowFilterMethod o_directional_shadow_filtering_method = ShadowFilterMethod::None;
-option bool o_directional_shadow_receiver_plane_bias_enable = true;
-option bool o_blend_between_cascades_enable = false;
+enum ShadowFilterMethod
+{
+    ShadowFilterMethod_None = 0,
+    ShadowFilterMethod_Pcf = 1,
+    ShadowFilterMethod_Esm = 2,
+    ShadowFilterMethod_EsmPcf = 3
+};
 
 static const float CascadeBlendArea = 0.015f; // might be worth exposing this as a slider.
 
@@ -57,6 +59,10 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     struct Constants
     {
         float2 m_screenSize;
+        int m_filterMode;
+        int m_blendBetweenCascadesEnable;        
+        int m_receiverShadowPlaneBiasEnable;
+        int3 m_padding;
     };    
     
     Constants m_constantData;
@@ -97,8 +103,8 @@ class DirectionalLightShadow
             const float4 clipSpacePos = mul(lightViewToShadowmapMatrices[index], lightSpacePos);                
             m_shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
         }
-        
-        if (o_directional_shadow_receiver_plane_bias_enable)
+                
+        if (PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable)
         {
             [unroll]
             for(int i = 0 ; i < ViewSrg::MaxCascadeCount ; ++i)
@@ -142,21 +148,22 @@ class DirectionalLightShadow
     float GetVisibility()
     {
         float lit = 1;
-        switch(o_directional_shadow_filtering_method)
+        switch(PassSrg::m_constantData.m_filterMode)
         {
-            case ShadowFilterMethod::None:
+            case ShadowFilterMethod_None:
                 lit = GetVisibilityFromLightNoFilter();
                 break;
-            case ShadowFilterMethod::Pcf:
+            case ShadowFilterMethod_Pcf:
                 lit = GetVisibilityFromLightPcf();
                 break;
-            case ShadowFilterMethod::Esm:
+            case ShadowFilterMethod_Esm:
                 lit = GetVisibilityFromLightEsm();
                 break;
-            case ShadowFilterMethod::EsmPcf:
+            case ShadowFilterMethod_EsmPcf:
                 lit = GetVisibilityFromLightEsmPcf();
                 break;
         }
+                    
         return lit;
     }
     
@@ -193,7 +200,7 @@ class DirectionalLightShadow
         param.invShadowMapSize = rcp(size); 
         param.comparisonValue = shadowCoord.z;
         param.samplerState = PassSrg::m_hwPcfSampler;
-        param.receiverPlaneDepthBias = o_directional_shadow_receiver_plane_bias_enable ? ComputeReceiverPlaneDepthBias(m_shadowPosDX[indexOfCascade], m_shadowPosDY[indexOfCascade]) : 0;
+        param.receiverPlaneDepthBias = PassSrg::m_constantData.m_blendBetweenCascadesEnable ? ComputeReceiverPlaneDepthBias(m_shadowPosDX[indexOfCascade], m_shadowPosDY[indexOfCascade]) : 0;
         
         [branch]     
         if (filteringSampleCount <= 4)       
@@ -239,7 +246,7 @@ class DirectionalLightShadow
         {
             float lit = SamplePcfBicubic(m_shadowCoords[currentCascadeIndex], currentCascadeIndex);
             
-            if(o_blend_between_cascades_enable) 
+            if(PassSrg::m_constantData.m_blendBetweenCascadesEnable) 
             {  
                 const float blendBetweenCascadesAmount = CalculateCascadeBlendAmount(m_shadowCoords[currentCascadeIndex].xyz);
 

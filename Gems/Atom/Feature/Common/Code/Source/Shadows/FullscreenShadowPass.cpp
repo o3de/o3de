@@ -110,10 +110,18 @@ namespace AZ
             struct ConstantData
             {
                 AZStd::array<float, 2> m_screenSize;
+                int m_filterMode;
+                int m_blendBetweenCascadesEnable;
+                int m_receiverShadowPlaneBiasEnable;
+                int m_padding[3];
+
             } constantData;
 
             const RHI::Size resolution = GetDepthBufferDimensions();
             constantData.m_screenSize = { static_cast<float>(resolution.m_width), static_cast<float>(resolution.m_height) };
+            constantData.m_filterMode = static_cast<int>(m_filterMethod);
+            constantData.m_blendBetweenCascadesEnable = m_blendBetweenCascadesEnable ? 1 : 0;
+            constantData.m_receiverShadowPlaneBiasEnable = m_receiverShadowPlaneBiasEnable ? 1 : 0;
 
             [[maybe_unused]] bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
             AZ_Assert(setOk, "FullscreenShadowPass::SetConstantData() - could not set constant data");
