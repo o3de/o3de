@@ -183,7 +183,7 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPos
     Sampler sampler, size_t indexStepSize) const
 {
     const float minHeight = m_currentSettings.m_worldBounds.GetMin().GetZ();
-    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
+    for (auto& position : inPositions)
     {
         switch(sampler)
         {
@@ -191,48 +191,51 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<AZ::Vector3>& inPos
             {
                 AZ::Vector2 normalizedDelta;
                 AZ::Vector2 pos0;
-                ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), pos0, normalizedDelta);
+                ClampPosition(position.GetX(), position.GetY(), pos0, normalizedDelta);
                 const AZ::Vector2 pos1(pos0.GetX() + m_currentSettings.m_heightQueryResolution,
                     pos0.GetY() + m_currentSettings.m_heightQueryResolution);
-                outPositions[iteratorIndex].Set(pos0.GetX(), pos0.GetY(), minHeight);
-                outPositions[iteratorIndex + 1].Set(pos1.GetX(), pos0.GetY(), minHeight);
-                outPositions[iteratorIndex + 2].Set(pos0.GetX(), pos1.GetY(), minHeight);
-                outPositions[iteratorIndex + 3].Set(pos1.GetX(), pos1.GetY(), minHeight);
+                outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos0.GetY(), minHeight));
+                outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos0.GetY(), minHeight));
+                outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos1.GetY(), minHeight));
+                outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos1.GetY(), minHeight));
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
             {
                 AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
-                ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), clampedPosition, normalizedDelta);
-                outPositions[iteratorIndex].Set(clampedPosition.GetX(), clampedPosition.GetY(), minHeight);
+                ClampPosition(position.GetX(), position.GetY(), clampedPosition, normalizedDelta);
+                outPositions.emplace_back(AZ::Vector3(clampedPosition.GetX(), clampedPosition.GetY(), minHeight));
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
             [[fallthrough]];
         default:
-            outPositions[iteratorIndex].Set(inPositions[i].GetX(), inPositions[i].GetY(), minHeight);
+            outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
             break;
         }
     }
 }
 
-void TerrainSystem::GenerateInputPositionsFromRegion(
+AZStd::vector<AZ::Vector3> TerrainSystem::GenerateInputPositionsFromRegion(
     const AZ::Aabb& inRegion,
-    const AZ::Vector2& stepSize,
-    AZStd::span<AZ::Vector3> inPositions) const
+    const AZ::Vector2& stepSize) const
 {
+    AZStd::vector<AZ::Vector3> inPositions;
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize);
+    inPositions.reserve(numSamplesX * numSamplesY);
 
-    for (size_t y = 0, i = 0; y < numSamplesY; y++)
+    for (size_t y = 0; y < numSamplesY; y++)
     {
         float fy = aznumeric_cast<float>(inRegion.GetMin().GetY() + (y * stepSize.GetY()));
         for (size_t x = 0; x < numSamplesX; x++)
         {
             float fx = aznumeric_cast<float>(inRegion.GetMin().GetX() + (x * stepSize.GetX()));
-            inPositions[i++].Set(fx, fy, 0.0f);
+            inPositions.emplace_back(AZ::Vector3(fx, fy, 0.0f));
         }
     }
+
+    return inPositions;
 }
 
 void TerrainSystem::MakeBulkQueries(
@@ -302,21 +305,12 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<AZ::Vector3>& inPosi
     AZStd::vector<AZ::Vector3> outPositions;
     AZStd::vector<bool> outTerrainExists;
 
-    size_t indexStepSize = 1;
-    if (sampler == AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR)
-    {
-        // outPositions holds the iterators to results of the bulk queries.
-        // In the case of the bilinear sampler, we'll be making 4 queries per
-        // input position.
-        outPositions.resize(inPositions.size() * 4);
-        outTerrainExists.resize(inPositions.size() * 4);
-        indexStepSize = 4;
-    }
-    else
-    {
-        outPositions.resize(inPositions.size());
-        outTerrainExists.resize(inPositions.size());
-    }
+    // outPositions holds the iterators to results of the bulk queries.
+    // In the case of the bilinear sampler, we'll be making 4 queries per
+    // input position.
+    size_t indexStepSize = (sampler == AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR) ? 4 : 1;
+    outPositions.reserve(inPositions.size() * indexStepSize);
+    outTerrainExists.resize(inPositions.size() * indexStepSize);
 
     GenerateQueryPositions(inPositions, outPositions, sampler, indexStepSize);
 
@@ -1004,8 +998,7 @@ void TerrainSystem::ProcessHeightsFromRegion(
 
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize);
 
-    AZStd::vector<AZ::Vector3> inPositions(numSamplesX * numSamplesY);
-    GenerateInputPositionsFromRegion(inRegion, stepSize, inPositions);
+    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize);
 
     AZStd::vector<bool> terrainExists(inPositions.size());
     AZStd::vector<float> heights(inPositions.size());
@@ -1038,8 +1031,7 @@ void TerrainSystem::ProcessNormalsFromRegion(
 
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize);
 
-    AZStd::vector<AZ::Vector3> inPositions(numSamplesX * numSamplesY);
-    GenerateInputPositionsFromRegion(inRegion, stepSize, inPositions);
+    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize);
 
     AZStd::vector<bool> terrainExists(inPositions.size());
     AZStd::vector<AZ::Vector3> normals(inPositions.size());
@@ -1073,8 +1065,7 @@ void TerrainSystem::ProcessSurfaceWeightsFromRegion(
 
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize);
 
-    AZStd::vector<AZ::Vector3> inPositions(numSamplesX * numSamplesY);
-    GenerateInputPositionsFromRegion(inRegion, stepSize, inPositions);
+    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize);
 
     AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList(inPositions.size());
     AZStd::vector<bool> terrainExists(inPositions.size());
@@ -1108,8 +1099,7 @@ void TerrainSystem::ProcessSurfacePointsFromRegion(
 
     const auto [numSamplesX, numSamplesY] = GetNumSamplesFromRegion(inRegion, stepSize);
 
-    AZStd::vector<AZ::Vector3> inPositions(numSamplesX * numSamplesY);
-    GenerateInputPositionsFromRegion(inRegion, stepSize, inPositions);
+    AZStd::vector<AZ::Vector3> inPositions = GenerateInputPositionsFromRegion(inRegion, stepSize);
 
     AZStd::vector<float> heights(inPositions.size());
     AZStd::vector<AZ::Vector3> normals(inPositions.size());
