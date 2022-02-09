@@ -234,21 +234,13 @@ namespace GradientSignal
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
         GradientRequestBus::Handler::BusConnect(GetEntityId());
-        AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
 
-        // If the image asset is already ready (e.g. constructed in a unit test),
-        // then go ahead and retrieve the image data now
-        AZStd::unique_lock<decltype(m_imageMutex)> imageLock(m_imageMutex);
-        if (m_configuration.m_imageAsset.IsReady())
-        {
-            GetSubImageData();
-        }
-        // Otherwise for normal use-case, we queue the asset to be loaded now
-        else
-        {
-            m_imageData = AZStd::span<const uint8_t>();
-            m_configuration.m_imageAsset.QueueLoad();
-        }
+        // Invoke the QueueLoad before connecting to the AssetBus, so that
+        // if the asset is already ready, then OnAssetReady will be triggered immediately
+        m_imageData = AZStd::span<const uint8_t>();
+        m_configuration.m_imageAsset.QueueLoad();
+
+        AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
     }
 
     void ImageGradientComponent::Deactivate()
