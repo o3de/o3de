@@ -250,6 +250,16 @@ namespace UnitTest
         {
         }
 
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataProviderHandle(const AZ::EntityId& providerEntityId) override
+        {
+            return GetSurfaceProviderHandle(providerEntityId);
+        }
+
+        SurfaceData::SurfaceDataRegistryHandle GetSurfaceDataModifierHandle(const AZ::EntityId& modifierEntityId) override
+        {
+            return GetSurfaceModifierHandle(modifierEntityId);
+        }
+
         SurfaceData::SurfaceDataRegistryHandle GetSurfaceProviderHandle(AZ::EntityId id)
         {
             return GetEntryHandle(id, m_providers);
