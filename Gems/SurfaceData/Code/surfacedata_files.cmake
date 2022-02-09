@@ -7,6 +7,9 @@
 #
 
 set(FILES
+    Include/SurfaceData/Components/SurfaceDataColliderComponent.h
+    Include/SurfaceData/Components/SurfaceDataShapeComponent.h
+    Include/SurfaceData/Components/SurfaceDataSystemComponent.h
     Include/SurfaceData/SurfaceDataConstants.h
     Include/SurfaceData/SurfaceDataTypes.h
     Include/SurfaceData/SurfaceDataSystemRequestBus.h
@@ -18,12 +21,9 @@ set(FILES
     Include/SurfaceData/SurfaceTag.h
     Include/SurfaceData/Utility/SurfaceDataUtility.h
     Source/SurfaceDataSystemComponent.cpp
-    Source/SurfaceDataSystemComponent.h
     Source/SurfaceDataTypes.cpp
     Source/SurfaceTag.cpp
     Source/Components/SurfaceDataColliderComponent.cpp
-    Source/Components/SurfaceDataColliderComponent.h
     Source/Components/SurfaceDataShapeComponent.cpp
-    Source/Components/SurfaceDataShapeComponent.h
     Source/SurfaceDataUtility.cpp
 )
