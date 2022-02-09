@@ -8,14 +8,17 @@
 
 #pragma once
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Serialization/EditContext.h>
+
+#include <Atom/Feature/Material/MaterialAssignment.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
+
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <TerrainRenderer/TerrainAreaMaterialRequestBus.h>
-
 
 namespace LmbrCentral
 {

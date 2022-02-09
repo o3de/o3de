@@ -8,21 +8,19 @@
 
 #include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 
-#include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetSerializer.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-
-#include <GradientSignal/Ebuses/GradientRequestBus.h>
-#include <SurfaceData/SurfaceDataProviderRequestBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 
+#include <GradientSignal/Ebuses/GradientRequestBus.h>
+#include <SurfaceData/SurfaceDataProviderRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
 namespace Terrain
