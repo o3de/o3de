@@ -17,9 +17,12 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AtomCore
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            Gem::Atom_RPI.Public
             Gem::SurfaceData
             Gem::ImageProcessingAtom.Headers
             Gem::LmbrCentral
