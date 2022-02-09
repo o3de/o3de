@@ -28,13 +28,11 @@ namespace LmbrCentral
 
 namespace Terrain
 {
-    struct TerrainSurfaceMaterialMapping
+    struct TerrainSurfaceMaterialMapping final
     {
         AZ_CLASS_ALLOCATOR(TerrainSurfaceMaterialMapping, AZ::SystemAllocator, 0);
         AZ_RTTI(TerrainSurfaceMaterialMapping, "{37D2A586-CDDD-4FB7-A7D6-0B4CC575AB8C}");
         static void Reflect(AZ::ReflectContext* context);
-
-        virtual ~TerrainSurfaceMaterialMapping() = default;
 
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
