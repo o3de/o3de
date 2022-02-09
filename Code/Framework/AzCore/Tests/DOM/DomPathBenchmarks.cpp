@@ -96,4 +96,25 @@ namespace AZ::Dom::Benchmark
         state.SetItemsProcessed(3 * state.iterations());
     }
     BENCHMARK_REGISTER_F(DomPathBenchmark, DomPathEntry_IsEndOfArray);
+
+    BENCHMARK_DEFINE_F(DomPathBenchmark, DomPathEntry_Comparison)(benchmark::State& state)
+    {
+        PathEntry name("name");
+        PathEntry index(0);
+        PathEntry endOfArray;
+        endOfArray.SetEndOfArray();
+
+        for (auto _ : state)
+        {
+            benchmark::DoNotOptimize(name == name);
+            benchmark::DoNotOptimize(name == index);
+            benchmark::DoNotOptimize(name == endOfArray);
+            benchmark::DoNotOptimize(index == index);
+            benchmark::DoNotOptimize(index == endOfArray);
+            benchmark::DoNotOptimize(endOfArray == endOfArray);
+        }
+
+        state.SetItemsProcessed(6 * state.iterations());
+    }
+    BENCHMARK_REGISTER_F(DomPathBenchmark, DomPathEntry_Comparison);
 }
