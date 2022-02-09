@@ -8,6 +8,7 @@
 
 #include <ProfilerImGuiSystemComponent.h>
 
+#include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
