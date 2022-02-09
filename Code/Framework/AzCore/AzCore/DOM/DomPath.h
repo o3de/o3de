@@ -111,6 +111,7 @@ namespace AZ::Dom
         void Clear();
         PathEntry At(size_t index) const;
         size_t Size() const;
+        bool IsEmpty() const;
 
         PathEntry& operator[](size_t index);
         const PathEntry& operator[](size_t index) const;
@@ -128,10 +129,19 @@ namespace AZ::Dom
         size_t GetStringLength() const;
         //! Formats a JSON-pointer style path string into the target buffer.
         //! This operation will fail if bufferSize < GetStringLength() + 1
-        void FormatString(char* stringBuffer, size_t bufferSize) const;
+        //! \return The number of bytes written, excepting the null terminator.
+        size_t FormatString(char* stringBuffer, size_t bufferSize) const;
         //! Returns a JSON-pointer style path string for this path.
         AZStd::string ToString() const;
+
         void AppendToString(AZStd::string& output) const;
+        template <class T>
+        void AppendToString(T& output) const
+        {
+            const size_t startIndex = output.length();
+            output.resize_no_construct(startIndex + FormatString(output.data() + startIndex, output.capacity() - startIndex));
+        }
+
         //! Reads a JSON-pointer style path from pathString and replaces this path's contents.
         //! Paths are accepted in the following forms:
         //! "/path/to/foo/0"
