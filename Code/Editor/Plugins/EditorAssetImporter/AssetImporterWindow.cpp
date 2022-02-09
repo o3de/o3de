@@ -394,7 +394,7 @@ void AssetImporterWindow::OnSceneResetRequested()
     // reset the script rule from the .assetinfo file if it exists
     if (m_scriptProcessorRule)
     {
-        m_scriptProcessorRule = nullptr;
+        m_scriptProcessorRule = {};
         if (QFile::exists(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str()))
         {
             QFile file(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
@@ -411,6 +411,11 @@ void AssetImporterWindow::OnSceneResetRequested()
 
 void AssetImporterWindow::OnAssignScript()
 {
+    using namespace AZ::SceneAPI;
+    using namespace AZ::SceneAPI::Events;
+    using namespace AZ::SceneAPI::SceneUI;
+    using namespace AZ::SceneAPI::Utilities;
+
     // use QFileDialog to select a Python script to embed into a scene manifest file
     QString pyFilename = QFileDialog::getOpenFileName(this,
         tr("Select scene builder Python script"),
@@ -422,19 +427,30 @@ void AssetImporterWindow::OnAssignScript()
         return;
     }
 
+    // reset the script rule from the .assetinfo file if it exists
+    if (m_scriptProcessorRule)
+    {
+        m_scriptProcessorRule = {};
+        if (QFile::exists(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str()))
+        {
+            QFile file(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
+            file.remove();
+        }
+    }
+
     // find the path relative to the project folder
     pyFilename = Path::GetRelativePath(pyFilename, true);
 
     // create a script rule
-    auto scriptProcessorRule = AZStd::make_shared<AZ::SceneAPI::SceneData::ScriptProcessorRule>();
+    auto scriptProcessorRule = AZStd::make_shared<SceneData::ScriptProcessorRule>();
     scriptProcessorRule->SetScriptFilename(pyFilename.toUtf8().toStdString().c_str());
 
     // add the script rule to the manifest & save off the scene manifest
-    AZ::SceneAPI::Containers::SceneManifest sceneManifest;
+    Containers::SceneManifest sceneManifest;
     sceneManifest.AddEntry(scriptProcessorRule);
     if (sceneManifest.SaveToFile(m_assetImporterDocument->GetScene()->GetManifestFilename()))
     {
-        OnSceneResetRequested();
+        OpenFile(m_assetImporterDocument->GetScene()->GetSourceFilename());
     }
 }
 
