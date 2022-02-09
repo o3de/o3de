@@ -586,7 +586,10 @@ void AssetImporterWindow::HandleAssetLoadingCompleted()
     auto userFriendlyFileName = QString::fromUtf8(relativeSourcePath.c_str(), static_cast<int>(relativeSourcePath.Native().size()));
     if (m_scriptProcessorRule)
     {
-        auto sceneDisplay = userFriendlyFileName.append(" with ").append(m_scriptProcessorRule->GetScriptFilename().c_str());
+        auto sceneDisplay = userFriendlyFileName
+            .append("\n Assigned Python builder script (")
+            .append(m_scriptProcessorRule->GetScriptFilename().c_str())
+            .append(")");
         m_rootDisplay->SetSceneDisplay(sceneDisplay, m_assetImporterDocument->GetScene());
     }
     else

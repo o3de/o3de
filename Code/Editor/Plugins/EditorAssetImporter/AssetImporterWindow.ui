@@ -50,7 +50,7 @@
           <enum>QLayout::SetMaximumSize</enum>
         </property>
 
-        <!-- When an fbx is loaded -->
+        <!-- When a source scene file (i.e. FBX) is loaded -->
         <item>
           <widget class="QWidget" name="m_mainArea">
             <property name="sizePolicy">
