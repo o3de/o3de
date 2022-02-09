@@ -401,7 +401,7 @@ namespace UnitTest
                 AZStd::mutex completionMutex;
                 AZStd::condition_variable completionVariable;
                 AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
                 {
                     AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
                     completionFlag = true;
@@ -487,7 +487,7 @@ namespace UnitTest
                 AZStd::mutex completionMutex;
                 AZStd::condition_variable completionVariable;
                 AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
                 {
                     AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
                     completionFlag = true;
@@ -596,7 +596,7 @@ namespace UnitTest
                 AZStd::mutex completionMutex;
                 AZStd::condition_variable completionVariable;
                 AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
                 {
                     AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
                     completionFlag = true;
@@ -676,7 +676,7 @@ namespace UnitTest
                 AZStd::mutex completionMutex;
                 AZStd::condition_variable completionVariable;
                 AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
                 {
                     AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
                     completionFlag = true;
@@ -783,7 +783,7 @@ namespace UnitTest
                 AZStd::mutex completionMutex;
                 AZStd::condition_variable completionVariable;
                 AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
                 {
                     AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
                     completionFlag = true;
@@ -863,7 +863,7 @@ namespace UnitTest
                 AZStd::mutex completionMutex;
                 AZStd::condition_variable completionVariable;
                 AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
                 {
                     AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
                     completionFlag = true;
@@ -970,7 +970,7 @@ namespace UnitTest
                 AZStd::mutex completionMutex;
                 AZStd::condition_variable completionVariable;
                 AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
                 {
                     AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
                     completionFlag = true;
@@ -1050,7 +1050,7 @@ namespace UnitTest
                 AZStd::mutex completionMutex;
                 AZStd::condition_variable completionVariable;
                 AZStd::atomic_bool completionFlag = false;
-                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+                auto completionCallback = [&completionMutex, &completionVariable, &completionFlag]()
                 {
                     AZStd::unique_lock<AZStd::mutex> lock(completionMutex);
                     completionFlag = true;
