@@ -113,7 +113,7 @@ namespace Multiplayer
         NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();
         AzFramework::IEntityBoundsUnion* entityBoundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
         AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(expandedVolume,
-            [this, debugDisplay, networkEntityTracker, entityBoundsUnion, rewindVolume](const AzFramework::IVisibilityScene::NodeData& nodeData)
+            [this, debugDisplay, networkEntityTracker, entityBoundsUnion, expandedVolume](const AzFramework::IVisibilityScene::NodeData& nodeData)
         {
             m_rewoundEntities.reserve(m_rewoundEntities.size() + nodeData.m_entries.size());
             for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
@@ -156,9 +156,10 @@ namespace Multiplayer
                             debugDisplay->DrawWireBox(rewoundAabb.GetMin(), rewoundAabb.GetMax());
                         }
 
-                        if (AZ::ShapeIntersection::Overlaps(rewoundAabb, rewindVolume)) // Validate the rewound aabb intersects our rewind volume
+                        if (AZ::ShapeIntersection::Overlaps(rewoundAabb, expandedVolume)) // Validate the rewound aabb intersects our rewind volume
                         {
                             m_rewoundEntities.push_back(entityHandle);
+                            entityHandle.GetNetBindComponent()->NotifySyncRewindState();
                         }
                     }
                 }
