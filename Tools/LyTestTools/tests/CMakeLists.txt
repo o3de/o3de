@@ -28,6 +28,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             Legacy::Editor
             AssetProcessor
             AutomatedTesting.GameLauncher
+            AutomatedTesting.ServerLauncher
             AutomatedTesting.Assets
             COMPONENT TestTools
     )

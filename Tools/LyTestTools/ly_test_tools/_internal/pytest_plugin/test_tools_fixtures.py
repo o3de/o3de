@@ -234,10 +234,10 @@ def _launcher(request, workspace, launcher_platform, level=""):
     """Separate implementation to call directly during unit tests"""
 
     if not level:
-        launcher = ly_test_tools.launchers.launcher_helper.create_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_game_launcher(
             workspace, launcher_platform)
     else:
-        launcher = ly_test_tools.launchers.launcher_helper.create_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_game_launcher(
             workspace, launcher_platform, ['+map', level])
 
     def teardown():
@@ -262,10 +262,10 @@ def _dedicated_launcher(request, workspace, launcher_platform, level=""):
     """Separate implementation to call directly during unit tests"""
 
     if not level:
-        launcher = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
             workspace, launcher_platform)
     else:
-        launcher = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
+        launcher = ly_test_tools.launchers.launcher_helper.create_server_launcher(
             workspace, launcher_platform, ['+map', level])
 
     def teardown():
