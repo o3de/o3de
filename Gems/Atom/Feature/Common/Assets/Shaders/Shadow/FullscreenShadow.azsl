@@ -32,6 +32,16 @@ static const float CascadeBlendArea = 0.015f; // might be worth exposing this as
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
     Sampler LinearSampler
     {
         MinFilter = Linear;
@@ -358,7 +368,22 @@ class DirectionalLightShadow
 
 
 
+float3 ComputeWorldNormal(VSOutput IN)
+{
+    const float2 uv0 = IN.m_texCoord; // center
+    const float2 uv1 = IN.m_texCoord + float2(1, 0) / PassSrg::m_constantData.m_screenSize; // right 
+    const float2 uv2 = IN.m_texCoord + float2(0, 1) / PassSrg::m_constantData.m_screenSize; // top
 
+    const float depth0 = PassSrg::m_depth.Sample(PassSrg::PointSampler, uv0);
+    const float depth1 = PassSrg::m_depth.Sample(PassSrg::PointSampler, uv1);
+    const float depth2 = PassSrg::m_depth.Sample(PassSrg::PointSampler, uv2);
+
+    const float3 P0 = WorldPositionFromDepthBuffer(uv0, depth0).xyz;
+    const float3 P1 = WorldPositionFromDepthBuffer(uv1, depth1).xyz;
+    const float3 P2 = WorldPositionFromDepthBuffer(uv2, depth2).xyz;
+
+    return normalize(cross(P2 - P0, P1 - P0));        
+}
 
 PSOutput MainPS(VSOutput IN)
 {
@@ -368,13 +393,11 @@ PSOutput MainPS(VSOutput IN)
     const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
     const float zDepth = PassSrg::m_depth.Sample(PassSrg::LinearSampler, IN.m_texCoord);
 
-    float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_constantData.m_screenSize, zDepth, IN.m_position.xy).xyz;
-    
-    const float3 worldNormal = float3(0,0,1);
-    
+    const float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_constantData.m_screenSize, zDepth, IN.m_position.xy).xyz;      
+    const float3 worldNormal = ComputeWorldNormal(IN);
+       
     directionalLightShadow.ComputeShadowCoords(lightIndex, surfacePosWS, worldNormal);
    
- 
     PSOutput OUT;   
     OUT.m_color.rgb = directionalLightShadow.GetVisibility();
     return OUT; 
