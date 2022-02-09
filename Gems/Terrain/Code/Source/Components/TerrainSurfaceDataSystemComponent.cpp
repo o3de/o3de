@@ -192,6 +192,7 @@ namespace Terrain
         registryEntry.m_entityId = GetEntityId();
         registryEntry.m_bounds = GetSurfaceAabb();
         registryEntry.m_tags = GetSurfaceTags();
+        registryEntry.m_maxPointsCreatedPerInput = 1;
 
         m_terrainBounds = registryEntry.m_bounds;
         m_terrainBoundsIsValid = m_terrainBounds.IsValid();

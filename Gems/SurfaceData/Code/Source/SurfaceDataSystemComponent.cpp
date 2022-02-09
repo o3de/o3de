@@ -343,6 +343,7 @@ namespace SurfaceData
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataProviderInternal(const SurfaceDataRegistryEntry& entry)
     {
+        AZ_Assert(entry.m_maxPointsCreatedPerInput > 0, "Surface data providers should always create at least 1 point.");
         AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         SurfaceDataRegistryHandle handle = ++m_registeredSurfaceDataProviderHandleCounter;
         m_registeredSurfaceDataProviders[handle] = entry;
@@ -364,6 +365,7 @@ namespace SurfaceData
 
     bool SurfaceDataSystemComponent::UpdateSurfaceDataProviderInternal(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry, AZ::Aabb& oldBounds)
     {
+        AZ_Assert(entry.m_maxPointsCreatedPerInput > 0, "Surface data providers should always create at least 1 point.");
         AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         auto entryItr = m_registeredSurfaceDataProviders.find(handle);
         if (entryItr != m_registeredSurfaceDataProviders.end())
@@ -377,6 +379,7 @@ namespace SurfaceData
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataModifierInternal(const SurfaceDataRegistryEntry& entry)
     {
+        AZ_Assert(entry.m_maxPointsCreatedPerInput == 0, "Surface data modifiers cannot create any points.");
         AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         SurfaceDataRegistryHandle handle = ++m_registeredSurfaceDataModifierHandleCounter;
         m_registeredSurfaceDataModifiers[handle] = entry;
@@ -399,6 +402,7 @@ namespace SurfaceData
 
     bool SurfaceDataSystemComponent::UpdateSurfaceDataModifierInternal(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry, AZ::Aabb& oldBounds)
     {
+        AZ_Assert(entry.m_maxPointsCreatedPerInput == 0, "Surface data modifiers cannot create any points.");
         AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         auto entryItr = m_registeredSurfaceDataModifiers.find(handle);
         if (entryItr != m_registeredSurfaceDataModifiers.end())

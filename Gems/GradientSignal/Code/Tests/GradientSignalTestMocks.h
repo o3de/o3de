@@ -179,6 +179,16 @@ namespace UnitTest
             providerRegistryEntry.m_bounds = m_bounds;
             providerRegistryEntry.m_tags = m_tags;
 
+            providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
+            for (auto& pointEntry : m_surfacePoints)
+            {
+                for (size_t index = 0; index < pointEntry.second.GetInputPositionSize(); index++)
+                {
+                    providerRegistryEntry.m_maxPointsCreatedPerInput =
+                        AZ::GetMax(providerRegistryEntry.m_maxPointsCreatedPerInput, pointEntry.second.GetSize(index));
+                }
+            }
+
             SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
                 m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, providerRegistryEntry);
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);

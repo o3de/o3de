@@ -290,9 +290,18 @@ namespace SurfaceData
 
     struct SurfaceDataRegistryEntry
     {
+        //! The entity ID of the surface provider / modifier
         AZ::EntityId m_entityId;
+
+        //! The AABB bounds that this surface provider / modifier can affect, or null if it has infinite bounds.
         AZ::Aabb m_bounds = AZ::Aabb::CreateNull();
+
+        //! The set of surface tags that this surface provider / modifier can create or add to a point.
         SurfaceTagVector m_tags;
+
+        //! The maximum number of surface points that this will create per input position.
+        //! For surface modifiers, this is always expected to be 0, and for surface providers it's expected to be > 0.
+        size_t m_maxPointsCreatedPerInput = 0;
     };
 
     using SurfaceDataRegistryHandle = AZ::u32;

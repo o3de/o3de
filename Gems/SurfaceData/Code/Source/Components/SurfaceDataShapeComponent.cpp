@@ -238,9 +238,11 @@ namespace SurfaceData
         providerRegistryEntry.m_entityId = GetEntityId();
         providerRegistryEntry.m_bounds = m_shapeBounds;
         providerRegistryEntry.m_tags = m_configuration.m_providerTags;
+        providerRegistryEntry.m_maxPointsCreatedPerInput = 1;
 
         SurfaceDataRegistryEntry modifierRegistryEntry(providerRegistryEntry);
         modifierRegistryEntry.m_tags = m_configuration.m_modifierTags;
+        modifierRegistryEntry.m_maxPointsCreatedPerInput = 0;
 
         if (shapeValidBeforeUpdate && shapeValidAfterUpdate)
         {

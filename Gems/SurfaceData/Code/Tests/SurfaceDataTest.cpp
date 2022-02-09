@@ -114,6 +114,12 @@ class MockSurfaceProvider
 
             if (m_providerType == ProviderType::SURFACE_PROVIDER)
             {
+                registryEntry.m_maxPointsCreatedPerInput = 1;
+                for (auto& entry : m_GetSurfacePoints)
+                {
+                    registryEntry.m_maxPointsCreatedPerInput = AZ::GetMax(registryEntry.m_maxPointsCreatedPerInput, entry.second.size());
+                }
+
                 SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, registryEntry);
                 SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);
             }

@@ -255,6 +255,7 @@ namespace SurfaceData
         registryEntry.m_entityId = GetEntityId();
         registryEntry.m_bounds = GetSurfaceAabb();
         registryEntry.m_tags = GetSurfaceTags();
+        registryEntry.m_maxPointsCreatedPerInput = 1;
 
         if (!meshValidBeforeUpdate && !meshValidAfterUpdate)
         {
