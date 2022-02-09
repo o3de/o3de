@@ -44,23 +44,6 @@ namespace Terrain
         SurfaceData::SurfaceTag m_previousTag;
 
         bool m_active = false;
-
-        virtual AZ::Crc32 ShouldShowSurfaceTag()
-        {
-            return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
-        }
-    };
-
-    struct DefaultTerrainSurfaceMaterial final : public TerrainSurfaceMaterialMapping
-    {
-        AZ_CLASS_ALLOCATOR(DefaultTerrainSurfaceMaterial, AZ::SystemAllocator, 0);
-        AZ_RTTI(DefaultTerrainSurfaceMaterial, "{C46F00BE-820E-47FE-8A57-D0AF148106AB}", TerrainSurfaceMaterialMapping);
-        static void Reflect(AZ::ReflectContext* context);
-
-        AZ::Crc32 ShouldShowSurfaceTag() override
-        {
-            return AZ::Edit::PropertyVisibility::Hide;
-        }
     };
 
     class TerrainSurfaceMaterialsListConfig : public AZ::ComponentConfig
@@ -70,8 +53,13 @@ namespace Terrain
         AZ_RTTI(TerrainSurfaceMaterialsListConfig, "{68A1CB1B-C835-4C3A-8D1C-08692E07711A}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        DefaultTerrainSurfaceMaterial m_defaultSurfaceMaterial;
+        TerrainSurfaceMaterialsListConfig();
+
+        TerrainSurfaceMaterialMapping m_defaultSurfaceMaterial;
         AZStd::vector<TerrainSurfaceMaterialMapping> m_surfaceMaterials;
+    private:
+        static const AZ::Edit::ElementData* GetDynamicData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType);
+        AZ::Edit::ElementData m_hideSurfaceTagData;
     };
 
     class TerrainSurfaceMaterialsListComponent

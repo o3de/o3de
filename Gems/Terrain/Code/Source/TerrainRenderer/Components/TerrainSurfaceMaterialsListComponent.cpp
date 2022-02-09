@@ -43,7 +43,6 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainSurfaceMaterialMapping::m_surfaceTag, "Surface tag", "Surface type to map to a material.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &TerrainSurfaceMaterialMapping::ShouldShowSurfaceTag)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialMapping::m_materialAsset, "Material asset", "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
@@ -52,19 +51,9 @@ namespace Terrain
         }
     }
 
-    void DefaultTerrainSurfaceMaterial::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serialize->Class<DefaultTerrainSurfaceMaterial, TerrainSurfaceMaterialMapping>()
-                ->Version(1);
-        }
-    }
-
     void TerrainSurfaceMaterialsListConfig::Reflect(AZ::ReflectContext* context)
     {
         TerrainSurfaceMaterialMapping::Reflect(context);
-        DefaultTerrainSurfaceMaterial::Reflect(context);
 
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
@@ -79,6 +68,7 @@ namespace Terrain
             {
                 edit->Class<TerrainSurfaceMaterialsListConfig>(
                         "Terrain Surface Material List Component", "Provide mapping between surfaces and render materials.")
+                    ->SetDynamicEditDataProvider(&TerrainSurfaceMaterialsListConfig::GetDynamicData)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -90,6 +80,26 @@ namespace Terrain
                         "Material Mappings", "Maps surfaces to materials.");
             }
         }
+    }
+
+    TerrainSurfaceMaterialsListConfig::TerrainSurfaceMaterialsListConfig()
+    {
+       m_hideSurfaceTagData.m_attributes.push_back(
+           {
+               AZ::Edit::Attributes::Visibility,
+               aznew AZ::Edit::AttributeData<AZ::Crc32>(AZ::Edit::PropertyVisibility::Hide)
+           }
+       );
+    }
+
+    const AZ::Edit::ElementData* TerrainSurfaceMaterialsListConfig::GetDynamicData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& )
+    {
+        const TerrainSurfaceMaterialsListConfig* owner = reinterpret_cast<const TerrainSurfaceMaterialsListConfig*>(handlerPtr);
+        if (elementPtr == &owner->m_defaultSurfaceMaterial.m_surfaceTag)
+        {
+            return &owner->m_hideSurfaceTagData;
+        }
+        return nullptr;
     }
 
     void TerrainSurfaceMaterialsListComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
