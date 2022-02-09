@@ -98,6 +98,8 @@ namespace GradientSignal
 
         void SetupDependencies();
 
+        void GetSubImageData();
+
         // ImageGradientRequestBus overrides...
         AZStd::string GetImageAssetPath() const override;
         void SetImageAssetPath(const AZStd::string& assetPath) override;
@@ -113,5 +115,6 @@ namespace GradientSignal
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_imageMutex;
         GradientTransform m_gradientTransform;
+        AZStd::span<const uint8_t> m_imageData;
     };
 }
