@@ -37,6 +37,7 @@ namespace AZ
 
     namespace Render
     {
+        //! All of the views needed for skinning input, skinning output, and static rendering of a single mesh
         struct SkinnedSubMeshProperties
         {
             struct SrgNameViewPair
@@ -60,6 +61,7 @@ namespace AZ
             //! Number of influences per vertex across the sub-mesh
             uint32_t m_skinInfluenceCountPerVertex;
         };
+
         //! Container for all the buffers and views needed for a single lod of a skinned mesh
         //! To create a SkinnedMeshInputLod, follow the general pattern
         //!     lod.SetIndexCount()
