@@ -1,14 +1,8 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "",
     "materialTypeVersion": 3,
-    "properties": {
-        "baseColor": {
-            "textureMap": "Textures/Default/checker_uv_basecolor.png"
-        },
-        "general": {
-            "doubleSided": true
-        }
+    "propertyValues": {
+        "baseColor.textureMap": "Textures/Default/checker_uv_basecolor.png",
+        "general.doubleSided": true
     }
 }

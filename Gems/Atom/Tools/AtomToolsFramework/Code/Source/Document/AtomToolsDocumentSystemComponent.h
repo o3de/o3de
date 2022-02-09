@@ -15,7 +15,6 @@
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
-#include <AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QFileInfo>
@@ -79,7 +78,6 @@ namespace AtomToolsFramework
 
         AZ::Uuid OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen);
 
-        AZStd::intrusive_ptr<AtomToolsDocumentSystemSettings> m_settings;
         AZStd::function<AtomToolsDocument*()> m_documentCreator;
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<AtomToolsDocument>> m_documentMap;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsWithExternalChanges;
